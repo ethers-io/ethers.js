@@ -634,7 +634,7 @@ export class Fragment {
             case "function": return FunctionFragment.fromObject(obj);
             case "struct": return StructFragment.fromObject(obj);
         }
-        throw new Error("not implemented yet");
+        throw new Error(`not implemented yet: ${obj.type}`);
     }
     static fromString(text) {
         try {
@@ -721,6 +721,9 @@ export class ErrorFragment extends NamedFragment {
         result.push(this.name + joinParams(format, this.inputs));
         return result.join(" ");
     }
+    static fromObject(obj) {
+        return new ErrorFragment(_guard, obj.name, obj.inputs ? obj.inputs.map(ParamType.fromObject) : []);
+    }
     static fromString(text) {
         return ErrorFragment.fromTokens(lex(text));
     }
@@ -758,6 +761,9 @@ export class EventFragment extends NamedFragment {
             result.push("anonymous");
         }
         return result.join(" ");
+    }
+    static fromObject(obj) {
+        return new EventFragment(_guard, obj.name, obj.inputs ? obj.inputs.map(ParamType.fromObject) : [], !!obj.anonymous);
     }
     static fromString(text) {
         return EventFragment.fromTokens(lex(text));
@@ -799,11 +805,11 @@ export class ConstructorFragment extends Fragment {
         }
         return result.join(" ");
     }
+    static fromObject(obj) {
+        return new ConstructorFragment(_guard, "constructor", obj.inputs ? obj.inputs.map(ParamType.fromObject) : [], !!obj.payable, (obj.gas != null) ? obj.gas : null);
+    }
     static fromString(text) {
         return ConstructorFragment.fromTokens(lex(text));
-    }
-    static fromObject(obj) {
-        throw new Error("TODO");
     }
     static fromTokens(tokens) {
         consumeKeywords(tokens, setify(["constructor"]));
@@ -861,6 +867,10 @@ export class FunctionFragment extends NamedFragment {
             }
         }
         return result.join(" ");
+    }
+    static fromObject(obj) {
+        // @TODO: verifyState for stateMutability
+        return new FunctionFragment(_guard, obj.name, obj.stateMutability, obj.inputs ? obj.inputs.map(ParamType.fromObject) : [], obj.outputs ? obj.outputs.map(ParamType.fromObject) : [], (obj.gas != null) ? obj.gas : null);
     }
     static fromString(text) {
         return FunctionFragment.fromTokens(lex(text));

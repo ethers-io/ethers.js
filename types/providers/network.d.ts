@@ -1,6 +1,4 @@
-import { Formatter } from "./formatter.js";
 import type { BigNumberish } from "../utils/index.js";
-import type { Freezable, Frozen } from "../utils/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 import type { NetworkPlugin } from "./plugins-network.js";
 /**
@@ -16,23 +14,19 @@ export declare type Networkish = Network | number | bigint | string | {
     ensAddress?: string;
     ensNetwork?: number;
 };
-export declare class Network implements Freezable<Network> {
+export declare class Network {
     #private;
-    constructor(name: string, _chainId: BigNumberish, formatter?: Formatter);
+    constructor(name: string, _chainId: BigNumberish);
     toJSON(): any;
     get name(): string;
     set name(value: string);
     get chainId(): bigint;
     set chainId(value: BigNumberish);
-    get formatter(): Formatter;
-    set formatter(value: Formatter);
     get plugins(): Array<NetworkPlugin>;
     attachPlugin(plugin: NetworkPlugin): this;
     getPlugin<T extends NetworkPlugin = NetworkPlugin>(name: string): null | T;
     getPlugins<T extends NetworkPlugin = NetworkPlugin>(basename: string): Array<T>;
     clone(): Network;
-    freeze(): Frozen<Network>;
-    isFrozen(): boolean;
     computeIntrinsicGas(tx: TransactionLike): number;
     /**
      *  Returns a new Network for the %%network%% name or chainId.

@@ -113,6 +113,7 @@ export class FetchRequest {
     #process;
     #retry;
     #signal;
+    #throttle;
     /**
      *  The fetch URI to requrest.
      */
@@ -333,10 +334,22 @@ export class FetchRequest {
         this.#gzip = false;
         this.#headers = {};
         this.#method = "";
-        this.#timeout = 300;
+        this.#timeout = 300000;
+        this.#throttle = {
+            slotInterval: SLOT_INTERVAL,
+            maxAttempts: MAX_ATTEMPTS
+        };
+    }
+    setThrottleParams(params) {
+        if (params.slotInterval != null) {
+            this.#throttle.slotInterval = params.slotInterval;
+        }
+        if (params.maxAttempts != null) {
+            this.#throttle.maxAttempts = params.maxAttempts;
+        }
     }
     async #send(attempt, expires, delay, _request, _response) {
-        if (attempt >= MAX_ATTEMPTS) {
+        if (attempt >= this.#throttle.maxAttempts) {
             return _response.makeServerError("exceeded maximum retry limit");
         }
         if (getTime() > expires) {
@@ -391,7 +404,7 @@ export class FetchRequest {
             // Throttle
             if (this.retryFunc == null || (await this.retryFunc(req, response, attempt))) {
                 const retryAfter = response.headers["retry-after"];
-                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
+                let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
                 if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
                     delay = parseInt(retryAfter);
                 }
@@ -409,7 +422,7 @@ export class FetchRequest {
                     response.makeServerError("error in post-processing function", error).assertOk();
                 }
                 // Throttle
-                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
+                let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
                 ;
                 if (error.stall >= 0) {
                     delay = error.stall;

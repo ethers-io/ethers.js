@@ -1,10 +1,8 @@
-import type { Network } from "./network.js";
 import type { FeeData, Provider } from "./provider.js";
 export declare class NetworkPlugin {
     readonly name: string;
     constructor(name: string);
     clone(): NetworkPlugin;
-    validate(network: Network): NetworkPlugin;
 }
 export declare type GasCostParameters = {
     txBase?: number;
@@ -14,7 +12,7 @@ export declare type GasCostParameters = {
     txAccessListStorageKey?: number;
     txAccessListAddress?: number;
 };
-export declare class GasCostPlugin extends NetworkPlugin {
+export declare class GasCostPlugin extends NetworkPlugin implements GasCostParameters {
     readonly effectiveBlock: number;
     readonly txBase: number;
     readonly txCreate: number;
@@ -30,7 +28,6 @@ export declare class EnsPlugin extends NetworkPlugin {
     readonly targetNetwork: number;
     constructor(address?: null | string, targetNetwork?: null | number);
     clone(): EnsPlugin;
-    validate(network: Network): this;
 }
 export declare class FeeDataNetworkPlugin extends NetworkPlugin {
     #private;
@@ -38,5 +35,13 @@ export declare class FeeDataNetworkPlugin extends NetworkPlugin {
     constructor(feeDataFunc: (provider: Provider) => Promise<FeeData>);
     getFeeData(provider: Provider): Promise<FeeData>;
     clone(): FeeDataNetworkPlugin;
+}
+import type { Block, BlockParams, TransactionResponse, TransactionResponseParams } from "./provider.js";
+export declare class CustomBlockNetworkPlugin extends NetworkPlugin {
+    #private;
+    constructor(blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>, blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>);
+    getBlock(provider: Provider, block: BlockParams<string>): Promise<Block<string>>;
+    getBlockWithTransactions(provider: Provider, block: BlockParams<TransactionResponseParams>): Promise<Block<TransactionResponse>>;
+    clone(): CustomBlockNetworkPlugin;
 }
 //# sourceMappingURL=plugins-network.d.ts.map

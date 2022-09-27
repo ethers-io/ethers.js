@@ -44,7 +44,6 @@ export declare class SocketProvider extends JsonRpcApiProvider {
     _getSubscriber(sub: Subscription): Subscriber;
     _register(filterId: number | string, subscriber: SocketSubscriber): void;
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>>;
-    _start(): Promise<void>;
     _processMessage(message: string): Promise<void>;
     _write(message: string): Promise<void>;
 }

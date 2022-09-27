@@ -1,6 +1,5 @@
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
-import type { Frozen } from "../utils/index.js";
 import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
 export interface FallbackProviderConfig {
@@ -31,7 +30,7 @@ export declare class FallbackProvider extends AbstractProvider {
     readonly eventWorkers: number;
     constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish);
     get providerConfigs(): Array<FallbackProviderState>;
-    _detectNetwork(): Promise<Frozen<Network>>;
+    _detectNetwork(): Promise<Network>;
     _perform<T = any>(req: PerformActionRequest): Promise<T>;
 }
 //# sourceMappingURL=provider-fallback.d.ts.map

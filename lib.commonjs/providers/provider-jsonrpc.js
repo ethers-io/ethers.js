@@ -33,6 +33,9 @@ function deepCopy(value) {
     }
     throw new Error(`should not happen: ${value} (${typeof (value)})`);
 }
+function stall(duration) {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
+}
 function getLowerCase(value) {
     if (value) {
         return value.toLowerCase();
@@ -123,7 +126,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
                 // Try getting the transaction
                 const tx = await this.provider.getTransaction(hash);
                 if (tx != null) {
-                    resolve(this.provider._wrapTransaction(tx, hash, blockNumber));
+                    resolve(tx.replaceableTransaction(blockNumber));
                     return;
                 }
                 // Wait another 4 seconds
@@ -188,22 +191,35 @@ exports.JsonRpcSigner = JsonRpcSigner;
  *  sub-classed.
  *
  *  It provides the base for all JSON-RPC-based Provider interaction.
+ *
+ *  Sub-classing Notes:
+ *  - a sub-class MUST override _send
+ *  - a sub-class MUST call the `_start()` method once connected
  */
 class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
     #options;
     #nextId;
     #payloads;
+    #ready;
+    #starting;
     #drainTimer;
+    #network;
     constructor(network, options) {
         super(network);
+        this.#ready = false;
+        this.#starting = null;
         this.#nextId = 1;
         this.#options = Object.assign({}, defaultOptions, options || {});
         this.#payloads = [];
         this.#drainTimer = null;
+        this.#network = null;
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork && staticNetwork !== network) {
-            (0, index_js_4.throwArgumentError)("staticNetwork MUST match network object", "options", options);
+        if (staticNetwork) {
+            if (staticNetwork !== network) {
+                (0, index_js_4.throwArgumentError)("staticNetwork MUST match network object", "options", options);
+            }
+            this.#network = staticNetwork;
         }
     }
     /**
@@ -214,8 +230,40 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
     _getOption(key) {
         return this.#options[key];
     }
+    get _network() {
+        if (!this.#network) {
+            (0, index_js_4.throwError)("network is not available yet", "NETWORK_ERROR");
+        }
+        return this.#network;
+    }
+    get ready() { return this.#ready; }
+    async _start() {
+        if (this.#ready) {
+            return;
+        }
+        if (this.#starting) {
+            return this.#starting;
+        }
+        this.#starting = (async () => {
+            // Bootstrap the network
+            if (this.#network == null) {
+                try {
+                    this.#network = await this._detectNetwork();
+                }
+                catch (error) {
+                    console.log("JsonRpcProvider failed to startup; retry in 1s");
+                    await stall(1000);
+                    this.#starting = null;
+                }
+            }
+            this.#ready = true;
+            this.#starting = null;
+            // Start dispatching requests
+            this.#scheduleDrain();
+        })();
+    }
     #scheduleDrain() {
-        if (this.#drainTimer) {
+        if (this.#drainTimer || !this.ready) {
             return;
         }
         // If we aren't using batching, no hard in sending it immeidately
@@ -272,7 +320,6 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             }
         }, stallTime);
     }
-    // Sub-classes should **NOT** override this
     /**
      *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
      *  over the underlying channel. This can be used to call methods
@@ -331,25 +378,44 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             }
             return new JsonRpcSigner(this, accounts[address]);
         }
-        const [network, accounts] = await Promise.all([this.getNetwork(), accountsPromise]);
+        const { accounts } = await (0, index_js_4.resolveProperties)({
+            network: this.getNetwork(),
+            accounts: accountsPromise
+        });
         // Account address
-        address = network.formatter.address(address);
+        address = (0, index_js_1.getAddress)(address);
         for (const account of accounts) {
-            if (network.formatter.address(account) === account) {
+            if ((0, index_js_1.getAddress)(account) === account) {
                 return new JsonRpcSigner(this, account);
             }
         }
         throw new Error("invalid account");
     }
-    // Sub-classes can override this; it detects the *actual* network we
-    // are connected to
+    /** Sub-classes can override this; it detects the *actual* network that
+     *  we are **currently** connected to.
+     *
+     *  Keep in mind that [[send]] may only be used once [[ready]].
+     */
     async _detectNetwork() {
-        // We have a static network (like INFURA)
         const network = this._getOption("staticNetwork");
         if (network) {
             return network;
         }
-        return network_js_1.Network.from((0, index_js_4.getBigInt)(await this._perform({ method: "chainId" })));
+        // If we are ready, use ``send``, which enabled requests to be batched
+        if (this.ready) {
+            return network_js_1.Network.from((0, index_js_4.getBigInt)(await this.send("eth_chainId", [])));
+        }
+        // We are not ready yet; use the primitive _send
+        const payload = {
+            id: this.#nextId++, method: "eth_chainId", params: [], jsonrpc: "2.0"
+        };
+        this.emit("debug", { action: "sendRpcPayload", payload });
+        const result = (await this._send(payload))[0];
+        this.emit("debug", { action: "receiveRpcResult", result });
+        if ("result" in result) {
+            return network_js_1.Network.from((0, index_js_4.getBigInt)(result.result));
+        }
+        throw this.getRpcError(payload, result);
     }
     /**
      *  Return a Subscriber that will manage the %%sub%%.
@@ -601,6 +667,13 @@ class JsonRpcProvider extends JsonRpcApiProvider {
             this.#connect = url.clone();
         }
         this.#pollingInterval = 4000;
+    }
+    async send(method, params) {
+        // All requests are over HTTP, so we can just start handling requests
+        // We do this here rather than the constructor so that we don't send any
+        // requests to the network until we absolutely have to.
+        await this._start();
+        return await super.send(method, params);
     }
     async _send(payload) {
         // Configure a POST connection for the requested method

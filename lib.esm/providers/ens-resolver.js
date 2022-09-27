@@ -1,3 +1,4 @@
+import { getAddress } from "../address/index.js";
 import { ZeroHash } from "../constants/hashes.js";
 import { dnsEncode, namehash } from "../hash/index.js";
 import { concat, dataSlice, getBytes, hexlify, zeroPadValue, defineProperties, encodeBase58, getBigInt, toArray, toNumber, toUtf8Bytes, toUtf8String, throwArgumentError, throwError, FetchRequest } from "../utils/index.js";
@@ -57,6 +58,12 @@ function encodeBytes(datas) {
         byteCount += 32 + Math.ceil(data.length / 32) * 32;
     }
     return concat(result);
+}
+function callAddress(value) {
+    if (value.length !== 66 || dataSlice(value, 0, 12) !== "0x000000000000000000000000") {
+        throwArgumentError("invalid call address", "value", value);
+    }
+    return getAddress("0x" + value.substring(26));
 }
 // @TODO: This should use the fetch-data:ipfs gateway
 // Trim off the ipfs:// prefix and return the default gateway URL
@@ -174,11 +181,10 @@ export class EnsResolver {
                 // keccak256("addr(bytes32)")
                 const result = await this._fetch("0x3b3b57de");
                 // No address
-                if (result === "0x" || result === ZeroHash) {
+                if (result == null || result === "0x" || result === ZeroHash) {
                     return null;
                 }
-                const network = await this.provider.getNetwork();
-                return network.formatter.callAddress(result);
+                return callAddress(result);
             }
             catch (error) {
                 if (error.code === "CALL_EXCEPTION") {
@@ -301,13 +307,12 @@ export class EnsResolver {
                             linkage.push({ type: `!${scheme}caip`, value: (match[2] || "") });
                             throw new Error("!caip");
                         }
-                        const formatter = (await this.provider.getNetwork()).formatter;
-                        const addr = formatter.address(comps[0]);
+                        const addr = getAddress(comps[0]);
                         const tokenId = numPad(comps[1]);
                         // Check that this account owns the token
                         if (scheme === "erc721") {
                             // ownerOf(uint256 tokenId)
-                            const tokenOwner = formatter.callAddress(await this.provider.call({
+                            const tokenOwner = callAddress(await this.provider.call({
                                 to: addr, data: concat(["0x6352211e", tokenId])
                             }));
                             if (owner !== tokenOwner) {
@@ -419,7 +424,7 @@ export class EnsResolver {
                 data: concat(["0x0178b8bf", namehash(name)]),
                 enableCcipRead: true
             });
-            const addr = network.formatter.callAddress(addrData);
+            const addr = callAddress(addrData);
             if (addr === dataSlice(ZeroHash, 0, 20)) {
                 return null;
             }

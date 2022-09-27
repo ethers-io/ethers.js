@@ -1,0 +1,240 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.formatTransactionResponse = exports.formatTransactionReceipt = exports.formatReceiptLog = exports.formatBlockWithTransactions = exports.formatBlock = exports.formatLog = exports.formatUint256 = exports.formatHash = exports.formatData = exports.formatBoolean = exports.object = exports.arrayOf = exports.allowNull = void 0;
+const index_js_1 = require("../address/index.js");
+const index_js_2 = require("../transaction/index.js");
+const index_js_3 = require("../utils/index.js");
+const BN_0 = BigInt(0);
+function allowNull(format, nullValue) {
+    return (function (value) {
+        if (value == null) {
+            return nullValue;
+        }
+        return format(value);
+    });
+}
+exports.allowNull = allowNull;
+function arrayOf(format) {
+    return ((array) => {
+        if (!Array.isArray(array)) {
+            throw new Error("not an array");
+        }
+        return array.map((i) => format(i));
+    });
+}
+exports.arrayOf = arrayOf;
+// Requires an object which matches a fleet of other formatters
+// Any FormatFunc may return `undefined` to have the value omitted
+// from the result object. Calls preserve `this`.
+function object(format, altNames) {
+    return ((value) => {
+        const result = {};
+        for (const key in format) {
+            let srcKey = key;
+            if (altNames && key in altNames && !(srcKey in value)) {
+                for (const altKey of altNames[key]) {
+                    if (altKey in value) {
+                        srcKey = altKey;
+                        break;
+                    }
+                }
+            }
+            try {
+                const nv = format[key](value[srcKey]);
+                if (nv !== undefined) {
+                    result[key] = nv;
+                }
+            }
+            catch (error) {
+                const message = (error instanceof Error) ? error.message : "not-an-error";
+                (0, index_js_3.throwError)(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+            }
+        }
+        return result;
+    });
+}
+exports.object = object;
+function formatBoolean(value) {
+    switch (value) {
+        case true:
+        case "true":
+            return true;
+        case false:
+        case "false":
+            return false;
+    }
+    return (0, index_js_3.throwArgumentError)(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
+}
+exports.formatBoolean = formatBoolean;
+function formatData(value) {
+    if (!(0, index_js_3.isHexString)(value, true)) {
+        (0, index_js_3.throwArgumentError)("", "value", value);
+    }
+    return value;
+}
+exports.formatData = formatData;
+function formatHash(value) {
+    if (!(0, index_js_3.isHexString)(value, 32)) {
+        (0, index_js_3.throwArgumentError)("", "value", value);
+    }
+    return value;
+}
+exports.formatHash = formatHash;
+function formatUint256(value) {
+    if (!(0, index_js_3.isHexString)(value)) {
+        throw new Error("invalid uint256");
+    }
+    return (0, index_js_3.zeroPadValue)(value, 32);
+}
+exports.formatUint256 = formatUint256;
+exports.formatLog = object({
+    address: index_js_1.getAddress,
+    blockHash: formatHash,
+    blockNumber: index_js_3.getNumber,
+    data: formatData,
+    index: index_js_3.getNumber,
+    removed: formatBoolean,
+    topics: arrayOf(formatHash),
+    transactionHash: formatHash,
+    transactionIndex: index_js_3.getNumber,
+}, {
+    index: ["logIndex"]
+});
+function _formatBlock(txFunc) {
+    return object({
+        hash: allowNull(formatHash),
+        parentHash: formatHash,
+        number: index_js_3.getNumber,
+        timestamp: index_js_3.getNumber,
+        nonce: allowNull(formatData),
+        difficulty: index_js_3.getBigInt,
+        gasLimit: index_js_3.getBigInt,
+        gasUsed: index_js_3.getBigInt,
+        miner: allowNull(index_js_1.getAddress),
+        extraData: formatData,
+        transactions: arrayOf(txFunc),
+        baseFeePerGas: allowNull(index_js_3.getBigInt)
+    });
+}
+exports.formatBlock = _formatBlock(formatHash);
+exports.formatBlockWithTransactions = _formatBlock(formatTransactionResponse);
+exports.formatReceiptLog = object({
+    transactionIndex: index_js_3.getNumber,
+    blockNumber: index_js_3.getNumber,
+    transactionHash: formatHash,
+    address: index_js_1.getAddress,
+    topics: arrayOf(formatHash),
+    data: formatData,
+    logIndex: index_js_3.getNumber,
+    blockHash: formatHash,
+});
+exports.formatTransactionReceipt = object({
+    to: allowNull(index_js_1.getAddress, null),
+    from: allowNull(index_js_1.getAddress, null),
+    contractAddress: allowNull(index_js_1.getAddress, null),
+    transactionIndex: index_js_3.getNumber,
+    // should be allowNull(hash), but broken-EIP-658 support is handled in receipt
+    root: allowNull(index_js_3.hexlify),
+    gasUsed: index_js_3.getBigInt,
+    logsBloom: allowNull(formatData),
+    blockHash: formatHash,
+    transactionHash: formatHash,
+    logs: arrayOf(exports.formatReceiptLog),
+    blockNumber: index_js_3.getNumber,
+    confirmations: allowNull(index_js_3.getNumber, null),
+    cumulativeGasUsed: index_js_3.getBigInt,
+    effectiveGasPrice: allowNull(index_js_3.getBigInt),
+    status: allowNull(index_js_3.getNumber),
+    type: index_js_3.getNumber
+}, {
+    effectiveGasPrice: ["gasPrice"]
+});
+function formatTransactionResponse(value) {
+    // Some clients (TestRPC) do strange things like return 0x0 for the
+    // 0 address; correct this to be a real address
+    if (value.to && (0, index_js_3.getBigInt)(value.to) === BN_0) {
+        value.to = "0x0000000000000000000000000000000000000000";
+    }
+    const result = object({
+        hash: formatHash,
+        type: (value) => {
+            if (value === "0x" || value == null) {
+                return 0;
+            }
+            return (0, index_js_3.getNumber)(value);
+        },
+        accessList: allowNull(index_js_2.accessListify, null),
+        blockHash: allowNull(formatHash, null),
+        blockNumber: allowNull(index_js_3.getNumber, null),
+        transactionIndex: allowNull(index_js_3.getNumber, null),
+        confirmations: allowNull(index_js_3.getNumber, null),
+        from: index_js_1.getAddress,
+        // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
+        gasPrice: allowNull(index_js_3.getBigInt),
+        maxPriorityFeePerGas: allowNull(index_js_3.getBigInt),
+        maxFeePerGas: allowNull(index_js_3.getBigInt),
+        gasLimit: index_js_3.getBigInt,
+        to: allowNull(index_js_1.getAddress, null),
+        value: index_js_3.getBigInt,
+        nonce: index_js_3.getNumber,
+        data: formatData,
+        r: allowNull(formatUint256),
+        s: allowNull(formatUint256),
+        v: allowNull(index_js_3.getNumber),
+        creates: allowNull(index_js_1.getAddress, null),
+        chainId: allowNull(index_js_3.getBigInt, null)
+    }, {
+        data: ["input"],
+        gasLimit: ["gas"]
+    })(value);
+    // If to and creates are empty, populate the creates from the value
+    if (result.to == null && result.creates == null) {
+        result.creates = (0, index_js_1.getCreateAddress)(result);
+    }
+    // @TODO: Check fee data
+    // Add an access list to supported transaction types
+    if ((value.type === 1 || value.type === 2) && value.accessList == null) {
+        value.accessList = [];
+    }
+    // @TODO: check chainID
+    /*
+    if (value.chainId != null) {
+        let chainId = value.chainId;
+
+        if (isHexString(chainId)) {
+            chainId = BigNumber.from(chainId).toNumber();
+        }
+
+        result.chainId = chainId;
+
+    } else {
+        let chainId = value.networkId;
+
+        // geth-etc returns chainId
+        if (chainId == null && result.v == null) {
+            chainId = value.chainId;
+        }
+
+        if (isHexString(chainId)) {
+            chainId = BigNumber.from(chainId).toNumber();
+        }
+
+        if (typeof(chainId) !== "number" && result.v != null) {
+            chainId = (result.v - 35) / 2;
+            if (chainId < 0) { chainId = 0; }
+            chainId = parseInt(chainId);
+        }
+
+        if (typeof(chainId) !== "number") { chainId = 0; }
+
+        result.chainId = chainId;
+    }
+    */
+    // 0x0000... should actually be null
+    if (result.blockHash && (0, index_js_3.getBigInt)(result.blockHash) === BN_0) {
+        result.blockHash = null;
+    }
+    return result;
+}
+exports.formatTransactionResponse = formatTransactionResponse;
+//# sourceMappingURL=format.js.map

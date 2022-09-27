@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.1";
+const version = "6.0.0-beta-exports.2";
 
 async function resolveProperties(value) {
     const keys = Object.keys(value);
@@ -437,7 +437,7 @@ function zeroPadBytes(data, length) {
     return zeroPad(data, length, false);
 }
 
-const BN_0$6 = BigInt(0);
+const BN_0$8 = BigInt(0);
 const BN_1$5 = BigInt(1);
 // IEEE 754 support 53-bits of mantissa
 const maxValue = 0x1fffffffffffff;
@@ -460,7 +460,7 @@ function fromTwos(_value, _width) {
 function toTwos(_value, _width) {
     const value = getBigInt(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
-    if (value < BN_0$6) {
+    if (value < BN_0$8) {
         const mask = (BN_1$5 << width) - BN_1$5;
         return ((~(-value)) & mask) + BN_1$5;
     }
@@ -587,7 +587,7 @@ function toArray(_value) {
     if (value < 0) {
         throw new Error("cannot convert negative value to hex");
     }
-    if (value === BN_0$6) {
+    if (value === BN_0$8) {
         return new Uint8Array([]);
     }
     let hex = value.toString(16);
@@ -634,7 +634,7 @@ function getAlpha(letter) {
     }
     return result;
 }
-const BN_0$5 = BigInt(0);
+const BN_0$7 = BigInt(0);
 const BN_58 = BigInt(58);
 /**
  *  Encode %%value%% as Base58-encoded data.
@@ -652,7 +652,7 @@ function encodeBase58(_value) {
  *  Decode the Base58-encoded %%value%%.
  */
 function decodeBase58(value) {
-    let result = BN_0$5;
+    let result = BN_0$7;
     for (let i = 0; i < value.length; i++) {
         result *= BN_58;
         result += getAlpha(value[i]);
@@ -1048,6 +1048,7 @@ class FetchRequest {
     #process;
     #retry;
     #signal;
+    #throttle;
     /**
      *  The fetch URI to requrest.
      */
@@ -1268,10 +1269,22 @@ class FetchRequest {
         this.#gzip = false;
         this.#headers = {};
         this.#method = "";
-        this.#timeout = 300;
+        this.#timeout = 300000;
+        this.#throttle = {
+            slotInterval: SLOT_INTERVAL,
+            maxAttempts: MAX_ATTEMPTS
+        };
+    }
+    setThrottleParams(params) {
+        if (params.slotInterval != null) {
+            this.#throttle.slotInterval = params.slotInterval;
+        }
+        if (params.maxAttempts != null) {
+            this.#throttle.maxAttempts = params.maxAttempts;
+        }
     }
     async #send(attempt, expires, delay, _request, _response) {
-        if (attempt >= MAX_ATTEMPTS) {
+        if (attempt >= this.#throttle.maxAttempts) {
             return _response.makeServerError("exceeded maximum retry limit");
         }
         if (getTime$2() > expires) {
@@ -1326,7 +1339,7 @@ class FetchRequest {
             // Throttle
             if (this.retryFunc == null || (await this.retryFunc(req, response, attempt))) {
                 const retryAfter = response.headers["retry-after"];
-                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
+                let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
                 if (typeof (retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
                     delay = parseInt(retryAfter);
                 }
@@ -1344,7 +1357,7 @@ class FetchRequest {
                     response.makeServerError("error in post-processing function", error).assertOk();
                 }
                 // Throttle
-                let delay = SLOT_INTERVAL * Math.trunc(Math.random() * Math.pow(2, attempt));
+                let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
                 ;
                 if (error.stall >= 0) {
                     delay = error.stall;
@@ -5217,7 +5230,7 @@ const EtherSymbol = "\u039e"; // "\uD835\uDF63";
 const MessagePrefix = "\x19Ethereum Signed Message:\n";
 
 // Constants
-const BN_0$4 = BigInt(0);
+const BN_0$6 = BigInt(0);
 const BN_1$4 = BigInt(1);
 const BN_2$3 = BigInt(2);
 const BN_27$1 = BigInt(27);
@@ -5324,7 +5337,7 @@ class Signature {
         const bv = getBigInt(v, "v");
         // The v is not an EIP-155 v, so it is the unspecified chain ID
         if ((bv == BN_27$1) || (bv == BN_28$1)) {
-            return BN_0$4;
+            return BN_0$6;
         }
         // Bad value for an EIP-155 v
         if (bv < BN_35$1) {
@@ -5339,7 +5352,7 @@ class Signature {
     // Convert an EIP-155 v into a normalized v
     static getNormalizedV(v) {
         const bv = getBigInt(v);
-        if (bv == BN_0$4) {
+        if (bv == BN_0$6) {
             return 27;
         }
         if (bv == BN_1$4) {
@@ -5558,7 +5571,7 @@ function lock() {
     sha512.lock();
 }
 
-const BN_0$3 = BigInt(0);
+const BN_0$5 = BigInt(0);
 const BN_36 = BigInt(36);
 function getChecksumAddress(address) {
     //    if (!isHexString(address, 20)) {
@@ -5620,7 +5633,7 @@ const Base36 = (function () {
 })();
 function fromBase36(value) {
     value = value.toLowerCase();
-    let result = BN_0$3;
+    let result = BN_0$5;
     for (let i = 0; i < value.length; i++) {
         result = result * BN_36 + Base36[value[i]];
     }
@@ -6239,9 +6252,9 @@ class NullCoder extends Coder {
     }
 }
 
-const BN_0$2 = BigInt(0);
+const BN_0$4 = BigInt(0);
 const BN_1$3 = BigInt(1);
-const BN_MAX_UINT256$2 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+const BN_MAX_UINT256$1 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 class NumberCoder extends Coder {
     size;
     signed;
@@ -6256,14 +6269,14 @@ class NumberCoder extends Coder {
     encode(writer, _value) {
         let value = getBigInt(Typed.dereference(_value, this.type));
         // Check bounds are safe for encoding
-        let maxUintValue = mask(BN_MAX_UINT256$2, WordSize * 8);
+        let maxUintValue = mask(BN_MAX_UINT256$1, WordSize * 8);
         if (this.signed) {
             let bounds = mask(maxUintValue, (this.size * 8) - 1);
             if (value > bounds || value < -(bounds + BN_1$3)) {
                 this._throwError("value out-of-bounds", _value);
             }
         }
-        else if (value < BN_0$2 || value > mask(maxUintValue, this.size * 8)) {
+        else if (value < BN_0$4 || value > mask(maxUintValue, this.size * 8)) {
             this._throwError("value out-of-bounds", _value);
         }
         value = mask(toTwos(value, this.size * 8), this.size * 8);
@@ -6535,9 +6548,9 @@ function solidityPackedSha256(types, values) {
 const padding = new Uint8Array(32);
 padding.fill(0);
 const BN__1 = BigInt(-1);
-const BN_0$1 = BigInt(0);
+const BN_0$3 = BigInt(0);
 const BN_1$2 = BigInt(1);
-const BN_MAX_UINT256$1 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 ;
 ;
 function hexPadRight(value) {
@@ -6549,7 +6562,7 @@ function hexPadRight(value) {
     return hexlify(bytes);
 }
 const hexTrue = toHex(BN_1$2, 32);
-const hexFalse = toHex(BN_0$1, 32);
+const hexFalse = toHex(BN_0$3, 32);
 const domainFieldTypes = {
     name: "string",
     version: "string",
@@ -6599,8 +6612,8 @@ function getBaseEncoder(type) {
             if (width % 8 !== 0 || width > 256 || (match[2] && match[2] !== String(width))) {
                 throwArgumentError("invalid numeric width", "type", type);
             }
-            const boundsUpper = mask(BN_MAX_UINT256$1, signed ? (width - 1) : width);
-            const boundsLower = signed ? ((boundsUpper + BN_1$2) * BN__1) : BN_0$1;
+            const boundsUpper = mask(BN_MAX_UINT256, signed ? (width - 1) : width);
+            const boundsLower = signed ? ((boundsUpper + BN_1$2) * BN__1) : BN_0$3;
             return function (_value) {
                 const value = getBigInt(_value, "value");
                 if (value < boundsLower || value > boundsUpper) {
@@ -7589,7 +7602,7 @@ class Fragment {
             case "function": return FunctionFragment.fromObject(obj);
             case "struct": return StructFragment.fromObject(obj);
         }
-        throw new Error("not implemented yet");
+        throw new Error(`not implemented yet: ${obj.type}`);
     }
     static fromString(text) {
         try {
@@ -7676,6 +7689,9 @@ class ErrorFragment extends NamedFragment {
         result.push(this.name + joinParams(format, this.inputs));
         return result.join(" ");
     }
+    static fromObject(obj) {
+        return new ErrorFragment(_guard$2, obj.name, obj.inputs ? obj.inputs.map(ParamType.fromObject) : []);
+    }
     static fromString(text) {
         return ErrorFragment.fromTokens(lex(text));
     }
@@ -7713,6 +7729,9 @@ class EventFragment extends NamedFragment {
             result.push("anonymous");
         }
         return result.join(" ");
+    }
+    static fromObject(obj) {
+        return new EventFragment(_guard$2, obj.name, obj.inputs ? obj.inputs.map(ParamType.fromObject) : [], !!obj.anonymous);
     }
     static fromString(text) {
         return EventFragment.fromTokens(lex(text));
@@ -7754,11 +7773,11 @@ class ConstructorFragment extends Fragment {
         }
         return result.join(" ");
     }
+    static fromObject(obj) {
+        return new ConstructorFragment(_guard$2, "constructor", obj.inputs ? obj.inputs.map(ParamType.fromObject) : [], !!obj.payable, (obj.gas != null) ? obj.gas : null);
+    }
     static fromString(text) {
         return ConstructorFragment.fromTokens(lex(text));
-    }
-    static fromObject(obj) {
-        throw new Error("TODO");
     }
     static fromTokens(tokens) {
         consumeKeywords(tokens, setify(["constructor"]));
@@ -7816,6 +7835,10 @@ class FunctionFragment extends NamedFragment {
             }
         }
         return result.join(" ");
+    }
+    static fromObject(obj) {
+        // @TODO: verifyState for stateMutability
+        return new FunctionFragment(_guard$2, obj.name, obj.stateMutability, obj.inputs ? obj.inputs.map(ParamType.fromObject) : [], obj.outputs ? obj.outputs.map(ParamType.fromObject) : [], (obj.gas != null) ? obj.gas : null);
     }
     static fromString(text) {
         return FunctionFragment.fromTokens(lex(text));
@@ -8051,8 +8074,15 @@ class Interface {
         this.#errors = new Map();
         this.#events = new Map();
         //        this.#structs = new Map();
+        const frags = [];
+        for (const a of abi) {
+            try {
+                frags.push(Fragment.from(a));
+            }
+            catch (error) { }
+        }
         defineProperties(this, {
-            fragments: Object.freeze(abi.map((f) => Fragment.from(f)).filter((f) => (f != null))),
+            fragments: Object.freeze(frags)
         });
         this.#abiCoder = this.getAbiCoder();
         // Add all fragments by their signature
@@ -8901,6 +8931,12 @@ function encodeBytes$1(datas) {
     }
     return concat(result);
 }
+function callAddress(value) {
+    if (value.length !== 66 || dataSlice(value, 0, 12) !== "0x000000000000000000000000") {
+        throwArgumentError("invalid call address", "value", value);
+    }
+    return getAddress("0x" + value.substring(26));
+}
 // @TODO: This should use the fetch-data:ipfs gateway
 // Trim off the ipfs:// prefix and return the default gateway URL
 function getIpfsLink(link) {
@@ -9017,11 +9053,10 @@ class EnsResolver {
                 // keccak256("addr(bytes32)")
                 const result = await this._fetch("0x3b3b57de");
                 // No address
-                if (result === "0x" || result === ZeroHash) {
+                if (result == null || result === "0x" || result === ZeroHash) {
                     return null;
                 }
-                const network = await this.provider.getNetwork();
-                return network.formatter.callAddress(result);
+                return callAddress(result);
             }
             catch (error) {
                 if (error.code === "CALL_EXCEPTION") {
@@ -9144,13 +9179,12 @@ class EnsResolver {
                             linkage.push({ type: `!${scheme}caip`, value: (match[2] || "") });
                             throw new Error("!caip");
                         }
-                        const formatter = (await this.provider.getNetwork()).formatter;
-                        const addr = formatter.address(comps[0]);
+                        const addr = getAddress(comps[0]);
                         const tokenId = numPad$1(comps[1]);
                         // Check that this account owns the token
                         if (scheme === "erc721") {
                             // ownerOf(uint256 tokenId)
-                            const tokenOwner = formatter.callAddress(await this.provider.call({
+                            const tokenOwner = callAddress(await this.provider.call({
                                 to: addr, data: concat(["0x6352211e", tokenId])
                             }));
                             if (owner !== tokenOwner) {
@@ -9262,7 +9296,7 @@ class EnsResolver {
                 data: concat(["0x0178b8bf", namehash(name)]),
                 enableCcipRead: true
             });
-            const addr = network.formatter.callAddress(addrData);
+            const addr = callAddress(addrData);
             if (addr === dataSlice(ZeroHash, 0, 20)) {
                 return null;
             }
@@ -9347,7 +9381,7 @@ function recoverAddress(digest, signature) {
     return computeAddress(SigningKey.recoverPublicKey(digest, signature));
 }
 
-const BN_0 = BigInt(0);
+const BN_0$2 = BigInt(0);
 const BN_2$2 = BigInt(2);
 const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
@@ -9383,7 +9417,7 @@ function handleNumber(_value, param) {
 }
 function handleUint(_value, param) {
     if (_value === "0x") {
-        return BN_0;
+        return BN_0$2;
     }
     const value = getBigInt(_value, param);
     if (value > BN_MAX_UINT) {
@@ -9415,7 +9449,7 @@ function _parseLegacy(data) {
         to: handleAddress(fields[3]),
         value: handleUint(fields[4], "value"),
         data: handleData(fields[5], "dta"),
-        chainId: BN_0
+        chainId: BN_0$2
     };
     // Legacy unsigned transaction
     if (fields.length === 6) {
@@ -9424,19 +9458,19 @@ function _parseLegacy(data) {
     const v = handleUint(fields[6], "v");
     const r = handleUint(fields[7], "r");
     const s = handleUint(fields[8], "s");
-    if (r === BN_0 && s === BN_0) {
+    if (r === BN_0$2 && s === BN_0$2) {
         // EIP-155 unsigned transaction
         tx.chainId = v;
     }
     else {
         // Compute the EIP-155 chain ID (or 0 for legacy)
         let chainId = (v - BN_35) / BN_2$2;
-        if (chainId < BN_0) {
-            chainId = BN_0;
+        if (chainId < BN_0$2) {
+            chainId = BN_0$2;
         }
         tx.chainId = chainId;
         // Signed Legacy Transaction
-        if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
+        if (chainId === BN_0$2 && (v < BN_27 || v > BN_28)) {
             throwArgumentError("non-canonical legacy v", "v", fields[6]);
         }
         tx.signature = Signature.from({
@@ -9457,7 +9491,7 @@ function _serializeLegacy(tx, sig) {
         formatNumber(tx.value || 0, "value"),
         (tx.data || "0x"),
     ];
-    let chainId = BN_0;
+    let chainId = BN_0$2;
     if (tx.chainId != null) {
         // A chainId was provided; if non-zero we'll use EIP-155
         chainId = getBigInt(tx.chainId, "tx.chainId");
@@ -9477,7 +9511,7 @@ function _serializeLegacy(tx, sig) {
     // Requesting an unsigned transaction
     if (!sig) {
         // We have an EIP-155 transaction (chainId was specified and non-zero)
-        if (chainId !== BN_0) {
+        if (chainId !== BN_0$2) {
             fields.push(toArray(chainId));
             fields.push("0x");
             fields.push("0x");
@@ -9486,7 +9520,7 @@ function _serializeLegacy(tx, sig) {
     }
     // We pushed a chainId and null r, s on for hashing only; remove those
     let v = BigInt(27 + sig.yParity);
-    if (chainId !== BN_0) {
+    if (chainId !== BN_0$2) {
         v = Signature.getChainIdV(chainId, sig.v);
     }
     else if (BigInt(sig.v) !== v) {
@@ -9648,7 +9682,7 @@ class Transaction {
     get gasPrice() {
         const value = getStore(this.#props, "gasPrice");
         if (value == null && (this.type === 0 || this.type === 1)) {
-            return BN_0;
+            return BN_0$2;
         }
         return value;
     }
@@ -9658,7 +9692,7 @@ class Transaction {
     get maxPriorityFeePerGas() {
         const value = getStore(this.#props, "maxPriorityFeePerGas");
         if (value == null && this.type === 2) {
-            return BN_0;
+            return BN_0$2;
         }
         return value;
     }
@@ -9668,7 +9702,7 @@ class Transaction {
     get maxFeePerGas() {
         const value = getStore(this.#props, "maxFeePerGas");
         if (value == null && this.type === 2) {
-            return BN_0;
+            return BN_0$2;
         }
         return value;
     }
@@ -9923,7 +9957,533 @@ class Transaction {
     }
 }
 
+const BN_0$1 = BigInt(0);
+function allowNull(format, nullValue) {
+    return (function (value) {
+        if (value == null) {
+            return nullValue;
+        }
+        return format(value);
+    });
+}
+function arrayOf(format) {
+    return ((array) => {
+        if (!Array.isArray(array)) {
+            throw new Error("not an array");
+        }
+        return array.map((i) => format(i));
+    });
+}
+// Requires an object which matches a fleet of other formatters
+// Any FormatFunc may return `undefined` to have the value omitted
+// from the result object. Calls preserve `this`.
+function object(format, altNames) {
+    return ((value) => {
+        const result = {};
+        for (const key in format) {
+            let srcKey = key;
+            if (altNames && key in altNames && !(srcKey in value)) {
+                for (const altKey of altNames[key]) {
+                    if (altKey in value) {
+                        srcKey = altKey;
+                        break;
+                    }
+                }
+            }
+            try {
+                const nv = format[key](value[srcKey]);
+                if (nv !== undefined) {
+                    result[key] = nv;
+                }
+            }
+            catch (error) {
+                const message = (error instanceof Error) ? error.message : "not-an-error";
+                throwError(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+            }
+        }
+        return result;
+    });
+}
+function formatBoolean(value) {
+    switch (value) {
+        case true:
+        case "true":
+            return true;
+        case false:
+        case "false":
+            return false;
+    }
+    return throwArgumentError(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
+}
+function formatData(value) {
+    if (!isHexString(value, true)) {
+        throwArgumentError("", "value", value);
+    }
+    return value;
+}
+function formatHash(value) {
+    if (!isHexString(value, 32)) {
+        throwArgumentError("", "value", value);
+    }
+    return value;
+}
+function formatUint256(value) {
+    if (!isHexString(value)) {
+        throw new Error("invalid uint256");
+    }
+    return zeroPadValue(value, 32);
+}
+const formatLog = object({
+    address: getAddress,
+    blockHash: formatHash,
+    blockNumber: getNumber,
+    data: formatData,
+    index: getNumber,
+    removed: formatBoolean,
+    topics: arrayOf(formatHash),
+    transactionHash: formatHash,
+    transactionIndex: getNumber,
+}, {
+    index: ["logIndex"]
+});
+function _formatBlock(txFunc) {
+    return object({
+        hash: allowNull(formatHash),
+        parentHash: formatHash,
+        number: getNumber,
+        timestamp: getNumber,
+        nonce: allowNull(formatData),
+        difficulty: getBigInt,
+        gasLimit: getBigInt,
+        gasUsed: getBigInt,
+        miner: allowNull(getAddress),
+        extraData: formatData,
+        transactions: arrayOf(txFunc),
+        baseFeePerGas: allowNull(getBigInt)
+    });
+}
+const formatBlock = _formatBlock(formatHash);
+const formatBlockWithTransactions = _formatBlock(formatTransactionResponse);
+const formatReceiptLog = object({
+    transactionIndex: getNumber,
+    blockNumber: getNumber,
+    transactionHash: formatHash,
+    address: getAddress,
+    topics: arrayOf(formatHash),
+    data: formatData,
+    logIndex: getNumber,
+    blockHash: formatHash,
+});
+const formatTransactionReceipt = object({
+    to: allowNull(getAddress, null),
+    from: allowNull(getAddress, null),
+    contractAddress: allowNull(getAddress, null),
+    transactionIndex: getNumber,
+    // should be allowNull(hash), but broken-EIP-658 support is handled in receipt
+    root: allowNull(hexlify),
+    gasUsed: getBigInt,
+    logsBloom: allowNull(formatData),
+    blockHash: formatHash,
+    transactionHash: formatHash,
+    logs: arrayOf(formatReceiptLog),
+    blockNumber: getNumber,
+    confirmations: allowNull(getNumber, null),
+    cumulativeGasUsed: getBigInt,
+    effectiveGasPrice: allowNull(getBigInt),
+    status: allowNull(getNumber),
+    type: getNumber
+}, {
+    effectiveGasPrice: ["gasPrice"]
+});
+function formatTransactionResponse(value) {
+    // Some clients (TestRPC) do strange things like return 0x0 for the
+    // 0 address; correct this to be a real address
+    if (value.to && getBigInt(value.to) === BN_0$1) {
+        value.to = "0x0000000000000000000000000000000000000000";
+    }
+    const result = object({
+        hash: formatHash,
+        type: (value) => {
+            if (value === "0x" || value == null) {
+                return 0;
+            }
+            return getNumber(value);
+        },
+        accessList: allowNull(accessListify, null),
+        blockHash: allowNull(formatHash, null),
+        blockNumber: allowNull(getNumber, null),
+        transactionIndex: allowNull(getNumber, null),
+        confirmations: allowNull(getNumber, null),
+        from: getAddress,
+        // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
+        gasPrice: allowNull(getBigInt),
+        maxPriorityFeePerGas: allowNull(getBigInt),
+        maxFeePerGas: allowNull(getBigInt),
+        gasLimit: getBigInt,
+        to: allowNull(getAddress, null),
+        value: getBigInt,
+        nonce: getNumber,
+        data: formatData,
+        r: allowNull(formatUint256),
+        s: allowNull(formatUint256),
+        v: allowNull(getNumber),
+        creates: allowNull(getAddress, null),
+        chainId: allowNull(getBigInt, null)
+    }, {
+        data: ["input"],
+        gasLimit: ["gas"]
+    })(value);
+    // If to and creates are empty, populate the creates from the value
+    if (result.to == null && result.creates == null) {
+        result.creates = getCreateAddress(result);
+    }
+    // @TODO: Check fee data
+    // Add an access list to supported transaction types
+    if ((value.type === 1 || value.type === 2) && value.accessList == null) {
+        value.accessList = [];
+    }
+    // @TODO: check chainID
+    /*
+    if (value.chainId != null) {
+        let chainId = value.chainId;
+
+        if (isHexString(chainId)) {
+            chainId = BigNumber.from(chainId).toNumber();
+        }
+
+        result.chainId = chainId;
+
+    } else {
+        let chainId = value.networkId;
+
+        // geth-etc returns chainId
+        if (chainId == null && result.v == null) {
+            chainId = value.chainId;
+        }
+
+        if (isHexString(chainId)) {
+            chainId = BigNumber.from(chainId).toNumber();
+        }
+
+        if (typeof(chainId) !== "number" && result.v != null) {
+            chainId = (result.v - 35) / 2;
+            if (chainId < 0) { chainId = 0; }
+            chainId = parseInt(chainId);
+        }
+
+        if (typeof(chainId) !== "number") { chainId = 0; }
+
+        result.chainId = chainId;
+    }
+    */
+    // 0x0000... should actually be null
+    if (result.blockHash && getBigInt(result.blockHash) === BN_0$1) {
+        result.blockHash = null;
+    }
+    return result;
+}
+
+const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
+class NetworkPlugin {
+    name;
+    constructor(name) {
+        defineProperties(this, { name });
+    }
+    clone() {
+        return new NetworkPlugin(this.name);
+    }
+}
+class GasCostPlugin extends NetworkPlugin {
+    effectiveBlock;
+    txBase;
+    txCreate;
+    txDataZero;
+    txDataNonzero;
+    txAccessListStorageKey;
+    txAccessListAddress;
+    constructor(effectiveBlock = 0, costs) {
+        super(`org.ethers.network-plugins.gas-cost#${(effectiveBlock || 0)}`);
+        const props = { effectiveBlock };
+        function set(name, nullish) {
+            let value = (costs || {})[name];
+            if (value == null) {
+                value = nullish;
+            }
+            if (typeof (value) !== "number") {
+                throwArgumentError(`invalud value for ${name}`, "costs", costs);
+            }
+            props[name] = value;
+        }
+        set("txBase", 21000);
+        set("txCreate", 32000);
+        set("txDataZero", 4);
+        set("txDataNonzero", 16);
+        set("txAccessListStorageKey", 1900);
+        set("txAccessListAddress", 2400);
+        defineProperties(this, props);
+    }
+    clone() {
+        return new GasCostPlugin(this.effectiveBlock, this);
+    }
+}
+// Networks shoudl use this plugin to specify the contract address
+// and network necessary to resolve ENS names.
+class EnsPlugin extends NetworkPlugin {
+    // The ENS contract address
+    address;
+    // The network ID that the ENS contract lives on
+    targetNetwork;
+    constructor(address, targetNetwork) {
+        super("org.ethers.network-plugins.ens");
+        defineProperties(this, {
+            address: (address || EnsAddress),
+            targetNetwork: ((targetNetwork == null) ? 1 : targetNetwork)
+        });
+    }
+    clone() {
+        return new EnsPlugin(this.address, this.targetNetwork);
+    }
+}
+/*
+export class MaxPriorityFeePlugin extends NetworkPlugin {
+    readonly priorityFee!: bigint;
+
+    constructor(priorityFee: BigNumberish) {
+        super("org.ethers.plugins.max-priority-fee");
+        defineProperties<MaxPriorityFeePlugin>(this, {
+            priorityFee: logger.getBigInt(priorityFee)
+        });
+    }
+
+    async getPriorityFee(provider: Provider): Promise<bigint> {
+        return this.priorityFee;
+    }
+
+    clone(): MaxPriorityFeePlugin {
+        return new MaxPriorityFeePlugin(this.priorityFee);
+    }
+}
+*/
+class FeeDataNetworkPlugin extends NetworkPlugin {
+    #feeDataFunc;
+    get feeDataFunc() { return this.#feeDataFunc; }
+    constructor(feeDataFunc) {
+        super("org.ethers.network-plugins.fee-data");
+        this.#feeDataFunc = feeDataFunc;
+    }
+    async getFeeData(provider) {
+        return await this.#feeDataFunc(provider);
+    }
+    clone() {
+        return new FeeDataNetworkPlugin(this.#feeDataFunc);
+    }
+}
+class CustomBlockNetworkPlugin extends NetworkPlugin {
+    #blockFunc;
+    #blockWithTxsFunc;
+    constructor(blockFunc, blockWithTxsFunc) {
+        super("org.ethers.network-plugins.custom-block");
+        this.#blockFunc = blockFunc;
+        this.#blockWithTxsFunc = blockWithTxsFunc;
+    }
+    async getBlock(provider, block) {
+        return await this.#blockFunc(provider, block);
+    }
+    async getBlockWithTransactions(provider, block) {
+        return await this.#blockWithTxsFunc(provider, block);
+    }
+    clone() {
+        return new CustomBlockNetworkPlugin(this.#blockFunc, this.#blockWithTxsFunc);
+    }
+}
+
+/* * * *
+// Networks which operation against an L2 can use this plugin to
+// specify how to access L1, for the purpose of resolving ENS,
+// for example.
+export class LayerOneConnectionPlugin extends NetworkPlugin {
+    readonly provider!: Provider;
+// @TODO: Rename to ChainAccess and allow for connecting to any chain
+    constructor(provider: Provider) {
+        super("org.ethers.plugins.layer-one-connection");
+        defineProperties<LayerOneConnectionPlugin>(this, { provider });
+    }
+
+    clone(): LayerOneConnectionPlugin {
+        return new LayerOneConnectionPlugin(this.provider);
+    }
+}
+*/
+/* * * *
+export class PriceOraclePlugin extends NetworkPlugin {
+    readonly address!: string;
+
+    constructor(address: string) {
+        super("org.ethers.plugins.price-oracle");
+        defineProperties<PriceOraclePlugin>(this, { address });
+    }
+
+    clone(): PriceOraclePlugin {
+        return new PriceOraclePlugin(this.address);
+    }
+}
+*/
+// Networks or clients with a higher need for security (such as clients
+// that may automatically make CCIP requests without user interaction)
+// can use this plugin to anonymize requests or intercept CCIP requests
+// to notify and/or receive authorization from the user
+/* * * *
+export type FetchDataFunc = (req: Frozen<FetchRequest>) => Promise<FetchRequest>;
+export class CcipPreflightPlugin extends NetworkPlugin {
+    readonly fetchData!: FetchDataFunc;
+
+    constructor(fetchData: FetchDataFunc) {
+        super("org.ethers.plugins.ccip-preflight");
+        defineProperties<CcipPreflightPlugin>(this, { fetchData });
+    }
+
+    clone(): CcipPreflightPlugin {
+        return new CcipPreflightPlugin(this.fetchData);
+    }
+}
+*/
+const Networks = new Map();
+// @TODO: Add a _ethersNetworkObj variable to better detect network ovjects
+class Network {
+    #props;
+    constructor(name, _chainId) {
+        const chainId = getBigInt(_chainId);
+        const plugins = new Map();
+        this.#props = { name, chainId, plugins };
+    }
+    toJSON() {
+        return { name: this.name, chainId: this.chainId };
+    }
+    get name() { return getStore(this.#props, "name"); }
+    set name(value) { setStore(this.#props, "name", value); }
+    get chainId() { return getStore(this.#props, "chainId"); }
+    set chainId(value) { setStore(this.#props, "chainId", getBigInt(value, "chainId")); }
+    get plugins() {
+        return Array.from(this.#props.plugins.values());
+    }
+    attachPlugin(plugin) {
+        if (this.#props.plugins.get(plugin.name)) {
+            throw new Error(`cannot replace existing plugin: ${plugin.name} `);
+        }
+        this.#props.plugins.set(plugin.name, plugin.clone());
+        return this;
+    }
+    getPlugin(name) {
+        return (this.#props.plugins.get(name)) || null;
+    }
+    // Gets a list of Plugins which match basename, ignoring any fragment
+    getPlugins(basename) {
+        return (this.plugins.filter((p) => (p.name.split("#")[0] === basename)));
+    }
+    clone() {
+        const clone = new Network(this.name, this.chainId);
+        this.plugins.forEach((plugin) => {
+            clone.attachPlugin(plugin.clone());
+        });
+        return clone;
+    }
+    /*
+        freeze(): Frozen<Network> {
+            Object.freeze(this.#props);
+            return this;
+        }
+    
+        isFrozen(): boolean {
+            return Object.isFrozen(this.#props);
+        }
+    */
+    computeIntrinsicGas(tx) {
+        const costs = this.getPlugin("org.ethers.gas-cost") || (new GasCostPlugin());
+        let gas = costs.txBase;
+        if (tx.to == null) {
+            gas += costs.txCreate;
+        }
+        if (tx.data) {
+            for (let i = 2; i < tx.data.length; i += 2) {
+                if (tx.data.substring(i, i + 2) === "00") {
+                    gas += costs.txDataZero;
+                }
+                else {
+                    gas += costs.txDataNonzero;
+                }
+            }
+        }
+        if (tx.accessList) {
+            const accessList = accessListify(tx.accessList);
+            for (const addr in accessList) {
+                gas += costs.txAccessListAddress + costs.txAccessListStorageKey * accessList[addr].storageKeys.length;
+            }
+        }
+        return gas;
+    }
+    /**
+     *  Returns a new Network for the %%network%% name or chainId.
+     */
+    static from(network) {
+        // Default network
+        if (network == null) {
+            return Network.from("homestead");
+        }
+        // Canonical name or chain ID
+        if (typeof (network) === "number") {
+            network = BigInt(network);
+        }
+        if (typeof (network) === "string" || typeof (network) === "bigint") {
+            const networkFunc = Networks.get(network);
+            if (networkFunc) {
+                return networkFunc();
+            }
+            if (typeof (network) === "bigint") {
+                return new Network("unknown", network);
+            }
+            throwArgumentError("unknown network", "network", network);
+        }
+        // Clonable with network-like abilities
+        if (typeof (network.clone) === "function") {
+            const clone = network.clone();
+            //if (typeof(network.name) !== "string" || typeof(network.chainId) !== "number") {
+            //}
+            return clone;
+        }
+        // Networkish
+        if (typeof (network) === "object") {
+            if (typeof (network.name) !== "string" || typeof (network.chainId) !== "number") {
+                throwArgumentError("invalid network object name or chainId", "network", network);
+            }
+            const custom = new Network((network.name), (network.chainId));
+            if (network.ensAddress || network.ensNetwork != null) {
+                custom.attachPlugin(new EnsPlugin(network.ensAddress, network.ensNetwork));
+            }
+            //if ((<any>network).layerOneConnection) {
+            //    custom.attachPlugin(new LayerOneConnectionPlugin((<any>network).layerOneConnection));
+            //}
+            return custom;
+        }
+        return throwArgumentError("invalid network", "network", network);
+    }
+    /**
+     *  Register %%nameOrChainId%% with a function which returns
+     *  an instance of a Network representing that chain.
+     */
+    static register(nameOrChainId, networkFunc) {
+        if (typeof (nameOrChainId) === "number") {
+            nameOrChainId = BigInt(nameOrChainId);
+        }
+        const existing = Networks.get(nameOrChainId);
+        if (existing) {
+            throwArgumentError(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
+        }
+        Networks.set(nameOrChainId, networkFunc);
+    }
+}
+
 //import { resolveAddress } from "@ethersproject/address";
+const BN_0 = BigInt(0);
 // -----------------------
 function getValue(value) {
     if (value == null) {
@@ -9960,7 +10520,7 @@ class FeeData {
     }
 }
 ;
-function copyRequest$1(req) {
+function copyRequest(req) {
     const result = {};
     // These could be addresses, ENS names or Addressables
     if (req.to) {
@@ -10016,9 +10576,6 @@ class Block {
     baseFeePerGas;
     #transactions;
     constructor(block, provider) {
-        if (provider == null) {
-            provider = dummyProvider;
-        }
         this.#transactions = Object.freeze(block.transactions.map((tx) => {
             if (typeof (tx) !== "string" && tx.provider !== provider) {
                 throw new Error("provider mismatch");
@@ -10113,9 +10670,6 @@ class Log {
     index;
     transactionIndex;
     constructor(log, provider) {
-        if (provider == null) {
-            provider = dummyProvider;
-        }
         this.provider = provider;
         const topics = Object.freeze(log.topics.slice());
         defineProperties(this, {
@@ -10185,9 +10739,6 @@ class TransactionReceipt {
     root;
     #logs;
     constructor(tx, provider) {
-        if (provider == null) {
-            provider = dummyProvider;
-        }
         this.#logs = Object.freeze(tx.logs.map((log) => {
             if (provider !== log.provider) {
                 //return log.connect(provider);
@@ -10296,10 +10847,8 @@ class TransactionResponse {
     chainId;
     signature;
     accessList;
+    #startBlock;
     constructor(tx, provider) {
-        if (provider == null) {
-            provider = dummyProvider;
-        }
         this.provider = provider;
         this.blockNumber = (tx.blockNumber != null) ? tx.blockNumber : null;
         this.blockHash = (tx.blockHash != null) ? tx.blockHash : null;
@@ -10318,10 +10867,8 @@ class TransactionResponse {
         this.chainId = tx.chainId;
         this.signature = tx.signature;
         this.accessList = (tx.accessList != null) ? tx.accessList : null;
+        this.#startBlock = -1;
     }
-    //connect(provider: Provider): TransactionResponse {
-    //    return new TransactionResponse(this, provider);
-    //}
     toJSON() {
         const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;
         return {
@@ -10358,8 +10905,153 @@ class TransactionResponse {
     async getTransaction() {
         return this.provider.getTransaction(this.hash);
     }
-    async wait(confirms) {
-        return this.provider.waitForTransaction(this.hash, confirms);
+    async wait(_confirms, _timeout) {
+        const confirms = (_confirms == null) ? 1 : _confirms;
+        const timeout = (_timeout == null) ? 0 : _timeout;
+        let startBlock = this.#startBlock;
+        let nextScan = -1;
+        let stopScanning = (startBlock === -1) ? true : false;
+        const checkReplacement = async () => {
+            // Get the current transaction count for this sender
+            if (stopScanning) {
+                return null;
+            }
+            const { blockNumber, nonce } = await resolveProperties({
+                blockNumber: this.provider.getBlockNumber(),
+                nonce: this.provider.getTransactionCount(this.from)
+            });
+            // No transaction for our nonce has been mined yet; but we can start
+            // scanning later when we do start
+            if (nonce < this.nonce) {
+                startBlock = blockNumber;
+                return;
+            }
+            // We were mined; no replacement
+            if (stopScanning) {
+                return null;
+            }
+            const mined = await this.getTransaction();
+            if (mined && mined.blockNumber != null) {
+                return;
+            }
+            // We were replaced; start scanning for that transaction
+            // Starting to scan; look back a few extra blocks for safety
+            if (nextScan === -1) {
+                nextScan = startBlock - 3;
+                if (nextScan < this.#startBlock) {
+                    nextScan = this.#startBlock;
+                }
+            }
+            while (nextScan <= blockNumber) {
+                // Get the next block to scan
+                if (stopScanning) {
+                    return null;
+                }
+                const block = await this.provider.getBlockWithTransactions(nextScan);
+                // This should not happen; but we'll try again shortly
+                if (block == null) {
+                    return;
+                }
+                for (const tx of block.transactions) {
+                    // We were mined; no replacement
+                    if (tx.hash === this.hash) {
+                        return;
+                    }
+                    if (tx.from === this.from && tx.nonce === this.nonce) {
+                        // Get the receipt
+                        if (stopScanning) {
+                            return null;
+                        }
+                        const receipt = await this.provider.getTransactionReceipt(tx.hash);
+                        // This should not happen; but we'll try again shortly
+                        if (receipt == null) {
+                            return;
+                        }
+                        // We will retry this on the next block (this case could be optimized)
+                        if ((blockNumber - receipt.blockNumber + 1) < confirms) {
+                            return;
+                        }
+                        // The reason we were replaced
+                        let reason = "replaced";
+                        if (tx.data === this.data && tx.to === this.to && tx.value === this.value) {
+                            reason = "repriced";
+                        }
+                        else if (tx.data === "0x" && tx.from === tx.to && tx.value === BN_0) {
+                            reason = "cancelled";
+                        }
+                        throwError("transaction was replaced", "TRANSACTION_REPLACED", {
+                            cancelled: (reason === "replaced" || reason === "cancelled"),
+                            reason,
+                            replacement: tx.replaceableTransaction(startBlock),
+                            hash: tx.hash,
+                            receipt
+                        });
+                    }
+                }
+                nextScan++;
+            }
+            return;
+        };
+        const receipt = await this.provider.getTransactionReceipt(this.hash);
+        if (receipt) {
+            if ((await receipt.confirmations()) >= confirms) {
+                return receipt;
+            }
+        }
+        else {
+            // Check for a replacement; throws if a replacement was found
+            await checkReplacement();
+            // Allow null only when the confirms is 0
+            if (confirms === 0) {
+                return null;
+            }
+        }
+        const waiter = new Promise((resolve, reject) => {
+            // List of things to cancel when we have a result (one way or the other)
+            const cancellers = [];
+            const cancel = () => { cancellers.forEach((c) => c()); };
+            // On cancel, stop scanning for replacements
+            cancellers.push(() => { stopScanning = true; });
+            // Set up any timeout requested
+            if (timeout > 0) {
+                const timer = setTimeout(() => {
+                    cancel();
+                    reject(makeError("wait for transaction timeout", "TIMEOUT"));
+                }, timeout);
+                cancellers.push(() => { clearTimeout(timer); });
+            }
+            const txListener = async (receipt) => {
+                // Done; return it!
+                if ((await receipt.confirmations()) >= confirms) {
+                    cancel();
+                    resolve(receipt);
+                }
+            };
+            cancellers.push(() => { this.provider.off(this.hash, txListener); });
+            this.provider.on(this.hash, txListener);
+            // We support replacement detection; start checking
+            if (startBlock >= 0) {
+                const replaceListener = async () => {
+                    try {
+                        // Check for a replacement; this throws only if one is found
+                        await checkReplacement();
+                    }
+                    catch (error) {
+                        // We were replaced (with enough confirms); re-throw the error
+                        if (isError(error, "TRANSACTION_REPLACED")) {
+                            cancel();
+                            reject(error);
+                            return;
+                        }
+                    }
+                    // Rescheudle a check on the next block
+                    this.provider.once("block", replaceListener);
+                };
+                cancellers.push(() => { this.provider.off("block", replaceListener); });
+                this.provider.once("block", replaceListener);
+            }
+        });
+        return await waiter;
     }
     isMined() {
         return (this.blockHash != null);
@@ -10394,6 +11086,21 @@ class TransactionResponse {
         }
         return createReorderedTransactionFilter(this, other);
     }
+    /**
+     *  Returns a new TransactionResponse instance which has the ability to
+     *  detect (and throw an error) if the transaction is replaced, which
+     *  will begin scanning at %%startBlock%%.
+     *
+     *  This should generally not be used by developers and is intended
+     *  primarily for internal use. Setting an incorrect %%startBlock%% can
+     *  have devastating performance consequences if used incorrectly.
+     */
+    replaceableTransaction(startBlock) {
+        assertArgument(Number.isInteger(startBlock) && startBlock >= 0, "invalid startBlock", "startBlock", startBlock);
+        const tx = new TransactionResponse(this, this.provider);
+        tx.#startBlock = startBlock;
+        return tx;
+    }
 }
 function createOrphanedBlockFilter(block) {
     return { orphan: "drop-block", hash: block.hash, number: block.number };
@@ -10414,739 +11121,6 @@ function createRemovedLogFilter(log) {
             topics: Object.freeze(log.topics.slice()),
             index: log.index
         } };
-}
-// @TODO: I think I can drop T
-function fail() {
-    throw new Error("this provider should not be used");
-}
-class DummyProvider {
-    get provider() { return this; }
-    async getNetwork() { return fail(); }
-    async getFeeData() { return fail(); }
-    async estimateGas(tx) { return fail(); }
-    async call(tx) { return fail(); }
-    async resolveName(name) { return fail(); }
-    // State
-    async getBlockNumber() { return fail(); }
-    // Account
-    async getBalance(address, blockTag) {
-        return fail();
-    }
-    async getTransactionCount(address, blockTag) {
-        return fail();
-    }
-    async getCode(address, blockTag) {
-        return fail();
-    }
-    async getStorageAt(address, position, blockTag) {
-        return fail();
-    }
-    // Write
-    async broadcastTransaction(signedTx) { return fail(); }
-    // Queries
-    async getBlock(blockHashOrBlockTag) {
-        return fail();
-    }
-    async getBlockWithTransactions(blockHashOrBlockTag) {
-        return fail();
-    }
-    async getTransaction(hash) {
-        return fail();
-    }
-    async getTransactionReceipt(hash) {
-        return fail();
-    }
-    async getTransactionResult(hash) {
-        return fail();
-    }
-    // Bloom-filter Queries
-    async getLogs(filter) {
-        return fail();
-    }
-    // ENS
-    async lookupAddress(address) {
-        return fail();
-    }
-    async waitForTransaction(hash, confirms, timeout) {
-        return fail();
-    }
-    async waitForBlock(blockTag) {
-        return fail();
-    }
-    // EventEmitterable
-    async on(event, listener) { return fail(); }
-    async once(event, listener) { return fail(); }
-    async emit(event, ...args) { return fail(); }
-    async listenerCount(event) { return fail(); }
-    async listeners(event) { return fail(); }
-    async off(event, listener) { return fail(); }
-    async removeAllListeners(event) { return fail(); }
-    async addListener(event, listener) { return fail(); }
-    async removeListener(event, listener) { return fail(); }
-}
-/**
- *  A singleton [[Provider]] instance that can be used as a placeholder. This
- *  allows API that have a Provider added later to not require a null check.
- *
- *  All operations performed on this [[Provider]] will throw.
- */
-const dummyProvider = new DummyProvider();
-
-// Belongs to Networks; requires abstract-provider
-const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-//export type AccessListSet = { address: string, storageKeys: Array<string> };
-//export type AccessList = Array<AccessListSet>;
-//export type AccessListish = AccessList |
-//                            Array<[ string, Array<string> ]> |
-//                            Record<string, Array<string>>;
-function stringify(value) {
-    if (typeof (value) !== "string") {
-        throw new Error("invalid string");
-    }
-    return value;
-}
-class Formatter {
-    #format;
-    #baseBlock;
-    constructor() {
-        const address = this.address.bind(this);
-        const bigNumber = this.bigNumber.bind(this);
-        const blockTag = this.blockTag.bind(this);
-        const data = this.data.bind(this);
-        const hash = this.hash.bind(this);
-        const number = this.number.bind(this);
-        const uint256 = this.uint256.bind(this);
-        const topics = this.arrayOf(hash);
-        this.#format = {
-            address,
-            bigNumber,
-            blockTag,
-            data,
-            hash,
-            number,
-            uint256,
-            topics,
-            filter: this.object({
-                fromBlock: this.allowNull(blockTag, undefined),
-                toBlock: this.allowNull(blockTag, undefined),
-                blockHash: this.allowNull(hash, undefined),
-                address: this.allowNull(address, undefined),
-                topics: this.allowNull(topics, undefined)
-            }),
-            transactionRequest: this.object({
-                from: this.allowNull(address),
-                type: this.allowNull(number),
-                to: this.allowNull(address),
-                nonce: this.allowNull(number),
-                gasLimit: this.allowNull(uint256),
-                gasPrice: this.allowNull(uint256),
-                maxFeePerGas: this.allowNull(uint256),
-                maxPriorityFeePerGas: this.allowNull(uint256),
-                data: this.allowNull(data),
-                value: this.allowNull(uint256),
-            }),
-            transactionResponse: this.object({
-                hash: hash,
-                index: number,
-                type: this.allowNull(number, 0),
-                // These can be null for pending blocks
-                blockHash: this.allowNull(hash),
-                blockNumber: this.allowNull(number),
-                // For Legacy transactions, this comes from the v
-                chainId: this.allowNull(number),
-                from: address,
-                to: this.address,
-                gasLimit: bigNumber,
-                gasPrice: this.allowNull(bigNumber),
-                maxFeePerGas: this.allowNull(bigNumber),
-                maxPriorityFeePerGas: this.allowNull(bigNumber),
-                value: bigNumber,
-                data: data,
-                nonce: number,
-                r: hash,
-                s: hash,
-                v: number,
-                accessList: this.allowNull(this.accessList)
-            }, {
-                index: ["transactionIndex"]
-            }),
-        };
-        this.#baseBlock = this.object({
-            number: number,
-            hash: this.allowNull(hash, null),
-            timestamp: number,
-            parentHash: hash,
-            nonce: this.allowNull(stringify, "0x0000000000000000"),
-            difficulty: bigNumber,
-            gasLimit: bigNumber,
-            gasUsed: bigNumber,
-            miner: this.allowNull(address, "0x0000000000000000000000000000000000000000"),
-            extraData: stringify,
-            baseFeePerGas: this.allowNull(bigNumber),
-        });
-    }
-    // An address
-    address(value) {
-        return getAddress(value);
-    }
-    // An address from a call result; may be zero-padded
-    callAddress(value) {
-        if (dataLength(value) !== 32 || dataSlice(value, 0, 12) !== "0x000000000000000000000000") {
-            throwArgumentError("invalid call address", "value", value);
-        }
-        return this.address(dataSlice(value, 12));
-    }
-    // An address from a transaction (e.g. { from: string, nonce: number })
-    contractAddress(value) {
-        return getCreateAddress({
-            from: this.address(value.from),
-            nonce: getNumber(value.nonce, "value.nonce")
-        });
-    }
-    // Block Tag
-    blockTag(value) {
-        if (value == null) {
-            return "latest";
-        }
-        switch (value) {
-            case "earliest":
-                return "0x0";
-            case "latest":
-            case "pending":
-            case "safe":
-            case "finalized":
-                return value;
-        }
-        if (typeof (value) === "number" || (isHexString(value) && dataLength(value) < 32)) {
-            return toQuantity(value);
-        }
-        return throwArgumentError("invalid blockTag", "value", value);
-    }
-    // Block objects
-    block(value, provider) {
-        const params = this.#baseBlock(value);
-        params.transactions = value.transactions.map((t) => this.hash(t));
-        return new Block(params, provider);
-    }
-    blockWithTransactions(value, provider) {
-        throw new Error();
-    }
-    // Transactions
-    transactionRequest(value, provider) {
-        return this.#format.transactionRequest(value);
-    }
-    transactionResponse(value, provider) {
-        value = Object.assign({}, value);
-        // @TODO: Use the remap feature
-        if (value.data == null && value.input != null) {
-            value.data = value.input;
-        }
-        if (value.gasLimit == null && value.gas) {
-            value.gasLimit = value.gas;
-        }
-        value = this.#format.transactionResponse(value);
-        const sig = Signature.from({ r: value.r, s: value.s, v: value.v });
-        value.signature = sig;
-        if (value.chainId == null) {
-            value.chainId = sig.legacyChainId;
-        }
-        return new TransactionResponse(value, provider);
-    }
-    // Receipts
-    log(value, provider) {
-        const log = this.object({
-            address: this.address,
-            blockHash: this.hash,
-            blockNumber: this.number,
-            data: this.data,
-            index: this.number,
-            removed: this.boolean,
-            topics: this.topics,
-            transactionHash: this.hash,
-            transactionIndex: this.number,
-        }, {
-            index: ["logIndex"]
-        })(value);
-        return new Log(log, provider);
-    }
-    receipt(value, provider) {
-        const receipt = this.object({
-            blockHash: this.hash,
-            blockNumber: this.number,
-            contractAddress: this.allowNull(this.address),
-            cumulativeGasUsed: this.bigNumber,
-            from: this.address,
-            gasUsed: this.bigNumber,
-            logs: this.arrayOf((v) => (this.log(v, provider))),
-            logsBloom: this.data,
-            root: this.allowNull(this.data),
-            status: this.allowNull(this.number),
-            to: this.address,
-            gasPrice: this.allowNull(this.bigNumber),
-            hash: this.hash,
-            index: this.number,
-            type: this.allowNull(this.number, 0),
-        }, {
-            hash: ["transactionHash"],
-            gasPrice: ["effectiveGasPrice"],
-            index: ["transactionIndex"]
-        })(value);
-        // RSK incorrectly implemented EIP-658, so we munge things a bit here for it
-        if (receipt.root != null) {
-            if (receipt.root.length <= 4) {
-                // Could be 0x00, 0x0, 0x01 or 0x1
-                const value = parseInt(receipt.root);
-                if (value === 0 || value === 1) {
-                    // Make sure if both are specified, they match
-                    if (receipt.status != null && receipt.status !== value) {
-                        return throwError("alt-root-status/status mismatch", "BAD_DATA", {
-                            value: { root: receipt.root, status: receipt.status }
-                        });
-                    }
-                    receipt.status = value;
-                    delete receipt.root;
-                }
-                else {
-                    return throwError("invalid alt-root-status", "BAD_DATA", {
-                        value: receipt.root
-                    });
-                }
-            }
-            else if (!isHexString(receipt.root, 32)) {
-                // Must be a valid bytes32
-                return throwError("invalid receipt root hash", "BAD_DATA", {
-                    value: receipt.root
-                });
-            }
-        }
-        //receipt.byzantium = (receipt.root == null);
-        return new TransactionReceipt(receipt, provider);
-    }
-    // Fitlers
-    topics(value) {
-        return this.#format.topics(value);
-    }
-    filter(value) {
-        return this.#format.filter(value);
-    }
-    filterLog(value) {
-        console.log("ME", value);
-        return null;
-    }
-    // Converts a serialized transaction to a TransactionResponse
-    transaction(value) {
-        throw new Error();
-    }
-    // Useful utility formatters functions, which if need be use the
-    // methods within the formatter to ensure internal compatibility
-    // Access List; converts an AccessListish to an AccessList
-    accessList(value) {
-        return accessListify(value);
-    }
-    // Converts falsish values to a specific value, otherwise use the formatter. Calls preserve `this`.
-    allowFalsish(format, ifFalse) {
-        return ((value) => {
-            if (!value) {
-                return ifFalse;
-            }
-            return format.call(this, value);
-        });
-    }
-    // Allows null, optionally replacing it with a default value. Calls preserve `this`.
-    allowNull(format, ifNull) {
-        return ((value) => {
-            if (value == null) {
-                return ifNull;
-            }
-            return format.call(this, value);
-        });
-    }
-    // Requires an Array satisfying the formatter. Calls preserves `this`.
-    arrayOf(format) {
-        return ((array) => {
-            if (!Array.isArray(array)) {
-                throw new Error("not an array");
-            }
-            return array.map((i) => format.call(this, i));
-        });
-    }
-    // Requires a value which is a value BigNumber
-    bigNumber(value) {
-        return getBigInt(value, "value");
-    }
-    uint256(value) {
-        const result = this.bigNumber(value);
-        if (result < 0 || result > BN_MAX_UINT256) {
-            throwArgumentError("invalid uint256", "value", value);
-        }
-        return result;
-    }
-    // Requires a value which is a value boolean or string equivalent
-    boolean(value) {
-        switch (value) {
-            case true:
-            case "true":
-                return true;
-            case false:
-            case "false":
-                return false;
-        }
-        return throwArgumentError(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
-    }
-    // Requires a value which is a valid hexstring. If dataOrLength is true,
-    // the length must be even (i.e. a datahexstring) or if it is a number,
-    // specifies teh number of bytes value must represent
-    _hexstring(dataOrLength) {
-        if (dataOrLength == null) {
-            dataOrLength = false;
-        }
-        return (function (value) {
-            if (isHexString(value, dataOrLength)) {
-                return value.toLowerCase();
-            }
-            throw new Error("bad hexstring");
-        });
-    }
-    data(value) {
-        if (dataLength(value) == null) {
-            throwArgumentError("", "value", value);
-        }
-        return value;
-    }
-    // Requires a network-native hash
-    hash(value) {
-        if (dataLength(value) !== 32) {
-            throwArgumentError("", "value", value);
-        }
-        return this.#format.data(value);
-    }
-    // Requires a valid number, within the IEEE 754 safe range
-    number(value) {
-        return getNumber(value);
-    }
-    // Requires an object which matches a fleet of other formatters
-    // Any FormatFunc may return `undefined` to have the value omitted
-    // from the result object. Calls preserve `this`.
-    object(format, altNames) {
-        return ((value) => {
-            const result = {};
-            for (const key in format) {
-                let srcKey = key;
-                if (altNames && key in altNames && !(srcKey in value)) {
-                    for (const altKey of altNames[key]) {
-                        if (altKey in value) {
-                            srcKey = altKey;
-                            break;
-                        }
-                    }
-                }
-                try {
-                    const nv = format[key].call(this, value[srcKey]);
-                    if (nv !== undefined) {
-                        result[key] = nv;
-                    }
-                }
-                catch (error) {
-                    const message = (error instanceof Error) ? error.message : "not-an-error";
-                    throwError(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
-                }
-            }
-            return result;
-        });
-    }
-}
-
-const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
-class NetworkPlugin {
-    name;
-    constructor(name) {
-        defineProperties(this, { name });
-    }
-    clone() {
-        return new NetworkPlugin(this.name);
-    }
-    validate(network) {
-        return this;
-    }
-}
-class GasCostPlugin extends NetworkPlugin {
-    effectiveBlock;
-    txBase;
-    txCreate;
-    txDataZero;
-    txDataNonzero;
-    txAccessListStorageKey;
-    txAccessListAddress;
-    constructor(effectiveBlock = 0, costs) {
-        super(`org.ethers.network-plugins.gas-cost#${(effectiveBlock || 0)}`);
-        const props = { effectiveBlock };
-        function set(name, nullish) {
-            let value = (costs || {})[name];
-            if (value == null) {
-                value = nullish;
-            }
-            if (typeof (value) !== "number") {
-                throwArgumentError(`invalud value for ${name}`, "costs", costs);
-            }
-            props[name] = value;
-        }
-        set("txBase", 21000);
-        set("txCreate", 32000);
-        set("txDataZero", 4);
-        set("txDataNonzero", 16);
-        set("txAccessListStorageKey", 1900);
-        set("txAccessListAddress", 2400);
-        defineProperties(this, props);
-    }
-    clone() {
-        return new GasCostPlugin(this.effectiveBlock, this);
-    }
-}
-// Networks shoudl use this plugin to specify the contract address
-// and network necessary to resolve ENS names.
-class EnsPlugin extends NetworkPlugin {
-    // The ENS contract address
-    address;
-    // The network ID that the ENS contract lives on
-    targetNetwork;
-    constructor(address, targetNetwork) {
-        super("org.ethers.network-plugins.ens");
-        defineProperties(this, {
-            address: (address || EnsAddress),
-            targetNetwork: ((targetNetwork == null) ? 1 : targetNetwork)
-        });
-    }
-    clone() {
-        return new EnsPlugin(this.address, this.targetNetwork);
-    }
-    validate(network) {
-        network.formatter.address(this.address);
-        return this;
-    }
-}
-/*
-export class MaxPriorityFeePlugin extends NetworkPlugin {
-    readonly priorityFee!: bigint;
-
-    constructor(priorityFee: BigNumberish) {
-        super("org.ethers.plugins.max-priority-fee");
-        defineProperties<MaxPriorityFeePlugin>(this, {
-            priorityFee: logger.getBigInt(priorityFee)
-        });
-    }
-
-    async getPriorityFee(provider: Provider): Promise<bigint> {
-        return this.priorityFee;
-    }
-
-    clone(): MaxPriorityFeePlugin {
-        return new MaxPriorityFeePlugin(this.priorityFee);
-    }
-}
-*/
-class FeeDataNetworkPlugin extends NetworkPlugin {
-    #feeDataFunc;
-    get feeDataFunc() { return this.#feeDataFunc; }
-    constructor(feeDataFunc) {
-        super("org.ethers.network-plugins.fee-data");
-        this.#feeDataFunc = feeDataFunc;
-    }
-    async getFeeData(provider) {
-        return await this.#feeDataFunc(provider);
-    }
-    clone() {
-        return new FeeDataNetworkPlugin(this.#feeDataFunc);
-    }
-}
-
-/* * * *
-// Networks which operation against an L2 can use this plugin to
-// specify how to access L1, for the purpose of resolving ENS,
-// for example.
-export class LayerOneConnectionPlugin extends NetworkPlugin {
-    readonly provider!: Provider;
-// @TODO: Rename to ChainAccess and allow for connecting to any chain
-    constructor(provider: Provider) {
-        super("org.ethers.plugins.layer-one-connection");
-        defineProperties<LayerOneConnectionPlugin>(this, { provider });
-    }
-
-    clone(): LayerOneConnectionPlugin {
-        return new LayerOneConnectionPlugin(this.provider);
-    }
-}
-*/
-/* * * *
-export class PriceOraclePlugin extends NetworkPlugin {
-    readonly address!: string;
-
-    constructor(address: string) {
-        super("org.ethers.plugins.price-oracle");
-        defineProperties<PriceOraclePlugin>(this, { address });
-    }
-
-    clone(): PriceOraclePlugin {
-        return new PriceOraclePlugin(this.address);
-    }
-}
-*/
-// Networks or clients with a higher need for security (such as clients
-// that may automatically make CCIP requests without user interaction)
-// can use this plugin to anonymize requests or intercept CCIP requests
-// to notify and/or receive authorization from the user
-/* * * *
-export type FetchDataFunc = (req: Frozen<FetchRequest>) => Promise<FetchRequest>;
-export class CcipPreflightPlugin extends NetworkPlugin {
-    readonly fetchData!: FetchDataFunc;
-
-    constructor(fetchData: FetchDataFunc) {
-        super("org.ethers.plugins.ccip-preflight");
-        defineProperties<CcipPreflightPlugin>(this, { fetchData });
-    }
-
-    clone(): CcipPreflightPlugin {
-        return new CcipPreflightPlugin(this.fetchData);
-    }
-}
-*/
-const Networks = new Map();
-const defaultFormatter = new Formatter();
-class Network {
-    #props;
-    constructor(name, _chainId, formatter) {
-        const chainId = getBigInt(_chainId);
-        if (formatter == null) {
-            formatter = defaultFormatter;
-        }
-        const plugins = new Map();
-        this.#props = { name, chainId, formatter, plugins };
-    }
-    toJSON() {
-        return { name: this.name, chainId: this.chainId };
-    }
-    get name() { return getStore(this.#props, "name"); }
-    set name(value) { setStore(this.#props, "name", value); }
-    get chainId() { return getStore(this.#props, "chainId"); }
-    set chainId(value) { setStore(this.#props, "chainId", getBigInt(value, "chainId")); }
-    get formatter() { return getStore(this.#props, "formatter"); }
-    set formatter(value) { setStore(this.#props, "formatter", value); }
-    get plugins() {
-        return Array.from(this.#props.plugins.values());
-    }
-    attachPlugin(plugin) {
-        if (this.isFrozen()) {
-            throw new Error("frozen");
-        }
-        if (this.#props.plugins.get(plugin.name)) {
-            throw new Error(`cannot replace existing plugin: ${plugin.name} `);
-        }
-        this.#props.plugins.set(plugin.name, plugin.validate(this));
-        return this;
-    }
-    getPlugin(name) {
-        return (this.#props.plugins.get(name)) || null;
-    }
-    // Gets a list of Plugins which match basename, ignoring any fragment
-    getPlugins(basename) {
-        return (this.plugins.filter((p) => (p.name.split("#")[0] === basename)));
-    }
-    clone() {
-        const clone = new Network(this.name, this.chainId, this.formatter);
-        this.plugins.forEach((plugin) => {
-            clone.attachPlugin(plugin.clone());
-        });
-        return clone;
-    }
-    freeze() {
-        Object.freeze(this.#props);
-        return this;
-    }
-    isFrozen() {
-        return Object.isFrozen(this.#props);
-    }
-    computeIntrinsicGas(tx) {
-        const costs = this.getPlugin("org.ethers.gas-cost") || (new GasCostPlugin());
-        let gas = costs.txBase;
-        if (tx.to == null) {
-            gas += costs.txCreate;
-        }
-        if (tx.data) {
-            for (let i = 2; i < tx.data.length; i += 2) {
-                if (tx.data.substring(i, i + 2) === "00") {
-                    gas += costs.txDataZero;
-                }
-                else {
-                    gas += costs.txDataNonzero;
-                }
-            }
-        }
-        if (tx.accessList) {
-            const accessList = this.formatter.accessList(tx.accessList);
-            for (const addr in accessList) {
-                gas += costs.txAccessListAddress + costs.txAccessListStorageKey * accessList[addr].storageKeys.length;
-            }
-        }
-        return gas;
-    }
-    /**
-     *  Returns a new Network for the %%network%% name or chainId.
-     */
-    static from(network) {
-        // Default network
-        if (network == null) {
-            return Network.from("homestead");
-        }
-        // Canonical name or chain ID
-        if (typeof (network) === "number") {
-            network = BigInt(network);
-        }
-        if (typeof (network) === "string" || typeof (network) === "bigint") {
-            const networkFunc = Networks.get(network);
-            if (networkFunc) {
-                return networkFunc();
-            }
-            if (typeof (network) === "bigint") {
-                return new Network("unknown", network);
-            }
-            throwArgumentError("unknown network", "network", network);
-        }
-        // Clonable with network-like abilities
-        if (typeof (network.clone) === "function") {
-            const clone = network.clone();
-            //if (typeof(network.name) !== "string" || typeof(network.chainId) !== "number") {
-            //}
-            return clone;
-        }
-        // Networkish
-        if (typeof (network) === "object") {
-            if (typeof (network.name) !== "string" || typeof (network.chainId) !== "number") {
-                throwArgumentError("invalid network object name or chainId", "network", network);
-            }
-            const custom = new Network((network.name), (network.chainId));
-            if (network.ensAddress || network.ensNetwork != null) {
-                custom.attachPlugin(new EnsPlugin(network.ensAddress, network.ensNetwork));
-            }
-            //if ((<any>network).layerOneConnection) {
-            //    custom.attachPlugin(new LayerOneConnectionPlugin((<any>network).layerOneConnection));
-            //}
-            return custom;
-        }
-        return throwArgumentError("invalid network", "network", network);
-    }
-    /**
-     *  Register %%nameOrChainId%% with a function which returns
-     *  an instance of a Network representing that chain.
-     */
-    static register(nameOrChainId, networkFunc) {
-        if (typeof (nameOrChainId) === "number") {
-            nameOrChainId = BigInt(nameOrChainId);
-        }
-        const existing = Networks.get(nameOrChainId);
-        if (existing) {
-            throwArgumentError(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
-        }
-        Networks.set(nameOrChainId, networkFunc);
-    }
 }
 
 function copy$2(obj) {
@@ -11325,6 +11299,9 @@ class PollingEventSubscriber {
 // Constants
 const BN_2$1 = BigInt(2);
 const MAX_CCIP_REDIRECTS = 10;
+function isPromise$1(value) {
+    return (value && typeof (value.then) === "function");
+}
 function getTag(prefix, value) {
     return prefix + ":" + JSON.stringify(value, (k, v) => {
         if (typeof (v) === "bigint") {
@@ -11361,10 +11338,6 @@ function concisify$1(items) {
     items.sort();
     return items;
 }
-// Normalize a ProviderEvent into a Subscription
-// @TODO: Make events sync if possible; like block
-//function getSyncSubscription(_event: ProviderEvent): Subscription {
-//}
 async function getSubscription(_event, provider) {
     if (_event == null) {
         throw new Error("invalid event");
@@ -11434,10 +11407,6 @@ async function getSubscription(_event, provider) {
     return throwArgumentError("unknown ProviderEvent", "event", _event);
 }
 function getTime$1() { return (new Date()).getTime(); }
-function copyRequest(tx) {
-    // @TODO: copy the copy from contracts and use it from this
-    return tx;
-}
 class AbstractProvider {
     #subs;
     #plugins;
@@ -11446,6 +11415,8 @@ class AbstractProvider {
     #networkPromise;
     #anyNetwork;
     #performCache;
+    // The most recent block number if running an event or -1 if no "block" event
+    #lastBlockNumber;
     #nextTimer;
     #timers;
     #disableCcipRead;
@@ -11466,6 +11437,7 @@ class AbstractProvider {
             this.#anyNetwork = false;
             this.#networkPromise = null;
         }
+        this.#lastBlockNumber = -1;
         this.#performCache = new Map();
         this.#subs = new Map();
         this.#plugins = new Map();
@@ -11554,8 +11526,20 @@ class AbstractProvider {
             transaction: tx, info: { urls, errorMessages }
         });
     }
-    _wrapTransaction(tx, hash, blockNumber) {
-        return tx;
+    _wrapBlock(value, network) {
+        return new Block(formatBlock(value), this);
+    }
+    _wrapBlockWithTransactions(value, network) {
+        return new Block(formatBlock(value), this);
+    }
+    _wrapLog(value, network) {
+        return new Log(formatLog(value), this);
+    }
+    _wrapTransactionReceipt(value, network) {
+        return new TransactionReceipt(formatTransactionReceipt(value), this);
+    }
+    _wrapTransactionResponse(tx, network) {
+        return new TransactionResponse(tx, this);
     }
     _detectNetwork() {
         return throwError("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
@@ -11572,20 +11556,14 @@ class AbstractProvider {
     }
     // State
     async getBlockNumber() {
-        return getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
+        const blockNumber = getNumber(await this.#perform({ method: "getBlockNumber" }), "%response");
+        if (this.#lastBlockNumber >= 0) {
+            this.#lastBlockNumber = blockNumber;
+        }
+        return blockNumber;
     }
-    // @TODO: Make this string | Promsie<string> so no await needed if sync is possible
     _getAddress(address) {
         return resolveAddress(address, this);
-        /*
-        if (typeof(address) === "string") {
-            if (address.match(/^0x[0-9a-f]+$/i)) { return address; }
-            const resolved = await this.resolveName(address);
-            if (resolved == null) { throw new Error("not confiugred @TODO"); }
-            return resolved;
-        }
-        return address.getAddress();
-        */
     }
     _getBlockTag(blockTag) {
         if (blockTag == null) {
@@ -11610,235 +11588,12 @@ class AbstractProvider {
             if (blockTag >= 0) {
                 return toQuantity(blockTag);
             }
+            if (this.#lastBlockNumber >= 0) {
+                return toQuantity(this.#lastBlockNumber + blockTag);
+            }
             return this.getBlockNumber().then((b) => toQuantity(b + blockTag));
         }
         return throwArgumentError("invalid blockTag", "blockTag", blockTag);
-    }
-    async getNetwork() {
-        // No explicit network was set and this is our first time
-        if (this.#networkPromise == null) {
-            // Detect the current network (shared with all calls)
-            const detectNetwork = this._detectNetwork().then((network) => {
-                this.emit("network", network, null);
-                return network;
-            }, (error) => {
-                // Reset the networkPromise on failure, so we will try again
-                if (this.#networkPromise === detectNetwork) {
-                    this.#networkPromise = null;
-                }
-                throw error;
-            });
-            this.#networkPromise = detectNetwork;
-            return await detectNetwork;
-        }
-        const networkPromise = this.#networkPromise;
-        const [expected, actual] = await Promise.all([
-            networkPromise,
-            this._detectNetwork() // The actual connected network
-        ]);
-        if (expected.chainId !== actual.chainId) {
-            if (this.#anyNetwork) {
-                // The "any" network can change, so notify listeners
-                this.emit("network", actual, expected);
-                // Update the network if something else hasn't already changed it
-                if (this.#networkPromise === networkPromise) {
-                    this.#networkPromise = Promise.resolve(actual);
-                }
-            }
-            else {
-                // Otherwise, we do not allow changes to the underlying network
-                throwError(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
-                    event: "changed"
-                });
-            }
-        }
-        return expected.clone().freeze();
-    }
-    async getFeeData() {
-        const { block, gasPrice } = await resolveProperties({
-            block: this.getBlock("latest"),
-            gasPrice: ((async () => {
-                try {
-                    const gasPrice = await this.#perform({ method: "getGasPrice" });
-                    return getBigInt(gasPrice, "%response");
-                }
-                catch (error) { }
-                return null;
-            })())
-        });
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
-        if (block && block.baseFeePerGas) {
-            // We may want to compute this more accurately in the future,
-            // using the formula "check if the base fee is correct".
-            // See: https://eips.ethereum.org/EIPS/eip-1559
-            maxPriorityFeePerGas = BigInt("1500000000");
-            // Allow a network to override their maximum priority fee per gas
-            //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
-            //if (priorityFeePlugin) {
-            //    maxPriorityFeePerGas = await priorityFeePlugin.getPriorityFee(this);
-            //}
-            maxFeePerGas = (block.baseFeePerGas * BN_2$1) + maxPriorityFeePerGas;
-        }
-        return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
-    }
-    async _getTransaction(_request) {
-        const network = await this.getNetwork();
-        // Fill in any addresses
-        const request = Object.assign({}, _request, await resolveProperties({
-            to: (_request.to ? resolveAddress(_request.to, this) : undefined),
-            from: (_request.from ? resolveAddress(_request.from, this) : undefined),
-        }));
-        return network.formatter.transactionRequest(request);
-    }
-    async estimateGas(_tx) {
-        const transaction = await this._getTransaction(_tx);
-        return getBigInt(await this.#perform({
-            method: "estimateGas", transaction
-        }), "%response");
-    }
-    async #call(tx, blockTag, attempt) {
-        if (attempt >= MAX_CCIP_REDIRECTS) {
-            throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
-                reason: "TOO_MANY_REDIRECTS",
-                transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
-            });
-        }
-        const transaction = copyRequest(tx);
-        try {
-            return hexlify(await this._perform({ method: "call", transaction, blockTag }));
-        }
-        catch (error) {
-            // CCIP Read OffchainLookup
-            if (!this.disableCcipRead && isCallException(error) && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
-                const data = error.data;
-                const txSender = await resolveAddress(transaction.to, this);
-                // Parse the CCIP Read Arguments
-                let ccipArgs;
-                try {
-                    ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
-                }
-                catch (error) {
-                    return throwError(error.message, "OFFCHAIN_FAULT", {
-                        reason: "BAD_DATA",
-                        transaction, info: { data }
-                    });
-                }
-                // Check the sender of the OffchainLookup matches the transaction
-                if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
-                    return throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
-                        data, transaction,
-                        errorSignature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
-                        errorName: "OffchainLookup",
-                        errorArgs: ccipArgs.errorArgs
-                    });
-                }
-                const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
-                if (ccipResult == null) {
-                    return throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
-                        reason: "FETCH_FAILED",
-                        transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
-                    });
-                }
-                return this.#call({
-                    to: txSender,
-                    data: concat([
-                        ccipArgs.selector, encodeBytes([ccipResult, ccipArgs.extraData])
-                    ]),
-                }, blockTag, attempt + 1);
-            }
-            throw error;
-        }
-    }
-    async call(_tx) {
-        const [tx, blockTag] = await Promise.all([
-            this._getTransaction(_tx), this._getBlockTag(_tx.blockTag)
-        ]);
-        return this.#call(tx, blockTag, _tx.enableCcipRead ? 0 : -1);
-    }
-    // Account
-    async #getAccountValue(request, _address, _blockTag) {
-        let address = this._getAddress(_address);
-        let blockTag = this._getBlockTag(_blockTag);
-        if (typeof (address) !== "string" || typeof (blockTag) !== "string") {
-            [address, blockTag] = await Promise.all([address, blockTag]);
-        }
-        return await this.#perform(Object.assign(request, { address, blockTag }));
-    }
-    async getBalance(address, blockTag) {
-        return getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
-    }
-    async getTransactionCount(address, blockTag) {
-        return getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
-    }
-    async getCode(address, blockTag) {
-        return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
-    }
-    async getStorageAt(address, _position, blockTag) {
-        const position = getBigInt(_position, "position");
-        return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
-    }
-    // Write
-    async broadcastTransaction(signedTx) {
-        throw new Error();
-        return {};
-    }
-    async #getBlock(block, includeTransactions) {
-        if (isHexString(block, 32)) {
-            return await this.#perform({
-                method: "getBlock", blockHash: block, includeTransactions
-            });
-        }
-        let blockTag = this._getBlockTag(block);
-        if (typeof (blockTag) !== "string") {
-            blockTag = await blockTag;
-        }
-        return await this.#perform({
-            method: "getBlock", blockTag, includeTransactions
-        });
-    }
-    // Queries
-    async getBlock(block) {
-        const [network, params] = await Promise.all([
-            this.getNetwork(), this.#getBlock(block, false)
-        ]);
-        if (params == null) {
-            return null;
-        }
-        return network.formatter.block(params, this);
-    }
-    async getBlockWithTransactions(block) {
-        const format = (await this.getNetwork()).formatter;
-        const params = this.#getBlock(block, true);
-        if (params == null) {
-            return null;
-        }
-        return format.blockWithTransactions(params, this);
-    }
-    async getTransaction(hash) {
-        const format = (await this.getNetwork()).formatter;
-        const params = await this.#perform({ method: "getTransaction", hash });
-        return format.transactionResponse(params, this);
-    }
-    async getTransactionReceipt(hash) {
-        const format = (await this.getNetwork()).formatter;
-        const receipt = await this.#perform({ method: "getTransactionReceipt", hash });
-        if (receipt == null) {
-            return null;
-        }
-        // Some backends did not backfill the effectiveGasPrice into old transactions
-        // in the receipt, so we look it up manually and inject it.
-        if (receipt.gasPrice == null && receipt.effectiveGasPrice == null) {
-            const tx = await this.#perform({ method: "getTransaction", hash });
-            receipt.effectiveGasPrice = tx.gasPrice;
-        }
-        return format.receipt(receipt, this);
-    }
-    async getTransactionResult(hash) {
-        const result = await this.#perform({ method: "getTransactionResult", hash });
-        if (result == null) {
-            return null;
-        }
-        return hexlify(result);
     }
     _getFilter(filter) {
         // Create a canonical representation of the topics
@@ -11915,15 +11670,295 @@ class AbstractProvider {
         }
         return resolve(address, fromBlock, toBlock);
     }
+    _getTransactionRequest(_request) {
+        const request = copyRequest(_request);
+        const promises = [];
+        ["to", "from"].forEach((key) => {
+            if (request[key] == null) {
+                return;
+            }
+            const addr = resolveAddress(request[key]);
+            if (isPromise$1(addr)) {
+                promises.push((async function () { request[key] = await addr; })());
+            }
+            else {
+                request[key] = addr;
+            }
+        });
+        if (request.blockTag != null) {
+            const blockTag = this._getBlockTag(request.blockTag);
+            if (isPromise$1(blockTag)) {
+                promises.push((async function () { request.blockTag = await blockTag; })());
+            }
+            else {
+                request.blockTag = blockTag;
+            }
+        }
+        if (promises.length) {
+            return (async function () {
+                await Promise.all(promises);
+                return request;
+            })();
+        }
+        return request;
+    }
+    async getNetwork() {
+        // No explicit network was set and this is our first time
+        if (this.#networkPromise == null) {
+            // Detect the current network (shared with all calls)
+            const detectNetwork = this._detectNetwork().then((network) => {
+                this.emit("network", network, null);
+                return network;
+            }, (error) => {
+                // Reset the networkPromise on failure, so we will try again
+                if (this.#networkPromise === detectNetwork) {
+                    this.#networkPromise = null;
+                }
+                throw error;
+            });
+            this.#networkPromise = detectNetwork;
+            return (await detectNetwork).clone();
+        }
+        const networkPromise = this.#networkPromise;
+        const [expected, actual] = await Promise.all([
+            networkPromise,
+            this._detectNetwork() // The actual connected network
+        ]);
+        if (expected.chainId !== actual.chainId) {
+            if (this.#anyNetwork) {
+                // The "any" network can change, so notify listeners
+                this.emit("network", actual, expected);
+                // Update the network if something else hasn't already changed it
+                if (this.#networkPromise === networkPromise) {
+                    this.#networkPromise = Promise.resolve(actual);
+                }
+            }
+            else {
+                // Otherwise, we do not allow changes to the underlying network
+                throwError(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
+                    event: "changed"
+                });
+            }
+        }
+        return expected.clone();
+    }
+    async getFeeData() {
+        const { block, gasPrice } = await resolveProperties({
+            block: this.getBlock("latest"),
+            gasPrice: ((async () => {
+                try {
+                    const gasPrice = await this.#perform({ method: "getGasPrice" });
+                    return getBigInt(gasPrice, "%response");
+                }
+                catch (error) { }
+                return null;
+            })())
+        });
+        let maxFeePerGas = null, maxPriorityFeePerGas = null;
+        if (block && block.baseFeePerGas) {
+            // We may want to compute this more accurately in the future,
+            // using the formula "check if the base fee is correct".
+            // See: https://eips.ethereum.org/EIPS/eip-1559
+            maxPriorityFeePerGas = BigInt("1500000000");
+            // Allow a network to override their maximum priority fee per gas
+            //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
+            //if (priorityFeePlugin) {
+            //    maxPriorityFeePerGas = await priorityFeePlugin.getPriorityFee(this);
+            //}
+            maxFeePerGas = (block.baseFeePerGas * BN_2$1) + maxPriorityFeePerGas;
+        }
+        return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
+    }
+    async estimateGas(_tx) {
+        let tx = this._getTransactionRequest(_tx);
+        if (isPromise$1(tx)) {
+            tx = await tx;
+        }
+        return getBigInt(await this.#perform({
+            method: "estimateGas", transaction: tx
+        }), "%response");
+    }
+    async #call(tx, blockTag, attempt) {
+        if (attempt >= MAX_CCIP_REDIRECTS) {
+            throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+                reason: "TOO_MANY_REDIRECTS",
+                transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
+            });
+        }
+        // This came in as a PerformActionTransaction, so to/from are safe; we can cast
+        const transaction = copyRequest(tx);
+        try {
+            return hexlify(await this._perform({ method: "call", transaction, blockTag }));
+        }
+        catch (error) {
+            // CCIP Read OffchainLookup
+            if (!this.disableCcipRead && isCallException(error) && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
+                const data = error.data;
+                const txSender = await resolveAddress(transaction.to, this);
+                // Parse the CCIP Read Arguments
+                let ccipArgs;
+                try {
+                    ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
+                }
+                catch (error) {
+                    return throwError(error.message, "OFFCHAIN_FAULT", {
+                        reason: "BAD_DATA",
+                        transaction, info: { data }
+                    });
+                }
+                // Check the sender of the OffchainLookup matches the transaction
+                if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
+                    return throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                        data, transaction,
+                        errorSignature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                        errorName: "OffchainLookup",
+                        errorArgs: ccipArgs.errorArgs
+                    });
+                }
+                const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
+                if (ccipResult == null) {
+                    return throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                        reason: "FETCH_FAILED",
+                        transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
+                    });
+                }
+                return this.#call({
+                    to: txSender,
+                    data: concat([
+                        ccipArgs.selector, encodeBytes([ccipResult, ccipArgs.extraData])
+                    ]),
+                }, blockTag, attempt + 1);
+            }
+            throw error;
+        }
+    }
+    async #checkNetwork(promise) {
+        const { value } = await resolveProperties({
+            network: this.getNetwork(),
+            value: promise
+        });
+        return value;
+    }
+    async call(_tx) {
+        const { tx, blockTag } = await resolveProperties({
+            tx: this._getTransactionRequest(_tx),
+            blockTag: this._getBlockTag(_tx.blockTag)
+        });
+        return await this.#checkNetwork(this.#call(tx, blockTag, _tx.enableCcipRead ? 0 : -1));
+    }
+    // Account
+    async #getAccountValue(request, _address, _blockTag) {
+        let address = this._getAddress(_address);
+        let blockTag = this._getBlockTag(_blockTag);
+        if (typeof (address) !== "string" || typeof (blockTag) !== "string") {
+            [address, blockTag] = await Promise.all([address, blockTag]);
+        }
+        return await this.#checkNetwork(this.#perform(Object.assign(request, { address, blockTag })));
+    }
+    async getBalance(address, blockTag) {
+        return getBigInt(await this.#getAccountValue({ method: "getBalance" }, address, blockTag), "%response");
+    }
+    async getTransactionCount(address, blockTag) {
+        return getNumber(await this.#getAccountValue({ method: "getTransactionCount" }, address, blockTag), "%response");
+    }
+    async getCode(address, blockTag) {
+        return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
+    }
+    async getStorageAt(address, _position, blockTag) {
+        const position = getBigInt(_position, "position");
+        return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
+    }
+    // Write
+    async broadcastTransaction(signedTx) {
+        throw new Error();
+        return {};
+    }
+    async #getBlock(block, includeTransactions) {
+        // @TODO: Add CustomBlockPlugin check
+        if (isHexString(block, 32)) {
+            return await this.#perform({
+                method: "getBlock", blockHash: block, includeTransactions
+            });
+        }
+        let blockTag = this._getBlockTag(block);
+        if (typeof (blockTag) !== "string") {
+            blockTag = await blockTag;
+        }
+        return await this.#perform({
+            method: "getBlock", blockTag, includeTransactions
+        });
+    }
+    // Queries
+    async getBlock(block) {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#getBlock(block, false)
+        });
+        if (params == null) {
+            return null;
+        }
+        return this._wrapBlock(formatBlock(params), network);
+    }
+    async getBlockWithTransactions(block) {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#getBlock(block, true)
+        });
+        if (params == null) {
+            return null;
+        }
+        return this._wrapBlockWithTransactions(formatBlockWithTransactions(params), network);
+    }
+    async getTransaction(hash) {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#perform({ method: "getTransaction", hash })
+        });
+        if (params == null) {
+            return null;
+        }
+        return this._wrapTransactionResponse(formatTransactionResponse(params), network);
+    }
+    async getTransactionReceipt(hash) {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#perform({ method: "getTransactionReceipt", hash })
+        });
+        if (params == null) {
+            return null;
+        }
+        // Some backends did not backfill the effectiveGasPrice into old transactions
+        // in the receipt, so we look it up manually and inject it.
+        if (params.gasPrice == null && params.effectiveGasPrice == null) {
+            const tx = await this.#perform({ method: "getTransaction", hash });
+            if (tx == null) {
+                throw new Error("report this; could not find tx or effectiveGasPrice");
+            }
+            params.effectiveGasPrice = tx.gasPrice;
+        }
+        return this._wrapTransactionReceipt(formatTransactionReceipt(params), network);
+    }
+    async getTransactionResult(hash) {
+        const { result } = await resolveProperties({
+            network: this.getNetwork(),
+            result: this.#perform({ method: "getTransactionResult", hash })
+        });
+        if (result == null) {
+            return null;
+        }
+        return hexlify(result);
+    }
     // Bloom-filter Queries
     async getLogs(_filter) {
-        const { network, filter } = await resolveProperties({
+        let filter = this._getFilter(_filter);
+        if (isPromise$1(filter)) {
+            filter = await filter;
+        }
+        const { network, params } = await resolveProperties({
             network: this.getNetwork(),
-            filter: this._getFilter(_filter)
+            params: this.#perform({ method: "getLogs", filter })
         });
-        return (await this.#perform({ method: "getLogs", filter })).map((l) => {
-            return network.formatter.log(l, this);
-        });
+        return params.map((p) => this._wrapLog(formatLog(p), network));
     }
     // ENS
     _getProvider(chainId) {
@@ -12233,6 +12268,7 @@ class AbstractProvider {
         }
     }
     pause(dropWhilePaused) {
+        this.#lastBlockNumber = -1;
         if (this.#pausedState != null) {
             if (this.#pausedState == !!dropWhilePaused) {
                 return;
@@ -12547,7 +12583,28 @@ class WrappedSigner extends AbstractSigner {
     }
 }
 
-const defaultApiKey$2 = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
+// Show the throttle message only once
+const shown = new Set();
+function showThrottleMessage(service) {
+    if (shown.has(service)) {
+        return;
+    }
+    shown.add(service);
+    console.log("========= NOTICE =========");
+    console.log(`Request-Rate Exceeded for ${service} (this message will not be repeated)`);
+    console.log("");
+    console.log("The default API keys for each service are provided as a highly-throttled,");
+    console.log("community resource for low-traffic projects and early prototyping.");
+    console.log("");
+    console.log("While your application will continue to function, we highly recommended");
+    console.log("signing up for your own API keys to improve performance, increase your");
+    console.log("request rate/limit and enable other perks, such as metrics and advanced APIs.");
+    console.log("");
+    console.log("For more details: https:/\/docs.ethers.io/api-keys/");
+    console.log("==========================");
+}
+
+const THROTTLE = 2000;
 const EtherscanPluginId = "org.ethers.plugins.etherscan";
 class EtherscanPlugin extends NetworkPlugin {
     baseUrl;
@@ -12561,29 +12618,25 @@ class EtherscanPlugin extends NetworkPlugin {
         return new EtherscanPlugin(this.baseUrl, this.communityApiKey);
     }
 }
-class EtherscanProvider extends AbstractProvider {
+let nextId = 1;
+class BaseEtherscanProvider extends AbstractProvider {
     network;
     apiKey;
+    #plugin;
     constructor(_network, apiKey) {
         super();
         const network = Network.from(_network);
-        if (apiKey == null) {
-            const plugin = network.getPlugin(EtherscanPluginId);
-            if (plugin) {
-                apiKey = plugin.communityApiKey;
-            }
-            else {
-                apiKey = defaultApiKey$2;
-            }
+        this.#plugin = network.getPlugin(EtherscanPluginId);
+        if (apiKey == null && this.#plugin) {
+            apiKey = this.#plugin.communityApiKey;
         }
         defineProperties(this, { apiKey, network });
         // Test that the network is supported by Etherscan
         this.getBaseUrl();
     }
     getBaseUrl() {
-        const plugin = this.network.getPlugin(EtherscanPluginId);
-        if (plugin) {
-            return plugin.baseUrl;
+        if (this.#plugin) {
+            return this.#plugin.baseUrl;
         }
         switch (this.network.name) {
             case "homestead":
@@ -12623,61 +12676,61 @@ class EtherscanProvider extends AbstractProvider {
         return this.network;
     }
     async fetch(module, params, post) {
+        const id = nextId++;
         const url = (post ? this.getPostUrl() : this.getUrl(module, params));
         const payload = (post ? this.getPostData(module, params) : null);
-        /*
-        this.emit("debug", {
-            action: "request",
-            request: url,
-            provider: this
-        });
-        */
+        this.emit("debug", { action: "sendRequest", id, url, payload: payload });
         const request = new FetchRequest(url);
+        request.setThrottleParams({ slotInterval: 1000 });
+        request.retryFunc = (req, resp, attempt) => {
+            if (this.isCommunityResource()) {
+                showThrottleMessage("Etherscan");
+            }
+            return Promise.resolve(true);
+        };
         request.processFunc = async (request, response) => {
             const result = response.hasBody() ? JSON.parse(toUtf8String(response.body)) : {};
             const throttle = ((typeof (result.result) === "string") ? result.result : "").toLowerCase().indexOf("rate limit") >= 0;
             if (module === "proxy") {
                 // This JSON response indicates we are being throttled
                 if (result && result.status == 0 && result.message == "NOTOK" && throttle) {
-                    response.throwThrottleError(result.result);
+                    this.emit("debug", { action: "receiveError", id, reason: "proxy-NOTOK", error: result });
+                    response.throwThrottleError(result.result, THROTTLE);
                 }
             }
             else {
                 if (throttle) {
-                    response.throwThrottleError(result.result);
+                    this.emit("debug", { action: "receiveError", id, reason: "null result", error: result.result });
+                    response.throwThrottleError(result.result, THROTTLE);
                 }
             }
             return response;
         };
-        // @TODO:
-        //throttleSlotInterval: 1000,
         if (payload) {
             request.setHeader("content-type", "application/x-www-form-urlencoded; charset=UTF-8");
             request.body = Object.keys(payload).map((k) => `${k}=${payload[k]}`).join("&");
         }
         const response = await request.send();
-        response.assertOk();
+        try {
+            response.assertOk();
+        }
+        catch (error) {
+            this.emit("debug", { action: "receiveError", id, error, reason: "assertOk" });
+        }
         if (!response.hasBody()) {
+            this.emit("debug", { action: "receiveError", id, error: "missing body", reason: "null body" });
             throw new Error();
         }
-        /*
-        this.emit("debug", {
-            action: "response",
-            request: url,
-            response: deepCopy(result),
-            provider: this
-        });
-        */
         const result = JSON.parse(toUtf8String(response.body));
         if (module === "proxy") {
             if (result.jsonrpc != "2.0") {
-                // @TODO: not any
+                this.emit("debug", { action: "receiveError", id, result, reason: "invalid JSON-RPC" });
                 const error = new Error("invalid response");
                 error.result = JSON.stringify(result);
                 throw error;
             }
             if (result.error) {
-                // @TODO: not any
+                this.emit("debug", { action: "receiveError", id, result, reason: "JSON-RPC error" });
                 const error = new Error(result.error.message || "unknown error");
                 if (result.error.code) {
                     error.code = result.error.code;
@@ -12687,14 +12740,17 @@ class EtherscanProvider extends AbstractProvider {
                 }
                 throw error;
             }
+            this.emit("debug", { action: "receiveRequest", id, result });
             return result.result;
         }
         else {
             // getLogs, getHistory have weird success responses
             if (result.status == 0 && (result.message === "No records found" || result.message === "No transactions found")) {
+                this.emit("debug", { action: "receiveRequest", id, result });
                 return result.result;
             }
-            if (result.status != 1 || result.message != "OK") {
+            if (result.status != 1 || (typeof (result.message) === "string" && !result.message.match(/^OK/))) {
+                this.emit("debug", { action: "receiveError", id, result });
                 const error = new Error("invalid response");
                 error.result = JSON.stringify(result);
                 //        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
@@ -12702,6 +12758,7 @@ class EtherscanProvider extends AbstractProvider {
                 //        }
                 throw error;
             }
+            this.emit("debug", { action: "receiveRequest", id, result });
             return result.result;
         }
     }
@@ -12721,7 +12778,7 @@ class EtherscanProvider extends AbstractProvider {
                 value = toQuantity(hexlify(value));
             }
             else if (key === "accessList") {
-                value = "[" + this.network.formatter.accessList(value).map((set) => {
+                value = "[" + accessListify(value).map((set) => {
                     return `{address:"${set.address}",storageKeys:["${set.storageKeys.join('","')}"]}`;
                 }).join(",") + "]";
             }
@@ -12964,38 +13021,9 @@ class EtherscanProvider extends AbstractProvider {
         if (plugin) {
             return (plugin.communityApiKey === this.apiKey);
         }
-        return (defaultApiKey$2 === this.apiKey);
+        return (this.apiKey == null);
     }
 }
-/*
-(async function() {
-    const provider = new EtherscanProvider();
-    console.log(provider);
-    console.log(await provider.getBlockNumber());
-    / *
-    provider.on("block", (b) => {
-        console.log("BB", b);
-    });
-    console.log(await provider.getTransactionReceipt("0xa5ded92f548e9f362192f9ab7e5b3fbc9b5a919a868e29247f177d49ce38de6e"));
-
-    provider.once("0xa5ded92f548e9f362192f9ab7e5b3fbc9b5a919a868e29247f177d49ce38de6e", (tx) => {
-        console.log("TT", tx);
-    });
-    * /
-    try {
-        console.log(await provider.getBlock(100));
-    } catch (error) {
-        console.log(error);
-    }
-
-    try {
-        console.log(await provider.getBlock(13821768));
-    } catch (error) {
-        console.log(error);
-    }
-
-})();
-*/
 
 /**
  *  Exports the same Network as "./network.js" except with common
@@ -13081,7 +13109,7 @@ function shuffle(array) {
         array[j] = tmp;
     }
 }
-function stall$2(duration) {
+function stall$3(duration) {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
 function getTime() { return (new Date()).getTime(); }
@@ -13109,7 +13137,7 @@ async function waitForSync(config, blockNumber) {
 }
 // Normalizes a result to a string that can be used to compare against
 // other results using normal string equality
-function normalize(network, value, req) {
+function normalize(provider, value, req) {
     switch (req.method) {
         case "chainId":
             return getBigInt(value).toString();
@@ -13127,19 +13155,19 @@ function normalize(network, value, req) {
             return hexlify(value);
         case "getBlock":
             if (req.includeTransactions) {
-                return JSON.stringify(network.formatter.blockWithTransactions(value));
+                return JSON.stringify(formatBlockWithTransactions(value));
             }
-            return JSON.stringify(network.formatter.block(value));
+            return JSON.stringify(formatBlock(value));
         case "getTransaction":
-            return JSON.stringify(network.formatter.transactionResponse(value));
+            return JSON.stringify(formatTransactionResponse(value));
         case "getTransactionReceipt":
-            return JSON.stringify(network.formatter.receipt(value));
+            return JSON.stringify(formatTransactionReceipt(value));
         case "call":
             return hexlify(value);
         case "estimateGas":
             return getBigInt(value).toString();
         case "getLogs":
-            return JSON.stringify(value.map((v) => network.formatter.log(v)));
+            return JSON.stringify(value.map((v) => formatLog(v)));
     }
     return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
         operation: `_perform(${JSON.stringify(req.method)})`
@@ -13243,7 +13271,7 @@ class FallbackProvider extends AbstractProvider {
         return this.#configs.slice();
     }
     async _detectNetwork() {
-        return Network.from(getBigInt(await this._perform({ method: "chainId" }))).freeze();
+        return Network.from(getBigInt(await this._perform({ method: "chainId" })));
     }
     // @TODO: Add support to select providers to be the event subscriber
     //_getSubscriber(sub: Subscription): Subscriber {
@@ -13292,7 +13320,7 @@ class FallbackProvider extends AbstractProvider {
             runner.perform = null;
         })();
         runner.staller = (async () => {
-            await stall$2(config.stallTimeout);
+            await stall$3(config.stallTimeout);
             runner.staller = null;
         })();
         running.add(runner);
@@ -13338,7 +13366,7 @@ class FallbackProvider extends AbstractProvider {
                 const result = runner.result.result;
                 results.push({
                     result,
-                    normal: normalize((runner.config._network), result, req),
+                    normal: normalize(runner.config.provider, result, req),
                     weight: runner.config.weight
                 });
             }
@@ -13564,10 +13592,8 @@ class FilterIdEventSubscriber extends FilterIdSubscriber {
         return filterId;
     }
     async _emitResults(provider, results) {
-        const network = await provider.getNetwork();
         for (const result of results) {
-            const log = network.formatter.log(result, provider);
-            provider.emit(this.#event, log);
+            provider.emit(this.#event, provider._wrapLog(result, provider._network));
         }
     }
 }
@@ -13576,9 +13602,8 @@ class FilterIdPendingSubscriber extends FilterIdSubscriber {
         return await provider.send("eth_newPendingTransactionFilter", []);
     }
     async _emitResults(provider, results) {
-        const network = await provider.getNetwork();
         for (const result of results) {
-            provider.emit("pending", network.formatter.hash(result));
+            provider.emit("pending", result);
         }
     }
 }
@@ -13604,6 +13629,9 @@ function deepCopy(value) {
         }, {});
     }
     throw new Error(`should not happen: ${value} (${typeof (value)})`);
+}
+function stall$2(duration) {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
 function getLowerCase(value) {
     if (value) {
@@ -13695,7 +13723,7 @@ class JsonRpcSigner extends AbstractSigner {
                 // Try getting the transaction
                 const tx = await this.provider.getTransaction(hash);
                 if (tx != null) {
-                    resolve(this.provider._wrapTransaction(tx, hash, blockNumber));
+                    resolve(tx.replaceableTransaction(blockNumber));
                     return;
                 }
                 // Wait another 4 seconds
@@ -13759,22 +13787,35 @@ class JsonRpcSigner extends AbstractSigner {
  *  sub-classed.
  *
  *  It provides the base for all JSON-RPC-based Provider interaction.
+ *
+ *  Sub-classing Notes:
+ *  - a sub-class MUST override _send
+ *  - a sub-class MUST call the `_start()` method once connected
  */
 class JsonRpcApiProvider extends AbstractProvider {
     #options;
     #nextId;
     #payloads;
+    #ready;
+    #starting;
     #drainTimer;
+    #network;
     constructor(network, options) {
         super(network);
+        this.#ready = false;
+        this.#starting = null;
         this.#nextId = 1;
         this.#options = Object.assign({}, defaultOptions, options || {});
         this.#payloads = [];
         this.#drainTimer = null;
+        this.#network = null;
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork && staticNetwork !== network) {
-            throwArgumentError("staticNetwork MUST match network object", "options", options);
+        if (staticNetwork) {
+            if (staticNetwork !== network) {
+                throwArgumentError("staticNetwork MUST match network object", "options", options);
+            }
+            this.#network = staticNetwork;
         }
     }
     /**
@@ -13785,8 +13826,40 @@ class JsonRpcApiProvider extends AbstractProvider {
     _getOption(key) {
         return this.#options[key];
     }
+    get _network() {
+        if (!this.#network) {
+            throwError("network is not available yet", "NETWORK_ERROR");
+        }
+        return this.#network;
+    }
+    get ready() { return this.#ready; }
+    async _start() {
+        if (this.#ready) {
+            return;
+        }
+        if (this.#starting) {
+            return this.#starting;
+        }
+        this.#starting = (async () => {
+            // Bootstrap the network
+            if (this.#network == null) {
+                try {
+                    this.#network = await this._detectNetwork();
+                }
+                catch (error) {
+                    console.log("JsonRpcProvider failed to startup; retry in 1s");
+                    await stall$2(1000);
+                    this.#starting = null;
+                }
+            }
+            this.#ready = true;
+            this.#starting = null;
+            // Start dispatching requests
+            this.#scheduleDrain();
+        })();
+    }
     #scheduleDrain() {
-        if (this.#drainTimer) {
+        if (this.#drainTimer || !this.ready) {
             return;
         }
         // If we aren't using batching, no hard in sending it immeidately
@@ -13843,7 +13916,6 @@ class JsonRpcApiProvider extends AbstractProvider {
             }
         }, stallTime);
     }
-    // Sub-classes should **NOT** override this
     /**
      *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
      *  over the underlying channel. This can be used to call methods
@@ -13902,25 +13974,44 @@ class JsonRpcApiProvider extends AbstractProvider {
             }
             return new JsonRpcSigner(this, accounts[address]);
         }
-        const [network, accounts] = await Promise.all([this.getNetwork(), accountsPromise]);
+        const { accounts } = await resolveProperties({
+            network: this.getNetwork(),
+            accounts: accountsPromise
+        });
         // Account address
-        address = network.formatter.address(address);
+        address = getAddress(address);
         for (const account of accounts) {
-            if (network.formatter.address(account) === account) {
+            if (getAddress(account) === account) {
                 return new JsonRpcSigner(this, account);
             }
         }
         throw new Error("invalid account");
     }
-    // Sub-classes can override this; it detects the *actual* network we
-    // are connected to
+    /** Sub-classes can override this; it detects the *actual* network that
+     *  we are **currently** connected to.
+     *
+     *  Keep in mind that [[send]] may only be used once [[ready]].
+     */
     async _detectNetwork() {
-        // We have a static network (like INFURA)
         const network = this._getOption("staticNetwork");
         if (network) {
             return network;
         }
-        return Network.from(getBigInt(await this._perform({ method: "chainId" })));
+        // If we are ready, use ``send``, which enabled requests to be batched
+        if (this.ready) {
+            return Network.from(getBigInt(await this.send("eth_chainId", [])));
+        }
+        // We are not ready yet; use the primitive _send
+        const payload = {
+            id: this.#nextId++, method: "eth_chainId", params: [], jsonrpc: "2.0"
+        };
+        this.emit("debug", { action: "sendRpcPayload", payload });
+        const result = (await this._send(payload))[0];
+        this.emit("debug", { action: "receiveRpcResult", result });
+        if ("result" in result) {
+            return Network.from(getBigInt(result.result));
+        }
+        throw this.getRpcError(payload, result);
     }
     /**
      *  Return a Subscriber that will manage the %%sub%%.
@@ -14172,6 +14263,13 @@ class JsonRpcProvider extends JsonRpcApiProvider {
         }
         this.#pollingInterval = 4000;
     }
+    async send(method, params) {
+        // All requests are over HTTP, so we can just start handling requests
+        // We do this here rather than the constructor so that we don't send any
+        // requests to the network until we absolutely have to.
+        await this._start();
+        return await super.send(method, params);
+    }
     async _send(payload) {
         // Configure a POST connection for the requested method
         const request = this.#connect.clone();
@@ -14253,27 +14351,6 @@ function spelunkMessage(value) {
     const result = [];
     _spelunkMessage(value, result);
     return result;
-}
-
-// Show the throttle message only once
-const shown = new Set();
-function showThrottleMessage(service) {
-    if (shown.has(service)) {
-        return;
-    }
-    shown.add(service);
-    console.log("========= NOTICE =========");
-    console.log(`Request-Rate Exceeded for ${service} (this message will not be repeated)`);
-    console.log("");
-    console.log("The default API keys for each service are provided as a highly-throttled,");
-    console.log("community resource for low-traffic projects and early prototyping.");
-    console.log("");
-    console.log("While your application will continue to function, we highly recommended");
-    console.log("signing up for your own API keys to improve performance, increase your");
-    console.log("request rate/limit and enable other perks, such as metrics and advanced APIs.");
-    console.log("");
-    console.log("For more details: https:/\/docs.ethers.io/api-keys/");
-    console.log("==========================");
 }
 
 const defaultApiKey$1 = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
@@ -14431,6 +14508,26 @@ class CloudflareProvider extends JsonRpcProvider {
             return throwArgumentError("unsupported network", "network", _network);
         }
         super("https:/\/cloudflare-eth.com/", network, { staticNetwork: network });
+    }
+}
+
+function isPromise(value) {
+    return (value && typeof (value.then) === "function");
+}
+class EtherscanProvider extends BaseEtherscanProvider {
+    async getContract(_address) {
+        let address = this._getAddress(_address);
+        if (isPromise(address)) {
+            address = await address;
+        }
+        try {
+            const resp = await this.fetch("contract", { action: "getabi", address });
+            const abi = JSON.parse(resp);
+            return new Contract(address, abi, this);
+        }
+        catch (error) {
+            return null;
+        }
     }
 }
 
@@ -14605,20 +14702,16 @@ class SocketPendingSubscriber extends SocketSubscriber {
 class SocketEventSubscriber extends SocketSubscriber {
     #logFilter;
     get logFilter() { return JSON.parse(this.#logFilter); }
-    #formatter;
     constructor(provider, filter) {
         super(provider, ["logs", filter]);
         this.#logFilter = JSON.stringify(filter);
-        this.#formatter = provider.getNetwork().then((network) => network.formatter);
     }
     async _emit(provider, message) {
-        const formatter = await this.#formatter;
-        provider.emit(this.#logFilter, formatter.log(message, provider));
+        provider.emit(this.#logFilter, provider._wrapLog(message, provider._network));
     }
 }
 class SocketProvider extends JsonRpcApiProvider {
     #callbacks;
-    #ready;
     // Maps each filterId to its subscriber
     #subs;
     // If any events come in before a subscriber has finished
@@ -14627,10 +14720,18 @@ class SocketProvider extends JsonRpcApiProvider {
     constructor(network) {
         super(network, { batchMaxCount: 1 });
         this.#callbacks = new Map();
-        this.#ready = false;
         this.#subs = new Map();
         this.#pending = new Map();
     }
+    // This value is only valid after _start has been called
+    /*
+    get _network(): Network {
+        if (this.#network == null) {
+            throw new Error("this shouldn't happen");
+        }
+        return this.#network.clone();
+    }
+    */
     _getSubscriber(sub) {
         switch (sub.type) {
             case "close":
@@ -14667,21 +14768,23 @@ class SocketProvider extends JsonRpcApiProvider {
         const promise = new Promise((resolve, reject) => {
             this.#callbacks.set(payload.id, { payload, resolve, reject });
         });
-        if (this.#ready) {
-            await this._write(JSON.stringify(payload));
-        }
+        await this._write(JSON.stringify(payload));
         return [await promise];
     }
     // Sub-classes must call this once they are connected
-    async _start() {
-        if (this.#ready) {
-            return;
-        }
-        this.#ready = true;
+    /*
+    async _start(): Promise<void> {
+        if (this.#ready) { return; }
+
         for (const { payload } of this.#callbacks.values()) {
             await this._write(JSON.stringify(payload));
         }
+
+        this.#ready = (async function() {
+            await super._start();
+        })();
     }
+    */
     // Sub-classes must call this for each message
     async _processMessage(message) {
         const result = (JSON.parse(message));
@@ -14752,8 +14855,14 @@ class WebSocketProvider extends SocketProvider {
         else {
             this.#websocket = url;
         }
-        this.websocket.onopen = () => {
-            this._start();
+        this.websocket.onopen = async () => {
+            try {
+                await this._start();
+            }
+            catch (error) {
+                console.log("failed to start WebsocketProvider", error);
+                // @TODO: now what? Attempt reconnect?
+            }
         };
         this.websocket.onmessage = (message) => {
             this._processMessage(message.data);
@@ -14910,7 +15019,7 @@ function getProvider(value) {
 }
 async function copyOverrides(arg) {
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
-    const overrides = copyRequest$1(Typed.dereference(arg, "overrides"));
+    const overrides = copyRequest(Typed.dereference(arg, "overrides"));
     // Some sanity checking; these are what these methods adds
     //if ((<any>overrides).to) {
     if (overrides.to) {
@@ -14999,6 +15108,8 @@ class WrappedMethod extends _WrappedMethodBase() {
         }
         const tx = await runner.sendTransaction(await this.populateTransaction(...args));
         const provider = getProvider(this._contract.runner);
+        // @TODO: the provider can be null; make a custom dummy provider that will throw a
+        // meaningful error
         return new ContractTransactionResponse(this._contract.interface, provider, tx);
     }
     async estimateGas(...args) {
@@ -15216,6 +15327,8 @@ class BaseContract {
         let deployTx = null;
         if (_deployTx) {
             const provider = getProvider(runner);
+            // @TODO: the provider can be null; make a custom dummy provider that will throw a
+            // meaningful error
             deployTx = new ContractTransactionResponse(this.interface, provider, _deployTx);
         }
         let subs = new Map();

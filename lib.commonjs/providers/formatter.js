@@ -1,8 +1,6 @@
 "use strict";
 // Belongs to Networks; requires abstract-provider
 // provider requires abstract-provider and network
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Formatter = void 0;
 /**
  *  Formatter
  *
@@ -16,26 +14,56 @@ exports.Formatter = void 0;
  *  Network object this allows exotic (non-Ethereum) networks
  *  to be fairly simple to adapt to ethers.
  */
-const index_js_1 = require("../address/index.js");
-const index_js_2 = require("../utils/index.js");
-const signature_js_1 = require("../crypto/signature.js");
-const index_js_3 = require("../transaction/index.js");
-const provider_js_1 = require("./provider.js");
+/*
+import { getAddress, getCreateAddress } from "../address/index.js";
+import {
+    dataLength, dataSlice, getBigInt, getNumber, isHexString, toQuantity,
+    throwArgumentError, throwError
+} from "../utils/index.js";
+import { Signature } from "../crypto/signature.js";
+import { accessListify } from "../transaction/index.js";
+
+import { Block, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
+
+import type { AccessList } from "../transaction/index.js";
+
+import type { PerformActionTransaction } from "./abstract-provider.js";
+import type { Filter, Provider } from "./provider.js";
+
+
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
+export type FormatFunc = (value: any) => any;
+
 //export type AccessListSet = { address: string, storageKeys: Array<string> };
 //export type AccessList = Array<AccessListSet>;
+
 //export type AccessListish = AccessList |
 //                            Array<[ string, Array<string> ]> |
 //                            Record<string, Array<string>>;
-function stringify(value) {
-    if (typeof (value) !== "string") {
-        throw new Error("invalid string");
-    }
+
+function stringify(value: any): string {
+    if (typeof(value) !== "string") { throw new Error("invalid string"); }
     return value;
 }
-class Formatter {
-    #format;
-    #baseBlock;
+
+export class Formatter {
+    #format: {
+        address: FormatFunc,
+        bigNumber: FormatFunc,
+        blockTag: FormatFunc,
+        data: FormatFunc,
+        filter: FormatFunc,
+        hash: FormatFunc,
+        number: FormatFunc,
+        topics: FormatFunc,
+        transactionRequest: FormatFunc,
+        transactionResponse: FormatFunc,
+        uint256: FormatFunc,
+    };
+
+    #baseBlock: FormatFunc;
+
     constructor() {
         const address = this.address.bind(this);
         const bigNumber = this.bigNumber.bind(this);
@@ -44,7 +72,9 @@ class Formatter {
         const hash = this.hash.bind(this);
         const number = this.number.bind(this);
         const uint256 = this.uint256.bind(this);
+
         const topics = this.arrayOf(hash);
+
         this.#format = {
             address,
             bigNumber,
@@ -53,7 +83,9 @@ class Formatter {
             hash,
             number,
             uint256,
+
             topics,
+
             filter: this.object({
                 fromBlock: this.allowNull(blockTag, undefined),
                 toBlock: this.allowNull(blockTag, undefined),
@@ -61,6 +93,7 @@ class Formatter {
                 address: this.allowNull(address, undefined),
                 topics: this.allowNull(topics, undefined)
             }),
+
             transactionRequest: this.object({
                 from: this.allowNull(address),
                 type: this.allowNull(number),
@@ -73,21 +106,29 @@ class Formatter {
                 data: this.allowNull(data),
                 value: this.allowNull(uint256),
             }),
+
             transactionResponse: this.object({
                 hash: hash,
                 index: number,
+
                 type: this.allowNull(number, 0),
+
                 // These can be null for pending blocks
                 blockHash: this.allowNull(hash),
                 blockNumber: this.allowNull(number),
+
                 // For Legacy transactions, this comes from the v
                 chainId: this.allowNull(number),
+
                 from: address,
                 to: this.address,
+
                 gasLimit: bigNumber,
+
                 gasPrice: this.allowNull(bigNumber),
                 maxFeePerGas: this.allowNull(bigNumber),
                 maxPriorityFeePerGas: this.allowNull(bigNumber),
+
                 value: bigNumber,
                 data: data,
                 nonce: number,
@@ -96,92 +137,102 @@ class Formatter {
                 v: number,
                 accessList: this.allowNull(this.accessList)
             }, {
-                index: ["transactionIndex"]
+                index: [ "transactionIndex" ]
             }),
         };
+
         this.#baseBlock = this.object({
             number: number,
             hash: this.allowNull(hash, null),
             timestamp: number,
+
             parentHash: hash,
+
             nonce: this.allowNull(stringify, "0x0000000000000000"),
             difficulty: bigNumber,
+
             gasLimit: bigNumber,
             gasUsed: bigNumber,
             miner: this.allowNull(address, "0x0000000000000000000000000000000000000000"),
             extraData: stringify,
+
             baseFeePerGas: this.allowNull(bigNumber),
         });
+
     }
+
     // An address
-    address(value) {
-        return (0, index_js_1.getAddress)(value);
+    address(value: any): string {
+        return getAddress(value);
     }
+
     // An address from a call result; may be zero-padded
-    callAddress(value) {
-        if ((0, index_js_2.dataLength)(value) !== 32 || (0, index_js_2.dataSlice)(value, 0, 12) !== "0x000000000000000000000000") {
-            (0, index_js_2.throwArgumentError)("invalid call address", "value", value);
+    callAddress(value: any): string {
+        if (dataLength(value) !== 32 || dataSlice(value, 0, 12) !== "0x000000000000000000000000") {
+            throwArgumentError("invalid call address", "value", value);
         }
-        return this.address((0, index_js_2.dataSlice)(value, 12));
+        return this.address(dataSlice(value, 12));
     }
+
     // An address from a transaction (e.g. { from: string, nonce: number })
-    contractAddress(value) {
-        return (0, index_js_1.getCreateAddress)({
+    contractAddress(value: any): string {
+        return getCreateAddress({
             from: this.address(value.from),
-            nonce: (0, index_js_2.getNumber)(value.nonce, "value.nonce")
+            nonce: getNumber(value.nonce, "value.nonce")
         });
     }
+
     // Block Tag
-    blockTag(value) {
-        if (value == null) {
-            return "latest";
-        }
+    blockTag(value?: any): string {
+        if (value == null) { return "latest"; }
+
         switch (value) {
             case "earliest":
                 return "0x0";
-            case "latest":
-            case "pending":
-            case "safe":
-            case "finalized":
+            case "latest": case "pending": case "safe": case "finalized":
                 return value;
         }
-        if (typeof (value) === "number" || ((0, index_js_2.isHexString)(value) && (0, index_js_2.dataLength)(value) < 32)) {
-            return (0, index_js_2.toQuantity)(value);
+
+        if (typeof(value) === "number" || (isHexString(value) && dataLength(value) < 32)) {
+            return toQuantity(value);
         }
-        return (0, index_js_2.throwArgumentError)("invalid blockTag", "value", value);
+
+        return throwArgumentError("invalid blockTag", "value", value);
     }
+
     // Block objects
-    block(value, provider) {
+    block(value: any, provider?: Provider): Block<string> {
         const params = this.#baseBlock(value);
-        params.transactions = value.transactions.map((t) => this.hash(t));
-        return new provider_js_1.Block(params, provider);
+        params.transactions = value.transactions.map((t: any) => this.hash(t));
+        return new Block(params, provider);
     }
-    blockWithTransactions(value, provider) {
+    blockWithTransactions(value: any, provider?: Provider): Block<TransactionResponse> {
         throw new Error();
     }
+
     // Transactions
-    transactionRequest(value, provider) {
+    transactionRequest(value: any, provider?: Provider): PerformActionTransaction {
         return this.#format.transactionRequest(value);
     }
-    transactionResponse(value, provider) {
-        value = Object.assign({}, value);
+
+    transactionResponse(value: any, provider?: Provider): TransactionResponse {
+        value = Object.assign({ }, value);
+
         // @TODO: Use the remap feature
-        if (value.data == null && value.input != null) {
-            value.data = value.input;
-        }
-        if (value.gasLimit == null && value.gas) {
-            value.gasLimit = value.gas;
-        }
+        if (value.data == null && value.input != null) { value.data = value.input; }
+        if (value.gasLimit == null && value.gas) { value.gasLimit = value.gas; }
+
         value = this.#format.transactionResponse(value);
-        const sig = signature_js_1.Signature.from({ r: value.r, s: value.s, v: value.v });
+
+        const sig = Signature.from({ r: value.r, s: value.s, v: value.v });
         value.signature = sig;
-        if (value.chainId == null) {
-            value.chainId = sig.legacyChainId;
-        }
-        return new provider_js_1.TransactionResponse(value, provider);
+        if (value.chainId == null) { value.chainId = sig.legacyChainId; }
+
+        return new TransactionResponse(value, provider);
     }
+
     // Receipts
-    log(value, provider) {
+    log(value: any, provider?: Provider): Log {
         const log = this.object({
             address: this.address,
             blockHash: this.hash,
@@ -193,11 +244,12 @@ class Formatter {
             transactionHash: this.hash,
             transactionIndex: this.number,
         }, {
-            index: ["logIndex"]
+            index: [ "logIndex" ]
         })(value);
-        return new provider_js_1.Log(log, provider);
+        return new Log(log, provider);
     }
-    receipt(value, provider) {
+
+    receipt(value: any, provider?: Provider): TransactionReceipt {
         const receipt = this.object({
             blockHash: this.hash,
             blockNumber: this.number,
@@ -205,7 +257,7 @@ class Formatter {
             cumulativeGasUsed: this.bigNumber,
             from: this.address,
             gasUsed: this.bigNumber,
-            logs: this.arrayOf((v) => (this.log(v, provider))),
+            logs: this.arrayOf((v: any) => (this.log(v, provider))),
             logsBloom: this.data,
             root: this.allowNull(this.data),
             status: this.allowNull(this.number),
@@ -215,10 +267,11 @@ class Formatter {
             index: this.number,
             type: this.allowNull(this.number, 0),
         }, {
-            hash: ["transactionHash"],
-            gasPrice: ["effectiveGasPrice"],
-            index: ["transactionIndex"]
+            hash: [ "transactionHash" ],
+            gasPrice: [ "effectiveGasPrice" ],
+            index: [ "transactionIndex" ]
         })(value);
+
         // RSK incorrectly implemented EIP-658, so we munge things a bit here for it
         if (receipt.root != null) {
             if (receipt.root.length <= 4) {
@@ -227,137 +280,144 @@ class Formatter {
                 if (value === 0 || value === 1) {
                     // Make sure if both are specified, they match
                     if (receipt.status != null && receipt.status !== value) {
-                        return (0, index_js_2.throwError)("alt-root-status/status mismatch", "BAD_DATA", {
+                        return throwError("alt-root-status/status mismatch", "BAD_DATA", {
                             value: { root: receipt.root, status: receipt.status }
                         });
                     }
                     receipt.status = value;
                     delete receipt.root;
-                }
-                else {
-                    return (0, index_js_2.throwError)("invalid alt-root-status", "BAD_DATA", {
+                } else {
+                    return throwError("invalid alt-root-status", "BAD_DATA", {
                         value: receipt.root
                     });
                 }
-            }
-            else if (!(0, index_js_2.isHexString)(receipt.root, 32)) {
+            } else if (!isHexString(receipt.root, 32)) {
                 // Must be a valid bytes32
-                return (0, index_js_2.throwError)("invalid receipt root hash", "BAD_DATA", {
+                return throwError("invalid receipt root hash", "BAD_DATA", {
                     value: receipt.root
                 });
             }
         }
+
         //receipt.byzantium = (receipt.root == null);
-        return new provider_js_1.TransactionReceipt(receipt, provider);
+
+        return new TransactionReceipt(receipt, provider);
     }
+
     // Fitlers
-    topics(value) {
+    topics(value: any): Array<string> {
         return this.#format.topics(value);
     }
-    filter(value) {
+
+    filter(value: any): Filter {
         return this.#format.filter(value);
     }
-    filterLog(value) {
+
+    filterLog(value: any): any {
         console.log("ME", value);
         return null;
     }
+
     // Converts a serialized transaction to a TransactionResponse
-    transaction(value) {
+    transaction(value: any): TransactionResponse {
         throw new Error();
     }
+
     // Useful utility formatters functions, which if need be use the
     // methods within the formatter to ensure internal compatibility
+
     // Access List; converts an AccessListish to an AccessList
-    accessList(value) {
-        return (0, index_js_3.accessListify)(value);
+    accessList(value: any): AccessList {
+        return accessListify(value);
     }
+
     // Converts falsish values to a specific value, otherwise use the formatter. Calls preserve `this`.
-    allowFalsish(format, ifFalse) {
-        return ((value) => {
-            if (!value) {
-                return ifFalse;
-            }
+    allowFalsish(format: FormatFunc, ifFalse: any): FormatFunc {
+        return ((value: any) => {
+            if (!value) { return ifFalse; }
             return format.call(this, value);
         });
     }
+
     // Allows null, optionally replacing it with a default value. Calls preserve `this`.
-    allowNull(format, ifNull) {
-        return ((value) => {
-            if (value == null) {
-                return ifNull;
-            }
+    allowNull(format: FormatFunc, ifNull?: any): FormatFunc {
+        return ((value: any) => {
+            if (value == null) { return ifNull; }
             return format.call(this, value);
         });
     }
+
     // Requires an Array satisfying the formatter. Calls preserves `this`.
-    arrayOf(format) {
-        return ((array) => {
-            if (!Array.isArray(array)) {
-                throw new Error("not an array");
-            }
+    arrayOf(format: FormatFunc): FormatFunc {
+        return ((array: any) => {
+            if (!Array.isArray(array)) { throw new Error("not an array"); }
             return array.map((i) => format.call(this, i));
         });
     }
+
     // Requires a value which is a value BigNumber
-    bigNumber(value) {
-        return (0, index_js_2.getBigInt)(value, "value");
+    bigNumber(value: any): bigint {
+        return getBigInt(value, "value");
     }
-    uint256(value) {
+
+    uint256(value: any): bigint {
         const result = this.bigNumber(value);
         if (result < 0 || result > BN_MAX_UINT256) {
-            (0, index_js_2.throwArgumentError)("invalid uint256", "value", value);
+            throwArgumentError("invalid uint256", "value", value);
         }
         return result;
     }
+
     // Requires a value which is a value boolean or string equivalent
-    boolean(value) {
+    boolean(value: any): boolean {
         switch (value) {
-            case true:
-            case "true":
+            case true: case "true":
                 return true;
-            case false:
-            case "false":
+            case false: case "false":
                 return false;
         }
-        return (0, index_js_2.throwArgumentError)(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
+        return throwArgumentError(`invalid boolean; ${ JSON.stringify(value) }`, "value", value);
     }
+
     // Requires a value which is a valid hexstring. If dataOrLength is true,
     // the length must be even (i.e. a datahexstring) or if it is a number,
     // specifies teh number of bytes value must represent
-    _hexstring(dataOrLength) {
-        if (dataOrLength == null) {
-            dataOrLength = false;
-        }
-        return (function (value) {
-            if ((0, index_js_2.isHexString)(value, dataOrLength)) {
+    _hexstring(dataOrLength?: boolean | number): FormatFunc {
+        if (dataOrLength == null) { dataOrLength = false; }
+        return (function(value: any) {
+            if (isHexString(value, dataOrLength)) {
                 return value.toLowerCase();
             }
             throw new Error("bad hexstring");
         });
     }
-    data(value) {
-        if ((0, index_js_2.dataLength)(value) == null) {
-            (0, index_js_2.throwArgumentError)("", "value", value);
+
+    data(value: string): string {
+        if (dataLength(value) == null) {
+            throwArgumentError("", "value", value);
         }
         return value;
     }
+
     // Requires a network-native hash
-    hash(value) {
-        if ((0, index_js_2.dataLength)(value) !== 32) {
-            (0, index_js_2.throwArgumentError)("", "value", value);
+    hash(value: any): string {
+        if (dataLength(value) !== 32) {
+            throwArgumentError("", "value", value);
         }
         return this.#format.data(value);
     }
+
     // Requires a valid number, within the IEEE 754 safe range
-    number(value) {
-        return (0, index_js_2.getNumber)(value);
+    number(value: any): number {
+        return getNumber(value);
     }
+
     // Requires an object which matches a fleet of other formatters
     // Any FormatFunc may return `undefined` to have the value omitted
     // from the result object. Calls preserve `this`.
-    object(format, altNames) {
-        return ((value) => {
-            const result = {};
+    object(format: Record<string, FormatFunc>, altNames?: Record<string, Array<string>>): FormatFunc {
+        return ((value: any) => {
+            const result: any = { };
             for (const key in format) {
                 let srcKey = key;
                 if (altNames && key in altNames && !(srcKey in value)) {
@@ -368,20 +428,18 @@ class Formatter {
                         }
                     }
                 }
+
                 try {
                     const nv = format[key].call(this, value[srcKey]);
-                    if (nv !== undefined) {
-                        result[key] = nv;
-                    }
-                }
-                catch (error) {
-                    const message = (error instanceof Error) ? error.message : "not-an-error";
-                    (0, index_js_2.throwError)(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+                    if (nv !== undefined) { result[key] = nv; }
+                } catch (error) {
+                    const message = (error instanceof Error) ? error.message: "not-an-error";
+                    throwError(`invalid value for value.${ key } (${ message })`, "BAD_DATA", { value })
                 }
             }
             return result;
         });
     }
 }
-exports.Formatter = Formatter;
+*/
 //# sourceMappingURL=formatter.js.map

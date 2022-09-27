@@ -1,25 +1,5 @@
 {
   "author": "Richard Moore <me@ricmoo.com>",
-  "dependencies": {
-    "@noble/hashes": "1.1.2",
-    "@noble/secp256k1": "1.6.3",
-    "aes-js": "4.0.0-beta.2",
-    "tslib": "2.4.0",
-    "ws": "8.5.0"
-  },
-  "description": "Ethereum library.",
-  "devDependencies": {
-    "@rollup/plugin-node-resolve": "13.3.0",
-    "@types/mocha": "9.1.1",
-    "c8": "7.12.0",
-    "mocha": "10.0.0",
-    "rollup": "2.78.1",
-    "typescript": "4.7.4",
-    "uglify-js": "3.17.0"
-  },
-  "engines": {
-    "node": ">=14.0.0"
-  },
   "browser": {
     "./lib.esm/crypto/crypto.js": "./lib.esm/crypto/crypto-browser.js",
     "./lib.esm/providers/provider-ipcsocket.js": "./lib.esm/providers/provider-ipcsocket-browser.js",
@@ -27,6 +7,28 @@
     "./lib.esm/utils/base64.js": "./lib.esm/utils/base64-browser.js",
     "./lib.esm/utils/geturl.js": "./lib.esm/utils/geturl-browser.js",
     "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js"
+  },
+  "dependencies": {
+    "@noble/hashes": "1.1.2",
+    "@noble/secp256k1": "1.6.3",
+    "aes-js": "4.0.0-beta.3",
+    "tslib": "2.4.0",
+    "ws": "8.5.0"
+  },
+  "description": "Ethereum library.",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "13.3.0",
+    "@types/mocha": "9.1.1",
+    "@types/semver": "7.3.12",
+    "c8": "7.12.0",
+    "mocha": "10.0.0",
+    "rollup": "2.78.1",
+    "semver": "7.3.7",
+    "typescript": "4.7.4",
+    "uglify-js": "3.17.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "exports": {
     ".": {
@@ -102,6 +104,7 @@
       "types": "./types/wordlistsindex.d.ts"
     }
   },
+  "gitHead": "4d435cd56e6dfeff4914e27fff0e9688d41c88b1",
   "keywords": [
     "ethereum",
     "ethers",
@@ -120,24 +123,27 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "scripts": {
-    "clean": "rm -rf dist lib.esm lib.commonjs types",
-    "build": "tsc --project tsconfig.esm.json",
-    "build-commonjs": "tsc --project tsconfig.commonjs.json && cp ./package-commonjs.json ./lib.commonjs/package.json",
-    "build-types": "tsc --project tsconfig.types.json",
-    "build-docs": "echo 'foo'",
-    "auto-build": "npm run build -- -w",
-    "build-all": "npm run build && npm run build-commonjs && npm run build-types",
-    "build-clean": "npm run clean && node lib.esm/_admin/update-version-const && npm run build-all && npm run _build-dist",
-    "_dist-stats": "gzip -k9f -S '.gz' ./dist/ethers.min.js && gzip -k9f -S '.gz' ./dist/wordlists-extra.min.js && du -hs ./dist/*.gz && echo '' && du -hs ./dist/*.js",
+    "_build-clean": "npm run clean && node lib.esm/_admin/update-version-const && npm run build-all && npm run _build-dist",
     "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js",
+    "_dist-stats": "gzip -k9f -S '.gz' ./dist/ethers.min.js && gzip -k9f -S '.gz' ./dist/wordlists-extra.min.js && du -hs ./dist/*.gz && echo '' && du -hs ./dist/*.js",
+    "auto-build": "npm run build -- -w",
+    "build": "tsc --project tsconfig.esm.json",
+    "build-all": "npm run build && npm run build-commonjs && npm run build-types",
+    "build-clean": "npm run clean && npm run build-all && npm run _build-dist",
+    "build-commonjs": "tsc --project tsconfig.commonjs.json && cp ./package-commonjs.json ./lib.commonjs/package.json",
     "build-dist": "npm run build && npm run _build-dist && npm run _dist-stats",
+    "build-docs": "echo 'foo'",
+    "build-types": "tsc --project tsconfig.types.json",
+    "clean": "rm -rf dist lib.esm lib.commonjs types",
     "stats": "echo 'Dependencies' && npm ls --all --omit=dev",
     "test": "mocha --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js",
     "test-commonjs": "mocha --reporter ./reporter.cjs ./lib.commonjs/_tests/test-*.js",
-    "test-coverage": "c8 -o output -r lcov -r text mocha --no-color --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js | tee output/summary.txt"
+    "test-coverage": "c8 -o output -r lcov -r text mocha --no-color --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js | tee output/summary.txt",
+    "update-version": "node lib.esm/_admin/update-publish-properties.js"
   },
   "sideEffects": false,
+  "tarballHash": "0x6d318afe16d51dd2db7d8f9079a6f542802f2b77edee675b7d46c2e02a054039",
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.0-beta-exports.1"
+  "version": "6.0.0-beta-exports.2"
 }

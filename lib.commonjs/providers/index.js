@@ -1,7 +1,7 @@
 "use strict";
 /////
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = exports.WebSocketProvider = exports.SocketProvider = exports.IpcSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.copyRequest = exports.dummyProvider = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = exports.Network = exports.Formatter = exports.WrappedSigner = exports.VoidSigner = exports.AbstractSigner = exports.UnmanagedSubscriber = exports.AbstractProvider = void 0;
+exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = exports.WebSocketProvider = exports.SocketProvider = exports.IpcSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.EtherscanPlugin = exports.BaseEtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.copyRequest = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = exports.Network = exports.WrappedSigner = exports.VoidSigner = exports.AbstractSigner = exports.UnmanagedSubscriber = exports.AbstractProvider = void 0;
 var abstract_provider_js_1 = require("./abstract-provider.js");
 Object.defineProperty(exports, "AbstractProvider", { enumerable: true, get: function () { return abstract_provider_js_1.AbstractProvider; } });
 Object.defineProperty(exports, "UnmanagedSubscriber", { enumerable: true, get: function () { return abstract_provider_js_1.UnmanagedSubscriber; } });
@@ -18,8 +18,6 @@ export { getDefaultProvider } from "./default-provider.js";
 
 export { EnsResolver } from "./ens-resolver.js";
 */
-var formatter_js_1 = require("./formatter.js");
-Object.defineProperty(exports, "Formatter", { enumerable: true, get: function () { return formatter_js_1.Formatter; } });
 var common_networks_js_1 = require("./common-networks.js");
 Object.defineProperty(exports, "Network", { enumerable: true, get: function () { return common_networks_js_1.Network; } });
 var plugins_network_js_1 = require("./plugins-network.js");
@@ -32,7 +30,6 @@ Object.defineProperty(exports, "FeeData", { enumerable: true, get: function () {
 Object.defineProperty(exports, "Log", { enumerable: true, get: function () { return provider_js_1.Log; } });
 Object.defineProperty(exports, "TransactionReceipt", { enumerable: true, get: function () { return provider_js_1.TransactionReceipt; } });
 Object.defineProperty(exports, "TransactionResponse", { enumerable: true, get: function () { return provider_js_1.TransactionResponse; } });
-Object.defineProperty(exports, "dummyProvider", { enumerable: true, get: function () { return provider_js_1.dummyProvider; } });
 Object.defineProperty(exports, "copyRequest", { enumerable: true, get: function () { return provider_js_1.copyRequest; } });
 var provider_fallback_js_1 = require("./provider-fallback.js");
 Object.defineProperty(exports, "FallbackProvider", { enumerable: true, get: function () { return provider_fallback_js_1.FallbackProvider; } });
@@ -46,6 +43,9 @@ var provider_ankr_js_1 = require("./provider-ankr.js");
 Object.defineProperty(exports, "AnkrProvider", { enumerable: true, get: function () { return provider_ankr_js_1.AnkrProvider; } });
 var provider_cloudflare_js_1 = require("./provider-cloudflare.js");
 Object.defineProperty(exports, "CloudflareProvider", { enumerable: true, get: function () { return provider_cloudflare_js_1.CloudflareProvider; } });
+var provider_etherscan_base_js_1 = require("./provider-etherscan-base.js");
+Object.defineProperty(exports, "BaseEtherscanProvider", { enumerable: true, get: function () { return provider_etherscan_base_js_1.BaseEtherscanProvider; } });
+Object.defineProperty(exports, "EtherscanPlugin", { enumerable: true, get: function () { return provider_etherscan_base_js_1.EtherscanPlugin; } });
 var provider_etherscan_js_1 = require("./provider-etherscan.js");
 Object.defineProperty(exports, "EtherscanProvider", { enumerable: true, get: function () { return provider_etherscan_js_1.EtherscanProvider; } });
 var provider_infura_js_1 = require("./provider-infura.js");

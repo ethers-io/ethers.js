@@ -3,7 +3,7 @@
  *  networks injected registered.
  */
 import { EnsPlugin, GasCostPlugin } from "./plugins-network.js";
-import { EtherscanPlugin } from "./provider-etherscan.js";
+import { EtherscanPlugin } from "./provider-etherscan-base.js";
 import { Network } from "./network.js";
 // See: https://chainlist.org
 export function injectCommonNetworks() {

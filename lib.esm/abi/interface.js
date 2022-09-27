@@ -117,8 +117,15 @@ export class Interface {
         this.#errors = new Map();
         this.#events = new Map();
         //        this.#structs = new Map();
+        const frags = [];
+        for (const a of abi) {
+            try {
+                frags.push(Fragment.from(a));
+            }
+            catch (error) { }
+        }
         defineProperties(this, {
-            fragments: Object.freeze(abi.map((f) => Fragment.from(f)).filter((f) => (f != null))),
+            fragments: Object.freeze(frags)
         });
         this.#abiCoder = this.getAbiCoder();
         // Add all fragments by their signature

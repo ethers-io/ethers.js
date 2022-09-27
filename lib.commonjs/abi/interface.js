@@ -125,8 +125,15 @@ class Interface {
         this.#errors = new Map();
         this.#events = new Map();
         //        this.#structs = new Map();
+        const frags = [];
+        for (const a of abi) {
+            try {
+                frags.push(fragments_js_1.Fragment.from(a));
+            }
+            catch (error) { }
+        }
         (0, index_js_3.defineProperties)(this, {
-            fragments: Object.freeze(abi.map((f) => fragments_js_1.Fragment.from(f)).filter((f) => (f != null))),
+            fragments: Object.freeze(frags)
         });
         this.#abiCoder = this.getAbiCoder();
         // Add all fragments by their signature

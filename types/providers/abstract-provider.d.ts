@@ -3,10 +3,9 @@ import { Network } from "./network.js";
 import { Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
 import type { AddressLike } from "../address/index.js";
 import type { BigNumberish } from "../utils/index.js";
-import type { Frozen, Listener } from "../utils/index.js";
-import type { AccessList } from "../transaction/index.js";
+import type { Listener } from "../utils/index.js";
 import type { Networkish } from "./network.js";
-import type { BlockTag, CallRequest, EventFilter, Filter, FilterByBlockHash, OrphanFilter, Provider, ProviderEvent, TransactionRequest } from "./provider.js";
+import type { BlockParams, BlockTag, EventFilter, Filter, FilterByBlockHash, LogParams, OrphanFilter, PreparedTransactionRequest, Provider, ProviderEvent, TransactionReceiptParams, TransactionRequest, TransactionResponseParams } from "./provider.js";
 export declare type Subscription = {
     type: "block" | "close" | "debug" | "network" | "pending";
     tag: string;
@@ -52,20 +51,10 @@ export declare type PerformActionFilter = {
     topics?: Array<null | string | Array<string>>;
     blockHash?: string;
 };
-export declare type PerformActionTransaction = {
-    type?: number;
+export interface PerformActionTransaction extends PreparedTransactionRequest {
     to?: string;
     from?: string;
-    nonce?: number;
-    gasLimit?: bigint;
-    gasPrice?: bigint;
-    maxPriorityFeePerGas?: bigint;
-    maxFeePerGas?: bigint;
-    data?: string;
-    value?: bigint;
-    chainId?: bigint;
-    accessList?: AccessList;
-};
+}
 export declare type PerformActionRequest = {
     method: "call";
     transaction: PerformActionTransaction;
@@ -120,7 +109,6 @@ export declare type PerformActionRequest = {
     method: "broadcastTransaction";
     signedTransaction: string;
 };
-export declare function copyRequest<T extends PerformActionTransaction>(tx: T): T;
 export declare class AbstractProvider implements Provider {
     #private;
     constructor(_network?: "any" | Networkish);
@@ -131,17 +119,22 @@ export declare class AbstractProvider implements Provider {
     set disableCcipRead(value: boolean);
     get disableCcipRead(): boolean;
     ccipReadFetch(tx: PerformActionTransaction, calldata: string, urls: Array<string>): Promise<null | string>;
-    _wrapTransaction(tx: TransactionResponse, hash: string, blockNumber: number): TransactionResponse;
-    _detectNetwork(): Promise<Frozen<Network>>;
+    _wrapBlock(value: BlockParams<string>, network: Network): Block<string>;
+    _wrapBlockWithTransactions(value: BlockParams<TransactionResponseParams>, network: Network): Block<TransactionResponse>;
+    _wrapLog(value: LogParams, network: Network): Log;
+    _wrapTransactionReceipt(value: TransactionReceiptParams, network: Network): TransactionReceipt;
+    _wrapTransactionResponse(tx: TransactionResponseParams, network: Network): TransactionResponse;
+    _detectNetwork(): Promise<Network>;
     _perform<T = any>(req: PerformActionRequest): Promise<T>;
     getBlockNumber(): Promise<number>;
     _getAddress(address: AddressLike): string | Promise<string>;
     _getBlockTag(blockTag?: BlockTag): string | Promise<string>;
-    getNetwork(): Promise<Frozen<Network>>;
+    _getFilter(filter: Filter | FilterByBlockHash): PerformActionFilter | Promise<PerformActionFilter>;
+    _getTransactionRequest(_request: TransactionRequest): PerformActionTransaction | Promise<PerformActionTransaction>;
+    getNetwork(): Promise<Network>;
     getFeeData(): Promise<FeeData>;
-    _getTransaction(_request: CallRequest): Promise<PerformActionTransaction>;
     estimateGas(_tx: TransactionRequest): Promise<bigint>;
-    call(_tx: CallRequest): Promise<string>;
+    call(_tx: TransactionRequest): Promise<string>;
     getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint>;
     getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number>;
     getCode(address: AddressLike, blockTag?: BlockTag): Promise<string>;
@@ -152,7 +145,6 @@ export declare class AbstractProvider implements Provider {
     getTransaction(hash: string): Promise<null | TransactionResponse>;
     getTransactionReceipt(hash: string): Promise<null | TransactionReceipt>;
     getTransactionResult(hash: string): Promise<null | string>;
-    _getFilter(filter: Filter | FilterByBlockHash): PerformActionFilter | Promise<PerformActionFilter>;
     getLogs(_filter: Filter | FilterByBlockHash): Promise<Array<Log>>;
     _getProvider(chainId: number): AbstractProvider;
     getResolver(name: string): Promise<null | EnsResolver>;

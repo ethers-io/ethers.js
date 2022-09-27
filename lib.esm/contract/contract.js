@@ -165,6 +165,8 @@ class WrappedMethod extends _WrappedMethodBase() {
         }
         const tx = await runner.sendTransaction(await this.populateTransaction(...args));
         const provider = getProvider(this._contract.runner);
+        // @TODO: the provider can be null; make a custom dummy provider that will throw a
+        // meaningful error
         return new ContractTransactionResponse(this._contract.interface, provider, tx);
     }
     async estimateGas(...args) {
@@ -382,6 +384,8 @@ export class BaseContract {
         let deployTx = null;
         if (_deployTx) {
             const provider = getProvider(runner);
+            // @TODO: the provider can be null; make a custom dummy provider that will throw a
+            // meaningful error
             deployTx = new ContractTransactionResponse(this.interface, provider, _deployTx);
         }
         let subs = new Map();

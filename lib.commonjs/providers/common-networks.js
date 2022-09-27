@@ -6,7 +6,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Network = exports.injectCommonNetworks = void 0;
 const plugins_network_js_1 = require("./plugins-network.js");
-const provider_etherscan_js_1 = require("./provider-etherscan.js");
+const provider_etherscan_base_js_1 = require("./provider-etherscan-base.js");
 const network_js_1 = require("./network.js");
 Object.defineProperty(exports, "Network", { enumerable: true, get: function () { return network_js_1.Network; } });
 // See: https://chainlist.org
@@ -24,7 +24,7 @@ function injectCommonNetworks() {
             }
             if (options.etherscan) {
                 const { url, apiKey } = options.etherscan;
-                network.attachPlugin(new provider_etherscan_js_1.EtherscanPlugin(url, apiKey));
+                network.attachPlugin(new provider_etherscan_base_js_1.EtherscanPlugin(url, apiKey));
             }
             network.attachPlugin(new plugins_network_js_1.GasCostPlugin());
             return network;

@@ -88,10 +88,8 @@ class FilterIdEventSubscriber extends FilterIdSubscriber {
         return filterId;
     }
     async _emitResults(provider, results) {
-        const network = await provider.getNetwork();
         for (const result of results) {
-            const log = network.formatter.log(result, provider);
-            provider.emit(this.#event, log);
+            provider.emit(this.#event, provider._wrapLog(result, provider._network));
         }
     }
 }
@@ -101,9 +99,8 @@ class FilterIdPendingSubscriber extends FilterIdSubscriber {
         return await provider.send("eth_newPendingTransactionFilter", []);
     }
     async _emitResults(provider, results) {
-        const network = await provider.getNetwork();
         for (const result of results) {
-            provider.emit("pending", network.formatter.hash(result));
+            provider.emit("pending", result);
         }
     }
 }

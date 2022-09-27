@@ -1,5 +1,5 @@
 import type { EventFragment, FunctionFragment, Result, Typed } from "../abi/index.js";
-import type { CallRequest, PreparedRequest, TopicFilter } from "../providers/index.js";
+import type { TransactionRequest, PreparedTransactionRequest, TopicFilter } from "../providers/index.js";
 import type { ContractTransactionResponse } from "./wrappers.js";
 export declare type ContractEventName = string | ContractEvent | TopicFilter;
 export interface ContractInterface {
@@ -9,13 +9,13 @@ export interface DeferredTopicFilter {
     getTopicFilter(): Promise<TopicFilter>;
     fragment: EventFragment;
 }
-export interface ContractTransaction extends PreparedRequest {
+export interface ContractTransaction extends PreparedTransactionRequest {
     to: string;
     data: string;
 }
 export interface ContractDeployTransaction extends Omit<ContractTransaction, "to"> {
 }
-export interface Overrides extends Omit<CallRequest, "to" | "data"> {
+export interface Overrides extends Omit<TransactionRequest, "to" | "data"> {
 }
 export declare type PostfixOverrides<A extends Array<any>> = A | [...A, Overrides];
 export declare type ContractMethodArgs<A extends Array<any>> = PostfixOverrides<{

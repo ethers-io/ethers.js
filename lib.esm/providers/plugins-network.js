@@ -9,9 +9,6 @@ export class NetworkPlugin {
     clone() {
         return new NetworkPlugin(this.name);
     }
-    validate(network) {
-        return this;
-    }
 }
 export class GasCostPlugin extends NetworkPlugin {
     effectiveBlock;
@@ -63,10 +60,6 @@ export class EnsPlugin extends NetworkPlugin {
     clone() {
         return new EnsPlugin(this.address, this.targetNetwork);
     }
-    validate(network) {
-        network.formatter.address(this.address);
-        return this;
-    }
 }
 /*
 export class MaxPriorityFeePlugin extends NetworkPlugin {
@@ -100,6 +93,24 @@ export class FeeDataNetworkPlugin extends NetworkPlugin {
     }
     clone() {
         return new FeeDataNetworkPlugin(this.#feeDataFunc);
+    }
+}
+export class CustomBlockNetworkPlugin extends NetworkPlugin {
+    #blockFunc;
+    #blockWithTxsFunc;
+    constructor(blockFunc, blockWithTxsFunc) {
+        super("org.ethers.network-plugins.custom-block");
+        this.#blockFunc = blockFunc;
+        this.#blockWithTxsFunc = blockWithTxsFunc;
+    }
+    async getBlock(provider, block) {
+        return await this.#blockFunc(provider, block);
+    }
+    async getBlockWithTransactions(provider, block) {
+        return await this.#blockWithTxsFunc(provider, block);
+    }
+    clone() {
+        return new CustomBlockNetworkPlugin(this.#blockFunc, this.#blockWithTxsFunc);
     }
 }
 //# sourceMappingURL=plugins-network.js.map

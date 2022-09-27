@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FallbackProvider = void 0;
 const index_js_1 = require("../utils/index.js");
 const abstract_provider_js_1 = require("./abstract-provider.js");
+const format_js_1 = require("./format.js");
 const network_js_1 = require("./network.js");
 //const BN_0 = BigInt("0");
 const BN_1 = BigInt("1");
@@ -43,7 +44,7 @@ async function waitForSync(config, blockNumber) {
 }
 // Normalizes a result to a string that can be used to compare against
 // other results using normal string equality
-function normalize(network, value, req) {
+function normalize(provider, value, req) {
     switch (req.method) {
         case "chainId":
             return (0, index_js_1.getBigInt)(value).toString();
@@ -61,19 +62,19 @@ function normalize(network, value, req) {
             return (0, index_js_1.hexlify)(value);
         case "getBlock":
             if (req.includeTransactions) {
-                return JSON.stringify(network.formatter.blockWithTransactions(value));
+                return JSON.stringify((0, format_js_1.formatBlockWithTransactions)(value));
             }
-            return JSON.stringify(network.formatter.block(value));
+            return JSON.stringify((0, format_js_1.formatBlock)(value));
         case "getTransaction":
-            return JSON.stringify(network.formatter.transactionResponse(value));
+            return JSON.stringify((0, format_js_1.formatTransactionResponse)(value));
         case "getTransactionReceipt":
-            return JSON.stringify(network.formatter.receipt(value));
+            return JSON.stringify((0, format_js_1.formatTransactionReceipt)(value));
         case "call":
             return (0, index_js_1.hexlify)(value);
         case "estimateGas":
             return (0, index_js_1.getBigInt)(value).toString();
         case "getLogs":
-            return JSON.stringify(value.map((v) => network.formatter.log(v)));
+            return JSON.stringify(value.map((v) => (0, format_js_1.formatLog)(v)));
     }
     return (0, index_js_1.throwError)("unsupported method", "UNSUPPORTED_OPERATION", {
         operation: `_perform(${JSON.stringify(req.method)})`
@@ -177,7 +178,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
         return this.#configs.slice();
     }
     async _detectNetwork() {
-        return network_js_1.Network.from((0, index_js_1.getBigInt)(await this._perform({ method: "chainId" }))).freeze();
+        return network_js_1.Network.from((0, index_js_1.getBigInt)(await this._perform({ method: "chainId" })));
     }
     // @TODO: Add support to select providers to be the event subscriber
     //_getSubscriber(sub: Subscription): Subscriber {
@@ -272,7 +273,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
                 const result = runner.result.result;
                 results.push({
                     result,
-                    normal: normalize((runner.config._network), result, req),
+                    normal: normalize(runner.config.provider, result, req),
                     weight: runner.config.weight
                 });
             }

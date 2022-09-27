@@ -126,6 +126,10 @@ export declare class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
  *  sub-classed.
  *
  *  It provides the base for all JSON-RPC-based Provider interaction.
+ *
+ *  Sub-classing Notes:
+ *  - a sub-class MUST override _send
+ *  - a sub-class MUST call the `_start()` method once connected
  */
 export declare class JsonRpcApiProvider extends AbstractProvider {
     #private;
@@ -136,6 +140,9 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      *  Sub-classes can use this to inquire about configuration options.
      */
     _getOption<K extends keyof JsonRpcApiProviderOptions>(key: K): JsonRpcApiProviderOptions[K];
+    get _network(): Network;
+    get ready(): boolean;
+    _start(): Promise<void>;
     /**
      *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
      *  over the underlying channel. This can be used to call methods
@@ -169,6 +176,11 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      *  Throws if the account doesn't exist.
      */
     getSigner(address?: number | string): Promise<JsonRpcSigner>;
+    /** Sub-classes can override this; it detects the *actual* network that
+     *  we are **currently** connected to.
+     *
+     *  Keep in mind that [[send]] may only be used once [[ready]].
+     */
     _detectNetwork(): Promise<Network>;
     /**
      *  Return a Subscriber that will manage the %%sub%%.
@@ -217,6 +229,7 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
 export declare class JsonRpcProvider extends JsonRpcApiProvider {
     #private;
     constructor(url?: string | FetchRequest, network?: Networkish, options?: JsonRpcApiProviderOptions);
+    send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult>>;
     /**
      *  The polling interval (default: 4000 ms)

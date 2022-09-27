@@ -1,6 +1,7 @@
 //import { resolveAddress } from "@ethersproject/address";
-import { defineProperties, getBigInt, getNumber, hexlify, throwError } from "../utils/index.js";
+import { defineProperties, getBigInt, getNumber, hexlify, resolveProperties, assertArgument, isError, makeError, throwError } from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
+const BN_0 = BigInt(0);
 // -----------------------
 function getValue(value) {
     if (value == null) {
@@ -93,9 +94,6 @@ export class Block {
     baseFeePerGas;
     #transactions;
     constructor(block, provider) {
-        if (provider == null) {
-            provider = dummyProvider;
-        }
         this.#transactions = Object.freeze(block.transactions.map((tx) => {
             if (typeof (tx) !== "string" && tx.provider !== provider) {
                 throw new Error("provider mismatch");
@@ -190,9 +188,6 @@ export class Log {
     index;
     transactionIndex;
     constructor(log, provider) {
-        if (provider == null) {
-            provider = dummyProvider;
-        }
         this.provider = provider;
         const topics = Object.freeze(log.topics.slice());
         defineProperties(this, {
@@ -262,9 +257,6 @@ export class TransactionReceipt {
     root;
     #logs;
     constructor(tx, provider) {
-        if (provider == null) {
-            provider = dummyProvider;
-        }
         this.#logs = Object.freeze(tx.logs.map((log) => {
             if (provider !== log.provider) {
                 //return log.connect(provider);
@@ -373,10 +365,8 @@ export class TransactionResponse {
     chainId;
     signature;
     accessList;
+    #startBlock;
     constructor(tx, provider) {
-        if (provider == null) {
-            provider = dummyProvider;
-        }
         this.provider = provider;
         this.blockNumber = (tx.blockNumber != null) ? tx.blockNumber : null;
         this.blockHash = (tx.blockHash != null) ? tx.blockHash : null;
@@ -395,10 +385,8 @@ export class TransactionResponse {
         this.chainId = tx.chainId;
         this.signature = tx.signature;
         this.accessList = (tx.accessList != null) ? tx.accessList : null;
+        this.#startBlock = -1;
     }
-    //connect(provider: Provider): TransactionResponse {
-    //    return new TransactionResponse(this, provider);
-    //}
     toJSON() {
         const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;
         return {
@@ -435,8 +423,153 @@ export class TransactionResponse {
     async getTransaction() {
         return this.provider.getTransaction(this.hash);
     }
-    async wait(confirms) {
-        return this.provider.waitForTransaction(this.hash, confirms);
+    async wait(_confirms, _timeout) {
+        const confirms = (_confirms == null) ? 1 : _confirms;
+        const timeout = (_timeout == null) ? 0 : _timeout;
+        let startBlock = this.#startBlock;
+        let nextScan = -1;
+        let stopScanning = (startBlock === -1) ? true : false;
+        const checkReplacement = async () => {
+            // Get the current transaction count for this sender
+            if (stopScanning) {
+                return null;
+            }
+            const { blockNumber, nonce } = await resolveProperties({
+                blockNumber: this.provider.getBlockNumber(),
+                nonce: this.provider.getTransactionCount(this.from)
+            });
+            // No transaction for our nonce has been mined yet; but we can start
+            // scanning later when we do start
+            if (nonce < this.nonce) {
+                startBlock = blockNumber;
+                return;
+            }
+            // We were mined; no replacement
+            if (stopScanning) {
+                return null;
+            }
+            const mined = await this.getTransaction();
+            if (mined && mined.blockNumber != null) {
+                return;
+            }
+            // We were replaced; start scanning for that transaction
+            // Starting to scan; look back a few extra blocks for safety
+            if (nextScan === -1) {
+                nextScan = startBlock - 3;
+                if (nextScan < this.#startBlock) {
+                    nextScan = this.#startBlock;
+                }
+            }
+            while (nextScan <= blockNumber) {
+                // Get the next block to scan
+                if (stopScanning) {
+                    return null;
+                }
+                const block = await this.provider.getBlockWithTransactions(nextScan);
+                // This should not happen; but we'll try again shortly
+                if (block == null) {
+                    return;
+                }
+                for (const tx of block.transactions) {
+                    // We were mined; no replacement
+                    if (tx.hash === this.hash) {
+                        return;
+                    }
+                    if (tx.from === this.from && tx.nonce === this.nonce) {
+                        // Get the receipt
+                        if (stopScanning) {
+                            return null;
+                        }
+                        const receipt = await this.provider.getTransactionReceipt(tx.hash);
+                        // This should not happen; but we'll try again shortly
+                        if (receipt == null) {
+                            return;
+                        }
+                        // We will retry this on the next block (this case could be optimized)
+                        if ((blockNumber - receipt.blockNumber + 1) < confirms) {
+                            return;
+                        }
+                        // The reason we were replaced
+                        let reason = "replaced";
+                        if (tx.data === this.data && tx.to === this.to && tx.value === this.value) {
+                            reason = "repriced";
+                        }
+                        else if (tx.data === "0x" && tx.from === tx.to && tx.value === BN_0) {
+                            reason = "cancelled";
+                        }
+                        throwError("transaction was replaced", "TRANSACTION_REPLACED", {
+                            cancelled: (reason === "replaced" || reason === "cancelled"),
+                            reason,
+                            replacement: tx.replaceableTransaction(startBlock),
+                            hash: tx.hash,
+                            receipt
+                        });
+                    }
+                }
+                nextScan++;
+            }
+            return;
+        };
+        const receipt = await this.provider.getTransactionReceipt(this.hash);
+        if (receipt) {
+            if ((await receipt.confirmations()) >= confirms) {
+                return receipt;
+            }
+        }
+        else {
+            // Check for a replacement; throws if a replacement was found
+            await checkReplacement();
+            // Allow null only when the confirms is 0
+            if (confirms === 0) {
+                return null;
+            }
+        }
+        const waiter = new Promise((resolve, reject) => {
+            // List of things to cancel when we have a result (one way or the other)
+            const cancellers = [];
+            const cancel = () => { cancellers.forEach((c) => c()); };
+            // On cancel, stop scanning for replacements
+            cancellers.push(() => { stopScanning = true; });
+            // Set up any timeout requested
+            if (timeout > 0) {
+                const timer = setTimeout(() => {
+                    cancel();
+                    reject(makeError("wait for transaction timeout", "TIMEOUT"));
+                }, timeout);
+                cancellers.push(() => { clearTimeout(timer); });
+            }
+            const txListener = async (receipt) => {
+                // Done; return it!
+                if ((await receipt.confirmations()) >= confirms) {
+                    cancel();
+                    resolve(receipt);
+                }
+            };
+            cancellers.push(() => { this.provider.off(this.hash, txListener); });
+            this.provider.on(this.hash, txListener);
+            // We support replacement detection; start checking
+            if (startBlock >= 0) {
+                const replaceListener = async () => {
+                    try {
+                        // Check for a replacement; this throws only if one is found
+                        await checkReplacement();
+                    }
+                    catch (error) {
+                        // We were replaced (with enough confirms); re-throw the error
+                        if (isError(error, "TRANSACTION_REPLACED")) {
+                            cancel();
+                            reject(error);
+                            return;
+                        }
+                    }
+                    // Rescheudle a check on the next block
+                    this.provider.once("block", replaceListener);
+                };
+                cancellers.push(() => { this.provider.off("block", replaceListener); });
+                this.provider.once("block", replaceListener);
+            }
+        });
+        return await waiter;
     }
     isMined() {
         return (this.blockHash != null);
@@ -471,6 +604,21 @@ export class TransactionResponse {
         }
         return createReorderedTransactionFilter(this, other);
     }
+    /**
+     *  Returns a new TransactionResponse instance which has the ability to
+     *  detect (and throw an error) if the transaction is replaced, which
+     *  will begin scanning at %%startBlock%%.
+     *
+     *  This should generally not be used by developers and is intended
+     *  primarily for internal use. Setting an incorrect %%startBlock%% can
+     *  have devastating performance consequences if used incorrectly.
+     */
+    replaceableTransaction(startBlock) {
+        assertArgument(Number.isInteger(startBlock) && startBlock >= 0, "invalid startBlock", "startBlock", startBlock);
+        const tx = new TransactionResponse(this, this.provider);
+        tx.#startBlock = startBlock;
+        return tx;
+    }
 }
 function createOrphanedBlockFilter(block) {
     return { orphan: "drop-block", hash: block.hash, number: block.number };
@@ -492,80 +640,4 @@ function createRemovedLogFilter(log) {
             index: log.index
         } };
 }
-// @TODO: I think I can drop T
-function fail() {
-    throw new Error("this provider should not be used");
-}
-class DummyProvider {
-    get provider() { return this; }
-    async getNetwork() { return fail(); }
-    async getFeeData() { return fail(); }
-    async estimateGas(tx) { return fail(); }
-    async call(tx) { return fail(); }
-    async resolveName(name) { return fail(); }
-    // State
-    async getBlockNumber() { return fail(); }
-    // Account
-    async getBalance(address, blockTag) {
-        return fail();
-    }
-    async getTransactionCount(address, blockTag) {
-        return fail();
-    }
-    async getCode(address, blockTag) {
-        return fail();
-    }
-    async getStorageAt(address, position, blockTag) {
-        return fail();
-    }
-    // Write
-    async broadcastTransaction(signedTx) { return fail(); }
-    // Queries
-    async getBlock(blockHashOrBlockTag) {
-        return fail();
-    }
-    async getBlockWithTransactions(blockHashOrBlockTag) {
-        return fail();
-    }
-    async getTransaction(hash) {
-        return fail();
-    }
-    async getTransactionReceipt(hash) {
-        return fail();
-    }
-    async getTransactionResult(hash) {
-        return fail();
-    }
-    // Bloom-filter Queries
-    async getLogs(filter) {
-        return fail();
-    }
-    // ENS
-    async lookupAddress(address) {
-        return fail();
-    }
-    async waitForTransaction(hash, confirms, timeout) {
-        return fail();
-    }
-    async waitForBlock(blockTag) {
-        return fail();
-    }
-    // EventEmitterable
-    async on(event, listener) { return fail(); }
-    async once(event, listener) { return fail(); }
-    async emit(event, ...args) { return fail(); }
-    async listenerCount(event) { return fail(); }
-    async listeners(event) { return fail(); }
-    async off(event, listener) { return fail(); }
-    async removeAllListeners(event) { return fail(); }
-    async addListener(event, listener) { return fail(); }
-    async removeListener(event, listener) { return fail(); }
-}
-/**
- *  A singleton [[Provider]] instance that can be used as a placeholder. This
- *  allows API that have a Provider added later to not require a null check.
- *
- *  All operations performed on this [[Provider]] will throw.
- */
-export const dummyProvider = new DummyProvider();
 //# sourceMappingURL=provider.js.map

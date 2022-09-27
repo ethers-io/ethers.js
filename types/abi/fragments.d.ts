@@ -104,6 +104,7 @@ export declare class ErrorFragment extends NamedFragment {
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>);
     get selector(): string;
     format(format?: FormatType): string;
+    static fromObject(obj: any): ErrorFragment;
     static fromString(text: string): ErrorFragment;
     static fromTokens(tokens: TokenString): ErrorFragment;
 }
@@ -112,6 +113,7 @@ export declare class EventFragment extends NamedFragment {
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>, anonymous: boolean);
     get topicHash(): string;
     format(format?: FormatType): string;
+    static fromObject(obj: any): EventFragment;
     static fromString(text: string): EventFragment;
     static fromTokens(tokens: TokenString): EventFragment;
 }
@@ -120,8 +122,8 @@ export declare class ConstructorFragment extends Fragment {
     readonly gas: null | bigint;
     constructor(guard: any, type: FragmentType, inputs: ReadonlyArray<ParamType>, payable: boolean, gas: null | bigint);
     format(format?: FormatType): string;
-    static fromString(text: string): ConstructorFragment;
     static fromObject(obj: any): ConstructorFragment;
+    static fromString(text: string): ConstructorFragment;
     static fromTokens(tokens: TokenString): ConstructorFragment;
 }
 export declare class FunctionFragment extends NamedFragment {
@@ -133,6 +135,7 @@ export declare class FunctionFragment extends NamedFragment {
     constructor(guard: any, name: string, stateMutability: string, inputs: ReadonlyArray<ParamType>, outputs: ReadonlyArray<ParamType>, gas: null | bigint);
     get selector(): string;
     format(format?: FormatType): string;
+    static fromObject(obj: any): FunctionFragment;
     static fromString(text: string): FunctionFragment;
     static fromTokens(tokens: TokenString): FunctionFragment;
 }

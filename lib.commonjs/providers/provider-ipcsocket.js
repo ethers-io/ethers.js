@@ -24,7 +24,15 @@ class IpcSocketProvider extends provider_socket_js_1.SocketProvider {
     constructor(path, network) {
         super(network);
         this.#socket = (0, net_1.connect)(path);
-        this.socket.on("ready", () => { this._start(); });
+        this.socket.on("ready", async () => {
+            try {
+                await this._start();
+            }
+            catch (error) {
+                console.log("failed to start IpcSocketProvider", error);
+                // @TODO: Now what? Restart?
+            }
+        });
         let response = Buffer.alloc(0);
         this.socket.on("data", (data) => {
             response = Buffer.concat([response, data]);

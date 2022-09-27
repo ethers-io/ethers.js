@@ -4,6 +4,10 @@ export declare type GetUrlResponse = {
     headers: Record<string, string>;
     body: null | Uint8Array;
 };
+export declare type FetchThrottleParams = {
+    maxAttempts?: number;
+    slotInterval?: number;
+};
 /**
  *  Called before any network request, allowing updated headers (e.g. Bearer tokens), etc.
  */
@@ -155,6 +159,7 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
     get retryFunc(): null | FetchRetryFunc;
     set retryFunc(retry: null | FetchRetryFunc);
     constructor(url: string);
+    setThrottleParams(params: FetchThrottleParams): void;
     /**
      *  Resolves to the response by sending the request.
      */

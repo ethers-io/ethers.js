@@ -1,5 +1,6 @@
 import { getBigInt, getNumber, hexlify, throwError, throwArgumentError } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
+import { formatBlock, formatBlockWithTransactions, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
 import { Network } from "./network.js";
 //const BN_0 = BigInt("0");
 const BN_1 = BigInt("1");
@@ -40,7 +41,7 @@ async function waitForSync(config, blockNumber) {
 }
 // Normalizes a result to a string that can be used to compare against
 // other results using normal string equality
-function normalize(network, value, req) {
+function normalize(provider, value, req) {
     switch (req.method) {
         case "chainId":
             return getBigInt(value).toString();
@@ -58,19 +59,19 @@ function normalize(network, value, req) {
             return hexlify(value);
         case "getBlock":
             if (req.includeTransactions) {
-                return JSON.stringify(network.formatter.blockWithTransactions(value));
+                return JSON.stringify(formatBlockWithTransactions(value));
             }
-            return JSON.stringify(network.formatter.block(value));
+            return JSON.stringify(formatBlock(value));
         case "getTransaction":
-            return JSON.stringify(network.formatter.transactionResponse(value));
+            return JSON.stringify(formatTransactionResponse(value));
         case "getTransactionReceipt":
-            return JSON.stringify(network.formatter.receipt(value));
+            return JSON.stringify(formatTransactionReceipt(value));
         case "call":
             return hexlify(value);
         case "estimateGas":
             return getBigInt(value).toString();
         case "getLogs":
-            return JSON.stringify(value.map((v) => network.formatter.log(v)));
+            return JSON.stringify(value.map((v) => formatLog(v)));
     }
     return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
         operation: `_perform(${JSON.stringify(req.method)})`
@@ -174,7 +175,7 @@ export class FallbackProvider extends AbstractProvider {
         return this.#configs.slice();
     }
     async _detectNetwork() {
-        return Network.from(getBigInt(await this._perform({ method: "chainId" }))).freeze();
+        return Network.from(getBigInt(await this._perform({ method: "chainId" })));
     }
     // @TODO: Add support to select providers to be the event subscriber
     //_getSubscriber(sub: Subscription): Subscriber {
@@ -269,7 +270,7 @@ export class FallbackProvider extends AbstractProvider {
                 const result = runner.result.result;
                 results.push({
                     result,
-                    normal: normalize((runner.config._network), result, req),
+                    normal: normalize(runner.config.provider, result, req),
                     weight: runner.config.weight
                 });
             }

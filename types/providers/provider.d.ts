@@ -1,5 +1,5 @@
 import type { AddressLike, NameResolver } from "../address/index.js";
-import type { BigNumberish, EventEmitterable, Frozen } from "../utils/index.js";
+import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
 import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
 import type { ContractRunner } from "./contracts.js";
@@ -26,12 +26,10 @@ export interface TransactionRequest {
     chainId?: null | BigNumberish;
     accessList?: null | AccessListish;
     customData?: any;
-}
-export interface CallRequest extends TransactionRequest {
     blockTag?: BlockTag;
     enableCcipRead?: boolean;
 }
-export interface PreparedRequest {
+export interface PreparedTransactionRequest {
     type?: number;
     to?: AddressLike;
     from?: AddressLike;
@@ -48,8 +46,8 @@ export interface PreparedRequest {
     blockTag?: BlockTag;
     enableCcipRead?: boolean;
 }
-export declare function copyRequest(req: CallRequest): PreparedRequest;
-export interface BlockParams<T extends string | TransactionResponse> {
+export declare function copyRequest(req: TransactionRequest): PreparedTransactionRequest;
+export interface BlockParams<T extends string | TransactionResponseParams> {
     hash?: null | string;
     number: number;
     timestamp: number;
@@ -84,7 +82,7 @@ export declare class Block<T extends string | TransactionResponse> implements Bl
     readonly miner: string;
     readonly extraData: string;
     readonly baseFeePerGas: null | bigint;
-    constructor(block: BlockParams<T>, provider?: null | Provider);
+    constructor(block: BlockParams<T>, provider: Provider);
     get transactions(): ReadonlyArray<T>;
     toJSON(): any;
     [Symbol.iterator](): Iterator<T>;
@@ -119,7 +117,7 @@ export declare class Log implements LogParams {
     readonly topics: ReadonlyArray<string>;
     readonly index: number;
     readonly transactionIndex: number;
-    constructor(log: LogParams, provider?: null | Provider);
+    constructor(log: LogParams, provider: Provider);
     toJSON(): any;
     getBlock(): Promise<Block<string>>;
     getTransaction(): Promise<TransactionResponse>;
@@ -161,7 +159,7 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
     readonly byzantium: boolean;
     readonly status: null | number;
     readonly root: null | string;
-    constructor(tx: TransactionReceiptParams, provider?: null | Provider);
+    constructor(tx: TransactionReceiptParams, provider: Provider);
     get logs(): ReadonlyArray<Log>;
     toJSON(): any;
     get length(): number;
@@ -198,7 +196,16 @@ export interface MinedTransactionResponse extends TransactionResponse {
     blockHash: string;
     date: Date;
 }
+export declare type ReplacementDetectionSetup = {
+    to: string;
+    from: string;
+    value: bigint;
+    data: string;
+    nonce: number;
+    block: number;
+};
 export declare class TransactionResponse implements TransactionLike<string>, TransactionResponseParams {
+    #private;
     readonly provider: Provider;
     readonly blockNumber: null | number;
     readonly blockHash: null | string;
@@ -217,11 +224,11 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
     readonly chainId: bigint;
     readonly signature: Signature;
     readonly accessList: null | AccessList;
-    constructor(tx: TransactionResponseParams, provider?: null | Provider);
+    constructor(tx: TransactionResponseParams, provider: Provider);
     toJSON(): any;
     getBlock(): Promise<null | Block<string>>;
     getTransaction(): Promise<null | TransactionResponse>;
-    wait(confirms?: number): Promise<null | TransactionReceipt>;
+    wait(_confirms?: number, _timeout?: number): Promise<null | TransactionReceipt>;
     isMined(): this is MinedTransactionResponse;
     isLegacy(): this is (TransactionResponse & {
         accessList: null;
@@ -240,6 +247,16 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
     });
     removedEvent(): OrphanFilter;
     reorderedEvent(other?: TransactionResponse): OrphanFilter;
+    /**
+     *  Returns a new TransactionResponse instance which has the ability to
+     *  detect (and throw an error) if the transaction is replaced, which
+     *  will begin scanning at %%startBlock%%.
+     *
+     *  This should generally not be used by developers and is intended
+     *  primarily for internal use. Setting an incorrect %%startBlock%% can
+     *  have devastating performance consequences if used incorrectly.
+     */
+    replaceableTransaction(startBlock: number): TransactionResponse;
 }
 export declare type OrphanFilter = {
     orphan: "drop-block";
@@ -303,7 +320,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     /**
      *  Get the connected [[Network]].
      */
-    getNetwork(): Promise<Frozen<Network>>;
+    getNetwork(): Promise<Network>;
     /**
      *  Get the best guess at the recommended [[FeeData]].
      */
@@ -363,7 +380,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *
      *  @param tx - The transaction to simulate
      */
-    call(tx: CallRequest): Promise<string>;
+    call(tx: TransactionRequest): Promise<string>;
     /**
      *  Broadcasts the %%signedTx%% to the network, adding it to the memory pool
      *  of any node for which the transaction meets the rebroadcast requirements.
@@ -382,11 +399,4 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     waitForTransaction(hash: string, confirms?: number, timeout?: number): Promise<null | TransactionReceipt>;
     waitForBlock(blockTag?: BlockTag): Promise<Block<string>>;
 }
-/**
- *  A singleton [[Provider]] instance that can be used as a placeholder. This
- *  allows API that have a Provider added later to not require a null check.
- *
- *  All operations performed on this [[Provider]] will throw.
- */
-export declare const dummyProvider: Provider;
 //# sourceMappingURL=provider.d.ts.map

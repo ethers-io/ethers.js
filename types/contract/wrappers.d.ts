@@ -15,12 +15,12 @@ export declare class EventLog extends Log {
 }
 export declare class ContractTransactionReceipt extends TransactionReceipt {
     #private;
-    constructor(iface: Interface, provider: null | Provider, tx: TransactionReceipt);
+    constructor(iface: Interface, provider: Provider, tx: TransactionReceipt);
     get logs(): Array<EventLog | Log>;
 }
 export declare class ContractTransactionResponse extends TransactionResponse {
     #private;
-    constructor(iface: Interface, provider: null | Provider, tx: TransactionResponse);
+    constructor(iface: Interface, provider: Provider, tx: TransactionResponse);
     wait(confirms?: number): Promise<null | ContractTransactionReceipt>;
 }
 export declare class ContractEventPayload extends EventPayload<ContractEventName> {

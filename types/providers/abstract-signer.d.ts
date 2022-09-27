@@ -1,6 +1,6 @@
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { TransactionLike } from "../transaction/index.js";
-import type { BlockTag, CallRequest, Provider, TransactionRequest, TransactionResponse } from "./provider.js";
+import type { BlockTag, Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
 export declare abstract class AbstractSigner<P extends null | Provider = null | Provider> implements Signer {
     #private;
@@ -9,10 +9,10 @@ export declare abstract class AbstractSigner<P extends null | Provider = null | 
     abstract getAddress(): Promise<string>;
     abstract connect(provider: null | Provider): Signer;
     getNonce(blockTag?: BlockTag): Promise<number>;
-    populateCall(tx: CallRequest): Promise<TransactionLike<string>>;
+    populateCall(tx: TransactionRequest): Promise<TransactionLike<string>>;
     populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>>;
-    estimateGas(tx: CallRequest): Promise<bigint>;
-    call(tx: CallRequest): Promise<string>;
+    estimateGas(tx: TransactionRequest): Promise<bigint>;
+    call(tx: TransactionRequest): Promise<string>;
     resolveName(name: string): Promise<null | string>;
     sendTransaction(tx: TransactionRequest): Promise<TransactionResponse>;
     abstract signTransaction(tx: TransactionRequest): Promise<string>;
@@ -35,10 +35,10 @@ export declare class WrappedSigner extends AbstractSigner {
     getAddress(): Promise<string>;
     connect(provider: null | Provider): WrappedSigner;
     getNonce(blockTag?: BlockTag): Promise<number>;
-    populateCall(tx: CallRequest): Promise<TransactionLike<string>>;
+    populateCall(tx: TransactionRequest): Promise<TransactionLike<string>>;
     populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>>;
-    estimateGas(tx: CallRequest): Promise<bigint>;
-    call(tx: CallRequest): Promise<string>;
+    estimateGas(tx: TransactionRequest): Promise<bigint>;
+    call(tx: TransactionRequest): Promise<string>;
     resolveName(name: string): Promise<null | string>;
     signTransaction(tx: TransactionRequest): Promise<string>;
     sendTransaction(tx: TransactionRequest): Promise<TransactionResponse>;

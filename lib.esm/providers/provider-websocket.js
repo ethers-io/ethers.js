@@ -12,8 +12,14 @@ export class WebSocketProvider extends SocketProvider {
         else {
             this.#websocket = url;
         }
-        this.websocket.onopen = () => {
-            this._start();
+        this.websocket.onopen = async () => {
+            try {
+                await this._start();
+            }
+            catch (error) {
+                console.log("failed to start WebsocketProvider", error);
+                // @TODO: now what? Attempt reconnect?
+            }
         };
         this.websocket.onmessage = (message) => {
             this._processMessage(message.data);

@@ -2,7 +2,7 @@ import type { Addressable, NameResolver } from "../address/index.js";
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 import type { ContractRunner } from "./contracts.js";
-import type { BlockTag, CallRequest, Provider, TransactionRequest, TransactionResponse } from "./provider.js";
+import type { BlockTag, Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 /**
  *  A Signer represents an account on the Ethereum Blockchain, and is most often
  *  backed by a private key represented by a mnemonic or residing on a Hardware Wallet.
@@ -33,13 +33,13 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      */
     getNonce(blockTag?: BlockTag): Promise<number>;
     /**
-     *  Prepares a {@link CallRequest} for calling:
+     *  Prepares a {@link TransactionRequest} for calling:
      *  - resolves ``to`` and ``from`` addresses
      *  - if ``from`` is specified , check that it matches this Signer
      *
      *  @param tx - The call to prepare
      */
-    populateCall(tx: CallRequest): Promise<TransactionLike<string>>;
+    populateCall(tx: TransactionRequest): Promise<TransactionLike<string>>;
     /**
      *  Prepares a {@link TransactionRequest} for sending to the network by
      *  populating any missing properties:
@@ -74,7 +74,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *          node to take into account. In these cases, a manually determined ``gasLimit``
      *          will need to be made.
      */
-    estimateGas(tx: CallRequest): Promise<bigint>;
+    estimateGas(tx: TransactionRequest): Promise<bigint>;
     /**
      *  Evaluates the //tx// by running it against the current Blockchain state. This
      *  cannot change state and has no cost in ether, as it is effectively simulating
@@ -84,7 +84,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *  (e.g. running a Contract's getters) or to simulate the effect of a transaction
      *  before actually performing an operation.
      */
-    call(tx: CallRequest): Promise<string>;
+    call(tx: TransactionRequest): Promise<string>;
     /**
      *  Resolves an [[Address]] or ENS Name to an [[Address]].
      */

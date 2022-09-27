@@ -95,20 +95,16 @@ export class SocketPendingSubscriber extends SocketSubscriber {
 export class SocketEventSubscriber extends SocketSubscriber {
     #logFilter;
     get logFilter() { return JSON.parse(this.#logFilter); }
-    #formatter;
     constructor(provider, filter) {
         super(provider, ["logs", filter]);
         this.#logFilter = JSON.stringify(filter);
-        this.#formatter = provider.getNetwork().then((network) => network.formatter);
     }
     async _emit(provider, message) {
-        const formatter = await this.#formatter;
-        provider.emit(this.#logFilter, formatter.log(message, provider));
+        provider.emit(this.#logFilter, provider._wrapLog(message, provider._network));
     }
 }
 export class SocketProvider extends JsonRpcApiProvider {
     #callbacks;
-    #ready;
     // Maps each filterId to its subscriber
     #subs;
     // If any events come in before a subscriber has finished
@@ -117,10 +113,18 @@ export class SocketProvider extends JsonRpcApiProvider {
     constructor(network) {
         super(network, { batchMaxCount: 1 });
         this.#callbacks = new Map();
-        this.#ready = false;
         this.#subs = new Map();
         this.#pending = new Map();
     }
+    // This value is only valid after _start has been called
+    /*
+    get _network(): Network {
+        if (this.#network == null) {
+            throw new Error("this shouldn't happen");
+        }
+        return this.#network.clone();
+    }
+    */
     _getSubscriber(sub) {
         switch (sub.type) {
             case "close":
@@ -157,21 +161,23 @@ export class SocketProvider extends JsonRpcApiProvider {
         const promise = new Promise((resolve, reject) => {
             this.#callbacks.set(payload.id, { payload, resolve, reject });
         });
-        if (this.#ready) {
-            await this._write(JSON.stringify(payload));
-        }
+        await this._write(JSON.stringify(payload));
         return [await promise];
     }
     // Sub-classes must call this once they are connected
-    async _start() {
-        if (this.#ready) {
-            return;
-        }
-        this.#ready = true;
+    /*
+    async _start(): Promise<void> {
+        if (this.#ready) { return; }
+
         for (const { payload } of this.#callbacks.values()) {
             await this._write(JSON.stringify(payload));
         }
+
+        this.#ready = (async function() {
+            await super._start();
+        })();
     }
+    */
     // Sub-classes must call this for each message
     async _processMessage(message) {
         const result = (JSON.parse(message));

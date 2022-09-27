@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = void 0;
+exports.CustomBlockNetworkPlugin = exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = void 0;
 const properties_js_1 = require("../utils/properties.js");
 const index_js_1 = require("../utils/index.js");
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
@@ -11,9 +11,6 @@ class NetworkPlugin {
     }
     clone() {
         return new NetworkPlugin(this.name);
-    }
-    validate(network) {
-        return this;
     }
 }
 exports.NetworkPlugin = NetworkPlugin;
@@ -68,10 +65,6 @@ class EnsPlugin extends NetworkPlugin {
     clone() {
         return new EnsPlugin(this.address, this.targetNetwork);
     }
-    validate(network) {
-        network.formatter.address(this.address);
-        return this;
-    }
 }
 exports.EnsPlugin = EnsPlugin;
 /*
@@ -109,4 +102,23 @@ class FeeDataNetworkPlugin extends NetworkPlugin {
     }
 }
 exports.FeeDataNetworkPlugin = FeeDataNetworkPlugin;
+class CustomBlockNetworkPlugin extends NetworkPlugin {
+    #blockFunc;
+    #blockWithTxsFunc;
+    constructor(blockFunc, blockWithTxsFunc) {
+        super("org.ethers.network-plugins.custom-block");
+        this.#blockFunc = blockFunc;
+        this.#blockWithTxsFunc = blockWithTxsFunc;
+    }
+    async getBlock(provider, block) {
+        return await this.#blockFunc(provider, block);
+    }
+    async getBlockWithTransactions(provider, block) {
+        return await this.#blockWithTxsFunc(provider, block);
+    }
+    clone() {
+        return new CustomBlockNetworkPlugin(this.#blockFunc, this.#blockWithTxsFunc);
+    }
+}
+exports.CustomBlockNetworkPlugin = CustomBlockNetworkPlugin;
 //# sourceMappingURL=plugins-network.js.map

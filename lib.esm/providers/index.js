@@ -10,14 +10,13 @@ export { getDefaultProvider } from "./default-provider.js";
 
 export { EnsResolver } from "./ens-resolver.js";
 */
-export { Formatter } from "./formatter.js";
 export { Network } from "./common-networks.js";
 export { NetworkPlugin, GasCostPlugin, EnsPlugin,
 //LayerOneConnectionPlugin,
 //MaxPriorityFeePlugin,
 //PriceOraclePlugin,
  } from "./plugins-network.js";
-export { Block, FeeData, Log, TransactionReceipt, TransactionResponse, dummyProvider, copyRequest,
+export { Block, FeeData, Log, TransactionReceipt, TransactionResponse, copyRequest,
 //resolveTransactionRequest,
  } from "./provider.js";
 export { FallbackProvider } from "./provider-fallback.js";
@@ -25,6 +24,7 @@ export { JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from "./provider-j
 export { AlchemyProvider } from "./provider-alchemy.js";
 export { AnkrProvider } from "./provider-ankr.js";
 export { CloudflareProvider } from "./provider-cloudflare.js";
+export { BaseEtherscanProvider, EtherscanPlugin } from "./provider-etherscan-base.js";
 export { EtherscanProvider } from "./provider-etherscan.js";
 export { InfuraProvider } from "./provider-infura.js";
 //export { PocketProvider } from "./provider-pocket.js";
