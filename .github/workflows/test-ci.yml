@@ -15,7 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [ 16.x, 18.x ]
-        test-type: [ test, test-commonjs ]
+        test-type: [ esm, commonjs ]
+
+    name: Run Tests (node: ${{ matrix.node-version }}, type: ${{ matrix.test-type }})
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
@@ -35,12 +37,12 @@ jobs:
         run: npm run build-all
 
       - name: Run tests (${{ matrix.test-type }})
-        run: npm run ${{ matrix.test-type }}
+        run: npm run test-${{ matrix.test-type }}
 
 
   coverage:
 
-    name: Coverage
+    name: Generate Coverage
 
     runs-on: ubuntu-latest
 
