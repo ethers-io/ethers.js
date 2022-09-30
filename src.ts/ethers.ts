@@ -53,6 +53,19 @@ export {
     TypedDataEncoder
 } from "./hash/index.js";
 
+export {
+    AbstractProvider,
+
+    FallbackProvider,
+    JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner,
+
+    AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider,
+    //PocketProvider } from "./provider-pocket.js";
+
+    IpcSocketProvider, SocketProvider, WebSocketProvider,
+
+    Network
+} from "./providers/index.js";
 
 export {
     accessListify,
@@ -115,18 +128,8 @@ export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
 
 export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 
-export {
-    AbstractProvider,
-    
-    FallbackProvider,
-    JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner,
-
-    AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider,
-    //PocketProvider } from "./provider-pocket.js";
-
-    IpcSocketProvider, SocketProvider, WebSocketProvider,
-
-    Network
+export type {
+    Provider
 } from "./providers/index.js";
 
 export type {
