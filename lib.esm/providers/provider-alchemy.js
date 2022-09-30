@@ -5,7 +5,7 @@ import { JsonRpcProvider } from "./provider-jsonrpc.js";
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
 function getHost(name) {
     switch (name) {
-        case "homestead":
+        case "mainnet":
             return "eth-mainnet.alchemyapi.io";
         case "ropsten":
             return "eth-ropsten.alchemyapi.io";
@@ -32,7 +32,7 @@ function getHost(name) {
 }
 export class AlchemyProvider extends JsonRpcProvider {
     apiKey;
-    constructor(_network = "homestead", apiKey) {
+    constructor(_network = "mainnet", apiKey) {
         const network = Network.from(_network);
         if (apiKey == null) {
             apiKey = defaultApiKey;

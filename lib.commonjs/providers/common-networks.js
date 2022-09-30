@@ -38,7 +38,7 @@ function injectCommonNetworks() {
             });
         }
     }
-    registerEth("homestead", 1, { ensNetwork: 1, altNames: ["mainnet"] });
+    registerEth("mainnet", 1, { ensNetwork: 1, altNames: ["homestead"] });
     registerEth("ropsten", 3, { ensNetwork: 3 });
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });

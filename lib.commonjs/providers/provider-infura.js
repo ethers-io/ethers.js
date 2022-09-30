@@ -1,14 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InfuraProvider = void 0;
+exports.InfuraProvider = exports.InfuraWebSocketProvider = void 0;
 const index_js_1 = require("../utils/index.js");
 const community_js_1 = require("./community.js");
 const network_js_1 = require("./network.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
+const provider_websocket_js_1 = require("./provider-websocket.js");
 const defaultProjectId = "84842078b09946638c03157f83405213";
 function getHost(name) {
     switch (name) {
-        case "homestead":
+        case "mainnet":
             return "mainnet.infura.io";
         case "ropsten":
             return "ropsten.infura.io";
@@ -33,10 +34,33 @@ function getHost(name) {
     }
     return (0, index_js_1.throwArgumentError)("unsupported network", "network", name);
 }
+class InfuraWebSocketProvider extends provider_websocket_js_1.WebSocketProvider {
+    projectId;
+    projectSecret;
+    constructor(network, apiKey) {
+        const provider = new InfuraProvider(network, apiKey);
+        const req = provider._getConnection();
+        if (req.credentials) {
+            (0, index_js_1.throwError)("INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", {
+                operation: "InfuraProvider.getWebSocketProvider()"
+            });
+        }
+        const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+        super(url, network);
+        (0, index_js_1.defineProperties)(this, {
+            projectId: provider.projectId,
+            projectSecret: provider.projectSecret
+        });
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
+    }
+}
+exports.InfuraWebSocketProvider = InfuraWebSocketProvider;
 class InfuraProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     projectId;
     projectSecret;
-    constructor(_network = "homestead", projectId, projectSecret) {
+    constructor(_network = "mainnet", projectId, projectSecret) {
         const network = network_js_1.Network.from(_network);
         if (projectId == null) {
             projectId = defaultProjectId;
@@ -54,6 +78,12 @@ class InfuraProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
         }
         catch (error) { }
         return super._getProvider(chainId);
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
+    }
+    static getWebSocketProvider(network, apiKey) {
+        return new InfuraWebSocketProvider(network, apiKey);
     }
     static getRequest(network, projectId, projectSecret) {
         if (projectId == null) {
@@ -74,9 +104,6 @@ class InfuraProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
             };
         }
         return request;
-    }
-    isCommunityResource() {
-        return (this.projectId === defaultProjectId);
     }
 }
 exports.InfuraProvider = InfuraProvider;

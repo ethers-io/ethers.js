@@ -584,9 +584,9 @@ class AbstractProvider {
     async getCode(address, blockTag) {
         return (0, index_js_2.hexlify)(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
     }
-    async getStorageAt(address, _position, blockTag) {
+    async getStorage(address, _position, blockTag) {
         const position = (0, index_js_2.getBigInt)(_position, "position");
-        return (0, index_js_2.hexlify)(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
+        return (0, index_js_2.hexlify)(await this.#getAccountValue({ method: "getStorage", position }, address, blockTag));
     }
     // Write
     async broadcastTransaction(signedTx) {

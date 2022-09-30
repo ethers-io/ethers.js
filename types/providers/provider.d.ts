@@ -133,12 +133,12 @@ export interface TransactionReceiptParams {
     blockHash: string;
     blockNumber: number;
     logsBloom: string;
-    logs: ReadonlyArray<Log>;
+    logs: ReadonlyArray<LogParams>;
     gasUsed: bigint;
     cumulativeGasUsed: bigint;
     gasPrice?: null | bigint;
     effectiveGasPrice?: null | bigint;
-    byzantium: boolean;
+    type: number;
     status: null | number;
     root: null | string;
 }
@@ -156,7 +156,7 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
     readonly gasUsed: bigint;
     readonly cumulativeGasUsed: bigint;
     readonly gasPrice: bigint;
-    readonly byzantium: boolean;
+    readonly type: number;
     readonly status: null | number;
     readonly root: null | string;
     constructor(tx: TransactionReceiptParams, provider: Provider);
@@ -368,7 +368,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  @note On nodes without archive access enabled, the %%blockTag%% may be
      *        **silently ignored** by the node, which may cause issues if relied on.
      */
-    getStorageAt(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>;
+    getStorage(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>;
     /**
      *  Estimates the amount of gas required to executre %%tx%%.
      *

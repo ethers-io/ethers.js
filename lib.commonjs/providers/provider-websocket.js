@@ -4,9 +4,13 @@ exports.WebSocketProvider = void 0;
 const ws_js_1 = require("./ws.js"); /*-browser*/
 const provider_socket_js_1 = require("./provider-socket.js");
 class WebSocketProvider extends provider_socket_js_1.SocketProvider {
-    url;
     #websocket;
-    get websocket() { return this.#websocket; }
+    get websocket() {
+        if (this.#websocket == null) {
+            throw new Error("websocket closed");
+        }
+        return this.#websocket;
+    }
     constructor(url, network) {
         super(network);
         if (typeof (url) === "string") {
@@ -30,6 +34,13 @@ class WebSocketProvider extends provider_socket_js_1.SocketProvider {
     }
     async _write(message) {
         this.websocket.send(message);
+    }
+    async destroy() {
+        if (this.#websocket == null) {
+            return;
+        }
+        this.#websocket.close();
+        this.#websocket = null;
     }
 }
 exports.WebSocketProvider = WebSocketProvider;

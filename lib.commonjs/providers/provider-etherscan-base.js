@@ -43,7 +43,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
             return this.#plugin.baseUrl;
         }
         switch (this.network.name) {
-            case "homestead":
+            case "mainnet":
                 return "https:/\/api.etherscan.io";
             case "ropsten":
                 return "https:/\/api-ropsten.etherscan.io";
@@ -293,7 +293,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                     address: req.address,
                     tag: req.blockTag
                 });
-            case "getStorageAt":
+            case "getStorage":
                 return this.fetch("proxy", {
                     action: "eth_getStorageAt",
                     address: req.address,
@@ -415,7 +415,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
         return this.network;
     }
     async getEtherPrice() {
-        if (this.network.name !== "homestead") {
+        if (this.network.name !== "mainnet") {
             return 0.0;
         }
         return parseFloat((await this.fetch("stats", { action: "ethprice" })).ethusd);

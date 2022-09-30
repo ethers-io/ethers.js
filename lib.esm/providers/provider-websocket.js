@@ -1,9 +1,13 @@
 import { WebSocket as _WebSocket } from "./ws.js"; /*-browser*/
 import { SocketProvider } from "./provider-socket.js";
 export class WebSocketProvider extends SocketProvider {
-    url;
     #websocket;
-    get websocket() { return this.#websocket; }
+    get websocket() {
+        if (this.#websocket == null) {
+            throw new Error("websocket closed");
+        }
+        return this.#websocket;
+    }
     constructor(url, network) {
         super(network);
         if (typeof (url) === "string") {
@@ -27,6 +31,13 @@ export class WebSocketProvider extends SocketProvider {
     }
     async _write(message) {
         this.websocket.send(message);
+    }
+    async destroy() {
+        if (this.#websocket == null) {
+            return;
+        }
+        this.#websocket.close();
+        this.#websocket = null;
     }
 }
 //# sourceMappingURL=provider-websocket.js.map

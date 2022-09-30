@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.2";
+const version = "6.0.0-beta-exports.3";
 
 async function resolveProperties(value) {
     const keys = Object.keys(value);
@@ -10071,20 +10071,22 @@ const formatReceiptLog = object({
     address: getAddress,
     topics: arrayOf(formatHash),
     data: formatData,
-    logIndex: getNumber,
+    index: getNumber,
     blockHash: formatHash,
+}, {
+    index: ["logIndex"]
 });
 const formatTransactionReceipt = object({
     to: allowNull(getAddress, null),
     from: allowNull(getAddress, null),
     contractAddress: allowNull(getAddress, null),
-    transactionIndex: getNumber,
     // should be allowNull(hash), but broken-EIP-658 support is handled in receipt
+    index: getNumber,
     root: allowNull(hexlify),
     gasUsed: getBigInt,
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
-    transactionHash: formatHash,
+    hash: formatHash,
     logs: arrayOf(formatReceiptLog),
     blockNumber: getNumber,
     confirmations: allowNull(getNumber, null),
@@ -10093,7 +10095,9 @@ const formatTransactionReceipt = object({
     status: allowNull(getNumber),
     type: getNumber
 }, {
-    effectiveGasPrice: ["gasPrice"]
+    effectiveGasPrice: ["gasPrice"],
+    hash: ["transactionHash"],
+    index: ["transactionIndex"],
 });
 function formatTransactionResponse(value) {
     // Some clients (TestRPC) do strange things like return 0x0 for the
@@ -10124,9 +10128,6 @@ function formatTransactionResponse(value) {
         value: getBigInt,
         nonce: getNumber,
         data: formatData,
-        r: allowNull(formatUint256),
-        s: allowNull(formatUint256),
-        v: allowNull(getNumber),
         creates: allowNull(getAddress, null),
         chainId: allowNull(getBigInt, null)
     }, {
@@ -10140,7 +10141,16 @@ function formatTransactionResponse(value) {
     // @TODO: Check fee data
     // Add an access list to supported transaction types
     if ((value.type === 1 || value.type === 2) && value.accessList == null) {
-        value.accessList = [];
+        result.accessList = [];
+    }
+    // Compute the signature
+    result.signature = Signature.from(value);
+    // Some backends omit ChainId on legacy transactions, but we can compute it
+    if (result.chainId == null) {
+        const chainId = result.signature.legacyChainId;
+        if (chainId != null) {
+            result.chainId = chainId;
+        }
     }
     // @TODO: check chainID
     /*
@@ -10427,7 +10437,7 @@ class Network {
     static from(network) {
         // Default network
         if (network == null) {
-            return Network.from("homestead");
+            return Network.from("mainnet");
         }
         // Canonical name or chain ID
         if (typeof (network) === "number") {
@@ -10578,7 +10588,7 @@ class Block {
     constructor(block, provider) {
         this.#transactions = Object.freeze(block.transactions.map((tx) => {
             if (typeof (tx) !== "string" && tx.provider !== provider) {
-                throw new Error("provider mismatch");
+                return (new TransactionResponse(tx, provider));
             }
             return tx;
         }));
@@ -10734,17 +10744,14 @@ class TransactionReceipt {
     gasUsed;
     cumulativeGasUsed;
     gasPrice;
-    byzantium;
+    type;
+    //readonly byzantium!: boolean;
     status;
     root;
     #logs;
     constructor(tx, provider) {
         this.#logs = Object.freeze(tx.logs.map((log) => {
-            if (provider !== log.provider) {
-                //return log.connect(provider);
-                throw new Error("provider mismatch");
-            }
-            return log;
+            return new Log(log, provider);
         }));
         defineProperties(this, {
             provider,
@@ -10759,7 +10766,8 @@ class TransactionReceipt {
             gasUsed: tx.gasUsed,
             cumulativeGasUsed: tx.cumulativeGasUsed,
             gasPrice: (tx.effectiveGasPrice || tx.gasPrice),
-            byzantium: tx.byzantium,
+            type: tx.type,
+            //byzantium: tx.byzantium,
             status: tx.status,
             root: tx.root
         });
@@ -10769,10 +10777,13 @@ class TransactionReceipt {
     //    return new TransactionReceipt(this, provider);
     //}
     toJSON() {
-        const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, byzantium, status, root } = this;
+        const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
+        status, root } = this;
         return {
             _type: "TransactionReceipt",
-            blockHash, blockNumber, byzantium, contractAddress,
+            blockHash, blockNumber,
+            //byzantium, 
+            contractAddress,
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
             gasPrice: toJson(this.gasPrice),
@@ -11864,9 +11875,9 @@ class AbstractProvider {
     async getCode(address, blockTag) {
         return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
     }
-    async getStorageAt(address, _position, blockTag) {
+    async getStorage(address, _position, blockTag) {
         const position = getBigInt(_position, "position");
-        return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
+        return hexlify(await this.#getAccountValue({ method: "getStorage", position }, address, blockTag));
     }
     // Write
     async broadcastTransaction(signedTx) {
@@ -12639,7 +12650,7 @@ class BaseEtherscanProvider extends AbstractProvider {
             return this.#plugin.baseUrl;
         }
         switch (this.network.name) {
-            case "homestead":
+            case "mainnet":
                 return "https:/\/api.etherscan.io";
             case "ropsten":
                 return "https:/\/api-ropsten.etherscan.io";
@@ -12889,7 +12900,7 @@ class BaseEtherscanProvider extends AbstractProvider {
                     address: req.address,
                     tag: req.blockTag
                 });
-            case "getStorageAt":
+            case "getStorage":
                 return this.fetch("proxy", {
                     action: "eth_getStorageAt",
                     address: req.address,
@@ -13011,7 +13022,7 @@ class BaseEtherscanProvider extends AbstractProvider {
         return this.network;
     }
     async getEtherPrice() {
-        if (this.network.name !== "homestead") {
+        if (this.network.name !== "mainnet") {
             return 0.0;
         }
         return parseFloat((await this.fetch("stats", { action: "ethprice" })).ethusd);
@@ -13058,7 +13069,7 @@ function injectCommonNetworks() {
             });
         }
     }
-    registerEth("homestead", 1, { ensNetwork: 1, altNames: ["mainnet"] });
+    registerEth("mainnet", 1, { ensNetwork: 1, altNames: ["homestead"] });
     registerEth("ropsten", 3, { ensNetwork: 3 });
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });
@@ -13151,7 +13162,7 @@ function normalize(provider, value, req) {
             return getNumber(value).toString();
         case "getCode":
             return hexlify(value);
-        case "getStorageAt":
+        case "getStorage":
             return hexlify(value);
         case "getBlock":
             if (req.includeTransactions) {
@@ -13409,7 +13420,7 @@ class FallbackProvider extends AbstractProvider {
             case "getBalance":
             case "getTransactionCount":
             case "getCode":
-            case "getStorageAt":
+            case "getStorage":
             case "getTransaction":
             case "getTransactionReceipt":
             case "getLogs":
@@ -13794,72 +13805,15 @@ class JsonRpcSigner extends AbstractSigner {
  */
 class JsonRpcApiProvider extends AbstractProvider {
     #options;
+    // The next ID to use for the JSON-RPC ID field
     #nextId;
+    // Payloads are queued and triggered in batches using the drainTimer
     #payloads;
-    #ready;
-    #starting;
     #drainTimer;
+    #notReady;
     #network;
-    constructor(network, options) {
-        super(network);
-        this.#ready = false;
-        this.#starting = null;
-        this.#nextId = 1;
-        this.#options = Object.assign({}, defaultOptions, options || {});
-        this.#payloads = [];
-        this.#drainTimer = null;
-        this.#network = null;
-        // This could be relaxed in the future to just check equivalent networks
-        const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork) {
-            if (staticNetwork !== network) {
-                throwArgumentError("staticNetwork MUST match network object", "options", options);
-            }
-            this.#network = staticNetwork;
-        }
-    }
-    /**
-     *  Returns the value associated with the option %%key%%.
-     *
-     *  Sub-classes can use this to inquire about configuration options.
-     */
-    _getOption(key) {
-        return this.#options[key];
-    }
-    get _network() {
-        if (!this.#network) {
-            throwError("network is not available yet", "NETWORK_ERROR");
-        }
-        return this.#network;
-    }
-    get ready() { return this.#ready; }
-    async _start() {
-        if (this.#ready) {
-            return;
-        }
-        if (this.#starting) {
-            return this.#starting;
-        }
-        this.#starting = (async () => {
-            // Bootstrap the network
-            if (this.#network == null) {
-                try {
-                    this.#network = await this._detectNetwork();
-                }
-                catch (error) {
-                    console.log("JsonRpcProvider failed to startup; retry in 1s");
-                    await stall$2(1000);
-                    this.#starting = null;
-                }
-            }
-            this.#ready = true;
-            this.#starting = null;
-            // Start dispatching requests
-            this.#scheduleDrain();
-        })();
-    }
     #scheduleDrain() {
-        if (this.#drainTimer || !this.ready) {
+        if (this.#drainTimer) {
             return;
         }
         // If we aren't using batching, no hard in sending it immeidately
@@ -13916,31 +13870,46 @@ class JsonRpcApiProvider extends AbstractProvider {
             }
         }, stallTime);
     }
-    /**
-     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
-     *  over the underlying channel. This can be used to call methods
-     *  on the backend that do not have a high-level API within the Provider
-     *  API.
-     *
-     *  This method queues requests according to the batch constraints
-     *  in the options, assigns the request a unique ID.
-     *
-     *  **Do NOT override** this method in sub-classes; instead
-     *  override [[_send]] or force the options values in the
-     *  call to the constructor to modify this method's behavior.
-     */
-    send(method, params) {
-        // @TODO: cache chainId?? purge on switch_networks
-        const id = this.#nextId++;
-        const promise = new Promise((resolve, reject) => {
-            this.#payloads.push({
-                resolve, reject,
-                payload: { method, params, id, jsonrpc: "2.0" }
+    constructor(network, options) {
+        super(network);
+        this.#nextId = 1;
+        this.#options = Object.assign({}, defaultOptions, options || {});
+        this.#payloads = [];
+        this.#drainTimer = null;
+        this.#network = null;
+        {
+            let resolve = null;
+            const promise = new Promise((_resolve) => {
+                resolve = _resolve;
             });
-        });
-        // If there is not a pending drainTimer, set one
-        this.#scheduleDrain();
-        return promise;
+            this.#notReady = { promise, resolve };
+        }
+        // This could be relaxed in the future to just check equivalent networks
+        const staticNetwork = this._getOption("staticNetwork");
+        if (staticNetwork) {
+            if (staticNetwork !== network) {
+                throwArgumentError("staticNetwork MUST match network object", "options", options);
+            }
+            this.#network = staticNetwork;
+        }
+    }
+    /**
+     *  Returns the value associated with the option %%key%%.
+     *
+     *  Sub-classes can use this to inquire about configuration options.
+     */
+    _getOption(key) {
+        return this.#options[key];
+    }
+    /**
+     *  Gets the [[Network]] this provider has committed to. On each call, the network
+     *  is detected, and if it has changed, the call will reject.
+     */
+    get _network() {
+        if (!this.#network) {
+            throwError("network is not available yet", "NETWORK_ERROR");
+        }
+        return this.#network;
     }
     /**
      *  Sends a JSON-RPC %%payload%% (or a batch) to the underlying channel.
@@ -13953,44 +13922,40 @@ class JsonRpcApiProvider extends AbstractProvider {
         });
     }
     /**
-     *  Resolves to the [[Signer]] account for  %%address%% managed by
-     *  the client.
+     *  Resolves to the non-normalized value by performing %%req%%.
      *
-     *  If the %%address%% is a number, it is used as an index in the
-     *  the accounts from [[listAccounts]].
-     *
-     *  This can only be used on clients which manage accounts (such as
-     *  Geth with imported account or MetaMask).
-     *
-     *  Throws if the account doesn't exist.
+     *  Sub-classes may override this to modify behavior of actions,
+     *  and should generally call ``super._perform`` as a fallback.
      */
-    async getSigner(address = 0) {
-        const accountsPromise = this.send("eth_accounts", []);
-        // Account index
-        if (typeof (address) === "number") {
-            const accounts = (await accountsPromise);
-            if (address > accounts.length) {
-                throw new Error("no such account");
-            }
-            return new JsonRpcSigner(this, accounts[address]);
-        }
-        const { accounts } = await resolveProperties({
-            network: this.getNetwork(),
-            accounts: accountsPromise
-        });
-        // Account address
-        address = getAddress(address);
-        for (const account of accounts) {
-            if (getAddress(account) === account) {
-                return new JsonRpcSigner(this, account);
+    async _perform(req) {
+        // Legacy networks do not like the type field being passed along (which
+        // is fair), so we delete type if it is 0 and a non-EIP-1559 network
+        if (req.method === "call" || req.method === "estimateGas") {
+            let tx = req.transaction;
+            if (tx && tx.type != null && getBigInt(tx.type)) {
+                // If there are no EIP-1559 properties, it might be non-EIP-a559
+                if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
+                    const feeData = await this.getFeeData();
+                    if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
+                        // Network doesn't know about EIP-1559 (and hence type)
+                        req = Object.assign({}, req, {
+                            transaction: Object.assign({}, tx, { type: undefined })
+                        });
+                    }
+                }
             }
         }
-        throw new Error("invalid account");
+        const request = this.getRpcRequest(req);
+        if (request != null) {
+            return await this.send(request.method, request.args);
+        }
+        return super._perform(req);
     }
-    /** Sub-classes can override this; it detects the *actual* network that
+    /** Sub-classes may override this; it detects the *actual* network that
      *  we are **currently** connected to.
      *
-     *  Keep in mind that [[send]] may only be used once [[ready]].
+     *  Keep in mind that [[send]] may only be used once [[ready]], otherwise the
+     *  _send primitive must be used instead.
      */
     async _detectNetwork() {
         const network = this._getOption("staticNetwork");
@@ -14006,7 +13971,14 @@ class JsonRpcApiProvider extends AbstractProvider {
             id: this.#nextId++, method: "eth_chainId", params: [], jsonrpc: "2.0"
         };
         this.emit("debug", { action: "sendRpcPayload", payload });
-        const result = (await this._send(payload))[0];
+        let result;
+        try {
+            result = (await this._send(payload))[0];
+        }
+        catch (error) {
+            this.emit("debug", { action: "receiveRpcError", error });
+            throw error;
+        }
         this.emit("debug", { action: "receiveRpcResult", result });
         if ("result" in result) {
             return Network.from(getBigInt(result.result));
@@ -14014,9 +13986,48 @@ class JsonRpcApiProvider extends AbstractProvider {
         throw this.getRpcError(payload, result);
     }
     /**
+     *  Sub-classes **MUST** call this. Until [[_start]] has been called, no calls
+     *  will be passed to [[_send]] from [[send]]. If it is overridden, then
+     *  ``super._start()`` **MUST** be called.
+     *
+     *  Calling it multiple times is safe and has no effect.
+     */
+    _start() {
+        if (this.#notReady == null || this.#notReady.resolve == null) {
+            return;
+        }
+        this.#notReady.resolve();
+        this.#notReady = null;
+        (async () => {
+            // Bootstrap the network
+            while (this.#network == null) {
+                try {
+                    this.#network = await this._detectNetwork();
+                }
+                catch (error) {
+                    console.log("JsonRpcProvider failed to startup; retry in 1s");
+                    await stall$2(1000);
+                }
+            }
+            // Start dispatching requests
+            this.#scheduleDrain();
+        })();
+    }
+    /**
+     *  Resolves once the [[_start]] has been called. This can be used in
+     *  sub-classes to defer sending data until the connection has been
+     *  established.
+     */
+    async _waitUntilReady() {
+        if (this.#notReady == null) {
+            return;
+        }
+        return await this.#notReady.promise;
+    }
+    /**
      *  Return a Subscriber that will manage the %%sub%%.
      *
-     *  Sub-classes can override this to modify the behavior of
+     *  Sub-classes may override this to modify the behavior of
      *  subscription management.
      */
     _getSubscriber(sub) {
@@ -14034,6 +14045,10 @@ class JsonRpcApiProvider extends AbstractProvider {
         }
         return super._getSubscriber(sub);
     }
+    /**
+     *  Returns true only if the [[_start]] has been called.
+     */
+    get ready() { return this.#notReady == null; }
     /**
      *  Returns %%tx%% as a normalized JSON-RPC transaction request,
      *  which has all values hexlified and any numeric values converted
@@ -14092,7 +14107,7 @@ class JsonRpcApiProvider extends AbstractProvider {
                     method: "eth_getCode",
                     args: [getLowerCase(req.address), req.blockTag]
                 };
-            case "getStorageAt":
+            case "getStorage":
                 return {
                     method: "eth_getStorageAt",
                     args: [
@@ -14209,34 +14224,65 @@ class JsonRpcApiProvider extends AbstractProvider {
         return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
     }
     /**
-     *  Resolves to the non-normalized value by performing %%req%%.
+     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
+     *  over the underlying channel. This can be used to call methods
+     *  on the backend that do not have a high-level API within the Provider
+     *  API.
      *
-     *  Sub-classes may override this to modify behavior of actions,
-     *  and should generally call ``super._perform`` as a fallback.
+     *  This method queues requests according to the batch constraints
+     *  in the options, assigns the request a unique ID.
+     *
+     *  **Do NOT override** this method in sub-classes; instead
+     *  override [[_send]] or force the options values in the
+     *  call to the constructor to modify this method's behavior.
      */
-    async _perform(req) {
-        // Legacy networks do not like the type field being passed along (which
-        // is fair), so we delete type if it is 0 and a non-EIP-1559 network
-        if (req.method === "call" || req.method === "estimateGas") {
-            let tx = req.transaction;
-            if (tx && tx.type != null && getBigInt(tx.type)) {
-                // If there are no EIP-1559 properties, it might be non-EIP-a559
-                if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
-                    const feeData = await this.getFeeData();
-                    if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
-                        // Network doesn't know about EIP-1559 (and hence type)
-                        req = Object.assign({}, req, {
-                            transaction: Object.assign({}, tx, { type: undefined })
-                        });
-                    }
-                }
+    send(method, params) {
+        // @TODO: cache chainId?? purge on switch_networks
+        const id = this.#nextId++;
+        const promise = new Promise((resolve, reject) => {
+            this.#payloads.push({
+                resolve, reject,
+                payload: { method, params, id, jsonrpc: "2.0" }
+            });
+        });
+        // If there is not a pending drainTimer, set one
+        this.#scheduleDrain();
+        return promise;
+    }
+    /**
+     *  Resolves to the [[Signer]] account for  %%address%% managed by
+     *  the client.
+     *
+     *  If the %%address%% is a number, it is used as an index in the
+     *  the accounts from [[listAccounts]].
+     *
+     *  This can only be used on clients which manage accounts (such as
+     *  Geth with imported account or MetaMask).
+     *
+     *  Throws if the account doesn't exist.
+     */
+    async getSigner(address = 0) {
+        const accountsPromise = this.send("eth_accounts", []);
+        // Account index
+        if (typeof (address) === "number") {
+            const accounts = (await accountsPromise);
+            if (address > accounts.length) {
+                throw new Error("no such account");
+            }
+            return new JsonRpcSigner(this, accounts[address]);
+        }
+        const { accounts } = await resolveProperties({
+            network: this.getNetwork(),
+            accounts: accountsPromise
+        });
+        // Account address
+        address = getAddress(address);
+        for (const account of accounts) {
+            if (getAddress(account) === account) {
+                return new JsonRpcSigner(this, account);
             }
         }
-        const request = this.getRpcRequest(req);
-        if (request != null) {
-            return await this.send(request.method, request.args);
-        }
-        return super._perform(req);
+        throw new Error("invalid account");
     }
 }
 /**
@@ -14263,16 +14309,19 @@ class JsonRpcProvider extends JsonRpcApiProvider {
         }
         this.#pollingInterval = 4000;
     }
+    _getConnection() {
+        return this.#connect.clone();
+    }
     async send(method, params) {
         // All requests are over HTTP, so we can just start handling requests
         // We do this here rather than the constructor so that we don't send any
-        // requests to the network until we absolutely have to.
+        // requests to the network (i.e. eth_chainId) until we absolutely have to.
         await this._start();
         return await super.send(method, params);
     }
     async _send(payload) {
         // Configure a POST connection for the requested method
-        const request = this.#connect.clone();
+        const request = this._getConnection();
         request.body = JSON.stringify(payload);
         const response = await request.send();
         response.assertOk();
@@ -14356,7 +14405,7 @@ function spelunkMessage(value) {
 const defaultApiKey$1 = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
 function getHost$2(name) {
     switch (name) {
-        case "homestead":
+        case "mainnet":
             return "eth-mainnet.alchemyapi.io";
         case "ropsten":
             return "eth-ropsten.alchemyapi.io";
@@ -14383,7 +14432,7 @@ function getHost$2(name) {
 }
 class AlchemyProvider extends JsonRpcProvider {
     apiKey;
-    constructor(_network = "homestead", apiKey) {
+    constructor(_network = "mainnet", apiKey) {
         const network = Network.from(_network);
         if (apiKey == null) {
             apiKey = defaultApiKey$1;
@@ -14447,7 +14496,7 @@ class AlchemyProvider extends JsonRpcProvider {
 const defaultApiKey = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
 function getHost$1(name) {
     switch (name) {
-        case "homestead":
+        case "mainnet":
             return "rpc.ankr.com/eth";
         case "ropsten":
             return "rpc.ankr.com/eth_ropsten";
@@ -14464,7 +14513,7 @@ function getHost$1(name) {
 }
 class AnkrProvider extends JsonRpcProvider {
     apiKey;
-    constructor(_network = "homestead", apiKey) {
+    constructor(_network = "mainnet", apiKey) {
         const network = Network.from(_network);
         if (apiKey == null) {
             apiKey = defaultApiKey;
@@ -14502,9 +14551,9 @@ class AnkrProvider extends JsonRpcProvider {
 }
 
 class CloudflareProvider extends JsonRpcProvider {
-    constructor(_network = "homestead") {
+    constructor(_network = "mainnet") {
         const network = Network.from(_network);
-        if (network.name !== "homestead") {
+        if (network.name !== "mainnet") {
             return throwArgumentError("unsupported network", "network", _network);
         }
         super("https:/\/cloudflare-eth.com/", network, { staticNetwork: network });
@@ -14531,82 +14580,20 @@ class EtherscanProvider extends BaseEtherscanProvider {
     }
 }
 
-const defaultProjectId = "84842078b09946638c03157f83405213";
-function getHost(name) {
-    switch (name) {
-        case "homestead":
-            return "mainnet.infura.io";
-        case "ropsten":
-            return "ropsten.infura.io";
-        case "rinkeby":
-            return "rinkeby.infura.io";
-        case "kovan":
-            return "kovan.infura.io";
-        case "goerli":
-            return "goerli.infura.io";
-        case "matic":
-            return "polygon-mainnet.infura.io";
-        case "maticmum":
-            return "polygon-mumbai.infura.io";
-        case "optimism":
-            return "optimism-mainnet.infura.io";
-        case "optimism-kovan":
-            return "optimism-kovan.infura.io";
-        case "arbitrum":
-            return "arbitrum-mainnet.infura.io";
-        case "arbitrum-rinkeby":
-            return "arbitrum-rinkeby.infura.io";
+function getGlobal() {
+    if (typeof self !== 'undefined') {
+        return self;
     }
-    return throwArgumentError("unsupported network", "network", name);
+    if (typeof window !== 'undefined') {
+        return window;
+    }
+    if (typeof global !== 'undefined') {
+        return global;
+    }
+    throw new Error('unable to locate global object');
 }
-class InfuraProvider extends JsonRpcProvider {
-    projectId;
-    projectSecret;
-    constructor(_network = "homestead", projectId, projectSecret) {
-        const network = Network.from(_network);
-        if (projectId == null) {
-            projectId = defaultProjectId;
-        }
-        if (projectSecret == null) {
-            projectSecret = null;
-        }
-        const request = InfuraProvider.getRequest(network, projectId, projectSecret);
-        super(request, network, { staticNetwork: network });
-        defineProperties(this, { projectId, projectSecret });
-    }
-    _getProvider(chainId) {
-        try {
-            return new InfuraProvider(chainId, this.projectId, this.projectSecret);
-        }
-        catch (error) { }
-        return super._getProvider(chainId);
-    }
-    static getRequest(network, projectId, projectSecret) {
-        if (projectId == null) {
-            projectId = defaultProjectId;
-        }
-        if (projectSecret == null) {
-            projectSecret = null;
-        }
-        const request = new FetchRequest(`https:/\/${getHost(network.name)}/v3/${projectId}`);
-        request.allowGzip = true;
-        if (projectSecret) {
-            request.setCredentials("", projectSecret);
-        }
-        if (projectId === defaultProjectId) {
-            request.retryFunc = async (request, response, attempt) => {
-                showThrottleMessage("InfuraProvider");
-                return true;
-            };
-        }
-        return request;
-    }
-    isCommunityResource() {
-        return (this.projectId === defaultProjectId);
-    }
-}
-
-const IpcSocketProvider = undefined;
+;
+const _WebSocket = getGlobal().WebSocket;
 
 /**
  *  SocketProvider
@@ -14765,9 +14752,13 @@ class SocketProvider extends JsonRpcApiProvider {
         // WebSocket provider doesn't accept batches
         assertArgument(!Array.isArray(payload), "WebSocket does not support batch send", "payload", payload);
         // @TODO: stringify payloads here and store to prevent mutations
+        // Prepare a promise to respond to
         const promise = new Promise((resolve, reject) => {
             this.#callbacks.set(payload.id, { payload, resolve, reject });
         });
+        // Wait until the socket is connected before writing to it
+        await this._waitUntilReady();
+        // Write the request to the socket
         await this._write(JSON.stringify(payload));
         return [await promise];
     }
@@ -14795,17 +14786,19 @@ class SocketProvider extends JsonRpcApiProvider {
                 return;
             }
             this.#callbacks.delete(result.id);
-            if ("error" in result) {
-                const { message, code, data } = result.error;
-                const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
-                    request: `ws:${JSON.stringify(callback.payload)}`,
-                    info: { code, data }
-                });
-                callback.reject(error);
-            }
-            else {
-                callback.resolve(result.result);
-            }
+            callback.resolve(result);
+            /*
+                        if ("error" in result) {
+                            const { message, code, data } = result.error;
+                            const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
+                                request: `ws:${ JSON.stringify(callback.payload) }`,
+                                info: { code, data }
+                            });
+                            callback.reject(error);
+                        } else {
+                            callback.resolve(result.result);
+                        }
+            */
         }
         else if (result.method === "eth_subscription") {
             const filterId = result.params.subscription;
@@ -14828,25 +14821,14 @@ class SocketProvider extends JsonRpcApiProvider {
     }
 }
 
-function getGlobal() {
-    if (typeof self !== 'undefined') {
-        return self;
-    }
-    if (typeof window !== 'undefined') {
-        return window;
-    }
-    if (typeof global !== 'undefined') {
-        return global;
-    }
-    throw new Error('unable to locate global object');
-}
-;
-const _WebSocket = getGlobal().WebSocket;
-
 class WebSocketProvider extends SocketProvider {
-    url;
     #websocket;
-    get websocket() { return this.#websocket; }
+    get websocket() {
+        if (this.#websocket == null) {
+            throw new Error("websocket closed");
+        }
+        return this.#websocket;
+    }
     constructor(url, network) {
         super(network);
         if (typeof (url) === "string") {
@@ -14871,7 +14853,116 @@ class WebSocketProvider extends SocketProvider {
     async _write(message) {
         this.websocket.send(message);
     }
+    async destroy() {
+        if (this.#websocket == null) {
+            return;
+        }
+        this.#websocket.close();
+        this.#websocket = null;
+    }
 }
+
+const defaultProjectId = "84842078b09946638c03157f83405213";
+function getHost(name) {
+    switch (name) {
+        case "mainnet":
+            return "mainnet.infura.io";
+        case "ropsten":
+            return "ropsten.infura.io";
+        case "rinkeby":
+            return "rinkeby.infura.io";
+        case "kovan":
+            return "kovan.infura.io";
+        case "goerli":
+            return "goerli.infura.io";
+        case "matic":
+            return "polygon-mainnet.infura.io";
+        case "maticmum":
+            return "polygon-mumbai.infura.io";
+        case "optimism":
+            return "optimism-mainnet.infura.io";
+        case "optimism-kovan":
+            return "optimism-kovan.infura.io";
+        case "arbitrum":
+            return "arbitrum-mainnet.infura.io";
+        case "arbitrum-rinkeby":
+            return "arbitrum-rinkeby.infura.io";
+    }
+    return throwArgumentError("unsupported network", "network", name);
+}
+class InfuraWebSocketProvider extends WebSocketProvider {
+    projectId;
+    projectSecret;
+    constructor(network, apiKey) {
+        const provider = new InfuraProvider(network, apiKey);
+        const req = provider._getConnection();
+        if (req.credentials) {
+            throwError("INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", {
+                operation: "InfuraProvider.getWebSocketProvider()"
+            });
+        }
+        const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+        super(url, network);
+        defineProperties(this, {
+            projectId: provider.projectId,
+            projectSecret: provider.projectSecret
+        });
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
+    }
+}
+class InfuraProvider extends JsonRpcProvider {
+    projectId;
+    projectSecret;
+    constructor(_network = "mainnet", projectId, projectSecret) {
+        const network = Network.from(_network);
+        if (projectId == null) {
+            projectId = defaultProjectId;
+        }
+        if (projectSecret == null) {
+            projectSecret = null;
+        }
+        const request = InfuraProvider.getRequest(network, projectId, projectSecret);
+        super(request, network, { staticNetwork: network });
+        defineProperties(this, { projectId, projectSecret });
+    }
+    _getProvider(chainId) {
+        try {
+            return new InfuraProvider(chainId, this.projectId, this.projectSecret);
+        }
+        catch (error) { }
+        return super._getProvider(chainId);
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
+    }
+    static getWebSocketProvider(network, apiKey) {
+        return new InfuraWebSocketProvider(network, apiKey);
+    }
+    static getRequest(network, projectId, projectSecret) {
+        if (projectId == null) {
+            projectId = defaultProjectId;
+        }
+        if (projectSecret == null) {
+            projectSecret = null;
+        }
+        const request = new FetchRequest(`https:/\/${getHost(network.name)}/v3/${projectId}`);
+        request.allowGzip = true;
+        if (projectSecret) {
+            request.setCredentials("", projectSecret);
+        }
+        if (projectId === defaultProjectId) {
+            request.retryFunc = async (request, response, attempt) => {
+                showThrottleMessage("InfuraProvider");
+                return true;
+            };
+        }
+        return request;
+    }
+}
+
+const IpcSocketProvider = undefined;
 
 /////
 
@@ -17499,6 +17590,20 @@ var ethers = /*#__PURE__*/Object.freeze({
     solidityPackedKeccak256: solidityPackedKeccak256,
     solidityPackedSha256: solidityPackedSha256,
     TypedDataEncoder: TypedDataEncoder,
+    AbstractProvider: AbstractProvider,
+    FallbackProvider: FallbackProvider,
+    JsonRpcApiProvider: JsonRpcApiProvider,
+    JsonRpcProvider: JsonRpcProvider,
+    JsonRpcSigner: JsonRpcSigner,
+    AlchemyProvider: AlchemyProvider,
+    AnkrProvider: AnkrProvider,
+    CloudflareProvider: CloudflareProvider,
+    EtherscanProvider: EtherscanProvider,
+    InfuraProvider: InfuraProvider,
+    IpcSocketProvider: IpcSocketProvider,
+    SocketProvider: SocketProvider,
+    WebSocketProvider: WebSocketProvider,
+    Network: Network,
     accessListify: accessListify,
     computeAddress: computeAddress,
     recoverAddress: recoverAddress,
@@ -17574,21 +17679,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     LangEn: LangEn,
     wordlists: wordlists,
     WordlistOwl: WordlistOwl,
-    WordlistOwlA: WordlistOwlA,
-    AbstractProvider: AbstractProvider,
-    FallbackProvider: FallbackProvider,
-    JsonRpcApiProvider: JsonRpcApiProvider,
-    JsonRpcProvider: JsonRpcProvider,
-    JsonRpcSigner: JsonRpcSigner,
-    AlchemyProvider: AlchemyProvider,
-    AnkrProvider: AnkrProvider,
-    CloudflareProvider: CloudflareProvider,
-    EtherscanProvider: EtherscanProvider,
-    InfuraProvider: InfuraProvider,
-    IpcSocketProvider: IpcSocketProvider,
-    SocketProvider: SocketProvider,
-    WebSocketProvider: WebSocketProvider,
-    Network: Network
+    WordlistOwlA: WordlistOwlA
 });
 
 export { AbiCoder, AbstractProvider, AlchemyProvider, AnkrProvider, BaseContract, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FetchCancelSignal, FetchRequest, FetchResponse, FixedFormat, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, HDNodeWalletManager, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, NegativeOne, Network, One, ParamType, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, Two, Typed, TypedDataEncoder, Utf8ErrorFuncs, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, Zero, ZeroAddress, ZeroHash, _toEscapedUtf8String, accessListify, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultAbiCoder, defaultPath$1 as defaultPath, dnsEncode, encodeBase58, encodeBase64, encodeRlp, encryptKeystoreJson, ethers, formatBytes32String, formatEther, formatFixed, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getIcapAddress, getIpfsGatewayFunc, getNumber, hashMessage, hexlify, id, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, langEn, lock, makeError, mask, namehash, parseBytes32String, parseEther, parseFixed, parseUnits, pbkdf2, randomBytes, recoverAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, throwArgumentError, throwError, toArray, toBigInt, toHex, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, wordlists, zeroPadBytes, zeroPadValue };

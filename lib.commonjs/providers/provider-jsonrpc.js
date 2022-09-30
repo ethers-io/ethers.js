@@ -198,72 +198,15 @@ exports.JsonRpcSigner = JsonRpcSigner;
  */
 class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
     #options;
+    // The next ID to use for the JSON-RPC ID field
     #nextId;
+    // Payloads are queued and triggered in batches using the drainTimer
     #payloads;
-    #ready;
-    #starting;
     #drainTimer;
+    #notReady;
     #network;
-    constructor(network, options) {
-        super(network);
-        this.#ready = false;
-        this.#starting = null;
-        this.#nextId = 1;
-        this.#options = Object.assign({}, defaultOptions, options || {});
-        this.#payloads = [];
-        this.#drainTimer = null;
-        this.#network = null;
-        // This could be relaxed in the future to just check equivalent networks
-        const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork) {
-            if (staticNetwork !== network) {
-                (0, index_js_4.throwArgumentError)("staticNetwork MUST match network object", "options", options);
-            }
-            this.#network = staticNetwork;
-        }
-    }
-    /**
-     *  Returns the value associated with the option %%key%%.
-     *
-     *  Sub-classes can use this to inquire about configuration options.
-     */
-    _getOption(key) {
-        return this.#options[key];
-    }
-    get _network() {
-        if (!this.#network) {
-            (0, index_js_4.throwError)("network is not available yet", "NETWORK_ERROR");
-        }
-        return this.#network;
-    }
-    get ready() { return this.#ready; }
-    async _start() {
-        if (this.#ready) {
-            return;
-        }
-        if (this.#starting) {
-            return this.#starting;
-        }
-        this.#starting = (async () => {
-            // Bootstrap the network
-            if (this.#network == null) {
-                try {
-                    this.#network = await this._detectNetwork();
-                }
-                catch (error) {
-                    console.log("JsonRpcProvider failed to startup; retry in 1s");
-                    await stall(1000);
-                    this.#starting = null;
-                }
-            }
-            this.#ready = true;
-            this.#starting = null;
-            // Start dispatching requests
-            this.#scheduleDrain();
-        })();
-    }
     #scheduleDrain() {
-        if (this.#drainTimer || !this.ready) {
+        if (this.#drainTimer) {
             return;
         }
         // If we aren't using batching, no hard in sending it immeidately
@@ -320,31 +263,46 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             }
         }, stallTime);
     }
-    /**
-     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
-     *  over the underlying channel. This can be used to call methods
-     *  on the backend that do not have a high-level API within the Provider
-     *  API.
-     *
-     *  This method queues requests according to the batch constraints
-     *  in the options, assigns the request a unique ID.
-     *
-     *  **Do NOT override** this method in sub-classes; instead
-     *  override [[_send]] or force the options values in the
-     *  call to the constructor to modify this method's behavior.
-     */
-    send(method, params) {
-        // @TODO: cache chainId?? purge on switch_networks
-        const id = this.#nextId++;
-        const promise = new Promise((resolve, reject) => {
-            this.#payloads.push({
-                resolve, reject,
-                payload: { method, params, id, jsonrpc: "2.0" }
+    constructor(network, options) {
+        super(network);
+        this.#nextId = 1;
+        this.#options = Object.assign({}, defaultOptions, options || {});
+        this.#payloads = [];
+        this.#drainTimer = null;
+        this.#network = null;
+        {
+            let resolve = null;
+            const promise = new Promise((_resolve) => {
+                resolve = _resolve;
             });
-        });
-        // If there is not a pending drainTimer, set one
-        this.#scheduleDrain();
-        return promise;
+            this.#notReady = { promise, resolve };
+        }
+        // This could be relaxed in the future to just check equivalent networks
+        const staticNetwork = this._getOption("staticNetwork");
+        if (staticNetwork) {
+            if (staticNetwork !== network) {
+                (0, index_js_4.throwArgumentError)("staticNetwork MUST match network object", "options", options);
+            }
+            this.#network = staticNetwork;
+        }
+    }
+    /**
+     *  Returns the value associated with the option %%key%%.
+     *
+     *  Sub-classes can use this to inquire about configuration options.
+     */
+    _getOption(key) {
+        return this.#options[key];
+    }
+    /**
+     *  Gets the [[Network]] this provider has committed to. On each call, the network
+     *  is detected, and if it has changed, the call will reject.
+     */
+    get _network() {
+        if (!this.#network) {
+            (0, index_js_4.throwError)("network is not available yet", "NETWORK_ERROR");
+        }
+        return this.#network;
     }
     /**
      *  Sends a JSON-RPC %%payload%% (or a batch) to the underlying channel.
@@ -357,44 +315,40 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         });
     }
     /**
-     *  Resolves to the [[Signer]] account for  %%address%% managed by
-     *  the client.
+     *  Resolves to the non-normalized value by performing %%req%%.
      *
-     *  If the %%address%% is a number, it is used as an index in the
-     *  the accounts from [[listAccounts]].
-     *
-     *  This can only be used on clients which manage accounts (such as
-     *  Geth with imported account or MetaMask).
-     *
-     *  Throws if the account doesn't exist.
+     *  Sub-classes may override this to modify behavior of actions,
+     *  and should generally call ``super._perform`` as a fallback.
      */
-    async getSigner(address = 0) {
-        const accountsPromise = this.send("eth_accounts", []);
-        // Account index
-        if (typeof (address) === "number") {
-            const accounts = (await accountsPromise);
-            if (address > accounts.length) {
-                throw new Error("no such account");
-            }
-            return new JsonRpcSigner(this, accounts[address]);
-        }
-        const { accounts } = await (0, index_js_4.resolveProperties)({
-            network: this.getNetwork(),
-            accounts: accountsPromise
-        });
-        // Account address
-        address = (0, index_js_1.getAddress)(address);
-        for (const account of accounts) {
-            if ((0, index_js_1.getAddress)(account) === account) {
-                return new JsonRpcSigner(this, account);
+    async _perform(req) {
+        // Legacy networks do not like the type field being passed along (which
+        // is fair), so we delete type if it is 0 and a non-EIP-1559 network
+        if (req.method === "call" || req.method === "estimateGas") {
+            let tx = req.transaction;
+            if (tx && tx.type != null && (0, index_js_4.getBigInt)(tx.type)) {
+                // If there are no EIP-1559 properties, it might be non-EIP-a559
+                if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
+                    const feeData = await this.getFeeData();
+                    if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
+                        // Network doesn't know about EIP-1559 (and hence type)
+                        req = Object.assign({}, req, {
+                            transaction: Object.assign({}, tx, { type: undefined })
+                        });
+                    }
+                }
             }
         }
-        throw new Error("invalid account");
+        const request = this.getRpcRequest(req);
+        if (request != null) {
+            return await this.send(request.method, request.args);
+        }
+        return super._perform(req);
     }
-    /** Sub-classes can override this; it detects the *actual* network that
+    /** Sub-classes may override this; it detects the *actual* network that
      *  we are **currently** connected to.
      *
-     *  Keep in mind that [[send]] may only be used once [[ready]].
+     *  Keep in mind that [[send]] may only be used once [[ready]], otherwise the
+     *  _send primitive must be used instead.
      */
     async _detectNetwork() {
         const network = this._getOption("staticNetwork");
@@ -410,7 +364,14 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             id: this.#nextId++, method: "eth_chainId", params: [], jsonrpc: "2.0"
         };
         this.emit("debug", { action: "sendRpcPayload", payload });
-        const result = (await this._send(payload))[0];
+        let result;
+        try {
+            result = (await this._send(payload))[0];
+        }
+        catch (error) {
+            this.emit("debug", { action: "receiveRpcError", error });
+            throw error;
+        }
         this.emit("debug", { action: "receiveRpcResult", result });
         if ("result" in result) {
             return network_js_1.Network.from((0, index_js_4.getBigInt)(result.result));
@@ -418,9 +379,48 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         throw this.getRpcError(payload, result);
     }
     /**
+     *  Sub-classes **MUST** call this. Until [[_start]] has been called, no calls
+     *  will be passed to [[_send]] from [[send]]. If it is overridden, then
+     *  ``super._start()`` **MUST** be called.
+     *
+     *  Calling it multiple times is safe and has no effect.
+     */
+    _start() {
+        if (this.#notReady == null || this.#notReady.resolve == null) {
+            return;
+        }
+        this.#notReady.resolve();
+        this.#notReady = null;
+        (async () => {
+            // Bootstrap the network
+            while (this.#network == null) {
+                try {
+                    this.#network = await this._detectNetwork();
+                }
+                catch (error) {
+                    console.log("JsonRpcProvider failed to startup; retry in 1s");
+                    await stall(1000);
+                }
+            }
+            // Start dispatching requests
+            this.#scheduleDrain();
+        })();
+    }
+    /**
+     *  Resolves once the [[_start]] has been called. This can be used in
+     *  sub-classes to defer sending data until the connection has been
+     *  established.
+     */
+    async _waitUntilReady() {
+        if (this.#notReady == null) {
+            return;
+        }
+        return await this.#notReady.promise;
+    }
+    /**
      *  Return a Subscriber that will manage the %%sub%%.
      *
-     *  Sub-classes can override this to modify the behavior of
+     *  Sub-classes may override this to modify the behavior of
      *  subscription management.
      */
     _getSubscriber(sub) {
@@ -438,6 +438,10 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         }
         return super._getSubscriber(sub);
     }
+    /**
+     *  Returns true only if the [[_start]] has been called.
+     */
+    get ready() { return this.#notReady == null; }
     /**
      *  Returns %%tx%% as a normalized JSON-RPC transaction request,
      *  which has all values hexlified and any numeric values converted
@@ -496,7 +500,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                     method: "eth_getCode",
                     args: [getLowerCase(req.address), req.blockTag]
                 };
-            case "getStorageAt":
+            case "getStorage":
                 return {
                     method: "eth_getStorageAt",
                     args: [
@@ -613,34 +617,65 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         return (0, index_js_4.makeError)("could not coalesce error", "UNKNOWN_ERROR", { error });
     }
     /**
-     *  Resolves to the non-normalized value by performing %%req%%.
+     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
+     *  over the underlying channel. This can be used to call methods
+     *  on the backend that do not have a high-level API within the Provider
+     *  API.
      *
-     *  Sub-classes may override this to modify behavior of actions,
-     *  and should generally call ``super._perform`` as a fallback.
+     *  This method queues requests according to the batch constraints
+     *  in the options, assigns the request a unique ID.
+     *
+     *  **Do NOT override** this method in sub-classes; instead
+     *  override [[_send]] or force the options values in the
+     *  call to the constructor to modify this method's behavior.
      */
-    async _perform(req) {
-        // Legacy networks do not like the type field being passed along (which
-        // is fair), so we delete type if it is 0 and a non-EIP-1559 network
-        if (req.method === "call" || req.method === "estimateGas") {
-            let tx = req.transaction;
-            if (tx && tx.type != null && (0, index_js_4.getBigInt)(tx.type)) {
-                // If there are no EIP-1559 properties, it might be non-EIP-a559
-                if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
-                    const feeData = await this.getFeeData();
-                    if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
-                        // Network doesn't know about EIP-1559 (and hence type)
-                        req = Object.assign({}, req, {
-                            transaction: Object.assign({}, tx, { type: undefined })
-                        });
-                    }
-                }
+    send(method, params) {
+        // @TODO: cache chainId?? purge on switch_networks
+        const id = this.#nextId++;
+        const promise = new Promise((resolve, reject) => {
+            this.#payloads.push({
+                resolve, reject,
+                payload: { method, params, id, jsonrpc: "2.0" }
+            });
+        });
+        // If there is not a pending drainTimer, set one
+        this.#scheduleDrain();
+        return promise;
+    }
+    /**
+     *  Resolves to the [[Signer]] account for  %%address%% managed by
+     *  the client.
+     *
+     *  If the %%address%% is a number, it is used as an index in the
+     *  the accounts from [[listAccounts]].
+     *
+     *  This can only be used on clients which manage accounts (such as
+     *  Geth with imported account or MetaMask).
+     *
+     *  Throws if the account doesn't exist.
+     */
+    async getSigner(address = 0) {
+        const accountsPromise = this.send("eth_accounts", []);
+        // Account index
+        if (typeof (address) === "number") {
+            const accounts = (await accountsPromise);
+            if (address > accounts.length) {
+                throw new Error("no such account");
+            }
+            return new JsonRpcSigner(this, accounts[address]);
+        }
+        const { accounts } = await (0, index_js_4.resolveProperties)({
+            network: this.getNetwork(),
+            accounts: accountsPromise
+        });
+        // Account address
+        address = (0, index_js_1.getAddress)(address);
+        for (const account of accounts) {
+            if ((0, index_js_1.getAddress)(account) === account) {
+                return new JsonRpcSigner(this, account);
             }
         }
-        const request = this.getRpcRequest(req);
-        if (request != null) {
-            return await this.send(request.method, request.args);
-        }
-        return super._perform(req);
+        throw new Error("invalid account");
     }
 }
 exports.JsonRpcApiProvider = JsonRpcApiProvider;
@@ -668,16 +703,19 @@ class JsonRpcProvider extends JsonRpcApiProvider {
         }
         this.#pollingInterval = 4000;
     }
+    _getConnection() {
+        return this.#connect.clone();
+    }
     async send(method, params) {
         // All requests are over HTTP, so we can just start handling requests
         // We do this here rather than the constructor so that we don't send any
-        // requests to the network until we absolutely have to.
+        // requests to the network (i.e. eth_chainId) until we absolutely have to.
         await this._start();
         return await super.send(method, params);
     }
     async _send(payload) {
         // Configure a POST connection for the requested method
-        const request = this.#connect.clone();
+        const request = this._getConnection();
         request.body = JSON.stringify(payload);
         const response = await request.send();
         response.assertOk();

@@ -140,23 +140,11 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      *  Sub-classes can use this to inquire about configuration options.
      */
     _getOption<K extends keyof JsonRpcApiProviderOptions>(key: K): JsonRpcApiProviderOptions[K];
-    get _network(): Network;
-    get ready(): boolean;
-    _start(): Promise<void>;
     /**
-     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
-     *  over the underlying channel. This can be used to call methods
-     *  on the backend that do not have a high-level API within the Provider
-     *  API.
-     *
-     *  This method queues requests according to the batch constraints
-     *  in the options, assigns the request a unique ID.
-     *
-     *  **Do NOT override** this method in sub-classes; instead
-     *  override [[_send]] or force the options values in the
-     *  call to the constructor to modify this method's behavior.
+     *  Gets the [[Network]] this provider has committed to. On each call, the network
+     *  is detected, and if it has changed, the call will reject.
      */
-    send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
+    get _network(): Network;
     /**
      *  Sends a JSON-RPC %%payload%% (or a batch) to the underlying channel.
      *
@@ -164,31 +152,44 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      */
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>>;
     /**
-     *  Resolves to the [[Signer]] account for  %%address%% managed by
-     *  the client.
+     *  Resolves to the non-normalized value by performing %%req%%.
      *
-     *  If the %%address%% is a number, it is used as an index in the
-     *  the accounts from [[listAccounts]].
-     *
-     *  This can only be used on clients which manage accounts (such as
-     *  Geth with imported account or MetaMask).
-     *
-     *  Throws if the account doesn't exist.
+     *  Sub-classes may override this to modify behavior of actions,
+     *  and should generally call ``super._perform`` as a fallback.
      */
-    getSigner(address?: number | string): Promise<JsonRpcSigner>;
-    /** Sub-classes can override this; it detects the *actual* network that
+    _perform(req: PerformActionRequest): Promise<any>;
+    /** Sub-classes may override this; it detects the *actual* network that
      *  we are **currently** connected to.
      *
-     *  Keep in mind that [[send]] may only be used once [[ready]].
+     *  Keep in mind that [[send]] may only be used once [[ready]], otherwise the
+     *  _send primitive must be used instead.
      */
     _detectNetwork(): Promise<Network>;
     /**
+     *  Sub-classes **MUST** call this. Until [[_start]] has been called, no calls
+     *  will be passed to [[_send]] from [[send]]. If it is overridden, then
+     *  ``super._start()`` **MUST** be called.
+     *
+     *  Calling it multiple times is safe and has no effect.
+     */
+    _start(): void;
+    /**
+     *  Resolves once the [[_start]] has been called. This can be used in
+     *  sub-classes to defer sending data until the connection has been
+     *  established.
+     */
+    _waitUntilReady(): Promise<void>;
+    /**
      *  Return a Subscriber that will manage the %%sub%%.
      *
-     *  Sub-classes can override this to modify the behavior of
+     *  Sub-classes may override this to modify the behavior of
      *  subscription management.
      */
     _getSubscriber(sub: Subscription): Subscriber;
+    /**
+     *  Returns true only if the [[_start]] has been called.
+     */
+    get ready(): boolean;
     /**
      *  Returns %%tx%% as a normalized JSON-RPC transaction request,
      *  which has all values hexlified and any numeric values converted
@@ -211,12 +212,32 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      */
     getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error;
     /**
-     *  Resolves to the non-normalized value by performing %%req%%.
+     *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
+     *  over the underlying channel. This can be used to call methods
+     *  on the backend that do not have a high-level API within the Provider
+     *  API.
      *
-     *  Sub-classes may override this to modify behavior of actions,
-     *  and should generally call ``super._perform`` as a fallback.
+     *  This method queues requests according to the batch constraints
+     *  in the options, assigns the request a unique ID.
+     *
+     *  **Do NOT override** this method in sub-classes; instead
+     *  override [[_send]] or force the options values in the
+     *  call to the constructor to modify this method's behavior.
      */
-    _perform(req: PerformActionRequest): Promise<any>;
+    send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
+    /**
+     *  Resolves to the [[Signer]] account for  %%address%% managed by
+     *  the client.
+     *
+     *  If the %%address%% is a number, it is used as an index in the
+     *  the accounts from [[listAccounts]].
+     *
+     *  This can only be used on clients which manage accounts (such as
+     *  Geth with imported account or MetaMask).
+     *
+     *  Throws if the account doesn't exist.
+     */
+    getSigner(address?: number | string): Promise<JsonRpcSigner>;
 }
 /**
  *  The JsonRpcProvider is one of the most common Providers,
@@ -229,6 +250,7 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
 export declare class JsonRpcProvider extends JsonRpcApiProvider {
     #private;
     constructor(url?: string | FetchRequest, network?: Networkish, options?: JsonRpcApiProviderOptions);
+    _getConnection(): FetchRequest;
     send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult>>;
     /**

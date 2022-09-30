@@ -1,8 +1,9 @@
-import { AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, 
+import { AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider,
 //    PocketProvider,
-FallbackProvider, } from "../index.js";
+//    FallbackProvider,
+ } from "../index.js";
 ;
-const ethNetworks = ["default", "homestead", "rinkeby", "ropsten", "goerli"];
+const ethNetworks = ["default", "mainnet", "rinkeby", "ropsten", "goerli"];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {
@@ -21,7 +22,7 @@ const ProviderCreators = [
     },
     {
         name: "CloudflareProvider",
-        networks: ["default", "homestead"],
+        networks: ["default", "mainnet"],
         create: function (network) {
             return new CloudflareProvider(network);
         }
@@ -40,13 +41,20 @@ const ProviderCreators = [
             return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    {
+        name: "InfuraWebsocketProvider",
+        networks: ethNetworks,
+        create: function (network) {
+            return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+        }
+    },
     /*
     {
         name: "PocketProvider",
         networks: ethNetworks,
         create: function(network: string) {
             const apiKeys: Record<string, string> = {
-                homestead: "6004bcd10040261633ade990",
+                mainnet: "6004bcd10040261633ade990",
                 ropsten: "6004bd4d0040261633ade991",
                 rinkeby: "6004bda20040261633ade994",
                 goerli: "6004bd860040261633ade992",
@@ -55,25 +63,23 @@ const ProviderCreators = [
         }
     },
     */
-    {
-        name: "FallbackProvider",
-        networks: ethNetworks,
-        create: function (network) {
-            const providers = [];
-            for (const creator of ProviderCreators) {
-                if (creator.name === "FallbackProvider") {
-                    continue;
-                }
-                if (creator.networks.indexOf(network) >= 0) {
-                    const provider = creator.create(network);
-                    if (provider) {
-                        providers.push(provider);
+    /*
+        {
+            name: "FallbackProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                const providers: Array<AbstractProvider> = [];
+                for (const creator of ProviderCreators) {
+                    if (creator.name === "FallbackProvider") { continue; }
+                    if (creator.networks.indexOf(network) >= 0) {
+                        const provider = creator.create(network);
+                        if (provider) { providers.push(provider); }
                     }
                 }
+                return new FallbackProvider(providers);
             }
-            return new FallbackProvider(providers);
-        }
-    },
+        },
+    */
 ];
 export const providerNames = Object.freeze(ProviderCreators.map((c) => (c.name)));
 function getCreator(provider) {
@@ -96,6 +102,10 @@ export function getProvider(provider, network) {
         return creator.create(network);
     }
     return null;
+}
+export function checkProvider(provider, network) {
+    const creator = getCreator(provider);
+    return (creator != null);
 }
 export function connect(network) {
     const provider = getProvider("InfuraProvider", network);

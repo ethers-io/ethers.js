@@ -88,7 +88,7 @@ export declare type PerformActionRequest = {
     method: "getLogs";
     filter: PerformActionFilter;
 } | {
-    method: "getStorageAt";
+    method: "getStorage";
     address: string;
     position: bigint;
     blockTag: BlockTag;
@@ -138,7 +138,7 @@ export declare class AbstractProvider implements Provider {
     getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint>;
     getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number>;
     getCode(address: AddressLike, blockTag?: BlockTag): Promise<string>;
-    getStorageAt(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string>;
+    getStorage(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string>;
     broadcastTransaction(signedTx: string): Promise<TransactionResponse>;
     getBlock(block: BlockTag | string): Promise<null | Block<string>>;
     getBlockWithTransactions(block: BlockTag | string): Promise<null | Block<TransactionResponse>>;

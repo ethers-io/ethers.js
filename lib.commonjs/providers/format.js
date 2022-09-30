@@ -2,8 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.formatTransactionResponse = exports.formatTransactionReceipt = exports.formatReceiptLog = exports.formatBlockWithTransactions = exports.formatBlock = exports.formatLog = exports.formatUint256 = exports.formatHash = exports.formatData = exports.formatBoolean = exports.object = exports.arrayOf = exports.allowNull = void 0;
 const index_js_1 = require("../address/index.js");
-const index_js_2 = require("../transaction/index.js");
-const index_js_3 = require("../utils/index.js");
+const index_js_2 = require("../crypto/index.js");
+const index_js_3 = require("../transaction/index.js");
+const index_js_4 = require("../utils/index.js");
 const BN_0 = BigInt(0);
 function allowNull(format, nullValue) {
     return (function (value) {
@@ -47,7 +48,7 @@ function object(format, altNames) {
             }
             catch (error) {
                 const message = (error instanceof Error) ? error.message : "not-an-error";
-                (0, index_js_3.throwError)(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+                (0, index_js_4.throwError)(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
             }
         }
         return result;
@@ -63,40 +64,40 @@ function formatBoolean(value) {
         case "false":
             return false;
     }
-    return (0, index_js_3.throwArgumentError)(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
+    return (0, index_js_4.throwArgumentError)(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
 }
 exports.formatBoolean = formatBoolean;
 function formatData(value) {
-    if (!(0, index_js_3.isHexString)(value, true)) {
-        (0, index_js_3.throwArgumentError)("", "value", value);
+    if (!(0, index_js_4.isHexString)(value, true)) {
+        (0, index_js_4.throwArgumentError)("", "value", value);
     }
     return value;
 }
 exports.formatData = formatData;
 function formatHash(value) {
-    if (!(0, index_js_3.isHexString)(value, 32)) {
-        (0, index_js_3.throwArgumentError)("", "value", value);
+    if (!(0, index_js_4.isHexString)(value, 32)) {
+        (0, index_js_4.throwArgumentError)("", "value", value);
     }
     return value;
 }
 exports.formatHash = formatHash;
 function formatUint256(value) {
-    if (!(0, index_js_3.isHexString)(value)) {
+    if (!(0, index_js_4.isHexString)(value)) {
         throw new Error("invalid uint256");
     }
-    return (0, index_js_3.zeroPadValue)(value, 32);
+    return (0, index_js_4.zeroPadValue)(value, 32);
 }
 exports.formatUint256 = formatUint256;
 exports.formatLog = object({
     address: index_js_1.getAddress,
     blockHash: formatHash,
-    blockNumber: index_js_3.getNumber,
+    blockNumber: index_js_4.getNumber,
     data: formatData,
-    index: index_js_3.getNumber,
+    index: index_js_4.getNumber,
     removed: formatBoolean,
     topics: arrayOf(formatHash),
     transactionHash: formatHash,
-    transactionIndex: index_js_3.getNumber,
+    transactionIndex: index_js_4.getNumber,
 }, {
     index: ["logIndex"]
 });
@@ -104,55 +105,59 @@ function _formatBlock(txFunc) {
     return object({
         hash: allowNull(formatHash),
         parentHash: formatHash,
-        number: index_js_3.getNumber,
-        timestamp: index_js_3.getNumber,
+        number: index_js_4.getNumber,
+        timestamp: index_js_4.getNumber,
         nonce: allowNull(formatData),
-        difficulty: index_js_3.getBigInt,
-        gasLimit: index_js_3.getBigInt,
-        gasUsed: index_js_3.getBigInt,
+        difficulty: index_js_4.getBigInt,
+        gasLimit: index_js_4.getBigInt,
+        gasUsed: index_js_4.getBigInt,
         miner: allowNull(index_js_1.getAddress),
         extraData: formatData,
         transactions: arrayOf(txFunc),
-        baseFeePerGas: allowNull(index_js_3.getBigInt)
+        baseFeePerGas: allowNull(index_js_4.getBigInt)
     });
 }
 exports.formatBlock = _formatBlock(formatHash);
 exports.formatBlockWithTransactions = _formatBlock(formatTransactionResponse);
 exports.formatReceiptLog = object({
-    transactionIndex: index_js_3.getNumber,
-    blockNumber: index_js_3.getNumber,
+    transactionIndex: index_js_4.getNumber,
+    blockNumber: index_js_4.getNumber,
     transactionHash: formatHash,
     address: index_js_1.getAddress,
     topics: arrayOf(formatHash),
     data: formatData,
-    logIndex: index_js_3.getNumber,
+    index: index_js_4.getNumber,
     blockHash: formatHash,
+}, {
+    index: ["logIndex"]
 });
 exports.formatTransactionReceipt = object({
     to: allowNull(index_js_1.getAddress, null),
     from: allowNull(index_js_1.getAddress, null),
     contractAddress: allowNull(index_js_1.getAddress, null),
-    transactionIndex: index_js_3.getNumber,
     // should be allowNull(hash), but broken-EIP-658 support is handled in receipt
-    root: allowNull(index_js_3.hexlify),
-    gasUsed: index_js_3.getBigInt,
+    index: index_js_4.getNumber,
+    root: allowNull(index_js_4.hexlify),
+    gasUsed: index_js_4.getBigInt,
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
-    transactionHash: formatHash,
+    hash: formatHash,
     logs: arrayOf(exports.formatReceiptLog),
-    blockNumber: index_js_3.getNumber,
-    confirmations: allowNull(index_js_3.getNumber, null),
-    cumulativeGasUsed: index_js_3.getBigInt,
-    effectiveGasPrice: allowNull(index_js_3.getBigInt),
-    status: allowNull(index_js_3.getNumber),
-    type: index_js_3.getNumber
+    blockNumber: index_js_4.getNumber,
+    confirmations: allowNull(index_js_4.getNumber, null),
+    cumulativeGasUsed: index_js_4.getBigInt,
+    effectiveGasPrice: allowNull(index_js_4.getBigInt),
+    status: allowNull(index_js_4.getNumber),
+    type: index_js_4.getNumber
 }, {
-    effectiveGasPrice: ["gasPrice"]
+    effectiveGasPrice: ["gasPrice"],
+    hash: ["transactionHash"],
+    index: ["transactionIndex"],
 });
 function formatTransactionResponse(value) {
     // Some clients (TestRPC) do strange things like return 0x0 for the
     // 0 address; correct this to be a real address
-    if (value.to && (0, index_js_3.getBigInt)(value.to) === BN_0) {
+    if (value.to && (0, index_js_4.getBigInt)(value.to) === BN_0) {
         value.to = "0x0000000000000000000000000000000000000000";
     }
     const result = object({
@@ -161,28 +166,25 @@ function formatTransactionResponse(value) {
             if (value === "0x" || value == null) {
                 return 0;
             }
-            return (0, index_js_3.getNumber)(value);
+            return (0, index_js_4.getNumber)(value);
         },
-        accessList: allowNull(index_js_2.accessListify, null),
+        accessList: allowNull(index_js_3.accessListify, null),
         blockHash: allowNull(formatHash, null),
-        blockNumber: allowNull(index_js_3.getNumber, null),
-        transactionIndex: allowNull(index_js_3.getNumber, null),
-        confirmations: allowNull(index_js_3.getNumber, null),
+        blockNumber: allowNull(index_js_4.getNumber, null),
+        transactionIndex: allowNull(index_js_4.getNumber, null),
+        confirmations: allowNull(index_js_4.getNumber, null),
         from: index_js_1.getAddress,
         // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
-        gasPrice: allowNull(index_js_3.getBigInt),
-        maxPriorityFeePerGas: allowNull(index_js_3.getBigInt),
-        maxFeePerGas: allowNull(index_js_3.getBigInt),
-        gasLimit: index_js_3.getBigInt,
+        gasPrice: allowNull(index_js_4.getBigInt),
+        maxPriorityFeePerGas: allowNull(index_js_4.getBigInt),
+        maxFeePerGas: allowNull(index_js_4.getBigInt),
+        gasLimit: index_js_4.getBigInt,
         to: allowNull(index_js_1.getAddress, null),
-        value: index_js_3.getBigInt,
-        nonce: index_js_3.getNumber,
+        value: index_js_4.getBigInt,
+        nonce: index_js_4.getNumber,
         data: formatData,
-        r: allowNull(formatUint256),
-        s: allowNull(formatUint256),
-        v: allowNull(index_js_3.getNumber),
         creates: allowNull(index_js_1.getAddress, null),
-        chainId: allowNull(index_js_3.getBigInt, null)
+        chainId: allowNull(index_js_4.getBigInt, null)
     }, {
         data: ["input"],
         gasLimit: ["gas"]
@@ -194,7 +196,16 @@ function formatTransactionResponse(value) {
     // @TODO: Check fee data
     // Add an access list to supported transaction types
     if ((value.type === 1 || value.type === 2) && value.accessList == null) {
-        value.accessList = [];
+        result.accessList = [];
+    }
+    // Compute the signature
+    result.signature = index_js_2.Signature.from(value);
+    // Some backends omit ChainId on legacy transactions, but we can compute it
+    if (result.chainId == null) {
+        const chainId = result.signature.legacyChainId;
+        if (chainId != null) {
+            result.chainId = chainId;
+        }
     }
     // @TODO: check chainID
     /*
@@ -231,7 +242,7 @@ function formatTransactionResponse(value) {
     }
     */
     // 0x0000... should actually be null
-    if (result.blockHash && (0, index_js_3.getBigInt)(result.blockHash) === BN_0) {
+    if (result.blockHash && (0, index_js_4.getBigInt)(result.blockHash) === BN_0) {
         result.blockHash = null;
     }
     return result;

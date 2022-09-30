@@ -10,9 +10,9 @@ export interface WebSocketLike {
 }
 export declare class WebSocketProvider extends SocketProvider {
     #private;
-    url: string;
     get websocket(): WebSocketLike;
     constructor(url: string | WebSocketLike, network?: Networkish);
     _write(message: string): Promise<void>;
+    destroy(): Promise<void>;
 }
 //# sourceMappingURL=provider-websocket.d.ts.map

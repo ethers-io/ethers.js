@@ -24,7 +24,7 @@ describe("Resolve ENS avatar", function () {
     ].forEach((test) => {
         it(`Resolves avatar for ${test.title}`, async function () {
             this.timeout(60000);
-            const provider = (0, create_provider_js_1.connect)("homestead");
+            const provider = (0, create_provider_js_1.connect)("mainnet");
             const avatar = await provider.getAvatar(test.name);
             assert_1.default.equal(avatar, test.value, "avatar url");
         });

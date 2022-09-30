@@ -9,7 +9,7 @@
  *  - a sub-class MUST call `_processMessage(string)` for each message
  */
 import { UnmanagedSubscriber } from "./abstract-provider.js";
-import { assertArgument, makeError, throwError } from "../utils/index.js";
+import { assertArgument, throwError } from "../utils/index.js";
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 export class SocketSubscriber {
     #provider;
@@ -158,9 +158,13 @@ export class SocketProvider extends JsonRpcApiProvider {
         // WebSocket provider doesn't accept batches
         assertArgument(!Array.isArray(payload), "WebSocket does not support batch send", "payload", payload);
         // @TODO: stringify payloads here and store to prevent mutations
+        // Prepare a promise to respond to
         const promise = new Promise((resolve, reject) => {
             this.#callbacks.set(payload.id, { payload, resolve, reject });
         });
+        // Wait until the socket is connected before writing to it
+        await this._waitUntilReady();
+        // Write the request to the socket
         await this._write(JSON.stringify(payload));
         return [await promise];
     }
@@ -188,17 +192,19 @@ export class SocketProvider extends JsonRpcApiProvider {
                 return;
             }
             this.#callbacks.delete(result.id);
-            if ("error" in result) {
-                const { message, code, data } = result.error;
-                const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
-                    request: `ws:${JSON.stringify(callback.payload)}`,
-                    info: { code, data }
-                });
-                callback.reject(error);
-            }
-            else {
-                callback.resolve(result.result);
-            }
+            callback.resolve(result);
+            /*
+                        if ("error" in result) {
+                            const { message, code, data } = result.error;
+                            const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
+                                request: `ws:${ JSON.stringify(callback.payload) }`,
+                                info: { code, data }
+                            });
+                            callback.reject(error);
+                        } else {
+                            callback.resolve(result.result);
+                        }
+            */
         }
         else if (result.method === "eth_subscription") {
             const filterId = result.params.subscription;

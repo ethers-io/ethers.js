@@ -96,7 +96,7 @@ export class Block {
     constructor(block, provider) {
         this.#transactions = Object.freeze(block.transactions.map((tx) => {
             if (typeof (tx) !== "string" && tx.provider !== provider) {
-                throw new Error("provider mismatch");
+                return (new TransactionResponse(tx, provider));
             }
             return tx;
         }));
@@ -252,17 +252,14 @@ export class TransactionReceipt {
     gasUsed;
     cumulativeGasUsed;
     gasPrice;
-    byzantium;
+    type;
+    //readonly byzantium!: boolean;
     status;
     root;
     #logs;
     constructor(tx, provider) {
         this.#logs = Object.freeze(tx.logs.map((log) => {
-            if (provider !== log.provider) {
-                //return log.connect(provider);
-                throw new Error("provider mismatch");
-            }
-            return log;
+            return new Log(log, provider);
         }));
         defineProperties(this, {
             provider,
@@ -277,7 +274,8 @@ export class TransactionReceipt {
             gasUsed: tx.gasUsed,
             cumulativeGasUsed: tx.cumulativeGasUsed,
             gasPrice: (tx.effectiveGasPrice || tx.gasPrice),
-            byzantium: tx.byzantium,
+            type: tx.type,
+            //byzantium: tx.byzantium,
             status: tx.status,
             root: tx.root
         });
@@ -287,10 +285,13 @@ export class TransactionReceipt {
     //    return new TransactionReceipt(this, provider);
     //}
     toJSON() {
-        const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, byzantium, status, root } = this;
+        const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
+        status, root } = this;
         return {
             _type: "TransactionReceipt",
-            blockHash, blockNumber, byzantium, contractAddress,
+            blockHash, blockNumber,
+            //byzantium, 
+            contractAddress,
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
             gasPrice: toJson(this.gasPrice),

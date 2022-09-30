@@ -58,7 +58,7 @@ function normalize(provider, value, req) {
             return (0, index_js_1.getNumber)(value).toString();
         case "getCode":
             return (0, index_js_1.hexlify)(value);
-        case "getStorageAt":
+        case "getStorage":
             return (0, index_js_1.hexlify)(value);
         case "getBlock":
             if (req.includeTransactions) {
@@ -316,7 +316,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
             case "getBalance":
             case "getTransactionCount":
             case "getCode":
-            case "getStorageAt":
+            case "getStorage":
             case "getTransaction":
             case "getTransactionReceipt":
             case "getLogs":

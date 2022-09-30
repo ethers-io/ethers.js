@@ -134,7 +134,7 @@ class Network {
     static from(network) {
         // Default network
         if (network == null) {
-            return Network.from("homestead");
+            return Network.from("mainnet");
         }
         // Canonical name or chain ID
         if (typeof (network) === "number") {

@@ -1,11 +1,12 @@
-import { defineProperties, FetchRequest, throwArgumentError } from "../utils/index.js";
+import { defineProperties, FetchRequest, throwArgumentError, throwError } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
+import { WebSocketProvider } from "./provider-websocket.js";
 const defaultProjectId = "84842078b09946638c03157f83405213";
 function getHost(name) {
     switch (name) {
-        case "homestead":
+        case "mainnet":
             return "mainnet.infura.io";
         case "ropsten":
             return "ropsten.infura.io";
@@ -30,10 +31,32 @@ function getHost(name) {
     }
     return throwArgumentError("unsupported network", "network", name);
 }
+export class InfuraWebSocketProvider extends WebSocketProvider {
+    projectId;
+    projectSecret;
+    constructor(network, apiKey) {
+        const provider = new InfuraProvider(network, apiKey);
+        const req = provider._getConnection();
+        if (req.credentials) {
+            throwError("INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", {
+                operation: "InfuraProvider.getWebSocketProvider()"
+            });
+        }
+        const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+        super(url, network);
+        defineProperties(this, {
+            projectId: provider.projectId,
+            projectSecret: provider.projectSecret
+        });
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
+    }
+}
 export class InfuraProvider extends JsonRpcProvider {
     projectId;
     projectSecret;
-    constructor(_network = "homestead", projectId, projectSecret) {
+    constructor(_network = "mainnet", projectId, projectSecret) {
         const network = Network.from(_network);
         if (projectId == null) {
             projectId = defaultProjectId;
@@ -51,6 +74,12 @@ export class InfuraProvider extends JsonRpcProvider {
         }
         catch (error) { }
         return super._getProvider(chainId);
+    }
+    isCommunityResource() {
+        return (this.projectId === defaultProjectId);
+    }
+    static getWebSocketProvider(network, apiKey) {
+        return new InfuraWebSocketProvider(network, apiKey);
     }
     static getRequest(network, projectId, projectSecret) {
         if (projectId == null) {
@@ -71,9 +100,6 @@ export class InfuraProvider extends JsonRpcProvider {
             };
         }
         return request;
-    }
-    isCommunityResource() {
-        return (this.projectId === defaultProjectId);
     }
 }
 //# sourceMappingURL=provider-infura.js.map

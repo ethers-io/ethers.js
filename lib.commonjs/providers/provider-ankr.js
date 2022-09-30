@@ -8,7 +8,7 @@ const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 const defaultApiKey = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
 function getHost(name) {
     switch (name) {
-        case "homestead":
+        case "mainnet":
             return "rpc.ankr.com/eth";
         case "ropsten":
             return "rpc.ankr.com/eth_ropsten";
@@ -25,7 +25,7 @@ function getHost(name) {
 }
 class AnkrProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     apiKey;
-    constructor(_network = "homestead", apiKey) {
+    constructor(_network = "mainnet", apiKey) {
         const network = network_js_1.Network.from(_network);
         if (apiKey == null) {
             apiKey = defaultApiKey;
