@@ -1,0 +1,81 @@
+name: Continuous Integration Tests
+
+on:
+  push:
+    branches:
+      - v6-beta-exports
+
+jobs:
+
+  test-node:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ 16.x, 18.x ]
+        test-type: [ test, test-commonjs ]
+
+    steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: "v6-beta-exports"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ESM and CommonJS (from TypeScript)
+        run: npm run build-all
+
+      - name: Run tests (${{ matrix.test-type }})
+        run: npm run ${{ matrix.test-type }}
+
+
+  coverage:
+
+    name: Coverage
+
+    runs-on: ubuntu-latest
+
+    continue-on-error: true
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: "v6-beta-exports"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ESM (from TypeScript)
+        run: npm run build
+
+      - name: Run tests
+        run: npm run test-coverage
+
+      - name: Upload coverage summary
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-summary
+          path: ./output/summary.txt
+
+      - name: Tar files
+        run: tar -cvf ./output/coverage.tar ./output/lcov-report/
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-complete
+          path: ./output/coverage.tar
