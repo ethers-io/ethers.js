@@ -6,7 +6,7 @@ import {
 import type { BytesLike } from "../utils/index.js";
 
 
-export function formatBytes32String(text: string): string {
+export function encodeBytes32String(text: string): string {
 
     // Get the bytes
     const bytes = toUtf8Bytes(text);
@@ -18,7 +18,7 @@ export function formatBytes32String(text: string): string {
     return zeroPadBytes(bytes, 32);
 }
 
-export function parseBytes32String(_bytes: BytesLike): string {
+export function decodeBytes32String(_bytes: BytesLike): string {
     const data = getBytes(_bytes, "bytes");
 
     // Must be 32 bytes with a null-termination

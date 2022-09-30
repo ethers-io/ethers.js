@@ -7,7 +7,7 @@ export {
     defaultAbiCoder
 } from "./abi-coder.js";
 
-export { formatBytes32String, parseBytes32String } from "./bytes32.js";
+export { decodeBytes32String, encodeBytes32String } from "./bytes32.js";
 
 export {
     ConstructorFragment, ErrorFragment, EventFragment, Fragment,

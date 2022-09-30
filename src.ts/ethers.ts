@@ -6,7 +6,7 @@
 export { version } from "./_version.js";
 
 export {
-    formatBytes32String, parseBytes32String,
+    decodeBytes32String, encodeBytes32String,
 
     AbiCoder, defaultAbiCoder,
     ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType,
