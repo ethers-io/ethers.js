@@ -1,0 +1,74 @@
+import semver from "semver";
+
+import { FetchRequest } from "../utils/index.js";
+
+import { atomicWrite } from "./utils/fs.js";
+import { getGitTag } from "./utils/git.js";
+import { loadJson, saveJson } from "./utils/json.js";
+import { resolve } from "./utils/path.js";
+
+
+const cache: Record<string, any> = { };
+
+async function getNpmPackage(name: string): Promise<any> {
+    if (!cache[name]) {
+        const resp = await (new FetchRequest("https:/\/registry.npmjs.org/" + name)).send();
+        resp.assertOk();
+        cache[name] = resp.bodyJson;
+    }
+
+    return cache[name] || null;
+}
+
+function writeVersion(version: string): void {
+    const content = `export const version = "${ version }";\n`;
+    atomicWrite(resolve("src.ts/_version.ts"), content);
+}
+
+(async function() {
+    // Local pkg
+    const pkgPath = resolve("package.json");
+    const pkgInfo = loadJson(pkgPath);
+    const tag = pkgInfo.publishConfig.tag;
+
+    // Get the remote version that matches our dist-tag
+    const remoteInfo = await getNpmPackage(pkgInfo.name);
+    const remoteVersion = remoteInfo["dist-tags"][tag];
+
+    // Remote pkg
+    const remotePkgInfo = remoteInfo.versions[remoteVersion];
+    const remoteGitHead = remotePkgInfo.gitHead;
+
+    const gitHead = await getGitTag(resolve("."));
+
+    // There are new commits, not reflected in the package
+    // published on npm; update the gitHead and version
+    if (gitHead !== remoteGitHead) {
+
+       // Bump the version from the remote version
+       if (tag.indexOf("beta") >= 0) {
+            // Still a beta branch; advance the beta version
+            const prerelease = semver.prerelease(remoteVersion);
+            if (prerelease == null || prerelease.length !== 2) {
+                throw new Error("no prerelease found");
+            }
+            pkgInfo.version = semver.inc(remoteVersion, "prerelease", String(prerelease[0]));
+        } else if (semver.minor(remoteVersion) == semver.minor(pkgInfo.version)) {
+            // If we want to bump the minor version, it was done explicitly in the pkg
+            pkgInfo.version = semver.inc(remoteVersion, "patch");
+        }
+
+        pkgInfo.gitHead = gitHead;
+
+        // Save the package.json
+        saveJson(pkgPath, pkgInfo, true);
+
+        // Save the src.ts/_version.ts
+        writeVersion(pkgInfo.version);
+    }
+
+})().catch((error) => {
+    console.log("ERROR");
+    console.log(error);
+    process.exit(1)
+});
