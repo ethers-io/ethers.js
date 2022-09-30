@@ -15,7 +15,7 @@ const defaultApiKey = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc8897385236
 
 function getHost(name: string): string {
     switch (name) {
-        case "homestead":
+        case "mainnet":
             return "rpc.ankr.com/eth";
         case "ropsten":
             return "rpc.ankr.com/eth_ropsten";
@@ -35,7 +35,7 @@ function getHost(name: string): string {
 export class AnkrProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly apiKey!: string;
 
-    constructor(_network: Networkish = "homestead", apiKey?: null | string) {
+    constructor(_network: Networkish = "mainnet", apiKey?: null | string) {
         const network = Network.from(_network);
         if (apiKey == null) { apiKey = defaultApiKey; }
 

@@ -1,5 +1,6 @@
 
 import { getAddress, getCreateAddress } from "../address/index.js";
+import { Signature } from "../crypto/index.js"
 import { accessListify } from "../transaction/index.js";
 import {
     getBigInt, getNumber, hexlify, isHexString, zeroPadValue,
@@ -133,21 +134,23 @@ export const formatReceiptLog = object({
     address: getAddress,
     topics: arrayOf(formatHash),
     data: formatData,
-    logIndex: getNumber,
+    index: getNumber,
     blockHash: formatHash,
+}, {
+    index: [ "logIndex" ]
 });
 
 export const formatTransactionReceipt = object({
     to: allowNull(getAddress, null),
     from: allowNull(getAddress, null),
     contractAddress: allowNull(getAddress, null),
-    transactionIndex: getNumber,
     // should be allowNull(hash), but broken-EIP-658 support is handled in receipt
+    index: getNumber,
     root: allowNull(hexlify),
     gasUsed: getBigInt,
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
-    transactionHash: formatHash,
+    hash: formatHash,
     logs: arrayOf(formatReceiptLog),
     blockNumber: getNumber,
     confirmations: allowNull(getNumber, null),
@@ -156,7 +159,9 @@ export const formatTransactionReceipt = object({
     status: allowNull(getNumber),
     type: getNumber
 }, {
-    effectiveGasPrice: [ "gasPrice" ]
+    effectiveGasPrice: [ "gasPrice" ],
+    hash: [ "transactionHash" ],
+    index: [ "transactionIndex" ],
 });
 
 export function formatTransactionResponse(value: any) {
@@ -195,10 +200,6 @@ export function formatTransactionResponse(value: any) {
         nonce: getNumber,
         data: formatData,
 
-        r: allowNull(formatUint256),
-        s: allowNull(formatUint256),
-        v: allowNull(getNumber),
-
         creates: allowNull(getAddress, null),
 
         chainId: allowNull(getBigInt, null)
@@ -216,8 +217,18 @@ export function formatTransactionResponse(value: any) {
 
     // Add an access list to supported transaction types
     if ((value.type === 1 || value.type === 2) && value.accessList == null) {
-        value.accessList = [ ];
+        result.accessList = [ ];
     }
+
+    // Compute the signature
+    result.signature = Signature.from(value);
+
+    // Some backends omit ChainId on legacy transactions, but we can compute it
+    if (result.chainId == null) {
+        const chainId = result.signature.legacyChainId;
+        if (chainId != null) { result.chainId = chainId; }
+    }
+
 
     // @TODO: check chainID
     /*

@@ -232,7 +232,7 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
 
         this.#transactions = Object.freeze(block.transactions.map((tx) => {
             if (typeof(tx) !== "string" && tx.provider !== provider) {
-                throw new Error("provider mismatch");
+                return <T>(new TransactionResponse(tx, provider));
             }
             return <T>tx;
         }));;
@@ -433,14 +433,15 @@ export interface TransactionReceiptParams {
     blockNumber: number;
 
     logsBloom: string;
-    logs: ReadonlyArray<Log>;
+    logs: ReadonlyArray<LogParams>;
 
     gasUsed: bigint;
     cumulativeGasUsed: bigint;
     gasPrice?: null | bigint;
     effectiveGasPrice?: null | bigint;
 
-    byzantium: boolean;
+    type: number;
+    //byzantium: boolean;
     status: null | number;
     root: null | string;
 }
@@ -478,7 +479,8 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
     readonly cumulativeGasUsed!: bigint;
     readonly gasPrice!: bigint;
 
-    readonly byzantium!: boolean;
+    readonly type!: number;
+    //readonly byzantium!: boolean;
     readonly status!: null | number;
     readonly root!: null | string;
 
@@ -486,11 +488,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
     constructor(tx: TransactionReceiptParams, provider: Provider) {
         this.#logs = Object.freeze(tx.logs.map((log) => {
-            if (provider !== log.provider) {
-            //return log.connect(provider);
-                throw new Error("provider mismatch");
-            }
-            return log;
+            return new Log(log, provider);
         }));
 
         defineProperties<TransactionReceipt>(this, {
@@ -512,7 +510,8 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             cumulativeGasUsed: tx.cumulativeGasUsed,
             gasPrice: ((tx.effectiveGasPrice || tx.gasPrice) as bigint),
 
-            byzantium: tx.byzantium,
+            type: tx.type,
+            //byzantium: tx.byzantium,
             status: tx.status,
             root: tx.root
         });
@@ -527,12 +526,15 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
     toJSON(): any {
         const {
             to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom,
-            logs, byzantium, status, root
+            logs, //byzantium, 
+            status, root
         } = this;
 
         return {
             _type: "TransactionReceipt",
-            blockHash, blockNumber, byzantium, contractAddress,
+            blockHash, blockNumber,
+            //byzantium, 
+            contractAddress,
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
             gasPrice: toJson(this.gasPrice),
@@ -1104,7 +1106,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  @note On nodes without archive access enabled, the %%blockTag%% may be
      *        **silently ignored** by the node, which may cause issues if relied on.
      */
-    getStorageAt(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>
+    getStorage(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>
 
 
     ////////////////////

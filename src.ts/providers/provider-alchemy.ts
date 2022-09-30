@@ -16,7 +16,7 @@ const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 
 function getHost(name: string): string {
     switch(name) {
-        case "homestead":
+        case "mainnet":
             return "eth-mainnet.alchemyapi.io";
         case "ropsten":
             return "eth-ropsten.alchemyapi.io";
@@ -46,7 +46,7 @@ function getHost(name: string): string {
 export class AlchemyProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly apiKey!: string;
 
-    constructor(_network: Networkish = "homestead", apiKey?: null | string) {
+    constructor(_network: Networkish = "mainnet", apiKey?: null | string) {
         const network = Network.from(_network);
         if (apiKey == null) { apiKey = defaultApiKey; }
 

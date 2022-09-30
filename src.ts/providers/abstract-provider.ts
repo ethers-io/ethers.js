@@ -251,7 +251,7 @@ export type PerformActionRequest = {
     method: "getLogs",
     filter: PerformActionFilter
 } | {
-    method: "getStorageAt",
+    method: "getStorage",
     address: string, position: bigint, blockTag: BlockTag
 } | {
     method: "getTransaction",
@@ -273,7 +273,7 @@ export type PerformActionRequest = {
 type _PerformAccountRequest = {
     method: "getBalance" | "getTransactionCount" | "getCode"
 } | {
-    method: "getStorageAt", position: bigint
+    method: "getStorage", position: bigint
 }
 
 type CcipArgs = {
@@ -795,9 +795,9 @@ export class AbstractProvider implements Provider {
         return hexlify(await this.#getAccountValue({ method: "getCode" }, address, blockTag));
     }
 
-    async getStorageAt(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string> {
+    async getStorage(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string> {
         const position = getBigInt(_position, "position");
-        return hexlify(await this.#getAccountValue({ method: "getStorageAt", position }, address, blockTag));
+        return hexlify(await this.#getAccountValue({ method: "getStorage", position }, address, blockTag));
     }
 
     // Write

@@ -7,9 +7,9 @@ import type { Networkish } from "./network.js";
 
 
 export class CloudflareProvider extends JsonRpcProvider {
-    constructor(_network: Networkish = "homestead") {
+    constructor(_network: Networkish = "mainnet") {
         const network = Network.from(_network);
-        if (network.name !== "homestead") {
+        if (network.name !== "mainnet") {
             return throwArgumentError("unsupported network", "network", _network);
         }
         super("https:/\/cloudflare-eth.com/", network, { staticNetwork: network });
