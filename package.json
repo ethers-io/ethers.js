@@ -104,7 +104,7 @@
       "types": "./types/wordlistsindex.d.ts"
     }
   },
-  "gitHead": "c1f86802fb0d7af9d01c7255d7d5c70d4b6390e1",
+  "gitHead": "1f2318a34a224fc7e4c63fae1c680e1af14895ec",
   "keywords": [
     "ethereum",
     "ethers",
