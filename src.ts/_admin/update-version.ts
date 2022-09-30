@@ -3,7 +3,7 @@ import semver from "semver";
 import { FetchRequest } from "../utils/index.js";
 
 import { atomicWrite } from "./utils/fs.js";
-import { getGitTag } from "./utils/git.js";
+import { getGitLog } from "./utils/git.js";
 import { loadJson, saveJson } from "./utils/json.js";
 import { resolve } from "./utils/path.js";
 
@@ -39,7 +39,14 @@ function writeVersion(version: string): void {
     const remotePkgInfo = remoteInfo.versions[remoteVersion];
     const remoteGitHead = remotePkgInfo.gitHead;
 
-    const gitHead = await getGitTag(resolve("."));
+    //const gitHead = await getGitTag(resolve("."));
+    let gitHead = "";
+    for (const log of await getGitLog(".")) {
+        if (log.body.startsWith("admin:")) { continue; }
+        gitHead = log.commit;
+        break;
+    }
+    if (gitHead === "") { throw new Error("no meaningful commit found"); }
 
     // There are new commits, not reflected in the package
     // published on npm; update the gitHead and version
