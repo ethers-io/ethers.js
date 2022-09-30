@@ -15,7 +15,7 @@ export function randomBytes(length: number): Uint8Array {
 randomBytes._ = _randomBytes;
 randomBytes.lock = function(): void { locked = true; }
 randomBytes.register = function(func: (length: number) => Uint8Array) {
-    if (locked) { throw new Error("random is locked"); }
+    if (locked) { throw new Error("randomBytes is locked"); }
     __randomBytes = func;
 }
 Object.freeze(randomBytes);

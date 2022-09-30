@@ -33,6 +33,7 @@ function lock(): void {
     scryptSync.lock();
     sha256.lock();
     sha512.lock();
+    randomBytes.lock();
 }
 
 export { lock };

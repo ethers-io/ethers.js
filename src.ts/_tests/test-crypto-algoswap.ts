@@ -2,16 +2,14 @@ import assert from "assert";
 
 import {
     lock,
-
     computeHmac,
-
     keccak256, ripemd160, sha256, sha512,
-
-    pbkdf2, scrypt, scryptSync
+    pbkdf2, scrypt, scryptSync,
+    randomBytes
 } from "../index.js";
 
 interface Algorithm {
-    (...args: Array<any>): string | Promise<string>;
+    (...args: Array<any>): string | Uint8Array | Promise<string>;
 
     register: (func: any) => void;
     lock: () => void;
@@ -23,6 +21,7 @@ interface TestCase {
     params: Array<any>;
     algorithm: Algorithm;
     hijackTag: string;
+    postCheck?: (value: any) => boolean;
 }
 
 
@@ -85,9 +84,18 @@ describe("test registration", function() {
             hijackTag: 'hijacked computeHmac: ["sha256",{},{}]',
             algorithm: computeHmac
         },
+        {
+            name: "randomBytes",
+            params: [ 32 ],
+            hijackTag: "hijacked randomBytes: [32]",
+            algorithm: randomBytes,
+            postCheck: (value: any) => {
+                return (value instanceof Uint8Array && value.length === 32);
+            }
+        }
     ];
 
-    tests.forEach(({ name, params, hijackTag, algorithm }) => {
+    tests.forEach(({ name, params, hijackTag, algorithm, postCheck }) => {
         it(`swaps in hijacked callback: ${ name }`, async function() {
             const initial = await algorithm(...params);
 
@@ -97,7 +105,11 @@ describe("test registration", function() {
             assert.equal(hijack, hijackTag);
 
             algorithm.register(algorithm._);
-            assert.equal(await algorithm(...params), initial);
+            if (postCheck) {
+                assert.ok(postCheck(await algorithm(...params)));
+            } else {
+                assert.equal(await algorithm(...params), initial);
+            }
         });
     });
 
