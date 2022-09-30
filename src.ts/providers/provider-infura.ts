@@ -1,10 +1,11 @@
 import {
-    defineProperties, FetchRequest, throwArgumentError
+    defineProperties, FetchRequest, throwArgumentError, throwError
 } from "../utils/index.js";
 
 import { showThrottleMessage } from "./community.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
+import { WebSocketProvider } from "./provider-websocket.js";
 
 import type { AbstractProvider } from "./abstract-provider.js";
 import type { CommunityResourcable } from "./community.js";
@@ -15,7 +16,7 @@ const defaultProjectId = "84842078b09946638c03157f83405213";
 
 function getHost(name: string): string {
     switch(name) {
-        case "homestead":
+        case "mainnet":
             return "mainnet.infura.io";
         case "ropsten":
             return "ropsten.infura.io";
@@ -42,12 +43,39 @@ function getHost(name: string): string {
     return throwArgumentError("unsupported network", "network", name);
 }
 
+export class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourcable {
+    readonly projectId!: string;
+    readonly projectSecret!: null | string;
+
+    constructor(network?: Networkish, apiKey?: any) {
+        const provider = new InfuraProvider(network, apiKey);
+
+        const req = provider._getConnection();
+        if (req.credentials) {
+            throwError("INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", {
+                operation: "InfuraProvider.getWebSocketProvider()"
+            });
+        }
+
+        const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+        super(url, network);
+
+        defineProperties<InfuraWebSocketProvider>(this, {
+            projectId: provider.projectId,
+            projectSecret: provider.projectSecret
+        });
+    }
+
+    isCommunityResource(): boolean {
+        return (this.projectId === defaultProjectId);
+    }
+}
 
 export class InfuraProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly projectId!: string;
     readonly projectSecret!: null | string;
 
-    constructor(_network: Networkish = "homestead", projectId?: null | string, projectSecret?: null | string) {
+    constructor(_network: Networkish = "mainnet", projectId?: null | string, projectSecret?: null | string) {
         const network = Network.from(_network);
         if (projectId == null) { projectId = defaultProjectId; }
         if (projectSecret == null) { projectSecret = null; }
@@ -63,6 +91,14 @@ export class InfuraProvider extends JsonRpcProvider implements CommunityResourca
             return new InfuraProvider(chainId, this.projectId, this.projectSecret);
         } catch (error) { }
         return super._getProvider(chainId);
+    }
+
+    isCommunityResource(): boolean {
+        return (this.projectId === defaultProjectId);
+    }
+
+    static getWebSocketProvider(network?: Networkish, apiKey?: any): InfuraWebSocketProvider {
+        return new InfuraWebSocketProvider(network, apiKey);
     }
 
     static getRequest(network: Network, projectId?: null | string, projectSecret?: null | string): FetchRequest {
@@ -83,7 +119,4 @@ export class InfuraProvider extends JsonRpcProvider implements CommunityResourca
         return request;
     }
 
-    isCommunityResource(): boolean {
-        return (this.projectId === defaultProjectId);
-    }
 }

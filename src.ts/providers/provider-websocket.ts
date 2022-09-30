@@ -18,10 +18,11 @@ export interface WebSocketLike {
 }
 
 export class WebSocketProvider extends SocketProvider {
-    url!: string;
-
-    #websocket: WebSocketLike;
-    get websocket(): WebSocketLike { return this.#websocket; }
+    #websocket: null | WebSocketLike;
+    get websocket(): WebSocketLike {
+        if (this.#websocket == null) { throw new Error("websocket closed"); }
+        return this.#websocket;
+    }
 
     constructor(url: string | WebSocketLike, network?: Networkish) {
         super(network);
@@ -47,5 +48,11 @@ export class WebSocketProvider extends SocketProvider {
 
     async _write(message: string): Promise<void> {
         this.websocket.send(message);
+    }
+
+    async destroy(): Promise<void> {
+        if (this.#websocket == null) { return; }
+        this.#websocket.close();
+        this.#websocket = null;
     }
 }

@@ -10,7 +10,7 @@
  */
 
 import { UnmanagedSubscriber } from "./abstract-provider.js";
-import { assertArgument, makeError, throwError } from "../utils/index.js";
+import { assertArgument, throwError } from "../utils/index.js";
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 
 import type { Subscriber, Subscription } from "./abstract-provider.js";
@@ -196,10 +196,16 @@ export class SocketProvider extends JsonRpcApiProvider {
         assertArgument(!Array.isArray(payload), "WebSocket does not support batch send", "payload", payload);
 
         // @TODO: stringify payloads here and store to prevent mutations
+
+        // Prepare a promise to respond to
         const promise = new Promise((resolve, reject) => {
             this.#callbacks.set(payload.id, { payload, resolve, reject });
         });
 
+        // Wait until the socket is connected before writing to it
+        await this._waitUntilReady();
+
+        // Write the request to the socket
         await this._write(JSON.stringify(payload));
 
         return <Array<JsonRpcResult | JsonRpcError>>[ await promise ];
@@ -232,6 +238,9 @@ export class SocketProvider extends JsonRpcApiProvider {
             }
             this.#callbacks.delete(result.id);
 
+            callback.resolve(result);
+
+/*
             if ("error" in result) {
                 const { message, code, data } = result.error;
                 const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
@@ -242,7 +251,7 @@ export class SocketProvider extends JsonRpcApiProvider {
             } else {
                 callback.resolve(result.result);
             }
-
+*/
         } else if (result.method === "eth_subscription") {
             const filterId = result.params.subscription;
             const subscriber = this.#subs.get(filterId);
