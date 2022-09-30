@@ -6,7 +6,7 @@ import {
     InfuraProvider,
 //    PocketProvider,
 
-    FallbackProvider,
+//    FallbackProvider,
 } from "../index.js";
 
 import type { AbstractProvider } from "../index.js";
@@ -17,7 +17,7 @@ interface ProviderCreator {
     create: (network: string) => null | AbstractProvider;
 };
 
-const ethNetworks = [ "default", "homestead", "rinkeby", "ropsten", "goerli" ];
+const ethNetworks = [ "default", "mainnet", "rinkeby", "ropsten", "goerli" ];
 //const maticNetworks = [ "matic", "maticmum" ];
 
 const ProviderCreators: Array<ProviderCreator> = [
@@ -37,7 +37,7 @@ const ProviderCreators: Array<ProviderCreator> = [
     },
     {
         name: "CloudflareProvider",
-        networks: [ "default", "homestead" ],
+        networks: [ "default", "mainnet" ],
         create: function(network: string) {
             return new CloudflareProvider(network);
         }
@@ -56,13 +56,20 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    {
+        name: "InfuraWebsocketProvider",
+        networks: ethNetworks,
+        create: function(network: string) {
+            return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+        }
+    },
     /*
     {
         name: "PocketProvider",
         networks: ethNetworks,
         create: function(network: string) {
             const apiKeys: Record<string, string> = {
-                homestead: "6004bcd10040261633ade990",
+                mainnet: "6004bcd10040261633ade990",
                 ropsten: "6004bd4d0040261633ade991",
                 rinkeby: "6004bda20040261633ade994",
                 goerli: "6004bd860040261633ade992",
@@ -71,7 +78,7 @@ const ProviderCreators: Array<ProviderCreator> = [
         }
     },
     */
-
+/*
     {
         name: "FallbackProvider",
         networks: ethNetworks,
@@ -87,6 +94,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new FallbackProvider(providers);
         }
     },
+*/
 ];
 
 export const providerNames = Object.freeze(ProviderCreators.map((c) => (c.name)));
@@ -107,6 +115,11 @@ export function getProvider(provider: string, network: string): null | AbstractP
     const creator = getCreator(provider);
     if (creator) { return creator.create(network); }
     return null;
+}
+
+export function checkProvider(provider: string, network: string): boolean {
+    const creator = getCreator(provider);
+    return (creator != null);
 }
 
 export function connect(network: string): AbstractProvider {
