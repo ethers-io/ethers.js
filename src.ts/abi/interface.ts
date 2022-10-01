@@ -760,7 +760,7 @@ export class Interface {
     }
 */
     // Create the filter for the event with search criteria (e.g. for eth_filterLog)
-    encodeFilterTopics(eventFragment: EventFragment, values: ReadonlyArray<any>): Array<null | string | Array<string>> {
+    encodeFilterTopics(eventFragment: EventFragment | string, values: ReadonlyArray<any>): Array<null | string | Array<string>> {
         if (typeof(eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
@@ -799,7 +799,7 @@ export class Interface {
 
         values.forEach((value, index) => {
 
-            const param = eventFragment.inputs[index];
+            const param = (<EventFragment>eventFragment).inputs[index];
 
             if (!param.indexed) {
                 if (value != null) {
@@ -827,7 +827,7 @@ export class Interface {
         return topics;
     }
 
-    encodeEventLog(eventFragment: EventFragment, values: ReadonlyArray<any>): { data: string, topics: Array<string> } {
+    encodeEventLog(eventFragment: EventFragment | string, values: ReadonlyArray<any>): { data: string, topics: Array<string> } {
         if (typeof(eventFragment) === "string") {
             eventFragment = this.getEvent(eventFragment);
         }
