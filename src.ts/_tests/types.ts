@@ -138,6 +138,14 @@ export interface TestCaseTypedData {
     signature?: string;
 }
 
+export interface TestCaseSolidityHash {
+    name: string;
+    types: Array<string>;
+    keccak256: string;
+    ripemd160: string;
+    sha256: string;
+    values: Array<any>
+}
 
 /////////////////////////////
 // rlp
