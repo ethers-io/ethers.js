@@ -919,7 +919,7 @@ export class EventFragment extends NamedFragment {
         }
 
         return new EventFragment(_guard, obj.name,
-            obj.inputs ? obj.inputs.map(ParamType.from): [ ], !!obj.anonymous);
+            obj.inputs ? obj.inputs.map((p: any) => ParamType.from(p, true)): [ ], !!obj.anonymous);
     }
 
     static isFragment(value: any): value is EventFragment {
