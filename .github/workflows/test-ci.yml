@@ -9,7 +9,7 @@ jobs:
 
   test-node:
 
-    name: Run Tests
+    name: Run Node.js Tests
 
     runs-on: ubuntu-latest
 
@@ -42,7 +42,7 @@ jobs:
 
   coverage:
 
-    name: Generate Coverage
+    name: Generate Coverage Report
 
     runs-on: ubuntu-latest
 
