@@ -1,5 +1,5 @@
 import assert from "assert";
-import { lock, computeHmac, keccak256, ripemd160, sha256, sha512, pbkdf2, scrypt, scryptSync } from "../index.js";
+import { lock, computeHmac, keccak256, ripemd160, sha256, sha512, pbkdf2, scrypt, scryptSync, randomBytes } from "../index.js";
 describe("test registration", function () {
     let hijack = "";
     function getHijack(algo) {
@@ -57,15 +57,29 @@ describe("test registration", function () {
             hijackTag: 'hijacked computeHmac: ["sha256",{},{}]',
             algorithm: computeHmac
         },
+        {
+            name: "randomBytes",
+            params: [32],
+            hijackTag: "hijacked randomBytes: [32]",
+            algorithm: randomBytes,
+            postCheck: (value) => {
+                return (value instanceof Uint8Array && value.length === 32);
+            }
+        }
     ];
-    tests.forEach(({ name, params, hijackTag, algorithm }) => {
+    tests.forEach(({ name, params, hijackTag, algorithm, postCheck }) => {
         it(`swaps in hijacked callback: ${name}`, async function () {
             const initial = await algorithm(...params);
             algorithm.register(getHijack(name));
             assert.equal(await algorithm(...params), "0x42");
             assert.equal(hijack, hijackTag);
             algorithm.register(algorithm._);
-            assert.equal(await algorithm(...params), initial);
+            if (postCheck) {
+                assert.ok(postCheck(await algorithm(...params)));
+            }
+            else {
+                assert.equal(await algorithm(...params), initial);
+            }
         });
     });
     it("prevents swapping after locked", function () {

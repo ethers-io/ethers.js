@@ -1,5 +1,6 @@
 import assert from "assert";
 import { checkProvider, getProvider, providerNames } from "./create-provider.js";
+import { retryIt } from "./utils.js";
 import { networkFeatureAtBlock, networkNames, testAddress, testBlock, testReceipt, testTransaction } from "./blockchain-data.js";
 function forEach(prefix, tests, func) {
     for (const networkName of networkNames) {
@@ -18,7 +19,7 @@ function forEach(prefix, tests, func) {
                     continue;
                 }
                 // Prepare the testcase
-                it(`${prefix}: ${providerName}:${networkName}.${test.test}`, async function () {
+                retryIt(`Foo ${prefix}: ${providerName}:${networkName}.${test.test}`, async function () {
                     // Create a provider
                     const provider = getProvider(providerName, networkName);
                     try {

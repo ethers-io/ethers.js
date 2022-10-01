@@ -62,15 +62,29 @@ describe("test registration", function () {
             hijackTag: 'hijacked computeHmac: ["sha256",{},{}]',
             algorithm: index_js_1.computeHmac
         },
+        {
+            name: "randomBytes",
+            params: [32],
+            hijackTag: "hijacked randomBytes: [32]",
+            algorithm: index_js_1.randomBytes,
+            postCheck: (value) => {
+                return (value instanceof Uint8Array && value.length === 32);
+            }
+        }
     ];
-    tests.forEach(({ name, params, hijackTag, algorithm }) => {
+    tests.forEach(({ name, params, hijackTag, algorithm, postCheck }) => {
         it(`swaps in hijacked callback: ${name}`, async function () {
             const initial = await algorithm(...params);
             algorithm.register(getHijack(name));
             assert_1.default.equal(await algorithm(...params), "0x42");
             assert_1.default.equal(hijack, hijackTag);
             algorithm.register(algorithm._);
-            assert_1.default.equal(await algorithm(...params), initial);
+            if (postCheck) {
+                assert_1.default.ok(postCheck(await algorithm(...params)));
+            }
+            else {
+                assert_1.default.equal(await algorithm(...params), initial);
+            }
         });
     });
     it("prevents swapping after locked", function () {

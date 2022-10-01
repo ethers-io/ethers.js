@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert_1 = __importDefault(require("assert"));
 const create_provider_js_1 = require("./create-provider.js");
+const utils_js_1 = require("./utils.js");
 const blockchain_data_js_1 = require("./blockchain-data.js");
 function forEach(prefix, tests, func) {
     for (const networkName of blockchain_data_js_1.networkNames) {
@@ -23,7 +24,7 @@ function forEach(prefix, tests, func) {
                     continue;
                 }
                 // Prepare the testcase
-                it(`${prefix}: ${providerName}:${networkName}.${test.test}`, async function () {
+                (0, utils_js_1.retryIt)(`Foo ${prefix}: ${providerName}:${networkName}.${test.test}`, async function () {
                     // Create a provider
                     const provider = (0, create_provider_js_1.getProvider)(providerName, networkName);
                     try {

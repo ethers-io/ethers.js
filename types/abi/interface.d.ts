@@ -170,8 +170,8 @@ export declare class Interface {
      *  a result from a Contract.
      */
     encodeFunctionResult(key: FunctionFragment | string, values?: ReadonlyArray<any>): string;
-    encodeFilterTopics(eventFragment: EventFragment, values: ReadonlyArray<any>): Array<null | string | Array<string>>;
-    encodeEventLog(eventFragment: EventFragment, values: ReadonlyArray<any>): {
+    encodeFilterTopics(eventFragment: EventFragment | string, values: ReadonlyArray<any>): Array<null | string | Array<string>>;
+    encodeEventLog(eventFragment: EventFragment | string, values: ReadonlyArray<any>): {
         data: string;
         topics: Array<string>;
     };

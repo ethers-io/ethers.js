@@ -1,7 +1,7 @@
 /////////////////////////////
 //
 export { version } from "./_version.js";
-export { formatBytes32String, parseBytes32String, AbiCoder, defaultAbiCoder, ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType, checkResultErrors, Indexed, Interface, LogDescription, Result, TransactionDescription, Typed, } from "./abi/index.js";
+export { decodeBytes32String, encodeBytes32String, AbiCoder, defaultAbiCoder, ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType, checkResultErrors, Indexed, Interface, LogDescription, Result, TransactionDescription, Typed, } from "./abi/index.js";
 export { getAddress, getIcapAddress, getCreateAddress, getCreate2Address } from "./address/index.js";
 export { ZeroAddress, NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256, MinInt256, MaxInt256, N, ZeroHash, EtherSymbol, MessagePrefix } from "./constants/index.js";
 export { BaseContract, Contract, ContractFactory, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EventLog, } from "./contract/index.js";

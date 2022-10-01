@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseBytes32String = exports.formatBytes32String = void 0;
+exports.decodeBytes32String = exports.encodeBytes32String = void 0;
 const index_js_1 = require("../utils/index.js");
-function formatBytes32String(text) {
+function encodeBytes32String(text) {
     // Get the bytes
     const bytes = (0, index_js_1.toUtf8Bytes)(text);
     // Check we have room for null-termination
@@ -12,8 +12,8 @@ function formatBytes32String(text) {
     // Zero-pad (implicitly null-terminates)
     return (0, index_js_1.zeroPadBytes)(bytes, 32);
 }
-exports.formatBytes32String = formatBytes32String;
-function parseBytes32String(_bytes) {
+exports.encodeBytes32String = encodeBytes32String;
+function decodeBytes32String(_bytes) {
     const data = (0, index_js_1.getBytes)(_bytes, "bytes");
     // Must be 32 bytes with a null-termination
     if (data.length !== 32) {
@@ -30,5 +30,5 @@ function parseBytes32String(_bytes) {
     // Determine the string value
     return (0, index_js_1.toUtf8String)(data.slice(0, length));
 }
-exports.parseBytes32String = parseBytes32String;
+exports.decodeBytes32String = decodeBytes32String;
 //# sourceMappingURL=bytes32.js.map

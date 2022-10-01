@@ -17,36 +17,6 @@ export interface JsonFragment {
     readonly gas?: string;
 }
 export declare type FormatType = "sighash" | "minimal" | "full" | "json";
-/**
- *  @ignore:
- */
-declare type Token = Readonly<{
-    type: string;
-    offset: number;
-    text: string;
-    depth: number;
-    match: number;
-    linkBack: number;
-    linkNext: number;
-    value: number;
-}>;
-declare class TokenString {
-    #private;
-    get offset(): number;
-    get length(): number;
-    constructor(tokens: ReadonlyArray<Token>);
-    clone(): TokenString;
-    reset(): void;
-    popKeyword(allowed: ReadonlySet<string>): string;
-    popType(type: string): string;
-    popParen(): TokenString;
-    popParams(): Array<TokenString>;
-    peek(): Token;
-    peekKeyword(allowed: ReadonlySet<string>): null | string;
-    peekType(type: string): null | string;
-    pop(): Token;
-    toString(): string;
-}
 export declare type FragmentWalkFunc = (type: string, value: any) => any;
 export declare type FragmentWalkAsyncFunc = (type: string, value: any) => any | Promise<any>;
 export declare class ParamType {
@@ -76,8 +46,6 @@ export declare class ParamType {
     walk(value: any, process: FragmentWalkFunc): any;
     walkAsync(value: any, process: (type: string, value: any) => any | Promise<any>): Promise<any>;
     static from(obj: any, allowIndexed?: boolean): ParamType;
-    static fromObject(obj: any, allowIndexed?: boolean): ParamType;
-    static fromTokens(tokens: TokenString, allowIndexed?: boolean): ParamType;
     static isParamType(value: any): value is ParamType;
 }
 export declare type FragmentType = "constructor" | "error" | "event" | "function" | "struct";
@@ -87,9 +55,6 @@ export declare abstract class Fragment {
     constructor(guard: any, type: FragmentType, inputs: ReadonlyArray<ParamType>);
     abstract format(format?: FormatType): string;
     static from(obj: any): Fragment;
-    static fromObject(obj: any): Fragment;
-    static fromString(text: string): Fragment;
-    static fromTokens(tokens: TokenString): Fragment;
     static isConstructor(value: any): value is ConstructorFragment;
     static isError(value: any): value is ErrorFragment;
     static isEvent(value: any): value is EventFragment;
@@ -104,27 +69,24 @@ export declare class ErrorFragment extends NamedFragment {
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>);
     get selector(): string;
     format(format?: FormatType): string;
-    static fromObject(obj: any): ErrorFragment;
-    static fromString(text: string): ErrorFragment;
-    static fromTokens(tokens: TokenString): ErrorFragment;
+    static from(obj: any): ErrorFragment;
+    static isFragment(value: any): value is ErrorFragment;
 }
 export declare class EventFragment extends NamedFragment {
     readonly anonymous: boolean;
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>, anonymous: boolean);
     get topicHash(): string;
     format(format?: FormatType): string;
-    static fromObject(obj: any): EventFragment;
-    static fromString(text: string): EventFragment;
-    static fromTokens(tokens: TokenString): EventFragment;
+    static from(obj: any): EventFragment;
+    static isFragment(value: any): value is EventFragment;
 }
 export declare class ConstructorFragment extends Fragment {
     readonly payable: boolean;
     readonly gas: null | bigint;
     constructor(guard: any, type: FragmentType, inputs: ReadonlyArray<ParamType>, payable: boolean, gas: null | bigint);
     format(format?: FormatType): string;
-    static fromObject(obj: any): ConstructorFragment;
-    static fromString(text: string): ConstructorFragment;
-    static fromTokens(tokens: TokenString): ConstructorFragment;
+    static from(obj: any): ConstructorFragment;
+    static isFragment(value: any): value is ConstructorFragment;
 }
 export declare class FunctionFragment extends NamedFragment {
     readonly constant: boolean;
@@ -135,14 +97,13 @@ export declare class FunctionFragment extends NamedFragment {
     constructor(guard: any, name: string, stateMutability: string, inputs: ReadonlyArray<ParamType>, outputs: ReadonlyArray<ParamType>, gas: null | bigint);
     get selector(): string;
     format(format?: FormatType): string;
-    static fromObject(obj: any): FunctionFragment;
-    static fromString(text: string): FunctionFragment;
-    static fromTokens(tokens: TokenString): FunctionFragment;
+    static from(obj: any): FunctionFragment;
+    static isFragment(value: any): value is FunctionFragment;
 }
 export declare class StructFragment extends NamedFragment {
+    constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>);
     format(): string;
-    static fromString(text: string): StructFragment;
-    static fromTokens(tokens: TokenString): StructFragment;
+    static from(obj: any): StructFragment;
+    static isFragment(value: any): value is FunctionFragment;
 }
-export {};
 //# sourceMappingURL=fragments.d.ts.map

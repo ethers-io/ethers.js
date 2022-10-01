@@ -1,5 +1,5 @@
 import { getBytes, toUtf8Bytes, toUtf8String, zeroPadBytes } from "../utils/index.js";
-export function formatBytes32String(text) {
+export function encodeBytes32String(text) {
     // Get the bytes
     const bytes = toUtf8Bytes(text);
     // Check we have room for null-termination
@@ -9,7 +9,7 @@ export function formatBytes32String(text) {
     // Zero-pad (implicitly null-terminates)
     return zeroPadBytes(bytes, 32);
 }
-export function parseBytes32String(_bytes) {
+export function decodeBytes32String(_bytes) {
     const data = getBytes(_bytes, "bytes");
     // Must be 32 bytes with a null-termination
     if (data.length !== 32) {

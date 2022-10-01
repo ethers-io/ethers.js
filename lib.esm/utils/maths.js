@@ -54,6 +54,9 @@ export function getBigInt(value, name) {
             return BigInt(value);
         case "string":
             try {
+                if (value[0] === "-" && value[1] !== "-") {
+                    return -BigInt(value.substring(1));
+                }
                 return BigInt(value);
             }
             catch (e) {

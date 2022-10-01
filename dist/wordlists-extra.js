@@ -145,7 +145,7 @@ const u64 = {
     add, add3L, add3H, add4L, add4H, add5H, add5L,
 };
 
-const version = "6.0.0-beta-exports.3";
+const version = "6.0.0-beta-exports.4";
 
 function defineReadOnly(object, name, value) {
     Object.defineProperty(object, name, {

@@ -11,7 +11,7 @@ randomBytes._ = _randomBytes;
 randomBytes.lock = function () { locked = true; };
 randomBytes.register = function (func) {
     if (locked) {
-        throw new Error("random is locked");
+        throw new Error("randomBytes is locked");
     }
     __randomBytes = func;
 };

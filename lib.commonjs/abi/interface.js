@@ -130,7 +130,9 @@ class Interface {
             try {
                 frags.push(fragments_js_1.Fragment.from(a));
             }
-            catch (error) { }
+            catch (error) {
+                console.log("EE", error);
+            }
         }
         (0, index_js_3.defineProperties)(this, {
             fragments: Object.freeze(frags)
@@ -173,7 +175,7 @@ class Interface {
         // If we do not have a constructor add a default
         if (!this.deploy) {
             (0, index_js_3.defineProperties)(this, {
-                deploy: fragments_js_1.ConstructorFragment.fromString("constructor()")
+                deploy: fragments_js_1.ConstructorFragment.from("constructor()")
             });
         }
     }
@@ -281,7 +283,7 @@ class Interface {
             return matching[0];
         }
         // Normalize the signature and lookup the function
-        const result = this.#functions.get(fragments_js_1.FunctionFragment.fromString(key).format());
+        const result = this.#functions.get(fragments_js_1.FunctionFragment.from(key).format());
         if (result) {
             return result;
         }
@@ -360,7 +362,7 @@ class Interface {
             return matching[0];
         }
         // Normalize the signature and lookup the function
-        const result = this.#events.get(fragments_js_1.EventFragment.fromString(key).format());
+        const result = this.#events.get(fragments_js_1.EventFragment.from(key).format());
         if (result) {
             return result;
         }
@@ -400,7 +402,7 @@ class Interface {
         if ((0, index_js_3.isHexString)(key)) {
             const selector = key.toLowerCase();
             if (BuiltinErrors[selector]) {
-                return fragments_js_1.ErrorFragment.fromString(BuiltinErrors[selector].signature);
+                return fragments_js_1.ErrorFragment.from(BuiltinErrors[selector].signature);
             }
             for (const fragment of this.#errors.values()) {
                 if (selector === fragment.selector) {
@@ -419,10 +421,10 @@ class Interface {
             }
             if (matching.length === 0) {
                 if (key === "Error") {
-                    return fragments_js_1.ErrorFragment.fromString("error Error(string)");
+                    return fragments_js_1.ErrorFragment.from("error Error(string)");
                 }
                 if (key === "Panic") {
-                    return fragments_js_1.ErrorFragment.fromString("error Panic(uint256)");
+                    return fragments_js_1.ErrorFragment.from("error Panic(uint256)");
                 }
                 (0, index_js_3.throwArgumentError)("no matching error", "name", key);
             }
@@ -433,12 +435,12 @@ class Interface {
             return matching[0];
         }
         // Normalize the signature and lookup the function
-        key = fragments_js_1.ErrorFragment.fromString(key).format();
+        key = fragments_js_1.ErrorFragment.from(key).format();
         if (key === "Error(string)") {
-            return fragments_js_1.ErrorFragment.fromString("error Error(string)");
+            return fragments_js_1.ErrorFragment.from("error Error(string)");
         }
         if (key === "Panic(uint256)") {
-            return fragments_js_1.ErrorFragment.fromString("error Panic(uint256)");
+            return fragments_js_1.ErrorFragment.from("error Panic(uint256)");
         }
         const result = this.#errors.get(key);
         if (result) {
@@ -799,7 +801,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         eventFragment.inputs.forEach((param, index) => {
             if (param.indexed) {
                 if (param.type === "string" || param.type === "bytes" || param.baseType === "tuple" || param.baseType === "array") {
-                    indexed.push(fragments_js_1.ParamType.fromObject({ type: "bytes32", name: param.name }));
+                    indexed.push(fragments_js_1.ParamType.from({ type: "bytes32", name: param.name }));
                     dynamic.push(true);
                 }
                 else {

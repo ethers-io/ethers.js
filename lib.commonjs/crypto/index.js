@@ -32,6 +32,7 @@ function lock() {
     scrypt_js_1.scryptSync.lock();
     sha2_js_1.sha256.lock();
     sha2_js_1.sha512.lock();
+    random_js_1.randomBytes.lock();
 }
 exports.lock = lock;
 //# sourceMappingURL=index.js.map
