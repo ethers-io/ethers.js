@@ -9,6 +9,8 @@ jobs:
 
   test-node:
 
+    name: Run Tests
+
     runs-on: ubuntu-latest
 
     strategy:
@@ -16,8 +18,6 @@ jobs:
       matrix:
         node-version: [ 16.x, 18.x ]
         test-type: [ esm, commonjs ]
-
-    #name: Run Tests (node: ${{ matrix.node-version }}, type: ${{ matrix.test-type }})
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
