@@ -39,10 +39,10 @@ function writeVersion(version: string): void {
     const remotePkgInfo = remoteInfo.versions[remoteVersion];
     const remoteGitHead = remotePkgInfo.gitHead;
 
-    //const gitHead = await getGitTag(resolve("."));
     let gitHead = "";
     for (const log of await getGitLog(".")) {
         if (log.body.startsWith("admin:")) { continue; }
+        if (log.body.startsWith("tests:")) { continue; }
         gitHead = log.commit;
         break;
     }
