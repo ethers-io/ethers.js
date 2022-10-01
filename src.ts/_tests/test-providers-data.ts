@@ -1,8 +1,10 @@
 import assert from "assert";
 
+import { checkProvider, getProvider, providerNames } from "./create-provider.js";
+import { retryIt } from "./utils.js";
+
 import type { Provider } from "../index.js";
 
-import { checkProvider, getProvider, providerNames } from "./create-provider.js";
 
 import {
     networkFeatureAtBlock, networkNames,
@@ -26,7 +28,7 @@ function forEach<T extends { test: string }>(prefix: string, tests: Record<TestB
                 if (testFunc == null) { continue; }
 
                 // Prepare the testcase
-                it(`${ prefix }: ${ providerName }:${ networkName }.${ test.test }`, async function() {
+                retryIt(`Foo ${ prefix }: ${ providerName }:${ networkName }.${ test.test }`, async function() {
                     // Create a provider
                     const provider = getProvider(providerName, networkName);
 
