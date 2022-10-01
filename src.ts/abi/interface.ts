@@ -182,7 +182,9 @@ export class Interface {
         for (const a of abi) {
             try {
                 frags.push(Fragment.from(a));
-            } catch (error) { }
+            } catch (error) {
+                console.log("EE", error);
+            }
         }
 
         defineProperties<Interface>(this, {
@@ -233,7 +235,7 @@ export class Interface {
         // If we do not have a constructor add a default
         if (!this.deploy) {
             defineProperties<Interface>(this, {
-                deploy: ConstructorFragment.fromString("constructor()")
+                deploy: ConstructorFragment.from("constructor()")
             });
         }
     }
@@ -350,7 +352,7 @@ export class Interface {
         }
 
         // Normalize the signature and lookup the function
-        const result = this.#functions.get(FunctionFragment.fromString(key).format());
+        const result = this.#functions.get(FunctionFragment.from(key).format());
         if (result) { return result; }
 
         return throwArgumentError("no matching function", "signature", key);
@@ -433,7 +435,7 @@ export class Interface {
         }
 
         // Normalize the signature and lookup the function
-        const result = this.#events.get(EventFragment.fromString(key).format());
+        const result = this.#events.get(EventFragment.from(key).format());
         if (result) { return result; }
 
         return throwArgumentError("no matching event", "signature", key);
@@ -476,7 +478,7 @@ export class Interface {
             const selector = key.toLowerCase();
 
             if (BuiltinErrors[selector]) {
-                return ErrorFragment.fromString(BuiltinErrors[selector].signature);
+                return ErrorFragment.from(BuiltinErrors[selector].signature);
             }
 
             for (const fragment of this.#errors.values()) {
@@ -493,8 +495,8 @@ export class Interface {
             }
 
             if (matching.length === 0) {
-                if (key === "Error") { return ErrorFragment.fromString("error Error(string)"); }
-                if (key === "Panic") { return ErrorFragment.fromString("error Panic(uint256)"); }
+                if (key === "Error") { return ErrorFragment.from("error Error(string)"); }
+                if (key === "Panic") { return ErrorFragment.from("error Panic(uint256)"); }
                 throwArgumentError("no matching error", "name", key);
             } else if (matching.length > 1) {
                 // @TODO: refine by Typed
@@ -505,9 +507,9 @@ export class Interface {
         }
 
         // Normalize the signature and lookup the function
-        key = ErrorFragment.fromString(key).format()
-        if (key === "Error(string)") { return ErrorFragment.fromString("error Error(string)"); }
-        if (key === "Panic(uint256)") { return ErrorFragment.fromString("error Panic(uint256)"); }
+        key = ErrorFragment.from(key).format()
+        if (key === "Error(string)") { return ErrorFragment.from("error Error(string)"); }
+        if (key === "Panic(uint256)") { return ErrorFragment.from("error Panic(uint256)"); }
 
         const result = this.#errors.get(key);
         if (result) { return result; }
@@ -891,7 +893,7 @@ export class Interface {
         eventFragment.inputs.forEach((param, index) => {
             if (param.indexed) {
                 if (param.type === "string" || param.type === "bytes" || param.baseType === "tuple" || param.baseType === "array") {
-                    indexed.push(ParamType.fromObject({ type: "bytes32", name: param.name }));
+                    indexed.push(ParamType.from({ type: "bytes32", name: param.name }));
                     dynamic.push(true);
                 } else {
                     indexed.push(param);
