@@ -84,9 +84,8 @@ with debugging.
 - access to advanced debugging trace and revert reason APIs
 
 _definition: **Networks:**
-``homestead``, ``ropsten``, ``rinkeby``, ``goerli``, ``kovan``, ``matic``,
-``maticmum``, ``optimism``, ``optimism-kovan``, ``arbitrum`` and
-``arbitrum-rinkeby``.
+``homestead``, ``goerli``, ``matic``,``maticmum``, ``optimism``,
+``optimism-kovan``, ``arbitrum`` and ``arbitrum-rinkeby``.
 
 
 _subsection: Pocket Gateway @NOTE<(see the [[PocketProvider]])> @<api-keys--pocket-gateway>
