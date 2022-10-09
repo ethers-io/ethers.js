@@ -61,9 +61,8 @@ interaction with standard tools versatile, simple and straightforward.
 - access to archive data (requires paid upgrade)
 
 _definition: **Networks:**
-``homestead``, ``ropsten``, ``rinkeby``, ``goerli``, ``kovan``, ``matic``,
-``maticmum``, ``optimism``, ``optimism-kovan``, ``arbitrum`` and
-``arbitrum-rinkeby``.
+``homestead``, ``goerli``, ``matic``, ``maticmum``, ``optimism``,
+``optimism-kovan``, ``arbitrum`` and ``arbitrum-rinkeby``.
 
 
 _subsection: Alchemy @NOTE<(see the [[AlchemyProvider]])> @<api-keys--alchemy>
