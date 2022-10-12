@@ -66,9 +66,9 @@ export function formatFixed(value: BigNumberish, decimals?: string | BigNumberis
         }
     } else {
         // Strip training 0
-        const result = fraction.match(/^([0-9]*[1-9]|0)(0*)/);
-        if (result !== null) {
-            fraction = result[1];
+        const matchedFraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/);
+        if (matchedFraction !== null) {
+            fraction = matchedFraction[1];
         }
     }
 
