@@ -61,12 +61,12 @@ export function commify(value: string | number): string {
     return negative + formatted.join(",") + suffix;
 }
 
-export function formatUnits(value: BigNumberish, unitName?: string | BigNumberish): string {
+export function formatUnits(value: BigNumberish, unitName?: string | BigNumberish, digits?: BigNumberish): string {
     if (typeof(unitName) === "string") {
         const index = names.indexOf(unitName);
         if (index !== -1) { unitName = 3 * index; }
     }
-    return formatFixed(value, (unitName != null) ? unitName: 18);
+    return formatFixed(value, (unitName != null) ? unitName: 18, digits);
 }
 
 export function parseUnits(value: string, unitName?: BigNumberish): BigNumber {

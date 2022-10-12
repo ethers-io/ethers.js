@@ -39,7 +39,7 @@ function getMultiplier(decimals: BigNumberish): string {
     return logger.throwArgumentError("invalid decimal size", "decimals", decimals);
 }
 
-export function formatFixed(value: BigNumberish, decimals?: string | BigNumberish): string {
+export function formatFixed(value: BigNumberish, decimals?: string | BigNumberish, digits?: BigNumberish): string {
     if (decimals == null) { decimals = 0; }
     const multiplier = getMultiplier(decimals);
 
@@ -52,8 +52,25 @@ export function formatFixed(value: BigNumberish, decimals?: string | BigNumberis
     let fraction = value.mod(multiplier).toString();
     while (fraction.length < multiplier.length - 1) { fraction = "0" + fraction; }
 
-    // Strip training 0
-    fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
+    if (digits !== undefined) {
+        if (typeof(digits) !== "number") {
+            try {
+                digits = BigNumber.from(digits).toNumber();
+            } catch (e) { }
+        }
+  
+        if (fraction.length >= digits) {
+            fraction = fraction.slice(0, digits as number);
+        } else {
+            while (fraction.length < digits) { fraction += "0"; }
+        }
+    } else {
+        // Strip training 0
+        const result = fraction.match(/^([0-9]*[1-9]|0)(0*)/);
+        if (result !== null) {
+            fraction = result[1];
+        }
+    }
 
     const whole = value.div(multiplier).toString();
     if (multiplier.length === 1) {
