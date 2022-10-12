@@ -40,10 +40,7 @@ It is highly recommended for production, you register with
 _definition: **Supported Networks**
 
 - ``homestead`` - Homestead (Mainnet)
-- ``ropsten`` - Ropsten (proof-of-work testnet)
-- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
 - ``goerli`` - G&ouml;rli (clique testnet)
-- ``kovan`` - Kovan (proof-of-authority testnet)
 
 _code: Etherscan Examples @lang<javascript>
 
@@ -54,10 +51,10 @@ _code: Etherscan Examples @lang<javascript>
 provider = new EtherscanProvider();
 
 // Connect to rinkeby testnet (these are equivalent)
-provider = new EtherscanProvider("rinkeby");
+provider = new EtherscanProvider("goerli");
 provider = new EtherscanProvider(4);
 
-network = ethers.providers.getNetwork("rinkeby");
+network = ethers.providers.getNetwork("goerli");
 //_hide: delete network._defaultProvider;
 //_log: network
 
@@ -107,16 +104,12 @@ It is highly recommended for production, you register with
 _definition: **Supported Networks**
 
 - ``homestead`` - Homestead (Mainnet)
-- ``ropsten`` - Ropsten (proof-of-work testnet)
-- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
 - ``goerli`` - G&ouml;rli (clique testnet)
 - ``kovan`` - Kovan (proof-of-authority testnet)
 - ``matic`` - Polygon
 - ``maticmum`` - Polygon Mumbai Testnet
 - ``optimism`` - Optimism (L2; optimistic roll-up)
-- ``optimism-kovan`` - Optimism Testnet (L2; optimistic roll-up testnet)
 - ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
-- ``arbitrum-rinkeby`` - Arbitrum Testnet (L2; optimistic roll-up testnet)
 
 _code: INFURA Examples @lang<javascript>
 
@@ -168,16 +161,11 @@ It is highly recommended for production, you register with
 _definition: **Supported Networks**
 
 - ``homestead`` - Homestead (Mainnet)
-- ``ropsten`` - Ropsten (proof-of-work testnet)
-- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
 - ``goerli`` - G&ouml;rli (clique testnet)
-- ``kovan`` - Kovan (proof-of-authority testnet)
 - ``matic`` - Polygon
 - ``maticmum`` - Polygon Mumbai Testnet
 - ``optimism`` - Optimism (L2; optimistic roll-up)
-- ``optimism-kovan`` - Optimism Testnet (L2; optimistic roll-up testnet)
 - ``arbitrum`` - Arbitrum (L2; optimistic roll-up)
-- ``arbitrum-rinkeby`` - Arbitrum Testnet (L2; optimistic roll-up testnet)
 
 _code: Alchemy Examples @lang<javascript>
 
@@ -189,7 +177,7 @@ provider = new AlchemyProvider();
 
 // Connect to the ropsten testnet
 // (see EtherscanProvider above for other network examples)
-provider = new AlchemyProvider("ropsten");
+provider = new AlchemyProvider("goerli");
 
 // Connect to mainnet with an API key (these are equivalent)
 provider = new AlchemyProvider(null, apiKey);
@@ -241,8 +229,6 @@ It is highly recommended for production, you register with
 _definition: **Supported Networks**
 
 - ``homestead`` - Homestead (Mainnet)
-- ``ropsten`` - Ropsten (proof-of-work testnet)
-- ``rinkeby`` - Rinkeby (proof-of-authority testnet)
 - ``goerli`` - G&ouml;rli (clique testnet)
 
 _code: Pocket Examples @lang<javascript>

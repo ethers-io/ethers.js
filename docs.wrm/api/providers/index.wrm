@@ -78,7 +78,7 @@ There are several official common Ethereum networks as well as custom
 networks and other compatible projects.
 
 Any API that accept a [[providers-Networkish]] can be passed a common
-name (such as ``"mainnet"`` or ``"ropsten"``) or chain ID to use that
+name (such as ``"mainnet"`` or ``"goerli"``) or chain ID to use that
 network definition or may specify custom parameters.
 
 _property: ethers.providers.getNetwork(aNetworkish) => [[providers-Network]]
