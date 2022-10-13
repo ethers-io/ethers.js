@@ -105,9 +105,6 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             case "arbitrum":
                 host = "arbitrum-mainnet.infura.io";
                 break;
-            case "arbitrum-rinkeby":
-                host = "arbitrum-rinkeby.infura.io";
-                break;
             default:
                 logger.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
                     argument: "network",
