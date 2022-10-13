@@ -41,7 +41,7 @@ operations required to interact with the Ethereum Blockchain.
 - customer usage metrics
 
 _definition: **Networks:**
-``homestead``, ``ropsten``, ``rinkeby``, ``goerli`` and ``kovan``.
+``homestead``, ``ropsten``, ``goerli`` and ``kovan``.
 
 
 _subsection: INFURA @NOTE<(see the [[InfuraProvider]])> @<api-keys--infura>
@@ -62,7 +62,7 @@ interaction with standard tools versatile, simple and straightforward.
 
 _definition: **Networks:**
 ``homestead``, ``goerli``, ``matic``, ``maticmum``, ``optimism``,
-``optimism-kovan``, ``arbitrum`` and ``arbitrum-rinkeby``.
+``optimism-kovan``, ``arbitrum`` and ``arbitrum-goerli``.
 
 
 _subsection: Alchemy @NOTE<(see the [[AlchemyProvider]])> @<api-keys--alchemy>
@@ -85,7 +85,7 @@ with debugging.
 
 _definition: **Networks:**
 ``homestead``, ``goerli``, ``matic``,``maticmum``, ``optimism``,
-``optimism-kovan``, ``arbitrum`` and ``arbitrum-rinkeby``.
+``optimism-kovan``, ``arbitrum`` and ``arbitrum-goerli``.
 
 
 _subsection: Pocket Gateway @NOTE<(see the [[PocketProvider]])> @<api-keys--pocket-gateway>
