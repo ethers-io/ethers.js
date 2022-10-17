@@ -187,7 +187,7 @@ export class Wallet extends Signer implements ExternallyOwnedAccount, TypedDataS
         return new Wallet(decryptJsonWalletSync(json, password));
     }
 
-    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist): Wallet {
+    static fromMnemonic(mnemonic: string, path?: string, wordlist?: Wordlist | string): Wallet {
         if (!path) { path = defaultPath; }
         return new Wallet(HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path));
     }
