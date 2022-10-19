@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
 //import Web3HttpProvider from "web3-providers-http";
 var ethers_1 = require("ethers");
+var utils_1 = require("./utils");
 var bnify = ethers_1.ethers.BigNumber.from;
 var blockchainData = {
     homestead: {
@@ -767,36 +768,23 @@ testFunctions.push({
 });
 describe("Test Provider Methods", function () {
     var fundReceipt = null;
-    var provider = new ethers_1.ethers.providers.InfuraProvider("goerli", getApiKeys("goerli").infura);
-    var faucetWallet;
-    try {
-        faucetWallet = new ethers_1.ethers.Wallet(process.env.FAUCET_PRIVATEKEY, provider);
-    }
-    catch (error) {
-        console.log("ERROR getting faucet", error);
-    }
     before(function () {
         return __awaiter(this, void 0, void 0, function () {
-            var tx;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.timeout(300000);
-                        return [4 /*yield*/, faucetWallet.sendTransaction({ to: fundWallet.address, value: "314159265358979323" })];
-                    case 1:
-                        tx = _a.sent();
-                        fundReceipt = tx.wait(); //provider.waitForTransaction(funder.hash);
-                        fundReceipt.then(function (receipt) {
-                            console.log("*** Funded: " + fundWallet.address);
-                        });
-                        return [2 /*return*/];
-                }
+                this.timeout(300000);
+                // Get some ether from the faucet
+                //const funder = await ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${ fundWallet.address.toLowerCase() }`);
+                fundReceipt = (0, utils_1.fundAddress)(fundWallet.address).then(function (hash) {
+                    console.log("*** Funded: " + fundWallet.address);
+                    return hash;
+                });
+                return [2 /*return*/];
             });
         });
     });
     after(function () {
         return __awaiter(this, void 0, void 0, function () {
-            var provider, gasPrice, balance, tx;
+            var hash;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -806,22 +794,10 @@ describe("Test Provider Methods", function () {
                     case 1:
                         // Wait until the funding is complete
                         _a.sent();
-                        provider = new ethers_1.ethers.providers.InfuraProvider("goerli", getApiKeys("goerli").infura);
-                        return [4 /*yield*/, provider.getGasPrice()];
+                        return [4 /*yield*/, (0, utils_1.returnFunds)(fundWallet)];
                     case 2:
-                        gasPrice = _a.sent();
-                        return [4 /*yield*/, provider.getBalance(fundWallet.address)];
-                    case 3:
-                        balance = _a.sent();
-                        return [4 /*yield*/, fundWallet.connect(provider).sendTransaction({
-                                to: faucetWallet.address,
-                                gasLimit: 21000,
-                                gasPrice: gasPrice,
-                                value: balance.sub(gasPrice.mul(21000))
-                            })];
-                    case 4:
-                        tx = _a.sent();
-                        console.log("*** Sweep Transaction:", tx.hash);
+                        hash = _a.sent();
+                        console.log("*** Sweep Transaction:", hash);
                         return [2 /*return*/];
                 }
             });

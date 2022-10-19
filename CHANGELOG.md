@@ -4,17 +4,12 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.7.2 (2022-10-18 23:41)
+ethers/v5.7.2 (2022-10-19 04:19)
 --------------------------------
 
-  - Updated tests to use goerli instead of ropsten. ([1392803](https://github.com/ethers-io/ethers.js/commit/139280390c32b80c533e6a74c84595e6bea706b9))
+  - Updated tests to use goerli instead of ropsten. ([1392803](https://github.com/ethers-io/ethers.js/commit/139280390c32b80c533e6a74c84595e6bea706b9), [706d3ca](https://github.com/ethers-io/ethers.js/commit/706d3ca27c233385944877eb64c099c74109b6c2))
   - Added new error strings Pocket returns. ([9f990c5](https://github.com/ethers-io/ethers.js/commit/9f990c57f0486728902d4b8e049536f2bb3487ee))
   - Fixed Alchemy goerli URL. ([#3320](https://github.com/ethers-io/ethers.js/issues/3320), [#3323](https://github.com/ethers-io/ethers.js/issues/3323), [#3340](https://github.com/ethers-io/ethers.js/issues/3340), [#3358](https://github.com/ethers-io/ethers.js/issues/3358), [#3423](https://github.com/ethers-io/ethers.js/issues/3423); [74e3d98](https://github.com/ethers-io/ethers.js/commit/74e3d98d1df2bd97be258202a63517d4aa1ba8fd))
-  - Update testnets for third-party providers. ([#3320](https://github.com/ethers-io/ethers.js/issues/3320), [#3323](https://github.com/ethers-io/ethers.js/issues/3323), [#3340](https://github.com/ethers-io/ethers.js/issues/3340), [#3358](https://github.com/ethers-io/ethers.js/issues/3358), [#3423](https://github.com/ethers-io/ethers.js/issues/3423); [2a3a2e1](https://github.com/ethers-io/ethers.js/commit/2a3a2e1feda7b18c8e234c84e4de32d4246f18ed))
-
-ethers/v5.7.2 (2022-10-18 20:35)
---------------------------------
-
   - Update testnets for third-party providers. ([#3320](https://github.com/ethers-io/ethers.js/issues/3320), [#3323](https://github.com/ethers-io/ethers.js/issues/3323), [#3340](https://github.com/ethers-io/ethers.js/issues/3340), [#3358](https://github.com/ethers-io/ethers.js/issues/3358), [#3423](https://github.com/ethers-io/ethers.js/issues/3423); [2a3a2e1](https://github.com/ethers-io/ethers.js/commit/2a3a2e1feda7b18c8e234c84e4de32d4246f18ed))
 
 ethers/v5.7.1 (2022-09-13 21:28)

@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import assert from "assert";
 //import Web3HttpProvider from "web3-providers-http";
 import { ethers } from "ethers";
+import { fundAddress, returnFunds } from "./utils";
 const bnify = ethers.BigNumber.from;
 const blockchainData = {
     homestead: {
@@ -638,23 +639,14 @@ testFunctions.push({
 });
 describe("Test Provider Methods", function () {
     let fundReceipt = null;
-    const provider = new ethers.providers.InfuraProvider("goerli", getApiKeys("goerli").infura);
-    let faucetWallet;
-    try {
-        faucetWallet = new ethers.Wallet(process.env.FAUCET_PRIVATEKEY, provider);
-    }
-    catch (error) {
-        console.log("ERROR getting faucet", error);
-    }
     before(function () {
         return __awaiter(this, void 0, void 0, function* () {
             this.timeout(300000);
             // Get some ether from the faucet
             //const funder = await ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${ fundWallet.address.toLowerCase() }`);
-            const tx = yield faucetWallet.sendTransaction({ to: fundWallet.address, value: "314159265358979323" });
-            fundReceipt = tx.wait(); //provider.waitForTransaction(funder.hash);
-            fundReceipt.then((receipt) => {
+            fundReceipt = fundAddress(fundWallet.address).then((hash) => {
                 console.log(`*** Funded: ${fundWallet.address}`);
+                return hash;
             });
         });
     });
@@ -664,16 +656,8 @@ describe("Test Provider Methods", function () {
             // Wait until the funding is complete
             yield fundReceipt;
             // Refund all unused ether to the faucet
-            const provider = new ethers.providers.InfuraProvider("goerli", getApiKeys("goerli").infura);
-            const gasPrice = yield provider.getGasPrice();
-            const balance = yield provider.getBalance(fundWallet.address);
-            const tx = yield fundWallet.connect(provider).sendTransaction({
-                to: faucetWallet.address,
-                gasLimit: 21000,
-                gasPrice: gasPrice,
-                value: balance.sub(gasPrice.mul(21000))
-            });
-            console.log(`*** Sweep Transaction:`, tx.hash);
+            const hash = yield returnFunds(fundWallet);
+            console.log(`*** Sweep Transaction:`, hash);
         });
     });
     providerFunctions.forEach(({ name, networks, create }) => {

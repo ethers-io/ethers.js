@@ -516,10 +516,10 @@ describe("Test ParamType Parser", function () {
     });
 });
 describe('Test EIP-838 Error Codes', function () {
-    const addr = "0xbd0B4B009a76CA97766360F04f75e05A3E449f1E";
+    const addr = "0x9FC52a97e59aeea064D9c24a383B70e8475b3e0B";
     it("testError1", function () {
         return __awaiter(this, void 0, void 0, function* () {
-            const provider = new ethers.providers.InfuraProvider("ropsten", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+            const provider = new ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
             const contract = new ethers.Contract(addr, [
                 "function testError1(bool pass, address addr, uint256 value) pure returns (bool)",
                 "function testError2(bool pass, bytes data) pure returns (bool)",
@@ -549,8 +549,9 @@ describe("Additional test cases", function () {
         const iface = new ethers.utils.Interface([
             "function test(address foo) view returns (bool)"
         ]);
-        const tx = iface.encodeFunctionData("test", ["c1912fee45d61c87cc5ea59dae31190fffff232d"]);
-        console.log(tx);
+        //const tx = 
+        iface.encodeFunctionData("test", ["c1912fee45d61c87cc5ea59dae31190fffff232d"]);
+        //console.log(tx);
     });
 });
 //# sourceMappingURL=test-contract-interface.js.map
