@@ -6,6 +6,8 @@ import assert from "assert";
 
 import { ethers } from "ethers";
 
+import { fundAddress, returnFunds } from "./utils";
+
 const bnify = ethers.BigNumber.from;
 
 type TestCases = {
@@ -712,27 +714,16 @@ testFunctions.push({
 });
 
 describe("Test Provider Methods", function() {
-    let fundReceipt: Promise<ethers.providers.TransactionReceipt> = null;
-
-    const provider = new ethers.providers.InfuraProvider("goerli", getApiKeys("goerli").infura);
-
-    let faucetWallet: null | ethers.Wallet;
-
-    try {
-        faucetWallet = new ethers.Wallet(process.env.FAUCET_PRIVATEKEY, provider);
-    } catch (error) {
-        console.log("ERROR getting faucet", error);
-    }
+    let fundReceipt: Promise<string> = null;
 
     before(async function() {
         this.timeout(300000);
 
         // Get some ether from the faucet
         //const funder = await ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${ fundWallet.address.toLowerCase() }`);
-        const tx = await faucetWallet.sendTransaction({ to: fundWallet.address, value: "314159265358979323" });
-        fundReceipt = tx.wait(); //provider.waitForTransaction(funder.hash);
-        fundReceipt.then((receipt) => {
+        fundReceipt = fundAddress(fundWallet.address).then((hash) => {
             console.log(`*** Funded: ${ fundWallet.address }`);
+            return hash;
         });
     });
 
@@ -743,17 +734,9 @@ describe("Test Provider Methods", function() {
         await fundReceipt;
 
         // Refund all unused ether to the faucet
-        const provider = new ethers.providers.InfuraProvider("goerli", getApiKeys("goerli").infura);
-        const gasPrice = await provider.getGasPrice();
-        const balance = await provider.getBalance(fundWallet.address);
-        const tx = await fundWallet.connect(provider).sendTransaction({
-            to: faucetWallet.address,
-            gasLimit: 21000,
-            gasPrice: gasPrice,
-            value: balance.sub(gasPrice.mul(21000))
-        });
+        const hash = await returnFunds(fundWallet);
 
-        console.log(`*** Sweep Transaction:`, tx.hash);
+        console.log(`*** Sweep Transaction:`, hash);
     });
 
     providerFunctions.forEach(({ name, networks, create}) => {

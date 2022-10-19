@@ -4,9 +4,11 @@ import assert from "assert";
 
 import { ethers } from "ethers";
 
+import { sendTransaction } from "./utils"
+
 import contractData from "./test-contract.json";
 
-const provider = new ethers.providers.InfuraProvider("rinkeby", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+const provider = new ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
 //const provider = ethers.getDefaultProvider("rinkeby");
 
 const TIMEOUT_PERIOD = 120000;
@@ -94,8 +96,12 @@ async function TestContractEvents() {
         });
     });
 
-    const data = await ethers.utils.fetchJson('https://api.ethers.io/api/v1/?action=triggerTest&address=' + contract.address);
-    console.log('*** Triggered Transaction Hash: ' + data.hash);
+    const hash = await sendTransaction({
+        to: "0x63c5bd7ef280f150aca761a5e9a922959eb26732",
+        data: "0xbabf890100000000000000000000000006b5955a67d827cdf91823e3bb8f069e6c89c1d600000000000000000000000000000000000000000000000000000000000000420000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000a48656c6c6f576f726c6400000000000000000000000000000000000000000000"
+    });
+
+    console.log('*** Triggered Transaction Hash: ' + hash);
 
     return running;
 }

@@ -43,12 +43,13 @@ module.exports = function(config) {
         ],
       }
     },
-    /*
     client: {
+      args: [ process.env.FAUCET_PRIVATEKEY ],
+      /*
       mocha: {
-        grep: 'utf',
+        grep: 'Test WebSocketProvider',
       }
+      */
     }
-    */
   })
 }
