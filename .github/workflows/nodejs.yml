@@ -11,6 +11,7 @@ jobs:
 
 #    runs-on: ubuntu-latest
     runs-on: macos-latest
+    environment: test-ethers
 
     strategy:
       fail-fast: false
@@ -43,6 +44,8 @@ jobs:
 
 #    runs-on: ubuntu-latest
     runs-on: macos-latest
+
+    environment: test-ethers
 
     strategy:
       fail-fast: false
@@ -104,6 +107,8 @@ jobs:
 
 #    runs-on: ubuntu-latest
     runs-on: macos-latest
+
+    environment: test-ethers
 
     continue-on-error: true
 
