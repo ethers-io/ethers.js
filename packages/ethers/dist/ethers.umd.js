@@ -24422,7 +24422,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.7.1";
+	exports.version = "providers/5.7.2";
 
 	});
 
@@ -28984,17 +28984,8 @@
 	            case "homestead":
 	                host = "eth-mainnet.alchemyapi.io/v2/";
 	                break;
-	            case "ropsten":
-	                host = "eth-ropsten.alchemyapi.io/v2/";
-	                break;
-	            case "rinkeby":
-	                host = "eth-rinkeby.alchemyapi.io/v2/";
-	                break;
 	            case "goerli":
-	                host = "eth-goerli.alchemyapi.io/v2/";
-	                break;
-	            case "kovan":
-	                host = "eth-kovan.alchemyapi.io/v2/";
+	                host = "eth-goerli.g.alchemyapi.io/v2/";
 	                break;
 	            case "matic":
 	                host = "polygon-mainnet.g.alchemy.com/v2/";
@@ -29005,17 +28996,11 @@
 	            case "arbitrum":
 	                host = "arb-mainnet.g.alchemy.com/v2/";
 	                break;
-	            case "arbitrum-rinkeby":
-	                host = "arb-rinkeby.g.alchemy.com/v2/";
-	                break;
 	            case "arbitrum-goerli":
 	                host = "arb-goerli.g.alchemy.com/v2/";
 	                break;
 	            case "optimism":
 	                host = "opt-mainnet.g.alchemy.com/v2/";
-	                break;
-	            case "optimism-kovan":
-	                host = "opt-kovan.g.alchemy.com/v2/";
 	                break;
 	            case "optimism-goerli":
 	                host = "opt-goerli.g.alchemy.com/v2/";
@@ -29457,20 +29442,22 @@
 	        switch (this.network ? this.network.name : "invalid") {
 	            case "homestead":
 	                return "https:/\/api.etherscan.io";
-	            case "ropsten":
-	                return "https:/\/api-ropsten.etherscan.io";
-	            case "rinkeby":
-	                return "https:/\/api-rinkeby.etherscan.io";
-	            case "kovan":
-	                return "https:/\/api-kovan.etherscan.io";
 	            case "goerli":
 	                return "https:/\/api-goerli.etherscan.io";
 	            case "sepolia":
 	                return "https:/\/api-sepolia.etherscan.io";
+	            case "matic":
+	                return "https:/\/api.polygonscan.com";
+	            case "maticmum":
+	                return "https:/\/api-testnet.polygonscan.com";
+	            case "arbitrum":
+	                return "https:/\/api.arbiscan.io";
+	            case "arbitrum-goerli":
+	                return "https:/\/api-goerli.arbiscan.io";
 	            case "optimism":
 	                return "https:/\/api-optimistic.etherscan.io";
-	            case "optimism-kovan":
-	                return "https:/\/api-kovan-optimistic.etherscan.io";
+	            case "optimism-goerli":
+	                return "https:/\/api-goerli-optimistic.etherscan.io";
 	            default:
 	        }
 	        return logger.throwArgumentError("unsupported network", "network", this.network.name);
@@ -30569,15 +30556,6 @@
 	            case "homestead":
 	                host = "mainnet.infura.io";
 	                break;
-	            case "ropsten":
-	                host = "ropsten.infura.io";
-	                break;
-	            case "rinkeby":
-	                host = "rinkeby.infura.io";
-	                break;
-	            case "kovan":
-	                host = "kovan.infura.io";
-	                break;
 	            case "goerli":
 	                host = "goerli.infura.io";
 	                break;
@@ -30593,14 +30571,14 @@
 	            case "optimism":
 	                host = "optimism-mainnet.infura.io";
 	                break;
-	            case "optimism-kovan":
-	                host = "optimism-kovan.infura.io";
+	            case "optimism-goerli":
+	                host = "optimism-goerli.infura.io";
 	                break;
 	            case "arbitrum":
 	                host = "arbitrum-mainnet.infura.io";
 	                break;
-	            case "arbitrum-rinkeby":
-	                host = "arbitrum-rinkeby.infura.io";
+	            case "arbitrum-goerli":
+	                host = "arbitrum-goerli.infura.io";
 	                break;
 	            default:
 	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
@@ -31547,7 +31525,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.7.1";
+	exports.version = "ethers/5.7.2";
 
 	});
 

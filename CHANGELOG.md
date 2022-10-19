@@ -4,6 +4,11 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
+ethers/v5.7.2 (2022-10-18 20:35)
+--------------------------------
+
+  - Update testnets for third-party providers. ([#3320](https://github.com/ethers-io/ethers.js/issues/3320), [#3323](https://github.com/ethers-io/ethers.js/issues/3323), [#3340](https://github.com/ethers-io/ethers.js/issues/3340), [#3358](https://github.com/ethers-io/ethers.js/issues/3358), [#3423](https://github.com/ethers-io/ethers.js/issues/3423); [2a3a2e1](https://github.com/ethers-io/ethers.js/commit/2a3a2e1feda7b18c8e234c84e4de32d4246f18ed))
+
 ethers/v5.7.1 (2022-09-13 21:28)
 --------------------------------
 
