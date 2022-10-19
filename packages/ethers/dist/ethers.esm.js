@@ -21318,7 +21318,7 @@ function checkError(method, error, params) {
     }
     message = (message || "").toLowerCase();
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit|InsufficientFunds/i)) {
         logger$u.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
             error, method, transaction
         });
@@ -21341,7 +21341,7 @@ function checkError(method, error, params) {
             error, method, transaction
         });
     }
-    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted|revert/)) {
         logger$u.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error, method, transaction
         });
@@ -22337,7 +22337,7 @@ class AlchemyProvider extends UrlJsonRpcProvider {
                 host = "eth-mainnet.alchemyapi.io/v2/";
                 break;
             case "goerli":
-                host = "eth-goerli.g.alchemyapi.io/v2/";
+                host = "eth-goerli.g.alchemy.com/v2/";
                 break;
             case "matic":
                 host = "polygon-mainnet.g.alchemy.com/v2/";

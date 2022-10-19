@@ -140,7 +140,7 @@ function checkError(method, error, params) {
     }
     message = (message || "").toLowerCase();
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit|InsufficientFunds/i)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", logger_1.Logger.errors.INSUFFICIENT_FUNDS, {
             error: error,
             method: method,
@@ -171,7 +171,7 @@ function checkError(method, error, params) {
             transaction: transaction
         });
     }
-    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted|revert/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", logger_1.Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error: error,
             method: method,

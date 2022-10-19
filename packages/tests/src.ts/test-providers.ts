@@ -715,7 +715,14 @@ describe("Test Provider Methods", function() {
     let fundReceipt: Promise<ethers.providers.TransactionReceipt> = null;
 
     const provider = new ethers.providers.InfuraProvider("goerli", getApiKeys("goerli").infura);
-    const faucetWallet = new ethers.Wallet(process.env.FAUCET_PRIVATEKEY, provider);
+
+    let faucetWallet: null | ethers.Wallet;
+
+    try {
+        faucetWallet = new ethers.Wallet(process.env.FAUCET_PRIVATEKEY, provider);
+    } catch (error) {
+        console.log("ERROR getting faucet", error);
+    }
 
     before(async function() {
         this.timeout(300000);

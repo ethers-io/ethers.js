@@ -43,7 +43,7 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
                 host = "eth-mainnet.alchemyapi.io/v2/";
                 break;
             case "goerli":
-                host = "eth-goerli.g.alchemyapi.io/v2/";
+                host = "eth-goerli.g.alchemy.com/v2/";
                 break;
             case "matic":
                 host = "polygon-mainnet.g.alchemy.com/v2/";
