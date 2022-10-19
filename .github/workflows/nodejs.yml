@@ -12,6 +12,8 @@ jobs:
 #    runs-on: ubuntu-latest
     runs-on: macos-latest
     environment: ethers-tests
+    env:
+      FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
 
     strategy:
       fail-fast: false
@@ -46,6 +48,8 @@ jobs:
     runs-on: macos-latest
 
     environment: ethers-tests
+    env:
+      FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
 
     strategy:
       fail-fast: false
@@ -109,6 +113,8 @@ jobs:
     runs-on: macos-latest
 
     environment: ethers-tests
+    env:
+      FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
 
     continue-on-error: true
 
