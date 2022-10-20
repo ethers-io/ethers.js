@@ -456,9 +456,7 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
     }
 
     get hash(): null | string {
-        if (this.signature == null) {
-            throw new Error("cannot hash unsigned transaction; maybe you meant .unsignedHash");
-        }
+        if (this.signature == null) { return null; }
         return keccak256(this.serialized);
     }
 
@@ -468,11 +466,12 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
 
     get from(): null | string {
         if (this.signature == null) { return null; }
-        return recoverAddress(this.unsignedSerialized, this.signature);
+        return recoverAddress(this.unsignedHash, this.signature);
     }
 
     get fromPublicKey(): null | string {
         if (this.signature == null) { return null; }
+        throw new Error("@TODO");
         // use ecrecover
         return "";
     }
@@ -610,6 +609,29 @@ export class Transaction implements Freezable<Transaction>, TransactionLike<stri
 
     isFrozen(): boolean {
         return Object.isFrozen(this.#props);
+    }
+
+    toJSON(): any {
+        const s = (v: null | bigint) => {
+            if (v == null) { return null; }
+            return v.toString();
+        };
+
+        return {
+            type: this.type,
+            to: this.to,
+            from: this.from,
+            data: this.data,
+            nonce: this.nonce,
+            gasLimit: s(this.gasLimit),
+            gasPrice: s(this.gasPrice),
+            maxPriorityFeePerGas: s(this.maxPriorityFeePerGas),
+            maxFeePerGas: s(this.maxFeePerGas),
+            value: s(this.value),
+            chainId: s(this.chainId),
+            sig: this.signature ? this.signature.toJSON(): null,
+            accessList: this.accessList
+        };
     }
 
     static from(tx: string | TransactionLike<string>): Transaction {
