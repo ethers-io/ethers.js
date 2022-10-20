@@ -3,6 +3,7 @@
 
 // https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
 
+import { getBuiltinCallException } from "../abi/index.js";
 import { getAddress, resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
@@ -295,7 +296,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         }
 
         const hexTx = this.provider.getRpcTransaction(tx);
-        return await this.provider.send("eth_sign_Transaction", [ hexTx ]);
+        return await this.provider.send("eth_signTransaction", [ hexTx ]);
     }
 
 
@@ -782,38 +783,113 @@ export class JsonRpcApiProvider extends AbstractProvider {
      *  that different nodes return, coercing them into a machine-readable
      *  standardized error.
      */
-    getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error {
+    getRpcError(payload: JsonRpcPayload, _error: JsonRpcError): Error {
         const { method } = payload;
+        const { error } = _error;
 
-        if (method === "eth_call") {
-            const transaction = <TransactionLike<string>>((<any>payload).params[0]);
-
+        if (method === "eth_call" || method === "eth_estimateGas") {
             const result = spelunkData(error);
+
+            const e = getBuiltinCallException(
+                (method === "eth_call") ? "call": "estimateGas",
+                ((<any>payload).params[0]),
+                (result ? result.data: null)
+            );
+            e.info = { error, payload };
+            return e;
+/*
+            let message = "missing revert data during JSON-RPC call";
+
+            const action = <"call" | "estimateGas" | "unknown">(({ eth_call: "call", eth_estimateGas: "estimateGas" })[method] || "unknown");
+            let data: null | string = null;
+            let reason: null | string = null;
+            const transaction = <{ from: string, to: string, data: string }>((<any>payload).params[0]);
+            const invocation = null;
+            let revert: null | { signature: string, name: string, args: Array<any> } = null;
+
             if (result) {
                 // @TODO: Extract errorSignature, errorName, errorArgs, reason if
                 //        it is Error(string) or Panic(uint25)
-                return makeError("execution reverted during JSON-RPC call", "CALL_EXCEPTION", {
-                    data: result.data,
-                    transaction
-                });
+                message = "execution reverted during JSON-RPC call";
+                data = result.data;
+
+                let bytes = getBytes(data);
+                if (bytes.length % 32 !== 4) {
+                    message += " (could not parse reason; invalid data length)";
+
+                } else if (data.substring(0, 10) === "0x08c379a0") {
+                    // Error(string)
+                    try {
+                        if (bytes.length < 68) { throw new Error("bad length"); }
+                        bytes = bytes.slice(4);
+                        const pointer = getNumber(hexlify(bytes.slice(0, 32)));
+                        bytes = bytes.slice(pointer);
+                        if (bytes.length < 32) { throw new Error("overrun"); }
+                        const length = getNumber(hexlify(bytes.slice(0, 32)));
+                        bytes = bytes.slice(32);
+                        if (bytes.length < length) { throw new Error("overrun"); }
+                        reason = toUtf8String(bytes.slice(0, length));
+                        revert = {
+                            signature: "Error(string)",
+                            name: "Error",
+                            args: [ reason ]
+                        };
+                        message += `: ${ JSON.stringify(reason) }`;
+
+                    } catch (error) {
+                        console.log(error);
+                        message += " (could not parse reason; invalid data length)";
+                    }
+
+                } else if (data.substring(0, 10) === "0x4e487b71") {
+                    // Panic(uint256)
+                    try {
+                        if (bytes.length !== 36) { throw new Error("bad length"); }
+                        const arg = getNumber(hexlify(bytes.slice(4)));
+                        revert = {
+                            signature: "Panic(uint256)",
+                            name: "Panic",
+                            args: [ arg ]
+                        };
+                        reason = `Panic due to ${ PanicReasons.get(Number(arg)) || "UNKNOWN" }(${ arg })`;
+                        message += `: ${ reason }`;
+                    } catch (error) {
+                        console.log(error);
+                        message += " (could not parse panic reason)";
+                    }
+                }
             }
 
-            return makeError("missing revert data during JSON-RPC call", "CALL_EXCEPTION", {
-                data: "0x", transaction, info: { error }
+            return makeError(message, "CALL_EXCEPTION", {
+                action, data, reason, transaction, invocation, revert,
+                info: { payload, error }
             });
+            */
         }
+
+        // Only estimateGas and call can return arbitrary contract-defined text, so now we
+        // we can process text safely.
 
         const message = JSON.stringify(spelunkMessage(error));
 
-        if (method === "eth_estimateGas") {
-            const transaction = <TransactionLike<string>>((<any>payload).params[0]);
+        if (typeof(error.message) === "string" && error.message.match(/user denied|ethers-user-denied/i)) {
+            const actionMap: Record<string, "requestAccess" | "sendTransaction" | "signMessage" | "signTransaction" | "signTypedData"> = {
+                eth_sign: "signMessage",
+                personal_sign: "signMessage",
+                eth_signTypedData_v4: "signTypedData",
+                eth_signTransaction: "signTransaction",
+                eth_sendTransaction: "sendTransaction",
+                eth_requestAccounts: "requestAccess",
+                wallet_requestAccounts: "requestAccess",
+            };
 
-            if (message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
-                return makeError("cannot estimate gas; transaction may fail or may require manual gas limit", "UNPREDICTABLE_GAS_LIMIT", {
-                    transaction
-                });
-            }
+            return makeError(`user rejected action`, "ACTION_REJECTED", {
+                action: (actionMap[method] || "unknown") ,
+                reason: "rejected",
+                info: { payload, error }
+            });
         }
+
 
         if (method === "eth_sendRawTransaction" || method === "eth_sendTransaction") {
             const transaction = <TransactionLike<string>>((<any>payload).params[0]);
@@ -838,6 +914,12 @@ export class JsonRpcApiProvider extends AbstractProvider {
                     operation: method, info: { transaction }
                 });
             }
+        }
+
+        if (message.match(/the method .* does not exist/i)) {
+            return makeError("unsupported operation", "UNSUPPORTED_OPERATION", {
+                operation: payload.method
+            });
         }
 
         return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
@@ -893,7 +975,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
         // Account index
         if (typeof(address) === "number") {
             const accounts = <Array<string>>(await accountsPromise);
-            if (address > accounts.length) { throw new Error("no such account"); }
+            if (address >= accounts.length) { throw new Error("no such account"); }
             return new JsonRpcSigner(this, accounts[address]);
         }
 
@@ -914,6 +996,37 @@ export class JsonRpcApiProvider extends AbstractProvider {
     }
 }
 
+export class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
+    #pollingInterval: number;
+    constructor(network?: Networkish, options?: JsonRpcApiProviderOptions) {
+        super(network, options);
+
+        this.#pollingInterval = 4000;
+    }
+
+    _getSubscriber(sub: Subscription): Subscriber {
+        const subscriber = super._getSubscriber(sub);
+        if (isPollable(subscriber)) {
+            subscriber.pollingInterval = this.#pollingInterval;
+        }
+        return subscriber;
+    }
+
+    /**
+     *  The polling interval (default: 4000 ms)
+     */
+    get pollingInterval(): number { return this.#pollingInterval; }
+    set pollingInterval(value: number) {
+        if (!Number.isInteger(value) || value < 0) { throw new Error("invalid interval"); }
+        this.#pollingInterval = value;
+        this._forEachSubscriber((sub) => {
+            if (isPollable(sub)) {
+                sub.pollingInterval = this.#pollingInterval;
+            }
+        });
+    }
+}
+
 /**
  *  The JsonRpcProvider is one of the most common Providers,
  *  which performs all operations over HTTP (or HTTPS) requests.
@@ -922,10 +1035,8 @@ export class JsonRpcApiProvider extends AbstractProvider {
  *  number; when it advances, all block-base events are then checked
  *  for updates.
  */
-export class JsonRpcProvider extends JsonRpcApiProvider {
+export class JsonRpcProvider extends JsonRpcApiPollingProvider {
     #connect: FetchRequest;
-
-    #pollingInterval: number;
 
     constructor(url?: string | FetchRequest, network?: Networkish, options?: JsonRpcApiProviderOptions) {
         if (url == null) { url = "http:/\/localhost:8545"; }
@@ -936,8 +1047,6 @@ export class JsonRpcProvider extends JsonRpcApiProvider {
         } else {
             this.#connect = url.clone();
         }
-
-        this.#pollingInterval = 4000;
     }
 
     _getConnection(): FetchRequest {
@@ -965,20 +1074,6 @@ export class JsonRpcProvider extends JsonRpcApiProvider {
         if (!Array.isArray(resp)) { resp = [ resp ]; }
 
         return resp;
-    }
-
-    /**
-     *  The polling interval (default: 4000 ms)
-     */
-    get pollingInterval(): number { return this.#pollingInterval; }
-    set pollingInterval(value: number) {
-        if (!Number.isInteger(value) || value < 0) { throw new Error("invalid interval"); }
-        this.#pollingInterval = value;
-        this._forEachSubscriber((sub) => {
-            if (isPollable(sub)) {
-                sub.pollingInterval = this.#pollingInterval;
-            }
-        });
     }
 }
 

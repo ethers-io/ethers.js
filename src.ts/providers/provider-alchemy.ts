@@ -1,6 +1,7 @@
 
 import {
-    defineProperties, FetchRequest, throwArgumentError, throwError
+    defineProperties, resolveProperties, throwArgumentError, throwError,
+    FetchRequest
 } from "../utils/index.js";
 
 import { showThrottleMessage } from "./community.js";
@@ -18,26 +19,21 @@ function getHost(name: string): string {
     switch(name) {
         case "mainnet":
             return "eth-mainnet.alchemyapi.io";
-        case "ropsten":
-            return "eth-ropsten.alchemyapi.io";
-        case "rinkeby":
-            return "eth-rinkeby.alchemyapi.io";
         case "goerli":
-            return "eth-goerli.alchemyapi.io";
-        case "kovan":
-            return "eth-kovan.alchemyapi.io";
+            return "eth-goerli.g.alchemy.com";
+
+        case "arbitrum":
+            return "arb-mainnet.g.alchemy.com";
+        case "arbitrum-goerli":
+            return "arb-goerli.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
         case "maticmum":
             return "polygon-mumbai.g.alchemy.com";
-        case "arbitrum":
-            return "arb-mainnet.g.alchemy.com";
-        case "arbitrum-rinkeby":
-            return "arb-rinkeby.g.alchemy.com";
         case "optimism":
             return "opt-mainnet.g.alchemy.com";
-        case "optimism-kovan":
-            return "opt-kovan.g.alchemy.com";
+        case "optimism-goerli":
+            return "opt-goerli.g.alchemy.com";
     }
 
     return throwArgumentError("unsupported network", "network", name);
@@ -67,8 +63,11 @@ export class AlchemyProvider extends JsonRpcProvider implements CommunityResourc
 
         // https://docs.alchemy.com/reference/trace-transaction
         if (req.method === "getTransactionResult") {
-            const trace = await this.send("trace_transaction", [ req.hash ]);
-            if (trace == null) { return null; }
+            const { trace, tx } = await resolveProperties({
+                trace: this.send("trace_transaction", [ req.hash ]),
+                tx: this.getTransaction(req.hash)
+            });
+            if (trace == null || tx == null) { return null; }
 
             let data: undefined | string;
             let error = false;
@@ -80,7 +79,12 @@ export class AlchemyProvider extends JsonRpcProvider implements CommunityResourc
             if (data) {
                 if (error) {
                     throwError("an error occurred during transaction executions", "CALL_EXCEPTION", {
-                        data
+                        action: "getTransactionResult",
+                        data,
+                        reason: null,
+                        transaction: tx,
+                        invocation: null,
+                        revert: null // @TODO
                     });
                 }
                 return data;
