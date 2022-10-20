@@ -11,7 +11,6 @@ import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { Provider, TransactionRequest } from "../providers/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 
-
 export class BaseWallet extends AbstractSigner {
     readonly address!: string;
 
@@ -35,28 +34,38 @@ export class BaseWallet extends AbstractSigner {
         return new BaseWallet(this.#signingKey, provider);
     }
 
-    async signTransaction(_tx: TransactionRequest): Promise<string> {
+    async signTransaction(tx: TransactionRequest): Promise<string> {
+
         // Replace any Addressable or ENS name with an address
-        const tx = <TransactionLike<string>>Object.assign({ }, _tx, await resolveProperties({
-            to: (_tx.to ? resolveAddress(_tx.to, this.provider): undefined),
-            from: (_tx.from ? resolveAddress(_tx.from, this.provider): undefined)
-        }));
+        const { to, from } = await resolveProperties({
+            to: (tx.to ? resolveAddress(tx.to, this.provider): undefined),
+            from: (tx.from ? resolveAddress(tx.from, this.provider): undefined)
+        });
+
+        if (to != null) { tx.to = to; }
+        if (from != null) { tx.from = from; }
 
         if (tx.from != null) {
-            if (getAddress(tx.from) !== this.address) {
-                throwArgumentError("transaction from address mismatch", "tx.from", _tx.from);
+            if (getAddress(<string>(tx.from)) !== this.address) {
+                throwArgumentError("transaction from address mismatch", "tx.from", tx.from);
             }
             delete tx.from;
         }
 
         // Build the transaction
-        const btx = Transaction.from(tx);
+        const btx = Transaction.from(<TransactionLike<string>>tx);
         btx.signature = this.signingKey.sign(btx.unsignedHash);
 
         return btx.serialized;
     }
 
     async signMessage(message: string | Uint8Array): Promise<string> {
+        return this.signingKey.sign(hashMessage(message)).serialized;
+    }
+
+    // @TODO: Add a secialized signTx and signTyped sync that enforces
+    // all parameters are known?
+    signMessageSync(message: string | Uint8Array): string {
         return this.signingKey.sign(hashMessage(message)).serialized;
     }
 
