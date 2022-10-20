@@ -21,7 +21,7 @@ const BN_35 = BigInt(35);
 
 const _guard = { };
 
-
+// @TODO: Allow Uint8Array
 export type SignatureLike = Signature | string | {
     r: string;
     s: string;
@@ -79,16 +79,7 @@ export class Signature implements Freezable<Signature> {
     }
 
     get yParity(): 0 | 1 {
-        if (this.v === 27) { return 0; }
-        return 1;
-        /*
-        // When v is 0 or 1 it is the recid directly
-        if (this.v.isZero()) { return 0; }
-        if (this.v.eq(1)) { return 1; }
-
-        // Otherwise, odd (e.g. 27) is 0 and even (e.g. 28) is 1
-        return this.v.and(1).isZero() ? 1: 0;
-        */
+        return (this.v === 27) ? 0: 1;
     }
 
     get yParityAndS(): string {
@@ -139,9 +130,9 @@ export class Signature implements Freezable<Signature> {
         };
     }
 
-    static create(): Signature {
-        return new Signature(_guard, ZeroHash, ZeroHash, 27);
-    }
+    //static create(): Signature {
+    //    return new Signature(_guard, ZeroHash, ZeroHash, 27);
+    //}
 
     // Get the chain ID from an EIP-155 v
     static getChainId(v: BigNumberish): bigint {
@@ -172,7 +163,11 @@ export class Signature implements Freezable<Signature> {
         return (bv & BN_1) ? 27: 28;
     }
 
-    static from(sig: SignatureLike): Signature {
+    static from(sig?: SignatureLike): Signature {
+        if (sig == null) {
+            return new Signature(_guard, ZeroHash, ZeroHash, 27);
+        }
+
         const throwError = (message: string) => {
             return throwArgumentError(message, "signature", sig);
         };
@@ -187,8 +182,8 @@ export class Signature implements Freezable<Signature> {
                 return new Signature(_guard, r, hexlify(s), v);
             }
 
-            if (dataLength(sig) !== 65) {
-                const r = hexlify(sig.slice(0, 32));
+            if (bytes.length === 65) {
+                const r = hexlify(bytes.slice(0, 32));
                 const s = bytes.slice(32, 64);
                 if (s[0] & 0x80) { throwError("non-canonical s"); }
                 const v = Signature.getNormalizedV(bytes[64]);
