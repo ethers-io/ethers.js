@@ -24,6 +24,9 @@ export interface ContractTransaction extends PreparedTransactionRequest {
     // These are populated by contract methods and cannot bu null
     to: string;
     data: string;
+
+    // These are resolved
+    from?: string;
 }
 
 // Deployment Transactions have no `to`

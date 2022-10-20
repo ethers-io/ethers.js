@@ -143,7 +143,7 @@ export async function copyOverrides(arg: any): Promise<Omit<ContractTransaction,
         overrides.from = await resolveAddress(overrides.from);
     }
 
-    return overrides;
+    return <Omit<ContractTransaction, "data" | "to">>overrides;
 }
 
 export async function resolveArgs(_runner: null | ContractRunner, inputs: ReadonlyArray<ParamType>, args: Array<any>): Promise<Array<any>> {
@@ -253,19 +253,19 @@ class WrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | Co
             });
         }
 
-        const fragment = this.getFragment(...args);
         const tx = await this.populateTransaction(...args);
 
         let result = "0x";
         try {
             result = await runner.call(tx);
         } catch (error: any) {
-            if (isCallException(error)) {
-                throw this._contract.interface.makeError(fragment, error.data, tx);
+            if (isCallException(error) && error.data) {
+                throw this._contract.interface.makeError(error.data, tx);
             }
             throw error;
         }
 
+        const fragment = this.getFragment(...args);
         return this._contract.interface.decodeFunctionResult(fragment, result);
     }
 }
