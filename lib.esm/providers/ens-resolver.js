@@ -1,5 +1,5 @@
 import { getAddress } from "../address/index.js";
-import { ZeroHash } from "../constants/hashes.js";
+import { ZeroAddress, ZeroHash } from "../constants/index.js";
 import { dnsEncode, namehash } from "../hash/index.js";
 import { concat, dataSlice, getBytes, hexlify, zeroPadValue, defineProperties, encodeBase58, getBigInt, toArray, toNumber, toUtf8Bytes, toUtf8String, throwArgumentError, throwError, FetchRequest } from "../utils/index.js";
 const BN_1 = BigInt(1);
@@ -146,6 +146,7 @@ export class EnsResolver {
         const addrData = concat([selector, namehash(this.name), parameters]);
         const tx = {
             to: this.address,
+            from: ZeroAddress,
             enableCcipRead: true,
             data: addrData
         };
@@ -159,8 +160,9 @@ export class EnsResolver {
         try {
             let data = await this.provider.call(tx);
             if ((getBytes(data).length % 32) === 4) {
-                return throwError("resolver threw error", "CALL_EXCEPTION", {
-                    transaction: tx, data
+                return throwError("execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
+                    action: "call", data, reason: null, transaction: tx,
+                    invocation: null, revert: null
                 });
             }
             if (wrapped) {

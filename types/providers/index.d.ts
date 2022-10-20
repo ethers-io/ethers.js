@@ -1,10 +1,11 @@
 export { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 export { AbstractSigner, VoidSigner, WrappedSigner } from "./abstract-signer.js";
-export { Network } from "./common-networks.js";
+export { Network } from "./network.js";
 export { NetworkPlugin, GasCostPlugin, EnsPlugin, } from "./plugins-network.js";
 export { Block, FeeData, Log, TransactionReceipt, TransactionResponse, copyRequest, } from "./provider.js";
 export { FallbackProvider } from "./provider-fallback.js";
 export { JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from "./provider-jsonrpc.js";
+export { BrowserProvider } from "./provider-browser.js";
 export { AlchemyProvider } from "./provider-alchemy.js";
 export { AnkrProvider } from "./provider-ankr.js";
 export { CloudflareProvider } from "./provider-cloudflare.js";

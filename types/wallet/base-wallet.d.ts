@@ -10,8 +10,9 @@ export declare class BaseWallet extends AbstractSigner {
     get privateKey(): string;
     getAddress(): Promise<string>;
     connect(provider: null | Provider): BaseWallet;
-    signTransaction(_tx: TransactionRequest): Promise<string>;
+    signTransaction(tx: TransactionRequest): Promise<string>;
     signMessage(message: string | Uint8Array): Promise<string>;
+    signMessageSync(message: string | Uint8Array): string;
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
 //# sourceMappingURL=base-wallet.d.ts.map

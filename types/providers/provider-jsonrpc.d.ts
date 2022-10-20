@@ -210,7 +210,7 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      *  that different nodes return, coercing them into a machine-readable
      *  standardized error.
      */
-    getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error;
+    getRpcError(payload: JsonRpcPayload, _error: JsonRpcError): Error;
     /**
      *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
      *  over the underlying channel. This can be used to call methods
@@ -239,6 +239,16 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      */
     getSigner(address?: number | string): Promise<JsonRpcSigner>;
 }
+export declare class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
+    #private;
+    constructor(network?: Networkish, options?: JsonRpcApiProviderOptions);
+    _getSubscriber(sub: Subscription): Subscriber;
+    /**
+     *  The polling interval (default: 4000 ms)
+     */
+    get pollingInterval(): number;
+    set pollingInterval(value: number);
+}
 /**
  *  The JsonRpcProvider is one of the most common Providers,
  *  which performs all operations over HTTP (or HTTPS) requests.
@@ -247,16 +257,11 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
  *  number; when it advances, all block-base events are then checked
  *  for updates.
  */
-export declare class JsonRpcProvider extends JsonRpcApiProvider {
+export declare class JsonRpcProvider extends JsonRpcApiPollingProvider {
     #private;
     constructor(url?: string | FetchRequest, network?: Networkish, options?: JsonRpcApiProviderOptions);
     _getConnection(): FetchRequest;
     send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult>>;
-    /**
-     *  The polling interval (default: 4000 ms)
-     */
-    get pollingInterval(): number;
-    set pollingInterval(value: number);
 }
 //# sourceMappingURL=provider-jsonrpc.d.ts.map

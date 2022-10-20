@@ -1,7 +1,7 @@
 import { keccak256 } from "../crypto/index.js";
 import { id } from "../hash/index.js";
-import { concat, dataSlice, getBigInt, getBytes, getBytesCopy, hexlify, zeroPadValue, isHexString, defineProperties, throwArgumentError, toHex, throwError, makeError } from "../utils/index.js";
-import { defaultAbiCoder } from "./abi-coder.js";
+import { concat, dataSlice, getBigInt, getBytes, getBytesCopy, hexlify, zeroPadValue, isHexString, defineProperties, throwArgumentError, toHex, throwError } from "../utils/index.js";
+import { defaultAbiCoder, getBuiltinCallException } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
 import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
 import { Typed } from "./typed.js";
@@ -570,65 +570,42 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
             info: { method: fragment.name, signature: fragment.format() }
         });
     }
-    makeError(fragment, _data, tx) {
-        if (typeof (fragment) === "string") {
-            fragment = this.getFunction(fragment);
-        }
-        const data = getBytes(_data);
-        let args = undefined;
-        if (tx) {
+    makeError(_data, tx) {
+        const data = getBytes(_data, "data");
+        const error = getBuiltinCallException("call", tx, data);
+        // Not a built-in error; try finding a custom error
+        if (!error.message.match(/could not decode/)) {
+            const selector = hexlify(data.slice(0, 4));
+            error.message = "execution reverted (unknown custom error)";
             try {
-                args = this.#abiCoder.decode(fragment.inputs, tx.data || "0x");
+                const ef = this.getError(selector);
+                try {
+                    error.revert = {
+                        name: ef.name,
+                        signature: ef.format(),
+                        args: this.#abiCoder.decode(ef.inputs, data.slice(4))
+                    };
+                    error.reason = error.revert.signature;
+                    error.message = `execution reverted: ${error.reason}`;
+                }
+                catch (e) {
+                    error.message = `execution reverted (coult not decode custom error)`;
+                }
             }
             catch (error) {
-                console.log(error);
+                console.log(error); // @TODO: remove
             }
         }
-        let errorArgs = undefined;
-        let errorName = undefined;
-        let errorSignature = undefined;
-        let reason = "unknown reason";
-        if (data.length === 0) {
-            reason = "missing error reason";
+        // Add the invocation, if available
+        const parsed = this.parseTransaction(tx);
+        if (parsed) {
+            error.invocation = {
+                method: parsed.name,
+                signature: parsed.signature,
+                args: parsed.args
+            };
         }
-        else if ((data.length % 32) === 4) {
-            const selector = hexlify(data.slice(0, 4));
-            const builtin = BuiltinErrors[selector];
-            if (builtin) {
-                try {
-                    errorName = builtin.name;
-                    errorSignature = builtin.signature;
-                    errorArgs = this.#abiCoder.decode(builtin.inputs, data.slice(4));
-                    reason = builtin.reason(...errorArgs);
-                }
-                catch (error) {
-                    console.log(error); // @TODO: remove
-                }
-            }
-            else {
-                reason = "unknown custom error";
-                try {
-                    const error = this.getError(selector);
-                    errorName = error.name;
-                    errorSignature = error.format();
-                    reason = `custom error: ${errorSignature}`;
-                    try {
-                        errorArgs = this.#abiCoder.decode(error.inputs, data.slice(4));
-                    }
-                    catch (error) {
-                        reason = `custom error: ${errorSignature} (coult not decode error data)`;
-                    }
-                }
-                catch (error) {
-                    console.log(error); // @TODO: remove
-                }
-            }
-        }
-        return makeError("call revert exception", "CALL_EXCEPTION", {
-            data: hexlify(data), transaction: null,
-            method: fragment.name, signature: fragment.format(), args,
-            errorArgs, errorName, errorSignature, reason
-        });
+        return error;
     }
     /**
      *  Encodes the result data (e.g. from an ``eth_call``) for the

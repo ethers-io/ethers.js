@@ -4,8 +4,14 @@ exports.recoverAddress = exports.computeAddress = void 0;
 const index_js_1 = require("../address/index.js");
 const index_js_2 = require("../crypto/index.js");
 function computeAddress(key) {
-    const publicKey = index_js_2.SigningKey.computePublicKey(key, false);
-    return (0, index_js_1.getAddress)((0, index_js_2.keccak256)("0x" + publicKey.substring(4)).substring(26));
+    let pubkey;
+    if (typeof (key) === "string") {
+        pubkey = index_js_2.SigningKey.computePublicKey(key, false);
+    }
+    else {
+        pubkey = key.publicKey;
+    }
+    return (0, index_js_1.getAddress)((0, index_js_2.keccak256)("0x" + pubkey.substring(4)).substring(26));
 }
 exports.computeAddress = computeAddress;
 function recoverAddress(digest, signature) {

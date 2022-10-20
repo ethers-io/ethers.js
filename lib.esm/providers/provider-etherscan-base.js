@@ -1,3 +1,4 @@
+import { getBuiltinCallException } from "../abi/index.js";
 import { accessListify } from "../transaction/index.js";
 import { defineProperties, hexlify, toQuantity, FetchRequest, throwArgumentError, throwError, toUtf8String } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
@@ -41,14 +42,22 @@ export class BaseEtherscanProvider extends AbstractProvider {
         switch (this.network.name) {
             case "mainnet":
                 return "https:/\/api.etherscan.io";
-            case "ropsten":
-                return "https:/\/api-ropsten.etherscan.io";
-            case "rinkeby":
-                return "https:/\/api-rinkeby.etherscan.io";
-            case "kovan":
-                return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "sepolia":
+                return "https:/\/api-sepolia.etherscan.io";
+            case "arbitrum":
+                return "https:/\/api.arbiscan.io";
+            case "arbitrum-goerli":
+                return "https:/\/api-goerli.arbiscan.io";
+            case "matic":
+                return "https:/\/api.polygonscan.com";
+            case "maticmum":
+                return "https:/\/api-testnet.polygonscan.com";
+            case "optimism":
+                return "https:/\/api-optimistic.etherscan.io";
+            case "optimism-goerli":
+                return "https:/\/api-goerli-optimistic.etherscan.io";
             default:
         }
         return throwArgumentError("unsupported network", "network", this.network);
@@ -190,6 +199,13 @@ export class BaseEtherscanProvider extends AbstractProvider {
         return result;
     }
     _checkError(req, error, transaction) {
+        if (req.method === "call" || req.method === "estimateGas") {
+            if (error.message.match(/execution reverted/i)) {
+                const e = getBuiltinCallException(req.method, req.transaction, error.data);
+                e.info = { request: req, error };
+                throw e;
+            }
+        }
         /*
             let body = "";
             if (isError(error, Logger.Errors.SERVER_ERROR) && error.response && error.response.hasBody()) {

@@ -78,6 +78,7 @@ export declare class Transaction implements Freezable<Transaction>, TransactionL
     clone(): Transaction;
     freeze(): Frozen<Transaction>;
     isFrozen(): boolean;
+    toJSON(): any;
     static from(tx: string | TransactionLike<string>): Transaction;
 }
 //# sourceMappingURL=transaction.d.ts.map

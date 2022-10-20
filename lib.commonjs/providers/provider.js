@@ -55,14 +55,14 @@ function copyRequest(req) {
         result.data = (0, index_js_1.hexlify)(req.data);
     }
     const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas, maxPriorityFeePerGas,value".split(/,/);
-    for (const key in bigIntKeys) {
+    for (const key of bigIntKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
         }
         result[key] = (0, index_js_1.getBigInt)(req[key], `request.${key}`);
     }
     const numberKeys = "type,nonce".split(/,/);
-    for (const key in numberKeys) {
+    for (const key of numberKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
         }

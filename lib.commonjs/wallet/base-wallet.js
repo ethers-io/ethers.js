@@ -22,15 +22,21 @@ class BaseWallet extends index_js_3.AbstractSigner {
     connect(provider) {
         return new BaseWallet(this.#signingKey, provider);
     }
-    async signTransaction(_tx) {
+    async signTransaction(tx) {
         // Replace any Addressable or ENS name with an address
-        const tx = Object.assign({}, _tx, await (0, index_js_5.resolveProperties)({
-            to: (_tx.to ? (0, index_js_1.resolveAddress)(_tx.to, this.provider) : undefined),
-            from: (_tx.from ? (0, index_js_1.resolveAddress)(_tx.from, this.provider) : undefined)
-        }));
+        const { to, from } = await (0, index_js_5.resolveProperties)({
+            to: (tx.to ? (0, index_js_1.resolveAddress)(tx.to, this.provider) : undefined),
+            from: (tx.from ? (0, index_js_1.resolveAddress)(tx.from, this.provider) : undefined)
+        });
+        if (to != null) {
+            tx.to = to;
+        }
+        if (from != null) {
+            tx.from = from;
+        }
         if (tx.from != null) {
-            if ((0, index_js_1.getAddress)(tx.from) !== this.address) {
-                (0, index_js_5.throwArgumentError)("transaction from address mismatch", "tx.from", _tx.from);
+            if ((0, index_js_1.getAddress)((tx.from)) !== this.address) {
+                (0, index_js_5.throwArgumentError)("transaction from address mismatch", "tx.from", tx.from);
             }
             delete tx.from;
         }
@@ -40,6 +46,11 @@ class BaseWallet extends index_js_3.AbstractSigner {
         return btx.serialized;
     }
     async signMessage(message) {
+        return this.signingKey.sign((0, index_js_2.hashMessage)(message)).serialized;
+    }
+    // @TODO: Add a secialized signTx and signTyped sync that enforces
+    // all parameters are known?
+    signMessageSync(message) {
         return this.signingKey.sign((0, index_js_2.hashMessage)(message)).serialized;
     }
     async signTypedData(domain, types, value) {

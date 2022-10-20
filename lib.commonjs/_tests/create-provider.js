@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.connect = exports.checkProvider = exports.getProvider = exports.getProviderNetworks = exports.providerNames = void 0;
 const index_js_1 = require("../index.js");
 ;
-const ethNetworks = ["default", "mainnet", "rinkeby", "ropsten", "goerli"];
+const ethNetworks = ["default", "mainnet", "goerli"];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {
@@ -99,8 +99,15 @@ function getProviderNetworks(provider) {
 exports.getProviderNetworks = getProviderNetworks;
 function getProvider(provider, network) {
     const creator = getCreator(provider);
-    if (creator) {
-        return creator.create(network);
+    try {
+        if (creator) {
+            return creator.create(network);
+        }
+    }
+    catch (error) {
+        if (!(0, index_js_1.isError)(error, "INVALID_ARGUMENT")) {
+            throw error;
+        }
     }
     return null;
 }

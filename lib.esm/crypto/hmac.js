@@ -1,8 +1,8 @@
-import { createHmac } from "./crypto.js";
+import { createHmac } from "./crypto-browser.js";
 import { getBytes, hexlify } from "../utils/index.js";
 let locked = false;
 const _computeHmac = function (algorithm, key, data) {
-    return "0x" + createHmac(algorithm, key).update(data).digest("hex");
+    return createHmac(algorithm, key).update(data).digest();
 };
 let __computeHmac = _computeHmac;
 export function computeHmac(algorithm, _key, _data) {

@@ -19,7 +19,7 @@ function forEach(prefix, tests, func) {
                     continue;
                 }
                 // Prepare the testcase
-                retryIt(`Foo ${prefix}: ${providerName}:${networkName}.${test.test}`, async function () {
+                retryIt(`${prefix}: ${providerName}:${networkName}.${test.test}`, async function () {
                     // Create a provider
                     const provider = getProvider(providerName, networkName);
                     try {

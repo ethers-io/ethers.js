@@ -12,6 +12,7 @@ export interface DeferredTopicFilter {
 export interface ContractTransaction extends PreparedTransactionRequest {
     to: string;
     data: string;
+    from?: string;
 }
 export interface ContractDeployTransaction extends Omit<ContractTransaction, "to"> {
 }

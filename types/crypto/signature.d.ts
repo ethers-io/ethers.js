@@ -37,10 +37,9 @@ export declare class Signature implements Freezable<Signature> {
     freeze(): Frozen<Signature>;
     isFrozen(): boolean;
     toJSON(): any;
-    static create(): Signature;
     static getChainId(v: BigNumberish): bigint;
     static getChainIdV(chainId: BigNumberish, v: 27 | 28): bigint;
     static getNormalizedV(v: BigNumberish): 27 | 28;
-    static from(sig: SignatureLike): Signature;
+    static from(sig?: SignatureLike): Signature;
 }
 //# sourceMappingURL=signature.d.ts.map

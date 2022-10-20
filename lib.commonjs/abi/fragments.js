@@ -498,7 +498,7 @@ class ParamType {
                     return value[param.name];
                 });
             }
-            if (value.length !== this.components.length) {
+            if (result.length !== this.components.length) {
                 throw new Error("array is wrong length");
             }
             result.forEach((value, index) => {
@@ -595,7 +595,7 @@ class ParamType {
             });
             return new ParamType(_guard, name, type, "array", indexed, null, arrayLength, arrayChildren);
         }
-        if (type.substring(0, 5) === "tuple(" || type[0] === "(") {
+        if (type === "tuple" || type.substring(0, 5) === "tuple(" || type[0] === "(") {
             const comps = (obj.components != null) ? obj.components.map((c) => ParamType.from(c)) : null;
             const tuple = new ParamType(_guard, name, type, "tuple", indexed, comps, null, null);
             // @TODO: use lexer to validate and normalize type

@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseEtherscanProvider = exports.EtherscanPlugin = void 0;
-const index_js_1 = require("../transaction/index.js");
-const index_js_2 = require("../utils/index.js");
+const index_js_1 = require("../abi/index.js");
+const index_js_2 = require("../transaction/index.js");
+const index_js_3 = require("../utils/index.js");
 const abstract_provider_js_1 = require("./abstract-provider.js");
 const network_js_1 = require("./network.js");
 const plugins_network_js_1 = require("./plugins-network.js");
@@ -15,7 +16,7 @@ class EtherscanPlugin extends plugins_network_js_1.NetworkPlugin {
     constructor(baseUrl, communityApiKey) {
         super(EtherscanPluginId);
         //if (communityApiKey == null) { communityApiKey = null; }
-        (0, index_js_2.defineProperties)(this, { baseUrl, communityApiKey });
+        (0, index_js_3.defineProperties)(this, { baseUrl, communityApiKey });
     }
     clone() {
         return new EtherscanPlugin(this.baseUrl, this.communityApiKey);
@@ -34,7 +35,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
         if (apiKey == null && this.#plugin) {
             apiKey = this.#plugin.communityApiKey;
         }
-        (0, index_js_2.defineProperties)(this, { apiKey, network });
+        (0, index_js_3.defineProperties)(this, { apiKey, network });
         // Test that the network is supported by Etherscan
         this.getBaseUrl();
     }
@@ -45,17 +46,25 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
         switch (this.network.name) {
             case "mainnet":
                 return "https:/\/api.etherscan.io";
-            case "ropsten":
-                return "https:/\/api-ropsten.etherscan.io";
-            case "rinkeby":
-                return "https:/\/api-rinkeby.etherscan.io";
-            case "kovan":
-                return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "sepolia":
+                return "https:/\/api-sepolia.etherscan.io";
+            case "arbitrum":
+                return "https:/\/api.arbiscan.io";
+            case "arbitrum-goerli":
+                return "https:/\/api-goerli.arbiscan.io";
+            case "matic":
+                return "https:/\/api.polygonscan.com";
+            case "maticmum":
+                return "https:/\/api-testnet.polygonscan.com";
+            case "optimism":
+                return "https:/\/api-optimistic.etherscan.io";
+            case "optimism-goerli":
+                return "https:/\/api-goerli-optimistic.etherscan.io";
             default:
         }
-        return (0, index_js_2.throwArgumentError)("unsupported network", "network", this.network);
+        return (0, index_js_3.throwArgumentError)("unsupported network", "network", this.network);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -84,7 +93,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
         const url = (post ? this.getPostUrl() : this.getUrl(module, params));
         const payload = (post ? this.getPostData(module, params) : null);
         this.emit("debug", { action: "sendRequest", id, url, payload: payload });
-        const request = new index_js_2.FetchRequest(url);
+        const request = new index_js_3.FetchRequest(url);
         request.setThrottleParams({ slotInterval: 1000 });
         request.retryFunc = (req, resp, attempt) => {
             if (this.isCommunityResource()) {
@@ -93,7 +102,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
             return Promise.resolve(true);
         };
         request.processFunc = async (request, response) => {
-            const result = response.hasBody() ? JSON.parse((0, index_js_2.toUtf8String)(response.body)) : {};
+            const result = response.hasBody() ? JSON.parse((0, index_js_3.toUtf8String)(response.body)) : {};
             const throttle = ((typeof (result.result) === "string") ? result.result : "").toLowerCase().indexOf("rate limit") >= 0;
             if (module === "proxy") {
                 // This JSON response indicates we are being throttled
@@ -125,7 +134,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
             this.emit("debug", { action: "receiveError", id, error: "missing body", reason: "null body" });
             throw new Error();
         }
-        const result = JSON.parse((0, index_js_2.toUtf8String)(response.body));
+        const result = JSON.parse((0, index_js_3.toUtf8String)(response.body));
         if (module === "proxy") {
             if (result.jsonrpc != "2.0") {
                 this.emit("debug", { action: "receiveError", id, result, reason: "invalid JSON-RPC" });
@@ -179,21 +188,28 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
             }
             // Quantity-types require no leading zero, unless 0
             if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
-                value = (0, index_js_2.toQuantity)((0, index_js_2.hexlify)(value));
+                value = (0, index_js_3.toQuantity)((0, index_js_3.hexlify)(value));
             }
             else if (key === "accessList") {
-                value = "[" + (0, index_js_1.accessListify)(value).map((set) => {
+                value = "[" + (0, index_js_2.accessListify)(value).map((set) => {
                     return `{address:"${set.address}",storageKeys:["${set.storageKeys.join('","')}"]}`;
                 }).join(",") + "]";
             }
             else {
-                value = (0, index_js_2.hexlify)(value);
+                value = (0, index_js_3.hexlify)(value);
             }
             result[key] = value;
         }
         return result;
     }
     _checkError(req, error, transaction) {
+        if (req.method === "call" || req.method === "estimateGas") {
+            if (error.message.match(/execution reverted/i)) {
+                const e = (0, index_js_1.getBuiltinCallException)(req.method, req.transaction, error.data);
+                e.info = { request: req, error };
+                throw e;
+            }
+        }
         /*
             let body = "";
             if (isError(error, Logger.Errors.SERVER_ERROR) && error.response && error.response.hasBody()) {
@@ -315,7 +331,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                         boolean: (req.includeTransactions ? "true" : "false")
                     });
                 }
-                return (0, index_js_2.throwError)("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                return (0, index_js_3.throwError)("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
             case "getTransaction":

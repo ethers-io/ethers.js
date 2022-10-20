@@ -21,7 +21,7 @@ export { getStore, setStore } from "./storage.js";
 export { formatEther, parseEther, formatUnits, parseUnits } from "./units.js";
 export { _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs, } from "./utf8.js";
 export type { BytesLike } from "./data.js";
-export type { ErrorCode, EthersError, UnknownError, NotImplementedError, UnsupportedOperationError, NetworkError, ServerError, TimeoutError, BadDataError, CancelledError, BufferOverrunError, NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError, CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError, ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError, UnpredictableGasLimitError, ActionRejectedError, CodedEthersError } from "./errors.js";
+export type { ErrorCode, EthersError, UnknownError, NotImplementedError, UnsupportedOperationError, NetworkError, ServerError, TimeoutError, BadDataError, CancelledError, BufferOverrunError, NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError, CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError, ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError, ActionRejectedError, CallExceptionAction, CallExceptionTransaction, CodedEthersError } from "./errors.js";
 export type { EventEmitterable, Listener } from "./events.js";
 export type { GetUrlResponse, FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc, FetchGatewayFunc, FetchGetUrlFunc } from "./fetch.js";
 export { BigNumberish, Numeric } from "./maths.js";

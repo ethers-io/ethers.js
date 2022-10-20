@@ -48,9 +48,7 @@ class SigningKey {
     get publicKey() { return SigningKey.computePublicKey(this.#privateKey); }
     get compressedPublicKey() { return SigningKey.computePublicKey(this.#privateKey, true); }
     sign(digest) {
-        /* @TODO
-        logger.assertArgument(() => (dataLength(digest) === 32), "invalid digest length", "digest", digest);
-        */
+        (0, index_js_1.assertArgument)((0, index_js_1.dataLength)(digest) === 32, "invalid digest length", "digest", digest);
         const [sigDer, recid] = secp256k1.signSync((0, index_js_1.getBytesCopy)(digest), (0, index_js_1.getBytesCopy)(this.#privateKey), {
             recovered: true,
             canonical: true
@@ -82,6 +80,7 @@ class SigningKey {
         return (0, index_js_1.hexlify)(point.toRawBytes(compressed));
     }
     static recoverPublicKey(digest, signature) {
+        (0, index_js_1.assertArgument)((0, index_js_1.dataLength)(digest) === 32, "invalid digest length", "digest", digest);
         const sig = signature_js_1.Signature.from(signature);
         const der = secp256k1.Signature.fromCompact((0, index_js_1.getBytesCopy)((0, index_js_1.concat)([sig.r, sig.s]))).toDERRawBytes();
         const pubKey = secp256k1.recoverPublicKey((0, index_js_1.getBytesCopy)(digest), der, sig.yParity);

@@ -1,9 +1,9 @@
-import { AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider,
+import { AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
 //    FallbackProvider,
- } from "../index.js";
+isError, } from "../index.js";
 ;
-const ethNetworks = ["default", "mainnet", "rinkeby", "ropsten", "goerli"];
+const ethNetworks = ["default", "mainnet", "goerli"];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {
@@ -98,8 +98,15 @@ export function getProviderNetworks(provider) {
 }
 export function getProvider(provider, network) {
     const creator = getCreator(provider);
-    if (creator) {
-        return creator.create(network);
+    try {
+        if (creator) {
+            return creator.create(network);
+        }
+    }
+    catch (error) {
+        if (!isError(error, "INVALID_ARGUMENT")) {
+            throw error;
+        }
     }
     return null;
 }

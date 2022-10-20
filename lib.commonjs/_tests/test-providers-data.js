@@ -24,7 +24,7 @@ function forEach(prefix, tests, func) {
                     continue;
                 }
                 // Prepare the testcase
-                (0, utils_js_1.retryIt)(`Foo ${prefix}: ${providerName}:${networkName}.${test.test}`, async function () {
+                (0, utils_js_1.retryIt)(`${prefix}: ${providerName}:${networkName}.${test.test}`, async function () {
                     // Create a provider
                     const provider = (0, create_provider_js_1.getProvider)(providerName, networkName);
                     try {

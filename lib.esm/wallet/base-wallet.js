@@ -19,15 +19,21 @@ export class BaseWallet extends AbstractSigner {
     connect(provider) {
         return new BaseWallet(this.#signingKey, provider);
     }
-    async signTransaction(_tx) {
+    async signTransaction(tx) {
         // Replace any Addressable or ENS name with an address
-        const tx = Object.assign({}, _tx, await resolveProperties({
-            to: (_tx.to ? resolveAddress(_tx.to, this.provider) : undefined),
-            from: (_tx.from ? resolveAddress(_tx.from, this.provider) : undefined)
-        }));
+        const { to, from } = await resolveProperties({
+            to: (tx.to ? resolveAddress(tx.to, this.provider) : undefined),
+            from: (tx.from ? resolveAddress(tx.from, this.provider) : undefined)
+        });
+        if (to != null) {
+            tx.to = to;
+        }
+        if (from != null) {
+            tx.from = from;
+        }
         if (tx.from != null) {
-            if (getAddress(tx.from) !== this.address) {
-                throwArgumentError("transaction from address mismatch", "tx.from", _tx.from);
+            if (getAddress((tx.from)) !== this.address) {
+                throwArgumentError("transaction from address mismatch", "tx.from", tx.from);
             }
             delete tx.from;
         }
@@ -37,6 +43,11 @@ export class BaseWallet extends AbstractSigner {
         return btx.serialized;
     }
     async signMessage(message) {
+        return this.signingKey.sign(hashMessage(message)).serialized;
+    }
+    // @TODO: Add a secialized signTx and signTyped sync that enforces
+    // all parameters are known?
+    signMessageSync(message) {
         return this.signingKey.sign(hashMessage(message)).serialized;
     }
     async signTypedData(domain, types, value) {

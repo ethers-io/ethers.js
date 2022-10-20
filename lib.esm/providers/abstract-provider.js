@@ -6,6 +6,7 @@
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 import { resolveAddress } from "../address/index.js";
+import { Transaction } from "../transaction/index.js";
 import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, makeError, throwError, throwArgumentError, FetchRequest, toArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { formatBlock, formatBlockWithTransactions, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
@@ -508,7 +509,7 @@ export class AbstractProvider {
         }
         catch (error) {
             // CCIP Read OffchainLookup
-            if (!this.disableCcipRead && isCallException(error) && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
+            if (!this.disableCcipRead && isCallException(error) && error.data && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
                 const data = error.data;
                 const txSender = await resolveAddress(transaction.to, this);
                 // Parse the CCIP Read Arguments
@@ -525,10 +526,16 @@ export class AbstractProvider {
                 // Check the sender of the OffchainLookup matches the transaction
                 if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
                     return throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
-                        data, transaction,
-                        errorSignature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
-                        errorName: "OffchainLookup",
-                        errorArgs: ccipArgs.errorArgs
+                        action: "call",
+                        data,
+                        reason: "OffchainLookup",
+                        transaction: transaction,
+                        invocation: null,
+                        revert: {
+                            signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                            name: "OffchainLookup",
+                            args: ccipArgs.errorArgs
+                        }
                     });
                 }
                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
@@ -586,8 +593,19 @@ export class AbstractProvider {
     }
     // Write
     async broadcastTransaction(signedTx) {
-        throw new Error();
-        return {};
+        const { blockNumber, hash, network } = await resolveProperties({
+            blockNumber: this.getBlockNumber(),
+            hash: this._perform({
+                method: "broadcastTransaction",
+                signedTransaction: signedTx
+            }),
+            network: this.getNetwork()
+        });
+        const tx = Transaction.from(signedTx);
+        if (tx.hash !== hash) {
+            throw new Error("@TODO: the returned hash did not match");
+        }
+        return this._wrapTransactionResponse(tx, network).replaceableTransaction(blockNumber);
     }
     async #getBlock(block, includeTransactions) {
         // @TODO: Add CustomBlockPlugin check

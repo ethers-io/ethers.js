@@ -44,18 +44,7 @@ export class Signature {
         return Signature.getChainId(v);
     }
     get yParity() {
-        if (this.v === 27) {
-            return 0;
-        }
-        return 1;
-        /*
-        // When v is 0 or 1 it is the recid directly
-        if (this.v.isZero()) { return 0; }
-        if (this.v.eq(1)) { return 1; }
-
-        // Otherwise, odd (e.g. 27) is 0 and even (e.g. 28) is 1
-        return this.v.and(1).isZero() ? 1: 0;
-        */
+        return (this.v === 27) ? 0 : 1;
     }
     get yParityAndS() {
         // The EIP-2098 compact representation
@@ -100,9 +89,9 @@ export class Signature {
             r: this.r, s: this.s, v: this.v,
         };
     }
-    static create() {
-        return new Signature(_guard, ZeroHash, ZeroHash, 27);
-    }
+    //static create(): Signature {
+    //    return new Signature(_guard, ZeroHash, ZeroHash, 27);
+    //}
     // Get the chain ID from an EIP-155 v
     static getChainId(v) {
         const bv = getBigInt(v, "v");
@@ -133,6 +122,9 @@ export class Signature {
         return (bv & BN_1) ? 27 : 28;
     }
     static from(sig) {
+        if (sig == null) {
+            return new Signature(_guard, ZeroHash, ZeroHash, 27);
+        }
         const throwError = (message) => {
             return throwArgumentError(message, "signature", sig);
         };
@@ -145,8 +137,8 @@ export class Signature {
                 s[0] &= 0x7f;
                 return new Signature(_guard, r, hexlify(s), v);
             }
-            if (dataLength(sig) !== 65) {
-                const r = hexlify(sig.slice(0, 32));
+            if (bytes.length === 65) {
+                const r = hexlify(bytes.slice(0, 32));
                 const s = bytes.slice(32, 64);
                 if (s[0] & 0x80) {
                     throwError("non-canonical s");

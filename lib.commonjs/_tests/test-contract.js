@@ -1,20 +1,23 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const assert_1 = __importDefault(require("assert"));
-const create_provider_js_1 = require("./create-provider.js");
-const index_js_1 = require("../index.js");
-describe("Test Contract", function () {
-    it("tests contract @TODO: expand", async function () {
-        const provider = (0, create_provider_js_1.connect)("mainnet");
-        const contract = new index_js_1.Contract("dai.tokens.ethers.eth", [
+/*
+import assert from "assert";
+
+import { connect } from "./create-provider.js";
+
+import { Contract } from "../index.js";
+
+describe("Test Contract", function() {
+    it("tests contract @TODO: expand", async function() {
+        const provider = connect("mainnet");
+
+        const contract = new Contract("dai.tokens.ethers.eth", [
             "function balanceOf(address) view returns (uint)"
         ], provider);
-        assert_1.default.equal(await contract.balanceOf("ricmoo.firefly.eth"), BigInt("6015089439794538201631"));
+
+        assert.equal(await contract.balanceOf("ricmoo.firefly.eth"), BigInt("6015089439794538201631"));
     });
 });
+*/
 /*
 import { Typed } from "../abi/index.js";
 import * as providers from "../providers/index.js";

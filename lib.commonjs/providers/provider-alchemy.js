@@ -10,26 +10,20 @@ function getHost(name) {
     switch (name) {
         case "mainnet":
             return "eth-mainnet.alchemyapi.io";
-        case "ropsten":
-            return "eth-ropsten.alchemyapi.io";
-        case "rinkeby":
-            return "eth-rinkeby.alchemyapi.io";
         case "goerli":
-            return "eth-goerli.alchemyapi.io";
-        case "kovan":
-            return "eth-kovan.alchemyapi.io";
+            return "eth-goerli.g.alchemy.com";
+        case "arbitrum":
+            return "arb-mainnet.g.alchemy.com";
+        case "arbitrum-goerli":
+            return "arb-goerli.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
         case "maticmum":
             return "polygon-mumbai.g.alchemy.com";
-        case "arbitrum":
-            return "arb-mainnet.g.alchemy.com";
-        case "arbitrum-rinkeby":
-            return "arb-rinkeby.g.alchemy.com";
         case "optimism":
             return "opt-mainnet.g.alchemy.com";
-        case "optimism-kovan":
-            return "opt-kovan.g.alchemy.com";
+        case "optimism-goerli":
+            return "opt-goerli.g.alchemy.com";
     }
     return (0, index_js_1.throwArgumentError)("unsupported network", "network", name);
 }
@@ -54,8 +48,11 @@ class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     async _perform(req) {
         // https://docs.alchemy.com/reference/trace-transaction
         if (req.method === "getTransactionResult") {
-            const trace = await this.send("trace_transaction", [req.hash]);
-            if (trace == null) {
+            const { trace, tx } = await (0, index_js_1.resolveProperties)({
+                trace: this.send("trace_transaction", [req.hash]),
+                tx: this.getTransaction(req.hash)
+            });
+            if (trace == null || tx == null) {
                 return null;
             }
             let data;
@@ -68,7 +65,12 @@ class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
             if (data) {
                 if (error) {
                     (0, index_js_1.throwError)("an error occurred during transaction executions", "CALL_EXCEPTION", {
-                        data
+                        action: "getTransactionResult",
+                        data,
+                        reason: null,
+                        transaction: tx,
+                        invocation: null,
+                        revert: null // @TODO
                     });
                 }
                 return data;

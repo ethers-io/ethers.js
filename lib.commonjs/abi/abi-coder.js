@@ -1,7 +1,7 @@
 "use strict";
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defaultAbiCoder = exports.AbiCoder = void 0;
+exports.defaultAbiCoder = exports.getBuiltinCallException = exports.AbiCoder = void 0;
 const index_js_1 = require("../utils/index.js");
 const abstract_coder_js_1 = require("./coders/abstract-coder.js");
 const address_js_1 = require("./coders/address.js");
@@ -14,6 +14,8 @@ const number_js_1 = require("./coders/number.js");
 const string_js_1 = require("./coders/string.js");
 const tuple_js_1 = require("./coders/tuple.js");
 const fragments_js_1 = require("./fragments.js");
+const index_js_2 = require("../address/index.js");
+const index_js_3 = require("../utils/index.js");
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 class AbiCoder {
@@ -76,5 +78,78 @@ class AbiCoder {
     }
 }
 exports.AbiCoder = AbiCoder;
+// https://docs.soliditylang.org/en/v0.8.17/control-structures.html
+const PanicReasons = new Map();
+PanicReasons.set(0x00, "GENERIC_PANIC");
+PanicReasons.set(0x01, "ASSERT_FALSE");
+PanicReasons.set(0x11, "OVERFLOW");
+PanicReasons.set(0x12, "DIVIDE_BY_ZERO");
+PanicReasons.set(0x21, "ENUM_RANGE_ERROR");
+PanicReasons.set(0x22, "BAD_STORAGE_DATA");
+PanicReasons.set(0x31, "STACK_UNDERFLOW");
+PanicReasons.set(0x32, "ARRAY_RANGE_ERROR");
+PanicReasons.set(0x41, "OUT_OF_MEMORY");
+PanicReasons.set(0x51, "UNINITIALIZED_FUNCTION_CALL");
+function getBuiltinCallException(action, tx, data) {
+    let message = "missing revert data";
+    let reason = null;
+    const invocation = null;
+    let revert = null;
+    if (data) {
+        message = "execution reverted";
+        const bytes = (0, index_js_3.getBytes)(data);
+        data = (0, index_js_3.hexlify)(data);
+        if (bytes.length % 32 !== 4) {
+            message += " (could not decode reason; invalid data length)";
+        }
+        else if ((0, index_js_3.hexlify)(bytes.slice(0, 4)) === "0x08c379a0") {
+            // Error(string)
+            try {
+                reason = exports.defaultAbiCoder.decode(["string"], bytes.slice(4))[0];
+                revert = {
+                    signature: "Error(string)",
+                    name: "Error",
+                    args: [reason]
+                };
+                message += `: ${JSON.stringify(reason)}`;
+            }
+            catch (error) {
+                console.log(error);
+                message += " (could not decode reason; invalid data)";
+            }
+        }
+        else if ((0, index_js_3.hexlify)(bytes.slice(0, 4)) === "0x4e487b71") {
+            // Panic(uint256)
+            try {
+                const code = Number(exports.defaultAbiCoder.decode(["uint256"], bytes.slice(4))[0]);
+                revert = {
+                    signature: "Panic(uint256)",
+                    name: "Panic",
+                    args: [code]
+                };
+                reason = `Panic due to ${PanicReasons.get(code) || "UNKNOWN"}(${code})`;
+                message += `: ${reason}`;
+            }
+            catch (error) {
+                console.log(error);
+                message += " (could not decode panic reason)";
+            }
+        }
+        else {
+            message += " (unknown custom error)";
+        }
+    }
+    const transaction = {
+        to: (tx.to ? (0, index_js_2.getAddress)(tx.to) : null),
+        data: (tx.data || "0x")
+    };
+    if (tx.from) {
+        transaction.from = (0, index_js_2.getAddress)(tx.from);
+    }
+    return (0, index_js_3.makeError)(message, "CALL_EXCEPTION", {
+        action, data, reason, transaction, invocation, revert
+    });
+}
+exports.getBuiltinCallException = getBuiltinCallException;
 exports.defaultAbiCoder = new AbiCoder();
 //# sourceMappingURL=abi-coder.js.map

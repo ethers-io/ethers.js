@@ -2,7 +2,7 @@ import { AbiCoder } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
 import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
 import { Typed } from "./typed.js";
-import type { BigNumberish, BytesLike } from "../utils/index.js";
+import type { BigNumberish, BytesLike, CallExceptionError, CallExceptionTransaction } from "../utils/index.js";
 import type { JsonFragment } from "./fragments.js";
 export { checkResultErrors, Result };
 export declare class LogDescription {
@@ -158,9 +158,7 @@ export declare class Interface {
      *  corresponding error.
      */
     decodeFunctionResult(fragment: FunctionFragment | string, data: BytesLike): Result;
-    makeError(fragment: FunctionFragment | string, _data: BytesLike, tx?: {
-        data: string;
-    }): Error;
+    makeError(_data: BytesLike, tx: CallExceptionTransaction): CallExceptionError;
     /**
      *  Encodes the result data (e.g. from an ``eth_call``) for the
      *  specified function (see [[getFunction]] for valid values

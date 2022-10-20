@@ -1,5 +1,5 @@
 import * as secp256k1 from "@noble/secp256k1";
-import { concat, getBytes, getBytesCopy, hexlify, toHex, throwArgumentError } from "../utils/index.js";
+import { concat, dataLength, getBytes, getBytesCopy, hexlify, toHex, assertArgument, throwArgumentError } from "../utils/index.js";
 import { computeHmac } from "./hmac.js";
 import { Signature } from "./signature.js";
 //const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
@@ -22,9 +22,7 @@ export class SigningKey {
     get publicKey() { return SigningKey.computePublicKey(this.#privateKey); }
     get compressedPublicKey() { return SigningKey.computePublicKey(this.#privateKey, true); }
     sign(digest) {
-        /* @TODO
-        logger.assertArgument(() => (dataLength(digest) === 32), "invalid digest length", "digest", digest);
-        */
+        assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
         const [sigDer, recid] = secp256k1.signSync(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
             recovered: true,
             canonical: true
@@ -56,6 +54,7 @@ export class SigningKey {
         return hexlify(point.toRawBytes(compressed));
     }
     static recoverPublicKey(digest, signature) {
+        assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
         const sig = Signature.from(signature);
         const der = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s]))).toDERRawBytes();
         const pubKey = secp256k1.recoverPublicKey(getBytesCopy(digest), der, sig.yParity);

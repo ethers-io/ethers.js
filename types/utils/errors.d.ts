@@ -11,7 +11,7 @@ export declare type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
  *
  *  _property: ``"NOT_IMPLEMENTED"``
  */
-export declare type ErrorCode = "UNKNOWN_ERROR" | "NOT_IMPLEMENTED" | "UNSUPPORTED_OPERATION" | "NETWORK_ERROR" | "SERVER_ERROR" | "TIMEOUT" | "BAD_DATA" | "CANCELLED" | "BUFFER_OVERRUN" | "NUMERIC_FAULT" | "INVALID_ARGUMENT" | "MISSING_ARGUMENT" | "UNEXPECTED_ARGUMENT" | "VALUE_MISMATCH" | "CALL_EXCEPTION" | "INSUFFICIENT_FUNDS" | "NONCE_EXPIRED" | "REPLACEMENT_UNDERPRICED" | "TRANSACTION_REPLACED" | "UNPREDICTABLE_GAS_LIMIT" | "UNCONFIGURED_NAME" | "OFFCHAIN_FAULT" | "ACTION_REJECTED";
+export declare type ErrorCode = "UNKNOWN_ERROR" | "NOT_IMPLEMENTED" | "UNSUPPORTED_OPERATION" | "NETWORK_ERROR" | "SERVER_ERROR" | "TIMEOUT" | "BAD_DATA" | "CANCELLED" | "BUFFER_OVERRUN" | "NUMERIC_FAULT" | "INVALID_ARGUMENT" | "MISSING_ARGUMENT" | "UNEXPECTED_ARGUMENT" | "VALUE_MISMATCH" | "CALL_EXCEPTION" | "INSUFFICIENT_FUNDS" | "NONCE_EXPIRED" | "REPLACEMENT_UNDERPRICED" | "TRANSACTION_REPLACED" | "UNCONFIGURED_NAME" | "OFFCHAIN_FAULT" | "ACTION_REJECTED";
 export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
     code: ErrorCode;
     info?: Record<string, any>;
@@ -66,16 +66,27 @@ export interface UnexpectedArgumentError extends EthersError<"UNEXPECTED_ARGUMEN
     count: number;
     expectedCount: number;
 }
-export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
+export declare type CallExceptionAction = "call" | "estimateGas" | "getTransactionResult" | "unknown";
+export declare type CallExceptionTransaction = {
+    to: null | string;
+    from?: string;
     data: string;
-    transaction?: any;
-    method?: string;
-    signature?: string;
-    args?: ReadonlyArray<any>;
-    errorSignature?: string;
-    errorName?: string;
-    errorArgs?: ReadonlyArray<any>;
-    reason?: string;
+};
+export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
+    action: CallExceptionAction;
+    data: null | string;
+    reason: null | string;
+    transaction: CallExceptionTransaction;
+    invocation: null | {
+        method: string;
+        signature: string;
+        args: Array<any>;
+    };
+    revert: null | {
+        signature: string;
+        name: string;
+        args: Array<any>;
+    };
 }
 export interface InsufficientFundsError extends EthersError<"INSUFFICIENT_FUNDS"> {
     transaction: TransactionRequest;
@@ -100,11 +111,9 @@ export interface TransactionReplacedError extends EthersError<"TRANSACTION_REPLA
 export interface UnconfiguredNameError extends EthersError<"UNCONFIGURED_NAME"> {
     value: string;
 }
-export interface UnpredictableGasLimitError extends EthersError<"UNPREDICTABLE_GAS_LIMIT"> {
-    transaction: TransactionRequest;
-}
 export interface ActionRejectedError extends EthersError<"ACTION_REJECTED"> {
-    action: string;
+    action: "requestAccess" | "sendTransaction" | "signMessage" | "signTransaction" | "signTypedData" | "unknown";
+    reason: "expired" | "rejected" | "pending";
 }
 /**
  *  A conditional type that transforms the [[ErrorCode]] T into
@@ -112,7 +121,7 @@ export interface ActionRejectedError extends EthersError<"ACTION_REJECTED"> {
  *
  *  @flatworm-skip-docs
  */
-export declare type CodedEthersError<T> = T extends "UNKNOWN_ERROR" ? UnknownError : T extends "NOT_IMPLEMENTED" ? NotImplementedError : T extends "UNSUPPORTED_OPERATION" ? UnsupportedOperationError : T extends "NETWORK_ERROR" ? NetworkError : T extends "SERVER_ERROR" ? ServerError : T extends "TIMEOUT" ? TimeoutError : T extends "BAD_DATA" ? BadDataError : T extends "CANCELLED" ? CancelledError : T extends "BUFFER_OVERRUN" ? BufferOverrunError : T extends "NUMERIC_FAULT" ? NumericFaultError : T extends "INVALID_ARGUMENT" ? InvalidArgumentError : T extends "MISSING_ARGUMENT" ? MissingArgumentError : T extends "UNEXPECTED_ARGUMENT" ? UnexpectedArgumentError : T extends "CALL_EXCEPTION" ? CallExceptionError : T extends "INSUFFICIENT_FUNDS" ? InsufficientFundsError : T extends "NONCE_EXPIRED" ? NonceExpiredError : T extends "OFFCHAIN_FAULT" ? OffchainFaultError : T extends "REPLACEMENT_UNDERPRICED" ? ReplacementUnderpricedError : T extends "TRANSACTION_REPLACED" ? TransactionReplacedError : T extends "UNCONFIGURED_NAME" ? UnconfiguredNameError : T extends "UNPREDICTABLE_GAS_LIMIT" ? UnpredictableGasLimitError : T extends "ACTION_REJECTED" ? ActionRejectedError : never;
+export declare type CodedEthersError<T> = T extends "UNKNOWN_ERROR" ? UnknownError : T extends "NOT_IMPLEMENTED" ? NotImplementedError : T extends "UNSUPPORTED_OPERATION" ? UnsupportedOperationError : T extends "NETWORK_ERROR" ? NetworkError : T extends "SERVER_ERROR" ? ServerError : T extends "TIMEOUT" ? TimeoutError : T extends "BAD_DATA" ? BadDataError : T extends "CANCELLED" ? CancelledError : T extends "BUFFER_OVERRUN" ? BufferOverrunError : T extends "NUMERIC_FAULT" ? NumericFaultError : T extends "INVALID_ARGUMENT" ? InvalidArgumentError : T extends "MISSING_ARGUMENT" ? MissingArgumentError : T extends "UNEXPECTED_ARGUMENT" ? UnexpectedArgumentError : T extends "CALL_EXCEPTION" ? CallExceptionError : T extends "INSUFFICIENT_FUNDS" ? InsufficientFundsError : T extends "NONCE_EXPIRED" ? NonceExpiredError : T extends "OFFCHAIN_FAULT" ? OffchainFaultError : T extends "REPLACEMENT_UNDERPRICED" ? ReplacementUnderpricedError : T extends "TRANSACTION_REPLACED" ? TransactionReplacedError : T extends "UNCONFIGURED_NAME" ? UnconfiguredNameError : T extends "ACTION_REJECTED" ? ActionRejectedError : never;
 /**
  *  Returns true if the %%error%% matches an error thrown by ethers
  *  that matches the error %%code%%.

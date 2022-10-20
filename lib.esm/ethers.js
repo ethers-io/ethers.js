@@ -7,7 +7,7 @@ export { ZeroAddress, NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256, MinI
 export { BaseContract, Contract, ContractFactory, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EventLog, } from "./contract/index.js";
 export { computeHmac, randomBytes, keccak256, ripemd160, sha256, sha512, pbkdf2, scrypt, scryptSync, lock, Signature, SigningKey } from "./crypto/index.js";
 export { id, isValidName, namehash, dnsEncode, hashMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, TypedDataEncoder } from "./hash/index.js";
-export { AbstractProvider, FallbackProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, 
+export { AbstractProvider, FallbackProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, BrowserProvider, AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, 
 //PocketProvider } from "./provider-pocket.js";
 IpcSocketProvider, SocketProvider, WebSocketProvider, Network } from "./providers/index.js";
 export { accessListify, computeAddress, recoverAddress, Transaction } from "./transaction/index.js";

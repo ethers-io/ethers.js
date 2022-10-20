@@ -185,18 +185,18 @@ class WrappedMethod extends _WrappedMethodBase() {
                 operation: "call"
             });
         }
-        const fragment = this.getFragment(...args);
         const tx = await this.populateTransaction(...args);
         let result = "0x";
         try {
             result = await runner.call(tx);
         }
         catch (error) {
-            if (isCallException(error)) {
-                throw this._contract.interface.makeError(fragment, error.data, tx);
+            if (isCallException(error) && error.data) {
+                throw this._contract.interface.makeError(error.data, tx);
             }
             throw error;
         }
+        const fragment = this.getFragment(...args);
         return this._contract.interface.decodeFunctionResult(fragment, result);
     }
 }

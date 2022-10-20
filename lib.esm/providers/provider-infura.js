@@ -8,26 +8,22 @@ function getHost(name) {
     switch (name) {
         case "mainnet":
             return "mainnet.infura.io";
-        case "ropsten":
-            return "ropsten.infura.io";
-        case "rinkeby":
-            return "rinkeby.infura.io";
-        case "kovan":
-            return "kovan.infura.io";
         case "goerli":
             return "goerli.infura.io";
+        case "sepolia":
+            return "sepolia.infura.io";
+        case "arbitrum":
+            return "arbitrum-mainnet.infura.io";
+        case "arbitrum-goerli":
+            return "arbitrum-goerli.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
         case "maticmum":
             return "polygon-mumbai.infura.io";
         case "optimism":
             return "optimism-mainnet.infura.io";
-        case "optimism-kovan":
-            return "optimism-kovan.infura.io";
-        case "arbitrum":
-            return "arbitrum-mainnet.infura.io";
-        case "arbitrum-rinkeby":
-            return "arbitrum-rinkeby.infura.io";
+        case "optimism-goerli":
+            return "optimism-goerli.infura.io";
     }
     return throwArgumentError("unsupported network", "network", name);
 }
