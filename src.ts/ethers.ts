@@ -59,6 +59,8 @@ export {
     FallbackProvider,
     JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner,
 
+    BrowserProvider,
+
     AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider,
     //PocketProvider } from "./provider-pocket.js";
 
@@ -153,7 +155,7 @@ export type {
     NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError,
     CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError,
     ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError,
-    UnpredictableGasLimitError, ActionRejectedError,
+    ActionRejectedError,
     CodedEthersError,
 } from "./utils/index.js";
 
