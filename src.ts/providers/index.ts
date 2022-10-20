@@ -22,7 +22,7 @@ export { getDefaultProvider } from "./default-provider.js";
 export { EnsResolver } from "./ens-resolver.js";
 */
 
-export { Network } from "./common-networks.js";
+export { Network } from "./network.js";
 
 export {
     NetworkPlugin,
@@ -46,6 +46,8 @@ export {
 
 export { FallbackProvider } from "./provider-fallback.js";
 export { JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from "./provider-jsonrpc.js"
+
+export { BrowserProvider } from "./provider-browser.js";
 
 export { AlchemyProvider } from "./provider-alchemy.js";
 export { AnkrProvider } from "./provider-ankr.js";
