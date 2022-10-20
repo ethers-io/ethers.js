@@ -91,7 +91,7 @@ jobs:
           path: ./output/coverage.tar
 
       - name: Upload to build.ethers.org
-        uses: ethers-io/sync-s3-action@master
+        uses: ethers-io/sync-s3-action@main
         with:
           aws_access_key_id: ${{ secrets.BUILD_AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.BUILD_AWS_SECRET_ACCESS_KEY}}
