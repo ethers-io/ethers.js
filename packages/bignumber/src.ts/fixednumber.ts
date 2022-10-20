@@ -73,7 +73,7 @@ export function formatFixed(value: BigNumberish, decimals?: string | BigNumberis
     }
 
     const whole = value.div(multiplier).toString();
-    if (multiplier.length === 1) {
+    if (multiplier.length === 1 || digits === 0) {
         value = whole;
     } else {
         value = whole + "." + fraction;
