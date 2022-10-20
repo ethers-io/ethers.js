@@ -97,5 +97,5 @@ jobs:
           aws_secret_access_key: ${{ secrets.BUILD_AWS_SECRET_ACCESS_KEY}}
           aws_s3_bucket: ${{ secrets.BUILD_AWS_BUCKET }}
           source_folder: 'output/'
-          destination-prefix: 'build/output/'
+          destination_prefix: 'output/'
           aws_cloudfront_id: ${{ secrets.BUILD_AWS_CLOUDFRONT_ID }}
