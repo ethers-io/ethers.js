@@ -4,7 +4,8 @@
 //////
 export {
     AbiCoder,
-    defaultAbiCoder
+    defaultAbiCoder,
+    getBuiltinCallException
 } from "./abi-coder.js";
 
 export { decodeBytes32String, encodeBytes32String } from "./bytes32.js";
