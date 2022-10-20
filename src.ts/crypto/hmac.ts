@@ -1,4 +1,4 @@
-import { createHmac } from "./crypto.js";
+import { createHmac } from "./crypto-browser.js";
 import { getBytes, hexlify } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
@@ -7,7 +7,7 @@ import type { BytesLike } from "../utils/index.js";
 let locked = false;
 
 const _computeHmac = function(algorithm: "sha256" | "sha512", key: Uint8Array, data: Uint8Array): BytesLike {
-    return "0x" + createHmac(algorithm, key).update(data).digest("hex");
+    return createHmac(algorithm, key).update(data).digest();
 }
 
 let __computeHmac = _computeHmac;
