@@ -7,6 +7,7 @@ import {
 //    PocketProvider,
 
 //    FallbackProvider,
+    isError,
 } from "../index.js";
 
 import type { AbstractProvider } from "../index.js";
@@ -17,7 +18,7 @@ interface ProviderCreator {
     create: (network: string) => null | AbstractProvider;
 };
 
-const ethNetworks = [ "default", "mainnet", "rinkeby", "ropsten", "goerli" ];
+const ethNetworks = [ "default", "mainnet", "goerli" ];
 //const maticNetworks = [ "matic", "maticmum" ];
 
 const ProviderCreators: Array<ProviderCreator> = [
@@ -113,7 +114,11 @@ export function getProviderNetworks(provider: string): Array<string> {
 
 export function getProvider(provider: string, network: string): null | AbstractProvider {
     const creator = getCreator(provider);
-    if (creator) { return creator.create(network); }
+    try {
+        if (creator) { return creator.create(network); }
+    } catch (error) {
+        if (!isError(error, "INVALID_ARGUMENT")) { throw error; }
+    }
     return null;
 }
 

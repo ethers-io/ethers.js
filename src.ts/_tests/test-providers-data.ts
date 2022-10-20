@@ -28,7 +28,7 @@ function forEach<T extends { test: string }>(prefix: string, tests: Record<TestB
                 if (testFunc == null) { continue; }
 
                 // Prepare the testcase
-                retryIt(`Foo ${ prefix }: ${ providerName }:${ networkName }.${ test.test }`, async function() {
+                retryIt(`${ prefix }: ${ providerName }:${ networkName }.${ test.test }`, async function() {
                     // Create a provider
                     const provider = getProvider(providerName, networkName);
 
