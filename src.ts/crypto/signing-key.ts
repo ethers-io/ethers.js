@@ -2,7 +2,8 @@
 import * as secp256k1 from "@noble/secp256k1";
 
 import {
-    concat, getBytes, getBytesCopy, hexlify, toHex, throwArgumentError
+    concat, dataLength, getBytes, getBytesCopy, hexlify, toHex,
+    assertArgument, throwArgumentError
 } from "../utils/index.js";
 
 import { computeHmac } from "./hmac.js";
@@ -38,9 +39,7 @@ export class SigningKey {
     get compressedPublicKey(): string { return SigningKey.computePublicKey(this.#privateKey, true); }
 
     sign(digest: BytesLike): Frozen<Signature> {
-        /* @TODO
-        logger.assertArgument(() => (dataLength(digest) === 32), "invalid digest length", "digest", digest);
-        */
+        assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
 
         const [ sigDer, recid ] = secp256k1.signSync(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
             recovered: true,
@@ -48,7 +47,6 @@ export class SigningKey {
         });
 
         const sig = secp256k1.Signature.fromHex(sigDer);
-
         return Signature.from({
             r: toHex("0x" + sig.r.toString(16), 32),
             s: toHex("0x" + sig.s.toString(16), 32),
@@ -81,6 +79,8 @@ export class SigningKey {
     }
 
     static recoverPublicKey(digest: BytesLike, signature: SignatureLike): string {
+        assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
+
         const sig = Signature.from(signature);
         const der = secp256k1.Signature.fromCompact(getBytesCopy(concat([ sig.r, sig.s ]))).toDERRawBytes();
 
