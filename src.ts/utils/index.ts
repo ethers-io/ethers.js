@@ -79,7 +79,9 @@ export type {
     NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError,
     CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError,
     ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError,
-    UnpredictableGasLimitError, ActionRejectedError,
+    ActionRejectedError,
+
+    CallExceptionAction, CallExceptionTransaction,
 
     CodedEthersError
 } from "./errors.js"

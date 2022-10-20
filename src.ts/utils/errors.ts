@@ -44,7 +44,6 @@ export type ErrorCode =
     // Blockchain Errors
     "CALL_EXCEPTION" | "INSUFFICIENT_FUNDS" | "NONCE_EXPIRED" |
     "REPLACEMENT_UNDERPRICED" | "TRANSACTION_REPLACED" |
-    "UNPREDICTABLE_GAS_LIMIT" |
     "UNCONFIGURED_NAME" | "OFFCHAIN_FAULT" |
 
     // User Interaction
@@ -130,24 +129,38 @@ export interface UnexpectedArgumentError extends EthersError<"UNEXPECTED_ARGUMEN
 
 
 // Blockchain Errors
-
-export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
-    // The revert data
+export type CallExceptionAction = "call" | "estimateGas" | "getTransactionResult" | "unknown";
+export type CallExceptionTransaction = {
+    to: null | string;
+    from?: string;
     data: string;
+};
+export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
+    // What was being performed when the call exception occurred
+    action: CallExceptionAction;
+
+    // The revert data
+    data: null | string;
+
+    // If possible, a human-readable representation of data
+    reason: null | string;
 
     // The transaction that triggered the exception
-    transaction?: any;
+    transaction: CallExceptionTransaction,
 
-    // The Contract, method and args used during invocation
-    method?: string;
-    signature?: string;
-    args?: ReadonlyArray<any>;
+    // If avaiable, the contract invocation details
+    invocation: null | {
+        method: string;
+        signature: string;
+        args: Array<any>;
+    }
 
-    // The Solidity custom revert error
-    errorSignature?: string;
-    errorName?: string;
-    errorArgs?: ReadonlyArray<any>;
-    reason?: string;
+    // The built-in or custom revert error if available
+    revert: null | {
+        signature: string;
+        name: string;
+        args: Array<any>;
+    }
 }
 
 //export interface ContractCallExceptionError extends CallExceptionError {
@@ -184,12 +197,9 @@ export interface UnconfiguredNameError extends EthersError<"UNCONFIGURED_NAME"> 
     value: string;
 }
 
-export interface UnpredictableGasLimitError extends EthersError<"UNPREDICTABLE_GAS_LIMIT"> {
-    transaction: TransactionRequest;
-}
-
 export interface ActionRejectedError extends EthersError<"ACTION_REJECTED"> {
-    action: string
+    action: "requestAccess" | "sendTransaction" | "signMessage" | "signTransaction" | "signTypedData" | "unknown",
+    reason: "expired" | "rejected" | "pending"
 }
 
 // Coding; converts an ErrorCode its Typed Error
@@ -224,7 +234,6 @@ export type CodedEthersError<T> =
     T extends "REPLACEMENT_UNDERPRICED" ? ReplacementUnderpricedError:
     T extends "TRANSACTION_REPLACED" ? TransactionReplacedError:
     T extends "UNCONFIGURED_NAME" ? UnconfiguredNameError:
-    T extends "UNPREDICTABLE_GAS_LIMIT" ? UnpredictableGasLimitError:
 
     T extends "ACTION_REJECTED" ? ActionRejectedError:
 
