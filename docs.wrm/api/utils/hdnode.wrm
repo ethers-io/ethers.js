@@ -56,7 +56,7 @@ _property: hdNode.privateKey => string<[[DataHexString]]<32>>
 The private key for this HDNode.
 
 _property: hdNode.publicKey => string<[[DataHexString]]<33>>
-The (compresses) public key for this HDNode.
+The (compressed) public key for this HDNode.
 
 _property: hdNode.fingerprint => string<[[DataHexString]]<4>>
 The fingerprint is meant as an index to quickly match parent and
@@ -112,7 +112,7 @@ _heading: Methods  @<HDNode--methods>
 _property: hdNode.neuter() => [[HDNode]]  @<HDNode-neuter> @SRC<hdnode>
 Return a new instance of //hdNode// with its private key removed
 but all other properties preserved. This ensures that the key
-can not leak the private key of itself or any derived children,
+cannot leak the private key of itself or any derived children,
 but may still be used to compute the addresses of itself and
 any non-hardened children.
 

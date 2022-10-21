@@ -23,7 +23,7 @@ public information, such as:
 
 There are several types of issues tracked by ethers. Using the correct
 one helps you receive feedback quicker and helps us keep the right
-person 
+person.
 
 _heading: Feature Requests
 
@@ -50,7 +50,7 @@ Please make sure you include as much information as is useful:
 - What backend are you using, such as Geth, INFURA, Provider Engine, etc.?
 
 
-_heading: Docuementation
+_heading: Documentation
 
 If you have found a typo in the documentation, a feature which isn't
 documented (or documented well) or just find something described in

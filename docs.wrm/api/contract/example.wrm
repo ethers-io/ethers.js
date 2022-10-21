@@ -12,11 +12,11 @@ all the methods defined in the ABI at run-time.
 _subsection: Deploying a Contract
 
 Most often, any contract you will need to interact with will already
-be deployed to the blockchain, but for this example will will first
+be deployed to the blockchain, but for this example we will first
 deploy the contract.
 
 _property: new ethers.ContractFactory(abi, bytecode, signer)
-Create a new [[ContractFactory]] which can deploy a contract to the
+Creates a new [[ContractFactory]] which can deploy a contract to the
 blockchain.
 
 _code: @lang<javascript>
@@ -37,7 +37,7 @@ const factory = new ethers.ContractFactory(abi, bytecode, signer)
 // Deploy, setting total supply to 100 tokens (assigned to the deployer)
 const contract = await factory.deploy(parseUnits("100"));
 
-// The contract is not currentl live on the network yet, however
+// The contract is not currently live on the network yet, however
 // its address is ready for us
 //_result:
 contract.address
@@ -58,7 +58,7 @@ _heading: ERC20Contract @INHERIT<[[Contract]]>
 _property: new ethers.Contract(address, abi, providerOrSigner)
 Creating a new instance of a Contract connects to an existing
 contract by specifying its //address// on the blockchain,
-its //abi// (used to populate the class' methods) a //providerOrSigner//.
+its //abi// (used to populate the class' methods) and a //providerOrSigner//.
 
 If a [[Provider]] is given, the contract has only read-only access, while
 a [[Signer]] offers access to state manipulating methods.
@@ -167,7 +167,7 @@ _property: erc20.listeners(event) => Array<Listener>
 Return a list of listeners that are subscribed to //event//.
 
 _property: erc20.off(event, listener) => this
-Unsubscribe //listener// to //event//.
+Unsubscribe //listener// from //event//.
 
 _property: erc20.on(event, listener) => this
 Subscribe to //event// calling //listener// when the event occurs.

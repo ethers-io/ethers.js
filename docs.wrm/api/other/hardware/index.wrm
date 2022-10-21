@@ -15,6 +15,6 @@ import { LedgerSigner } from "@ethersproject/hardware-wallets";
 _heading: API
 
 _property: new LedgerSigner([provider [, type [ , path ] ] ]) => [[hw-ledger]]
-Connects to a Ledger Hardware Wallet. The //type// if left unspecified is
+Connects to a Ledger Hardware Wallet. The //type//, if left unspecified, is
 determined by the environment; in node the default is "hid" and in the browser
 "u2f" is the default. The default Ethereum path is used if //path// is left unspecified.

@@ -11,10 +11,10 @@ The ethers library creates a strong division between the
 operation a **Provider** can perform and those of a [[Signer]],
 which Web3.js lumps together.
 
-This separation of concerns and a stricted subset of Provider
+This separation of concerns and a stricter subset of Provider
 operations allows for a larger variety of backends, a more
-consistent API and ensures other libraries to operate without
-being able to rely on any underlying assumption.
+consistent API and allow other libraries to operate without
+relying on any underlying assumption.
 
 _subsection: Accounts Methods  @<Provider--account-methods>
 
@@ -142,7 +142,7 @@ await provider.resolveName("ricmoo.eth");
 _subsection: EnsResolver @<EnsResolver> 
 
 _property: resolver.name => string
-The name of this resolver.
+The name of the Resolver.
 
 _property: resolver.address => string<[[address]]>
 The address of the Resolver.
@@ -384,7 +384,7 @@ Returns a Promise which will not resolve until //transactionHash// is mined.
 If //confirms// is 0, this method is non-blocking and if the
 transaction has not been mined returns null. Otherwise,
 this method will block until the transaction has //confirms//
-blocks mined on top of the block in which is was mined.
+blocks mined on top of the block in which it was mined.
 
 _subsection: Event Emitter Methods @<Provider--event-methods>
 
@@ -466,7 +466,7 @@ $Error:    emitted on any error
 $Pending:  emitted when a new transaction enters the memory pool; only
            certain providers offer this event and may require
            running your own node for reliable results
-$WillPoll: emitted prior to a polling loop is about to begin;
+$WillPoll: emitted prior to when a polling loop is about to begin;
            //(very rarely used by most developers)//
 $DidPoll:  emitted after all events from a polling loop are emitted;
            //(very rarely used by most developers)//
@@ -530,7 +530,7 @@ topicSets = [
     ]
 ]
 provider.on(topicSets, (log, event) => {
-    // Emitted any token is sent TO either address
+    // Emitted when any token is sent TO [CHECK!] either address
 })
 
 

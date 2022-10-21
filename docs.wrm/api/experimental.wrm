@@ -21,7 +21,7 @@ Generates a brain wallet, with a slightly improved experience, in which
 the generated wallet has a mnemonic.
 
 _property: BrainWallet.generateLegacy(username, password [ , progressCallback ]) => [[experimental-brainwallet]]
-Generate a brain wallet which is compatible with the ethers v3 and earlier.
+Generates a brain wallet which is compatible with ethers v3 and earlier.
 
 _code: Importing @lang<script>
 

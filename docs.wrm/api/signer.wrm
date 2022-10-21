@@ -34,7 +34,7 @@ _property: signer.getAddress() => Promise<string<[[address]]>>  @<Signer-getaddr
 Returns a Promise that resolves to the account address.
 
 This is a Promise so that a **Signer** can be designed around an
-asynchronous source, such as  hardware wallets.
+asynchronous source, such as hardware wallets.
 
 Sub-classes **must** implement this.
 
@@ -74,9 +74,9 @@ _property: signer.signMessage(message) => Promise<string<[RawSignature](signatur
 This returns a Promise which resolves to the [[signature-raw]]
 of //message//.
 
-A signed message is prefixd with ``"\\x19Ethereum Signed Message:\\n"`` and
+A signed message is prefixed with ``"\\x19Ethereum Signed Message:\\n"`` and
 the length of the message, using the [hashMessage](utils-hashMessage)
-method, so that it is [EIP-191](link-eip-191) compliant. If recovering
+method, so that it is [EIP-191](link-eip-191) compliant. If you are recovering
 the address in Solidity, this prefix will be required to create a matching
 hash.
 
@@ -125,7 +125,7 @@ the [[link-eip-712]] specification.
 
 _warning: Experimental feature (this method name will change)
 
-This is still an experimental feature. If using it, please specify the **exact**
+This is still an experimental feature. If you are using it, please specify the **exact**
 version of ethers you are using (e.g. spcify ``"5.0.18"``, **not** ``"^5.0.18"``) as
 the method name will be renamed from ``_signTypedData`` to ``signTypedData`` once
 it has been used in the field a bit.
@@ -206,7 +206,7 @@ as ``checkTransaction`` and fill in any properties required for sending a transa
 The result should have all promises resolved; if needed the [resolveProperties](utils-resolveproperties)
 utility function can be used for this.
 
-The default implementation calls ``checkTransaction`` and resolves to if it is an
+The default implementation calls ``checkTransaction`` and resolves to [CHECK!] if it is an
 ENS name, adds ``gasPrice``, ``nonce``, ``gasLimit`` and ``chainId`` based on the
 related operations on Signer.
 
@@ -263,7 +263,7 @@ may use the [connect](Signer-connect) method to create a new instance connected
 to the desired provider.
 
 _property: wallet.publicKey => string<[[DataHexString]]<65>>
-The uncompressed public key for this Wallet represents.
+The uncompressed public key for this Wallet.
 
 _heading: Methods @<Wallet--methods>
 

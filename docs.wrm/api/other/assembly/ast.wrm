@@ -123,7 +123,7 @@ The name of this node.
 
 _heading: LabelNode @<asm-labelnode> @INHERIT<[[asm-labellednode]]> @SRC<asm:class.LabelNode>
 
-A **LabelNode** is used as a place to ``JUMP`` to by referencing it
+A **LabelNode** is used as a place to ``JUMP`` to by referencing its
 name, using ``@myLabel:``. A ``JUMPDEST`` is automatically inserted
 at the bytecode offset.
 
@@ -132,11 +132,11 @@ _heading: DataNode @<asm-datanode> @INHERIT<[[asm-labellednode]]> @SRC<asm:class
 
 A **DataNode** allows for data to be inserted directly into the output
 assembly, using ``@myData[ ... ]``. The data is padded if needed to ensure
-values that would otherwise be regarded as a ``PUSH`` value does not impact
+values that would otherwise be regarded as a ``PUSH`` value do not impact
 anything past the data.
 
 _property: dataNode.data => Array<[[asm-valuenode]]>
-The child nodes, which each represent a verbatim piece of data in insert.
+The child nodes, which each represent a verbatim piece of data in insert [CHECK!].
 
 _heading: ScopeNode @<asm-scopenode> @INHERIT<[[asm-labellednode]]> @SRC<asm:class.ScopeNode>
 

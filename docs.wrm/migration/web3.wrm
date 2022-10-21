@@ -4,7 +4,9 @@ This migration guide focuses on migrating web3.js version 1.2.9 to ethers.js v5.
 
 _subsection: Providers
 
-In ethers, a provider provides an abstraction for a connection to the Ethereum Network. It can be used to issue read only queries and send signed state changing transactions to the Ethereum Network.
+In ethers, a provider provides an abstraction for a connection to the Ethereum
+Network. It can be used to issue read only queries and send signed state changing
+transactions to the Ethereum Network.
 
 _heading: Connecting to Ethereum
 
@@ -34,7 +36,8 @@ const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 _subsection: Signers
 
-In ethers, a **signer** is an abstraction of an Ethereum Account. It can be used to sign messages and transactions and send signed transactions to the Ethereum Network.
+In ethers, a **signer** is an abstraction of an Ethereum Account. It can be used
+to sign messages and transactions and send signed transactions to the Ethereum Network.
 
 In web3, an account can be used to sign messages and transactions.
 
@@ -69,7 +72,8 @@ signature = await signer.signMessage('Some data')
 
 _subsection: Contracts
 
-A contract object is an abstraction of a smart contract on the Ethereum Network. It allows for easy interaction with the smart contract.
+A contract object is an abstraction of a smart contract on the
+Ethereum Network. It allows for easy interaction with the smart contract.
 
 _heading: Deploying a Contract
 
@@ -115,7 +119,7 @@ contract.methods.changeValue(42).send({from: ....})
 });
 
 // ethers
-// pass a provider when initiating a contract for read only queries
+// pass a provider when initiating a contract for read-only queries
 const contract = new ethers.Contract(contractAddress, abi, provider);
 const value = await contract.getValue();
 

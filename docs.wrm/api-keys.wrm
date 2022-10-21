@@ -22,7 +22,7 @@ free tier, which (depending on the service) includes many advantages:
 
 - a much **higher request rate** and concurrent request limit
 - **faster** responses with fewer retries and timeouts
-- useful **metric tracking** for performance tuning and to analyze your customer behaviour
+- useful **metric tracking** for performance tuning and to analyze your customer [!CHECK] behaviour
 - more **advanced APIs**, such as archive data or advanced log queries
 
 _subsection: Etherscan @NOTE<(see the [[EtherscanProvider]])> @<api-keys--etherscan>
@@ -101,8 +101,8 @@ network or non-load-balanced fleet.
 
 - customer usage metrics
 - decentralized Access to Blockchain Infrastructure
-- Stake as opposed to paying a monthly fee
-- Highly redundant global set of nodes incentivized by cryptoeconomic incentives
+- stake as opposed to paying a monthly fee
+- highly redundant global set of nodes incentivized by cryptoeconomic incentives
 
 _definition: **Networks:**
 ``homestead``

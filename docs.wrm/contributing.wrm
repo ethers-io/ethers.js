@@ -4,7 +4,7 @@ The ethers.js library is something that I've written out of necessity,
 and has grown somewhat organically over time.
 
 Many things are the way they are for good (at the time, at least) reasons,
-but I always welcome criticism, and am completely willing to have my mind
+but I always welcome criticism, and I'm completely willing to have my mind
 changed on things.
 
 Pull requests are always welcome, but please keep a few points in mind:
@@ -38,7 +38,7 @@ number of environments, build tools and platforms, which is why
 there are a some weird things it must do.
 
 There are several custom scripts in the ``misc/admin`` folder
-to help manage the monorepo. Developers working on contributing
+to help manage the mono-repo. Developers working on contributing
 to ethers should not generally need to worry about those, since
 they are wrapped up behind ``npm run SCRIPT`` operations.
 
@@ -88,10 +88,10 @@ _heading: Testing
 
 _code: Testing @lang<shell>
 
-# Rebuilds all files (npm run build-all) and bundles testcases up for testing
+# Rebuilds all files (npm run build-all) and bundles test cases up for testing
 /home/ricmoo/ethers.js> npm test
 
-# Often you don't need the full CI experience
+# Often you don't need the full CI [CHECK!] experience
 /home/ricmoo/ethers.js> npm run test-node
 
 _heading: Distribution
@@ -114,7 +114,7 @@ _code: Preparing the Distribution @lang<shell>
 # Prepare all the distribution files
 # - Remove all generated files (i.e. npm run clean)
 # - Re-install all dependencies, hoisting, etc. (npm install)
-# - Spell check all strings in every TypeScript files
+# - Spell-check all strings in every TypeScript files
 # - Build everything from scratch with this clean install
 # - Compare local with npm, bumping the version if changed
 # - Build everything again (with the updated versions)

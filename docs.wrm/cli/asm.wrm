@@ -13,11 +13,11 @@ Usage:
    ethers-asm [ FILENAME ] [ OPTIONS ]
 
 OPTIONS
-  --define KEY=VALUE          provide assembler defines
+  --define KEY=VALUE          Provide assembler defines [CHECK!]
   --disassemble               Disassemble input bytecode
   --ignore-warnings           Ignore warnings
-  --pic                       generate position independent code
-  --target LABEL              output LABEL bytecode (default: _)
+  --pic                       Generate position independent code
+  --target LABEL              Output LABEL bytecode (default: _)
 
 OTHER OPTIONS
   --debug                     Show stack traces for errors
@@ -117,7 +117,7 @@ _code: @lang<shell>
 /home/ethers> cat SimpleStore.asm | ethers-asm
 # Same as above
 
-# Setting a define which the ASM file checks and adds a checksum
+# Setting a define [CHECK!] which the ASM file checks and adds a checksum
 /home/ethers> ethers-asm --define checksum SimpleStore.asm
 0x602a6000556065601160003960656000f334601e5760003560e01c80632096525514602457806355241077146030575b60006000fd5b60005460005260206000f35b6024361415601e5760043560005560006000f37f10358310d664c9aeb4bf4ce7a10a6a03176bd23194c8ccbd3160a6dac90774d6
 
@@ -131,16 +131,16 @@ assembler, which can be accessed in
 [Scripting Blocks](asm-dialect-scripting), such as ``{{= defined.someKey }}``.
 
 _definition: **-\-ignore-warnings**
-By default any warning will be treated like an error. This enabled
+By default any warning will be treated like an error. This enables
 by-passing warnings.
 
 _definition: **-\-pic**
 When a program is assembled, the labels are usually given as an
 absolute byte position, which can be jumped to for loops and
-control flow. This means that a program must be installed at a specific
+flow control. This means that a program must be installed at a specific
 location.
 
-Byt specifying the **Position Independent Code** flag, code
+By specifying the **Position Independent Code** flag, code
 will be generated in a way such that all offsets are relative, allowing
 the program to be moved without any impact to its logic.
 

@@ -3,7 +3,7 @@ _section: Web Utilities  @<web>
 
 _property: ethers.utils.fetchJson(urlOrConnectionInfo [, json [ , processFunc ] ]) => Promise<any> @<utils-fetchJson>
 Fetch and parse the JSON content from //urlOrConnectionInfo//, with the
-optional body //json// and optionally processing the result with //processFun//
+optional body //json// and optionally processing the result with //processFunc//
 before returning it.
 
 _property: ethers.utils.poll(pollFunc [, options ]) => Promise<any> @<utils-poll>
@@ -37,7 +37,7 @@ _property: connection.skipFetchSetup => boolean
 Normally a connection will specify the default values for a connection
 such as CORS-behavior and caching policy, to ensure compatibility across
 platforms. On some services, such as Cloudflare Workers, specifying any
-value (inclluding the default values) will cause failure. Setting this
+value (including the default values) will cause failure. Setting this
 to true will prevent any values being passed to the underlying API.
 
 _property: connection.errorPassThrough => boolean

@@ -41,7 +41,7 @@ _heading: Signature @<Signature>
 - **yParityAndS** --- The [compact representation](link-eip-2098) of the **s** and **v**
 - **_vs** --- Deprecated property; renamed to yParityAndS
 - **recoveryParam** --- The normalized (i.e. 0 or 1) value of **v**
-- **compact** - The full siggnature using [compact representation](link-eip-2098)
+- **compact** - The full signature using [compact representation](link-eip-2098)
 
 _heading: Raw Signature @<signature-raw> @inherit<string\<[[DataHexString]]\<65\>\>>
 

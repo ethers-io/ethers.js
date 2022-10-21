@@ -108,7 +108,7 @@ contract.deployTransaction
 
 // Wait until the transaction is mined (i.e. contract is deployed)
 //  - returns the receipt
-//  - throws on failure (the reciept is on the error)
+//  - throws on failure (the reciept is in the error)
 //_result:
 await contract.deployTransaction.wait()
 //_log:

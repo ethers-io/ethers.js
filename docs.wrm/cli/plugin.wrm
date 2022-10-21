@@ -46,12 +46,12 @@ CLI to bail and issue an //unknown option// error. This should throw if a value
 for a given option is invalid or some combination of options and flags is not
 allowed.
 
-Once the prepareOptions is complete (the returned promise is resolved), the ``prepareArguments``
+Once the ``prepareOptions`` is complete (the returned promise is resolved), the ``prepareArguments``
 is called. This should validate the number of arguments expected and throw
 an error if there are too many or too few arguments or if any arguments do not
 make sense.
 
-Once the prepareArguments is complete (the returned promise is resolved), the ``run``
+Once the ``prepareArguments`` is complete (the returned promise is resolved), the ``run``
 is called.
 
 _property: plugin.network => [[providers-Network]]
@@ -140,8 +140,8 @@ Arguments are all other values on the command line, and are not accessed through
 the **ArgParser** directly.
 
 When a CLI is run, an **ArgParser** is used to validate the command line by using
-prepareOptions, which consumes all flags and options leaving only the arguments
-behind, which are then passed into prepareArgs.
+``prepareOptions``, which consumes all flags and options leaving only the arguments
+behind, which are then passed into ``prepareArgs``.
 
 _property: argParser.consumeFlag(name) => boolean  @<argparser-consumeflag> @SRC<cli/cli>
 Remove the flag //name// and return true if it is present.

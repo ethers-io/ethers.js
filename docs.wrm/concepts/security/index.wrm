@@ -4,7 +4,7 @@ While security should be a concern for all developers, in the
 blockchain space developers must be additionally conscious of
 many areas which can be exploited.
 
-Once a problem has an economic incentives to exploit it, there
+Once a problem has economic incentives to exploit it, there
 is a much larger risk and with blockchain apps it can become
 quite valuable to attack.
 
@@ -50,19 +50,19 @@ to execute.
 
 In JavaScript, //Garbage Collection// occurs periodically when the
 system determines it is required. Each JavaScript implementation
-is different, with a variety of strategies and and abilities.
+is different, with a variety of strategies and abilities.
 
 Most Garbage Collection requires "stopping the world", or pausing
 all code being executed while it runs. This adds a large delay
 to any code that was currently running.
 
-This can be exploited by attackers to "condition cause a delay".
+This can be exploited by attackers to "condition cause a delay" [CHECK! grammar unclear].
 They will set up a scenario where the system is on the edge of
 needing to garbage collect, and call your code with two paths,
 a simple path and complex path. The simple path won't stir things
 up enough to cause a garbage collection, while the complex one
 will. By timing how long the code took to execute, they now know
-whether garbage collection occured and therefore whether the simple
+whether garbage collection occurred and therefore whether the simple
 or complex path was taken.
 
 Advanced timing attacks are very difficult to mitigate in any

@@ -83,7 +83,7 @@ _code: Creating New Wallets @lang<shell> @<cliex-init>
 /home/ethers> ethers init wallet.json
 Creating a new JSON Wallet - wallet.json
 Keep this password and file SAFE!! If lost or forgotten
-it CANNOT be recovered, by ANYone, EVER.
+it CANNOT be recovered, by ANYONE, EVER.
 Choose a password: ******
 Confirm password: ******
 Encrypting... 100%
@@ -191,9 +191,9 @@ _code: Convert a Solidity signature to JSON  @lang<shell>
       }
    ],
    "type" : "function",
-   "payble" : false,
+   "payable" : false,
    "stateMutability" : "view",
-   "ouputs" : [
+   "outputs" : [
       {
          "type" : "uint256"
       }

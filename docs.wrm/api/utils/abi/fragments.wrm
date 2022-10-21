@@ -6,7 +6,7 @@ _subsection: Formats
 
 _heading: JSON String ABI (Solidity Output JSON)
 The **JSON ABI Format** is the format that is
-[output from the Solidity compiler](link-solc-output).
+[outputted from the Solidity compiler](link-solc-output).
 
 A JSON serialized object is always a string, which represents an Array
 of Objects, where each Object has various properties describing the [[Fragment]] of the ABI.
@@ -22,7 +22,7 @@ The ABI is described by using an array of strings, where each string is the
 Solidity signature of the **constructor**, **function**, **event** or **error**.
 
 When parsing a fragment, all inferred properties will be injected (e.g. a //payable//
-method will have its ``constant`` proeprty set to false).
+method will have its ``constant`` property set to false).
 
 Tuples can be specified by using the ``tuple(...)`` syntax or with bare (additional)
 parenthesis, ``(...)``.
@@ -49,7 +49,7 @@ const ABI = [
 
 
 _heading: Output Formats @<fragments--output-formats> @SRC<abi/fragments:FormatTypes>
-Each [[Fragment]] and [[ParamType]] may be output using its ``format``
+Each [[Fragment]] and [[ParamType]] may be outputted using its ``format``
 method.
 
 _property: ethers.utils.FormatTypes.full => string

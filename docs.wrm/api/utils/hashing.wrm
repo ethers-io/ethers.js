@@ -264,7 +264,7 @@ Returns the hashed [[link-eip-712]] domain.
 _property: TypedDataEncoder.resolveNames(domain, types, value, resolveName) => Promise<any> @<TypedDataEncoder-resolveNames> @SRC<hash:TypedDataEncoder.resolveNames>
 
 Returns a copy of value, where any leaf value with a type of ``address`` will have
-been recursively replacedwith the value of calling //resolveName// with that value.
+been recursively replaced with the value of calling //resolveName// with that value.
 
 _code: Typed Data Example @lang<javascript>
 

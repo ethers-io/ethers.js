@@ -255,7 +255,7 @@ other libraries is that it is immutable, which is very important when
 dealing with the asynchronous nature of the blockchain.
 
 Capturing the value is not safe in async functions, so immutability
-protects us from easy to make mistakes, which is not possible on the
+protects us from easy-to-make mistakes, which is not possible on the
 low-level library's objects which supports myriad in-place operations.
 
 Second, the Ethers [[BigNumber]] provides all the functionality required
