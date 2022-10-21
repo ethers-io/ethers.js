@@ -953,7 +953,8 @@ export class AbstractProvider implements Provider {
         //return "TODO";
     }
 
-    async waitForTransaction(hash: string, confirms: number = 1, timeout?: number): Promise<null | TransactionReceipt> {
+    async waitForTransaction(hash: string, _confirms?: number, timeout?: number): Promise<null | TransactionReceipt> {
+        const confirms = (_confirms != null) ? _confirms: 1;
         if (confirms === 0) { return this.getTransactionReceipt(hash); }
 
         return new Promise(async (resolve, reject) => {
@@ -965,7 +966,7 @@ export class AbstractProvider implements Provider {
                     if (receipt != null) {
                         if (blockNumber - receipt.blockNumber + 1 >= confirms) {
                             resolve(receipt);
-                            this.off("block", listener);
+                            //this.off("block", listener);
                             if (timer) {
                                 clearTimeout(timer);
                                 timer = null;
@@ -1120,6 +1121,11 @@ export class AbstractProvider implements Provider {
             } catch(error) { }
             return !once;
         });
+
+        if (sub.listeners.length === 0) {
+            if (sub.started) { sub.subscriber.stop(); }
+            this.#subs.delete(sub.tag);
+        }
 
         return (count > 0);
     }
