@@ -90,12 +90,12 @@ jobs:
           name: coverage-complete
           path: ./output/coverage.tar
 
-      - name: Upload to build.ethers.org
+      - name: Upload coverage to to build.ethers.org
         uses: ethers-io/sync-s3-action@main
         with:
           aws_access_key_id: ${{ secrets.BUILD_AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.BUILD_AWS_SECRET_ACCESS_KEY}}
-          aws_s3_bucket: ${{ secrets.BUILD_AWS_BUCKET }}
+          aws_s3_bucket: ethers.org
           source_folder: 'output/'
-          destination_prefix: 'output/'
+          destination_prefix: 'build/output/'
           aws_cloudfront_id: ${{ secrets.BUILD_AWS_CLOUDFRONT_ID }}
