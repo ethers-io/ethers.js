@@ -48,7 +48,7 @@ function colorify(text) {
             return "";
         }
         return seq;
-    })) + Colors.normal;
+    })) + (disableColor ? "": Colors.normal);
 }
 
 function escapeColor(text) {
