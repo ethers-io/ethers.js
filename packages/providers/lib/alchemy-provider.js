@@ -33,8 +33,7 @@ var AlchemyWebSocketProvider = /** @class */ (function (_super) {
     function AlchemyWebSocketProvider(network, apiKey) {
         var _this = this;
         var provider = new AlchemyProvider(network, apiKey);
-        var url = provider.connection.url.replace(/^http/i, "ws")
-            .replace(".alchemyapi.", ".ws.alchemyapi.");
+        var url = provider.connection.url.replace(/^http/i, "ws");
         _this = _super.call(this, url, provider.network) || this;
         (0, properties_1.defineReadOnly)(_this, "apiKey", provider.apiKey);
         return _this;
@@ -66,7 +65,7 @@ var AlchemyProvider = /** @class */ (function (_super) {
         var host = null;
         switch (network.name) {
             case "homestead":
-                host = "eth-mainnet.alchemyapi.io/v2/";
+                host = "eth-mainnet.g.alchemy.com/v2/";
                 break;
             case "ropsten":
                 host = "eth-ropsten.alchemyapi.io/v2/";

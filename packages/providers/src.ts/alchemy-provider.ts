@@ -26,8 +26,7 @@ export class AlchemyWebSocketProvider extends WebSocketProvider implements Commu
     constructor(network?: Networkish, apiKey?: any) {
         const provider = new AlchemyProvider(network, apiKey);
 
-        const url = provider.connection.url.replace(/^http/i, "ws")
-                                           .replace(".alchemyapi.", ".ws.alchemyapi.");
+        const url = provider.connection.url.replace(/^http/i, "ws");
 
         super(url, provider.network);
         defineReadOnly(this, "apiKey", provider.apiKey);
@@ -56,7 +55,7 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
         let host = null;
         switch (network.name) {
             case "homestead":
-                host = "eth-mainnet.alchemyapi.io/v2/";
+                host = "eth-mainnet.g.alchemy.com/v2/";
                 break;
             case "ropsten":
                 host = "eth-ropsten.alchemyapi.io/v2/";
