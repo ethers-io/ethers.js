@@ -1,5 +1,5 @@
 import { getBytes } from "./data.js";
-import { throwArgumentError, throwError } from "./errors.js";
+import { assertArgument, throwError } from "./errors.js";
 import { getBigInt, getNumber, fromTwos, toBigInt, toHex, toTwos } from "./maths.js";
 
 import type { BigNumberish, BytesLike, Numeric } from "./index.js";
@@ -22,9 +22,8 @@ while (zeros.length < 256) { zeros += zeros; }
 // Returns a string "1" followed by decimal "0"s
 function getMultiplier(decimals: number): bigint {
 
-    if (typeof(decimals) !== "number" || decimals < 0 || decimals > 256 || decimals % 1 ) {
-        throwArgumentError("invalid decimal length", "decimals", decimals);
-    }
+    assertArgument(Number.isInteger(decimals) && decimals >= 0 && decimals <= 256,
+        "invalid decimal length", "decimals", decimals);
 
     return BigInt("1" + zeros.substring(0, decimals));
 }
@@ -65,23 +64,18 @@ export function parseFixed(value: string, _decimals: Numeric): bigint {
 
     const multiplier = getMultiplier(decimals);
 
-    if (typeof(value) !== "string" || !value.match(/^-?[0-9.]+$/)) {
-        throwArgumentError("invalid decimal value", "value", value);
-    }
+    assertArgument(typeof(value) === "string" && value.match(/^-?[0-9.]+$/),
+        "invalid decimal value", "value", value);
 
     // Is it negative?
     const negative = (value.substring(0, 1) === "-");
     if (negative) { value = value.substring(1); }
 
-    if (value === ".") {
-        throwArgumentError("missing value", "value", value);
-    }
+    assertArgument(value !== ".", "missing value", "value", value);
 
     // Split it into a whole and fractional part
     const comps = value.split(".");
-    if (comps.length > 2) {
-        throwArgumentError("too many decimal points", "value", value);
-    }
+    assertArgument(comps.length <= 2, "too many decimal points", "value", value);
 
     let whole = (comps[0] || "0"), fraction = (comps[1] || "0");
 
@@ -155,9 +149,7 @@ export class FixedFormat {
                 signed = false;
             } else {
                 const match = value.match(/^(u?)fixed([0-9]+)x([0-9]+)$/);
-                if (!match) {
-                    return throwArgumentError("invalid fixed format", "format", value);
-                }
+                assertArgument(match, "invalid fixed format", "format", value);
                 signed = (match[1] !== "u");
                 width = parseInt(match[2]);
                 decimals = parseInt(match[3]);
@@ -165,9 +157,8 @@ export class FixedFormat {
         } else if (value) {
             const check = (key: string, type: string, defaultValue: any): any => {
                 if (value[key] == null) { return defaultValue; }
-                if (typeof(value[key]) !== type) {
-                    throwArgumentError("invalid fixed format (" + key + " not " + type +")", "format." + key, value[key]);
-                }
+                assertArgument(typeof(value[key]) === type,
+                    "invalid fixed format (" + key + " not " + type +")", "format." + key, value[key]);
                 return value[key];
             }
             signed = check("signed", "boolean", signed);
@@ -175,13 +166,8 @@ export class FixedFormat {
             decimals = check("decimals", "number", decimals);
         }
 
-        if (width % 8) {
-            throwArgumentError("invalid fixed format width (not byte aligned)", "format.width", width);
-        }
-
-        if (decimals > 80) {
-            throwArgumentError("invalid fixed format (decimals too large)", "format.decimals", decimals);
-        }
+        assertArgument((width % 8) === 0, "invalid fixed format width (not byte aligned)", "format.width", width);
+        assertArgument(decimals <= 80, "invalid fixed format (decimals too large)", "format.decimals", decimals);
 
         return new FixedFormat(_constructorGuard, signed, width, decimals);
     }
@@ -215,9 +201,8 @@ export class FixedNumber {
     }
 
     #checkFormat(other: FixedNumber): void {
-        if (this.format.name !== other.format.name) {
-            throwArgumentError("incompatible format; use fixedNumber.toFormat", "other", other);
-        }
+        assertArgument(this.format.name === other.format.name,
+            "incompatible format; use fixedNumber.toFormat", "other", other);
     }
 
     /**
@@ -288,9 +273,8 @@ export class FixedNumber {
         const comps = this.toString().split(".");
         if (comps.length === 1) { comps.push("0"); }
 
-        if (decimals < 0 || decimals > 80 || (decimals % 1)) {
-            throwArgumentError("invalid decimal count", "decimals", decimals);
-        }
+        assertArgument(Number.isInteger(decimals) && decimals >= 0 && decimals <= 80,
+            "invalid decimal count", "decimals", decimals);
 
         if (comps[1].length <= decimals) { return this; }
 
@@ -391,7 +375,7 @@ export class FixedNumber {
             }
         }
 
-        return throwArgumentError("invalid FixedNumber value", "value", value);
+        assertArgument(false, "invalid FixedNumber value", "value", value);
     }
 
     static isFixedNumber(value: any): value is FixedNumber {

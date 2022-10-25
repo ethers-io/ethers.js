@@ -3,7 +3,7 @@ import { resolveAddress } from "../address/index.js";
 import { copyRequest, Log, TransactionResponse } from "../providers/index.js";
 import {
     defineProperties, isCallException, isHexString, resolveProperties,
-    makeError, throwArgumentError, throwError
+    makeError, assertArgument, throwError
 } from "../utils/index.js";
 
 import {
@@ -133,9 +133,9 @@ export async function copyOverrides(arg: any): Promise<Omit<ContractTransaction,
     // Some sanity checking; these are what these methods adds
     //if ((<any>overrides).to) {
     if (overrides.to) {
-        throwArgumentError("cannot override to", "overrides.to", overrides.to);
+        assertArgument(false, "cannot override to", "overrides.to", overrides.to);
     } else if (overrides.data) {
-        throwArgumentError("cannot override data", "overrides.data", overrides.data);
+        assertArgument(false, "cannot override data", "overrides.data", overrides.data);
     }
 
     // Resolve any from

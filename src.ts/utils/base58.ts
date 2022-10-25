@@ -1,6 +1,6 @@
 
 import { getBytes } from "./data.js";
-import { throwArgumentError } from "./errors.js";
+import { assertArgument } from "./errors.js";
 import { toBigInt, toHex } from "./maths.js";
 
 import type { BytesLike } from "./index.js";
@@ -17,9 +17,7 @@ function getAlpha(letter: string): bigint {
         }
     }
     const result = Lookup[letter];
-    if (result == null) {
-        throwArgumentError(`invalid base58 value`, "letter", letter);
-    }
+    assertArgument(result != null, `invalid base58 value`, "letter", letter);
     return result;
 }
 

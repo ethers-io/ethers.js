@@ -11,7 +11,7 @@ import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
     getBigInt, getBytes, getNumber,
-    isCallException, makeError, throwError, throwArgumentError,
+    isCallException, makeError, throwError, assertArgument,
     FetchRequest,
     toArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
@@ -198,7 +198,7 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
         return { filter, tag: getTag("event", filter), type: "event" };
     }
 
-    return throwArgumentError("unknown ProviderEvent", "event", _event);
+    assertArgument(false, "unknown ProviderEvent", "event", _event);
 }
 
 function getTime(): number { return (new Date()).getTime(); }
@@ -500,7 +500,7 @@ export class AbstractProvider implements Provider {
             return this.getBlockNumber().then((b) => toQuantity(b + blockTag));
         }
 
-        return throwArgumentError("invalid blockTag", "blockTag", blockTag);
+        assertArgument(false, "invalid blockTag", "blockTag", blockTag);
     }
 
     _getFilter(filter: Filter | FilterByBlockHash): PerformActionFilter | Promise<PerformActionFilter> {

@@ -1,5 +1,5 @@
 import {
-    defineProperties, isError, assertArgumentCount, throwArgumentError, throwError
+    defineProperties, isError, assertArgument, assertArgumentCount, throwError
 } from "../../utils/index.js";
 
 import { Typed } from "../typed.js";
@@ -43,12 +43,10 @@ export function pack(writer: Writer, coders: ReadonlyArray<Coder>, values: Array
         });
 
     } else {
-        throwArgumentError("invalid tuple value", "tuple", values);
+        assertArgument(false, "invalid tuple value", "tuple", values);
     }
 
-    if (coders.length !== arrayValues.length) {
-        throwArgumentError("types/value length mismatch", "tuple", values);
-    }
+    assertArgument(coders.length === arrayValues.length, "types/value length mismatch", "tuple", values);
 
     let staticWriter = new Writer();
     let dynamicWriter = new Writer();

@@ -1,7 +1,7 @@
 import { Transaction } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, resolveProperties,
-    throwArgumentError, throwError
+    assertArgument, throwError
 } from "../utils/index.js";
 
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
@@ -40,9 +40,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
 
         if (pop.to != null) {
             pop.to = provider.resolveName(pop.to).then((to) => {
-                if (to == null) {
-                    return throwArgumentError("transaction to ENS name not configured", "tx.to", pop.to);
-                }
+                assertArgument(to != null, "transaction to ENS name not configured", "tx.to", pop.to);
                 return to;
             });
         }
@@ -53,9 +51,8 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                 this.getAddress(),
                 this.resolveName(from)
             ]).then(([ address, from ]) => {
-                if (!from || address.toLowerCase() !== from.toLowerCase()) {
-                    return throwArgumentError("transaction from mismatch", "tx.from", from);
-                }
+                assertArgument(from && address.toLowerCase() === from.toLowerCase(),
+                    "transaction from mismatch", "tx.from", from);
                 return address;
             });
         }
@@ -84,9 +81,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         const network = await (<Provider>(this.provider)).getNetwork();
         if (pop.chainId != null) {
             const chainId = getBigInt(pop.chainId);
-            if (chainId !== network.chainId) {
-                throwArgumentError("transaction chainId mismatch", "tx.chainId", tx.chainId);
-            }
+            assertArgument(chainId === network.chainId, "transaction chainId mismatch", "tx.chainId", tx.chainId);
         } else {
             pop.chainId = network.chainId;
         }
@@ -94,9 +89,9 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         // Do not allow mixing pre-eip-1559 and eip-1559 properties
         const hasEip1559 = (pop.maxFeePerGas != null || pop.maxPriorityFeePerGas != null);
         if (pop.gasPrice != null && (pop.type === 2 || hasEip1559)) {
-            throwArgumentError("eip-1559 transaction do not support gasPrice", "tx", tx);
+            assertArgument(false, "eip-1559 transaction do not support gasPrice", "tx", tx);
         } else if ((pop.type === 0 || pop.type === 1) && hasEip1559) {
-            throwArgumentError("pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "tx", tx);
+            assertArgument(false, "pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "tx", tx);
         }
 
         if ((pop.type === 2 || pop.type == null) && (pop.maxFeePerGas != null && pop.maxPriorityFeePerGas != null)) {

@@ -5,7 +5,7 @@ import {
     concat, dataSlice, decodeBase58, defineProperties, encodeBase58,
     getBytes, hexlify,
     getNumber, toBigInt, toHex,
-    assertPrivate, throwArgumentError, throwError
+    assertPrivate, assertArgument, throwError
 } from "../utils/index.js";
 import { langEn } from "../wordlists/lang-en.js";
 
@@ -216,9 +216,8 @@ export class HDNodeWallet extends BaseWallet {
     static fromExtendedKey(extendedKey: string): HDNodeWallet | HDNodeVoidWallet {
         const bytes = getBytes(decodeBase58(extendedKey)); // @TODO: redact
 
-        if (bytes.length !== 82 || encodeBase58Check(bytes.slice(0, 78)) !== extendedKey) {
-            throwArgumentError("invalid extended key", "extendedKey", "[ REDACTED ]");
-        }
+        assertArgument(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey,
+            "invalid extended key", "extendedKey", "[ REDACTED ]");
 
         const depth = bytes[4];
         const parentFingerprint = hexlify(bytes.slice(5, 9));
@@ -242,7 +241,7 @@ export class HDNodeWallet extends BaseWallet {
         }
 
 
-        return throwArgumentError("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
+        assertArgument(false, "invalid extended key prefix", "extendedKey", "[ REDACTED ]");
     }
 
     static createRandom(password: string = "", path: null | string = defaultPath, wordlist: Wordlist = langEn): HDNodeWallet {
@@ -342,9 +341,7 @@ export class HDNodeWalletManager {
 
 export function getAccountPath(_index: Numeric): string {
     const index = getNumber(_index, "index");
-    if (index < 0 || index >= HardenedBit) {
-        throwArgumentError("invalid account index", "index", index);
-    }
+    assertArgument(index >= 0 && index < HardenedBit, "invalid account index", "index", index);
     return `m/44'/60'/${ index }'/0/0`;
 }
 

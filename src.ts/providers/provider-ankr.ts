@@ -1,5 +1,5 @@
 import {
-    defineProperties, FetchRequest, throwArgumentError
+    defineProperties, FetchRequest, assertArgument
 } from "../utils/index.js";
 
 import { AbstractProvider } from "./abstract-provider.js";
@@ -28,7 +28,8 @@ function getHost(name: string): string {
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
     }
-    return throwArgumentError("unsupported network", "network", name);
+
+    assertArgument(false, "unsupported network", "network", name);
 }
 
 

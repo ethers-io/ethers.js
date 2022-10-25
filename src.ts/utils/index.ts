@@ -25,7 +25,7 @@ export {
 
 export {
     isCallException, isError,
-    makeError, throwError, throwArgumentError,
+    makeError, throwError,
     assertArgument, assertArgumentCount, assertPrivate, assertNormalize
 } from "./errors.js"
 
@@ -53,7 +53,6 @@ export { getStore, setStore} from "./storage.js";
 export { formatEther, parseEther, formatUnits, parseUnits } from "./units.js";
 
 export {
-    _toEscapedUtf8String,
     toUtf8Bytes,
     toUtf8CodePoints,
     toUtf8String,

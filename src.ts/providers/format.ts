@@ -4,7 +4,7 @@ import { Signature } from "../crypto/index.js"
 import { accessListify } from "../transaction/index.js";
 import {
     getBigInt, getNumber, hexlify, isHexString, zeroPadValue,
-    throwArgumentError, throwError
+    assertArgument, throwError
 } from "../utils/index.js";
 
 
@@ -63,20 +63,16 @@ export function formatBoolean(value: any): boolean {
         case false: case "false":
             return false;
     }
-    return throwArgumentError(`invalid boolean; ${ JSON.stringify(value) }`, "value", value);
+    assertArgument(false, `invalid boolean; ${ JSON.stringify(value) }`, "value", value);
 }
 
 export function formatData(value: string): string {
-    if (!isHexString(value, true)) {
-        throwArgumentError("", "value", value);
-    }
+    assertArgument(isHexString(value, true), "invalid data", "value", value);
     return value;
 }
 
 export function formatHash(value: any): string {
-    if (!isHexString(value, 32)) {
-        throwArgumentError("", "value", value);
-    }
+    assertArgument(isHexString(value, 32), "invalid hash", "value", value);
     return value;
 }
 

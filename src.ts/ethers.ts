@@ -81,14 +81,14 @@ export {
     concat, dataLength, dataSlice, getBytes, getBytesCopy, hexlify,
     isHexString, isBytesLike, stripZerosLeft, zeroPadBytes, zeroPadValue,
     assertArgument, assertArgumentCount, assertNormalize, assertPrivate,
-    makeError, throwArgumentError, throwError,
+    makeError, throwError,
     isCallException, isError,
     getIpfsGatewayFunc, FetchRequest, FetchResponse, FetchCancelSignal,
     FixedFormat, FixedNumber, formatFixed, parseFixed,
     getBigInt, getNumber, toArray, toBigInt, toHex, toNumber, toQuantity,
     fromTwos, toTwos, mask,
     formatEther, parseEther, formatUnits, parseUnits,
-    _toEscapedUtf8String, toUtf8Bytes, toUtf8CodePoints, toUtf8String,
+    toUtf8Bytes, toUtf8CodePoints, toUtf8String,
     Utf8ErrorFuncs,
     decodeRlp, encodeRlp
 } from "./utils/index.js";

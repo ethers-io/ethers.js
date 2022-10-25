@@ -5,7 +5,7 @@ import {
     concat, dataSlice, getBytes, hexlify, zeroPadValue,
     defineProperties, encodeBase58, getBigInt, toArray,
     toNumber, toUtf8Bytes, toUtf8String,
-    throwArgumentError, throwError,
+    assertArgument, throwError,
     FetchRequest
 } from "../utils/index.js";
 
@@ -81,9 +81,8 @@ function encodeBytes(datas: Array<BytesLike>) {
 }
 
 function callAddress(value: string): string {
-    if (value.length !== 66 || dataSlice(value, 0, 12) !== "0x000000000000000000000000") {
-        throwArgumentError("invalid call address", "value", value);
-    }
+    assertArgument(value.length === 66 && dataSlice(value, 0, 12) === "0x000000000000000000000000",
+        "invalid call address", "value", value);
     return getAddress("0x" + value.substring(26));
 }
 
@@ -95,7 +94,7 @@ function getIpfsLink(link: string): string {
     } else if (link.match(/^ipfs:\/\//i)) {
         link = link.substring(7);
     } else {
-        throwArgumentError("unsupported IPFS format", "link", link);
+        assertArgument(false, "unsupported IPFS format", "link", link);
     }
 
     return `https:/\/gateway.ipfs.io/ipfs/${ link }`;

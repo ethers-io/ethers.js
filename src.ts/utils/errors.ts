@@ -327,16 +327,6 @@ export function throwError<K extends ErrorCode, T extends CodedEthersError<K>>(m
     throw makeError(message, code, info);
 }
 
-/**
- *  Throws an [[api:ArgumentError]] with %%message%% for the parameter with
- *  %%name%% and the %%value%%.
- */
-export function throwArgumentError(message: string, name: string, value: any): never {
-    return throwError(message, "INVALID_ARGUMENT", {
-        argument: name,
-        value: value
-    });
-}
 
 /**
  *  A simple helper to simply ensuring provided arguments match expected
@@ -346,7 +336,9 @@ export function throwArgumentError(message: string, name: string, value: any): n
  *  any further code does not need additional compile-time checks.
  */
 export function assertArgument(check: unknown, message: string, name: string, value: unknown): asserts check {
-    if (!check) { throwArgumentError(message, name, value); }
+    if (!check) {
+        throwError(message, "INVALID_ARGUMENT", { argument: name, value: value });
+    }
 }
 
 export function assertArgumentCount(count: number, expectedCount: number, message: string = ""): void {

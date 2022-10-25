@@ -2,7 +2,7 @@
 import {
     defineProperties, concat, getBytesCopy, getNumber, hexlify,
     toArray, toBigInt, toNumber,
-    assertPrivate, throwArgumentError, throwError
+    assertPrivate, assertArgument, throwError
 } from "../../utils/index.js";
 
 import type { BigNumberish, BytesLike } from "../../utils/index.js";
@@ -194,7 +194,7 @@ export abstract class Coder {
     }
 
     _throwError(message: string, value: any): never {
-        return throwArgumentError(message, this.localName, value);
+        assertArgument(false, message, this.localName, value);
     }
 
     abstract encode(writer: Writer, value: any): number;

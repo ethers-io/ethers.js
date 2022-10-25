@@ -1,4 +1,4 @@
-import { createHmac } from "./crypto-browser.js";
+import { createHmac } from "./crypto.js";
 import { getBytes, hexlify } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";

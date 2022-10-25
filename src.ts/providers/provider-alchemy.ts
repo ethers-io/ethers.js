@@ -1,6 +1,6 @@
 
 import {
-    defineProperties, resolveProperties, throwArgumentError, throwError,
+    defineProperties, resolveProperties, assertArgument, throwError,
     FetchRequest
 } from "../utils/index.js";
 
@@ -36,7 +36,7 @@ function getHost(name: string): string {
             return "opt-goerli.g.alchemy.com";
     }
 
-    return throwArgumentError("unsupported network", "network", name);
+    assertArgument(false, "unsupported network", "network", name);
 }
 
 export class AlchemyProvider extends JsonRpcProvider implements CommunityResourcable {

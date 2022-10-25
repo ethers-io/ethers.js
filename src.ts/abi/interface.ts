@@ -2,7 +2,7 @@ import { keccak256 } from "../crypto/index.js"
 import { id } from "../hash/index.js"
 import {
     concat, dataSlice, getBigInt, getBytes, getBytesCopy,
-    hexlify, zeroPadValue, isHexString, defineProperties, throwArgumentError, toHex,
+    hexlify, zeroPadValue, isHexString, defineProperties, assertArgument, toHex,
     throwError
 } from "../utils/index.js";
 
@@ -279,7 +279,7 @@ export class Interface {
             for (const fragment of this.#functions.values()) {
                 if (selector === fragment.selector) { return fragment; }
             }
-            throwArgumentError("no matching function", "selector", key);
+            assertArgument(false, "no matching function", "selector", key);
         }
 
         // It is a bare name, look up the function (will return null if ambiguous)
@@ -340,12 +340,11 @@ export class Interface {
                 }
             }
 
-            if (matching.length === 0) {
-                throwArgumentError("no matching function", "name", key);
+            assertArgument(matching.length !== 0, "no matching function", "name", key);
 
-            } else if (matching.length > 1 && forceUnique) {
+            if (matching.length > 1 && forceUnique) {
                 const matchStr = matching.map((m) => JSON.stringify(m.format())).join(", ");
-                throwArgumentError(`multiple matching functions (i.e. ${ matchStr })`, "name", key);
+                assertArgument(false, `multiple matching functions (i.e. ${ matchStr })`, "name", key);
             }
 
             return matching[0];
@@ -355,7 +354,7 @@ export class Interface {
         const result = this.#functions.get(FunctionFragment.from(key).format());
         if (result) { return result; }
 
-        return throwArgumentError("no matching function", "signature", key);
+        assertArgument(false, "no matching function", "signature", key);
     }
 
     /**
@@ -390,7 +389,7 @@ export class Interface {
             for (const fragment of this.#events.values()) {
                 if (eventTopic === fragment.topicHash) { return fragment; }
             }
-            throwArgumentError("no matching event", "eventTopic", key);
+            assertArgument(false, "no matching event", "eventTopic", key);
         }
 
         // It is a bare name, look up the function (will return null if ambiguous)
@@ -424,11 +423,10 @@ export class Interface {
                 }
             }
 
-            if (matching.length === 0) {
-                throwArgumentError("no matching event", "name", key);
-            } else if (matching.length > 1 && forceUnique) {
+            assertArgument(matching.length > 0, "no matching event", "name", key);
+            if (matching.length > 1 && forceUnique) {
                 // @TODO: refine by Typed
-                throwArgumentError("multiple matching events", "name", key);
+                assertArgument(false, "multiple matching events", "name", key);
             }
 
             return matching[0];
@@ -438,7 +436,7 @@ export class Interface {
         const result = this.#events.get(EventFragment.from(key).format());
         if (result) { return result; }
 
-        return throwArgumentError("no matching event", "signature", key);
+        assertArgument(false, "no matching event", "signature", key);
     }
 
     /**
@@ -484,7 +482,7 @@ export class Interface {
             for (const fragment of this.#errors.values()) {
                 if (selector === fragment.selector) { return fragment; }
             }
-            throwArgumentError("no matching error", "selector", key);
+            assertArgument(false, "no matching error", "selector", key);
         }
 
         // It is a bare name, look up the function (will return null if ambiguous)
@@ -497,10 +495,10 @@ export class Interface {
             if (matching.length === 0) {
                 if (key === "Error") { return ErrorFragment.from("error Error(string)"); }
                 if (key === "Panic") { return ErrorFragment.from("error Panic(uint256)"); }
-                throwArgumentError("no matching error", "name", key);
+                assertArgument(false, "no matching error", "name", key);
             } else if (matching.length > 1) {
                 // @TODO: refine by Typed
-                throwArgumentError("multiple matching errors", "name", key);
+                assertArgument(false, "multiple matching errors", "name", key);
             }
 
             return matching[0];
@@ -514,7 +512,7 @@ export class Interface {
         const result = this.#errors.get(key);
         if (result) { return result; }
 
-        return throwArgumentError("no matching error", "signature", key);
+        assertArgument(false, "no matching error", "signature", key);
     }
 
     // Get the 4-byte selector used by Solidity to identify a function
@@ -576,9 +574,8 @@ export class Interface {
     decodeErrorResult(fragment: ErrorFragment | string, data: BytesLike): Result {
         if (typeof(fragment) === "string") { fragment = this.getError(fragment); }
 
-        if (dataSlice(data, 0, 4) !== fragment.selector) {
-            throwArgumentError(`data signature does not match error ${ fragment.name }.`, "data", data);
-        }
+        assertArgument(dataSlice(data, 0, 4) === fragment.selector,
+            `data signature does not match error ${ fragment.name }.`, "data", data);
 
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
     }
@@ -611,9 +608,8 @@ export class Interface {
     decodeFunctionData(key: FunctionFragment | string, data: BytesLike): Result {
         const fragment = (typeof(key) === "string") ? this.getFunction(key): key;
 
-        if (dataSlice(data, 0, 4) !== fragment.selector) {
-            throwArgumentError(`data signature does not match function ${ fragment.name }.`, "data", data);
-        }
+        assertArgument(dataSlice(data, 0, 4) === fragment.selector,
+            `data signature does not match function ${ fragment.name }.`, "data", data);
 
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
     }
@@ -788,16 +784,15 @@ export class Interface {
             const param = (<EventFragment>eventFragment).inputs[index];
 
             if (!param.indexed) {
-                if (value != null) {
-                    throwArgumentError("cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
-                }
+                assertArgument(value == null,
+                    "cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
                 return;
             }
 
             if (value == null) {
                 topics.push(null);
             } else if (param.baseType === "array" || param.baseType === "tuple") {
-                throwArgumentError("filtering with tuples or arrays not supported", ("contract." + param.name), value);
+                assertArgument(false, "filtering with tuples or arrays not supported", ("contract." + param.name), value);
             } else if (Array.isArray(value)) {
                 topics.push(value.map((value) => encodeTopic(param, value)));
             } else {
@@ -827,9 +822,8 @@ export class Interface {
             topics.push(eventFragment.topicHash);
         }
 
-        if (values.length !== eventFragment.inputs.length) {
-            throwArgumentError("event arguments/values mismatch", "values", values);
-        }
+        assertArgument(values.length !== eventFragment.inputs.length,
+            "event arguments/values mismatch", "values", values);
 
         eventFragment.inputs.forEach((param, index) => {
             const value = values[index];
@@ -864,9 +858,8 @@ export class Interface {
 
         if (topics != null && !eventFragment.anonymous) {
             const eventTopic = eventFragment.topicHash;
-            if (!isHexString(topics[0], 32) || topics[0].toLowerCase() !== eventTopic) {
-                throwArgumentError("fragment/topic mismatch", "topics[0]", topics[0]);
-            }
+            assertArgument(isHexString(topics[0], 32) && topics[0].toLowerCase() === eventTopic,
+                "fragment/topic mismatch", "topics[0]", topics[0]);
             topics = topics.slice(1);
         }
 

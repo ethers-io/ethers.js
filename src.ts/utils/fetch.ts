@@ -1,6 +1,6 @@
 import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";
-import { assertArgument, throwArgumentError, throwError } from "./errors.js";
+import { assertArgument, throwError } from "./errors.js";
 import { defineProperties } from "./properties.js";
 import { toUtf8Bytes, toUtf8String } from "./utf8.js"
 
@@ -310,9 +310,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
      *  Sets an ``Authorization`` for %%username%% with %%password%%.
      */
     setCredentials(username: string, password: string): void {
-        if (username.match(/:/)) {
-            throwArgumentError("invalid basic authentication username", "username", "[REDACTED]");
-        }
+        assertArgument(!username.match(/:/), "invalid basic authentication username", "username", "[REDACTED]");
         this.#creds = `${ username }:${ password }`;
     }
 
@@ -762,8 +760,8 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     throwThrottleError(message?: string, stall?: number): never {
         if (stall == null) {
             stall = -1;
-        } else if (typeof(stall) !== "number" || !Number.isInteger(stall) || stall < 0) {
-            return throwArgumentError("invalid stall timeout", "stall", stall);
+        } else {
+            assertArgument(Number.isInteger(stall) && stall >= 0, "invalid stall timeout", "stall", stall);
         }
 
         const error = new Error(message || "throttling requests");

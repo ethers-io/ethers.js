@@ -1,6 +1,6 @@
 import { randomBytes, SigningKey } from "../crypto/index.js";
 import { computeAddress } from "../transaction/index.js";
-import { isHexString, throwArgumentError } from "../utils/index.js";
+import { isHexString, assertArgument } from "../utils/index.js";
 
 import { BaseWallet } from "./base-wallet.js";
 import { HDNodeWallet } from "./hdwallet.js";
@@ -89,9 +89,7 @@ export class Wallet extends BaseWallet {
         // A signing key
         if (signingKey == null) { signingKey = trySigningKey(key); }
 
-        if (signingKey == null) {
-           throwArgumentError("invalid key", "key", "[ REDACTED ]");
-        }
+        assertArgument(signingKey != null, "invalid key", "key", "[ REDACTED ]");
 
         super(signingKey as SigningKey, provider);
         this.#mnemonic = mnemonic;
@@ -123,13 +121,12 @@ export class Wallet extends BaseWallet {
             if (progress) { progress(1); await stall(0); }
 
         } else {
-            return throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
+            assertArgument(false, "invalid JSON wallet", "json", "[ REDACTED ]");
         }
 
         const wallet = new Wallet(account.privateKey);
-        if (wallet.address !== account.address) {
-            throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
-        }
+        assertArgument(wallet.address === account.address,
+            "address/privateKey mismatch", "json", "[ REDACTED ]");
         // @TODO: mnemonic
         return wallet;
     }
@@ -141,13 +138,12 @@ export class Wallet extends BaseWallet {
         } else if (isCrowdsaleJson(json)) {
             account = decryptCrowdsaleJson(json, password);
         } else {
-            return throwArgumentError("invalid JSON wallet", "json", "[ REDACTED ]");
+            assertArgument(false, "invalid JSON wallet", "json", "[ REDACTED ]");
         }
 
         const wallet = new Wallet(account.privateKey);
-        if (wallet.address !== account.address) {
-            throwArgumentError("address/privateKey mismatch", "json", "[ REDACTED ]");
-        }
+        assertArgument(wallet.address === account.address,
+            "address/privateKey mismatch", "json", "[ REDACTED ]");
         // @TODO: mnemonic
         return wallet;
     }

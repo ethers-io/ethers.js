@@ -3,7 +3,7 @@ import { getAddress } from "../address/index.js";
 import { keccak256, Signature } from "../crypto/index.js";
 import {
     concat, decodeRlp, encodeRlp, getBytes, getStore, getBigInt, getNumber, hexlify,
-    setStore, throwArgumentError, toArray, zeroPadValue
+    setStore, assertArgument, toArray, zeroPadValue
 } from "../utils/index.js";
 
 import { accessListify } from "./accesslist.js";
@@ -56,7 +56,7 @@ function handleData(value: string, param: string): string {
     try {
         return hexlify(value);
     } catch (error) {
-        return throwArgumentError("invalid data", param, value);
+        assertArgument(false, "invalid data", param, value);
     }
 }
 
@@ -64,7 +64,7 @@ function handleAccessList(value: any, param: string): AccessList {
     try {
         return accessListify(value);
     } catch (error) {
-        return throwArgumentError("invalid accessList", param, value);
+        assertArgument(false, "invalid accessList", param, value);
     }
 }
 
@@ -76,16 +76,14 @@ function handleNumber(_value: string, param: string): number {
 function handleUint(_value: string, param: string): bigint {
     if (_value === "0x") { return BN_0; }
     const value = getBigInt(_value, param);
-    if (value > BN_MAX_UINT) { throwArgumentError("value exceeds uint size", param, value); }
+    assertArgument(value <= BN_MAX_UINT, "value exceeds uint size", param, value);
     return value;
 }
 
 function formatNumber(_value: BigNumberish, name: string): Uint8Array {
     const value = getBigInt(_value, "value");
     const result = toArray(value);
-    if (result.length > 32) {
-        throwArgumentError(`value too large`, `tx.${ name }`, value);
-    }
+    assertArgument(result.length <= 32, `value too large`, `tx.${ name }`, value);
     return result;
 }
 
@@ -96,9 +94,8 @@ function formatAccessList(value: AccessListish): Array<[ string, Array<string> ]
 function _parseLegacy(data: Uint8Array): TransactionLike {
     const fields: any = decodeRlp(data);
 
-    if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 6)) {
-        return throwArgumentError("invalid field count for legacy transaction", "data", data);
-    }
+    assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 6),
+        "invalid field count for legacy transaction", "data", data);
 
     const tx: TransactionLike = {
         type:     0,
@@ -130,9 +127,7 @@ function _parseLegacy(data: Uint8Array): TransactionLike {
         tx.chainId = chainId
 
         // Signed Legacy Transaction
-        if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
-            throwArgumentError("non-canonical legacy v", "v", fields[6]);
-        }
+        assertArgument(chainId !== BN_0 || (v === BN_27 || v === BN_28), "non-canonical legacy v", "v", fields[6]);
 
         tx.signature = Signature.from({
             r: zeroPadValue(fields[7], 32),
@@ -163,9 +158,8 @@ function _serializeLegacy(tx: Transaction, sig?: Signature): string {
 
         // We have a chainId in the tx and an EIP-155 v in the signature,
         // make sure they agree with each other
-        if (sig && sig.networkV != null && sig.legacyChainId !== chainId) {
-             throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
-        }
+        assertArgument(!sig || sig.networkV == null || sig.legacyChainId === chainId,
+             "tx.chainId/sig.v mismatch", "sig", sig);
 
     } else if (sig) {
         // No chainId provided, but the signature is signing with EIP-155; derive chainId
@@ -190,7 +184,7 @@ function _serializeLegacy(tx: Transaction, sig?: Signature): string {
     if (chainId !== BN_0) {
         v = Signature.getChainIdV(chainId, sig.v);
     } else if (BigInt(sig.v) !== v) {
-        throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+        assertArgument(false, "tx.chainId/sig.v mismatch", "sig", sig);
     }
 
     fields.push(toArray(v));
@@ -206,7 +200,7 @@ function _parseEipSignature(tx: TransactionLike, fields: Array<string>, serializ
         yParity = handleNumber(fields[0], "yParity");
         if (yParity !== 0 && yParity !== 1) { throw new Error("bad yParity"); }
     } catch (error) {
-        return throwArgumentError("invalid yParity", "yParity", fields[0]);
+        assertArgument(false, "invalid yParity", "yParity", fields[0]);
     }
 
     const r = zeroPadValue(fields[1], 32);
@@ -219,9 +213,8 @@ function _parseEipSignature(tx: TransactionLike, fields: Array<string>, serializ
 function _parseEip1559(data: Uint8Array): TransactionLike {
     const fields: any = decodeRlp(getBytes(data).slice(1));
 
-    if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 12)) {
-        throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
-    }
+    assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 12),
+        "invalid field count for transaction type: 2", "data", hexlify(data));
 
     const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
     const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
@@ -274,9 +267,8 @@ function _serializeEip1559(tx: TransactionLike, sig?: Signature): string {
 function _parseEip2930(data: Uint8Array): TransactionLike {
     const fields: any = decodeRlp(getBytes(data).slice(1));
 
-    if (!Array.isArray(fields) || (fields.length !== 8 && fields.length !== 11)) {
-        throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
-    }
+    assertArgument(Array.isArray(fields) && (fields.length === 8 || fields.length === 11),
+        "invalid field count for transaction type: 1", "data", hexlify(data));
 
     const tx: TransactionLike = {
         type:       1,

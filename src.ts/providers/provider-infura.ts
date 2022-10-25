@@ -1,5 +1,5 @@
 import {
-    defineProperties, FetchRequest, throwArgumentError, throwError
+    defineProperties, FetchRequest, assertArgument, throwError
 } from "../utils/index.js";
 
 import { showThrottleMessage } from "./community.js";
@@ -37,7 +37,7 @@ function getHost(name: string): string {
             return "optimism-goerli.infura.io";
     }
 
-    return throwArgumentError("unsupported network", "network", name);
+    assertArgument(false, "unsupported network", "network", name);
 }
 
 export class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourcable {

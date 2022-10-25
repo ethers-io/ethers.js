@@ -1,6 +1,6 @@
 import { keccak256 } from "../crypto/index.js";
 import {
-    concat, dataSlice, getBigInt, getBytes, encodeRlp, throwArgumentError
+    concat, dataSlice, getBigInt, getBytes, encodeRlp, assertArgument
 } from "../utils/index.js";
 
 import { getAddress } from "./address.js";
@@ -30,13 +30,9 @@ export function getCreate2Address(_from: string, _salt: BytesLike, _initCodeHash
     const salt = getBytes(_salt, "salt");
     const initCodeHash = getBytes(_initCodeHash, "initCodeHash");
 
-    if (salt.length !== 32) {
-        throwArgumentError("salt must be 32 bytes", "salt", _salt);
-    }
+    assertArgument(salt.length === 32, "salt must be 32 bytes", "salt", _salt);
 
-    if (initCodeHash.length !== 32) {
-        throwArgumentError("initCodeHash must be 32 bytes", "initCodeHash", _initCodeHash);
-    }
+    assertArgument(initCodeHash.length === 32, "initCodeHash must be 32 bytes", "initCodeHash", _initCodeHash);
 
     return getAddress(dataSlice(keccak256(concat([ "0xff", from, salt, initCodeHash ])), 12))
 }

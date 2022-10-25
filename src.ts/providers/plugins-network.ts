@@ -1,6 +1,6 @@
 import { defineProperties } from "../utils/properties.js";
 
-import { throwArgumentError } from "../utils/index.js";
+import { assertArgument } from "../utils/index.js";
 
 import type { FeeData, Provider } from "./provider.js";
 
@@ -52,9 +52,7 @@ export class GasCostPlugin extends NetworkPlugin implements GasCostParameters {
         function set(name: keyof GasCostParameters, nullish: number): void {
             let value = (costs || { })[name];
             if (value == null) { value = nullish; }
-            if (typeof(value) !== "number") {
-                throwArgumentError(`invalud value for ${ name }`, "costs", costs);
-            }
+            assertArgument(typeof(value) === "number", `invalud value for ${ name }`, "costs", costs);
             props[name] = value;
         }
 

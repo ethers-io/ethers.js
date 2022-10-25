@@ -1,4 +1,4 @@
-import { throwArgumentError, throwError } from "../utils/index.js";
+import { assertArgument, throwError } from "../utils/index.js";
 
 import { getAddress } from "./address.js";
 
@@ -23,7 +23,7 @@ async function checkAddress(target: any, promise: Promise<null | string>): Promi
         if (typeof(target) === "string") {
             return throwError("unconfigured name", "UNCONFIGURED_NAME", { value: target });
         }
-        return throwArgumentError("invalid AddressLike value; did not resolve to a value address", "target", target);
+        assertArgument(false, "invalid AddressLike value; did not resolve to a value address", "target", target);
     }
     return getAddress(result);
 }
@@ -50,5 +50,5 @@ export function resolveAddress(target: AddressLike, resolver?: null | NameResolv
         return checkAddress(target, target);
     }
 
-    return throwArgumentError("unsupported addressable value", "target", target);
+    assertArgument(false, "unsupported addressable value", "target", target);
 }

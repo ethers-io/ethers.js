@@ -1,4 +1,4 @@
-import { throwArgumentError, throwError } from "./errors.js";
+import { assertArgument, throwError } from "./errors.js";
 
 
 export type BytesLike = string | Uint8Array;
@@ -19,7 +19,7 @@ function _getBytes(value: BytesLike, name?: string, copy?: boolean): Uint8Array 
         return result;
     }
 
-    return throwArgumentError("invalid BytesLike value", name || "value", value);
+    assertArgument(false, "invalid BytesLike value", name || "value", value);
 }
 
 /**

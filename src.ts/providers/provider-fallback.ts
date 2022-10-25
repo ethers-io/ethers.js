@@ -1,6 +1,6 @@
 
 import {
-    getBigInt, getNumber, hexlify, throwError, throwArgumentError
+    getBigInt, getNumber, hexlify, throwError, assertArgument
 } from "../utils/index.js";
 
 import { AbstractProvider } from "./abstract-provider.js";
@@ -284,9 +284,8 @@ export class FallbackProvider extends AbstractProvider {
         this.eventQuorum = 1;
         this.eventWorkers = 1;
 
-        if (this.quorum > this.#configs.reduce((a, c) => (a + c.weight), 0)) {
-            throwArgumentError("quorum exceed provider wieght", "quorum", this.quorum);
-        }
+        assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0),
+            "quorum exceed provider wieght", "quorum", this.quorum);
     }
 
     // @TOOD: Copy these and only return public values

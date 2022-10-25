@@ -9,7 +9,7 @@ import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes,
-    makeError, throwArgumentError, throwError,
+    makeError, assertArgument, throwError,
     FetchRequest, resolveProperties
 } from "../utils/index.js";
 
@@ -220,9 +220,8 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
             const _from = tx.from;
             promises.push((async () => {
                 const from = await resolveAddress(_from, this.provider);
-                if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                    throwArgumentError("from address mismatch", "transaction", _tx);
-                }
+                assertArgument(from != null && from.toLowerCase() === this.address.toLowerCase(),
+                    "from address mismatch", "transaction", _tx);
                 tx.from = from;
             })());
         } else {
@@ -287,9 +286,8 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         // Make sure the from matches the sender
         if (tx.from) {
             const from = await resolveAddress(tx.from, this.provider);
-            if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                return throwArgumentError("from address mismatch", "transaction", _tx);
-            }
+            assertArgument(from != null && from.toLowerCase() === this.address.toLowerCase(),
+                "from address mismatch", "transaction", _tx);
             tx.from = from;
         } else {
             tx.from = this.address;
@@ -312,9 +310,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         // Populate any ENS names (in-place)
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (value: string) => {
             const address = await resolveAddress(value);
-            if (address == null) {
-                return throwArgumentError("TypedData does not support null address", "value", value);
-            }
+            assertArgument(address != null, "TypedData does not support null address", "value", value);
             return address;
         });
 
@@ -462,9 +458,8 @@ export class JsonRpcApiProvider extends AbstractProvider {
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork) {
-            if (staticNetwork !== network) {
-                throwArgumentError("staticNetwork MUST match network object", "options", options);
-            }
+            assertArgument(staticNetwork === network,
+                "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
         }
     }

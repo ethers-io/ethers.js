@@ -1,5 +1,5 @@
 import {
-    getBytes, getBytesCopy, hexlify, throwArgumentError, toUtf8Bytes
+    getBytes, getBytesCopy, hexlify, assertArgument, toUtf8Bytes
 } from "../utils/index.js";
 
 import type { BytesLike } from "../utils/index.js";
@@ -28,9 +28,8 @@ export function getPassword(password: string | Uint8Array): Uint8Array {
 export function spelunk<T = string>(object: any, _path: string): T {
 
     const match = _path.match(/^([a-z0-9$_.-]*)(:([a-z]+))?(!)?$/i);
-    if (match == null) {
-        return throwArgumentError("invalid path", "path", _path);
-    }
+    assertArgument(match != null, "invalid path", "path", _path);
+
     const path = match[1];
     const type = match[3];
     const reqd = (match[4] === "!");
@@ -60,9 +59,7 @@ export function spelunk<T = string>(object: any, _path: string): T {
         if (cur == null) { break; }
     }
 
-    if (reqd && cur == null) {
-        throwArgumentError("missing required value", "path", path);
-    }
+    assertArgument(!reqd || cur != null, "missing required value", "path", path);
 
     if (type && cur != null) {
         if (type === "int") {
@@ -86,7 +83,7 @@ export function spelunk<T = string>(object: any, _path: string): T {
         if (type === "array" && Array.isArray(cur)) { return <T><unknown>cur; }
         if (type === typeof(cur)) { return cur; }
 
-        throwArgumentError(`wrong type found for ${ type } `, "path", path);
+        assertArgument(false, `wrong type found for ${ type } `, "path", path);
     }
 
     return cur;

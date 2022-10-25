@@ -1,7 +1,7 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 import { hexlify } from "./data.js";
-import { throwArgumentError, throwError } from "./errors.js";
+import { assertArgument, throwError } from "./errors.js";
 import { getBytes } from "./data.js";
 
 import type { BytesLike, RlpStructuredData } from "./index.js";
@@ -104,9 +104,7 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
 export function decodeRlp(_data: BytesLike): RlpStructuredData {
     const data = getBytes(_data, "data");
     const decoded = _decode(data, 0);
-    if (decoded.consumed !== data.length) {
-        throwArgumentError("unexpected junk after rlp payload", "data", _data);
-    }
+    assertArgument(decoded.consumed === data.length, "unexpected junk after rlp payload", "data", _data);
     return decoded.result;
 }
 

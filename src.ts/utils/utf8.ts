@@ -1,5 +1,5 @@
 import { getBytes } from "./data.js";
-import { assertNormalize, throwArgumentError } from "./errors.js";
+import { assertArgument, assertNormalize } from "./errors.js";
 
 import type { BytesLike } from "./index.js";
 
@@ -44,10 +44,8 @@ export type Utf8ErrorReason =
 export type Utf8ErrorFunc = (reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number) => number;
 
 
-
-
 function errorFunc(reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number): number {
-    return throwArgumentError(`invalid codepoint at offset ${ offset }; ${ reason }`, "bytes", bytes);
+    assertArgument(false, `invalid codepoint at offset ${ offset }; ${ reason }`, "bytes", bytes);
 }
 
 function ignoreFunc(reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number): number {
@@ -215,9 +213,8 @@ export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8
             i++;
             const c2 = str.charCodeAt(i);
 
-            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
-                throw new Error("invalid utf-8 string");
-            }
+            assertArgument(i < str.length && ((c2 & 0xfc00) === 0xdc00),
+                "invalid surrogate pair", "str", str);
 
             // Surrogate Pair
             const pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
@@ -235,37 +232,6 @@ export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8
 
     return new Uint8Array(result);
 };
-
-function escapeChar(value: number): string {
-    const hex = ("0000" + value.toString(16));
-    return "\\u" + hex.substring(hex.length - 4);
-}
-
-export function _toEscapedUtf8String(bytes: BytesLike, onError?: Utf8ErrorFunc): string {
-    return '"' + getUtf8CodePoints(bytes, onError).map((codePoint) => {
-        if (codePoint < 256) {
-            switch (codePoint) {
-                case 8:  return "\\b";
-                case 9:  return "\\t";
-                case 10: return "\\n"
-                case 13: return "\\r";
-                case 34: return "\\\"";
-                case 92: return "\\\\";
-            }
-
-            if (codePoint >= 32 && codePoint < 127) {
-                return String.fromCharCode(codePoint);
-            }
-        }
-
-        if (codePoint <= 0xffff) {
-            return escapeChar(codePoint);
-        }
-
-        codePoint -= 0x10000;
-        return escapeChar(((codePoint >> 10) & 0x3ff) + 0xd800) + escapeChar((codePoint & 0x3ff) + 0xdc00);
-    }).join("") + '"';
-}
 
 export function _toUtf8String(codePoints: Array<number>): string {
     return codePoints.map((codePoint) => {

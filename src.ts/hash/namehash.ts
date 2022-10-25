@@ -1,7 +1,7 @@
 
 import { keccak256 } from "../crypto/index.js";
 import {
-    concat, hexlify, throwArgumentError, toUtf8Bytes, toUtf8String
+    concat, hexlify, assertArgument, toUtf8Bytes, toUtf8String
 } from "../utils/index.js";
 
 
@@ -56,9 +56,7 @@ export function isValidName(name: string): boolean {
 
 export function namehash(name: string): string {
     /* istanbul ignore if */
-    if (typeof(name) !== "string") {
-        throwArgumentError("invalid ENS name; not a string", "name", name);
-    }
+    assertArgument(typeof(name) === "string", "invalid ENS name; not a string", "name", name);
 
     let result: string | Uint8Array = Zeros;
 

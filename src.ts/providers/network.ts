@@ -1,6 +1,6 @@
 import { accessListify } from "../transaction/index.js";
 import {
-    getStore, getBigInt, setStore, throwArgumentError
+    getStore, getBigInt, setStore, assertArgument
 } from "../utils/index.js";
 
 import { EnsPlugin, GasCostPlugin } from "./plugins-network.js";
@@ -192,7 +192,7 @@ export class Network {
                 return new Network("unknown", network);
             }
 
-            throwArgumentError("unknown network", "network", network);
+            assertArgument(false, "unknown network", "network", network);
         }
 
         // Clonable with network-like abilities
@@ -205,9 +205,8 @@ export class Network {
 
         // Networkish
         if (typeof(network) === "object") {
-            if (typeof(network.name) !== "string" || typeof(network.chainId) !== "number") {
-                throwArgumentError("invalid network object name or chainId", "network", network);
-            }
+            assertArgument(typeof(network.name) === "string" && typeof(network.chainId) === "number",
+                "invalid network object name or chainId", "network", network);
 
             const custom = new Network(<string>(network.name), <number>(network.chainId));
 
@@ -222,7 +221,7 @@ export class Network {
             return custom;
         }
 
-        return throwArgumentError("invalid network", "network", network);
+        assertArgument(false, "invalid network", "network", network);
     }
 
     /**
@@ -233,7 +232,7 @@ export class Network {
         if (typeof(nameOrChainId) === "number") { nameOrChainId = BigInt(nameOrChainId); }
         const existing = Networks.get(nameOrChainId);
         if (existing) {
-            throwArgumentError(`conflicting network for ${ JSON.stringify(existing.name) }`, "nameOrChainId", nameOrChainId);
+            assertArgument(false, `conflicting network for ${ JSON.stringify(existing.name) }`, "nameOrChainId", nameOrChainId);
         }
         Networks.set(nameOrChainId, networkFunc);
     }

@@ -3,7 +3,7 @@ import * as secp256k1 from "@noble/secp256k1";
 
 import {
     concat, dataLength, getBytes, getBytesCopy, hexlify, toHex,
-    assertArgument, throwArgumentError
+    assertArgument
 } from "../utils/index.js";
 
 import { computeHmac } from "./hmac.js";
@@ -87,7 +87,7 @@ export class SigningKey {
         const pubKey = secp256k1.recoverPublicKey(getBytesCopy(digest), der, sig.yParity);
         if (pubKey != null) { return hexlify(pubKey); }
 
-        return throwArgumentError("invalid signautre for digest", "signature", signature);
+        assertArgument(false, "invalid signautre for digest", "signature", signature);
     }
 
     static _addPoints(p0: BytesLike, p1: BytesLike, compressed?: boolean): string {

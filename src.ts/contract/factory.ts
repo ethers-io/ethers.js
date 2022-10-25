@@ -3,7 +3,7 @@ import { Interface } from "../abi/index.js";
 import { getCreateAddress } from "../address/index.js";
 import {
     concat, defineProperties, getBytes, hexlify,
-    throwArgumentError, throwError
+    assertArgument, throwError
 } from "../utils/index.js";
 
 import { BaseContract, copyOverrides, resolveArgs } from "./contract.js";
@@ -80,9 +80,7 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
     }
 
     static fromSolidity<A extends Array<any> = Array<any>, I = ContractInterface>(output: any, runner?: ContractRunner): ContractFactory<A, I> {
-        if (output == null) {
-            throwArgumentError("bad compiler output", "output", output);
-        }
+        assertArgument(output != null, "bad compiler output", "output", output);
 
         if (typeof(output) === "string") { output = JSON.parse(output); }
 

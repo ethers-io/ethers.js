@@ -1,6 +1,6 @@
 import {
     defineProperties, getBigInt, getNumber,
-    assertPrivate, throwArgumentError, throwError
+    assertPrivate, assertArgument, throwError
 } from "../utils/index.js";
 import { id } from "../hash/index.js";
 
@@ -401,25 +401,19 @@ const regexArrayType = new RegExp(/^(.*)\[([0-9]*)\]$/);
 
 function verifyBasicType(type: string): string {
     const match = type.match(regexType);
-    if (!match) {
-        return throwArgumentError("invalid type", "type", type);
-    }
+    assertArgument(match, "invalid type", "type", type);
     if (type === "uint") { return "uint256"; }
     if (type === "int") { return "int256"; }
 
     if (match[2]) {
         // bytesXX
         const length = parseInt(match[2]);
-        if (length === 0 || length > 32) {
-            throwArgumentError("invalid bytes length", "type", type);
-        }
+        assertArgument(length !== 0 && length <= 32, "invalid bytes length", "type", type);
 
     } else if (match[3]) {
         // intXX or uintXX
         const size = parseInt(match[3] as string);
-        if (size === 0 || size > 256 || size % 8) {
-            throwArgumentError("invalid numeric width", "type", type);
-        }
+        assertArgument(size !== 0 && size <= 256 && (size % 8) === 0, "invalid numeric width", "type", type);
     }
 
     return type;
@@ -694,15 +688,12 @@ export class ParamType {
         }
 
         const name = obj.name;
-        if (name && (typeof(name) !== "string" || !name.match(regexIdentifier))) {
-            throwArgumentError("invalid name", "obj.name", name);
-        }
+        assertArgument(!name || (typeof(name) === "string" && name.match(regexIdentifier)),
+            "invalid name", "obj.name", name);
 
         let indexed = obj.indexed;
         if (indexed != null) {
-            if (!allowIndexed) {
-                throwArgumentError("parameter cannot be indexed", "obj.indexed", obj.indexed);
-            }
+            assertArgument(allowIndexed, "parameter cannot be indexed", "obj.indexed", obj.indexed);
             indexed = !!indexed;
         }
 
@@ -813,9 +804,8 @@ export abstract class NamedFragment extends Fragment {
 
     constructor(guard: any, type: FragmentType, name: string, inputs: ReadonlyArray<ParamType>) {
         super(guard, type, inputs);
-        if (typeof(name) !== "string" || !name.match(regexIdentifier)) {
-            throwArgumentError("invalid identifier", "name", name);
-        }
+        assertArgument(typeof(name) === "string" && name.match(regexIdentifier),
+            "invalid identifier", "name", name);
         inputs = Object.freeze(inputs.slice());
         defineProperties<NamedFragment>(this, { name });
     }

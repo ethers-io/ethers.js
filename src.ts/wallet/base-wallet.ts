@@ -3,7 +3,7 @@ import { hashMessage, TypedDataEncoder } from "../hash/index.js";
 import { AbstractSigner } from "../providers/index.js";
 import { computeAddress, Transaction } from "../transaction/index.js";
 import {
-    defineProperties, resolveProperties, throwArgumentError, throwError
+    defineProperties, resolveProperties, assertArgument, throwError
 } from "../utils/index.js";
 
 import type { SigningKey } from "../crypto/index.js";
@@ -46,9 +46,8 @@ export class BaseWallet extends AbstractSigner {
         if (from != null) { tx.from = from; }
 
         if (tx.from != null) {
-            if (getAddress(<string>(tx.from)) !== this.address) {
-                throwArgumentError("transaction from address mismatch", "tx.from", tx.from);
-            }
+            assertArgument(getAddress(<string>(tx.from)) === this.address,
+                "transaction from address mismatch", "tx.from", tx.from);
             delete tx.from;
         }
 

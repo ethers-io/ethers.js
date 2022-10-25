@@ -4,7 +4,7 @@ import {
     defineProperties,
     hexlify, toQuantity,
     FetchRequest,
-    throwArgumentError, throwError,
+    assertArgument, throwError,
     toUtf8String
  } from "../utils/index.js";
 
@@ -103,7 +103,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
             default:
         }
 
-        return throwArgumentError("unsupported network", "network", this.network);
+        assertArgument(false, "unsupported network", "network", this.network);
     }
 
     getUrl(module: string, params: Record<string, string>): string {

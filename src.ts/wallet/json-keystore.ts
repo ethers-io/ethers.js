@@ -4,7 +4,7 @@ import { getAddress } from "../address/index.js";
 import { keccak256, pbkdf2, randomBytes, scrypt, scryptSync } from "../crypto/index.js";
 import { computeAddress } from "../transaction/index.js";
 import {
-    concat, getBytes, hexlify, throwArgumentError, throwError
+    concat, getBytes, hexlify, assertArgument, throwError
 } from "../utils/index.js";
 
 import { getPassword, spelunk, uuidV4, zpad } from "./utils.js";
@@ -77,9 +77,8 @@ function getAccount(data: any, _key: string): KeystoreAccount {
     const ciphertext = spelunk<Uint8Array>(data, "crypto.ciphertext:data!");
 
     const computedMAC = hexlify(keccak256(concat([ key.slice(16, 32), ciphertext ]))).substring(2);
-    if (computedMAC !== spelunk(data, "crypto.mac:string!").toLowerCase()) {
-        return throwArgumentError("incorrect password", "password", "[ REDACTED ]");
-    }
+    assertArgument(computedMAC === spelunk(data, "crypto.mac:string!").toLowerCase(),
+        "incorrect password", "password", "[ REDACTED ]");
 
     const privateKey = decrypt(data, key.slice(0, 16), ciphertext);
 
@@ -88,9 +87,7 @@ function getAccount(data: any, _key: string): KeystoreAccount {
         let check = data.address.toLowerCase();
         if (check.substring(0, 2) !== "0x") { check = "0x" + check; }
 
-        if (getAddress(check) !== address) {
-            throwArgumentError("keystore address/privateKey mismatch", "address", data.address);
-        }
+        assertArgument(getAddress(check) === address, "keystore address/privateKey mismatch", "address", data.address);
     }
 
     const account: KeystoreAccount = { address, privateKey };
@@ -134,7 +131,7 @@ function getKdfParams<T>(data: any): KdfParams {
     const kdf = spelunk(data, "crypto.kdf:string");
     if (kdf && typeof(kdf) === "string") {
         const throwError = function(name: string, value: any): never {
-            return throwArgumentError("invalid key-derivation function parameters", name, value);
+            assertArgument(false, "invalid key-derivation function parameters", name, value);
         }
 
         if (kdf.toLowerCase() === "scrypt") {
@@ -173,7 +170,7 @@ function getKdfParams<T>(data: any): KdfParams {
         }
     }
 
-    return throwArgumentError("unsupported key-derivation function", "kdf", kdf);
+    assertArgument(false, "unsupported key-derivation function", "kdf", kdf);
 }
 
 
@@ -275,15 +272,11 @@ export async function encryptKeystoreJson(account: KeystoreAccount, password: st
 
     // Override initialization vector
     const iv = (options.iv != null) ? getBytes(options.iv, "options.iv"): randomBytes(16);
-    if (iv.length !== 16) {
-        throwArgumentError("invalid options.iv", "options.iv", options.iv);
-    }
+    assertArgument(iv.length === 16, "invalid options.iv", "options.iv", options.iv);
 
     // Override the uuid
     const uuidRandom = (options.uuid != null) ? getBytes(options.uuid, "options.uuid"): randomBytes(16);
-    if (uuidRandom.length !== 16) {
-        throwArgumentError("invalid options.uuid", "options.uuid", options.iv);
-    }
+    assertArgument(uuidRandom.length === 16, "invalid options.uuid", "options.uuid", options.iv);
     if (uuidRandom.length !== 16) { throw new Error("invalid uuid"); }
 
     // Override the scrypt password-based key derivation function parameters
