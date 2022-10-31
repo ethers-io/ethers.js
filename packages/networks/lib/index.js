@@ -52,6 +52,12 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
+        if (providers.CoinbaseCloudProvider && options.coinbaseCloud !== "-") {
+            try {
+                providerList.push(new providers.CoinbaseCloudProvider(network, options.coinbaseCloud));
+            }
+            catch (error) { }
+        }
         if (providers.AnkrProvider && options.ankr !== "-") {
             try {
                 var skip = ["ropsten"];

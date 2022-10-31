@@ -219,6 +219,39 @@ _code: Cloudflare Examples @lang<javascript>
 provider = new CloudflareProvider();
 
 
+_subsection: CoinbaseCloudProvider @<CoinbaseCloudProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.CoinbaseCloudProvider>
+
+The **CoinbaseCloudProvider** is backed by [CoinbaseCloud](link-coinbase-cloud).
+
+_property: new ethers.providers.CoinbaseCloudProvider([ network, [ apiKey ] ])
+Create a new **CoinbaseCloudProvider** connected to //network// with //apiKey//.
+
+The //network// may be specified as a **string** for a common
+network name, a **number** for a common chain ID or a
+[Network Object](providers-Network).
+
+_note: Note: Default API keys
+If no //apiKey// is provided, a shared API key will be used,
+which may result in reduced performance and throttled requests.
+
+_definition: **Supported Networks**
+
+- ``homestead`` - Homestead (Mainnet)
+- ``goerli`` - G&ouml;rli (clique testnet)
+
+_code: CoinbaseCloud Examples @lang<javascript>
+
+//_hide: const CoinbaseCloudProvider = ethers.providers.CoinbaseCloudProvider;
+//_hide: const apiKey = "...";
+
+// Connect to mainnet with an API key (homestead)
+provider = new CoinbaseCloudProvider("homestead", apiKey);
+
+// Connect to the goerli testnet
+provider = new CoinbaseCloudProvider("ropsten", apiKey);
+//_hide: provider.destroy();
+
+
 _subsection: PocketProvider @<PocketProvider> @inherit<[[UrlJsonRpcProvider]]> @src<providers:class.PocketProvider>
 
 The **PocketProvider** is backed by [Pocket](link-pocket).

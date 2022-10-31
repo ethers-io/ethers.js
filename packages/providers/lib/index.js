@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
+exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CoinbaseCloudProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return abstract_provider_1.Provider; } });
 var networks_1 = require("@ethersproject/networks");
@@ -15,6 +15,8 @@ var ankr_provider_1 = require("./ankr-provider");
 Object.defineProperty(exports, "AnkrProvider", { enumerable: true, get: function () { return ankr_provider_1.AnkrProvider; } });
 var cloudflare_provider_1 = require("./cloudflare-provider");
 Object.defineProperty(exports, "CloudflareProvider", { enumerable: true, get: function () { return cloudflare_provider_1.CloudflareProvider; } });
+var coinbase_cloud_provider_1 = require("./coinbase-cloud-provider");
+Object.defineProperty(exports, "CoinbaseCloudProvider", { enumerable: true, get: function () { return coinbase_cloud_provider_1.CoinbaseCloudProvider; } });
 var etherscan_provider_1 = require("./etherscan-provider");
 Object.defineProperty(exports, "EtherscanProvider", { enumerable: true, get: function () { return etherscan_provider_1.EtherscanProvider; } });
 var fallback_provider_1 = require("./fallback-provider");
@@ -84,6 +86,7 @@ function getDefaultProvider(network, options) {
         AlchemyProvider: alchemy_provider_1.AlchemyProvider,
         AnkrProvider: ankr_provider_1.AnkrProvider,
         CloudflareProvider: cloudflare_provider_1.CloudflareProvider,
+        CoinbaseCloudProvider: coinbase_cloud_provider_1.CoinbaseCloudProvider,
         EtherscanProvider: etherscan_provider_1.EtherscanProvider,
         InfuraProvider: infura_provider_1.InfuraProvider,
         JsonRpcProvider: json_rpc_provider_1.JsonRpcProvider,

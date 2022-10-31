@@ -228,6 +228,7 @@ module.exports = {
       "link-alchemy": { name: "Alchemy", url: "https:/\/alchemyapi.io" },
       "link-ankr": { name: "Ankr", url: "https:/\/www.ankr.com" },
       "link-cloudflare": { name: "Cloudflare", url: "https:/\/developers.cloudflare.com/distributed-web/ethereum-gateway/" },
+      "link-coinbase-cloud": { name: "CoinbaseCloud", url: "https:/\/www.coinbase.com/cloud" },
       "link-ens": { name: "ENS", url: "https:/\/ens.domains/" },
       "link-ethereum": { name: "Ethereum", url: "https:/\/ethereumorg" },
       "link-etherscan": { name: "Etherscan", url: "https:/\/etherscan.io" },

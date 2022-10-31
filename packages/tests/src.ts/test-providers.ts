@@ -286,15 +286,25 @@ const allNetworks = [ "default", "homestead", "goerli" ];
 
 // We use separate API keys because otherwise the testcases sometimes
 // fail during CI because our default keys are pretty heavily used
-const _ApiKeys: Record<string, string> = {
+const _ApiKeys: Record<string, any> = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
+    coinbaseCloud: {
+        apiUsername: '',
+        apiPassword: ''
+    },
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
     pocket: "62fd9de24b068e0039c16996"
 };
 
+type CoinbaseCloudApiKeySet = {
+    apiUsername: string;
+    apiPassword: string;
+}
+
 type ApiKeySet = {
     alchemy: string;
+    coinbaseCloud: CoinbaseCloudApiKeySet;
     etherscan: string;
     infura: string;
     pocket: string;
@@ -303,6 +313,7 @@ type ApiKeySet = {
 function getApiKeys(network: string): ApiKeySet {
     if (network === "default" || network == null) { network = "homestead"; }
     const apiKeys = ethers.utils.shallowCopy(_ApiKeys);
+    console.log(apiKeys);
     //apiKeys.pocket = _ApiKeysPocket[network];
     return <ApiKeySet>apiKeys;
 }
@@ -347,6 +358,18 @@ const providerFunctions: Array<ProviderDescription> = [
         }
     },
     */
+    {
+        name: "CoinbaseCloudProvider",
+        networks: allNetworks,
+        create: (network: string) => {
+            if (network == "default") {
+                console.log(getApiKeys(network).coinbaseCloud);
+                return new ethers.providers.CoinbaseCloudProvider(null, getApiKeys(network).coinbaseCloud);
+            }
+            console.log(getApiKeys(network).coinbaseCloud);
+            return new ethers.providers.CoinbaseCloudProvider(network, getApiKeys(network).coinbaseCloud);
+        }
+    },
     {
         name: "InfuraProvider",
         networks: allNetworks,
