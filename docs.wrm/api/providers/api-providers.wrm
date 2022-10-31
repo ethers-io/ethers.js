@@ -242,13 +242,24 @@ _definition: **Supported Networks**
 _code: CoinbaseCloud Examples @lang<javascript>
 
 //_hide: const CoinbaseCloudProvider = ethers.providers.CoinbaseCloudProvider;
-//_hide: const apiKey = "...";
 
-// Connect to mainnet with an API key (homestead)
-provider = new CoinbaseCloudProvider("homestead", apiKey);
+// An API key consists of a username and password
+const apiKey = {
+    apiUsername: 'username',
+    apiPassword: 'password'
+};
+
+// Connect to mainnet (homestead)
+provider = new CoinbaseCloudProvider();
 
 // Connect to the goerli testnet
-provider = new CoinbaseCloudProvider("ropsten", apiKey);
+// (see EtherscanProvider above for other network examples)
+provider = new CoinbaseCloudProvider("goerli");
+
+// Connect to mainnet with an API key (these are equivalent)
+provider = new CoinbaseCloudProvider(null, apiKey);
+provider = new CoinbaseCloudProvider("homestead", apiKey);
+
 //_hide: provider.destroy();
 
 

@@ -289,8 +289,8 @@ const allNetworks = [ "default", "homestead", "goerli" ];
 const _ApiKeys: Record<string, any> = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
     coinbaseCloud: {
-        apiUsername: '',
-        apiPassword: ''
+        apiUsername: 'PM5MLMPDPUCAWVW6G5IZ',
+        apiPassword: 'RCT6QJ7ZO4ELKHXHZTVBWSCZAL2SHKWUFU5WZB4Z'
     },
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",

@@ -3,7 +3,7 @@
 import { Network } from "@ethersproject/networks";
 import { ConnectionInfo } from "@ethersproject/web";
 
-import { showThrottleMessage } from "./formatter";
+import { CommunityResourcable, showThrottleMessage } from "./formatter";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
@@ -11,13 +11,20 @@ const logger = new Logger(version);
 
 import { UrlJsonRpcProvider } from "./url-json-rpc-provider";
 
+// This key was provided to ethers.js by CoinbaseCloud to be used by the
+// default provider, but it is recommended that for your own
+// production environments, that you acquire your own API key at:
+//   https://console.cloud.coinbase.com/node
+const defaultApiKey = {
+    apiUsername: '7DLUS3D6XHLYQJU3RWJR',
+    apiPassword: 'BKFFDTSVWMIFO5O6BYRCCQBSHT7NXNXJOEQ3HDVE'
+}
 
-export class CoinbaseCloudProvider extends UrlJsonRpcProvider {
+export class CoinbaseCloudProvider extends UrlJsonRpcProvider implements CommunityResourcable {
+    readonly apiKey: any;
 
     static getApiKey(apiKey: any): any {
-        if (apiKey == null) {
-            logger.throwError("invalid apiKey, cannot be null");
-        }
+        if (apiKey == null) { return defaultApiKey; }
         if (apiKey.apiUsername == null || apiKey.apiPassword == null) {
             logger.throwError("invalid apiKey, apiUsername and apiPassword cannot be null");
         }
@@ -46,11 +53,17 @@ export class CoinbaseCloudProvider extends UrlJsonRpcProvider {
             allowGzip: true,
             url: ("https:/" + "/" + host),
             throttleCallback: (attempt: number, url: string) => {
-                showThrottleMessage();
+                if (apiKey === defaultApiKey) {
+                    showThrottleMessage();
+                }
                 return Promise.resolve(true);
             },
             user: apiKey.apiUsername,
             password: apiKey.apiPassword
         };
+    }
+
+    isCommunityResource(): boolean {
+        return (this.apiKey.apiUsername === defaultApiKey.apiUsername);
     }
 }
