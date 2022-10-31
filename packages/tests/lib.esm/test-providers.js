@@ -265,10 +265,6 @@ const allNetworks = ["default", "homestead", "goerli"];
 // fail during CI because our default keys are pretty heavily used
 const _ApiKeys = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
-    coinbaseCloud: {
-        apiUsername: 'NMXLIZXYFTGQ52JXY5WV',
-        apiPassword: 'G6CM5DZPA66ASSN7YAHHE4TBGYYTMFVBOEKW6D4H'
-    },
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
     pocket: "62fd9de24b068e0039c16996"
@@ -278,7 +274,6 @@ function getApiKeys(network) {
         network = "homestead";
     }
     const apiKeys = ethers.utils.shallowCopy(_ApiKeys);
-    console.log(apiKeys);
     //apiKeys.pocket = _ApiKeysPocket[network];
     return apiKeys;
 }
@@ -322,18 +317,6 @@ const providerFunctions = [
         }
     },
     */
-    {
-        name: "CoinbaseCloudProvider",
-        networks: allNetworks,
-        create: (network) => {
-            if (network == "default") {
-                console.log(getApiKeys(network).coinbaseCloud);
-                return new ethers.providers.CoinbaseCloudProvider(null, getApiKeys(network).coinbaseCloud);
-            }
-            console.log(getApiKeys(network).coinbaseCloud);
-            return new ethers.providers.CoinbaseCloudProvider(network, getApiKeys(network).coinbaseCloud);
-        }
-    },
     {
         name: "InfuraProvider",
         networks: allNetworks,

@@ -465,9 +465,6 @@ export class Plugin {
             if (argParser.consumeFlag("alchemy")) {
                 providers.push(new ethers.providers.AlchemyProvider(network));
             }
-            if (argParser.consumeFlag("coinbase-cloud")) {
-                providers.push(new ethers.providers.CoinbaseCloudProvider(network));
-            }
             if (argParser.consumeFlag("etherscan")) {
                 providers.push(new ethers.providers.EtherscanProvider(network));
             }

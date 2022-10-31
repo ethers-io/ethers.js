@@ -5,7 +5,6 @@ import { BaseProvider, Resolver } from "./base-provider";
 import { AlchemyProvider, AlchemyWebSocketProvider } from "./alchemy-provider";
 import { AnkrProvider } from "./ankr-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
-import { CoinbaseCloudProvider } from "./coinbase-cloud-provider";
 import { EtherscanProvider } from "./etherscan-provider";
 import { FallbackProvider } from "./fallback-provider";
 import { IpcProvider } from "./ipc-provider";
@@ -57,7 +56,6 @@ function getDefaultProvider(network, options) {
         AlchemyProvider,
         AnkrProvider,
         CloudflareProvider,
-        CoinbaseCloudProvider,
         EtherscanProvider,
         InfuraProvider,
         JsonRpcProvider,
@@ -74,7 +72,7 @@ export {
 Provider, BaseProvider, Resolver, UrlJsonRpcProvider, 
 ///////////////////////
 // Concrete Providers
-FallbackProvider, AlchemyProvider, AlchemyWebSocketProvider, AnkrProvider, CloudflareProvider, CoinbaseCloudProvider, EtherscanProvider, InfuraProvider, InfuraWebSocketProvider, JsonRpcProvider, JsonRpcBatchProvider, NodesmithProvider, PocketProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, 
+FallbackProvider, AlchemyProvider, AlchemyWebSocketProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, InfuraWebSocketProvider, JsonRpcProvider, JsonRpcBatchProvider, NodesmithProvider, PocketProvider, StaticJsonRpcProvider, Web3Provider, WebSocketProvider, IpcProvider, 
 ///////////////////////
 // Signer
 JsonRpcSigner, 
