@@ -9,7 +9,7 @@ import type { ContractTransactionResponse } from "./wrappers.js";
 
 
 // The types of events a Contract can listen for
-export type ContractEventName = string | ContractEvent | TopicFilter;
+export type ContractEventName = string | ContractEvent | TopicFilter | DeferredTopicFilter;
 
 export interface ContractInterface {
     [ name: string ]: BaseContractMethod;

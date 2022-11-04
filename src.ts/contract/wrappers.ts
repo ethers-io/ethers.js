@@ -64,25 +64,12 @@ export class ContractTransactionResponse extends TransactionResponse {
     }
 }
 
-export class ContractEventPayload extends EventPayload<ContractEventName> {
+export  class ContractUnknownEventPayload extends EventPayload<ContractEventName> {
+    readonly log!: Log;
 
-    readonly fragment!: EventFragment;
-    readonly log!: EventLog;
-    readonly args!: Result;
-
-    constructor(contract: BaseContract, listener: null | Listener, filter: ContractEventName, fragment: EventFragment, _log: Log) {
+    constructor(contract: BaseContract, listener: null | Listener, filter: ContractEventName, log: Log) {
         super(contract, listener, filter);
-        const log = new EventLog(_log, contract.interface, fragment);
-        const args = contract.interface.decodeEventLog(fragment, log.data, log.topics);
-        defineProperties<ContractEventPayload>(this, { args, fragment, log });
-    }
-
-    get eventName(): string {
-        return this.fragment.name;
-    }
-
-    get eventSignature(): string {
-        return this.fragment.format();
+        defineProperties<ContractUnknownEventPayload>(this, { log });
     }
 
     async getBlock(): Promise<Block<string>> {
@@ -95,5 +82,26 @@ export class ContractEventPayload extends EventPayload<ContractEventName> {
 
     async getTransactionReceipt(): Promise<TransactionReceipt> {
         return await this.log.getTransactionReceipt();
+    }
+}
+
+export class ContractEventPayload extends ContractUnknownEventPayload {
+
+    declare readonly fragment: EventFragment;
+    declare readonly log: EventLog;
+    declare readonly args: Result;
+
+    constructor(contract: BaseContract, listener: null | Listener, filter: ContractEventName, fragment: EventFragment, _log: Log) {
+        super(contract, listener, filter, new EventLog(_log, contract.interface, fragment));
+        const args = contract.interface.decodeEventLog(fragment, this.log.data, this.log.topics);
+        defineProperties<ContractEventPayload>(this, { args, fragment });
+    }
+
+    get eventName(): string {
+        return this.fragment.name;
+    }
+
+    get eventSignature(): string {
+        return this.fragment.format();
     }
 }
