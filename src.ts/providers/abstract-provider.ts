@@ -53,6 +53,7 @@ function isPromise<T = any>(value: any): value is Promise<T> {
 
 function getTag(prefix: string, value: any): string {
     return prefix + ":" + JSON.stringify(value, (k, v) => {
+        if (v == null) { return "null"; }
         if (typeof(v) === "bigint") { return `bigint:${ v.toString() }`}
         if (typeof(v) === "string") { return v.toLowerCase(); }
 
