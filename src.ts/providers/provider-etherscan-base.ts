@@ -4,7 +4,7 @@ import {
     defineProperties,
     hexlify, toQuantity,
     FetchRequest,
-    assertArgument, throwError,
+    assert, assertArgument,
     toUtf8String
  } from "../utils/index.js";
 
@@ -395,7 +395,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
                     });
                 }
 
-                return throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                assert(false, "getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
 

@@ -1,4 +1,4 @@
-import { isHexString, throwError } from "../utils/index.js";
+import { assert, isHexString } from "../utils/index.js";
 
 import type { AbstractProvider, Subscriber } from "./abstract-provider.js";
 import type { EventFilter, OrphanFilter, ProviderEvent } from "./provider.js";
@@ -11,7 +11,7 @@ export function getPollingSubscriber(provider: AbstractProvider, event: Provider
     if (event === "block") { return new PollingBlockSubscriber(provider); }
     if (isHexString(event, 32)) { return new PollingTransactionSubscriber(provider, event); }
 
-    return throwError("unsupported polling event", "UNSUPPORTED_OPERATION", {
+    assert(false, "unsupported polling event", "UNSUPPORTED_OPERATION", {
         operation: "getPollingSubscriber", info: { event }
     });
 }

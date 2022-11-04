@@ -5,7 +5,7 @@ import { pbkdf2 } from "@noble/hashes/pbkdf2";
 import { sha256 } from "@noble/hashes/sha256";
 import { sha512 } from "@noble/hashes/sha512";
 
-import { assertArgument, throwError } from "../utils/index.js";
+import { assert, assertArgument } from "../utils/index.js";
 
 
 declare global {
@@ -53,11 +53,8 @@ export function pbkdf2Sync(password: Uint8Array, salt: Uint8Array, iterations: n
 }
 
 export function randomBytes(length: number): Uint8Array {
-    if (crypto == null) {
-        return throwError("platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
-            operation: "randomBytes"
-        });
-    }
+    assert(crypto != null, "platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
+        operation: "randomBytes" });
 
     assertArgument(Number.isInteger(length) && length > 0 && length <= 1024, "invalid length", "length", length);
 

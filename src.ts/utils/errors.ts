@@ -319,12 +319,12 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
 
 /**
  *  Throws an EthersError with %%message%%, %%code%% and additional error
- *  info.
+ *  %%info%% when %%check%% is falsish..
  *
  *  @see [[api:makeError]]
  */
-export function throwError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): never {
-    throw makeError(message, code, info);
+export function assert<K extends ErrorCode, T extends CodedEthersError<K>>(check: unknown, message: string, code: K, info?: ErrorInfo<T>): asserts check {
+    if (!check) { throw makeError(message, code, info); }
 }
 
 
@@ -336,27 +336,21 @@ export function throwError<K extends ErrorCode, T extends CodedEthersError<K>>(m
  *  any further code does not need additional compile-time checks.
  */
 export function assertArgument(check: unknown, message: string, name: string, value: unknown): asserts check {
-    if (!check) {
-        throwError(message, "INVALID_ARGUMENT", { argument: name, value: value });
-    }
+    assert(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
 }
 
 export function assertArgumentCount(count: number, expectedCount: number, message: string = ""): void {
     if (message) { message = ": " + message; }
 
-    if (count < expectedCount) {
-        throwError("missing arguemnt" + message, "MISSING_ARGUMENT", {
-            count: count,
-            expectedCount: expectedCount
-        });
-    }
+    assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+        count: count,
+        expectedCount: expectedCount
+    });
 
-    if (count > expectedCount) {
-        throwError("too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
-            count: count,
-            expectedCount: expectedCount
-        });
-    }
+    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+        count: count,
+        expectedCount: expectedCount
+    });
 }
 
 const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
@@ -384,11 +378,9 @@ const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
  *  Throws if the normalization %%form%% is not supported.
  */
 export function assertNormalize(form: string): void {
-    if (_normalizeForms.indexOf(form) === -1) {
-        throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
-            operation: "String.prototype.normalize", info: { form }
-        });
-    }
+    assert(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+        operation: "String.prototype.normalize", info: { form }
+    });
 }
 
 /**
@@ -404,7 +396,7 @@ export function assertPrivate(givenGuard: any, guard: any, className: string = "
             method += ".";
             operation += " " + className;
         }
-        throwError(`private constructor; use ${ method }from* methods`, "UNSUPPORTED_OPERATION", {
+        assert(false, `private constructor; use ${ method }from* methods`, "UNSUPPORTED_OPERATION", {
             operation
         });
     }

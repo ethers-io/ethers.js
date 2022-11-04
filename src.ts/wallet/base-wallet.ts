@@ -3,7 +3,7 @@ import { hashMessage, TypedDataEncoder } from "../hash/index.js";
 import { AbstractSigner } from "../providers/index.js";
 import { computeAddress, Transaction } from "../transaction/index.js";
 import {
-    defineProperties, resolveProperties, assertArgument, throwError
+    defineProperties, resolveProperties, assert, assertArgument
 } from "../utils/index.js";
 
 import type { SigningKey } from "../crypto/index.js";
@@ -72,19 +72,15 @@ export class BaseWallet extends AbstractSigner {
 
         // Populate any ENS names
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name: string) => {
-            if (this.provider == null) {
-                return throwError("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
-                    operation: "resolveName",
-                    info: { name }
-                });
-            }
+            assert(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
+                operation: "resolveName",
+                info: { name }
+            });
 
             const address = await this.provider.resolveName(name);
-            if (address == null) {
-                return throwError("unconfigured ENS name", "UNCONFIGURED_NAME", {
-                    value: name
-                });
-            }
+            assert(address != null, "unconfigured ENS name", "UNCONFIGURED_NAME", {
+                value: name
+            });
 
             return address;
         });

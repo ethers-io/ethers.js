@@ -1,6 +1,6 @@
 import {
     defineProperties, getBigInt, getNumber,
-    assertPrivate, assertArgument, throwError
+    assert, assertPrivate, assertArgument
 } from "../utils/index.js";
 import { id } from "../hash/index.js";
 
@@ -930,11 +930,8 @@ export class ConstructorFragment extends Fragment {
     }
 
     format(format: FormatType = "sighash"): string {
-        if (format === "sighash") {
-            throwError("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
-                operation: "format(sighash)"
-            });
-        }
+        assert(format !== "sighash", "cannot format a constructor for sighash",
+            "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
 
         if (format === "json") {
             return JSON.stringify({

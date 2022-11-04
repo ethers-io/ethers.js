@@ -1,4 +1,4 @@
-import { assertArgument, throwError } from "../utils/index.js";
+import { assert, assertArgument } from "../utils/index.js";
 
 import { getAddress } from "./address.js";
 
@@ -20,9 +20,7 @@ export function isAddress(value: any): boolean {
 async function checkAddress(target: any, promise: Promise<null | string>): Promise<string> {
     const result = await promise;
     if (result == null || result === "0x0000000000000000000000000000000000000000") {
-        if (typeof(target) === "string") {
-            return throwError("unconfigured name", "UNCONFIGURED_NAME", { value: target });
-        }
+        assert(typeof(target) !== "string", "unconfigured name", "UNCONFIGURED_NAME", { value: target });
         assertArgument(false, "invalid AddressLike value; did not resolve to a value address", "target", target);
     }
     return getAddress(result);
@@ -35,11 +33,8 @@ export function resolveAddress(target: AddressLike, resolver?: null | NameResolv
     if (typeof(target) === "string") {
         if (target.match(/^0x[0-9a-f]{40}$/i)) { return getAddress(target); }
 
-        if (resolver == null) {
-            return throwError("ENS resolution requires a provider", "UNSUPPORTED_OPERATION", {
-                operation: "resolveName",
-            });
-        }
+        assert(resolver != null, "ENS resolution requires a provider",
+            "UNSUPPORTED_OPERATION", { operation: "resolveName" });
 
         return checkAddress(target, resolver.resolveName(target));
 

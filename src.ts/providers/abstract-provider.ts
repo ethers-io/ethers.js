@@ -11,7 +11,7 @@ import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
     getBigInt, getBytes, getNumber,
-    isCallException, makeError, throwError, assertArgument,
+    isCallException, makeError, assert, assertArgument,
     FetchRequest,
     toArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
@@ -184,7 +184,6 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
                     })());
                 }
             }
-
 
             if (Array.isArray(event.address)) {
                 event.address.forEach(addAddress);
@@ -416,18 +415,14 @@ export class AbstractProvider implements Provider {
             } catch (error) { }
 
             // 4xx indicates the result is not present; stop
-            if (resp.statusCode >= 400 && resp.statusCode < 500) {
-                return throwError(`response not found during CCIP fetch: ${ errorMessage }`, "OFFCHAIN_FAULT", {
-                    reason: "404_MISSING_RESOURCE",
-                    transaction: tx, info: { url, errorMessage }
-                });
-            }
+            assert(resp.statusCode < 400 || resp.statusCode >= 500, `response not found during CCIP fetch: ${ errorMessage }`,
+                "OFFCHAIN_FAULT", { reason: "404_MISSING_RESOURCE", transaction: tx, info: { url, errorMessage } });
 
             // 5xx indicates server issue; try the next url
             errorMessages.push(errorMessage);
         }
 
-        return throwError(`error encountered during CCIP fetch: ${ errorMessages.map((m) => JSON.stringify(m)).join(", ") }`, "OFFCHAIN_FAULT", {
+        assert(false, `error encountered during CCIP fetch: ${ errorMessages.map((m) => JSON.stringify(m)).join(", ") }`, "OFFCHAIN_FAULT", {
             reason: "500_SERVER_ERROR",
             transaction: tx, info: { urls, errorMessages }
         });
@@ -454,7 +449,7 @@ export class AbstractProvider implements Provider {
     }
 
     _detectNetwork(): Promise<Network> {
-        return throwError("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
+        assert(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
             operation: "_detectNetwork"
         });
     }
@@ -462,7 +457,7 @@ export class AbstractProvider implements Provider {
     // Sub-classes should override this and handle PerformActionRequest requests, calling
     // the super for any unhandled actions.
     async _perform<T = any>(req: PerformActionRequest): Promise<T> {
-        return throwError(`unsupported method: ${ req.method }`, "UNSUPPORTED_OPERATION", {
+        assert(false, `unsupported method: ${ req.method }`, "UNSUPPORTED_OPERATION", {
             operation: req.method,
             info: req
         });
@@ -645,7 +640,7 @@ export class AbstractProvider implements Provider {
                 }
             } else {
                 // Otherwise, we do not allow changes to the underlying network
-                throwError(`network changed: ${ expected.chainId } => ${ actual.chainId } `, "NETWORK_ERROR", {
+                assert(false, `network changed: ${ expected.chainId } => ${ actual.chainId } `, "NETWORK_ERROR", {
                     event: "changed"
                 });
             }
@@ -695,12 +690,10 @@ export class AbstractProvider implements Provider {
     }
 
     async #call(tx: PerformActionTransaction, blockTag: string, attempt: number): Promise<string> {
-        if (attempt >= MAX_CCIP_REDIRECTS) {
-             throwError("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
-                 reason: "TOO_MANY_REDIRECTS",
-                 transaction: Object.assign({ }, tx, { blockTag, enableCcipRead: true })
-             });
-         }
+        assert (attempt < MAX_CCIP_REDIRECTS, "CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+             reason: "TOO_MANY_REDIRECTS",
+             transaction: Object.assign({ }, tx, { blockTag, enableCcipRead: true })
+         });
 
          // This came in as a PerformActionTransaction, so to/from are safe; we can cast
          const transaction = <PerformActionTransaction>copyRequest(tx);
@@ -720,15 +713,13 @@ export class AbstractProvider implements Provider {
                  try {
                      ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
                  } catch (error: any) {
-                     return throwError(error.message, "OFFCHAIN_FAULT", {
-                         reason: "BAD_DATA",
-                         transaction, info: { data }
-                     });
+                     assert(false, error.message, "OFFCHAIN_FAULT", {
+                         reason: "BAD_DATA", transaction, info: { data } });
                  }
 
                  // Check the sender of the OffchainLookup matches the transaction
-                 if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
-                     return throwError("CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                 assert(ccipArgs.sender.toLowerCase() === txSender.toLowerCase(),
+                     "CCIP Read sender mismatch", "CALL_EXCEPTION", {
                          action: "call",
                          data,
                          reason: "OffchainLookup",
@@ -740,15 +731,10 @@ export class AbstractProvider implements Provider {
                              args: ccipArgs.errorArgs
                          }
                      });
-                 }
 
                  const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
-                 if (ccipResult == null) {
-                     return throwError("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
-                         reason: "FETCH_FAILED",
-                         transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
-                     });
-                 }
+                 assert(ccipResult != null, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                     reason: "FETCH_FAILED", transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs } });
 
                  return this.#call({
                      to: txSender,
@@ -916,7 +902,7 @@ export class AbstractProvider implements Provider {
 
     // ENS
     _getProvider(chainId: number): AbstractProvider {
-        return throwError("provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
+        assert(false, "provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
             operation: "_getProvider()"
         });
     }
@@ -1079,11 +1065,13 @@ export class AbstractProvider implements Provider {
         let sub = this.#subs.get(tag);
         if (!sub) {
             const subscriber = this._getSubscriber(subscription);
+
             const addressableMap = new WeakMap();
             const nameMap = new Map();
             sub = { subscriber, tag, addressableMap, nameMap, started: false, listeners: [ ] };
             this.#subs.set(tag, sub);
         }
+
         return sub;
     }
 
@@ -1226,7 +1214,7 @@ export class AbstractProvider implements Provider {
 
         if (this.#pausedState != null) {
             if (this.#pausedState == !!dropWhilePaused) { return; }
-            return throwError("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
+            assert(false, "cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
                 operation: "pause"
             });
         }

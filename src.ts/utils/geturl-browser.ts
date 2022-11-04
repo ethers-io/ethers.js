@@ -1,4 +1,4 @@
-import { throwError } from "./errors.js";
+import { assert } from "./errors.js";
 
 import type { FetchRequest, FetchCancelSignal, GetUrlResponse } from "./fetch.js";
 
@@ -30,18 +30,14 @@ declare global {
 export async function getUrl(req: FetchRequest, _signal?: FetchCancelSignal): Promise<GetUrlResponse> {
     const protocol = req.url.split(":")[0].toLowerCase();
 
-    if (protocol !== "http" && protocol !== "https") {
-        throwError(`unsupported protocol ${ protocol }`, "UNSUPPORTED_OPERATION", {
-            info: { protocol },
-            operation: "request"
-        });
-    }
+    assert(protocol === "http" || protocol === "https", `unsupported protocol ${ protocol }`, "UNSUPPORTED_OPERATION", {
+        info: { protocol },
+        operation: "request"
+    });
 
-    if (req.credentials && !req.allowInsecureAuthentication) {
-        throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
-            operation: "request"
-        });
-    }
+    assert(!req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        operation: "request"
+    });
 
     let signal: undefined | AbortSignal = undefined;
     if (_signal) {

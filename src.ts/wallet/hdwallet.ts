@@ -5,7 +5,7 @@ import {
     concat, dataSlice, decodeBase58, defineProperties, encodeBase58,
     getBytes, hexlify,
     getNumber, toBigInt, toHex,
-    assertPrivate, assertArgument, throwError
+    assertPrivate, assert, assertArgument
 } from "../utils/index.js";
 import { langEn } from "../wordlists/lang-en.js";
 
@@ -51,11 +51,9 @@ function ser_I(index: number, chainCode: string, publicKey: string, privateKey: 
     const data = new Uint8Array(37);
 
     if (index & HardenedBit) {
-        if (privateKey == null) {
-            return throwError("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
-                operation: "deriveChild"
-            });
-        }
+        assert(privateKey != null, "cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
+            operation: "deriveChild"
+        });
 
         // Data = 0x00 || ser_256(k_par)
         data.set(getBytes(privateKey), 1);

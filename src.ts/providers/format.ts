@@ -4,7 +4,7 @@ import { Signature } from "../crypto/index.js"
 import { accessListify } from "../transaction/index.js";
 import {
     getBigInt, getNumber, hexlify, isHexString, zeroPadValue,
-    assertArgument, throwError
+    assert, assertArgument
 } from "../utils/index.js";
 
 
@@ -49,7 +49,7 @@ export function object(format: Record<string, FormatFunc>, altNames?: Record<str
                 if (nv !== undefined) { result[key] = nv; }
             } catch (error) {
                 const message = (error instanceof Error) ? error.message: "not-an-error";
-                throwError(`invalid value for value.${ key } (${ message })`, "BAD_DATA", { value })
+                assert(false, `invalid value for value.${ key } (${ message })`, "BAD_DATA", { value })
             }
         }
         return result;

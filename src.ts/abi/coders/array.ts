@@ -1,5 +1,5 @@
 import {
-    defineProperties, isError, assertArgument, assertArgumentCount, throwError
+    defineProperties, isError, assert, assertArgument, assertArgumentCount
 } from "../../utils/index.js";
 
 import { Typed } from "../typed.js";
@@ -21,21 +21,11 @@ export function pack(writer: Writer, coders: ReadonlyArray<Coder>, values: Array
 
         arrayValues = coders.map((coder) => {
             const name = coder.localName;
-            if (!name) {
-                throwError("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
-                    argument: "values",
-                    info: { coder },
-                    value: values
-                });
-            }
+            assert(name, "cannot encode object for signature with missing names",
+                "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
 
-            if (unique[name]) {
-                throwError("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
-                    argument: "values",
-                    info: { coder },
-                    value: values
-                });
-            }
+            assert(unique[name], "cannot encode object for signature with duplicate names",
+                "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
 
             unique[name] = true;
 
@@ -161,7 +151,7 @@ export class ArrayCoder extends Coder {
     encode(writer: Writer, _value: Array<any> | Typed): number {
         const value = Typed.dereference(_value, "array");
 
-        if (!Array.isArray(value)) {
+        if(!Array.isArray(value)) {
             this._throwError("expected array value", value);
         }
 
@@ -190,13 +180,8 @@ export class ArrayCoder extends Coder {
             // slot requires at least 32 bytes for their value (or 32
             // bytes as a link to the data). This could use a much
             // tighter bound, but we are erroring on the side of safety.
-            if (count * WordSize > reader.dataLength) {
-                throwError("insufficient data length", "BUFFER_OVERRUN", {
-                    buffer: reader.bytes,
-                    offset: count * WordSize,
-                    length: reader.dataLength
-                });
-            }
+            assert(count * WordSize <= reader.dataLength, "insufficient data length",
+                "BUFFER_OVERRUN", { buffer: reader.bytes, offset: count * WordSize, length: reader.dataLength });
         }
         let coders = [];
         for (let i = 0; i < count; i++) { coders.push(new AnonymousCoder(this.coder)); }

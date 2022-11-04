@@ -1,18 +1,18 @@
 import { getBytes } from "./data.js";
-import { assertArgument, throwError } from "./errors.js";
+import { assert, assertArgument, assertPrivate } from "./errors.js";
 import { getBigInt, getNumber, fromTwos, toBigInt, toHex, toTwos } from "./maths.js";
 
 import type { BigNumberish, BytesLike, Numeric } from "./index.js";
 
 
-const _constructorGuard = { };
+const _guard = { };
 
 const NegativeOne = BigInt(-1);
 
 function throwFault(message: string, fault: string, operation: string, value?: any): never {
     const params: any = { fault: fault, operation: operation };
     if (value !== undefined) { params.value = value; }
-    return throwError(message, "NUMERIC_FAULT", params);
+    assert(false, message, "NUMERIC_FAULT", params);
 }
 
 // Constant to pull zeros from for multipliers
@@ -113,12 +113,8 @@ export class FixedFormat {
 
     readonly _multiplier: bigint;
 
-    constructor(constructorGuard: any, signed: boolean, width: number, decimals: number) {
-        if (constructorGuard !== _constructorGuard) {
-            throwError("cannot use FixedFormat constructor; use FixedFormat.from", "UNSUPPORTED_OPERATION", {
-                operation: "new FixedFormat"
-            });
-        }
+    constructor(guard: any, signed: boolean, width: number, decimals: number) {
+        assertPrivate(guard, _guard, "FixedFormat");
 
         this.signed = signed;
         this.width = width;
@@ -169,7 +165,7 @@ export class FixedFormat {
         assertArgument((width % 8) === 0, "invalid fixed format width (not byte aligned)", "format.width", width);
         assertArgument(decimals <= 80, "invalid fixed format (decimals too large)", "format.decimals", decimals);
 
-        return new FixedFormat(_constructorGuard, signed, width, decimals);
+        return new FixedFormat(_guard, signed, width, decimals);
     }
 }
 
@@ -184,12 +180,8 @@ export class FixedNumber {
     //#hex: string;
     #value: string;
 
-    constructor(constructorGuard: any, hex: string, value: string, format?: FixedFormat) {
-        if (constructorGuard !== _constructorGuard) {
-            throwError("cannot use FixedNumber constructor; use FixedNumber.from", "UNSUPPORTED_OPERATION", {
-                operation: "new FixedFormat"
-            });
-        }
+    constructor(guard: any, hex: string, value: string, format?: FixedFormat) {
+        assertPrivate(guard, _guard, "FixedNumber");
 
         this.format = FixedFormat.from(format);
         //this.#hex = hex;
@@ -337,7 +329,7 @@ export class FixedNumber {
 
         const decimal = formatFixed(numeric, fixedFormat.decimals);
 
-        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
+        return new FixedNumber(_guard, hex, decimal, fixedFormat);
     }
 
     static fromBytes(_value: BytesLike, format: FixedFormat | string | number = "fixed"): FixedNumber {
@@ -354,7 +346,7 @@ export class FixedNumber {
         const hex = toHex(toTwos(numeric, (fixedFormat.signed ? 0: 1) + fixedFormat.width));
         const decimal = formatFixed(numeric, fixedFormat.decimals);
 
-        return new FixedNumber(_constructorGuard, hex, decimal, fixedFormat);
+        return new FixedNumber(_guard, hex, decimal, fixedFormat);
     }
 
     static from(value: any, format?: FixedFormat | string | number): FixedNumber {

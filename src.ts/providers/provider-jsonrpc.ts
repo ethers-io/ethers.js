@@ -9,7 +9,7 @@ import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes,
-    makeError, assertArgument, throwError,
+    makeError, assert, assertArgument,
     FetchRequest, resolveProperties
 } from "../utils/index.js";
 
@@ -194,7 +194,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
     }
 
     connect(provider: null | Provider): Signer {
-        return throwError("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
+        assert(false, "cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
             operation: "signer.connect"
         });
     }
@@ -478,10 +478,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
      *  is detected, and if it has changed, the call will reject.
      */
     get _network(): Network {
-        if (!this.#network) {
-            throwError("network is not available yet", "NETWORK_ERROR");
-        }
-
+        assert (this.#network, "network is not available yet", "NETWORK_ERROR");
         return this.#network;
     }
 
@@ -491,7 +488,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
      *  Sub-classes **MUST** override this.
      */
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>> {
-        return throwError("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
+        assert(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
             operation: "jsonRpcApiProvider._send"
         });
     }
@@ -619,6 +616,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
      *  subscription management.
      */
     _getSubscriber(sub: Subscription): Subscriber {
+
         // Pending Filters aren't availble via polling
         if (sub.type === "pending") { return new FilterIdPendingSubscriber(this); }
 

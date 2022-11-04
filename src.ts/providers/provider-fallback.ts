@@ -1,6 +1,6 @@
 
 import {
-    getBigInt, getNumber, hexlify, throwError, assertArgument
+    getBigInt, getNumber, hexlify, assert, assertArgument
 } from "../utils/index.js";
 
 import { AbstractProvider } from "./abstract-provider.js";
@@ -31,6 +31,15 @@ function stall(duration: number): Promise<void> {
 }
 
 function getTime(): number { return (new Date()).getTime(); }
+
+function stringify(value: any): string {
+    return JSON.stringify(value, (key, value) => {
+        if (typeof(value) === "bigint") {
+            return { type: "bigint", value: value.toString() };
+        }
+        return value;
+    });
+}
 
 export interface FallbackProviderConfig {
 
@@ -152,24 +161,23 @@ function normalize(provider: AbstractProvider, value: any, req: PerformActionReq
             return hexlify(value);
         case "getBlock":
             if (req.includeTransactions) {
-                return JSON.stringify(formatBlockWithTransactions(value));
+                return stringify(formatBlockWithTransactions(value));
             }
-            return JSON.stringify(formatBlock(value));
+            return stringify(formatBlock(value));
         case "getTransaction":
-            return JSON.stringify(formatTransactionResponse(value));
+            return stringify(formatTransactionResponse(value));
         case "getTransactionReceipt":
-            return JSON.stringify(formatTransactionReceipt(value));
+            return stringify(formatTransactionReceipt(value));
         case "call":
             return hexlify(value);
         case "estimateGas":
             return getBigInt(value).toString();
         case "getLogs":
-            return JSON.stringify(value.map((v: any) => formatLog(v)));
+            return stringify(value.map((v: any) => formatLog(v)));
     }
 
-    return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
-        operation: `_perform(${ JSON.stringify(req.method) })`
-    });
+    assert(false, "unsupported method", "UNSUPPORTED_OPERATION", {
+        operation: `_perform(${ stringify(req.method) })` });
 }
 
 type TallyResult = {
@@ -384,7 +392,7 @@ export class FallbackProvider extends AbstractProvider {
                     if (chainId == null) {
                         chainId = network.chainId;
                     } else if (network.chainId !== chainId) {
-                        throwError("cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
+                        assert(false, "cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
                             operation: "new FallbackProvider"
                         });
                     }
@@ -463,8 +471,8 @@ export class FallbackProvider extends AbstractProvider {
                 throw new Error("TODO");
         }
 
-        return throwError("unsupported method", "UNSUPPORTED_OPERATION", {
-            operation: `_perform(${ JSON.stringify((<any>req).method) })`
+        assert(false, "unsupported method", "UNSUPPORTED_OPERATION", {
+            operation: `_perform(${ stringify((<any>req).method) })`
         });
     }
 

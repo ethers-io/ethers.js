@@ -1,6 +1,6 @@
 import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";
-import { assertArgument, throwError } from "./errors.js";
+import { assert, assertArgument } from "./errors.js";
 import { defineProperties } from "./properties.js";
 import { toUtf8Bytes, toUtf8String } from "./utf8.js"
 
@@ -117,11 +117,9 @@ export class FetchCancelSignal {
     }
 
     addListener(listener: () => void): void {
-        if (this.#cancelled) {
-            throwError("singal already cancelled", "UNSUPPORTED_OPERATION", {
-                operation: "fetchCancelSignal.addCancelListener"
-            });
-        }
+        assert(this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+            operation: "fetchCancelSignal.addCancelListener"
+        });
         this.#listeners.push(listener);
     }
 
@@ -129,7 +127,7 @@ export class FetchCancelSignal {
 
     checkSignal(): void {
         if (!this.cancelled) { return; }
-        throwError("cancelled", "CANCELLED", { });
+        assert(false, "cancelled", "CANCELLED", { });
     }
 }
 
@@ -414,11 +412,9 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
             return _response.makeServerError("exceeded maximum retry limit");
         }
 
-        if (getTime() > expires) {
-            return throwError("timeout", "TIMEOUT", {
-                operation: "request.send", reason: "timeout", request: _request
-            });
-        }
+        assert(getTime() <= expires, "timeout", "TIMEOUT", {
+            operation: "request.send", reason: "timeout", request: _request
+        });
 
         if (delay > 0) { await wait(delay); }
 
@@ -507,9 +503,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
      *  Resolves to the response by sending the request.
      */
     send(): Promise<FetchResponse> {
-        if (this.#signal != null) {
-            return throwError("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
-        }
+        assert(this.#signal == null, "request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
         this.#signal = new FetchCancelSignal(this);
         return this.#send(0, getTime() + this.timeout, 0, this, new FetchResponse(0, "", { }, null, this));
     }
@@ -519,9 +513,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
      *  error to be rejected from the [[send]].
      */
     cancel(): void {
-        if (this.#signal == null) {
-            return throwError("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
-        }
+        assert(this.#signal != null, "request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
         const signal = fetchSignals.get(this);
         if (!signal) { throw new Error("missing signal; should not happen"); }
         signal();
@@ -540,11 +532,9 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         // - non-GET requests
         // - downgrading the security (e.g. https => http)
         // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
-        if (this.method !== "GET" || (current === "https" && target === "http") || !location.match(/^https?:/)) {
-            return throwError(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
-                operation: `redirect(${ this.method } ${ JSON.stringify(this.url) } => ${ JSON.stringify(location) })`
-            });
-        }
+        assert(this.method === "GET" && (current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
+            operation: `redirect(${ this.method } ${ JSON.stringify(this.url) } => ${ JSON.stringify(location) })`
+        });
 
         // Create a copy of this request, with a new URL
         const req = new FetchRequest(location);
@@ -683,7 +673,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         try {
             return (this.#body == null) ? "": toUtf8String(this.#body);
         } catch (error) {
-            return throwError("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
+            assert(false, "response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
                 operation: "bodyText", info: { response: this }
             });
         }
@@ -698,7 +688,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         try {
             return JSON.parse(this.bodyText);
         } catch (error) {
-            return throwError("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
+            assert(false, "response body is not valid JSON", "UNSUPPORTED_OPERATION", {
                 operation: "bodyJson", info: { response: this }
             });
         }
@@ -806,7 +796,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         if (message === "") {
             message = `server response ${ this.statusCode } ${ this.statusMessage }`;
         }
-        throwError(message, "SERVER_ERROR", {
+        assert(false, message, "SERVER_ERROR", {
             request: (this.request || "unknown request"), response: this, error
         });
     }

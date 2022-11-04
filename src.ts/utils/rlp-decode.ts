@@ -1,7 +1,7 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
 import { hexlify } from "./data.js";
-import { assertArgument, throwError } from "./errors.js";
+import { assert, assertArgument } from "./errors.js";
 import { getBytes } from "./data.js";
 
 import type { BytesLike, RlpStructuredData } from "./index.js";
@@ -35,11 +35,9 @@ function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, 
         result.push(decoded.result);
 
         childOffset += decoded.consumed;
-        if (childOffset > offset + 1 + length) {
-            throwError("child data too short", "BUFFER_OVERRUN", {
-                buffer: data, length, offset
-            });
-        }
+        assert(childOffset <= offset + 1 + length, "child data too short", "BUFFER_OVERRUN", {
+            buffer: data, length, offset
+        });
     }
 
     return {consumed: (1 + length), result: result};
@@ -47,18 +45,14 @@ function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, 
 
 // returns { consumed: number, result: Object }
 function _decode(data: Uint8Array, offset: number): { consumed: number, result: any } {
-    if (data.length === 0) {
-        throwError("data too short", "BUFFER_OVERRUN", {
-            buffer: data, length: 0, offset: 1
-        });
-    }
+    assert(data.length !== 0, "data too short", "BUFFER_OVERRUN", {
+        buffer: data, length: 0, offset: 1
+    });
 
     const checkOffset = (offset: number) => {
-        if (offset > data.length) {
-            throwError("data short segment too short", "BUFFER_OVERRUN", {
-                buffer: data, length: data.length, offset
-            });
-        }
+        assert(offset <= data.length, "data short segment too short", "BUFFER_OVERRUN", {
+            buffer: data, length: data.length, offset
+        });
     };
 
     // Array with extra length prefix

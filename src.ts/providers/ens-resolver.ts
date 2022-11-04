@@ -5,7 +5,7 @@ import {
     concat, dataSlice, getBytes, hexlify, zeroPadValue,
     defineProperties, encodeBase58, getBigInt, toArray,
     toNumber, toUtf8Bytes, toUtf8String,
-    assertArgument, throwError,
+    assert, assertArgument,
     FetchRequest
 } from "../utils/index.js";
 
@@ -212,12 +212,11 @@ export class EnsResolver {
 
         try {
             let data = await this.provider.call(tx);
-            if ((getBytes(data).length % 32) === 4) {
-                return throwError("execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
-                    action: "call", data, reason: null, transaction: <any>tx,
-                    invocation: null, revert: null
-                });
-            }
+            assert((getBytes(data).length % 32) !== 4, "execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
+                action: "call", data, reason: null, transaction: <any>tx,
+                invocation: null, revert: null
+            });
+
             if (wrapped) { return parseBytes(data, 0); }
             return data;
         } catch (error: any) {
@@ -265,7 +264,7 @@ export class EnsResolver {
 
         if (address != null) { return address; }
 
-        return throwError(`invalid coin data`, "UNSUPPORTED_OPERATION", {
+        assert(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${ coinType })`,
             info: { coinType, data }
         });
@@ -308,7 +307,7 @@ export class EnsResolver {
             return `bzz:/\/${ swarm[1] }`;
         }
 
-        return throwError(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+        assert(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
             info: { data: hexBytes }
         });
@@ -485,11 +484,8 @@ export class EnsResolver {
         const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.network-plugins.ens");
 
         // No ENS...
-        if (!ensPlugin) {
-            return throwError("network does not support ENS", "UNSUPPORTED_OPERATION", {
-                operation: "getResolver", info: { network: network.name }
-            });
-        }
+        assert(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
+            operation: "getResolver", info: { network: network.name } });
 
         try {
             // keccak256("resolver(bytes32)")

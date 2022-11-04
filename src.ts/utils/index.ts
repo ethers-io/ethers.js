@@ -25,8 +25,7 @@ export {
 
 export {
     isCallException, isError,
-    makeError, throwError,
-    assertArgument, assertArgumentCount, assertPrivate, assertNormalize
+    assert, assertArgument, assertArgumentCount, assertPrivate, assertNormalize, makeError
 } from "./errors.js"
 
 export { EventPayload } from "./events.js";

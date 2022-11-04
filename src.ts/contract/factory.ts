@@ -3,7 +3,7 @@ import { Interface } from "../abi/index.js";
 import { getCreateAddress } from "../address/index.js";
 import {
     concat, defineProperties, getBytes, hexlify,
-    assertArgument, throwError
+    assert, assertArgument
 } from "../utils/index.js";
 
 import { BaseContract, copyOverrides, resolveArgs } from "./contract.js";
@@ -64,11 +64,9 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
     async deploy(...args: ContractMethodArgs<A>): Promise<BaseContract & { deploymentTransaction(): ContractTransactionResponse } & Omit<I, keyof BaseContract>> {
         const tx = await this.getDeployTransaction(...args);
 
-        if (!this.runner || typeof(this.runner.sendTransaction) !== "function") {
-            return throwError("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
-                operation: "sendTransaction"
-            });
-        }
+        assert(this.runner && typeof(this.runner.sendTransaction) === "function",
+            "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            operation: "sendTransaction" });
 
         const sentTx = await this.runner.sendTransaction(tx);
         const address = getCreateAddress(sentTx);

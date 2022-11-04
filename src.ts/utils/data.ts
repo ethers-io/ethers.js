@@ -1,4 +1,4 @@
-import { assertArgument, throwError } from "./errors.js";
+import { assert, assertArgument } from "./errors.js";
 
 
 export type BytesLike = string | Uint8Array;
@@ -114,9 +114,11 @@ export function dataLength(data: BytesLike): number {
  */
 export function dataSlice(data: BytesLike, start?: number, end?: number): string {
     const bytes = getBytes(data);
-    if (end != null && end > bytes.length) { throwError("cannot slice beyond data bounds", "BUFFER_OVERRUN", {
-        buffer: bytes, length: bytes.length, offset: end
-    }); }
+    if (end != null && end > bytes.length) {
+        assert(false, "cannot slice beyond data bounds", "BUFFER_OVERRUN", {
+            buffer: bytes, length: bytes.length, offset: end
+        });
+    }
     return hexlify(bytes.slice((start == null) ? 0: start, (end == null) ? bytes.length: end));
 }
 
@@ -132,13 +134,11 @@ export function stripZerosLeft(data: BytesLike): string {
 
 function zeroPad(data: BytesLike, length: number, left: boolean): string {
     const bytes = getBytes(data);
-    if (length < bytes.length) {
-       throwError("padding exceeds data length", "BUFFER_OVERRUN", {
-            buffer: new Uint8Array(bytes),
-            length: length,
-            offset: length + 1
-        });
-    }
+    assert(length >= bytes.length, "padding exceeds data length", "BUFFER_OVERRUN", {
+        buffer: new Uint8Array(bytes),
+        length: length,
+        offset: length + 1
+    });
 
     const result = new Uint8Array(length);
     result.fill(0);

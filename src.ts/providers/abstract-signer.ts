@@ -1,7 +1,7 @@
 import { Transaction } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, resolveProperties,
-    assertArgument, throwError
+    assert, assertArgument
 } from "../utils/index.js";
 
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
@@ -25,7 +25,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
 
     #checkProvider(operation: string): Provider {
         if (this.provider) { return this.provider; }
-        return throwError("missing provider", "UNSUPPORTED_OPERATION", { operation });
+        assert(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
     }
 
     async getNonce(blockTag?: BlockTag): Promise<number> {
@@ -104,11 +104,8 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
             // We need to get fee data to determine things
             const feeData = await provider.getFeeData();
 
-            if (feeData.gasPrice == null) {
-                throwError("network does not support gasPrice", "UNSUPPORTED_OPERATION", {
-                    operation: "getGasPrice"
-                });
-            }
+            assert(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
+                operation: "getGasPrice" });
 
             // Populate missing gasPrice
             if (pop.gasPrice == null) { pop.gasPrice = feeData.gasPrice; }
@@ -151,11 +148,8 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                     // Network doesn't support EIP-1559...
 
                     // ...but they are trying to use EIP-1559 properties
-                    if (hasEip1559) {
-                        throwError("network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
-                            operation: "populateTransaction"
-                        });
-                    }
+                    assert(hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
+                            operation: "populateTransaction" });
 
                     // Populate missing fee data
                     if (pop.gasPrice == null) {
@@ -168,9 +162,8 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
 
                } else {
                     // getFeeData has failed us.
-                    throwError("failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
-                        operation: "signer.getFeeData"
-                    });
+                    assert(false, "failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
+                        operation: "signer.getFeeData" });
                 }
 
             } else if (pop.type === 2) {
@@ -233,9 +226,7 @@ export class VoidSigner extends AbstractSigner {
     }
 
     #throwUnsupported(suffix: string, operation: string): never {
-        return throwError(`VoidSigner cannot sign ${ suffix }`, "UNSUPPORTED_OPERATION", {
-            operation
-        });
+        assert(false, `VoidSigner cannot sign ${ suffix }`, "UNSUPPORTED_OPERATION", { operation });
     }
 
     async signTransaction(tx: TransactionRequest): Promise<string> {

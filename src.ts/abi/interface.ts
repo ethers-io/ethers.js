@@ -3,7 +3,7 @@ import { id } from "../hash/index.js"
 import {
     concat, dataSlice, getBigInt, getBytes, getBytesCopy,
     hexlify, zeroPadValue, isHexString, defineProperties, assertArgument, toHex,
-    throwError
+    assert
 } from "../utils/index.js";
 
 import { AbiCoder, defaultAbiCoder, getBuiltinCallException } from "./abi-coder.js";
@@ -652,7 +652,7 @@ export class Interface {
         }
 
         // Call returned data with no error, but the data is junk
-        return throwError(message, "BAD_DATA", {
+        assert(false, message, "BAD_DATA", {
             value: hexlify(bytes),
             info: { method: fragment.name, signature: fragment.format() }
         });
@@ -747,12 +747,8 @@ export class Interface {
             eventFragment = this.getEvent(eventFragment);
         }
 
-        if (values.length > eventFragment.inputs.length) {
-            throwError("too many arguments for " + eventFragment.format(), "UNEXPECTED_ARGUMENT", {
-                count: values.length,
-                expectedCount: eventFragment.inputs.length
-            })
-        }
+        assert(values.length <= eventFragment.inputs.length, `too many arguments for ${ eventFragment.format() }`,
+            "UNEXPECTED_ARGUMENT", { count: values.length, expectedCount: eventFragment.inputs.length })
 
         const topics: Array<null | string | Array<string>> = [];
         if (!eventFragment.anonymous) { topics.push(eventFragment.topicHash); }

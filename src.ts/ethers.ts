@@ -54,6 +54,8 @@ export {
 } from "./hash/index.js";
 
 export {
+    Block, FeeData, Log, TransactionReceipt, TransactionResponse,
+
     AbstractProvider,
 
     FallbackProvider,
@@ -80,8 +82,8 @@ export {
     decodeBase64, encodeBase64,
     concat, dataLength, dataSlice, getBytes, getBytesCopy, hexlify,
     isHexString, isBytesLike, stripZerosLeft, zeroPadBytes, zeroPadValue,
-    assertArgument, assertArgumentCount, assertNormalize, assertPrivate,
-    makeError, throwError,
+    assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate,
+    makeError,
     isCallException, isError,
     getIpfsGatewayFunc, FetchRequest, FetchResponse, FetchCancelSignal,
     FixedFormat, FixedNumber, formatFixed, parseFixed,

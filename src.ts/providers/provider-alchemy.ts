@@ -1,6 +1,6 @@
 
 import {
-    defineProperties, resolveProperties, assertArgument, throwError,
+    defineProperties, resolveProperties, assert, assertArgument,
     FetchRequest
 } from "../utils/index.js";
 
@@ -77,20 +77,18 @@ export class AlchemyProvider extends JsonRpcProvider implements CommunityResourc
             } catch (error) { }
 
             if (data) {
-                if (error) {
-                    throwError("an error occurred during transaction executions", "CALL_EXCEPTION", {
-                        action: "getTransactionResult",
-                        data,
-                        reason: null,
-                        transaction: tx,
-                        invocation: null,
-                        revert: null // @TODO
-                    });
-                }
+                assert(!error, "an error occurred during transaction executions", "CALL_EXCEPTION", {
+                    action: "getTransactionResult",
+                    data,
+                    reason: null,
+                    transaction: tx,
+                    invocation: null,
+                    revert: null // @TODO
+                });
                 return data;
             }
 
-            return throwError("could not parse trace result", "BAD_DATA", { value: trace });
+            assert(false, "could not parse trace result", "BAD_DATA", { value: trace });
         }
 
         return await super._perform(req);

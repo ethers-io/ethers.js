@@ -104,7 +104,6 @@ export class FilterIdEventSubscriber extends FilterIdSubscriber {
 
     async _subscribe(provider: JsonRpcApiProvider): Promise<string> {
         const filterId = await provider.send("eth_newFilter", [ this.#event ]);
-        console.log("____SUB", filterId);
         return filterId;
     }
 

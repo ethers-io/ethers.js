@@ -4,7 +4,7 @@ import { getAddress } from "../address/index.js";
 import { keccak256, pbkdf2, randomBytes, scrypt, scryptSync } from "../crypto/index.js";
 import { computeAddress } from "../transaction/index.js";
 import {
-    concat, getBytes, hexlify, assertArgument, throwError
+    concat, getBytes, hexlify, assert, assertArgument
 } from "../utils/index.js";
 
 import { getPassword, spelunk, uuidV4, zpad } from "./utils.js";
@@ -67,7 +67,7 @@ function decrypt(data: any, key: Uint8Array, ciphertext: Uint8Array): string {
         return hexlify(aesCtr.decrypt(ciphertext));
     }
 
-    return throwError("unsupported cipher", "UNSUPPORTED_OPERATION", {
+    assert(false, "unsupported cipher", "UNSUPPORTED_OPERATION", {
         operation: "decrypt"
     });
 }
