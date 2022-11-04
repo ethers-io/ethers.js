@@ -42,6 +42,8 @@ export interface MochaRunnable {
 
 const ATTEMPTS = 5;
 export async function retryIt(name: string, func: (this: MochaRunnable) => Promise<void>): Promise<void> {
+    //const errors: Array<Error> = [ ];
+
     it(name, async function() {
         this.timeout(ATTEMPTS * 5000);
 
@@ -53,15 +55,20 @@ export async function retryIt(name: string, func: (this: MochaRunnable) => Promi
                 if (error.message === "sync skip; aborting execution") {
                     // Skipping a test; let mocha handle it
                     throw error;
+
                 } else if (error.code === "ERR_ASSERTION") {
                     // Assertion error; let mocha scold us
                     throw error;
+
                 } else {
+                    //errors.push(error);
+
                     if (i === ATTEMPTS - 1) {
-                        stats.pushRetry(i, name, error);
+                        throw error;
+                        //stats.pushRetry(i, name, error);
                     } else {
                         await stall(500 * (1 << i));
-                        stats.pushRetry(i, name, null);
+                        //stats.pushRetry(i, name, null);
                     }
                 }
             }
@@ -72,6 +79,7 @@ export async function retryIt(name: string, func: (this: MochaRunnable) => Promi
     });
 }
 
+/*
 export interface StatSet {
     name: string;
     retries: Array<{ message: string, error: null | Error }>;
@@ -80,11 +88,11 @@ export interface StatSet {
 const _guard = { };
 
 export class Stats {
-    #stats: Array<StatSet>;
+//    #stats: Array<StatSet>;
 
     constructor(guard: any) {
         if (guard !== _guard) { throw new Error("private constructor"); }
-        this.#stats = [ ];
+//        this.#stats = [ ];
     }
 
     #currentStats(): StatSet {
@@ -124,3 +132,4 @@ export class Stats {
 }
 
 export const stats = new Stats(_guard);
+*/
