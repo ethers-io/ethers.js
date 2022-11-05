@@ -289,8 +289,14 @@ const allNetworks = [ "default", "homestead", "goerli" ];
 const _ApiKeys: Record<string, any> = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
     coinbaseCloud: {
-        apiUsername: 'PM5MLMPDPUCAWVW6G5IZ',
-        apiPassword: 'RCT6QJ7ZO4ELKHXHZTVBWSCZAL2SHKWUFU5WZB4Z'
+        homestead: {
+            apiUsername: 'RE6TJCAA3KAXYIZUKROS',
+            apiPassword: 'OOIQYRHLK332GYRIDEA7NBQUV245XBNEPX7RUFQT'
+        },
+        goerli: {
+            apiUsername: 'IMRGCPQL3GZRXT2D3ZVS',
+            apiPassword: 'LUZT3NAFE3CV7HCVSAYBQHGCL4AG6VE56HAFWVDM'
+        }
     },
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
@@ -304,7 +310,7 @@ type CoinbaseCloudApiKeySet = {
 
 type ApiKeySet = {
     alchemy: string;
-    coinbaseCloud: CoinbaseCloudApiKeySet;
+    coinbaseCloud: Record<string, CoinbaseCloudApiKeySet>;
     etherscan: string;
     infura: string;
     pocket: string;
@@ -313,7 +319,6 @@ type ApiKeySet = {
 function getApiKeys(network: string): ApiKeySet {
     if (network === "default" || network == null) { network = "homestead"; }
     const apiKeys = ethers.utils.shallowCopy(_ApiKeys);
-    console.log(apiKeys);
     //apiKeys.pocket = _ApiKeysPocket[network];
     return <ApiKeySet>apiKeys;
 }
@@ -363,11 +368,9 @@ const providerFunctions: Array<ProviderDescription> = [
         networks: allNetworks,
         create: (network: string) => {
             if (network == "default") {
-                console.log(getApiKeys(network).coinbaseCloud);
-                return new ethers.providers.CoinbaseCloudProvider(null, getApiKeys(network).coinbaseCloud);
+                return new ethers.providers.CoinbaseCloudProvider(null, getApiKeys(network).coinbaseCloud.homestead);
             }
-            console.log(getApiKeys(network).coinbaseCloud);
-            return new ethers.providers.CoinbaseCloudProvider(network, getApiKeys(network).coinbaseCloud);
+            return new ethers.providers.CoinbaseCloudProvider(network, getApiKeys(network).coinbaseCloud[network]);
         }
     },
     {
