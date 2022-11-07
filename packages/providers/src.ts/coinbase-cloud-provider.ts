@@ -104,4 +104,11 @@ export class CoinbaseCloudProvider extends UrlJsonRpcProvider implements Communi
     isCommunityResource(): boolean {
         return CoinbaseCloudProvider.isDefaultKey(this.apiKey);
     }
+
+    async perform(method: string, params: any): Promise<any> {
+        if (method === "getStorageAt") {
+            throw new Error("CoinbaseCloudProvider does not support getStorageAt");
+        }
+        return super.perform(method, params);
+    }
 }

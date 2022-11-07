@@ -479,9 +479,12 @@ Object.keys(blockchainData).forEach((network) => {
 
         if (test.storage) {
             Object.keys(test.storage).forEach((position) => {
-                addSimpleTest(`fetches storage: ${ test.address }:${ position }`, (provider: ethers.providers.Provider) => {
+                addObjectTest(`fetches storage: ${ test.address }:${ position }`, (provider: ethers.providers.Provider) => {
                     return provider.getStorageAt(test.address, bnify(position));
-                }, test.storage[position]);
+                }, test.storage[position], (provider: string, network: string, test: TestDescription) => {
+                    // CoinbaseCloudProvider does not support getStorageAt
+                    return provider === "CoinbaseCloudProvider";
+                });
             });
         }
 
