@@ -107,7 +107,7 @@ function resolveName(resolver, nameOrPromise) {
                 case 2:
                     address = _a.sent();
                     if (address == null) {
-                        logger.throwArgumentError("resolver or addr is not configured for ENS name", "name", name);
+                        logger.throwArgumentError("resolver or addr is not configured for ENS name. Here are some reasons why this happens: 1)Your provider or signer is not configured with a correct contract address. 2) A parameter to a contract call of type address is empty. 3) You are sending a parameter struct which contains an address type which is empty. ", "name", name);
                     }
                     return [2 /*return*/, address];
             }
