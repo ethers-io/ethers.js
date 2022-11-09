@@ -12,6 +12,7 @@ lib.esm/_admin/**
 types/_admin/**
 reporter.cjs
 package-commonjs.json
+.github/workflows/test-ci.yml
 
 # Ignore test cases
 src.ts/_tests/**
