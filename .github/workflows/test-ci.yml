@@ -72,19 +72,19 @@ jobs:
       - name: Build ESM (from TypeScript)
         run: npm run build
 
-      - name: Run tests
+      - name: Run coverage tests
         run: npm run test-coverage
 
-      - name: Upload coverage summary
+      - name: Store coverage summary artifact
         uses: actions/upload-artifact@v2
         with:
           name: coverage-summary
           path: ./output/summary.txt
 
-      - name: Tar files
+      - name: Tar coverage files
         run: tar -cvf ./output/coverage.tar ./output/lcov-report/
 
-      - name: Upload coverage
+      - name: Store full coverage artifact
         uses: actions/upload-artifact@v2
         with:
           name: coverage-complete
