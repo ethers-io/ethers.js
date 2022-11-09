@@ -11,7 +11,7 @@ import {
 
 import type { BigNumberish, BytesLike, EthersError } from "../utils/index.js";
 
-import type { AbstractProvider, ProviderPlugin } from "./abstract-provider.js";
+import type { AbstractProvider, AbstractProviderPlugin } from "./abstract-provider.js";
 import type { EnsPlugin } from "./plugins-network.js";
 import type { TransactionRequest, Provider } from "./provider.js";
 
@@ -117,14 +117,14 @@ export interface AvatarResult {
     url: null | string;
 };
 
-export abstract class MulticoinProviderPlugin implements ProviderPlugin {
+export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin {
     readonly name!: string;
 
     constructor(name: string) {
         defineProperties<MulticoinProviderPlugin>(this, { name });
     }
 
-    validate(proivder: Provider): ProviderPlugin {
+    connect(proivder: Provider): MulticoinProviderPlugin {
         return this;
     }
 
@@ -141,7 +141,7 @@ export abstract class MulticoinProviderPlugin implements ProviderPlugin {
     }
 }
 
-const BasicMulticoinPluginId = "org.ethers.provider-prugins.basicmulticoin";
+const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoinProviderPlugin";
 
 export class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
     constructor() {

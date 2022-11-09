@@ -71,6 +71,33 @@ function getTag(prefix: string, value: any): string {
     });
 }
 
+export type DebugEventAbstractProvider = {
+    action: "sendCcipReadFetchRequest",
+    request: FetchRequest
+    index: number
+    urls: Array<string>
+} | {
+    action: "receiveCcipReadFetchResult",
+    request: FetchRequest,
+    result: any
+} | {
+    action: "receiveCcipReadFetchError",
+    request: FetchRequest,
+    result: any
+} | {
+    action: "sendCcipReadCall",
+    transaction: { to: string, data: string }
+} | {
+    action: "receiveCcipReadCallResult",
+    transaction: { to: string, data: string }
+    result: string
+} | {
+    action: "receiveCcipReadCallError",
+    transaction: { to: string, data: string }
+    error: Error
+};
+
+
 // Only sub-classes overriding the _getSubscription method will care about this
 export type Subscription = {
     type: "block" | "close" | "debug" | "network" | "pending",
@@ -203,9 +230,9 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
 
 function getTime(): number { return (new Date()).getTime(); }
 
-export interface ProviderPlugin {
+export interface AbstractProviderPlugin {
     readonly name: string;
-    validate(provider: Provider): ProviderPlugin;
+    connect(provider: AbstractProvider): AbstractProviderPlugin;
 }
 
 export type PerformActionFilter = {
@@ -225,6 +252,9 @@ export interface PerformActionTransaction extends PreparedTransactionRequest {
 }
 
 export type PerformActionRequest = {
+    method: "broadcastTransaction",
+    signedTransaction: string
+} | {
     method: "call",
     transaction: PerformActionTransaction, blockTag: BlockTag
 } | {
@@ -266,9 +296,6 @@ export type PerformActionRequest = {
 } | {
     method: "getTransactionResult",
     hash: string
-} | {
-    method: "broadcastTransaction", // @TODO: rename to broadcast
-    signedTransaction: string
 };
 
 type _PerformAccountRequest = {
@@ -290,7 +317,7 @@ type CcipArgs = {
 export class AbstractProvider implements Provider {
 
     #subs: Map<string, Sub>;
-    #plugins: Map<string, ProviderPlugin>;
+    #plugins: Map<string, AbstractProviderPlugin>;
 
     // null=unpaused, true=paused+dropWhilePaused, false=paused
     #pausedState: null | boolean;
@@ -341,19 +368,19 @@ export class AbstractProvider implements Provider {
 
     get provider(): this { return this; }
 
-    get plugins(): Array<ProviderPlugin> {
+    get plugins(): Array<AbstractProviderPlugin> {
         return Array.from(this.#plugins.values());
     }
 
-    attachPlugin(plugin: ProviderPlugin): this {
+    attachPlugin(plugin: AbstractProviderPlugin): this {
         if (this.#plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${ plugin.name } `);
         }
-        this.#plugins.set(plugin.name,  plugin.validate(this));
+        this.#plugins.set(plugin.name,  plugin.connect(this));
         return this;
     }
 
-    getPlugin<T extends ProviderPlugin = ProviderPlugin>(name: string): null | T {
+    getPlugin<T extends AbstractProviderPlugin = AbstractProviderPlugin>(name: string): null | T {
         return <T>(this.#plugins.get(name)) || null;
     }
 
@@ -406,13 +433,19 @@ export class AbstractProvider implements Provider {
                 request.body = { data, sender };
             }
 
+            this.emit("debug", { action: "sendCcipReadFetchRequest", request, index: i, urls });
+
             let errorMessage = "unknown error";
 
             const resp = await request.send();
             try {
                  const result = resp.bodyJson;
-                 if (result.data) { return result.data; }
+                 if (result.data) {
+                     this.emit("debug", { action: "receiveCcipReadFetchResult", request, result });
+                     return result.data;
+                 }
                  if (result.message) { errorMessage = result.message; }
+                 this.emit("debug", { action: "receiveCcipReadFetchError", request, result });
             } catch (error) { }
 
             // 4xx indicates the result is not present; stop
@@ -485,8 +518,9 @@ export class AbstractProvider implements Provider {
                 return blockTag;
         }
 
+
         if (isHexString(blockTag)) {
-            if (dataLength(blockTag) === 32) { return blockTag; }
+            if (isHexString(blockTag, 32)) { return blockTag; }
             return toQuantity(blockTag);
         }
 
@@ -737,12 +771,20 @@ export class AbstractProvider implements Provider {
                  assert(ccipResult != null, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
                      reason: "FETCH_FAILED", transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs } });
 
-                 return this.#call({
+                 const tx = {
                      to: txSender,
-                     data: concat([
-                         ccipArgs.selector, encodeBytes([ ccipResult, ccipArgs.extraData ])
-                     ]),
-                 }, blockTag, attempt + 1);
+                     data: concat([ ccipArgs.selector, encodeBytes([ ccipResult, ccipArgs.extraData ]) ])
+                 };
+
+                 this.emit("debug", { action: "sendCcipReadCall", transaction: tx });
+                 try {
+                     const result = await this.#call(tx, blockTag, attempt + 1);
+                     this.emit("debug", { action: "receiveCcipReadCallResult", transaction: Object.assign({ }, tx), result });
+                     return result;
+                 } catch (error) {
+                     this.emit("debug", { action: "receiveCcipReadCallError", transaction: Object.assign({ }, tx), error });
+                     throw error;
+                 }
              }
 
              throw error;

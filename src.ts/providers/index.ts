@@ -69,7 +69,7 @@ export {
 
 export type {
     Subscription, Subscriber,
-    ProviderPlugin,
+    AbstractProviderPlugin,
     PerformActionFilter, PerformActionTransaction, PerformActionRequest
 } from "./abstract-provider.js"
 export type { ContractRunner } from "./contracts.js";
