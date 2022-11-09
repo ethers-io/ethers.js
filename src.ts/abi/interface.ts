@@ -818,7 +818,7 @@ export class Interface {
             topics.push(eventFragment.topicHash);
         }
 
-        assertArgument(values.length !== eventFragment.inputs.length,
+        assertArgument(values.length === eventFragment.inputs.length,
             "event arguments/values mismatch", "values", values);
 
         eventFragment.inputs.forEach((param, index) => {
