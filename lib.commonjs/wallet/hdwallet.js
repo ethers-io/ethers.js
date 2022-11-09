@@ -54,9 +54,7 @@ function ser_I(index, chainCode, publicKey, privateKey) {
 }
 function derivePath(node, path) {
     const components = path.split("/");
-    if (components.length === 0 || (components[0] === "m" && node.depth !== 0)) {
-        throw new Error("invalid path - " + path);
-    }
+    (0, index_js_4.assertArgument)(components.length > 0 && (components[0] === "m" || node.depth > 0), "invalid path", "path", path);
     if (components[0] === "m") {
         components.shift();
     }
@@ -65,20 +63,16 @@ function derivePath(node, path) {
         const component = components[i];
         if (component.match(/^[0-9]+'$/)) {
             const index = parseInt(component.substring(0, component.length - 1));
-            if (index >= HardenedBit) {
-                throw new Error("invalid path index - " + component);
-            }
+            (0, index_js_4.assertArgument)(index < HardenedBit, "invalid path index", `path[${i}]`, component);
             result = result.deriveChild(HardenedBit + index);
         }
         else if (component.match(/^[0-9]+$/)) {
             const index = parseInt(component);
-            if (index >= HardenedBit) {
-                throw new Error("invalid path index - " + component);
-            }
+            (0, index_js_4.assertArgument)(index < HardenedBit, "invalid path index", `path[${i}]`, component);
             result = result.deriveChild(index);
         }
         else {
-            throw new Error("invalid path component - " + component);
+            (0, index_js_4.assertArgument)(false, "invalid path component", `path[${i}]`, component);
         }
     }
     return result;
@@ -112,9 +106,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
         // we should always use mainnet, and use BIP-44 to derive the network
         //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
         //   - Testnet: public=0x043587CF, private=0x04358394
-        if (this.depth >= 256) {
-            throw new Error("Depth too large!");
-        }
+        (0, index_js_4.assert)(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
         return encodeBase58Check((0, index_js_4.concat)([
             "0x0488ADE4", zpad(this.depth, 1), this.parentFingerprint,
             zpad(this.index, 4), this.chainCode,
@@ -127,9 +119,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
     }
     deriveChild(_index) {
         const index = (0, index_js_4.getNumber)(_index, "index");
-        if (index > 0xffffffff) {
-            throw new Error("invalid index - " + String(index));
-        }
+        (0, index_js_4.assertArgument)(index <= 0xffffffff, "invalid index", "index", index);
         // Base path
         let path = this.path;
         if (path) {
@@ -146,10 +136,9 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
         return derivePath(this, path);
     }
     static #fromSeed(_seed, mnemonic) {
+        (0, index_js_4.assertArgument)((0, index_js_4.isBytesLike)(_seed), "invalid seed", "seed", "[REDACTED]");
         const seed = (0, index_js_4.getBytes)(_seed, "seed");
-        if (seed.length < 16 || seed.length > 64) {
-            throw new Error("invalid seed");
-        }
+        (0, index_js_4.assertArgument)(seed.length >= 16 && seed.length <= 64, "invalid seed", "seed", "[REDACTED]");
         const I = (0, index_js_4.getBytes)((0, index_js_1.computeHmac)("sha512", MasterSecret, seed));
         const signingKey = new index_js_1.SigningKey((0, index_js_4.hexlify)(I.slice(0, 32)));
         return new HDNodeWallet(_guard, signingKey, "0x00000000", (0, index_js_4.hexlify)(I.slice(32)), "m", 0, 0, mnemonic, null);
@@ -230,9 +219,7 @@ class HDNodeVoidWallet extends index_js_2.VoidSigner {
         // we should always use mainnet, and use BIP-44 to derive the network
         //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
         //   - Testnet: public=0x043587CF, private=0x04358394
-        if (this.depth >= 256) {
-            throw new Error("Depth too large!");
-        }
+        (0, index_js_4.assert)(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
         return encodeBase58Check((0, index_js_4.concat)([
             "0x0488B21E",
             zpad(this.depth, 1),
@@ -245,9 +232,7 @@ class HDNodeVoidWallet extends index_js_2.VoidSigner {
     hasPath() { return (this.path != null); }
     deriveChild(_index) {
         const index = (0, index_js_4.getNumber)(_index, "index");
-        if (index > 0xffffffff) {
-            throw new Error("invalid index - " + String(index));
-        }
+        (0, index_js_4.assertArgument)(index <= 0xffffffff, "invalid index", "index", index);
         // Base path
         let path = this.path;
         if (path) {

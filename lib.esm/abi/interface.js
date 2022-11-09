@@ -707,7 +707,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         if (!eventFragment.anonymous) {
             topics.push(eventFragment.topicHash);
         }
-        assertArgument(values.length !== eventFragment.inputs.length, "event arguments/values mismatch", "values", values);
+        assertArgument(values.length === eventFragment.inputs.length, "event arguments/values mismatch", "values", values);
         eventFragment.inputs.forEach((param, index) => {
             const value = values[index];
             if (param.indexed) {

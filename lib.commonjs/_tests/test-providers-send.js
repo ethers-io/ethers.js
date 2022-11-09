@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert_1 = __importDefault(require("assert"));
 const index_js_1 = require("../index.js");
 const create_provider_js_1 = require("./create-provider.js");
+function stall(duration) {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
+}
 describe("Sends Transactions", function () {
     const cleanup = [];
     after(function () {
@@ -29,11 +32,26 @@ describe("Sends Transactions", function () {
             this.timeout(60000);
             const w = wallet.connect(provider);
             const dustAddr = index_js_1.Wallet.createRandom().address;
-            const tx = await w.sendTransaction({
-                to: dustAddr,
-                value: 42,
-                type: 2
-            });
+            // Retry if another CI instance used our value
+            let tx = null;
+            for (let i = 0; i < 10; i++) {
+                try {
+                    tx = await w.sendTransaction({
+                        to: dustAddr,
+                        value: 42,
+                        type: 2
+                    });
+                    break;
+                }
+                catch (error) {
+                    if ((0, index_js_1.isError)(error, "REPLACEMENT_UNDERPRICED")) {
+                        await stall(1000);
+                        continue;
+                    }
+                    throw error;
+                }
+            }
+            assert_1.default.ok(!!tx, "too many retries");
             //const receipt = 
             await provider.waitForTransaction(tx.hash); //tx.wait();
             //console.log(receipt);
