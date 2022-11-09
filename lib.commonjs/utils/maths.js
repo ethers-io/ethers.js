@@ -51,12 +51,8 @@ function getBigInt(value, name) {
     switch (typeof (value)) {
         case "bigint": return value;
         case "number":
-            if (!Number.isInteger(value)) {
-                (0, errors_js_1.throwArgumentError)("underflow", name || "value", value);
-            }
-            else if (value < -maxValue || value > maxValue) {
-                (0, errors_js_1.throwArgumentError)("overflow", name || "value", value);
-            }
+            (0, errors_js_1.assertArgument)(Number.isInteger(value), "underflow", name || "value", value);
+            (0, errors_js_1.assertArgument)(value >= -maxValue && value <= maxValue, "overflow", name || "value", value);
             return BigInt(value);
         case "string":
             try {
@@ -66,10 +62,10 @@ function getBigInt(value, name) {
                 return BigInt(value);
             }
             catch (e) {
-                (0, errors_js_1.throwArgumentError)(`invalid BigNumberish string: ${e.message}`, name || "value", value);
+                (0, errors_js_1.assertArgument)(false, `invalid BigNumberish string: ${e.message}`, name || "value", value);
             }
     }
-    return (0, errors_js_1.throwArgumentError)("invalid BigNumberish value", name || "value", value);
+    (0, errors_js_1.assertArgument)(false, "invalid BigNumberish value", name || "value", value);
 }
 exports.getBigInt = getBigInt;
 const Nibbles = "0123456789abcdef";
@@ -96,27 +92,21 @@ exports.toBigInt = toBigInt;
 function getNumber(value, name) {
     switch (typeof (value)) {
         case "bigint":
-            if (value < -maxValue || value > maxValue) {
-                (0, errors_js_1.throwArgumentError)("overflow", name || "value", value);
-            }
+            (0, errors_js_1.assertArgument)(value >= -maxValue && value <= maxValue, "overflow", name || "value", value);
             return Number(value);
         case "number":
-            if (!Number.isInteger(value)) {
-                (0, errors_js_1.throwArgumentError)("underflow", name || "value", value);
-            }
-            else if (value < -maxValue || value > maxValue) {
-                (0, errors_js_1.throwArgumentError)("overflow", name || "value", value);
-            }
+            (0, errors_js_1.assertArgument)(Number.isInteger(value), "underflow", name || "value", value);
+            (0, errors_js_1.assertArgument)(value >= -maxValue && value <= maxValue, "overflow", name || "value", value);
             return value;
         case "string":
             try {
                 return getNumber(BigInt(value), name);
             }
             catch (e) {
-                (0, errors_js_1.throwArgumentError)(`invalid numeric string: ${e.message}`, name || "value", value);
+                (0, errors_js_1.assertArgument)(false, `invalid numeric string: ${e.message}`, name || "value", value);
             }
     }
-    return (0, errors_js_1.throwArgumentError)("invalid numeric value", name || "value", value);
+    (0, errors_js_1.assertArgument)(false, "invalid numeric value", name || "value", value);
 }
 exports.getNumber = getNumber;
 /*

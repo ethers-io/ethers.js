@@ -1,4 +1,4 @@
-import { isHexString, throwError } from "../utils/index.js";
+import { assert, isHexString } from "../utils/index.js";
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
@@ -9,7 +9,7 @@ export function getPollingSubscriber(provider, event) {
     if (isHexString(event, 32)) {
         return new PollingTransactionSubscriber(provider, event);
     }
-    return throwError("unsupported polling event", "UNSUPPORTED_OPERATION", {
+    assert(false, "unsupported polling event", "UNSUPPORTED_OPERATION", {
         operation: "getPollingSubscriber", info: { event }
     });
 }

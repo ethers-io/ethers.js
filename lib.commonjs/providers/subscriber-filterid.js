@@ -84,7 +84,6 @@ class FilterIdEventSubscriber extends FilterIdSubscriber {
     }
     async _subscribe(provider) {
         const filterId = await provider.send("eth_newFilter", [this.#event]);
-        console.log("____SUB", filterId);
         return filterId;
     }
     async _emitResults(provider, results) {

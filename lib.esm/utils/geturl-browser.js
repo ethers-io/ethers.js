@@ -1,18 +1,14 @@
-import { throwError } from "./errors.js";
+import { assert } from "./errors.js";
 // @TODO: timeout is completely ignored; start a Promise.any with a reject?
 export async function getUrl(req, _signal) {
     const protocol = req.url.split(":")[0].toLowerCase();
-    if (protocol !== "http" && protocol !== "https") {
-        throwError(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
-            info: { protocol },
-            operation: "request"
-        });
-    }
-    if (req.credentials && !req.allowInsecureAuthentication) {
-        throwError("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
-            operation: "request"
-        });
-    }
+    assert(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+        info: { protocol },
+        operation: "request"
+    });
+    assert(!req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        operation: "request"
+    });
     let signal = undefined;
     if (_signal) {
         const controller = new AbortController();

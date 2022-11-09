@@ -63,9 +63,7 @@ function encodeBytes(datas) {
     return (0, index_js_4.concat)(result);
 }
 function callAddress(value) {
-    if (value.length !== 66 || (0, index_js_4.dataSlice)(value, 0, 12) !== "0x000000000000000000000000") {
-        (0, index_js_4.throwArgumentError)("invalid call address", "value", value);
-    }
+    (0, index_js_4.assertArgument)(value.length === 66 && (0, index_js_4.dataSlice)(value, 0, 12) === "0x000000000000000000000000", "invalid call address", "value", value);
     return (0, index_js_1.getAddress)("0x" + value.substring(26));
 }
 // @TODO: This should use the fetch-data:ipfs gateway
@@ -78,7 +76,7 @@ function getIpfsLink(link) {
         link = link.substring(7);
     }
     else {
-        (0, index_js_4.throwArgumentError)("unsupported IPFS format", "link", link);
+        (0, index_js_4.assertArgument)(false, "unsupported IPFS format", "link", link);
     }
     return `https:/\/gateway.ipfs.io/ipfs/${link}`;
 }
@@ -89,7 +87,7 @@ class MulticoinProviderPlugin {
     constructor(name) {
         (0, index_js_4.defineProperties)(this, { name });
     }
-    validate(proivder) {
+    connect(proivder) {
         return this;
     }
     supportsCoinType(coinType) {
@@ -103,7 +101,7 @@ class MulticoinProviderPlugin {
     }
 }
 exports.MulticoinProviderPlugin = MulticoinProviderPlugin;
-const BasicMulticoinPluginId = "org.ethers.provider-prugins.basicmulticoin";
+const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoinProviderPlugin";
 class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
     constructor() {
         super(BasicMulticoinPluginId);
@@ -164,12 +162,10 @@ class EnsResolver {
         }
         try {
             let data = await this.provider.call(tx);
-            if (((0, index_js_4.getBytes)(data).length % 32) === 4) {
-                return (0, index_js_4.throwError)("execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
-                    action: "call", data, reason: null, transaction: tx,
-                    invocation: null, revert: null
-                });
-            }
+            (0, index_js_4.assert)(((0, index_js_4.getBytes)(data).length % 32) !== 4, "execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
+                action: "call", data, reason: null, transaction: tx,
+                invocation: null, revert: null
+            });
             if (wrapped) {
                 return parseBytes(data, 0);
             }
@@ -224,7 +220,7 @@ class EnsResolver {
         if (address != null) {
             return address;
         }
-        return (0, index_js_4.throwError)(`invalid coin data`, "UNSUPPORTED_OPERATION", {
+        (0, index_js_4.assert)(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${coinType})`,
             info: { coinType, data }
         });
@@ -262,7 +258,7 @@ class EnsResolver {
         if (swarm && swarm[1].length === 64) {
             return `bzz:/\/${swarm[1]}`;
         }
-        return (0, index_js_4.throwError)(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+        (0, index_js_4.assert)(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
             info: { data: hexBytes }
         });
@@ -419,11 +415,9 @@ class EnsResolver {
         const network = await provider.getNetwork();
         const ensPlugin = network.getPlugin("org.ethers.network-plugins.ens");
         // No ENS...
-        if (!ensPlugin) {
-            return (0, index_js_4.throwError)("network does not support ENS", "UNSUPPORTED_OPERATION", {
-                operation: "getResolver", info: { network: network.name }
-            });
-        }
+        (0, index_js_4.assert)(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
+            operation: "getResolver", info: { network: network.name }
+        });
         try {
             // keccak256("resolver(bytes32)")
             const addrData = await provider.call({

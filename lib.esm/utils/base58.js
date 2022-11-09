@@ -1,5 +1,5 @@
 import { getBytes } from "./data.js";
-import { throwArgumentError } from "./errors.js";
+import { assertArgument } from "./errors.js";
 import { toBigInt, toHex } from "./maths.js";
 const Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 let Lookup = null;
@@ -11,9 +11,7 @@ function getAlpha(letter) {
         }
     }
     const result = Lookup[letter];
-    if (result == null) {
-        throwArgumentError(`invalid base58 value`, "letter", letter);
-    }
+    assertArgument(result != null, `invalid base58 value`, "letter", letter);
     return result;
 }
 const BN_0 = BigInt(0);

@@ -1,7 +1,7 @@
 import { getAddress, getCreateAddress } from "../address/index.js";
 import { Signature } from "../crypto/index.js";
 import { accessListify } from "../transaction/index.js";
-import { getBigInt, getNumber, hexlify, isHexString, zeroPadValue, throwArgumentError, throwError } from "../utils/index.js";
+import { getBigInt, getNumber, hexlify, isHexString, zeroPadValue, assert, assertArgument } from "../utils/index.js";
 const BN_0 = BigInt(0);
 export function allowNull(format, nullValue) {
     return (function (value) {
@@ -43,7 +43,7 @@ export function object(format, altNames) {
             }
             catch (error) {
                 const message = (error instanceof Error) ? error.message : "not-an-error";
-                throwError(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+                assert(false, `invalid value for value.${key} (${message})`, "BAD_DATA", { value });
             }
         }
         return result;
@@ -58,18 +58,14 @@ export function formatBoolean(value) {
         case "false":
             return false;
     }
-    return throwArgumentError(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
+    assertArgument(false, `invalid boolean; ${JSON.stringify(value)}`, "value", value);
 }
 export function formatData(value) {
-    if (!isHexString(value, true)) {
-        throwArgumentError("", "value", value);
-    }
+    assertArgument(isHexString(value, true), "invalid data", "value", value);
     return value;
 }
 export function formatHash(value) {
-    if (!isHexString(value, 32)) {
-        throwArgumentError("", "value", value);
-    }
+    assertArgument(isHexString(value, 32), "invalid hash", "value", value);
     return value;
 }
 export function formatUint256(value) {
@@ -134,7 +130,7 @@ export const formatTransactionReceipt = object({
     hash: formatHash,
     logs: arrayOf(formatReceiptLog),
     blockNumber: getNumber,
-    confirmations: allowNull(getNumber, null),
+    //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: getBigInt,
     effectiveGasPrice: allowNull(getBigInt),
     status: allowNull(getNumber),
@@ -162,7 +158,7 @@ export function formatTransactionResponse(value) {
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),
-        confirmations: allowNull(getNumber, null),
+        //confirmations: allowNull(getNumber, null),
         from: getAddress,
         // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
         gasPrice: allowNull(getBigInt),
@@ -189,7 +185,12 @@ export function formatTransactionResponse(value) {
         result.accessList = [];
     }
     // Compute the signature
-    result.signature = Signature.from(value);
+    if (value.signature) {
+        result.signature = Signature.from(value.signature);
+    }
+    else {
+        result.signature = Signature.from(value);
+    }
     // Some backends omit ChainId on legacy transactions, but we can compute it
     if (result.chainId == null) {
         const chainId = result.signature.legacyChainId;

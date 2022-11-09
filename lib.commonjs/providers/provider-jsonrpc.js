@@ -61,7 +61,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
         (0, index_js_5.defineProperties)(this, { address });
     }
     connect(provider) {
-        return (0, index_js_5.throwError)("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
+        (0, index_js_5.assert)(false, "cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
             operation: "signer.connect"
         });
     }
@@ -82,9 +82,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
             const _from = tx.from;
             promises.push((async () => {
                 const from = await (0, index_js_2.resolveAddress)(_from, this.provider);
-                if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                    (0, index_js_5.throwArgumentError)("from address mismatch", "transaction", _tx);
-                }
+                (0, index_js_5.assertArgument)(from != null && from.toLowerCase() === this.address.toLowerCase(), "from address mismatch", "transaction", _tx);
                 tx.from = from;
             })());
         }
@@ -141,9 +139,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
         // Make sure the from matches the sender
         if (tx.from) {
             const from = await (0, index_js_2.resolveAddress)(tx.from, this.provider);
-            if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                return (0, index_js_5.throwArgumentError)("from address mismatch", "transaction", _tx);
-            }
+            (0, index_js_5.assertArgument)(from != null && from.toLowerCase() === this.address.toLowerCase(), "from address mismatch", "transaction", _tx);
             tx.from = from;
         }
         else {
@@ -163,9 +159,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
         // Populate any ENS names (in-place)
         const populated = await index_js_3.TypedDataEncoder.resolveNames(domain, types, value, async (value) => {
             const address = await (0, index_js_2.resolveAddress)(value);
-            if (address == null) {
-                return (0, index_js_5.throwArgumentError)("TypedData does not support null address", "value", value);
-            }
+            (0, index_js_5.assertArgument)(address != null, "TypedData does not support null address", "value", value);
             return address;
         });
         return await this.provider.send("eth_signTypedData_v4", [
@@ -281,9 +275,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork) {
-            if (staticNetwork !== network) {
-                (0, index_js_5.throwArgumentError)("staticNetwork MUST match network object", "options", options);
-            }
+            (0, index_js_5.assertArgument)(staticNetwork === network, "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
         }
     }
@@ -300,9 +292,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
      *  is detected, and if it has changed, the call will reject.
      */
     get _network() {
-        if (!this.#network) {
-            (0, index_js_5.throwError)("network is not available yet", "NETWORK_ERROR");
-        }
+        (0, index_js_5.assert)(this.#network, "network is not available yet", "NETWORK_ERROR");
         return this.#network;
     }
     /**
@@ -311,7 +301,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
      *  Sub-classes **MUST** override this.
      */
     _send(payload) {
-        return (0, index_js_5.throwError)("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
+        (0, index_js_5.assert)(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
             operation: "jsonRpcApiProvider._send"
         });
     }

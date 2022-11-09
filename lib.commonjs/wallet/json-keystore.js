@@ -28,7 +28,7 @@ function decrypt(data, key, ciphertext) {
         const aesCtr = new aes_js_1.CTR(key, iv);
         return (0, index_js_4.hexlify)(aesCtr.decrypt(ciphertext));
     }
-    return (0, index_js_4.throwError)("unsupported cipher", "UNSUPPORTED_OPERATION", {
+    (0, index_js_4.assert)(false, "unsupported cipher", "UNSUPPORTED_OPERATION", {
         operation: "decrypt"
     });
 }
@@ -36,9 +36,7 @@ function getAccount(data, _key) {
     const key = (0, index_js_4.getBytes)(_key);
     const ciphertext = (0, utils_js_1.spelunk)(data, "crypto.ciphertext:data!");
     const computedMAC = (0, index_js_4.hexlify)((0, index_js_2.keccak256)((0, index_js_4.concat)([key.slice(16, 32), ciphertext]))).substring(2);
-    if (computedMAC !== (0, utils_js_1.spelunk)(data, "crypto.mac:string!").toLowerCase()) {
-        return (0, index_js_4.throwArgumentError)("incorrect password", "password", "[ REDACTED ]");
-    }
+    (0, index_js_4.assertArgument)(computedMAC === (0, utils_js_1.spelunk)(data, "crypto.mac:string!").toLowerCase(), "incorrect password", "password", "[ REDACTED ]");
     const privateKey = decrypt(data, key.slice(0, 16), ciphertext);
     const address = (0, index_js_3.computeAddress)(privateKey);
     if (data.address) {
@@ -46,9 +44,7 @@ function getAccount(data, _key) {
         if (check.substring(0, 2) !== "0x") {
             check = "0x" + check;
         }
-        if ((0, index_js_1.getAddress)(check) !== address) {
-            (0, index_js_4.throwArgumentError)("keystore address/privateKey mismatch", "address", data.address);
-        }
+        (0, index_js_4.assertArgument)((0, index_js_1.getAddress)(check) === address, "keystore address/privateKey mismatch", "address", data.address);
     }
     const account = { address, privateKey };
     // Version 0.1 x-ethers metadata must contain an encrypted mnemonic phrase
@@ -70,7 +66,7 @@ function getKdfParams(data) {
     const kdf = (0, utils_js_1.spelunk)(data, "crypto.kdf:string");
     if (kdf && typeof (kdf) === "string") {
         const throwError = function (name, value) {
-            return (0, index_js_4.throwArgumentError)("invalid key-derivation function parameters", name, value);
+            (0, index_js_4.assertArgument)(false, "invalid key-derivation function parameters", name, value);
         };
         if (kdf.toLowerCase() === "scrypt") {
             const salt = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.salt:data!");
@@ -106,7 +102,7 @@ function getKdfParams(data) {
             return { name: "pbkdf2", salt, count, dkLen, algorithm };
         }
     }
-    return (0, index_js_4.throwArgumentError)("unsupported key-derivation function", "kdf", kdf);
+    (0, index_js_4.assertArgument)(false, "unsupported key-derivation function", "kdf", kdf);
 }
 function decryptKeystoreJsonSync(json, _password) {
     const data = JSON.parse(json);
@@ -196,14 +192,10 @@ async function encryptKeystoreJson(account, password, options, progressCallback)
     const salt = (options.salt != null) ? (0, index_js_4.getBytes)(options.salt, "options.slat") : (0, index_js_2.randomBytes)(32);
     // Override initialization vector
     const iv = (options.iv != null) ? (0, index_js_4.getBytes)(options.iv, "options.iv") : (0, index_js_2.randomBytes)(16);
-    if (iv.length !== 16) {
-        (0, index_js_4.throwArgumentError)("invalid options.iv", "options.iv", options.iv);
-    }
+    (0, index_js_4.assertArgument)(iv.length === 16, "invalid options.iv", "options.iv", options.iv);
     // Override the uuid
     const uuidRandom = (options.uuid != null) ? (0, index_js_4.getBytes)(options.uuid, "options.uuid") : (0, index_js_2.randomBytes)(16);
-    if (uuidRandom.length !== 16) {
-        (0, index_js_4.throwArgumentError)("invalid options.uuid", "options.uuid", options.iv);
-    }
+    (0, index_js_4.assertArgument)(uuidRandom.length === 16, "invalid options.uuid", "options.uuid", options.iv);
     if (uuidRandom.length !== 16) {
         throw new Error("invalid uuid");
     }

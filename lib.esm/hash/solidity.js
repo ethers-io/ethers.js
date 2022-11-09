@@ -1,5 +1,5 @@
 import { keccak256 as _keccak256, sha256 as _sha256 } from "../crypto/index.js";
-import { concat, dataLength, getBytes, hexlify, toArray, toTwos, toUtf8Bytes, zeroPadBytes, zeroPadValue, throwArgumentError } from "../utils/index.js";
+import { concat, dataLength, getBytes, hexlify, toArray, toTwos, toUtf8Bytes, zeroPadBytes, zeroPadValue, assertArgument } from "../utils/index.js";
 const regexBytes = new RegExp("^bytes([0-9]+)$");
 const regexNumber = new RegExp("^(u?int)([0-9]*)$");
 const regexArray = new RegExp("^(.*)\\[([0-9]*)\\]$");
@@ -24,9 +24,7 @@ function _pack(type, value, isArray) {
     let match = type.match(regexNumber);
     if (match) {
         let size = parseInt(match[2] || "256");
-        if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
-            return throwArgumentError("invalid number type", "type", type);
-        }
+        assertArgument((!match[2] || match[2] === String(size)) && (size % 8 === 0) && size !== 0 && size <= 256, "invalid number type", "type", type);
         if (isArray) {
             size = 256;
         }
@@ -36,12 +34,8 @@ function _pack(type, value, isArray) {
     match = type.match(regexBytes);
     if (match) {
         const size = parseInt(match[1]);
-        if (String(size) !== match[1] || size === 0 || size > 32) {
-            return throwArgumentError("invalid bytes type", "type", type);
-        }
-        if (dataLength(value) !== size) {
-            return throwArgumentError(`invalid value for ${type}`, "value", value);
-        }
+        assertArgument(String(size) === match[1] && size !== 0 && size <= 32, "invalid bytes type", "type", type);
+        assertArgument(dataLength(value) === size, `invalid value for ${type}`, "value", value);
         if (isArray) {
             return getBytes(zeroPadBytes(value, 32));
         }
@@ -51,22 +45,18 @@ function _pack(type, value, isArray) {
     if (match && Array.isArray(value)) {
         const baseType = match[1];
         const count = parseInt(match[2] || String(value.length));
-        if (count != value.length) {
-            throwArgumentError(`invalid array length for ${type}`, "value", value);
-        }
+        assertArgument(count === value.length, `invalid array length for ${type}`, "value", value);
         const result = [];
         value.forEach(function (value) {
             result.push(_pack(baseType, value, true));
         });
         return getBytes(concat(result));
     }
-    return throwArgumentError("invalid type", "type", type);
+    assertArgument(false, "invalid type", "type", type);
 }
 // @TODO: Array Enum
 export function solidityPacked(types, values) {
-    if (types.length != values.length) {
-        throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
-    }
+    assertArgument(types.length === values.length, "wrong number of values; expected ${ types.length }", "values", values);
     const tight = [];
     types.forEach(function (type, index) {
         tight.push(_pack(type, values[index]));

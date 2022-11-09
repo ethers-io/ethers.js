@@ -1,5 +1,5 @@
 import { ZeroHash } from "../constants/index.js";
-import { concat, dataLength, getBigInt, getBytes, getNumber, getStore, hexlify, isHexString, setStore, assertPrivate, throwArgumentError } from "../utils/index.js";
+import { concat, dataLength, getBigInt, getBytes, getNumber, getStore, hexlify, isHexString, setStore, assertArgument, assertPrivate } from "../utils/index.js";
 // Constants
 const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);
@@ -12,27 +12,19 @@ export class Signature {
     #props;
     get r() { return getStore(this.#props, "r"); }
     set r(value) {
-        if (dataLength(value) !== 32) {
-            throwArgumentError("invalid r", "value", value);
-        }
+        assertArgument(dataLength(value) === 32, "invalid r", "value", value);
         setStore(this.#props, "r", hexlify(value));
     }
     get s() { return getStore(this.#props, "s"); }
     set s(value) {
-        if (dataLength(value) !== 32) {
-            throwArgumentError("invalid r", "value", value);
-        }
-        else if (getBytes(value)[0] & 0x80) {
-            throwArgumentError("non-canonical s", "value", value);
-        }
+        assertArgument(dataLength(value) === 32, "invalid r", "value", value);
+        assertArgument((getBytes(value)[0] & 0x80) === 0, "non-canonical s", "value", value);
         setStore(this.#props, "s", hexlify(value));
     }
     get v() { return getStore(this.#props, "v"); }
     set v(value) {
         const v = getNumber(value, "value");
-        if (v !== 27 && v !== 28) {
-            throw new Error("@TODO");
-        }
+        assertArgument(v === 27 || v === 28, "invalid v", "v", value);
         setStore(this.#props, "v", v);
     }
     get networkV() { return getStore(this.#props, "networkV"); }
@@ -89,9 +81,6 @@ export class Signature {
             r: this.r, s: this.s, v: this.v,
         };
     }
-    //static create(): Signature {
-    //    return new Signature(_guard, ZeroHash, ZeroHash, 27);
-    //}
     // Get the chain ID from an EIP-155 v
     static getChainId(v) {
         const bv = getBigInt(v, "v");
@@ -100,9 +89,7 @@ export class Signature {
             return BN_0;
         }
         // Bad value for an EIP-155 v
-        if (bv < BN_35) {
-            throwArgumentError("invalid EIP-155 v", "v", v);
-        }
+        assertArgument(bv >= BN_35, "invalid EIP-155 v", "v", v);
         return (bv - BN_35) / BN_2;
     }
     // Get the EIP-155 v transformed for a given chainId
@@ -122,12 +109,13 @@ export class Signature {
         return (bv & BN_1) ? 27 : 28;
     }
     static from(sig) {
+        function assertError(check, message) {
+            assertArgument(check, message, "signature", sig);
+        }
+        ;
         if (sig == null) {
             return new Signature(_guard, ZeroHash, ZeroHash, 27);
         }
-        const throwError = (message) => {
-            return throwArgumentError(message, "signature", sig);
-        };
         if (typeof (sig) === "string") {
             const bytes = getBytes(sig, "signature");
             if (bytes.length === 64) {
@@ -140,46 +128,34 @@ export class Signature {
             if (bytes.length === 65) {
                 const r = hexlify(bytes.slice(0, 32));
                 const s = bytes.slice(32, 64);
-                if (s[0] & 0x80) {
-                    throwError("non-canonical s");
-                }
+                assertError((s[0] & 0x80) === 0, "non-canonical s");
                 const v = Signature.getNormalizedV(bytes[64]);
                 return new Signature(_guard, r, hexlify(s), v);
             }
-            return throwError("invlaid raw signature length");
+            assertError(false, "invlaid raw signature length");
         }
         if (sig instanceof Signature) {
             return sig.clone();
         }
         // Get r
         const r = sig.r;
-        if (r == null) {
-            throwError("missing r");
-        }
-        if (!isHexString(r, 32)) {
-            throwError("invalid r");
-        }
+        assertError(r != null, "missing r");
+        assertError(isHexString(r, 32), "invalid r");
         // Get s; by any means necessary (we check consistency below)
         const s = (function (s, yParityAndS) {
             if (s != null) {
-                if (!isHexString(s, 32)) {
-                    throwError("invalid s");
-                }
+                assertError(isHexString(s, 32), "invalid s");
                 return s;
             }
             if (yParityAndS != null) {
-                if (!isHexString(yParityAndS, 32)) {
-                    throwError("invalid yParityAndS");
-                }
+                assertError(isHexString(yParityAndS, 32), "invalid yParityAndS");
                 const bytes = getBytes(yParityAndS);
                 bytes[0] &= 0x7f;
                 return hexlify(bytes);
             }
-            return throwError("missing s");
+            assertError(false, "missing s");
         })(sig.s, sig.yParityAndS);
-        if (getBytes(s)[0] & 0x80) {
-            throwError("non-canonical s");
-        }
+        assertError((getBytes(s)[0] & 0x80) == 0, "non-canonical s");
         // Get v; by any means necessary (we check consistency below)
         const { networkV, v } = (function (_v, yParityAndS, yParity) {
             if (_v != null) {
@@ -190,9 +166,7 @@ export class Signature {
                 };
             }
             if (yParityAndS != null) {
-                if (!isHexString(yParityAndS, 32)) {
-                    throwError("invalid yParityAndS");
-                }
+                assertError(isHexString(yParityAndS, 32), "invalid yParityAndS");
                 return { v: ((getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
             }
             if (yParity != null) {
@@ -200,21 +174,17 @@ export class Signature {
                     case 0: return { v: 27 };
                     case 1: return { v: 28 };
                 }
-                return throwError("invalid yParity");
+                assertError(false, "invalid yParity");
             }
-            return throwError("missing v");
+            assertError(false, "missing v");
         })(sig.v, sig.yParityAndS, sig.yParity);
         const result = new Signature(_guard, r, s, v);
         if (networkV) {
             setStore(result.#props, "networkV", networkV);
         }
         // If multiple of v, yParity, yParityAndS we given, check they match
-        if ("yParity" in sig && sig.yParity !== result.yParity) {
-            throwError("yParity mismatch");
-        }
-        else if ("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS) {
-            throwError("yParityAndS mismatch");
-        }
+        assertError(!("yParity" in sig && sig.yParity !== result.yParity), "yParity mismatch");
+        assertError(!("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS), "yParityAndS mismatch");
         return result;
     }
 }

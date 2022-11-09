@@ -77,22 +77,14 @@ export function makeError(message, code, info) {
 }
 /**
  *  Throws an EthersError with %%message%%, %%code%% and additional error
- *  info.
+ *  %%info%% when %%check%% is falsish..
  *
  *  @see [[api:makeError]]
  */
-export function throwError(message, code, info) {
-    throw makeError(message, code, info);
-}
-/**
- *  Throws an [[api:ArgumentError]] with %%message%% for the parameter with
- *  %%name%% and the %%value%%.
- */
-export function throwArgumentError(message, name, value) {
-    return throwError(message, "INVALID_ARGUMENT", {
-        argument: name,
-        value: value
-    });
+export function assert(check, message, code, info) {
+    if (!check) {
+        throw makeError(message, code, info);
+    }
 }
 /**
  *  A simple helper to simply ensuring provided arguments match expected
@@ -102,26 +94,20 @@ export function throwArgumentError(message, name, value) {
  *  any further code does not need additional compile-time checks.
  */
 export function assertArgument(check, message, name, value) {
-    if (!check) {
-        throwArgumentError(message, name, value);
-    }
+    assert(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
 }
 export function assertArgumentCount(count, expectedCount, message = "") {
     if (message) {
         message = ": " + message;
     }
-    if (count < expectedCount) {
-        throwError("missing arguemnt" + message, "MISSING_ARGUMENT", {
-            count: count,
-            expectedCount: expectedCount
-        });
-    }
-    if (count > expectedCount) {
-        throwError("too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
-            count: count,
-            expectedCount: expectedCount
-        });
-    }
+    assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+        count: count,
+        expectedCount: expectedCount
+    });
+    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+        count: count,
+        expectedCount: expectedCount
+    });
 }
 const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
     try {
@@ -150,11 +136,9 @@ const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
  *  Throws if the normalization %%form%% is not supported.
  */
 export function assertNormalize(form) {
-    if (_normalizeForms.indexOf(form) === -1) {
-        throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
-            operation: "String.prototype.normalize", info: { form }
-        });
-    }
+    assert(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+        operation: "String.prototype.normalize", info: { form }
+    });
 }
 /**
  *  Many classes use file-scoped values to guard the constructor,
@@ -169,7 +153,7 @@ export function assertPrivate(givenGuard, guard, className = "") {
             method += ".";
             operation += " " + className;
         }
-        throwError(`private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
+        assert(false, `private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
             operation
         });
     }

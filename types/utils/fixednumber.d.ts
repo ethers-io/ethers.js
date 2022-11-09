@@ -7,7 +7,7 @@ export declare class FixedFormat {
     readonly decimals: number;
     readonly name: string;
     readonly _multiplier: bigint;
-    constructor(constructorGuard: any, signed: boolean, width: number, decimals: number);
+    constructor(guard: any, signed: boolean, width: number, decimals: number);
     static from(value: any): FixedFormat;
 }
 /**
@@ -17,7 +17,7 @@ export declare class FixedNumber {
     #private;
     readonly format: FixedFormat;
     readonly _isFixedNumber: boolean;
-    constructor(constructorGuard: any, hex: string, value: string, format?: FixedFormat);
+    constructor(guard: any, hex: string, value: string, format?: FixedFormat);
     /**
      *  Returns a new [[FixedNumber]] with the result of this added
      *  to %%other%%.

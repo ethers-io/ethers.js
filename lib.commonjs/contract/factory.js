@@ -45,11 +45,9 @@ class ContractFactory {
     }
     async deploy(...args) {
         const tx = await this.getDeployTransaction(...args);
-        if (!this.runner || typeof (this.runner.sendTransaction) !== "function") {
-            return (0, index_js_3.throwError)("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
-                operation: "sendTransaction"
-            });
-        }
+        (0, index_js_3.assert)(this.runner && typeof (this.runner.sendTransaction) === "function", "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            operation: "sendTransaction"
+        });
         const sentTx = await this.runner.sendTransaction(tx);
         const address = (0, index_js_2.getCreateAddress)(sentTx);
         return new contract_js_1.BaseContract(address, this.interface, this.runner, sentTx);
@@ -58,9 +56,7 @@ class ContractFactory {
         return new ContractFactory(this.interface, this.bytecode, runner);
     }
     static fromSolidity(output, runner) {
-        if (output == null) {
-            (0, index_js_3.throwArgumentError)("bad compiler output", "output", output);
-        }
+        (0, index_js_3.assertArgument)(output != null, "bad compiler output", "output", output);
         if (typeof (output) === "string") {
             output = JSON.parse(output);
         }

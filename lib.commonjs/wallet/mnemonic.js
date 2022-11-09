@@ -18,16 +18,12 @@ function mnemonicToEntropy(mnemonic, wordlist = lang_en_js_1.langEn) {
         wordlist = lang_en_js_1.langEn;
     }
     const words = wordlist.split(mnemonic);
-    if ((words.length % 3) !== 0 || words.length < 12 || words.length > 24) {
-        (0, index_js_2.throwArgumentError)("invalid mnemonic length", "mnemonic", "[ REDACTED ]");
-    }
+    (0, index_js_2.assertArgument)((words.length % 3) === 0 && words.length >= 12 && words.length <= 24, "invalid mnemonic length", "mnemonic", "[ REDACTED ]");
     const entropy = new Uint8Array(Math.ceil(11 * words.length / 8));
     let offset = 0;
     for (let i = 0; i < words.length; i++) {
         let index = wordlist.getWordIndex(words[i].normalize("NFKD"));
-        if (index === -1) {
-            (0, index_js_2.throwArgumentError)(`invalid mnemonic word at index ${i}`, "mnemonic", "[ REDACTED ]");
-        }
+        (0, index_js_2.assertArgument)(index >= 0, `invalid mnemonic word at index ${i}`, "mnemonic", "[ REDACTED ]");
         for (let bit = 0; bit < 11; bit++) {
             if (index & (1 << (10 - bit))) {
                 entropy[offset >> 3] |= (1 << (7 - (offset % 8)));
@@ -39,15 +35,11 @@ function mnemonicToEntropy(mnemonic, wordlist = lang_en_js_1.langEn) {
     const checksumBits = words.length / 3;
     const checksumMask = getUpperMask(checksumBits);
     const checksum = (0, index_js_2.getBytes)((0, index_js_1.sha256)(entropy.slice(0, entropyBits / 8)))[0] & checksumMask;
-    if (checksum !== (entropy[entropy.length - 1] & checksumMask)) {
-        (0, index_js_2.throwArgumentError)("invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
-    }
+    (0, index_js_2.assertArgument)(checksum === (entropy[entropy.length - 1] & checksumMask), "invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
     return (0, index_js_2.hexlify)(entropy.slice(0, entropyBits / 8));
 }
 function entropyToMnemonic(entropy, wordlist = lang_en_js_1.langEn) {
-    if ((entropy.length % 4) || entropy.length < 16 || entropy.length > 32) {
-        (0, index_js_2.throwArgumentError)("invalid entropy size", "entropy", "[ REDACTED ]");
-    }
+    (0, index_js_2.assertArgument)((entropy.length % 4) === 0 && entropy.length >= 16 && entropy.length <= 32, "invalid entropy size", "entropy", "[ REDACTED ]");
     if (wordlist == null) {
         wordlist = lang_en_js_1.langEn;
     }

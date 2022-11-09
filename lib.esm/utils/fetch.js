@@ -1,6 +1,6 @@
 import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";
-import { assertArgument, throwArgumentError, throwError } from "./errors.js";
+import { assert, assertArgument } from "./errors.js";
 import { defineProperties } from "./properties.js";
 import { toUtf8Bytes, toUtf8String } from "./utf8.js";
 import { getUrl } from "./geturl.js";
@@ -69,11 +69,9 @@ export class FetchCancelSignal {
         });
     }
     addListener(listener) {
-        if (this.#cancelled) {
-            throwError("singal already cancelled", "UNSUPPORTED_OPERATION", {
-                operation: "fetchCancelSignal.addCancelListener"
-            });
-        }
+        assert(this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+            operation: "fetchCancelSignal.addCancelListener"
+        });
         this.#listeners.push(listener);
     }
     get cancelled() { return this.#cancelled; }
@@ -81,7 +79,7 @@ export class FetchCancelSignal {
         if (!this.cancelled) {
             return;
         }
-        throwError("cancelled", "CANCELLED", {});
+        assert(false, "cancelled", "CANCELLED", {});
     }
 }
 // Check the signal, throwing if it is cancelled
@@ -258,9 +256,7 @@ export class FetchRequest {
      *  Sets an ``Authorization`` for %%username%% with %%password%%.
      */
     setCredentials(username, password) {
-        if (username.match(/:/)) {
-            throwArgumentError("invalid basic authentication username", "username", "[REDACTED]");
-        }
+        assertArgument(!username.match(/:/), "invalid basic authentication username", "username", "[REDACTED]");
         this.#creds = `${username}:${password}`;
     }
     /**
@@ -352,11 +348,9 @@ export class FetchRequest {
         if (attempt >= this.#throttle.maxAttempts) {
             return _response.makeServerError("exceeded maximum retry limit");
         }
-        if (getTime() > expires) {
-            return throwError("timeout", "TIMEOUT", {
-                operation: "request.send", reason: "timeout", request: _request
-            });
-        }
+        assert(getTime() <= expires, "timeout", "TIMEOUT", {
+            operation: "request.send", reason: "timeout", request: _request
+        });
         if (delay > 0) {
             await wait(delay);
         }
@@ -436,9 +430,7 @@ export class FetchRequest {
      *  Resolves to the response by sending the request.
      */
     send() {
-        if (this.#signal != null) {
-            return throwError("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
-        }
+        assert(this.#signal == null, "request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
         this.#signal = new FetchCancelSignal(this);
         return this.#send(0, getTime() + this.timeout, 0, this, new FetchResponse(0, "", {}, null, this));
     }
@@ -447,9 +439,7 @@ export class FetchRequest {
      *  error to be rejected from the [[send]].
      */
     cancel() {
-        if (this.#signal == null) {
-            return throwError("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
-        }
+        assert(this.#signal != null, "request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
         const signal = fetchSignals.get(this);
         if (!signal) {
             throw new Error("missing signal; should not happen");
@@ -468,11 +458,9 @@ export class FetchRequest {
         // - non-GET requests
         // - downgrading the security (e.g. https => http)
         // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
-        if (this.method !== "GET" || (current === "https" && target === "http") || !location.match(/^https?:/)) {
-            return throwError(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
-                operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
-            });
-        }
+        assert(this.method === "GET" && (current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
+            operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
+        });
         // Create a copy of this request, with a new URL
         const req = new FetchRequest(location);
         req.method = "GET";
@@ -595,7 +583,7 @@ export class FetchResponse {
             return (this.#body == null) ? "" : toUtf8String(this.#body);
         }
         catch (error) {
-            return throwError("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
+            assert(false, "response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
                 operation: "bodyText", info: { response: this }
             });
         }
@@ -610,7 +598,7 @@ export class FetchResponse {
             return JSON.parse(this.bodyText);
         }
         catch (error) {
-            return throwError("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
+            assert(false, "response body is not valid JSON", "UNSUPPORTED_OPERATION", {
                 operation: "bodyJson", info: { response: this }
             });
         }
@@ -668,8 +656,8 @@ export class FetchResponse {
         if (stall == null) {
             stall = -1;
         }
-        else if (typeof (stall) !== "number" || !Number.isInteger(stall) || stall < 0) {
-            return throwArgumentError("invalid stall timeout", "stall", stall);
+        else {
+            assertArgument(Number.isInteger(stall) && stall >= 0, "invalid stall timeout", "stall", stall);
         }
         const error = new Error(message || "throttling requests");
         defineProperties(error, { stall, throttle: true });
@@ -708,7 +696,7 @@ export class FetchResponse {
         if (message === "") {
             message = `server response ${this.statusCode} ${this.statusMessage}`;
         }
-        throwError(message, "SERVER_ERROR", {
+        assert(false, message, "SERVER_ERROR", {
             request: (this.request || "unknown request"), response: this, error
         });
     }

@@ -14,9 +14,7 @@ function getAlpha(letter) {
         }
     }
     const result = Lookup[letter];
-    if (result == null) {
-        (0, errors_js_1.throwArgumentError)(`invalid base58 value`, "letter", letter);
-    }
+    (0, errors_js_1.assertArgument)(result != null, `invalid base58 value`, "letter", letter);
     return result;
 }
 const BN_0 = BigInt(0);

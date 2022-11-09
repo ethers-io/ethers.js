@@ -149,7 +149,7 @@ class Network {
             if (typeof (network) === "bigint") {
                 return new Network("unknown", network);
             }
-            (0, index_js_2.throwArgumentError)("unknown network", "network", network);
+            (0, index_js_2.assertArgument)(false, "unknown network", "network", network);
         }
         // Clonable with network-like abilities
         if (typeof (network.clone) === "function") {
@@ -160,9 +160,7 @@ class Network {
         }
         // Networkish
         if (typeof (network) === "object") {
-            if (typeof (network.name) !== "string" || typeof (network.chainId) !== "number") {
-                (0, index_js_2.throwArgumentError)("invalid network object name or chainId", "network", network);
-            }
+            (0, index_js_2.assertArgument)(typeof (network.name) === "string" && typeof (network.chainId) === "number", "invalid network object name or chainId", "network", network);
             const custom = new Network((network.name), (network.chainId));
             if (network.ensAddress || network.ensNetwork != null) {
                 custom.attachPlugin(new plugins_network_js_1.EnsPlugin(network.ensAddress, network.ensNetwork));
@@ -172,7 +170,7 @@ class Network {
             //}
             return custom;
         }
-        return (0, index_js_2.throwArgumentError)("invalid network", "network", network);
+        (0, index_js_2.assertArgument)(false, "invalid network", "network", network);
     }
     /**
      *  Register %%nameOrChainId%% with a function which returns
@@ -184,7 +182,7 @@ class Network {
         }
         const existing = Networks.get(nameOrChainId);
         if (existing) {
-            (0, index_js_2.throwArgumentError)(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
+            (0, index_js_2.assertArgument)(false, `conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
         }
         Networks.set(nameOrChainId, networkFunc);
     }

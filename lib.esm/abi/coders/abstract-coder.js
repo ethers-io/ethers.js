@@ -1,4 +1,4 @@
-import { defineProperties, concat, getBytesCopy, getNumber, hexlify, toArray, toBigInt, toNumber, assertPrivate, throwArgumentError, throwError } from "../../utils/index.js";
+import { defineProperties, concat, getBytesCopy, getNumber, hexlify, toArray, toBigInt, toNumber, assert, assertPrivate, assertArgument } from "../../utils/index.js";
 export const WordSize = 32;
 const Padding = new Uint8Array(WordSize);
 // Properties used to immediate pass through to the underlying object
@@ -128,13 +128,7 @@ export function checkResultErrors(result) {
 }
 function getValue(value) {
     let bytes = toArray(value);
-    if (bytes.length > WordSize) {
-        throwError("value out-of-bounds", "BUFFER_OVERRUN", {
-            buffer: bytes,
-            length: WordSize,
-            offset: bytes.length
-        });
-    }
+    assert(bytes.length <= WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: WordSize, offset: bytes.length });
     if (bytes.length !== WordSize) {
         bytes = getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));
     }
@@ -160,7 +154,7 @@ export class Coder {
         });
     }
     _throwError(message, value) {
-        return throwArgumentError(message, this.localName, value);
+        assertArgument(false, message, this.localName, value);
     }
 }
 export class Writer {
@@ -231,7 +225,7 @@ export class Reader {
                 alignedLength = length;
             }
             else {
-                throwError("data out-of-bounds", "BUFFER_OVERRUN", {
+                assert(false, "data out-of-bounds", "BUFFER_OVERRUN", {
                     buffer: getBytesCopy(this.#data),
                     length: this.#data.length,
                     offset: this.#offset + alignedLength

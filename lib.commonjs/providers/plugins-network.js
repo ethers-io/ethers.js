@@ -30,9 +30,7 @@ class GasCostPlugin extends NetworkPlugin {
             if (value == null) {
                 value = nullish;
             }
-            if (typeof (value) !== "number") {
-                (0, index_js_1.throwArgumentError)(`invalud value for ${name}`, "costs", costs);
-            }
+            (0, index_js_1.assertArgument)(typeof (value) === "number", `invalud value for ${name}`, "costs", costs);
             props[name] = value;
         }
         set("txBase", 21000);

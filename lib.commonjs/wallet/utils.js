@@ -26,9 +26,7 @@ function getPassword(password) {
 exports.getPassword = getPassword;
 function spelunk(object, _path) {
     const match = _path.match(/^([a-z0-9$_.-]*)(:([a-z]+))?(!)?$/i);
-    if (match == null) {
-        return (0, index_js_1.throwArgumentError)("invalid path", "path", _path);
-    }
+    (0, index_js_1.assertArgument)(match != null, "invalid path", "path", _path);
     const path = match[1];
     const type = match[3];
     const reqd = (match[4] === "!");
@@ -58,9 +56,7 @@ function spelunk(object, _path) {
             break;
         }
     }
-    if (reqd && cur == null) {
-        (0, index_js_1.throwArgumentError)("missing required value", "path", path);
-    }
+    (0, index_js_1.assertArgument)(!reqd || cur != null, "missing required value", "path", path);
     if (type && cur != null) {
         if (type === "int") {
             if (typeof (cur) === "string" && cur.match(/^-?[0-9]+$/)) {
@@ -86,7 +82,7 @@ function spelunk(object, _path) {
         if (type === typeof (cur)) {
             return cur;
         }
-        (0, index_js_1.throwArgumentError)(`wrong type found for ${type} `, "path", path);
+        (0, index_js_1.assertArgument)(false, `wrong type found for ${type} `, "path", path);
     }
     return cur;
 }

@@ -1,4 +1,4 @@
-import { getBytes, getBytesCopy, hexlify, throwArgumentError, toUtf8Bytes } from "../utils/index.js";
+import { getBytes, getBytesCopy, hexlify, assertArgument, toUtf8Bytes } from "../utils/index.js";
 export function looseArrayify(hexString) {
     if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
         hexString = '0x' + hexString;
@@ -20,9 +20,7 @@ export function getPassword(password) {
 }
 export function spelunk(object, _path) {
     const match = _path.match(/^([a-z0-9$_.-]*)(:([a-z]+))?(!)?$/i);
-    if (match == null) {
-        return throwArgumentError("invalid path", "path", _path);
-    }
+    assertArgument(match != null, "invalid path", "path", _path);
     const path = match[1];
     const type = match[3];
     const reqd = (match[4] === "!");
@@ -52,9 +50,7 @@ export function spelunk(object, _path) {
             break;
         }
     }
-    if (reqd && cur == null) {
-        throwArgumentError("missing required value", "path", path);
-    }
+    assertArgument(!reqd || cur != null, "missing required value", "path", path);
     if (type && cur != null) {
         if (type === "int") {
             if (typeof (cur) === "string" && cur.match(/^-?[0-9]+$/)) {
@@ -80,7 +76,7 @@ export function spelunk(object, _path) {
         if (type === typeof (cur)) {
             return cur;
         }
-        throwArgumentError(`wrong type found for ${type} `, "path", path);
+        assertArgument(false, `wrong type found for ${type} `, "path", path);
     }
     return cur;
 }

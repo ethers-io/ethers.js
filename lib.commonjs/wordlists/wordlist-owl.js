@@ -37,9 +37,7 @@ class WordlistOwl extends wordlist_js_1.Wordlist {
     }
     getWord(index) {
         const words = this.#loadWords();
-        if (index < 0 || index >= words.length) {
-            (0, index_js_2.throwArgumentError)(`invalid word index: ${index}`, "index", index);
-        }
+        (0, index_js_2.assertArgument)(index >= 0 && index < words.length, `invalid word index: ${index}`, "index", index);
         return words[index];
     }
     getWordIndex(word) {

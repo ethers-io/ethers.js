@@ -28,7 +28,7 @@ function getHost(name) {
         case "optimism-goerli":
             return "optimism-goerli.infura.io";
     }
-    return (0, index_js_1.throwArgumentError)("unsupported network", "network", name);
+    (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }
 class InfuraWebSocketProvider extends provider_websocket_js_1.WebSocketProvider {
     projectId;
@@ -36,11 +36,7 @@ class InfuraWebSocketProvider extends provider_websocket_js_1.WebSocketProvider 
     constructor(network, apiKey) {
         const provider = new InfuraProvider(network, apiKey);
         const req = provider._getConnection();
-        if (req.credentials) {
-            (0, index_js_1.throwError)("INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", {
-                operation: "InfuraProvider.getWebSocketProvider()"
-            });
-        }
+        (0, index_js_1.assert)(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
         super(url, network);
         (0, index_js_1.defineProperties)(this, {

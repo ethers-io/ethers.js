@@ -1,7 +1,7 @@
 import type { EventFragment, FunctionFragment, Result, Typed } from "../abi/index.js";
 import type { TransactionRequest, PreparedTransactionRequest, TopicFilter } from "../providers/index.js";
 import type { ContractTransactionResponse } from "./wrappers.js";
-export declare type ContractEventName = string | ContractEvent | TopicFilter;
+export declare type ContractEventName = string | ContractEvent | TopicFilter | DeferredTopicFilter;
 export interface ContractInterface {
     [name: string]: BaseContractMethod;
 }

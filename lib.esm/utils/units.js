@@ -1,5 +1,5 @@
 import { formatFixed, parseFixed } from "./fixednumber.js";
-import { throwArgumentError } from "./errors.js";
+import { assertArgument } from "./errors.js";
 const names = [
     "wei",
     "kwei",
@@ -18,9 +18,7 @@ const names = [
 export function formatUnits(value, unit) {
     if (typeof (unit) === "string") {
         const index = names.indexOf(unit);
-        if (index === -1) {
-            throwArgumentError("invalid unit", "unit", unit);
-        }
+        assertArgument(index >= 0, "invalid unit", "unit", unit);
         unit = 3 * index;
     }
     return formatFixed(value, (unit != null) ? unit : 18);
@@ -31,14 +29,10 @@ export function formatUnits(value, unit) {
  *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
  */
 export function parseUnits(value, unit) {
-    if (typeof (value) !== "string") {
-        throwArgumentError("value must be a string", "value", value);
-    }
+    assertArgument(typeof (value) === "string", "value must be a string", "value", value);
     if (typeof (unit) === "string") {
         const index = names.indexOf(unit);
-        if (index === -1) {
-            throwArgumentError("invalid unit", "unit", unit);
-        }
+        assertArgument(index >= 0, "invalid unit", "unit", unit);
         unit = 3 * index;
     }
     return parseFixed(value, (unit != null) ? unit : 18);

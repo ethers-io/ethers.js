@@ -35,11 +35,9 @@ const _guard = {};
 function ser_I(index, chainCode, publicKey, privateKey) {
     const data = new Uint8Array(37);
     if (index & HardenedBit) {
-        if (privateKey == null) {
-            return (0, index_js_4.throwError)("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
-                operation: "deriveChild"
-            });
-        }
+        (0, index_js_4.assert)(privateKey != null, "cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
+            operation: "deriveChild"
+        });
         // Data = 0x00 || ser_256(k_par)
         data.set((0, index_js_4.getBytes)(privateKey), 1);
     }
@@ -174,9 +172,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
     }
     static fromExtendedKey(extendedKey) {
         const bytes = (0, index_js_4.getBytes)((0, index_js_4.decodeBase58)(extendedKey)); // @TODO: redact
-        if (bytes.length !== 82 || encodeBase58Check(bytes.slice(0, 78)) !== extendedKey) {
-            (0, index_js_4.throwArgumentError)("invalid extended key", "extendedKey", "[ REDACTED ]");
-        }
+        (0, index_js_4.assertArgument)(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey, "invalid extended key", "extendedKey", "[ REDACTED ]");
         const depth = bytes[4];
         const parentFingerprint = (0, index_js_4.hexlify)(bytes.slice(5, 9));
         const index = parseInt((0, index_js_4.hexlify)(bytes.slice(9, 13)).substring(2), 16);
@@ -197,7 +193,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
                 }
                 return new HDNodeWallet(_guard, new index_js_1.SigningKey(key.slice(1)), parentFingerprint, chainCode, null, index, depth, null, null);
         }
-        return (0, index_js_4.throwArgumentError)("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
+        (0, index_js_4.assertArgument)(false, "invalid extended key prefix", "extendedKey", "[ REDACTED ]");
     }
     static createRandom(password = "", path = exports.defaultPath, wordlist = lang_en_js_1.langEn) {
         if (!path) {
@@ -282,9 +278,7 @@ class HDNodeWalletManager {
 exports.HDNodeWalletManager = HDNodeWalletManager;
 function getAccountPath(_index) {
     const index = (0, index_js_4.getNumber)(_index, "index");
-    if (index < 0 || index >= HardenedBit) {
-        (0, index_js_4.throwArgumentError)("invalid account index", "index", index);
-    }
+    (0, index_js_4.assertArgument)(index >= 0 && index < HardenedBit, "invalid account index", "index", index);
     return `m/44'/60'/${index}'/0/0`;
 }
 exports.getAccountPath = getAccountPath;

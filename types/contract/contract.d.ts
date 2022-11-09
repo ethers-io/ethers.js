@@ -1,5 +1,5 @@
 import { Interface } from "../abi/index.js";
-import { TransactionResponse } from "../providers/index.js";
+import { Log, TransactionResponse } from "../providers/index.js";
 import { ContractTransactionResponse, EventLog } from "./wrappers.js";
 import type { EventFragment, FunctionFragment, InterfaceAbi, ParamType } from "../abi/index.js";
 import type { Addressable } from "../address/index.js";
@@ -16,6 +16,7 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
     readonly filters: Record<string, ContractEvent>;
     readonly [internal]: any;
     constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _deployTx?: null | TransactionResponse);
+    connect(runner: null | ContractRunner): BaseContract;
     getAddress(): Promise<string>;
     getDeployedCode(): Promise<null | string>;
     waitForDeployment(): Promise<this>;
@@ -23,7 +24,7 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
     getEvent(key: string | EventFragment): ContractEvent;
     queryTransaction(hash: string): Promise<Array<EventLog>>;
-    queryFilter(event: ContractEventName, fromBlock?: BlockTag, toBlock?: BlockTag): Promise<Array<EventLog>>;
+    queryFilter(event: ContractEventName, fromBlock?: BlockTag, toBlock?: BlockTag): Promise<Array<EventLog | Log>>;
     on(event: ContractEventName, listener: Listener): Promise<this>;
     once(event: ContractEventName, listener: Listener): Promise<this>;
     emit(event: ContractEventName, ...args: Array<any>): Promise<boolean>;

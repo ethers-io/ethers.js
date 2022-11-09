@@ -1,12 +1,12 @@
 import { getBuiltinCallException } from "../abi/index.js";
 import { accessListify } from "../transaction/index.js";
-import { defineProperties, hexlify, toQuantity, FetchRequest, throwArgumentError, throwError, toUtf8String } from "../utils/index.js";
+import { defineProperties, hexlify, toQuantity, FetchRequest, assert, assertArgument, toUtf8String } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import { NetworkPlugin } from "./plugins-network.js";
 import { showThrottleMessage } from "./community.js";
 const THROTTLE = 2000;
-const EtherscanPluginId = "org.ethers.plugins.etherscan";
+const EtherscanPluginId = "org.ethers.plugins.Etherscan";
 export class EtherscanPlugin extends NetworkPlugin {
     baseUrl;
     communityApiKey;
@@ -60,7 +60,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
                 return "https:/\/api-goerli-optimistic.etherscan.io";
             default:
         }
-        return throwArgumentError("unsupported network", "network", this.network);
+        assertArgument(false, "unsupported network", "network", this.network);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -184,7 +184,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
             }
             // Quantity-types require no leading zero, unless 0
             if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
-                value = toQuantity(hexlify(value));
+                value = toQuantity(value);
             }
             else if (key === "accessList") {
                 value = "[" + accessListify(value).map((set) => {
@@ -327,7 +327,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
                         boolean: (req.includeTransactions ? "true" : "false")
                     });
                 }
-                return throwError("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                assert(false, "getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
             case "getTransaction":

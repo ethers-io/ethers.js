@@ -25,7 +25,7 @@ function getHost(name) {
         case "optimism-goerli":
             return "opt-goerli.g.alchemy.com";
     }
-    return (0, index_js_1.throwArgumentError)("unsupported network", "network", name);
+    (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }
 class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     apiKey;
@@ -63,19 +63,17 @@ class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
             }
             catch (error) { }
             if (data) {
-                if (error) {
-                    (0, index_js_1.throwError)("an error occurred during transaction executions", "CALL_EXCEPTION", {
-                        action: "getTransactionResult",
-                        data,
-                        reason: null,
-                        transaction: tx,
-                        invocation: null,
-                        revert: null // @TODO
-                    });
-                }
+                (0, index_js_1.assert)(!error, "an error occurred during transaction executions", "CALL_EXCEPTION", {
+                    action: "getTransactionResult",
+                    data,
+                    reason: null,
+                    transaction: tx,
+                    invocation: null,
+                    revert: null // @TODO
+                });
                 return data;
             }
-            return (0, index_js_1.throwError)("could not parse trace result", "BAD_DATA", { value: trace });
+            (0, index_js_1.assert)(false, "could not parse trace result", "BAD_DATA", { value: trace });
         }
         return await super._perform(req);
     }

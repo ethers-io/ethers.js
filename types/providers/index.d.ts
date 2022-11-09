@@ -17,7 +17,7 @@ export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";
 export { WebSocketProvider } from "./provider-websocket.js";
 export { SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, SocketEventSubscriber } from "./provider-socket.js";
-export type { Subscription, Subscriber, ProviderPlugin, PerformActionFilter, PerformActionTransaction, PerformActionRequest } from "./abstract-provider.js";
+export type { Subscription, Subscriber, AbstractProviderPlugin, PerformActionFilter, PerformActionTransaction, PerformActionRequest } from "./abstract-provider.js";
 export type { ContractRunner } from "./contracts.js";
 export type { Networkish } from "./network.js";
 export type { GasCostParameters } from "./plugins-network.js";

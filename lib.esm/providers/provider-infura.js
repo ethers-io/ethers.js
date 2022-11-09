@@ -1,4 +1,4 @@
-import { defineProperties, FetchRequest, throwArgumentError, throwError } from "../utils/index.js";
+import { defineProperties, FetchRequest, assert, assertArgument } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
@@ -25,7 +25,7 @@ function getHost(name) {
         case "optimism-goerli":
             return "optimism-goerli.infura.io";
     }
-    return throwArgumentError("unsupported network", "network", name);
+    assertArgument(false, "unsupported network", "network", name);
 }
 export class InfuraWebSocketProvider extends WebSocketProvider {
     projectId;
@@ -33,11 +33,7 @@ export class InfuraWebSocketProvider extends WebSocketProvider {
     constructor(network, apiKey) {
         const provider = new InfuraProvider(network, apiKey);
         const req = provider._getConnection();
-        if (req.credentials) {
-            throwError("INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", {
-                operation: "InfuraProvider.getWebSocketProvider()"
-            });
-        }
+        assert(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
         super(url, network);
         defineProperties(this, {

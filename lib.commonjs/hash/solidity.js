@@ -27,9 +27,7 @@ function _pack(type, value, isArray) {
     let match = type.match(regexNumber);
     if (match) {
         let size = parseInt(match[2] || "256");
-        if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
-            return (0, index_js_2.throwArgumentError)("invalid number type", "type", type);
-        }
+        (0, index_js_2.assertArgument)((!match[2] || match[2] === String(size)) && (size % 8 === 0) && size !== 0 && size <= 256, "invalid number type", "type", type);
         if (isArray) {
             size = 256;
         }
@@ -39,12 +37,8 @@ function _pack(type, value, isArray) {
     match = type.match(regexBytes);
     if (match) {
         const size = parseInt(match[1]);
-        if (String(size) !== match[1] || size === 0 || size > 32) {
-            return (0, index_js_2.throwArgumentError)("invalid bytes type", "type", type);
-        }
-        if ((0, index_js_2.dataLength)(value) !== size) {
-            return (0, index_js_2.throwArgumentError)(`invalid value for ${type}`, "value", value);
-        }
+        (0, index_js_2.assertArgument)(String(size) === match[1] && size !== 0 && size <= 32, "invalid bytes type", "type", type);
+        (0, index_js_2.assertArgument)((0, index_js_2.dataLength)(value) === size, `invalid value for ${type}`, "value", value);
         if (isArray) {
             return (0, index_js_2.getBytes)((0, index_js_2.zeroPadBytes)(value, 32));
         }
@@ -54,22 +48,18 @@ function _pack(type, value, isArray) {
     if (match && Array.isArray(value)) {
         const baseType = match[1];
         const count = parseInt(match[2] || String(value.length));
-        if (count != value.length) {
-            (0, index_js_2.throwArgumentError)(`invalid array length for ${type}`, "value", value);
-        }
+        (0, index_js_2.assertArgument)(count === value.length, `invalid array length for ${type}`, "value", value);
         const result = [];
         value.forEach(function (value) {
             result.push(_pack(baseType, value, true));
         });
         return (0, index_js_2.getBytes)((0, index_js_2.concat)(result));
     }
-    return (0, index_js_2.throwArgumentError)("invalid type", "type", type);
+    (0, index_js_2.assertArgument)(false, "invalid type", "type", type);
 }
 // @TODO: Array Enum
 function solidityPacked(types, values) {
-    if (types.length != values.length) {
-        (0, index_js_2.throwArgumentError)("wrong number of values; expected ${ types.length }", "values", values);
-    }
+    (0, index_js_2.assertArgument)(types.length === values.length, "wrong number of values; expected ${ types.length }", "values", values);
     const tight = [];
     types.forEach(function (type, index) {
         tight.push(_pack(type, values[index]));

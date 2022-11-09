@@ -42,21 +42,17 @@ class AbiCoder {
         let match = param.type.match(paramTypeNumber);
         if (match) {
             let size = parseInt(match[2] || "256");
-            if (size === 0 || size > 256 || (size % 8) !== 0) {
-                (0, index_js_1.throwArgumentError)("invalid " + match[1] + " bit length", "param", param);
-            }
+            (0, index_js_1.assertArgument)(size !== 0 && size <= 256 && (size % 8) === 0, "invalid " + match[1] + " bit length", "param", param);
             return new number_js_1.NumberCoder(size / 8, (match[1] === "int"), param.name);
         }
         // bytes[0-9]+
         match = param.type.match(paramTypeBytes);
         if (match) {
             let size = parseInt(match[1]);
-            if (size === 0 || size > 32) {
-                (0, index_js_1.throwArgumentError)("invalid bytes length", "param", param);
-            }
+            (0, index_js_1.assertArgument)(size !== 0 && size <= 32, "invalid bytes length", "param", param);
             return new fixed_bytes_js_1.FixedBytesCoder(size, param.name);
         }
-        return (0, index_js_1.throwArgumentError)("invalid type", "type", param.type);
+        (0, index_js_1.assertArgument)(false, "invalid type", "type", param.type);
     }
     getDefaultValue(types) {
         const coders = types.map((type) => this.#getCoder(fragments_js_1.ParamType.from(type)));

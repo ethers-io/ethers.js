@@ -149,5 +149,20 @@ describe("Test Solidity Hash functions", function () {
             assert_1.default.equal((0, index_js_1.solidityPackedSha256)(test.types, test.values), test.sha256);
         });
     }
+    const badTypes = [
+        { types: ["uint5"], values: [1] },
+        { types: ["bytes0"], values: ["0x"] },
+        { types: ["blorb"], values: [false] },
+    ];
+    for (const { types, values } of badTypes) {
+        it("fails on invalid type", function () {
+            assert_1.default.throws(function () {
+                const result = (0, index_js_1.solidityPacked)(types, values);
+                console.log(result);
+            }, function (error) {
+                return ((0, index_js_1.isError)(error, "INVALID_ARGUMENT") && error.argument === "type");
+            });
+        });
+    }
 });
 //# sourceMappingURL=test-hash.js.map

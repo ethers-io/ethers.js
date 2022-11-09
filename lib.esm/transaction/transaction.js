@@ -1,6 +1,6 @@
 import { getAddress } from "../address/index.js";
 import { keccak256, Signature } from "../crypto/index.js";
-import { concat, decodeRlp, encodeRlp, getBytes, getStore, getBigInt, getNumber, hexlify, setStore, throwArgumentError, toArray, zeroPadValue } from "../utils/index.js";
+import { concat, decodeRlp, encodeRlp, getBytes, getStore, getBigInt, getNumber, hexlify, setStore, assertArgument, toArray, zeroPadValue } from "../utils/index.js";
 import { accessListify } from "./accesslist.js";
 import { recoverAddress } from "./address.js";
 const BN_0 = BigInt(0);
@@ -20,7 +20,7 @@ function handleData(value, param) {
         return hexlify(value);
     }
     catch (error) {
-        return throwArgumentError("invalid data", param, value);
+        assertArgument(false, "invalid data", param, value);
     }
 }
 function handleAccessList(value, param) {
@@ -28,7 +28,7 @@ function handleAccessList(value, param) {
         return accessListify(value);
     }
     catch (error) {
-        return throwArgumentError("invalid accessList", param, value);
+        assertArgument(false, "invalid accessList", param, value);
     }
 }
 function handleNumber(_value, param) {
@@ -42,17 +42,13 @@ function handleUint(_value, param) {
         return BN_0;
     }
     const value = getBigInt(_value, param);
-    if (value > BN_MAX_UINT) {
-        throwArgumentError("value exceeds uint size", param, value);
-    }
+    assertArgument(value <= BN_MAX_UINT, "value exceeds uint size", param, value);
     return value;
 }
 function formatNumber(_value, name) {
     const value = getBigInt(_value, "value");
     const result = toArray(value);
-    if (result.length > 32) {
-        throwArgumentError(`value too large`, `tx.${name}`, value);
-    }
+    assertArgument(result.length <= 32, `value too large`, `tx.${name}`, value);
     return result;
 }
 function formatAccessList(value) {
@@ -60,9 +56,7 @@ function formatAccessList(value) {
 }
 function _parseLegacy(data) {
     const fields = decodeRlp(data);
-    if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 6)) {
-        return throwArgumentError("invalid field count for legacy transaction", "data", data);
-    }
+    assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 6), "invalid field count for legacy transaction", "data", data);
     const tx = {
         type: 0,
         nonce: handleNumber(fields[0], "nonce"),
@@ -92,9 +86,7 @@ function _parseLegacy(data) {
         }
         tx.chainId = chainId;
         // Signed Legacy Transaction
-        if (chainId === BN_0 && (v < BN_27 || v > BN_28)) {
-            throwArgumentError("non-canonical legacy v", "v", fields[6]);
-        }
+        assertArgument(chainId !== BN_0 || (v === BN_27 || v === BN_28), "non-canonical legacy v", "v", fields[6]);
         tx.signature = Signature.from({
             r: zeroPadValue(fields[7], 32),
             s: zeroPadValue(fields[8], 32),
@@ -119,9 +111,7 @@ function _serializeLegacy(tx, sig) {
         chainId = getBigInt(tx.chainId, "tx.chainId");
         // We have a chainId in the tx and an EIP-155 v in the signature,
         // make sure they agree with each other
-        if (sig && sig.networkV != null && sig.legacyChainId !== chainId) {
-            throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
-        }
+        assertArgument(!sig || sig.networkV == null || sig.legacyChainId === chainId, "tx.chainId/sig.v mismatch", "sig", sig);
     }
     else if (sig) {
         // No chainId provided, but the signature is signing with EIP-155; derive chainId
@@ -146,7 +136,7 @@ function _serializeLegacy(tx, sig) {
         v = Signature.getChainIdV(chainId, sig.v);
     }
     else if (BigInt(sig.v) !== v) {
-        throwArgumentError("tx.chainId/sig.v mismatch", "sig", sig);
+        assertArgument(false, "tx.chainId/sig.v mismatch", "sig", sig);
     }
     fields.push(toArray(v));
     fields.push(toArray(sig.r));
@@ -162,7 +152,7 @@ function _parseEipSignature(tx, fields, serialize) {
         }
     }
     catch (error) {
-        return throwArgumentError("invalid yParity", "yParity", fields[0]);
+        assertArgument(false, "invalid yParity", "yParity", fields[0]);
     }
     const r = zeroPadValue(fields[1], 32);
     const s = zeroPadValue(fields[2], 32);
@@ -171,9 +161,7 @@ function _parseEipSignature(tx, fields, serialize) {
 }
 function _parseEip1559(data) {
     const fields = decodeRlp(getBytes(data).slice(1));
-    if (!Array.isArray(fields) || (fields.length !== 9 && fields.length !== 12)) {
-        throwArgumentError("invalid field count for transaction type: 2", "data", hexlify(data));
-    }
+    assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 12), "invalid field count for transaction type: 2", "data", hexlify(data));
     const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
     const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
     const tx = {
@@ -218,9 +206,7 @@ function _serializeEip1559(tx, sig) {
 }
 function _parseEip2930(data) {
     const fields = decodeRlp(getBytes(data).slice(1));
-    if (!Array.isArray(fields) || (fields.length !== 8 && fields.length !== 11)) {
-        throwArgumentError("invalid field count for transaction type: 1", "data", hexlify(data));
-    }
+    assertArgument(Array.isArray(fields) && (fields.length === 8 || fields.length === 11), "invalid field count for transaction type: 1", "data", hexlify(data));
     const tx = {
         type: 1,
         chainId: handleUint(fields[0], "chainId"),

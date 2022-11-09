@@ -21,9 +21,7 @@ const names = [
 function formatUnits(value, unit) {
     if (typeof (unit) === "string") {
         const index = names.indexOf(unit);
-        if (index === -1) {
-            (0, errors_js_1.throwArgumentError)("invalid unit", "unit", unit);
-        }
+        (0, errors_js_1.assertArgument)(index >= 0, "invalid unit", "unit", unit);
         unit = 3 * index;
     }
     return (0, fixednumber_js_1.formatFixed)(value, (unit != null) ? unit : 18);
@@ -35,14 +33,10 @@ exports.formatUnits = formatUnits;
  *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
  */
 function parseUnits(value, unit) {
-    if (typeof (value) !== "string") {
-        (0, errors_js_1.throwArgumentError)("value must be a string", "value", value);
-    }
+    (0, errors_js_1.assertArgument)(typeof (value) === "string", "value must be a string", "value", value);
     if (typeof (unit) === "string") {
         const index = names.indexOf(unit);
-        if (index === -1) {
-            (0, errors_js_1.throwArgumentError)("invalid unit", "unit", unit);
-        }
+        (0, errors_js_1.assertArgument)(index >= 0, "invalid unit", "unit", unit);
         unit = 3 * index;
     }
     return (0, fixednumber_js_1.parseFixed)(value, (unit != null) ? unit : 18);

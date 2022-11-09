@@ -5,17 +5,13 @@ const errors_js_1 = require("./errors.js");
 // @TODO: timeout is completely ignored; start a Promise.any with a reject?
 async function getUrl(req, _signal) {
     const protocol = req.url.split(":")[0].toLowerCase();
-    if (protocol !== "http" && protocol !== "https") {
-        (0, errors_js_1.throwError)(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
-            info: { protocol },
-            operation: "request"
-        });
-    }
-    if (req.credentials && !req.allowInsecureAuthentication) {
-        (0, errors_js_1.throwError)("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
-            operation: "request"
-        });
-    }
+    (0, errors_js_1.assert)(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+        info: { protocol },
+        operation: "request"
+    });
+    (0, errors_js_1.assert)(!req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        operation: "request"
+    });
     let signal = undefined;
     if (_signal) {
         const controller = new AbortController();

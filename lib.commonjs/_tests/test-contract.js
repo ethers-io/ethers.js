@@ -1,39 +1,152 @@
 "use strict";
-/*
-import assert from "assert";
-
-import { connect } from "./create-provider.js";
-
-import { Contract } from "../index.js";
-
-describe("Test Contract", function() {
-    it("tests contract @TODO: expand", async function() {
-        const provider = connect("mainnet");
-
-        const contract = new Contract("dai.tokens.ethers.eth", [
-            "function balanceOf(address) view returns (uint)"
-        ], provider);
-
-        assert.equal(await contract.balanceOf("ricmoo.firefly.eth"), BigInt("6015089439794538201631"));
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const assert_1 = __importDefault(require("assert"));
+const create_provider_js_1 = require("./create-provider.js");
+const index_js_1 = require("../index.js");
+describe("Test Contract", function () {
+    const addr = "0x99417252Aad7B065940eBdF50d665Fb8879c5958";
+    const abi = [
+        "error CustomError1(uint256 code, string message)",
+        "event EventUint256(uint256 indexed value)",
+        "event EventAddress(address indexed value)",
+        "event EventString(string value)",
+        "event EventBytes(bytes value)",
+        "function testCustomError1(bool pass, uint code, string calldata message) pure returns (uint256)",
+        "function testErrorString(bool pass, string calldata message) pure returns (uint256)",
+        "function testPanic(uint256 code) returns (uint256)",
+        "function testEvent(uint256 valueUint256, address valueAddress, string valueString, bytes valueBytes) public",
+        "function testCallAdd(uint256 a, uint256 b) pure returns (uint256 result)"
+    ];
+    it("tests contract calls", async function () {
+        this.timeout(10000);
+        const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", "goerli");
+        const contract = new index_js_1.Contract(addr, abi, provider);
+        assert_1.default.equal(await contract.testCallAdd(4, 5), BigInt(9), "testCallAdd(4, 5)");
+        assert_1.default.equal(await contract.testCallAdd(6, 0), BigInt(6), "testCallAdd(6, 0)");
+    });
+    it("tests events", async function () {
+        this.timeout(60000);
+        const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", "goerli");
+        assert_1.default.ok(provider);
+        const contract = new index_js_1.Contract(addr, abi, provider);
+        const signer = new index_js_1.Wallet((process.env.FAUCET_PRIVATEKEY), provider);
+        const contractSigner = contract.connect(signer);
+        const vUint256 = 42;
+        const vAddrName = "ethers.eth";
+        const vAddr = "0x228568EA92aC5Bc281c1E30b1893735c60a139F1";
+        const vString = "Hello";
+        const vBytes = "0x12345678";
+        let hash = null;
+        // Test running a listener for a specific event
+        const specificEvent = new Promise((resolve, reject) => {
+            contract.on("EventUint256", async (value, event) => {
+                // Triggered by someone else
+                if (hash == null || hash !== event.log.transactionHash) {
+                    return;
+                }
+                try {
+                    assert_1.default.equal(event.filter, "EventUint256", "event.filter");
+                    assert_1.default.equal(event.fragment.name, "EventUint256", "event.fragment.name");
+                    assert_1.default.equal(event.log.address, addr, "event.log.address");
+                    assert_1.default.equal(event.args.length, 1, "event.args.length");
+                    assert_1.default.equal(event.args[0], BigInt(42), "event.args[0]");
+                    const count = await contract.listenerCount("EventUint256");
+                    await event.removeListener();
+                    assert_1.default.equal(await contract.listenerCount("EventUint256"), count - 1, "decrement event count");
+                    resolve(null);
+                }
+                catch (e) {
+                    event.removeListener();
+                    reject(e);
+                }
+            });
+        });
+        // Test running a listener on all (i.e. "*") events
+        const allEvents = new Promise((resolve, reject) => {
+            const waitingFor = {
+                EventUint256: vUint256,
+                EventAddress: vAddr,
+                EventString: vString,
+                EventBytes: vBytes
+            };
+            contract.on("*", (event) => {
+                // Triggered by someone else
+                if (hash == null || hash !== event.log.transactionHash) {
+                    return;
+                }
+                try {
+                    const name = event.eventName;
+                    assert_1.default.equal(event.args[0], waitingFor[name], `${name}`);
+                    delete waitingFor[name];
+                    if (Object.keys(waitingFor).length === 0) {
+                        event.removeListener();
+                        resolve(null);
+                    }
+                }
+                catch (error) {
+                    reject(error);
+                }
+            });
+        });
+        // Send a transaction to trigger some events
+        const tx = await contractSigner.testEvent(vUint256, vAddr, vString, vBytes);
+        hash = tx.hash;
+        const checkEvent = (filter, event) => {
+            const values = {
+                EventUint256: vUint256,
+                EventString: vString,
+                EventAddress: vAddr,
+                EventBytes: vBytes
+            };
+            assert_1.default.ok(event instanceof index_js_1.EventLog, `queryFilter(${filter}):isEventLog`);
+            const name = event.eventName;
+            assert_1.default.equal(event.address, addr, `queryFilter(${filter}):address`);
+            assert_1.default.equal(event.args[0], values[name], `queryFilter(${filter}):args[0]`);
+        };
+        const checkEventFilter = async (filter) => {
+            const events = (await contract.queryFilter(filter, -10)).filter((e) => (e.transactionHash === hash));
+            assert_1.default.equal(events.length, 1, `queryFilter(${filter}).length`);
+            checkEvent(filter, events[0]);
+            return events[0];
+        };
+        const receipt = await tx.wait();
+        // Check the logs in the receipt
+        for (const log of receipt.logs) {
+            checkEvent("receipt", log);
+        }
+        // Various options for queryFilter
+        await checkEventFilter("EventUint256");
+        await checkEventFilter(["EventUint256"]);
+        await checkEventFilter([["EventUint256"]]);
+        await checkEventFilter("EventUint256(uint)");
+        await checkEventFilter(["EventUint256(uint)"]);
+        await checkEventFilter([["EventUint256(uint)"]]);
+        await checkEventFilter([["EventUint256", "EventUint256(uint)"]]);
+        await checkEventFilter("0x85c55bbb820e6d71c71f4894e57751de334b38c421f9c170b0e66d32eafea337");
+        // Query by Event
+        await checkEventFilter(contract.filters.EventUint256);
+        // Query by Deferred Topic Filter; address
+        await checkEventFilter(contract.filters.EventUint256(vUint256));
+        // Query by Deferred Topic Filter; address
+        await checkEventFilter(contract.filters.EventAddress(vAddr));
+        // Query by Deferred Topic Filter; ENS name => address
+        await checkEventFilter(contract.filters.EventAddress(vAddrName));
+        // Multiple Methods
+        {
+            const filter = [["EventUint256", "EventString"]];
+            const events = (await contract.queryFilter(filter, -10)).filter((e) => (e.transactionHash === hash));
+            assert_1.default.equal(events.length, 2, `queryFilter(${filter}).length`);
+            for (const event of events) {
+                checkEvent(filter, event);
+            }
+        }
+        await specificEvent;
+        await allEvents;
     });
 });
-*/
-/*
-import { Typed } from "../abi/index.js";
-import * as providers from "../providers/index.js";
-
-import { Contract } from "../index.js";
-
-import { log } from "./utils.js";
-*/
-//import type { Addressable } from "@ethersproject/address";
-//import type { BigNumberish } from "@ethersproject/logger";
-/*
-import type {
-    ConstantContractMethod, ContractMethod, ContractEvent
-} from "../index.js";
-*/
-// @TODO
 /*
 describe("Test Contract Calls", function() {
     it("finds typed methods", async function() {
@@ -47,8 +160,7 @@ describe("Test Contract Calls", function() {
         contract["foo(string)"].fragment
     });
 });
-*/
-/*
+
 describe("Test Contract Interface", function() {
     it("builds contract interfaces", async function() {
         this.timeout(60000);
@@ -101,17 +213,6 @@ describe("Test Contract Interface", function() {
         });
         const logs = await contract.queryFilter("Transfer", -10);
         console.log(logs, logs[0], logs[0].args.from);
-    });
-});
-*/
-/*
-describe("Test Contract Calls", function() {
-    it("calls ERC-20 methods", async function() {
-        const provider = new providers.AnkrProvider();
-        const contract = new Contract("0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72", [
-            "function balanceOf(address owner) view returns (uint)",
-        ], provider);
-        log(this, `balance: ${ await contract.balanceOf("0x5555763613a12D8F3e73be831DFf8598089d3dCa") }`);
     });
 });
 */

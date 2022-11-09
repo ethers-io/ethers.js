@@ -48,7 +48,7 @@ function object(format, altNames) {
             }
             catch (error) {
                 const message = (error instanceof Error) ? error.message : "not-an-error";
-                (0, index_js_4.throwError)(`invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+                (0, index_js_4.assert)(false, `invalid value for value.${key} (${message})`, "BAD_DATA", { value });
             }
         }
         return result;
@@ -64,20 +64,16 @@ function formatBoolean(value) {
         case "false":
             return false;
     }
-    return (0, index_js_4.throwArgumentError)(`invalid boolean; ${JSON.stringify(value)}`, "value", value);
+    (0, index_js_4.assertArgument)(false, `invalid boolean; ${JSON.stringify(value)}`, "value", value);
 }
 exports.formatBoolean = formatBoolean;
 function formatData(value) {
-    if (!(0, index_js_4.isHexString)(value, true)) {
-        (0, index_js_4.throwArgumentError)("", "value", value);
-    }
+    (0, index_js_4.assertArgument)((0, index_js_4.isHexString)(value, true), "invalid data", "value", value);
     return value;
 }
 exports.formatData = formatData;
 function formatHash(value) {
-    if (!(0, index_js_4.isHexString)(value, 32)) {
-        (0, index_js_4.throwArgumentError)("", "value", value);
-    }
+    (0, index_js_4.assertArgument)((0, index_js_4.isHexString)(value, 32), "invalid hash", "value", value);
     return value;
 }
 exports.formatHash = formatHash;
@@ -144,7 +140,7 @@ exports.formatTransactionReceipt = object({
     hash: formatHash,
     logs: arrayOf(exports.formatReceiptLog),
     blockNumber: index_js_4.getNumber,
-    confirmations: allowNull(index_js_4.getNumber, null),
+    //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: index_js_4.getBigInt,
     effectiveGasPrice: allowNull(index_js_4.getBigInt),
     status: allowNull(index_js_4.getNumber),
@@ -172,7 +168,7 @@ function formatTransactionResponse(value) {
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(index_js_4.getNumber, null),
         transactionIndex: allowNull(index_js_4.getNumber, null),
-        confirmations: allowNull(index_js_4.getNumber, null),
+        //confirmations: allowNull(getNumber, null),
         from: index_js_1.getAddress,
         // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
         gasPrice: allowNull(index_js_4.getBigInt),
@@ -199,7 +195,12 @@ function formatTransactionResponse(value) {
         result.accessList = [];
     }
     // Compute the signature
-    result.signature = index_js_2.Signature.from(value);
+    if (value.signature) {
+        result.signature = index_js_2.Signature.from(value.signature);
+    }
+    else {
+        result.signature = index_js_2.Signature.from(value);
+    }
     // Some backends omit ChainId on legacy transactions, but we can compute it
     if (result.chainId == null) {
         const chainId = result.signature.legacyChainId;

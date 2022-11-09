@@ -94,9 +94,7 @@ class Wallet extends base_wallet_js_1.BaseWallet {
         if (signingKey == null) {
             signingKey = trySigningKey(key);
         }
-        if (signingKey == null) {
-            (0, index_js_3.throwArgumentError)("invalid key", "key", "[ REDACTED ]");
-        }
+        (0, index_js_3.assertArgument)(signingKey != null, "invalid key", "key", "[ REDACTED ]");
         super(signingKey, provider);
         this.#mnemonic = mnemonic;
     }
@@ -128,12 +126,10 @@ class Wallet extends base_wallet_js_1.BaseWallet {
             }
         }
         else {
-            return (0, index_js_3.throwArgumentError)("invalid JSON wallet", "json", "[ REDACTED ]");
+            (0, index_js_3.assertArgument)(false, "invalid JSON wallet", "json", "[ REDACTED ]");
         }
         const wallet = new Wallet(account.privateKey);
-        if (wallet.address !== account.address) {
-            (0, index_js_3.throwArgumentError)("address/privateKey mismatch", "json", "[ REDACTED ]");
-        }
+        (0, index_js_3.assertArgument)(wallet.address === account.address, "address/privateKey mismatch", "json", "[ REDACTED ]");
         // @TODO: mnemonic
         return wallet;
     }
@@ -146,12 +142,10 @@ class Wallet extends base_wallet_js_1.BaseWallet {
             account = (0, json_crowdsale_js_1.decryptCrowdsaleJson)(json, password);
         }
         else {
-            return (0, index_js_3.throwArgumentError)("invalid JSON wallet", "json", "[ REDACTED ]");
+            (0, index_js_3.assertArgument)(false, "invalid JSON wallet", "json", "[ REDACTED ]");
         }
         const wallet = new Wallet(account.privateKey);
-        if (wallet.address !== account.address) {
-            (0, index_js_3.throwArgumentError)("address/privateKey mismatch", "json", "[ REDACTED ]");
-        }
+        (0, index_js_3.assertArgument)(wallet.address === account.address, "address/privateKey mismatch", "json", "[ REDACTED ]");
         // @TODO: mnemonic
         return wallet;
     }

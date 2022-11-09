@@ -72,9 +72,7 @@ function fromBase36(value) {
     return result;
 }
 function getAddress(address) {
-    if (typeof (address) !== "string") {
-        (0, index_js_2.throwArgumentError)("invalid address", "address", address);
-    }
+    (0, index_js_2.assertArgument)(typeof (address) === "string", "invalid address", "address", address);
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
         // Missing the 0x prefix
         if (address.substring(0, 2) !== "0x") {
@@ -82,24 +80,20 @@ function getAddress(address) {
         }
         const result = getChecksumAddress(address);
         // It is a checksummed address with a bad checksum
-        if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            (0, index_js_2.throwArgumentError)("bad address checksum", "address", address);
-        }
+        (0, index_js_2.assertArgument)(!address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) || result === address, "bad address checksum", "address", address);
         return result;
     }
     // Maybe ICAP? (we only support direct mode)
     if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
         // It is an ICAP address with a bad checksum
-        if (address.substring(2, 4) !== ibanChecksum(address)) {
-            (0, index_js_2.throwArgumentError)("bad icap checksum", "address", address);
-        }
+        (0, index_js_2.assertArgument)(address.substring(2, 4) === ibanChecksum(address), "bad icap checksum", "address", address);
         let result = fromBase36(address.substring(4)).toString(16);
         while (result.length < 40) {
             result = "0" + result;
         }
         return getChecksumAddress("0x" + result);
     }
-    return (0, index_js_2.throwArgumentError)("invalid address", "address", address);
+    (0, index_js_2.assertArgument)(false, "invalid address", "address", address);
 }
 exports.getAddress = getAddress;
 function getIcapAddress(address) {

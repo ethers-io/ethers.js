@@ -1,6 +1,6 @@
 import { Interface } from "../abi/index.js";
 import { getCreateAddress } from "../address/index.js";
-import { concat, defineProperties, getBytes, hexlify, throwArgumentError, throwError } from "../utils/index.js";
+import { concat, defineProperties, getBytes, hexlify, assert, assertArgument } from "../utils/index.js";
 import { BaseContract, copyOverrides, resolveArgs } from "./contract.js";
 // A = Arguments to the constructor
 // I = Interface of deployed contracts
@@ -42,11 +42,9 @@ export class ContractFactory {
     }
     async deploy(...args) {
         const tx = await this.getDeployTransaction(...args);
-        if (!this.runner || typeof (this.runner.sendTransaction) !== "function") {
-            return throwError("factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
-                operation: "sendTransaction"
-            });
-        }
+        assert(this.runner && typeof (this.runner.sendTransaction) === "function", "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            operation: "sendTransaction"
+        });
         const sentTx = await this.runner.sendTransaction(tx);
         const address = getCreateAddress(sentTx);
         return new BaseContract(address, this.interface, this.runner, sentTx);
@@ -55,9 +53,7 @@ export class ContractFactory {
         return new ContractFactory(this.interface, this.bytecode, runner);
     }
     static fromSolidity(output, runner) {
-        if (output == null) {
-            throwArgumentError("bad compiler output", "output", output);
-        }
+        assertArgument(output != null, "bad compiler output", "output", output);
         if (typeof (output) === "string") {
             output = JSON.parse(output);
         }

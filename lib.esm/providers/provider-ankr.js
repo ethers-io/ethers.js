@@ -1,4 +1,4 @@
-import { defineProperties, FetchRequest, throwArgumentError } from "../utils/index.js";
+import { defineProperties, FetchRequest, assertArgument } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
@@ -18,7 +18,7 @@ function getHost(name) {
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
     }
-    return throwArgumentError("unsupported network", "network", name);
+    assertArgument(false, "unsupported network", "network", name);
 }
 export class AnkrProvider extends JsonRpcProvider {
     apiKey;

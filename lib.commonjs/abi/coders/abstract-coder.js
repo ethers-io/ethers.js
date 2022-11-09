@@ -133,13 +133,7 @@ function checkResultErrors(result) {
 exports.checkResultErrors = checkResultErrors;
 function getValue(value) {
     let bytes = (0, index_js_1.toArray)(value);
-    if (bytes.length > exports.WordSize) {
-        (0, index_js_1.throwError)("value out-of-bounds", "BUFFER_OVERRUN", {
-            buffer: bytes,
-            length: exports.WordSize,
-            offset: bytes.length
-        });
-    }
+    (0, index_js_1.assert)(bytes.length <= exports.WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: exports.WordSize, offset: bytes.length });
     if (bytes.length !== exports.WordSize) {
         bytes = (0, index_js_1.getBytesCopy)((0, index_js_1.concat)([Padding.slice(bytes.length % exports.WordSize), bytes]));
     }
@@ -165,7 +159,7 @@ class Coder {
         });
     }
     _throwError(message, value) {
-        return (0, index_js_1.throwArgumentError)(message, this.localName, value);
+        (0, index_js_1.assertArgument)(false, message, this.localName, value);
     }
 }
 exports.Coder = Coder;
@@ -238,7 +232,7 @@ class Reader {
                 alignedLength = length;
             }
             else {
-                (0, index_js_1.throwError)("data out-of-bounds", "BUFFER_OVERRUN", {
+                (0, index_js_1.assert)(false, "data out-of-bounds", "BUFFER_OVERRUN", {
                     buffer: (0, index_js_1.getBytesCopy)(this.#data),
                     length: this.#data.length,
                     offset: this.#offset + alignedLength

@@ -1,5 +1,5 @@
 import assert from "assert";
-import { hashMessage, solidityPackedKeccak256, solidityPackedSha256 } from "../index.js";
+import { hashMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, isError } from "../index.js";
 import { loadTests } from "./utils.js";
 /*
 
@@ -142,6 +142,21 @@ describe("Test Solidity Hash functions", function () {
     for (const test of tests) {
         it(`computes the solidity sha256: ${test.name}`, function () {
             assert.equal(solidityPackedSha256(test.types, test.values), test.sha256);
+        });
+    }
+    const badTypes = [
+        { types: ["uint5"], values: [1] },
+        { types: ["bytes0"], values: ["0x"] },
+        { types: ["blorb"], values: [false] },
+    ];
+    for (const { types, values } of badTypes) {
+        it("fails on invalid type", function () {
+            assert.throws(function () {
+                const result = solidityPacked(types, values);
+                console.log(result);
+            }, function (error) {
+                return (isError(error, "INVALID_ARGUMENT") && error.argument === "type");
+            });
         });
     }
 });

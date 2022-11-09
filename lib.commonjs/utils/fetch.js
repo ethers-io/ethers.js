@@ -73,11 +73,9 @@ class FetchCancelSignal {
         });
     }
     addListener(listener) {
-        if (this.#cancelled) {
-            (0, errors_js_1.throwError)("singal already cancelled", "UNSUPPORTED_OPERATION", {
-                operation: "fetchCancelSignal.addCancelListener"
-            });
-        }
+        (0, errors_js_1.assert)(this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+            operation: "fetchCancelSignal.addCancelListener"
+        });
         this.#listeners.push(listener);
     }
     get cancelled() { return this.#cancelled; }
@@ -85,7 +83,7 @@ class FetchCancelSignal {
         if (!this.cancelled) {
             return;
         }
-        (0, errors_js_1.throwError)("cancelled", "CANCELLED", {});
+        (0, errors_js_1.assert)(false, "cancelled", "CANCELLED", {});
     }
 }
 exports.FetchCancelSignal = FetchCancelSignal;
@@ -263,9 +261,7 @@ class FetchRequest {
      *  Sets an ``Authorization`` for %%username%% with %%password%%.
      */
     setCredentials(username, password) {
-        if (username.match(/:/)) {
-            (0, errors_js_1.throwArgumentError)("invalid basic authentication username", "username", "[REDACTED]");
-        }
+        (0, errors_js_1.assertArgument)(!username.match(/:/), "invalid basic authentication username", "username", "[REDACTED]");
         this.#creds = `${username}:${password}`;
     }
     /**
@@ -357,11 +353,9 @@ class FetchRequest {
         if (attempt >= this.#throttle.maxAttempts) {
             return _response.makeServerError("exceeded maximum retry limit");
         }
-        if (getTime() > expires) {
-            return (0, errors_js_1.throwError)("timeout", "TIMEOUT", {
-                operation: "request.send", reason: "timeout", request: _request
-            });
-        }
+        (0, errors_js_1.assert)(getTime() <= expires, "timeout", "TIMEOUT", {
+            operation: "request.send", reason: "timeout", request: _request
+        });
         if (delay > 0) {
             await wait(delay);
         }
@@ -441,9 +435,7 @@ class FetchRequest {
      *  Resolves to the response by sending the request.
      */
     send() {
-        if (this.#signal != null) {
-            return (0, errors_js_1.throwError)("request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
-        }
+        (0, errors_js_1.assert)(this.#signal == null, "request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
         this.#signal = new FetchCancelSignal(this);
         return this.#send(0, getTime() + this.timeout, 0, this, new FetchResponse(0, "", {}, null, this));
     }
@@ -452,9 +444,7 @@ class FetchRequest {
      *  error to be rejected from the [[send]].
      */
     cancel() {
-        if (this.#signal == null) {
-            return (0, errors_js_1.throwError)("request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
-        }
+        (0, errors_js_1.assert)(this.#signal != null, "request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
         const signal = fetchSignals.get(this);
         if (!signal) {
             throw new Error("missing signal; should not happen");
@@ -473,11 +463,9 @@ class FetchRequest {
         // - non-GET requests
         // - downgrading the security (e.g. https => http)
         // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
-        if (this.method !== "GET" || (current === "https" && target === "http") || !location.match(/^https?:/)) {
-            return (0, errors_js_1.throwError)(`unsupported redirect`, "UNSUPPORTED_OPERATION", {
-                operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
-            });
-        }
+        (0, errors_js_1.assert)(this.method === "GET" && (current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
+            operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
+        });
         // Create a copy of this request, with a new URL
         const req = new FetchRequest(location);
         req.method = "GET";
@@ -601,7 +589,7 @@ class FetchResponse {
             return (this.#body == null) ? "" : (0, utf8_js_1.toUtf8String)(this.#body);
         }
         catch (error) {
-            return (0, errors_js_1.throwError)("response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
+            (0, errors_js_1.assert)(false, "response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
                 operation: "bodyText", info: { response: this }
             });
         }
@@ -616,7 +604,7 @@ class FetchResponse {
             return JSON.parse(this.bodyText);
         }
         catch (error) {
-            return (0, errors_js_1.throwError)("response body is not valid JSON", "UNSUPPORTED_OPERATION", {
+            (0, errors_js_1.assert)(false, "response body is not valid JSON", "UNSUPPORTED_OPERATION", {
                 operation: "bodyJson", info: { response: this }
             });
         }
@@ -674,8 +662,8 @@ class FetchResponse {
         if (stall == null) {
             stall = -1;
         }
-        else if (typeof (stall) !== "number" || !Number.isInteger(stall) || stall < 0) {
-            return (0, errors_js_1.throwArgumentError)("invalid stall timeout", "stall", stall);
+        else {
+            (0, errors_js_1.assertArgument)(Number.isInteger(stall) && stall >= 0, "invalid stall timeout", "stall", stall);
         }
         const error = new Error(message || "throttling requests");
         (0, properties_js_1.defineProperties)(error, { stall, throttle: true });
@@ -714,7 +702,7 @@ class FetchResponse {
         if (message === "") {
             message = `server response ${this.statusCode} ${this.statusMessage}`;
         }
-        (0, errors_js_1.throwError)(message, "SERVER_ERROR", {
+        (0, errors_js_1.assert)(false, message, "SERVER_ERROR", {
             request: (this.request || "unknown request"), response: this, error
         });
     }

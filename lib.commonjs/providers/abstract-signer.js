@@ -12,7 +12,7 @@ class AbstractSigner {
         if (this.provider) {
             return this.provider;
         }
-        return (0, index_js_2.throwError)("missing provider", "UNSUPPORTED_OPERATION", { operation });
+        (0, index_js_2.assert)(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
     }
     async getNonce(blockTag) {
         return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
@@ -23,9 +23,7 @@ class AbstractSigner {
         let pop = Object.assign({}, tx);
         if (pop.to != null) {
             pop.to = provider.resolveName(pop.to).then((to) => {
-                if (to == null) {
-                    return (0, index_js_2.throwArgumentError)("transaction to ENS name not configured", "tx.to", pop.to);
-                }
+                (0, index_js_2.assertArgument)(to != null, "transaction to ENS name not configured", "tx.to", pop.to);
                 return to;
             });
         }
@@ -35,9 +33,7 @@ class AbstractSigner {
                 this.getAddress(),
                 this.resolveName(from)
             ]).then(([address, from]) => {
-                if (!from || address.toLowerCase() !== from.toLowerCase()) {
-                    return (0, index_js_2.throwArgumentError)("transaction from mismatch", "tx.from", from);
-                }
+                (0, index_js_2.assertArgument)(from && address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
                 return address;
             });
         }
@@ -59,9 +55,7 @@ class AbstractSigner {
         const network = await (this.provider).getNetwork();
         if (pop.chainId != null) {
             const chainId = (0, index_js_2.getBigInt)(pop.chainId);
-            if (chainId !== network.chainId) {
-                (0, index_js_2.throwArgumentError)("transaction chainId mismatch", "tx.chainId", tx.chainId);
-            }
+            (0, index_js_2.assertArgument)(chainId === network.chainId, "transaction chainId mismatch", "tx.chainId", tx.chainId);
         }
         else {
             pop.chainId = network.chainId;
@@ -69,10 +63,10 @@ class AbstractSigner {
         // Do not allow mixing pre-eip-1559 and eip-1559 properties
         const hasEip1559 = (pop.maxFeePerGas != null || pop.maxPriorityFeePerGas != null);
         if (pop.gasPrice != null && (pop.type === 2 || hasEip1559)) {
-            (0, index_js_2.throwArgumentError)("eip-1559 transaction do not support gasPrice", "tx", tx);
+            (0, index_js_2.assertArgument)(false, "eip-1559 transaction do not support gasPrice", "tx", tx);
         }
         else if ((pop.type === 0 || pop.type === 1) && hasEip1559) {
-            (0, index_js_2.throwArgumentError)("pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "tx", tx);
+            (0, index_js_2.assertArgument)(false, "pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "tx", tx);
         }
         if ((pop.type === 2 || pop.type == null) && (pop.maxFeePerGas != null && pop.maxPriorityFeePerGas != null)) {
             // Fully-formed EIP-1559 transaction (skip getFeeData)
@@ -82,11 +76,9 @@ class AbstractSigner {
             // Explicit Legacy or EIP-2930 transaction
             // We need to get fee data to determine things
             const feeData = await provider.getFeeData();
-            if (feeData.gasPrice == null) {
-                (0, index_js_2.throwError)("network does not support gasPrice", "UNSUPPORTED_OPERATION", {
-                    operation: "getGasPrice"
-                });
-            }
+            (0, index_js_2.assert)(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
+                operation: "getGasPrice"
+            });
             // Populate missing gasPrice
             if (pop.gasPrice == null) {
                 pop.gasPrice = feeData.gasPrice;
@@ -122,11 +114,9 @@ class AbstractSigner {
                 else if (feeData.gasPrice != null) {
                     // Network doesn't support EIP-1559...
                     // ...but they are trying to use EIP-1559 properties
-                    if (hasEip1559) {
-                        (0, index_js_2.throwError)("network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
-                            operation: "populateTransaction"
-                        });
-                    }
+                    (0, index_js_2.assert)(hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
+                        operation: "populateTransaction"
+                    });
                     // Populate missing fee data
                     if (pop.gasPrice == null) {
                         pop.gasPrice = feeData.gasPrice;
@@ -137,7 +127,7 @@ class AbstractSigner {
                 }
                 else {
                     // getFeeData has failed us.
-                    (0, index_js_2.throwError)("failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
+                    (0, index_js_2.assert)(false, "failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
                         operation: "signer.getFeeData"
                     });
                 }
@@ -186,9 +176,7 @@ class VoidSigner extends AbstractSigner {
         return new VoidSigner(this.address, provider);
     }
     #throwUnsupported(suffix, operation) {
-        return (0, index_js_2.throwError)(`VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", {
-            operation
-        });
+        (0, index_js_2.assert)(false, `VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", { operation });
     }
     async signTransaction(tx) {
         this.#throwUnsupported("transactions", "signTransaction");

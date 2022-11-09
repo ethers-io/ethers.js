@@ -25,27 +25,21 @@ function _decodeChildren(data, offset, childOffset, length) {
         const decoded = _decode(data, childOffset);
         result.push(decoded.result);
         childOffset += decoded.consumed;
-        if (childOffset > offset + 1 + length) {
-            (0, errors_js_1.throwError)("child data too short", "BUFFER_OVERRUN", {
-                buffer: data, length, offset
-            });
-        }
+        (0, errors_js_1.assert)(childOffset <= offset + 1 + length, "child data too short", "BUFFER_OVERRUN", {
+            buffer: data, length, offset
+        });
     }
     return { consumed: (1 + length), result: result };
 }
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
-    if (data.length === 0) {
-        (0, errors_js_1.throwError)("data too short", "BUFFER_OVERRUN", {
-            buffer: data, length: 0, offset: 1
-        });
-    }
+    (0, errors_js_1.assert)(data.length !== 0, "data too short", "BUFFER_OVERRUN", {
+        buffer: data, length: 0, offset: 1
+    });
     const checkOffset = (offset) => {
-        if (offset > data.length) {
-            (0, errors_js_1.throwError)("data short segment too short", "BUFFER_OVERRUN", {
-                buffer: data, length: data.length, offset
-            });
-        }
+        (0, errors_js_1.assert)(offset <= data.length, "data short segment too short", "BUFFER_OVERRUN", {
+            buffer: data, length: data.length, offset
+        });
     };
     // Array with extra length prefix
     if (data[offset] >= 0xf8) {
@@ -82,9 +76,7 @@ function _decode(data, offset) {
 function decodeRlp(_data) {
     const data = (0, data_js_2.getBytes)(_data, "data");
     const decoded = _decode(data, 0);
-    if (decoded.consumed !== data.length) {
-        (0, errors_js_1.throwArgumentError)("unexpected junk after rlp payload", "data", _data);
-    }
+    (0, errors_js_1.assertArgument)(decoded.consumed === data.length, "unexpected junk after rlp payload", "data", _data);
     return decoded.result;
 }
 exports.decodeRlp = decodeRlp;

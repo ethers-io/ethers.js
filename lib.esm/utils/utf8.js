@@ -1,7 +1,7 @@
 import { getBytes } from "./data.js";
-import { assertNormalize, throwArgumentError } from "./errors.js";
+import { assertArgument, assertNormalize } from "./errors.js";
 function errorFunc(reason, offset, bytes, output, badCodepoint) {
-    return throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
+    assertArgument(false, `invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
 }
 function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
     // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
@@ -144,9 +144,7 @@ export function toUtf8Bytes(str, form) {
         else if ((c & 0xfc00) == 0xd800) {
             i++;
             const c2 = str.charCodeAt(i);
-            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
-                throw new Error("invalid utf-8 string");
-            }
+            assertArgument(i < str.length && ((c2 & 0xfc00) === 0xdc00), "invalid surrogate pair", "str", str);
             // Surrogate Pair
             const pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
             result.push((pair >> 18) | 0xf0);
@@ -163,32 +161,6 @@ export function toUtf8Bytes(str, form) {
     return new Uint8Array(result);
 }
 ;
-function escapeChar(value) {
-    const hex = ("0000" + value.toString(16));
-    return "\\u" + hex.substring(hex.length - 4);
-}
-export function _toEscapedUtf8String(bytes, onError) {
-    return '"' + getUtf8CodePoints(bytes, onError).map((codePoint) => {
-        if (codePoint < 256) {
-            switch (codePoint) {
-                case 8: return "\\b";
-                case 9: return "\\t";
-                case 10: return "\\n";
-                case 13: return "\\r";
-                case 34: return "\\\"";
-                case 92: return "\\\\";
-            }
-            if (codePoint >= 32 && codePoint < 127) {
-                return String.fromCharCode(codePoint);
-            }
-        }
-        if (codePoint <= 0xffff) {
-            return escapeChar(codePoint);
-        }
-        codePoint -= 0x10000;
-        return escapeChar(((codePoint >> 10) & 0x3ff) + 0xd800) + escapeChar((codePoint & 0x3ff) + 0xdc00);
-    }).join("") + '"';
-}
 export function _toUtf8String(codePoints) {
     return codePoints.map((codePoint) => {
         if (codePoint <= 0xffff) {

@@ -35,9 +35,7 @@ class BaseWallet extends index_js_3.AbstractSigner {
             tx.from = from;
         }
         if (tx.from != null) {
-            if ((0, index_js_1.getAddress)((tx.from)) !== this.address) {
-                (0, index_js_5.throwArgumentError)("transaction from address mismatch", "tx.from", tx.from);
-            }
+            (0, index_js_5.assertArgument)((0, index_js_1.getAddress)((tx.from)) === this.address, "transaction from address mismatch", "tx.from", tx.from);
             delete tx.from;
         }
         // Build the transaction
@@ -56,18 +54,14 @@ class BaseWallet extends index_js_3.AbstractSigner {
     async signTypedData(domain, types, value) {
         // Populate any ENS names
         const populated = await index_js_2.TypedDataEncoder.resolveNames(domain, types, value, async (name) => {
-            if (this.provider == null) {
-                return (0, index_js_5.throwError)("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
-                    operation: "resolveName",
-                    info: { name }
-                });
-            }
+            (0, index_js_5.assert)(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
+                operation: "resolveName",
+                info: { name }
+            });
             const address = await this.provider.resolveName(name);
-            if (address == null) {
-                return (0, index_js_5.throwError)("unconfigured ENS name", "UNCONFIGURED_NAME", {
-                    value: name
-                });
-            }
+            (0, index_js_5.assert)(address != null, "unconfigured ENS name", "UNCONFIGURED_NAME", {
+                value: name
+            });
             return address;
         });
         return this.signingKey.sign(index_js_2.TypedDataEncoder.hash(populated.domain, types, populated.value)).serialized;

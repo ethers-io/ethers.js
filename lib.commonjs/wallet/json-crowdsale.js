@@ -26,9 +26,7 @@ function decryptCrowdsaleJson(json, _password) {
     const address = (0, index_js_1.getAddress)((0, utils_js_1.spelunk)(data, "ethaddr:string!"));
     // Encrypted Seed
     const encseed = (0, utils_js_1.looseArrayify)((0, utils_js_1.spelunk)(data, "encseed:string!"));
-    if (!encseed || (encseed.length % 16) !== 0) {
-        (0, index_js_4.throwArgumentError)("invalid encseed", "json", json);
-    }
+    (0, index_js_4.assertArgument)(encseed && (encseed.length % 16) === 0, "invalid encseed", "json", json);
     const key = (0, index_js_4.getBytes)((0, index_js_2.pbkdf2)(password, password, 2000, 32, "sha256")).slice(0, 16);
     const iv = encseed.slice(0, 16);
     const encryptedSeed = encseed.slice(16);

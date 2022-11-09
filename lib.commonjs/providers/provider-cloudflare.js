@@ -7,9 +7,7 @@ const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 class CloudflareProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     constructor(_network = "mainnet") {
         const network = network_js_1.Network.from(_network);
-        if (network.name !== "mainnet") {
-            return (0, index_js_1.throwArgumentError)("unsupported network", "network", _network);
-        }
+        (0, index_js_1.assertArgument)(network.name === "mainnet", "unsupported network", "network", _network);
         super("https:/\/cloudflare-eth.com/", network, { staticNetwork: network });
     }
 }

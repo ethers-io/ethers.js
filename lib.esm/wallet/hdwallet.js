@@ -1,7 +1,7 @@
 import { computeHmac, randomBytes, ripemd160, SigningKey, sha256 } from "../crypto/index.js";
 import { VoidSigner } from "../providers/index.js";
 import { computeAddress } from "../transaction/index.js";
-import { concat, dataSlice, decodeBase58, defineProperties, encodeBase58, getBytes, hexlify, getNumber, toBigInt, toHex, assertPrivate, throwArgumentError, throwError } from "../utils/index.js";
+import { concat, dataSlice, decodeBase58, defineProperties, encodeBase58, getBytes, hexlify, getNumber, toBigInt, toHex, assertPrivate, assert, assertArgument } from "../utils/index.js";
 import { langEn } from "../wordlists/lang-en.js";
 import { Mnemonic } from "./mnemonic.js";
 import { BaseWallet } from "./base-wallet.js";
@@ -32,11 +32,9 @@ const _guard = {};
 function ser_I(index, chainCode, publicKey, privateKey) {
     const data = new Uint8Array(37);
     if (index & HardenedBit) {
-        if (privateKey == null) {
-            return throwError("cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
-                operation: "deriveChild"
-            });
-        }
+        assert(privateKey != null, "cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
+            operation: "deriveChild"
+        });
         // Data = 0x00 || ser_256(k_par)
         data.set(getBytes(privateKey), 1);
     }
@@ -171,9 +169,7 @@ export class HDNodeWallet extends BaseWallet {
     }
     static fromExtendedKey(extendedKey) {
         const bytes = getBytes(decodeBase58(extendedKey)); // @TODO: redact
-        if (bytes.length !== 82 || encodeBase58Check(bytes.slice(0, 78)) !== extendedKey) {
-            throwArgumentError("invalid extended key", "extendedKey", "[ REDACTED ]");
-        }
+        assertArgument(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey, "invalid extended key", "extendedKey", "[ REDACTED ]");
         const depth = bytes[4];
         const parentFingerprint = hexlify(bytes.slice(5, 9));
         const index = parseInt(hexlify(bytes.slice(9, 13)).substring(2), 16);
@@ -194,7 +190,7 @@ export class HDNodeWallet extends BaseWallet {
                 }
                 return new HDNodeWallet(_guard, new SigningKey(key.slice(1)), parentFingerprint, chainCode, null, index, depth, null, null);
         }
-        return throwArgumentError("invalid extended key prefix", "extendedKey", "[ REDACTED ]");
+        assertArgument(false, "invalid extended key prefix", "extendedKey", "[ REDACTED ]");
     }
     static createRandom(password = "", path = defaultPath, wordlist = langEn) {
         if (!path) {
@@ -276,9 +272,7 @@ export class HDNodeWalletManager {
 }
 export function getAccountPath(_index) {
     const index = getNumber(_index, "index");
-    if (index < 0 || index >= HardenedBit) {
-        throwArgumentError("invalid account index", "index", index);
-    }
+    assertArgument(index >= 0 && index < HardenedBit, "invalid account index", "index", index);
     return `m/44'/60'/${index}'/0/0`;
 }
 //# sourceMappingURL=hdwallet.js.map

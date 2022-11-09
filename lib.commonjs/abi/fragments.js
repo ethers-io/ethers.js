@@ -302,9 +302,7 @@ function consumeEoi(tokens) {
 const regexArrayType = new RegExp(/^(.*)\[([0-9]*)\]$/);
 function verifyBasicType(type) {
     const match = type.match(regexType);
-    if (!match) {
-        return (0, index_js_1.throwArgumentError)("invalid type", "type", type);
-    }
+    (0, index_js_1.assertArgument)(match, "invalid type", "type", type);
     if (type === "uint") {
         return "uint256";
     }
@@ -314,16 +312,12 @@ function verifyBasicType(type) {
     if (match[2]) {
         // bytesXX
         const length = parseInt(match[2]);
-        if (length === 0 || length > 32) {
-            (0, index_js_1.throwArgumentError)("invalid bytes length", "type", type);
-        }
+        (0, index_js_1.assertArgument)(length !== 0 && length <= 32, "invalid bytes length", "type", type);
     }
     else if (match[3]) {
         // intXX or uintXX
         const size = parseInt(match[3]);
-        if (size === 0 || size > 256 || size % 8) {
-            (0, index_js_1.throwArgumentError)("invalid numeric width", "type", type);
-        }
+        (0, index_js_1.assertArgument)(size !== 0 && size <= 256 && (size % 8) === 0, "invalid numeric width", "type", type);
     }
     return type;
 }
@@ -575,14 +569,10 @@ class ParamType {
             return new ParamType(_guard, name, type, baseType, indexed, comps, arrayLength, arrayChildren);
         }
         const name = obj.name;
-        if (name && (typeof (name) !== "string" || !name.match(regexIdentifier))) {
-            (0, index_js_1.throwArgumentError)("invalid name", "obj.name", name);
-        }
+        (0, index_js_1.assertArgument)(!name || (typeof (name) === "string" && name.match(regexIdentifier)), "invalid name", "obj.name", name);
         let indexed = obj.indexed;
         if (indexed != null) {
-            if (!allowIndexed) {
-                (0, index_js_1.throwArgumentError)("parameter cannot be indexed", "obj.indexed", obj.indexed);
-            }
+            (0, index_js_1.assertArgument)(allowIndexed, "parameter cannot be indexed", "obj.indexed", obj.indexed);
             indexed = !!indexed;
         }
         let type = obj.type;
@@ -669,9 +659,7 @@ class NamedFragment extends Fragment {
     name;
     constructor(guard, type, name, inputs) {
         super(guard, type, inputs);
-        if (typeof (name) !== "string" || !name.match(regexIdentifier)) {
-            (0, index_js_1.throwArgumentError)("invalid identifier", "name", name);
-        }
+        (0, index_js_1.assertArgument)(typeof (name) === "string" && name.match(regexIdentifier), "invalid identifier", "name", name);
         inputs = Object.freeze(inputs.slice());
         (0, index_js_1.defineProperties)(this, { name });
     }
@@ -782,11 +770,7 @@ class ConstructorFragment extends Fragment {
         (0, index_js_1.defineProperties)(this, { payable, gas });
     }
     format(format = "sighash") {
-        if (format === "sighash") {
-            (0, index_js_1.throwError)("cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", {
-                operation: "format(sighash)"
-            });
-        }
+        (0, index_js_1.assert)(format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
         if (format === "json") {
             return JSON.stringify({
                 type: "constructor",

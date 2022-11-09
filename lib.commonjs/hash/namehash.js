@@ -52,9 +52,7 @@ function isValidName(name) {
 exports.isValidName = isValidName;
 function namehash(name) {
     /* istanbul ignore if */
-    if (typeof (name) !== "string") {
-        (0, index_js_2.throwArgumentError)("invalid ENS name; not a string", "name", name);
-    }
+    (0, index_js_2.assertArgument)(typeof (name) === "string", "invalid ENS name; not a string", "name", name);
     let result = Zeros;
     const comps = ensNameSplit(name);
     while (comps.length) {

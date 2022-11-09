@@ -18,11 +18,6 @@ function canResolve(value) {
 function canSend(value) {
     return (value && typeof (value.sendTransaction) === "function");
 }
-function concisify(items) {
-    items = Array.from((new Set(items)).values());
-    items.sort();
-    return items;
-}
 class PreparedTopicFilter {
     #filter;
     fragment;
@@ -83,10 +78,10 @@ async function copyOverrides(arg) {
     // Some sanity checking; these are what these methods adds
     //if ((<any>overrides).to) {
     if (overrides.to) {
-        (0, index_js_4.throwArgumentError)("cannot override to", "overrides.to", overrides.to);
+        (0, index_js_4.assertArgument)(false, "cannot override to", "overrides.to", overrides.to);
     }
     else if (overrides.data) {
-        (0, index_js_4.throwArgumentError)("cannot override data", "overrides.data", overrides.data);
+        (0, index_js_4.assertArgument)(false, "cannot override data", "overrides.data", overrides.data);
     }
     // Resolve any from
     if (overrides.from) {
@@ -163,11 +158,7 @@ class WrappedMethod extends _WrappedMethodBase() {
     }
     async send(...args) {
         const runner = this._contract.runner;
-        if (!canSend(runner)) {
-            return (0, index_js_4.throwError)("contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
-                operation: "sendTransaction"
-            });
-        }
+        (0, index_js_4.assert)(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
         const tx = await runner.sendTransaction(await this.populateTransaction(...args));
         const provider = getProvider(this._contract.runner);
         // @TODO: the provider can be null; make a custom dummy provider that will throw a
@@ -176,20 +167,12 @@ class WrappedMethod extends _WrappedMethodBase() {
     }
     async estimateGas(...args) {
         const runner = getRunner(this._contract.runner, "estimateGas");
-        if (!canEstimate(runner)) {
-            return (0, index_js_4.throwError)("contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", {
-                operation: "estimateGas"
-            });
-        }
+        (0, index_js_4.assert)(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
         return await runner.estimateGas(await this.populateTransaction(...args));
     }
     async staticCallResult(...args) {
         const runner = getRunner(this._contract.runner, "call");
-        if (!canCall(runner)) {
-            return (0, index_js_4.throwError)("contract runner does not support calling", "UNSUPPORTED_OPERATION", {
-                operation: "call"
-            });
-        }
+        (0, index_js_4.assert)(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
         const tx = await this.populateTransaction(...args);
         let result = "0x";
         try {
@@ -220,7 +203,7 @@ class WrappedEvent extends _WrappedEventBase() {
         });
         return new Proxy(this, {
             // Perform the default operation for this fragment type
-            apply: async (target, thisArg, args) => {
+            apply: (target, thisArg, args) => {
                 return new PreparedTopicFilter(contract, target.getFragment(...args), args);
             },
         });
@@ -250,22 +233,45 @@ function isDeferred(value) {
     return (value && typeof (value) === "object" && ("getTopicFilter" in value) &&
         (typeof (value.getTopicFilter) === "function") && value.fragment);
 }
-async function getSubTag(contract, event) {
-    let fragment;
+async function getSubInfo(contract, event) {
     let topics;
+    let fragment = null;
+    // Convert named events to topicHash and get the fragment for
+    // events which need deconstructing.
     if (Array.isArray(event)) {
-        // Topics; e.g. `[ "0x1234...89ab" ]`
-        fragment = contract.interface.getEvent(event[0]);
-        topics = event;
+        const topicHashify = function (name) {
+            if ((0, index_js_4.isHexString)(name, 32)) {
+                return name;
+            }
+            return contract.interface.getEvent(name).topicHash;
+        };
+        // Array of Topics and Names; e.g. `[ "0x1234...89ab", "Transfer(address)" ]`
+        topics = event.map((e) => {
+            if (e == null) {
+                return null;
+            }
+            if (Array.isArray(e)) {
+                return e.map(topicHashify);
+            }
+            return topicHashify(e);
+        });
+    }
+    else if (event === "*") {
+        topics = [null];
     }
     else if (typeof (event) === "string") {
-        // Event name (name or signature); `"Transfer"`
-        fragment = contract.interface.getEvent(event);
-        topics = [fragment.topicHash];
+        if ((0, index_js_4.isHexString)(event, 32)) {
+            // Topic Hash
+            topics = [event];
+        }
+        else {
+            // Name or Signature; e.g. `"Transfer", `"Transfer(address)"`
+            fragment = contract.interface.getEvent(event);
+            topics = [fragment.topicHash];
+        }
     }
     else if (isDeferred(event)) {
         // Deferred Topic Filter; e.g. `contract.filter.Transfer(from)`
-        fragment = event.fragment;
         topics = await event.getTopicFilter();
     }
     else if ("fragment" in event) {
@@ -274,8 +280,7 @@ async function getSubTag(contract, event) {
         topics = [fragment.topicHash];
     }
     else {
-        console.log(event);
-        throw new Error("TODO");
+        (0, index_js_4.assertArgument)(false, "unknown event name", "event", event);
     }
     // Normalize topics and sort TopicSets
     topics = topics.map((t) => {
@@ -283,7 +288,12 @@ async function getSubTag(contract, event) {
             return null;
         }
         if (Array.isArray(t)) {
-            return concisify(t.map((t) => t.toLowerCase()));
+            const items = Array.from(new Set(t.map((t) => t.toLowerCase())).values());
+            if (items.length === 1) {
+                return items[0];
+            }
+            items.sort();
+            return items;
         }
         return t.toLowerCase();
     });
@@ -300,25 +310,39 @@ async function getSubTag(contract, event) {
 }
 async function hasSub(contract, event) {
     const { subs } = getInternal(contract);
-    return subs.get((await getSubTag(contract, event)).tag) || null;
+    return subs.get((await getSubInfo(contract, event)).tag) || null;
 }
-async function getSub(contract, event) {
+async function getSub(contract, operation, event) {
     // Make sure our runner can actually subscribe to events
     const provider = getProvider(contract.runner);
-    if (!provider) {
-        return (0, index_js_4.throwError)("contract runner does not support subscribing", "UNSUPPORTED_OPERATION", {
-            operation: "on"
-        });
-    }
-    const { fragment, tag, topics } = await getSubTag(contract, event);
+    (0, index_js_4.assert)(provider, "contract runner does not support subscribing", "UNSUPPORTED_OPERATION", { operation });
+    const { fragment, tag, topics } = await getSubInfo(contract, event);
     const { addr, subs } = getInternal(contract);
     let sub = subs.get(tag);
     if (!sub) {
         const address = (addr ? addr : contract);
         const filter = { address, topics };
         const listener = (log) => {
-            const payload = new wrappers_js_1.ContractEventPayload(contract, null, event, fragment, log);
-            emit(contract, event, payload.args, payload);
+            let foundFragment = fragment;
+            if (foundFragment == null) {
+                try {
+                    foundFragment = contract.interface.getEvent(log.topics[0]);
+                }
+                catch (error) { }
+            }
+            // If fragment is null, we do not deconstruct the args to emit
+            if (foundFragment) {
+                const _foundFragment = foundFragment;
+                const args = fragment ? contract.interface.decodeEventLog(fragment, log.data, log.topics) : [];
+                emit(contract, event, args, (listener) => {
+                    return new wrappers_js_1.ContractEventPayload(contract, listener, event, _foundFragment, log);
+                });
+            }
+            else {
+                emit(contract, event, [], (listener) => {
+                    return new wrappers_js_1.ContractUnknownEventPayload(contract, listener, event, log);
+                });
+            }
         };
         let started = false;
         const start = () => {
@@ -344,7 +368,7 @@ async function getSub(contract, event) {
 // ensure correct ordering (note this cannot throw and just adds the
 // notice to the event queu using setTimeout).
 let lastEmit = Promise.resolve();
-async function _emit(contract, event, args, payload) {
+async function _emit(contract, event, args, payloadFunc) {
     await lastEmit;
     const sub = await hasSub(contract, event);
     if (!sub) {
@@ -353,8 +377,8 @@ async function _emit(contract, event, args, payload) {
     const count = sub.listeners.length;
     sub.listeners = sub.listeners.filter(({ listener, once }) => {
         const passArgs = args.slice();
-        if (payload) {
-            passArgs.push(new wrappers_js_1.ContractEventPayload(contract, (once ? null : listener), event, payload.fragment, payload.log));
+        if (payloadFunc) {
+            passArgs.push(payloadFunc(once ? null : listener));
         }
         try {
             listener.call(contract, ...passArgs);
@@ -364,12 +388,12 @@ async function _emit(contract, event, args, payload) {
     });
     return (count > 0);
 }
-async function emit(contract, event, args, payload) {
+async function emit(contract, event, args, payloadFunc) {
     try {
         await lastEmit;
     }
     catch (error) { }
-    const resultPromise = _emit(contract, event, args, payload);
+    const resultPromise = _emit(contract, event, args, payloadFunc);
     lastEmit = resultPromise;
     return await resultPromise;
 }
@@ -458,14 +482,13 @@ class BaseContract {
             }
         });
     }
+    connect(runner) {
+        return new BaseContract(this.target, this.interface, runner);
+    }
     async getAddress() { return await getInternal(this).addrPromise; }
     async getDeployedCode() {
         const provider = getProvider(this.runner);
-        if (!provider) {
-            return (0, index_js_4.throwError)("runner does not support .provider", "UNSUPPORTED_OPERATION", {
-                operation: "getDeployedCode"
-            });
-        }
+        (0, index_js_4.assert)(provider, "runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "getDeployedCode" });
         const code = await provider.getCode(await this.getAddress());
         if (code === "0x") {
             return null;
@@ -486,11 +509,7 @@ class BaseContract {
         }
         // Make sure we can subscribe to a provider event
         const provider = getProvider(this.runner);
-        if (provider == null) {
-            return (0, index_js_4.throwError)("contract runner does not support .provider", "UNSUPPORTED_OPERATION", {
-                operation: "waitForDeployment"
-            });
-        }
+        (0, index_js_4.assert)(provider != null, "contract runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "waitForDeployment" });
         return new Promise((resolve, reject) => {
             const checkCode = async () => {
                 try {
@@ -529,26 +548,34 @@ class BaseContract {
     async queryFilter(event, fromBlock = 0, toBlock = "latest") {
         const { addr, addrPromise } = getInternal(this);
         const address = (addr ? addr : (await addrPromise));
-        const { fragment, topics } = await getSubTag(this, event);
+        const { fragment, topics } = await getSubInfo(this, event);
         const filter = { address, topics, fromBlock, toBlock };
         const provider = getProvider(this.runner);
-        if (!provider) {
-            return (0, index_js_4.throwError)("contract runner does not have a provider", "UNSUPPORTED_OPERATION", {
-                operation: "queryFilter"
-            });
-        }
+        (0, index_js_4.assert)(provider, "contract runner does not have a provider", "UNSUPPORTED_OPERATION", { operation: "queryFilter" });
         return (await provider.getLogs(filter)).map((log) => {
-            return new wrappers_js_1.EventLog(log, this.interface, fragment);
+            let foundFragment = fragment;
+            if (foundFragment == null) {
+                try {
+                    foundFragment = this.interface.getEvent(log.topics[0]);
+                }
+                catch (error) { }
+            }
+            if (foundFragment) {
+                return new wrappers_js_1.EventLog(log, this.interface, foundFragment);
+            }
+            else {
+                return new index_js_3.Log(log, provider);
+            }
         });
     }
     async on(event, listener) {
-        const sub = await getSub(this, event);
+        const sub = await getSub(this, "on", event);
         sub.listeners.push({ listener, once: false });
         sub.start();
         return this;
     }
     async once(event, listener) {
-        const sub = await getSub(this, event);
+        const sub = await getSub(this, "once", event);
         sub.listeners.push({ listener, once: true });
         sub.start();
         return this;

@@ -44,11 +44,7 @@ class SocketSubscriber {
     // @TODO: pause should trap the current blockNumber, unsub, and on resume use getLogs
     //        and resume
     pause(dropWhilePaused) {
-        if (!dropWhilePaused) {
-            (0, index_js_1.throwError)("preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", {
-                operation: "pause(false)"
-            });
-        }
+        (0, index_js_1.assert)(dropWhilePaused, "preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", { operation: "pause(false)" });
         this.#paused = !!dropWhilePaused;
     }
     resume() {

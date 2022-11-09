@@ -1,7 +1,6 @@
 import { AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
-//    FallbackProvider,
-isError, } from "../index.js";
+FallbackProvider, isError, } from "../index.js";
 ;
 const ethNetworks = ["default", "mainnet", "goerli"];
 //const maticNetworks = [ "matic", "maticmum" ];
@@ -63,23 +62,23 @@ const ProviderCreators = [
         }
     },
     */
-    /*
-        {
-            name: "FallbackProvider",
-            networks: ethNetworks,
-            create: function(network: string) {
-                const providers: Array<AbstractProvider> = [];
-                for (const creator of ProviderCreators) {
-                    if (creator.name === "FallbackProvider") { continue; }
-                    if (creator.networks.indexOf(network) >= 0) {
-                        const provider = creator.create(network);
-                        if (provider) { providers.push(provider); }
-                    }
+    {
+        name: "FallbackProvider",
+        networks: ethNetworks,
+        create: function (network) {
+            const providers = [];
+            for (const providerName of ["AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider"]) {
+                const provider = getProvider(providerName, network);
+                if (provider) {
+                    providers.push(provider);
                 }
-                return new FallbackProvider(providers);
             }
-        },
-    */
+            if (providers.length === 0) {
+                throw new Error("UNSUPPORTED NETWORK");
+            }
+            return new FallbackProvider(providers);
+        }
+    },
 ];
 export const providerNames = Object.freeze(ProviderCreators.map((c) => (c.name)));
 function getCreator(provider) {

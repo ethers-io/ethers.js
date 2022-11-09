@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContractEventPayload = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.EventLog = void 0;
+exports.ContractEventPayload = exports.ContractUnknownEventPayload = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.EventLog = void 0;
 const index_js_1 = require("../providers/index.js");
 const index_js_2 = require("../utils/index.js");
 class EventLog extends index_js_1.Log {
@@ -50,21 +50,11 @@ class ContractTransactionResponse extends index_js_1.TransactionResponse {
     }
 }
 exports.ContractTransactionResponse = ContractTransactionResponse;
-class ContractEventPayload extends index_js_2.EventPayload {
-    fragment;
+class ContractUnknownEventPayload extends index_js_2.EventPayload {
     log;
-    args;
-    constructor(contract, listener, filter, fragment, _log) {
+    constructor(contract, listener, filter, log) {
         super(contract, listener, filter);
-        const log = new EventLog(_log, contract.interface, fragment);
-        const args = contract.interface.decodeEventLog(fragment, log.data, log.topics);
-        (0, index_js_2.defineProperties)(this, { args, fragment, log });
-    }
-    get eventName() {
-        return this.fragment.name;
-    }
-    get eventSignature() {
-        return this.fragment.format();
+        (0, index_js_2.defineProperties)(this, { log });
     }
     async getBlock() {
         return await this.log.getBlock();
@@ -74,6 +64,20 @@ class ContractEventPayload extends index_js_2.EventPayload {
     }
     async getTransactionReceipt() {
         return await this.log.getTransactionReceipt();
+    }
+}
+exports.ContractUnknownEventPayload = ContractUnknownEventPayload;
+class ContractEventPayload extends ContractUnknownEventPayload {
+    constructor(contract, listener, filter, fragment, _log) {
+        super(contract, listener, filter, new EventLog(_log, contract.interface, fragment));
+        const args = contract.interface.decodeEventLog(fragment, this.log.data, this.log.topics);
+        (0, index_js_2.defineProperties)(this, { args, fragment });
+    }
+    get eventName() {
+        return this.fragment.name;
+    }
+    get eventSignature() {
+        return this.fragment.format();
     }
 }
 exports.ContractEventPayload = ContractEventPayload;

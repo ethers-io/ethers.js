@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assertPrivate = exports.assertNormalize = exports.assertArgumentCount = exports.assertArgument = exports.throwArgumentError = exports.throwError = exports.makeError = exports.isCallException = exports.isError = void 0;
+exports.assertPrivate = exports.assertNormalize = exports.assertArgumentCount = exports.assertArgument = exports.assert = exports.makeError = exports.isCallException = exports.isError = void 0;
 const _version_js_1 = require("../_version.js");
 const properties_js_1 = require("./properties.js");
 // The type of error to use for various error codes
@@ -83,25 +83,16 @@ function makeError(message, code, info) {
 exports.makeError = makeError;
 /**
  *  Throws an EthersError with %%message%%, %%code%% and additional error
- *  info.
+ *  %%info%% when %%check%% is falsish..
  *
  *  @see [[api:makeError]]
  */
-function throwError(message, code, info) {
-    throw makeError(message, code, info);
+function assert(check, message, code, info) {
+    if (!check) {
+        throw makeError(message, code, info);
+    }
 }
-exports.throwError = throwError;
-/**
- *  Throws an [[api:ArgumentError]] with %%message%% for the parameter with
- *  %%name%% and the %%value%%.
- */
-function throwArgumentError(message, name, value) {
-    return throwError(message, "INVALID_ARGUMENT", {
-        argument: name,
-        value: value
-    });
-}
-exports.throwArgumentError = throwArgumentError;
+exports.assert = assert;
 /**
  *  A simple helper to simply ensuring provided arguments match expected
  *  constraints, throwing if not.
@@ -110,27 +101,21 @@ exports.throwArgumentError = throwArgumentError;
  *  any further code does not need additional compile-time checks.
  */
 function assertArgument(check, message, name, value) {
-    if (!check) {
-        throwArgumentError(message, name, value);
-    }
+    assert(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
 }
 exports.assertArgument = assertArgument;
 function assertArgumentCount(count, expectedCount, message = "") {
     if (message) {
         message = ": " + message;
     }
-    if (count < expectedCount) {
-        throwError("missing arguemnt" + message, "MISSING_ARGUMENT", {
-            count: count,
-            expectedCount: expectedCount
-        });
-    }
-    if (count > expectedCount) {
-        throwError("too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
-            count: count,
-            expectedCount: expectedCount
-        });
-    }
+    assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+        count: count,
+        expectedCount: expectedCount
+    });
+    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+        count: count,
+        expectedCount: expectedCount
+    });
 }
 exports.assertArgumentCount = assertArgumentCount;
 const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
@@ -160,11 +145,9 @@ const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
  *  Throws if the normalization %%form%% is not supported.
  */
 function assertNormalize(form) {
-    if (_normalizeForms.indexOf(form) === -1) {
-        throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
-            operation: "String.prototype.normalize", info: { form }
-        });
-    }
+    assert(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+        operation: "String.prototype.normalize", info: { form }
+    });
 }
 exports.assertNormalize = assertNormalize;
 /**
@@ -180,7 +163,7 @@ function assertPrivate(givenGuard, guard, className = "") {
             method += ".";
             operation += " " + className;
         }
-        throwError(`private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
+        assert(false, `private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
             operation
         });
     }

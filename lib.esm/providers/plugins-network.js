@@ -1,5 +1,5 @@
 import { defineProperties } from "../utils/properties.js";
-import { throwArgumentError } from "../utils/index.js";
+import { assertArgument } from "../utils/index.js";
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 export class NetworkPlugin {
     name;
@@ -26,9 +26,7 @@ export class GasCostPlugin extends NetworkPlugin {
             if (value == null) {
                 value = nullish;
             }
-            if (typeof (value) !== "number") {
-                throwArgumentError(`invalud value for ${name}`, "costs", costs);
-            }
+            assertArgument(typeof (value) === "number", `invalud value for ${name}`, "costs", costs);
             props[name] = value;
         }
         set("txBase", 21000);

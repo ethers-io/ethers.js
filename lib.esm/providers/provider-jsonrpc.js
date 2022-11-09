@@ -5,7 +5,7 @@ import { getBuiltinCallException } from "../abi/index.js";
 import { getAddress, resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
-import { defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes, makeError, throwArgumentError, throwError, FetchRequest, resolveProperties } from "../utils/index.js";
+import { defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes, makeError, assert, assertArgument, FetchRequest, resolveProperties } from "../utils/index.js";
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 import { AbstractSigner } from "./abstract-signer.js";
 import { Network } from "./network.js";
@@ -58,7 +58,7 @@ export class JsonRpcSigner extends AbstractSigner {
         defineProperties(this, { address });
     }
     connect(provider) {
-        return throwError("cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
+        assert(false, "cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
             operation: "signer.connect"
         });
     }
@@ -79,9 +79,7 @@ export class JsonRpcSigner extends AbstractSigner {
             const _from = tx.from;
             promises.push((async () => {
                 const from = await resolveAddress(_from, this.provider);
-                if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                    throwArgumentError("from address mismatch", "transaction", _tx);
-                }
+                assertArgument(from != null && from.toLowerCase() === this.address.toLowerCase(), "from address mismatch", "transaction", _tx);
                 tx.from = from;
             })());
         }
@@ -138,9 +136,7 @@ export class JsonRpcSigner extends AbstractSigner {
         // Make sure the from matches the sender
         if (tx.from) {
             const from = await resolveAddress(tx.from, this.provider);
-            if (from == null || from.toLowerCase() !== this.address.toLowerCase()) {
-                return throwArgumentError("from address mismatch", "transaction", _tx);
-            }
+            assertArgument(from != null && from.toLowerCase() === this.address.toLowerCase(), "from address mismatch", "transaction", _tx);
             tx.from = from;
         }
         else {
@@ -160,9 +156,7 @@ export class JsonRpcSigner extends AbstractSigner {
         // Populate any ENS names (in-place)
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (value) => {
             const address = await resolveAddress(value);
-            if (address == null) {
-                return throwArgumentError("TypedData does not support null address", "value", value);
-            }
+            assertArgument(address != null, "TypedData does not support null address", "value", value);
             return address;
         });
         return await this.provider.send("eth_signTypedData_v4", [
@@ -277,9 +271,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
         // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork) {
-            if (staticNetwork !== network) {
-                throwArgumentError("staticNetwork MUST match network object", "options", options);
-            }
+            assertArgument(staticNetwork === network, "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
         }
     }
@@ -296,9 +288,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
      *  is detected, and if it has changed, the call will reject.
      */
     get _network() {
-        if (!this.#network) {
-            throwError("network is not available yet", "NETWORK_ERROR");
-        }
+        assert(this.#network, "network is not available yet", "NETWORK_ERROR");
         return this.#network;
     }
     /**
@@ -307,7 +297,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
      *  Sub-classes **MUST** override this.
      */
     _send(payload) {
-        return throwError("sub-classes must override _send", "UNSUPPORTED_OPERATION", {
+        assert(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
             operation: "jsonRpcApiProvider._send"
         });
     }

@@ -27,34 +27,26 @@ function createHash(algo) {
         case "sha256": return sha256_1.sha256.create();
         case "sha512": return sha512_1.sha512.create();
     }
-    return (0, index_js_1.throwArgumentError)("invalid hashing algorithm name", "algorithm", algo);
+    (0, index_js_1.assertArgument)(false, "invalid hashing algorithm name", "algorithm", algo);
 }
 exports.createHash = createHash;
 function createHmac(_algo, key) {
     const algo = ({ sha256: sha256_1.sha256, sha512: sha512_1.sha512 }[_algo]);
-    if (algo == null) {
-        return (0, index_js_1.throwArgumentError)("invalid hmac algorithm", "algorithm", _algo);
-    }
+    (0, index_js_1.assertArgument)(algo != null, "invalid hmac algorithm", "algorithm", _algo);
     return hmac_1.hmac.create(algo, key);
 }
 exports.createHmac = createHmac;
 function pbkdf2Sync(password, salt, iterations, keylen, _algo) {
     const algo = ({ sha256: sha256_1.sha256, sha512: sha512_1.sha512 }[_algo]);
-    if (algo == null) {
-        return (0, index_js_1.throwArgumentError)("invalid pbkdf2 algorithm", "algorithm", _algo);
-    }
+    (0, index_js_1.assertArgument)(algo != null, "invalid pbkdf2 algorithm", "algorithm", _algo);
     return (0, pbkdf2_1.pbkdf2)(algo, password, salt, { c: iterations, dkLen: keylen });
 }
 exports.pbkdf2Sync = pbkdf2Sync;
 function randomBytes(length) {
-    if (crypto == null) {
-        return (0, index_js_1.throwError)("platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
-            operation: "randomBytes"
-        });
-    }
-    if (!Number.isInteger(length) || length <= 0 || length > 1024) {
-        (0, index_js_1.throwArgumentError)("invalid length", "length", length);
-    }
+    (0, index_js_1.assert)(crypto != null, "platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
+        operation: "randomBytes"
+    });
+    (0, index_js_1.assertArgument)(Number.isInteger(length) && length > 0 && length <= 1024, "invalid length", "length", length);
     const result = new Uint8Array(length);
     crypto.getRandomValues(result);
     return result;

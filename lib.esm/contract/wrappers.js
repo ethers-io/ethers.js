@@ -44,21 +44,11 @@ export class ContractTransactionResponse extends TransactionResponse {
         return new ContractTransactionReceipt(this.#interface, this.provider, receipt);
     }
 }
-export class ContractEventPayload extends EventPayload {
-    fragment;
+export class ContractUnknownEventPayload extends EventPayload {
     log;
-    args;
-    constructor(contract, listener, filter, fragment, _log) {
+    constructor(contract, listener, filter, log) {
         super(contract, listener, filter);
-        const log = new EventLog(_log, contract.interface, fragment);
-        const args = contract.interface.decodeEventLog(fragment, log.data, log.topics);
-        defineProperties(this, { args, fragment, log });
-    }
-    get eventName() {
-        return this.fragment.name;
-    }
-    get eventSignature() {
-        return this.fragment.format();
+        defineProperties(this, { log });
     }
     async getBlock() {
         return await this.log.getBlock();
@@ -68,6 +58,19 @@ export class ContractEventPayload extends EventPayload {
     }
     async getTransactionReceipt() {
         return await this.log.getTransactionReceipt();
+    }
+}
+export class ContractEventPayload extends ContractUnknownEventPayload {
+    constructor(contract, listener, filter, fragment, _log) {
+        super(contract, listener, filter, new EventLog(_log, contract.interface, fragment));
+        const args = contract.interface.decodeEventLog(fragment, this.log.data, this.log.topics);
+        defineProperties(this, { args, fragment });
+    }
+    get eventName() {
+        return this.fragment.name;
+    }
+    get eventSignature() {
+        return this.fragment.format();
     }
 }
 //# sourceMappingURL=wrappers.js.map

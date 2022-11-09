@@ -24,6 +24,9 @@ function isPromise(value) {
 }
 function getTag(prefix, value) {
     return prefix + ":" + JSON.stringify(value, (k, v) => {
+        if (v == null) {
+            return "null";
+        }
         if (typeof (v) === "bigint") {
             return `bigint:${v.toString()}`;
         }
@@ -125,7 +128,7 @@ async function getSubscription(_event, provider) {
         }
         return { filter, tag: getTag("event", filter), type: "event" };
     }
-    return (0, index_js_3.throwArgumentError)("unknown ProviderEvent", "event", _event);
+    (0, index_js_3.assertArgument)(false, "unknown ProviderEvent", "event", _event);
 }
 function getTime() { return (new Date()).getTime(); }
 class AbstractProvider {
@@ -175,7 +178,7 @@ class AbstractProvider {
         if (this.#plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${plugin.name} `);
         }
-        this.#plugins.set(plugin.name, plugin.validate(this));
+        this.#plugins.set(plugin.name, plugin.connect(this));
         return this;
     }
     getPlugin(name) {
@@ -220,29 +223,27 @@ class AbstractProvider {
             if (url.indexOf("{data}") === -1) {
                 request.body = { data, sender };
             }
+            this.emit("debug", { action: "sendCcipReadFetchRequest", request, index: i, urls });
             let errorMessage = "unknown error";
             const resp = await request.send();
             try {
                 const result = resp.bodyJson;
                 if (result.data) {
+                    this.emit("debug", { action: "receiveCcipReadFetchResult", request, result });
                     return result.data;
                 }
                 if (result.message) {
                     errorMessage = result.message;
                 }
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result });
             }
             catch (error) { }
             // 4xx indicates the result is not present; stop
-            if (resp.statusCode >= 400 && resp.statusCode < 500) {
-                return (0, index_js_3.throwError)(`response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", {
-                    reason: "404_MISSING_RESOURCE",
-                    transaction: tx, info: { url, errorMessage }
-                });
-            }
+            (0, index_js_3.assert)(resp.statusCode < 400 || resp.statusCode >= 500, `response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", { reason: "404_MISSING_RESOURCE", transaction: tx, info: { url, errorMessage } });
             // 5xx indicates server issue; try the next url
             errorMessages.push(errorMessage);
         }
-        return (0, index_js_3.throwError)(`error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
+        (0, index_js_3.assert)(false, `error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
             reason: "500_SERVER_ERROR",
             transaction: tx, info: { urls, errorMessages }
         });
@@ -263,14 +264,14 @@ class AbstractProvider {
         return new provider_js_1.TransactionResponse(tx, this);
     }
     _detectNetwork() {
-        return (0, index_js_3.throwError)("sub-classes must implement this", "UNSUPPORTED_OPERATION", {
+        (0, index_js_3.assert)(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
             operation: "_detectNetwork"
         });
     }
     // Sub-classes should override this and handle PerformActionRequest requests, calling
     // the super for any unhandled actions.
     async _perform(req) {
-        return (0, index_js_3.throwError)(`unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
+        (0, index_js_3.assert)(false, `unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
             operation: req.method,
             info: req
         });
@@ -300,7 +301,7 @@ class AbstractProvider {
                 return blockTag;
         }
         if ((0, index_js_3.isHexString)(blockTag)) {
-            if ((0, index_js_3.dataLength)(blockTag) === 32) {
+            if ((0, index_js_3.isHexString)(blockTag, 32)) {
                 return blockTag;
             }
             return (0, index_js_3.toQuantity)(blockTag);
@@ -314,7 +315,7 @@ class AbstractProvider {
             }
             return this.getBlockNumber().then((b) => (0, index_js_3.toQuantity)(b + blockTag));
         }
-        return (0, index_js_3.throwArgumentError)("invalid blockTag", "blockTag", blockTag);
+        (0, index_js_3.assertArgument)(false, "invalid blockTag", "blockTag", blockTag);
     }
     _getFilter(filter) {
         // Create a canonical representation of the topics
@@ -456,7 +457,7 @@ class AbstractProvider {
             }
             else {
                 // Otherwise, we do not allow changes to the underlying network
-                (0, index_js_3.throwError)(`network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
+                (0, index_js_3.assert)(false, `network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
                     event: "changed"
                 });
             }
@@ -500,12 +501,10 @@ class AbstractProvider {
         }), "%response");
     }
     async #call(tx, blockTag, attempt) {
-        if (attempt >= MAX_CCIP_REDIRECTS) {
-            (0, index_js_3.throwError)("CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
-                reason: "TOO_MANY_REDIRECTS",
-                transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
-            });
-        }
+        (0, index_js_3.assert)(attempt < MAX_CCIP_REDIRECTS, "CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+            reason: "TOO_MANY_REDIRECTS",
+            transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
+        });
         // This came in as a PerformActionTransaction, so to/from are safe; we can cast
         const transaction = (0, provider_js_1.copyRequest)(tx);
         try {
@@ -522,39 +521,41 @@ class AbstractProvider {
                     ccipArgs = parseOffchainLookup((0, index_js_3.dataSlice)(error.data, 4));
                 }
                 catch (error) {
-                    return (0, index_js_3.throwError)(error.message, "OFFCHAIN_FAULT", {
-                        reason: "BAD_DATA",
-                        transaction, info: { data }
+                    (0, index_js_3.assert)(false, error.message, "OFFCHAIN_FAULT", {
+                        reason: "BAD_DATA", transaction, info: { data }
                     });
                 }
                 // Check the sender of the OffchainLookup matches the transaction
-                if (ccipArgs.sender.toLowerCase() !== txSender.toLowerCase()) {
-                    return (0, index_js_3.throwError)("CCIP Read sender mismatch", "CALL_EXCEPTION", {
-                        action: "call",
-                        data,
-                        reason: "OffchainLookup",
-                        transaction: transaction,
-                        invocation: null,
-                        revert: {
-                            signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
-                            name: "OffchainLookup",
-                            args: ccipArgs.errorArgs
-                        }
-                    });
-                }
+                (0, index_js_3.assert)(ccipArgs.sender.toLowerCase() === txSender.toLowerCase(), "CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                    action: "call",
+                    data,
+                    reason: "OffchainLookup",
+                    transaction: transaction,
+                    invocation: null,
+                    revert: {
+                        signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
+                        name: "OffchainLookup",
+                        args: ccipArgs.errorArgs
+                    }
+                });
                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
-                if (ccipResult == null) {
-                    return (0, index_js_3.throwError)("CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
-                        reason: "FETCH_FAILED",
-                        transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
-                    });
-                }
-                return this.#call({
+                (0, index_js_3.assert)(ccipResult != null, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                    reason: "FETCH_FAILED", transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
+                });
+                const tx = {
                     to: txSender,
-                    data: (0, index_js_3.concat)([
-                        ccipArgs.selector, encodeBytes([ccipResult, ccipArgs.extraData])
-                    ]),
-                }, blockTag, attempt + 1);
+                    data: (0, index_js_3.concat)([ccipArgs.selector, encodeBytes([ccipResult, ccipArgs.extraData])])
+                };
+                this.emit("debug", { action: "sendCcipReadCall", transaction: tx });
+                try {
+                    const result = await this.#call(tx, blockTag, attempt + 1);
+                    this.emit("debug", { action: "receiveCcipReadCallResult", transaction: Object.assign({}, tx), result });
+                    return result;
+                }
+                catch (error) {
+                    this.emit("debug", { action: "receiveCcipReadCallError", transaction: Object.assign({}, tx), error });
+                    throw error;
+                }
             }
             throw error;
         }
@@ -700,7 +701,7 @@ class AbstractProvider {
     }
     // ENS
     _getProvider(chainId) {
-        return (0, index_js_3.throwError)("provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
+        (0, index_js_3.assert)(false, "provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
             operation: "_getProvider()"
         });
     }
@@ -738,7 +739,8 @@ class AbstractProvider {
         throw new Error();
         //return "TODO";
     }
-    async waitForTransaction(hash, confirms = 1, timeout) {
+    async waitForTransaction(hash, _confirms, timeout) {
+        const confirms = (_confirms != null) ? _confirms : 1;
         if (confirms === 0) {
             return this.getTransactionReceipt(hash);
         }
@@ -750,7 +752,7 @@ class AbstractProvider {
                     if (receipt != null) {
                         if (blockNumber - receipt.blockNumber + 1 >= confirms) {
                             resolve(receipt);
-                            this.off("block", listener);
+                            //this.off("block", listener);
                             if (timer) {
                                 clearTimeout(timer);
                                 timer = null;
@@ -908,6 +910,12 @@ class AbstractProvider {
             catch (error) { }
             return !once;
         });
+        if (sub.listeners.length === 0) {
+            if (sub.started) {
+                sub.subscriber.stop();
+            }
+            this.#subs.delete(sub.tag);
+        }
         return (count > 0);
     }
     async listenerCount(event) {
@@ -1011,7 +1019,7 @@ class AbstractProvider {
             if (this.#pausedState == !!dropWhilePaused) {
                 return;
             }
-            return (0, index_js_3.throwError)("cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
+            (0, index_js_3.assert)(false, "cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
                 operation: "pause"
             });
         }

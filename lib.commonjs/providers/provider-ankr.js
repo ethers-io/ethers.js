@@ -21,7 +21,7 @@ function getHost(name) {
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
     }
-    return (0, index_js_1.throwArgumentError)("unsupported network", "network", name);
+    (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }
 class AnkrProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     apiKey;

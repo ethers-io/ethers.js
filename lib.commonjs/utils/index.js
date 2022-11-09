@@ -1,8 +1,8 @@
 "use strict";
 ////
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setStore = exports.getStore = exports.encodeRlp = exports.decodeRlp = exports.defineProperties = exports.defineReadOnly = exports.resolveProperties = exports.toQuantity = exports.toArray = exports.toHex = exports.toNumber = exports.toBigInt = exports.getNumber = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = exports.parseFixed = exports.formatFixed = exports.FixedNumber = exports.FixedFormat = exports.FetchCancelSignal = exports.FetchResponse = exports.FetchRequest = exports.getIpfsGatewayFunc = exports.EventPayload = exports.assertNormalize = exports.assertPrivate = exports.assertArgumentCount = exports.assertArgument = exports.throwArgumentError = exports.throwError = exports.makeError = exports.isError = exports.isCallException = exports.zeroPadBytes = exports.zeroPadValue = exports.stripZerosLeft = exports.dataSlice = exports.dataLength = exports.concat = exports.hexlify = exports.isBytesLike = exports.isHexString = exports.getBytesCopy = exports.getBytes = exports.encodeBase64 = exports.decodeBase64 = exports.encodeBase58 = exports.decodeBase58 = void 0;
-exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports._toEscapedUtf8String = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = void 0;
+exports.formatEther = exports.setStore = exports.getStore = exports.encodeRlp = exports.decodeRlp = exports.defineProperties = exports.defineReadOnly = exports.resolveProperties = exports.toQuantity = exports.toArray = exports.toHex = exports.toNumber = exports.toBigInt = exports.getNumber = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = exports.parseFixed = exports.formatFixed = exports.FixedNumber = exports.FixedFormat = exports.FetchCancelSignal = exports.FetchResponse = exports.FetchRequest = exports.getIpfsGatewayFunc = exports.EventPayload = exports.makeError = exports.assertNormalize = exports.assertPrivate = exports.assertArgumentCount = exports.assertArgument = exports.assert = exports.isError = exports.isCallException = exports.zeroPadBytes = exports.zeroPadValue = exports.stripZerosLeft = exports.dataSlice = exports.dataLength = exports.concat = exports.hexlify = exports.isBytesLike = exports.isHexString = exports.getBytesCopy = exports.getBytes = exports.encodeBase64 = exports.decodeBase64 = exports.encodeBase58 = exports.decodeBase58 = void 0;
+exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports.parseUnits = exports.formatUnits = exports.parseEther = void 0;
 var base58_js_1 = require("./base58.js");
 Object.defineProperty(exports, "decodeBase58", { enumerable: true, get: function () { return base58_js_1.decodeBase58; } });
 Object.defineProperty(exports, "encodeBase58", { enumerable: true, get: function () { return base58_js_1.encodeBase58; } });
@@ -24,13 +24,12 @@ Object.defineProperty(exports, "zeroPadBytes", { enumerable: true, get: function
 var errors_js_1 = require("./errors.js");
 Object.defineProperty(exports, "isCallException", { enumerable: true, get: function () { return errors_js_1.isCallException; } });
 Object.defineProperty(exports, "isError", { enumerable: true, get: function () { return errors_js_1.isError; } });
-Object.defineProperty(exports, "makeError", { enumerable: true, get: function () { return errors_js_1.makeError; } });
-Object.defineProperty(exports, "throwError", { enumerable: true, get: function () { return errors_js_1.throwError; } });
-Object.defineProperty(exports, "throwArgumentError", { enumerable: true, get: function () { return errors_js_1.throwArgumentError; } });
+Object.defineProperty(exports, "assert", { enumerable: true, get: function () { return errors_js_1.assert; } });
 Object.defineProperty(exports, "assertArgument", { enumerable: true, get: function () { return errors_js_1.assertArgument; } });
 Object.defineProperty(exports, "assertArgumentCount", { enumerable: true, get: function () { return errors_js_1.assertArgumentCount; } });
 Object.defineProperty(exports, "assertPrivate", { enumerable: true, get: function () { return errors_js_1.assertPrivate; } });
 Object.defineProperty(exports, "assertNormalize", { enumerable: true, get: function () { return errors_js_1.assertNormalize; } });
+Object.defineProperty(exports, "makeError", { enumerable: true, get: function () { return errors_js_1.makeError; } });
 var events_js_1 = require("./events.js");
 Object.defineProperty(exports, "EventPayload", { enumerable: true, get: function () { return events_js_1.EventPayload; } });
 var fetch_js_1 = require("./fetch.js");
@@ -71,7 +70,6 @@ Object.defineProperty(exports, "parseEther", { enumerable: true, get: function (
 Object.defineProperty(exports, "formatUnits", { enumerable: true, get: function () { return units_js_1.formatUnits; } });
 Object.defineProperty(exports, "parseUnits", { enumerable: true, get: function () { return units_js_1.parseUnits; } });
 var utf8_js_1 = require("./utf8.js");
-Object.defineProperty(exports, "_toEscapedUtf8String", { enumerable: true, get: function () { return utf8_js_1._toEscapedUtf8String; } });
 Object.defineProperty(exports, "toUtf8Bytes", { enumerable: true, get: function () { return utf8_js_1.toUtf8Bytes; } });
 Object.defineProperty(exports, "toUtf8CodePoints", { enumerable: true, get: function () { return utf8_js_1.toUtf8CodePoints; } });
 Object.defineProperty(exports, "toUtf8String", { enumerable: true, get: function () { return utf8_js_1.toUtf8String; } });

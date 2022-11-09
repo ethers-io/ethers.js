@@ -1,7 +1,7 @@
 import { getAddress } from "../address/index.js";
 import { ZeroAddress, ZeroHash } from "../constants/index.js";
 import { dnsEncode, namehash } from "../hash/index.js";
-import { concat, dataSlice, getBytes, hexlify, zeroPadValue, defineProperties, encodeBase58, getBigInt, toArray, toNumber, toUtf8Bytes, toUtf8String, throwArgumentError, throwError, FetchRequest } from "../utils/index.js";
+import { concat, dataSlice, getBytes, hexlify, zeroPadValue, defineProperties, encodeBase58, getBigInt, toArray, toNumber, toUtf8Bytes, toUtf8String, assert, assertArgument, FetchRequest } from "../utils/index.js";
 const BN_1 = BigInt(1);
 const Empty = new Uint8Array([]);
 function parseBytes(result, start) {
@@ -60,9 +60,7 @@ function encodeBytes(datas) {
     return concat(result);
 }
 function callAddress(value) {
-    if (value.length !== 66 || dataSlice(value, 0, 12) !== "0x000000000000000000000000") {
-        throwArgumentError("invalid call address", "value", value);
-    }
+    assertArgument(value.length === 66 && dataSlice(value, 0, 12) === "0x000000000000000000000000", "invalid call address", "value", value);
     return getAddress("0x" + value.substring(26));
 }
 // @TODO: This should use the fetch-data:ipfs gateway
@@ -75,7 +73,7 @@ function getIpfsLink(link) {
         link = link.substring(7);
     }
     else {
-        throwArgumentError("unsupported IPFS format", "link", link);
+        assertArgument(false, "unsupported IPFS format", "link", link);
     }
     return `https:/\/gateway.ipfs.io/ipfs/${link}`;
 }
@@ -86,7 +84,7 @@ export class MulticoinProviderPlugin {
     constructor(name) {
         defineProperties(this, { name });
     }
-    validate(proivder) {
+    connect(proivder) {
         return this;
     }
     supportsCoinType(coinType) {
@@ -99,7 +97,7 @@ export class MulticoinProviderPlugin {
         throw new Error("unsupported coin");
     }
 }
-const BasicMulticoinPluginId = "org.ethers.provider-prugins.basicmulticoin";
+const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoinProviderPlugin";
 export class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
     constructor() {
         super(BasicMulticoinPluginId);
@@ -159,12 +157,10 @@ export class EnsResolver {
         }
         try {
             let data = await this.provider.call(tx);
-            if ((getBytes(data).length % 32) === 4) {
-                return throwError("execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
-                    action: "call", data, reason: null, transaction: tx,
-                    invocation: null, revert: null
-                });
-            }
+            assert((getBytes(data).length % 32) !== 4, "execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
+                action: "call", data, reason: null, transaction: tx,
+                invocation: null, revert: null
+            });
             if (wrapped) {
                 return parseBytes(data, 0);
             }
@@ -219,7 +215,7 @@ export class EnsResolver {
         if (address != null) {
             return address;
         }
-        return throwError(`invalid coin data`, "UNSUPPORTED_OPERATION", {
+        assert(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${coinType})`,
             info: { coinType, data }
         });
@@ -257,7 +253,7 @@ export class EnsResolver {
         if (swarm && swarm[1].length === 64) {
             return `bzz:/\/${swarm[1]}`;
         }
-        return throwError(`invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+        assert(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
             info: { data: hexBytes }
         });
@@ -414,11 +410,9 @@ export class EnsResolver {
         const network = await provider.getNetwork();
         const ensPlugin = network.getPlugin("org.ethers.network-plugins.ens");
         // No ENS...
-        if (!ensPlugin) {
-            return throwError("network does not support ENS", "UNSUPPORTED_OPERATION", {
-                operation: "getResolver", info: { network: network.name }
-            });
-        }
+        assert(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
+            operation: "getResolver", info: { network: network.name }
+        });
         try {
             // keccak256("resolver(bytes32)")
             const addrData = await provider.call({

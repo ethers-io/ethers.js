@@ -1,4 +1,4 @@
-import { createHmac } from "./crypto-browser.js";
+import { createHmac } from "./crypto.js";
 import { getBytes, hexlify } from "../utils/index.js";
 let locked = false;
 const _computeHmac = function (algorithm, key, data) {

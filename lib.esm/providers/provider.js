@@ -1,5 +1,5 @@
 //import { resolveAddress } from "@ethersproject/address";
-import { defineProperties, getBigInt, getNumber, hexlify, resolveProperties, assertArgument, isError, makeError, throwError } from "../utils/index.js";
+import { defineProperties, getBigInt, getNumber, hexlify, resolveProperties, assert, assertArgument, isError, makeError } from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
 const BN_0 = BigInt(0);
 // -----------------------
@@ -338,11 +338,7 @@ export class TransactionReceipt {
         return createRemovedTransactionFilter(this);
     }
     reorderedEvent(other) {
-        if (other && !other.isMined()) {
-            return throwError("unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", {
-                operation: "reorderedEvent(other)"
-            });
-        }
+        assert(!other || other.isMined(), "unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
         return createReorderedTransactionFilter(this, other);
     }
 }
@@ -498,7 +494,7 @@ export class TransactionResponse {
                         else if (tx.data === "0x" && tx.from === tx.to && tx.value === BN_0) {
                             reason = "cancelled";
                         }
-                        throwError("transaction was replaced", "TRANSACTION_REPLACED", {
+                        assert(false, "transaction was replaced", "TRANSACTION_REPLACED", {
                             cancelled: (reason === "replaced" || reason === "cancelled"),
                             reason,
                             replacement: tx.replaceableTransaction(startBlock),
@@ -585,24 +581,12 @@ export class TransactionResponse {
         return (this.type === 2);
     }
     removedEvent() {
-        if (!this.isMined()) {
-            return throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
-                operation: "removeEvent()"
-            });
-        }
+        assert(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
         return createRemovedTransactionFilter(this);
     }
     reorderedEvent(other) {
-        if (!this.isMined()) {
-            return throwError("unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
-                operation: "removeEvent()"
-            });
-        }
-        if (other && !other.isMined()) {
-            return throwError("unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", {
-                operation: "removeEvent()"
-            });
-        }
+        assert(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
+        assert(!other || other.isMined(), "unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
         return createReorderedTransactionFilter(this, other);
     }
     /**

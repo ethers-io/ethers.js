@@ -31,6 +31,7 @@ export declare class FallbackProvider extends AbstractProvider {
     constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish);
     get providerConfigs(): Array<FallbackProviderState>;
     _detectNetwork(): Promise<Network>;
+    _translatePerform(provider: AbstractProvider, req: PerformActionRequest): Promise<any>;
     _perform<T = any>(req: PerformActionRequest): Promise<T>;
 }
 //# sourceMappingURL=provider-fallback.d.ts.map

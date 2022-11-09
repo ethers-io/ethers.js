@@ -18,7 +18,7 @@ function _getBytes(value, name, copy) {
         }
         return result;
     }
-    return (0, errors_js_1.throwArgumentError)("invalid BytesLike value", name || "value", value);
+    (0, errors_js_1.assertArgument)(false, "invalid BytesLike value", name || "value", value);
 }
 /**
  *  Get a typed Uint8Array for %%value%%. If already a Uint8Array
@@ -114,7 +114,7 @@ exports.dataLength = dataLength;
 function dataSlice(data, start, end) {
     const bytes = getBytes(data);
     if (end != null && end > bytes.length) {
-        (0, errors_js_1.throwError)("cannot slice beyond data bounds", "BUFFER_OVERRUN", {
+        (0, errors_js_1.assert)(false, "cannot slice beyond data bounds", "BUFFER_OVERRUN", {
             buffer: bytes, length: bytes.length, offset: end
         });
     }
@@ -135,13 +135,11 @@ function stripZerosLeft(data) {
 exports.stripZerosLeft = stripZerosLeft;
 function zeroPad(data, length, left) {
     const bytes = getBytes(data);
-    if (length < bytes.length) {
-        (0, errors_js_1.throwError)("padding exceeds data length", "BUFFER_OVERRUN", {
-            buffer: new Uint8Array(bytes),
-            length: length,
-            offset: length + 1
-        });
-    }
+    (0, errors_js_1.assert)(length >= bytes.length, "padding exceeds data length", "BUFFER_OVERRUN", {
+        buffer: new Uint8Array(bytes),
+        length: length,
+        offset: length + 1
+    });
     const result = new Uint8Array(length);
     result.fill(0);
     if (left) {

@@ -87,7 +87,7 @@ class SigningKey {
         if (pubKey != null) {
             return (0, index_js_1.hexlify)(pubKey);
         }
-        return (0, index_js_1.throwArgumentError)("invalid signautre for digest", "signature", signature);
+        (0, index_js_1.assertArgument)(false, "invalid signautre for digest", "signature", signature);
     }
     static _addPoints(p0, p1, compressed) {
         const pub0 = secp256k1.Point.fromHex(SigningKey.computePublicKey(p0).substring(2));

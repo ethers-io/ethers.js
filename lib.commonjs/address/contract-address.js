@@ -25,12 +25,8 @@ function getCreate2Address(_from, _salt, _initCodeHash) {
     const from = (0, address_js_1.getAddress)(_from);
     const salt = (0, index_js_2.getBytes)(_salt, "salt");
     const initCodeHash = (0, index_js_2.getBytes)(_initCodeHash, "initCodeHash");
-    if (salt.length !== 32) {
-        (0, index_js_2.throwArgumentError)("salt must be 32 bytes", "salt", _salt);
-    }
-    if (initCodeHash.length !== 32) {
-        (0, index_js_2.throwArgumentError)("initCodeHash must be 32 bytes", "initCodeHash", _initCodeHash);
-    }
+    (0, index_js_2.assertArgument)(salt.length === 32, "salt must be 32 bytes", "salt", _salt);
+    (0, index_js_2.assertArgument)(initCodeHash.length === 32, "initCodeHash must be 32 bytes", "initCodeHash", _initCodeHash);
     return (0, address_js_1.getAddress)((0, index_js_2.dataSlice)((0, index_js_1.keccak256)((0, index_js_2.concat)(["0xff", from, salt, initCodeHash])), 12));
 }
 exports.getCreate2Address = getCreate2Address;

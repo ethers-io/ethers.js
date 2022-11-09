@@ -14,30 +14,16 @@ function pack(writer, coders, values) {
         let unique = {};
         arrayValues = coders.map((coder) => {
             const name = coder.localName;
-            if (!name) {
-                (0, index_js_1.throwError)("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
-                    argument: "values",
-                    info: { coder },
-                    value: values
-                });
-            }
-            if (unique[name]) {
-                (0, index_js_1.throwError)("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
-                    argument: "values",
-                    info: { coder },
-                    value: values
-                });
-            }
+            (0, index_js_1.assert)(name, "cannot encode object for signature with missing names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
+            (0, index_js_1.assert)(unique[name], "cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
             unique[name] = true;
             return values[name];
         });
     }
     else {
-        (0, index_js_1.throwArgumentError)("invalid tuple value", "tuple", values);
+        (0, index_js_1.assertArgument)(false, "invalid tuple value", "tuple", values);
     }
-    if (coders.length !== arrayValues.length) {
-        (0, index_js_1.throwArgumentError)("types/value length mismatch", "tuple", values);
-    }
+    (0, index_js_1.assertArgument)(coders.length === arrayValues.length, "types/value length mismatch", "tuple", values);
     let staticWriter = new abstract_coder_js_1.Writer();
     let dynamicWriter = new abstract_coder_js_1.Writer();
     let updateFuncs = [];
@@ -157,13 +143,7 @@ class ArrayCoder extends abstract_coder_js_1.Coder {
             // slot requires at least 32 bytes for their value (or 32
             // bytes as a link to the data). This could use a much
             // tighter bound, but we are erroring on the side of safety.
-            if (count * abstract_coder_js_1.WordSize > reader.dataLength) {
-                (0, index_js_1.throwError)("insufficient data length", "BUFFER_OVERRUN", {
-                    buffer: reader.bytes,
-                    offset: count * abstract_coder_js_1.WordSize,
-                    length: reader.dataLength
-                });
-            }
+            (0, index_js_1.assert)(count * abstract_coder_js_1.WordSize <= reader.dataLength, "insufficient data length", "BUFFER_OVERRUN", { buffer: reader.bytes, offset: count * abstract_coder_js_1.WordSize, length: reader.dataLength });
         }
         let coders = [];
         for (let i = 0; i < count; i++) {

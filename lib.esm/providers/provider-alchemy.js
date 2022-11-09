@@ -1,4 +1,4 @@
-import { defineProperties, resolveProperties, throwArgumentError, throwError, FetchRequest } from "../utils/index.js";
+import { defineProperties, resolveProperties, assert, assertArgument, FetchRequest } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
@@ -22,7 +22,7 @@ function getHost(name) {
         case "optimism-goerli":
             return "opt-goerli.g.alchemy.com";
     }
-    return throwArgumentError("unsupported network", "network", name);
+    assertArgument(false, "unsupported network", "network", name);
 }
 export class AlchemyProvider extends JsonRpcProvider {
     apiKey;
@@ -60,19 +60,17 @@ export class AlchemyProvider extends JsonRpcProvider {
             }
             catch (error) { }
             if (data) {
-                if (error) {
-                    throwError("an error occurred during transaction executions", "CALL_EXCEPTION", {
-                        action: "getTransactionResult",
-                        data,
-                        reason: null,
-                        transaction: tx,
-                        invocation: null,
-                        revert: null // @TODO
-                    });
-                }
+                assert(!error, "an error occurred during transaction executions", "CALL_EXCEPTION", {
+                    action: "getTransactionResult",
+                    data,
+                    reason: null,
+                    transaction: tx,
+                    invocation: null,
+                    revert: null // @TODO
+                });
                 return data;
             }
-            return throwError("could not parse trace result", "BAD_DATA", { value: trace });
+            assert(false, "could not parse trace result", "BAD_DATA", { value: trace });
         }
         return await super._perform(req);
     }

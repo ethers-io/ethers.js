@@ -1,6 +1,6 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 import { hexlify } from "./data.js";
-import { throwArgumentError, throwError } from "./errors.js";
+import { assert, assertArgument } from "./errors.js";
 import { getBytes } from "./data.js";
 function hexlifyByte(value) {
     let result = value.toString(16);
@@ -22,27 +22,21 @@ function _decodeChildren(data, offset, childOffset, length) {
         const decoded = _decode(data, childOffset);
         result.push(decoded.result);
         childOffset += decoded.consumed;
-        if (childOffset > offset + 1 + length) {
-            throwError("child data too short", "BUFFER_OVERRUN", {
-                buffer: data, length, offset
-            });
-        }
+        assert(childOffset <= offset + 1 + length, "child data too short", "BUFFER_OVERRUN", {
+            buffer: data, length, offset
+        });
     }
     return { consumed: (1 + length), result: result };
 }
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
-    if (data.length === 0) {
-        throwError("data too short", "BUFFER_OVERRUN", {
-            buffer: data, length: 0, offset: 1
-        });
-    }
+    assert(data.length !== 0, "data too short", "BUFFER_OVERRUN", {
+        buffer: data, length: 0, offset: 1
+    });
     const checkOffset = (offset) => {
-        if (offset > data.length) {
-            throwError("data short segment too short", "BUFFER_OVERRUN", {
-                buffer: data, length: data.length, offset
-            });
-        }
+        assert(offset <= data.length, "data short segment too short", "BUFFER_OVERRUN", {
+            buffer: data, length: data.length, offset
+        });
     };
     // Array with extra length prefix
     if (data[offset] >= 0xf8) {
@@ -79,9 +73,7 @@ function _decode(data, offset) {
 export function decodeRlp(_data) {
     const data = getBytes(_data, "data");
     const decoded = _decode(data, 0);
-    if (decoded.consumed !== data.length) {
-        throwArgumentError("unexpected junk after rlp payload", "data", _data);
-    }
+    assertArgument(decoded.consumed === data.length, "unexpected junk after rlp payload", "data", _data);
     return decoded.result;
 }
 //# sourceMappingURL=rlp-decode.js.map

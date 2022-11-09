@@ -1,5 +1,5 @@
 import { keccak256 } from "../crypto/index.js";
-import { concat, hexlify, throwArgumentError, toUtf8Bytes, toUtf8String } from "../utils/index.js";
+import { concat, hexlify, assertArgument, toUtf8Bytes, toUtf8String } from "../utils/index.js";
 //import { ens_normalize } from "./ens-normalize/lib";
 // @TOOD:
 function ens_normalize(name) {
@@ -47,9 +47,7 @@ export function isValidName(name) {
 }
 export function namehash(name) {
     /* istanbul ignore if */
-    if (typeof (name) !== "string") {
-        throwArgumentError("invalid ENS name; not a string", "name", name);
-    }
+    assertArgument(typeof (name) === "string", "invalid ENS name; not a string", "name", name);
     let result = Zeros;
     const comps = ensNameSplit(name);
     while (comps.length) {

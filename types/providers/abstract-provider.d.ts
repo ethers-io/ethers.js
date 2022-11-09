@@ -1,3 +1,4 @@
+import { FetchRequest } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { Network } from "./network.js";
 import { Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
@@ -6,6 +7,40 @@ import type { BigNumberish } from "../utils/index.js";
 import type { Listener } from "../utils/index.js";
 import type { Networkish } from "./network.js";
 import type { BlockParams, BlockTag, EventFilter, Filter, FilterByBlockHash, LogParams, OrphanFilter, PreparedTransactionRequest, Provider, ProviderEvent, TransactionReceiptParams, TransactionRequest, TransactionResponseParams } from "./provider.js";
+export declare type DebugEventAbstractProvider = {
+    action: "sendCcipReadFetchRequest";
+    request: FetchRequest;
+    index: number;
+    urls: Array<string>;
+} | {
+    action: "receiveCcipReadFetchResult";
+    request: FetchRequest;
+    result: any;
+} | {
+    action: "receiveCcipReadFetchError";
+    request: FetchRequest;
+    result: any;
+} | {
+    action: "sendCcipReadCall";
+    transaction: {
+        to: string;
+        data: string;
+    };
+} | {
+    action: "receiveCcipReadCallResult";
+    transaction: {
+        to: string;
+        data: string;
+    };
+    result: string;
+} | {
+    action: "receiveCcipReadCallError";
+    transaction: {
+        to: string;
+        data: string;
+    };
+    error: Error;
+};
 export declare type Subscription = {
     type: "block" | "close" | "debug" | "network" | "pending";
     tag: string;
@@ -37,9 +72,9 @@ export declare class UnmanagedSubscriber implements Subscriber {
     pause(dropWhilePaused?: boolean): void;
     resume(): void;
 }
-export interface ProviderPlugin {
+export interface AbstractProviderPlugin {
     readonly name: string;
-    validate(provider: Provider): ProviderPlugin;
+    connect(provider: AbstractProvider): AbstractProviderPlugin;
 }
 export declare type PerformActionFilter = {
     address?: string | Array<string>;
@@ -56,6 +91,9 @@ export interface PerformActionTransaction extends PreparedTransactionRequest {
     from?: string;
 }
 export declare type PerformActionRequest = {
+    method: "broadcastTransaction";
+    signedTransaction: string;
+} | {
     method: "call";
     transaction: PerformActionTransaction;
     blockTag: BlockTag;
@@ -105,17 +143,14 @@ export declare type PerformActionRequest = {
 } | {
     method: "getTransactionResult";
     hash: string;
-} | {
-    method: "broadcastTransaction";
-    signedTransaction: string;
 };
 export declare class AbstractProvider implements Provider {
     #private;
     constructor(_network?: "any" | Networkish);
     get provider(): this;
-    get plugins(): Array<ProviderPlugin>;
-    attachPlugin(plugin: ProviderPlugin): this;
-    getPlugin<T extends ProviderPlugin = ProviderPlugin>(name: string): null | T;
+    get plugins(): Array<AbstractProviderPlugin>;
+    attachPlugin(plugin: AbstractProviderPlugin): this;
+    getPlugin<T extends AbstractProviderPlugin = AbstractProviderPlugin>(name: string): null | T;
     set disableCcipRead(value: boolean);
     get disableCcipRead(): boolean;
     ccipReadFetch(tx: PerformActionTransaction, calldata: string, urls: Array<string>): Promise<null | string>;
@@ -151,7 +186,7 @@ export declare class AbstractProvider implements Provider {
     getAvatar(name: string): Promise<null | string>;
     resolveName(name: string): Promise<null | string>;
     lookupAddress(address: string): Promise<null | string>;
-    waitForTransaction(hash: string, confirms?: number, timeout?: number): Promise<null | TransactionReceipt>;
+    waitForTransaction(hash: string, _confirms?: number, timeout?: number): Promise<null | TransactionReceipt>;
     waitForBlock(blockTag?: BlockTag): Promise<Block<string>>;
     _clearTimeout(timerId: number): void;
     _setTimeout(_func: () => void, timeout?: number): number;

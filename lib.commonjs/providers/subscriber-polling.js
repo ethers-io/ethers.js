@@ -12,7 +12,7 @@ function getPollingSubscriber(provider, event) {
     if ((0, index_js_1.isHexString)(event, 32)) {
         return new PollingTransactionSubscriber(provider, event);
     }
-    return (0, index_js_1.throwError)("unsupported polling event", "UNSUPPORTED_OPERATION", {
+    (0, index_js_1.assert)(false, "unsupported polling event", "UNSUPPORTED_OPERATION", {
         operation: "getPollingSubscriber", info: { event }
     });
 }

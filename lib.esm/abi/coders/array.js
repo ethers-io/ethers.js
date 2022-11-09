@@ -1,4 +1,4 @@
-import { defineProperties, isError, assertArgumentCount, throwArgumentError, throwError } from "../../utils/index.js";
+import { defineProperties, isError, assert, assertArgument, assertArgumentCount } from "../../utils/index.js";
 import { Typed } from "../typed.js";
 import { Coder, Result, WordSize, Writer } from "./abstract-coder.js";
 import { AnonymousCoder } from "./anonymous.js";
@@ -11,30 +11,16 @@ export function pack(writer, coders, values) {
         let unique = {};
         arrayValues = coders.map((coder) => {
             const name = coder.localName;
-            if (!name) {
-                throwError("cannot encode object for signature with missing names", "INVALID_ARGUMENT", {
-                    argument: "values",
-                    info: { coder },
-                    value: values
-                });
-            }
-            if (unique[name]) {
-                throwError("cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", {
-                    argument: "values",
-                    info: { coder },
-                    value: values
-                });
-            }
+            assert(name, "cannot encode object for signature with missing names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
+            assert(unique[name], "cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
             unique[name] = true;
             return values[name];
         });
     }
     else {
-        throwArgumentError("invalid tuple value", "tuple", values);
+        assertArgument(false, "invalid tuple value", "tuple", values);
     }
-    if (coders.length !== arrayValues.length) {
-        throwArgumentError("types/value length mismatch", "tuple", values);
-    }
+    assertArgument(coders.length === arrayValues.length, "types/value length mismatch", "tuple", values);
     let staticWriter = new Writer();
     let dynamicWriter = new Writer();
     let updateFuncs = [];
@@ -152,13 +138,7 @@ export class ArrayCoder extends Coder {
             // slot requires at least 32 bytes for their value (or 32
             // bytes as a link to the data). This could use a much
             // tighter bound, but we are erroring on the side of safety.
-            if (count * WordSize > reader.dataLength) {
-                throwError("insufficient data length", "BUFFER_OVERRUN", {
-                    buffer: reader.bytes,
-                    offset: count * WordSize,
-                    length: reader.dataLength
-                });
-            }
+            assert(count * WordSize <= reader.dataLength, "insufficient data length", "BUFFER_OVERRUN", { buffer: reader.bytes, offset: count * WordSize, length: reader.dataLength });
         }
         let coders = [];
         for (let i = 0; i < count; i++) {

@@ -1,5 +1,5 @@
 import { accessListify } from "../transaction/index.js";
-import { getStore, getBigInt, setStore, throwArgumentError } from "../utils/index.js";
+import { getStore, getBigInt, setStore, assertArgument } from "../utils/index.js";
 import { EnsPlugin, GasCostPlugin } from "./plugins-network.js";
 /* * * *
 // Networks which operation against an L2 can use this plugin to
@@ -146,7 +146,7 @@ export class Network {
             if (typeof (network) === "bigint") {
                 return new Network("unknown", network);
             }
-            throwArgumentError("unknown network", "network", network);
+            assertArgument(false, "unknown network", "network", network);
         }
         // Clonable with network-like abilities
         if (typeof (network.clone) === "function") {
@@ -157,9 +157,7 @@ export class Network {
         }
         // Networkish
         if (typeof (network) === "object") {
-            if (typeof (network.name) !== "string" || typeof (network.chainId) !== "number") {
-                throwArgumentError("invalid network object name or chainId", "network", network);
-            }
+            assertArgument(typeof (network.name) === "string" && typeof (network.chainId) === "number", "invalid network object name or chainId", "network", network);
             const custom = new Network((network.name), (network.chainId));
             if (network.ensAddress || network.ensNetwork != null) {
                 custom.attachPlugin(new EnsPlugin(network.ensAddress, network.ensNetwork));
@@ -169,7 +167,7 @@ export class Network {
             //}
             return custom;
         }
-        return throwArgumentError("invalid network", "network", network);
+        assertArgument(false, "invalid network", "network", network);
     }
     /**
      *  Register %%nameOrChainId%% with a function which returns
@@ -181,7 +179,7 @@ export class Network {
         }
         const existing = Networks.get(nameOrChainId);
         if (existing) {
-            throwArgumentError(`conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
+            assertArgument(false, `conflicting network for ${JSON.stringify(existing.name)}`, "nameOrChainId", nameOrChainId);
         }
         Networks.set(nameOrChainId, networkFunc);
     }

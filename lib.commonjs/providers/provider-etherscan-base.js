@@ -9,7 +9,7 @@ const network_js_1 = require("./network.js");
 const plugins_network_js_1 = require("./plugins-network.js");
 const community_js_1 = require("./community.js");
 const THROTTLE = 2000;
-const EtherscanPluginId = "org.ethers.plugins.etherscan";
+const EtherscanPluginId = "org.ethers.plugins.Etherscan";
 class EtherscanPlugin extends plugins_network_js_1.NetworkPlugin {
     baseUrl;
     communityApiKey;
@@ -64,7 +64,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 return "https:/\/api-goerli-optimistic.etherscan.io";
             default:
         }
-        return (0, index_js_3.throwArgumentError)("unsupported network", "network", this.network);
+        (0, index_js_3.assertArgument)(false, "unsupported network", "network", this.network);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key) => {
@@ -188,7 +188,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
             }
             // Quantity-types require no leading zero, unless 0
             if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
-                value = (0, index_js_3.toQuantity)((0, index_js_3.hexlify)(value));
+                value = (0, index_js_3.toQuantity)(value);
             }
             else if (key === "accessList") {
                 value = "[" + (0, index_js_2.accessListify)(value).map((set) => {
@@ -331,7 +331,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                         boolean: (req.includeTransactions ? "true" : "false")
                     });
                 }
-                return (0, index_js_3.throwError)("getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                (0, index_js_3.assert)(false, "getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
             case "getTransaction":

@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.computeHmac = void 0;
-const crypto_browser_js_1 = require("./crypto-browser.js");
+const crypto_js_1 = require("./crypto.js");
 const index_js_1 = require("../utils/index.js");
 let locked = false;
 const _computeHmac = function (algorithm, key, data) {
-    return (0, crypto_browser_js_1.createHmac)(algorithm, key).update(data).digest();
+    return (0, crypto_js_1.createHmac)(algorithm, key).update(data).digest();
 };
 let __computeHmac = _computeHmac;
 function computeHmac(algorithm, _key, _data) {

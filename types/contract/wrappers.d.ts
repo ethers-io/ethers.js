@@ -23,15 +23,19 @@ export declare class ContractTransactionResponse extends TransactionResponse {
     constructor(iface: Interface, provider: Provider, tx: TransactionResponse);
     wait(confirms?: number): Promise<null | ContractTransactionReceipt>;
 }
-export declare class ContractEventPayload extends EventPayload<ContractEventName> {
+export declare class ContractUnknownEventPayload extends EventPayload<ContractEventName> {
+    readonly log: Log;
+    constructor(contract: BaseContract, listener: null | Listener, filter: ContractEventName, log: Log);
+    getBlock(): Promise<Block<string>>;
+    getTransaction(): Promise<TransactionResponse>;
+    getTransactionReceipt(): Promise<TransactionReceipt>;
+}
+export declare class ContractEventPayload extends ContractUnknownEventPayload {
     readonly fragment: EventFragment;
     readonly log: EventLog;
     readonly args: Result;
     constructor(contract: BaseContract, listener: null | Listener, filter: ContractEventName, fragment: EventFragment, _log: Log);
     get eventName(): string;
     get eventSignature(): string;
-    getBlock(): Promise<Block<string>>;
-    getTransaction(): Promise<TransactionResponse>;
-    getTransactionReceipt(): Promise<TransactionReceipt>;
 }
 //# sourceMappingURL=wrappers.d.ts.map

@@ -2,7 +2,7 @@ import { getAddress, resolveAddress } from "../address/index.js";
 import { hashMessage, TypedDataEncoder } from "../hash/index.js";
 import { AbstractSigner } from "../providers/index.js";
 import { computeAddress, Transaction } from "../transaction/index.js";
-import { defineProperties, resolveProperties, throwArgumentError, throwError } from "../utils/index.js";
+import { defineProperties, resolveProperties, assert, assertArgument } from "../utils/index.js";
 export class BaseWallet extends AbstractSigner {
     address;
     #signingKey;
@@ -32,9 +32,7 @@ export class BaseWallet extends AbstractSigner {
             tx.from = from;
         }
         if (tx.from != null) {
-            if (getAddress((tx.from)) !== this.address) {
-                throwArgumentError("transaction from address mismatch", "tx.from", tx.from);
-            }
+            assertArgument(getAddress((tx.from)) === this.address, "transaction from address mismatch", "tx.from", tx.from);
             delete tx.from;
         }
         // Build the transaction
@@ -53,18 +51,14 @@ export class BaseWallet extends AbstractSigner {
     async signTypedData(domain, types, value) {
         // Populate any ENS names
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name) => {
-            if (this.provider == null) {
-                return throwError("cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
-                    operation: "resolveName",
-                    info: { name }
-                });
-            }
+            assert(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
+                operation: "resolveName",
+                info: { name }
+            });
             const address = await this.provider.resolveName(name);
-            if (address == null) {
-                return throwError("unconfigured ENS name", "UNCONFIGURED_NAME", {
-                    value: name
-                });
-            }
+            assert(address != null, "unconfigured ENS name", "UNCONFIGURED_NAME", {
+                value: name
+            });
             return address;
         });
         return this.signingKey.sign(TypedDataEncoder.hash(populated.domain, types, populated.value)).serialized;

@@ -9,7 +9,7 @@
  *  - a sub-class MUST call `_processMessage(string)` for each message
  */
 import { UnmanagedSubscriber } from "./abstract-provider.js";
-import { assertArgument, throwError } from "../utils/index.js";
+import { assert, assertArgument } from "../utils/index.js";
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 export class SocketSubscriber {
     #provider;
@@ -41,11 +41,7 @@ export class SocketSubscriber {
     // @TODO: pause should trap the current blockNumber, unsub, and on resume use getLogs
     //        and resume
     pause(dropWhilePaused) {
-        if (!dropWhilePaused) {
-            throwError("preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", {
-                operation: "pause(false)"
-            });
-        }
+        assert(dropWhilePaused, "preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", { operation: "pause(false)" });
         this.#paused = !!dropWhilePaused;
     }
     resume() {

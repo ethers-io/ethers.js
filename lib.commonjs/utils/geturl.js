@@ -11,17 +11,13 @@ const errors_js_1 = require("./errors.js");
 const data_js_1 = require("./data.js");
 async function getUrl(req, signal) {
     const protocol = req.url.split(":")[0].toLowerCase();
-    if (protocol !== "http" && protocol !== "https") {
-        (0, errors_js_1.throwError)(`unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
-            info: { protocol },
-            operation: "request"
-        });
-    }
-    if (req.credentials && !req.allowInsecureAuthentication) {
-        (0, errors_js_1.throwError)("insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
-            operation: "request"
-        });
-    }
+    (0, errors_js_1.assert)(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+        info: { protocol },
+        operation: "request"
+    });
+    (0, errors_js_1.assert)(!req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        operation: "request"
+    });
     const method = req.method;
     const headers = Object.assign({}, req.headers);
     const options = { method, headers };

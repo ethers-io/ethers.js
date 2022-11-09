@@ -1,5 +1,5 @@
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
-import { assertArgumentCount, throwArgumentError } from "../utils/index.js";
+import { assertArgumentCount, assertArgument } from "../utils/index.js";
 import { Reader, Writer } from "./coders/abstract-coder.js";
 import { AddressCoder } from "./coders/address.js";
 import { ArrayCoder } from "./coders/array.js";
@@ -39,21 +39,17 @@ export class AbiCoder {
         let match = param.type.match(paramTypeNumber);
         if (match) {
             let size = parseInt(match[2] || "256");
-            if (size === 0 || size > 256 || (size % 8) !== 0) {
-                throwArgumentError("invalid " + match[1] + " bit length", "param", param);
-            }
+            assertArgument(size !== 0 && size <= 256 && (size % 8) === 0, "invalid " + match[1] + " bit length", "param", param);
             return new NumberCoder(size / 8, (match[1] === "int"), param.name);
         }
         // bytes[0-9]+
         match = param.type.match(paramTypeBytes);
         if (match) {
             let size = parseInt(match[1]);
-            if (size === 0 || size > 32) {
-                throwArgumentError("invalid bytes length", "param", param);
-            }
+            assertArgument(size !== 0 && size <= 32, "invalid bytes length", "param", param);
             return new FixedBytesCoder(size, param.name);
         }
-        return throwArgumentError("invalid type", "type", param.type);
+        assertArgument(false, "invalid type", "type", param.type);
     }
     getDefaultValue(types) {
         const coders = types.map((type) => this.#getCoder(ParamType.from(type)));

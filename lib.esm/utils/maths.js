@@ -1,5 +1,5 @@
 import { hexlify, isBytesLike } from "./data.js";
-import { throwArgumentError } from "./errors.js";
+import { assertArgument } from "./errors.js";
 const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);
 // IEEE 754 support 53-bits of mantissa
@@ -45,12 +45,8 @@ export function getBigInt(value, name) {
     switch (typeof (value)) {
         case "bigint": return value;
         case "number":
-            if (!Number.isInteger(value)) {
-                throwArgumentError("underflow", name || "value", value);
-            }
-            else if (value < -maxValue || value > maxValue) {
-                throwArgumentError("overflow", name || "value", value);
-            }
+            assertArgument(Number.isInteger(value), "underflow", name || "value", value);
+            assertArgument(value >= -maxValue && value <= maxValue, "overflow", name || "value", value);
             return BigInt(value);
         case "string":
             try {
@@ -60,10 +56,10 @@ export function getBigInt(value, name) {
                 return BigInt(value);
             }
             catch (e) {
-                throwArgumentError(`invalid BigNumberish string: ${e.message}`, name || "value", value);
+                assertArgument(false, `invalid BigNumberish string: ${e.message}`, name || "value", value);
             }
     }
-    return throwArgumentError("invalid BigNumberish value", name || "value", value);
+    assertArgument(false, "invalid BigNumberish value", name || "value", value);
 }
 const Nibbles = "0123456789abcdef";
 /*
@@ -88,27 +84,21 @@ export function toBigInt(value) {
 export function getNumber(value, name) {
     switch (typeof (value)) {
         case "bigint":
-            if (value < -maxValue || value > maxValue) {
-                throwArgumentError("overflow", name || "value", value);
-            }
+            assertArgument(value >= -maxValue && value <= maxValue, "overflow", name || "value", value);
             return Number(value);
         case "number":
-            if (!Number.isInteger(value)) {
-                throwArgumentError("underflow", name || "value", value);
-            }
-            else if (value < -maxValue || value > maxValue) {
-                throwArgumentError("overflow", name || "value", value);
-            }
+            assertArgument(Number.isInteger(value), "underflow", name || "value", value);
+            assertArgument(value >= -maxValue && value <= maxValue, "overflow", name || "value", value);
             return value;
         case "string":
             try {
                 return getNumber(BigInt(value), name);
             }
             catch (e) {
-                throwArgumentError(`invalid numeric string: ${e.message}`, name || "value", value);
+                assertArgument(false, `invalid numeric string: ${e.message}`, name || "value", value);
             }
     }
-    return throwArgumentError("invalid numeric value", name || "value", value);
+    assertArgument(false, "invalid numeric value", name || "value", value);
 }
 /*
  * Converts %%value%% to a number. If %%value%% is a Uint8Array, it

@@ -1,5 +1,5 @@
 import { keccak256 } from "../crypto/index.js";
-import { getBytes, throwArgumentError } from "../utils/index.js";
+import { getBytes, assertArgument } from "../utils/index.js";
 const BN_0 = BigInt(0);
 const BN_36 = BigInt(36);
 function getChecksumAddress(address) {
@@ -69,9 +69,7 @@ function fromBase36(value) {
     return result;
 }
 export function getAddress(address) {
-    if (typeof (address) !== "string") {
-        throwArgumentError("invalid address", "address", address);
-    }
+    assertArgument(typeof (address) === "string", "invalid address", "address", address);
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
         // Missing the 0x prefix
         if (address.substring(0, 2) !== "0x") {
@@ -79,24 +77,20 @@ export function getAddress(address) {
         }
         const result = getChecksumAddress(address);
         // It is a checksummed address with a bad checksum
-        if (address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && result !== address) {
-            throwArgumentError("bad address checksum", "address", address);
-        }
+        assertArgument(!address.match(/([A-F].*[a-f])|([a-f].*[A-F])/) || result === address, "bad address checksum", "address", address);
         return result;
     }
     // Maybe ICAP? (we only support direct mode)
     if (address.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
         // It is an ICAP address with a bad checksum
-        if (address.substring(2, 4) !== ibanChecksum(address)) {
-            throwArgumentError("bad icap checksum", "address", address);
-        }
+        assertArgument(address.substring(2, 4) === ibanChecksum(address), "bad icap checksum", "address", address);
         let result = fromBase36(address.substring(4)).toString(16);
         while (result.length < 40) {
             result = "0" + result;
         }
         return getChecksumAddress("0x" + result);
     }
-    return throwArgumentError("invalid address", "address", address);
+    assertArgument(false, "invalid address", "address", address);
 }
 export function getIcapAddress(address) {
     //let base36 = _base16To36(getAddress(address).substring(2)).toUpperCase();

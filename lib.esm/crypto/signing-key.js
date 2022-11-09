@@ -1,5 +1,5 @@
 import * as secp256k1 from "@noble/secp256k1";
-import { concat, dataLength, getBytes, getBytesCopy, hexlify, toHex, assertArgument, throwArgumentError } from "../utils/index.js";
+import { concat, dataLength, getBytes, getBytesCopy, hexlify, toHex, assertArgument } from "../utils/index.js";
 import { computeHmac } from "./hmac.js";
 import { Signature } from "./signature.js";
 //const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
@@ -61,7 +61,7 @@ export class SigningKey {
         if (pubKey != null) {
             return hexlify(pubKey);
         }
-        return throwArgumentError("invalid signautre for digest", "signature", signature);
+        assertArgument(false, "invalid signautre for digest", "signature", signature);
     }
     static _addPoints(p0, p1, compressed) {
         const pub0 = secp256k1.Point.fromHex(SigningKey.computePublicKey(p0).substring(2));
