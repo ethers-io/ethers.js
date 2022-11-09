@@ -3,7 +3,7 @@ import { VoidSigner } from "../providers/index.js";
 import { computeAddress } from "../transaction/index.js";
 import {
     concat, dataSlice, decodeBase58, defineProperties, encodeBase58,
-    getBytes, hexlify,
+    getBytes, hexlify, isBytesLike,
     getNumber, toBigInt, toHex,
     assertPrivate, assert, assertArgument
 } from "../utils/index.js";
@@ -74,9 +74,7 @@ type HDNodeLike<T> = { depth: number, deriveChild: (i: number) => T };
 function derivePath<T extends HDNodeLike<T>>(node: T, path: string): T {
     const components = path.split("/");
 
-    if (components.length === 0 || (components[0] === "m" && node.depth !== 0)) {
-        throw new Error("invalid path - " + path);
-    }
+    assertArgument(components.length > 0 && (components[0] === "m" || node.depth > 0), "invalid path", "path", path);
 
     if (components[0] === "m") { components.shift(); }
 
@@ -86,16 +84,16 @@ function derivePath<T extends HDNodeLike<T>>(node: T, path: string): T {
 
         if (component.match(/^[0-9]+'$/)) {
             const index = parseInt(component.substring(0, component.length - 1));
-            if (index >= HardenedBit) { throw new Error("invalid path index - " + component); }
+            assertArgument(index < HardenedBit, "invalid path index", `path[${ i }]`, component);
             result = result.deriveChild(HardenedBit + index);
 
         } else if (component.match(/^[0-9]+$/)) {
             const index = parseInt(component);
-            if (index >= HardenedBit) { throw new Error("invalid path index - " + component); }
+            assertArgument(index < HardenedBit, "invalid path index", `path[${ i }]`, component);
             result = result.deriveChild(index);
 
         } else {
-            throw new Error("invalid path component - " + component);
+            assertArgument(false, "invalid path component", `path[${ i }]`, component);
         }
     }
 
@@ -143,7 +141,7 @@ export class HDNodeWallet extends BaseWallet {
         //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
         //   - Testnet: public=0x043587CF, private=0x04358394
 
-        if (this.depth >= 256) { throw new Error("Depth too large!"); }
+        assert(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
 
         return encodeBase58Check(concat([
             "0x0488ADE4", zpad(this.depth, 1), this.parentFingerprint,
@@ -162,7 +160,7 @@ export class HDNodeWallet extends BaseWallet {
 
     deriveChild(_index: Numeric): HDNodeWallet {
         const index = getNumber(_index, "index");
-        if (index > 0xffffffff) { throw new Error("invalid index - " + String(index)); }
+        assertArgument(index <= 0xffffffff, "invalid index", "index", index);
 
         // Base path
         let path = this.path;
@@ -184,10 +182,10 @@ export class HDNodeWallet extends BaseWallet {
     }
 
     static #fromSeed(_seed: BytesLike, mnemonic: null | Mnemonic): HDNodeWallet {
+        assertArgument(isBytesLike(_seed), "invalid seed", "seed", "[REDACTED]");
+
         const seed = getBytes(_seed, "seed");
-        if (seed.length < 16 || seed.length > 64) {
-            throw new Error("invalid seed");
-        }
+        assertArgument(seed.length >= 16 && seed.length <= 64 , "invalid seed", "seed", "[REDACTED]");
 
         const I = getBytes(computeHmac("sha512", MasterSecret, seed));
         const signingKey = new SigningKey(hexlify(I.slice(0, 32)));
@@ -285,7 +283,7 @@ export class HDNodeVoidWallet extends VoidSigner {
         //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
         //   - Testnet: public=0x043587CF, private=0x04358394
 
-        if (this.depth >= 256) { throw new Error("Depth too large!"); }
+        assert(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
 
         return encodeBase58Check(concat([
             "0x0488B21E",
@@ -301,7 +299,7 @@ export class HDNodeVoidWallet extends VoidSigner {
 
     deriveChild(_index: Numeric): HDNodeVoidWallet {
         const index = getNumber(_index, "index");
-        if (index > 0xffffffff) { throw new Error("invalid index - " + String(index)); }
+        assertArgument(index <= 0xffffffff, "invalid index", "index", index);
 
         // Base path
         let path = this.path;
