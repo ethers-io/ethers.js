@@ -149,7 +149,7 @@ export const formatTransactionReceipt = object({
     hash: formatHash,
     logs: arrayOf(formatReceiptLog),
     blockNumber: getNumber,
-    confirmations: allowNull(getNumber, null),
+    //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: getBigInt,
     effectiveGasPrice: allowNull(getBigInt),
     status: allowNull(getNumber),
@@ -181,7 +181,7 @@ export function formatTransactionResponse(value: any) {
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),
 
-        confirmations: allowNull(getNumber, null),
+        //confirmations: allowNull(getNumber, null),
 
         from: getAddress,
 
@@ -217,7 +217,11 @@ export function formatTransactionResponse(value: any) {
     }
 
     // Compute the signature
-    result.signature = Signature.from(value);
+    if (value.signature) {
+        result.signature = Signature.from(value.signature);
+    } else {
+        result.signature = Signature.from(value);
+    }
 
     // Some backends omit ChainId on legacy transactions, but we can compute it
     if (result.chainId == null) {
