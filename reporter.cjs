@@ -1,5 +1,7 @@
 'use strict';
 
+/* c8 ignore start */
+
 const Mocha = require('mocha');
 const {
   EVENT_RUN_BEGIN,
@@ -211,3 +213,5 @@ class MyReporter {
 }
 
 module.exports = MyReporter;
+
+/* c8 ignore stop */
