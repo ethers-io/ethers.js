@@ -1,8 +1,14 @@
 import assert from "assert";
 
-import { Wallet } from "../index.js";
+import { isError, Wallet } from "../index.js";
 
 import { getProvider, providerNames } from "./create-provider.js";
+
+import type { TransactionResponse } from "../index.js";
+
+function stall(duration: number): Promise<void> {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
+}
 
 
 describe("Sends Transactions", function() {
@@ -30,11 +36,25 @@ describe("Sends Transactions", function() {
 
             const dustAddr = Wallet.createRandom().address;
 
-            const tx = await w.sendTransaction({
-                to: dustAddr,
-                value: 42,
-                type: 2
-            });
+            // Retry if another CI instance used our value
+            let tx: null | TransactionResponse = null;
+            for (let i = 0; i < 10; i++) {
+                try {
+                    tx = await w.sendTransaction({
+                        to: dustAddr,
+                        value: 42,
+                        type: 2
+                    });
+                    break;
+                } catch (error) {
+                    if (isError(error, "REPLACEMENT_UNDERPRICED")) {
+                        await stall(1000);
+                        continue;
+                    }
+                    throw error;
+                }
+            }
+            assert.ok(!!tx, "too many retries");
 
             //const receipt = 
             await provider.waitForTransaction(tx.hash); //tx.wait();
