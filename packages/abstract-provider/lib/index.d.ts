@@ -80,6 +80,8 @@ export interface TransactionReceipt {
     byzantium: boolean;
     type: number;
     status?: number;
+    l1BlockNumber?: number;
+    gasUsedForL1?: BigNumber;
 }
 export interface FeeData {
     lastBaseFeePerGas: null | BigNumber;

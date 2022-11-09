@@ -120,7 +120,9 @@ export interface TransactionReceipt {
     effectiveGasPrice: BigNumber,
     byzantium: boolean,
     type: number;
-    status?: number
+    status?: number,
+    l1BlockNumber?: number,
+    gasUsedForL1?: BigNumber,
 };
 
 export interface FeeData {
