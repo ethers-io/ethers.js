@@ -23,7 +23,7 @@ describe("Sends Transactions", function() {
         // this process from exiting
         if ((<any>provider).destroy) { cleanup.push(() => { (<any>provider).destroy(); }); }
 
-        it(`tests sending: ${ providerName }.`, async function() {
+        it(`tests sending: ${ providerName }`, async function() {
             this.timeout(60000);
 
             const w = wallet.connect(provider);
@@ -36,8 +36,9 @@ describe("Sends Transactions", function() {
                 type: 2
             });
 
-            const receipt = await provider.waitForTransaction(tx.hash); //tx.wait();
-            console.log(receipt);
+            //const receipt = 
+            await provider.waitForTransaction(tx.hash); //tx.wait();
+            //console.log(receipt);
 
             const balance = await provider.getBalance(dustAddr);
             assert.equal(balance, BigInt(42), "target balance after send");
