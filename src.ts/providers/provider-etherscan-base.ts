@@ -35,7 +35,7 @@ export type DebugEventEtherscanProvider = {
     error: any
 };
 
-const EtherscanPluginId = "org.ethers.plugins.etherscan";
+const EtherscanPluginId = "org.ethers.plugins.Etherscan";
 
 export class EtherscanPlugin extends NetworkPlugin {
     readonly baseUrl!: string;
@@ -184,7 +184,6 @@ export class BaseEtherscanProvider extends AbstractProvider {
         }
 
         const result = JSON.parse(toUtf8String(response.body));
-
         if (module === "proxy") {
             if (result.jsonrpc != "2.0") {
                 this.emit("debug", { action: "receiveError", id, result, reason: "invalid JSON-RPC" });
@@ -241,7 +240,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
 
             // Quantity-types require no leading zero, unless 0
             if ((<any>{ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true })[key]) {
-                value = toQuantity(hexlify(value));
+                value = toQuantity(value);
             } else if (key === "accessList") {
                 value = "[" + accessListify(value).map((set) => {
                     return `{address:"${ set.address }",storageKeys:["${ set.storageKeys.join('","') }"]}`;
