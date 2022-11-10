@@ -25,11 +25,11 @@ export declare class HDNodeWallet extends BaseWallet {
     neuter(): HDNodeVoidWallet;
     deriveChild(_index: Numeric): HDNodeWallet;
     derivePath(path: string): HDNodeWallet;
-    static fromSeed(seed: BytesLike): HDNodeWallet;
-    static fromPhrase(phrase: string, password?: string, path?: null | string, wordlist?: Wordlist): HDNodeWallet;
-    static fromMnemonic(mnemonic: Mnemonic, path?: null | string): HDNodeWallet;
     static fromExtendedKey(extendedKey: string): HDNodeWallet | HDNodeVoidWallet;
-    static createRandom(password?: string, path?: null | string, wordlist?: Wordlist): HDNodeWallet;
+    static createRandom(password?: string, path?: string, wordlist?: Wordlist): HDNodeWallet;
+    static fromMnemonic(mnemonic: Mnemonic, path?: string): HDNodeWallet;
+    static fromPhrase(phrase: string, password?: string, path?: string, wordlist?: Wordlist): HDNodeWallet;
+    static fromSeed(seed: BytesLike): HDNodeWallet;
 }
 export declare class HDNodeVoidWallet extends VoidSigner {
     readonly publicKey: string;

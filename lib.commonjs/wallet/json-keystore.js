@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.encryptKeystoreJson = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.isKeystoreJson = void 0;
+exports.encryptKeystoreJson = exports.encryptKeystoreJsonSync = exports._encryptKeystore = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.isKeystoreJson = void 0;
 const aes_js_1 = require("aes-js");
 const index_js_1 = require("../address/index.js");
 const index_js_2 = require("../crypto/index.js");
@@ -62,7 +62,7 @@ function getAccount(data, _key) {
     }
     return account;
 }
-function getKdfParams(data) {
+function getDecryptKdfParams(data) {
     const kdf = (0, utils_js_1.spelunk)(data, "crypto.kdf:string");
     if (kdf && typeof (kdf) === "string") {
         const throwError = function (name, value) {
@@ -107,18 +107,16 @@ function getKdfParams(data) {
 function decryptKeystoreJsonSync(json, _password) {
     const data = JSON.parse(json);
     const password = (0, utils_js_1.getPassword)(_password);
-    const params = getKdfParams(data);
+    const params = getDecryptKdfParams(data);
     if (params.name === "pbkdf2") {
         const { salt, count, dkLen, algorithm } = params;
         const key = (0, index_js_2.pbkdf2)(password, salt, count, dkLen, algorithm);
         return getAccount(data, key);
     }
-    else if (params.name === "scrypt") {
-        const { salt, N, r, p, dkLen } = params;
-        const key = (0, index_js_2.scryptSync)(password, salt, N, r, p, dkLen);
-        return getAccount(data, key);
-    }
-    throw new Error("unreachable");
+    (0, index_js_4.assert)(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
+    const { salt, N, r, p, dkLen } = params;
+    const key = (0, index_js_2.scryptSync)(password, salt, N, r, p, dkLen);
+    return getAccount(data, key);
 }
 exports.decryptKeystoreJsonSync = decryptKeystoreJsonSync;
 function stall(duration) {
@@ -127,7 +125,7 @@ function stall(duration) {
 async function decryptKeystoreJson(json, _password, progress) {
     const data = JSON.parse(json);
     const password = (0, utils_js_1.getPassword)(_password);
-    const params = getKdfParams(data);
+    const params = getDecryptKdfParams(data);
     if (params.name === "pbkdf2") {
         if (progress) {
             progress(0);
@@ -141,64 +139,15 @@ async function decryptKeystoreJson(json, _password, progress) {
         }
         return getAccount(data, key);
     }
-    else if (params.name === "scrypt") {
-        const { salt, N, r, p, dkLen } = params;
-        const key = await (0, index_js_2.scrypt)(password, salt, N, r, p, dkLen, progress);
-        return getAccount(data, key);
-    }
-    throw new Error("unreachable");
+    (0, index_js_4.assert)(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
+    const { salt, N, r, p, dkLen } = params;
+    const key = await (0, index_js_2.scrypt)(password, salt, N, r, p, dkLen, progress);
+    return getAccount(data, key);
 }
 exports.decryptKeystoreJson = decryptKeystoreJson;
-async function encryptKeystoreJson(account, password, options, progressCallback) {
-    // Check the address matches the private key
-    //if (getAddress(account.address) !== computeAddress(account.privateKey)) {
-    //    throw new Error("address/privateKey mismatch");
-    //}
-    // Check the mnemonic (if any) matches the private key
-    /*
-    if (hasMnemonic(account)) {
-        const mnemonic = account.mnemonic;
-        const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || defaultPath);
-
-        if (node.privateKey != account.privateKey) {
-            throw new Error("mnemonic mismatch");
-        }
-    }
-    */
-    // The options are optional, so adjust the call as needed
-    if (typeof (options) === "function" && !progressCallback) {
-        progressCallback = options;
-        options = {};
-    }
-    if (!options) {
-        options = {};
-    }
-    const privateKey = (0, index_js_4.getBytes)(account.privateKey, "privateKey");
-    const passwordBytes = (0, utils_js_1.getPassword)(password);
-    /*
-        let mnemonic: null | Mnemonic = null;
-        let entropy: Uint8Array = null
-        let path: string = null;
-        let locale: string = null;
-        if (hasMnemonic(account)) {
-            const srcMnemonic = account.mnemonic;
-            entropy = arrayify(mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
-            path = srcMnemonic.path || defaultPath;
-            locale = srcMnemonic.locale || "en";
-            mnemonic = Mnemonic.from(
-        }
-    */
+function getEncryptKdfParams(options) {
     // Check/generate the salt
-    const salt = (options.salt != null) ? (0, index_js_4.getBytes)(options.salt, "options.slat") : (0, index_js_2.randomBytes)(32);
-    // Override initialization vector
-    const iv = (options.iv != null) ? (0, index_js_4.getBytes)(options.iv, "options.iv") : (0, index_js_2.randomBytes)(16);
-    (0, index_js_4.assertArgument)(iv.length === 16, "invalid options.iv", "options.iv", options.iv);
-    // Override the uuid
-    const uuidRandom = (options.uuid != null) ? (0, index_js_4.getBytes)(options.uuid, "options.uuid") : (0, index_js_2.randomBytes)(16);
-    (0, index_js_4.assertArgument)(uuidRandom.length === 16, "invalid options.uuid", "options.uuid", options.iv);
-    if (uuidRandom.length !== 16) {
-        throw new Error("invalid uuid");
-    }
+    const salt = (options.salt != null) ? (0, index_js_4.getBytes)(options.salt, "options.salt") : (0, index_js_2.randomBytes)(32);
     // Override the scrypt password-based key derivation function parameters
     let N = (1 << 17), r = 8, p = 1;
     if (options.scrypt) {
@@ -212,12 +161,22 @@ async function encryptKeystoreJson(account, password, options, progressCallback)
             p = options.scrypt.p;
         }
     }
-    // We take 64 bytes:
-    //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
-    //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-    const _key = await (0, index_js_2.scrypt)(passwordBytes, salt, N, r, p, 64, progressCallback);
-    const key = (0, index_js_4.getBytes)(_key);
+    (0, index_js_4.assertArgument)(typeof (N) === "number" && Number.isSafeInteger(N) && (BigInt(N) & BigInt(N - 1)) === BigInt(0), "invalid scrypt N parameter", "options.N", N);
+    (0, index_js_4.assertArgument)(typeof (r) === "number" && Number.isSafeInteger(r), "invalid scrypt r parameter", "options.r", r);
+    (0, index_js_4.assertArgument)(typeof (p) === "number" && Number.isSafeInteger(p), "invalid scrypt p parameter", "options.p", p);
+    return { name: "scrypt", dkLen: 32, salt, N, r, p };
+}
+function _encryptKeystore(key, kdf, account, options) {
+    const privateKey = (0, index_js_4.getBytes)(account.privateKey, "privateKey");
+    // Override initialization vector
+    const iv = (options.iv != null) ? (0, index_js_4.getBytes)(options.iv, "options.iv") : (0, index_js_2.randomBytes)(16);
+    (0, index_js_4.assertArgument)(iv.length === 16, "invalid options.iv", "options.iv", options.iv);
+    // Override the uuid
+    const uuidRandom = (options.uuid != null) ? (0, index_js_4.getBytes)(options.uuid, "options.uuid") : (0, index_js_2.randomBytes)(16);
+    (0, index_js_4.assertArgument)(uuidRandom.length === 16, "invalid options.uuid", "options.uuid", options.iv);
     // This will be used to encrypt the wallet (as per Web3 secret storage)
+    // - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
+    // - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
     const derivedKey = key.slice(0, 16);
     const macPrefix = key.slice(16, 32);
     // Encrypt the private key
@@ -238,11 +197,11 @@ async function encryptKeystoreJson(account, password, options, progressCallback)
             ciphertext: (0, index_js_4.hexlify)(ciphertext).substring(2),
             kdf: "scrypt",
             kdfparams: {
-                salt: (0, index_js_4.hexlify)(salt).substring(2),
-                n: N,
+                salt: (0, index_js_4.hexlify)(kdf.salt).substring(2),
+                n: kdf.N,
                 dklen: 32,
-                p: p,
-                r: r
+                p: kdf.p,
+                r: kdf.r
             },
             mac: mac.substring(2)
         }
@@ -273,6 +232,26 @@ async function encryptKeystoreJson(account, password, options, progressCallback)
         };
     }
     return JSON.stringify(data);
+}
+exports._encryptKeystore = _encryptKeystore;
+function encryptKeystoreJsonSync(account, password, options) {
+    if (options == null) {
+        options = {};
+    }
+    const passwordBytes = (0, utils_js_1.getPassword)(password);
+    const kdf = getEncryptKdfParams(options);
+    const key = (0, index_js_2.scryptSync)(passwordBytes, kdf.salt, kdf.N, kdf.r, kdf.p, 64);
+    return _encryptKeystore((0, index_js_4.getBytes)(key), kdf, account, options);
+}
+exports.encryptKeystoreJsonSync = encryptKeystoreJsonSync;
+async function encryptKeystoreJson(account, password, options) {
+    if (options == null) {
+        options = {};
+    }
+    const passwordBytes = (0, utils_js_1.getPassword)(password);
+    const kdf = getEncryptKdfParams(options);
+    const key = await (0, index_js_2.scrypt)(passwordBytes, kdf.salt, kdf.N, kdf.r, kdf.p, 64, options.progressCallback);
+    return _encryptKeystore((0, index_js_4.getBytes)(key), kdf, account, options);
 }
 exports.encryptKeystoreJson = encryptKeystoreJson;
 //# sourceMappingURL=json-keystore.js.map

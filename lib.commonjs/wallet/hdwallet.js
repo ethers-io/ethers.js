@@ -143,22 +143,6 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
         const signingKey = new index_js_1.SigningKey((0, index_js_4.hexlify)(I.slice(0, 32)));
         return new HDNodeWallet(_guard, signingKey, "0x00000000", (0, index_js_4.hexlify)(I.slice(32)), "m", 0, 0, mnemonic, null);
     }
-    static fromSeed(seed) {
-        return HDNodeWallet.#fromSeed(seed, null);
-    }
-    static fromPhrase(phrase, password = "", path = exports.defaultPath, wordlist = lang_en_js_1.langEn) {
-        if (!path) {
-            path = exports.defaultPath;
-        }
-        const mnemonic = mnemonic_js_1.Mnemonic.fromPhrase(phrase, password, wordlist);
-        return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
-    }
-    static fromMnemonic(mnemonic, path = exports.defaultPath) {
-        if (!path) {
-            path = exports.defaultPath;
-        }
-        return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
-    }
     static fromExtendedKey(extendedKey) {
         const bytes = (0, index_js_4.getBytes)((0, index_js_4.decodeBase58)(extendedKey)); // @TODO: redact
         (0, index_js_4.assertArgument)(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey, "invalid extended key", "extendedKey", "[ REDACTED ]");
@@ -184,12 +168,40 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
         }
         (0, index_js_4.assertArgument)(false, "invalid extended key prefix", "extendedKey", "[ REDACTED ]");
     }
-    static createRandom(password = "", path = exports.defaultPath, wordlist = lang_en_js_1.langEn) {
-        if (!path) {
+    static createRandom(password, path, wordlist) {
+        if (password == null) {
+            password = "";
+        }
+        if (path == null) {
             path = exports.defaultPath;
+        }
+        if (wordlist == null) {
+            wordlist = lang_en_js_1.langEn;
         }
         const mnemonic = mnemonic_js_1.Mnemonic.fromEntropy((0, index_js_1.randomBytes)(16), password, wordlist);
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
+    }
+    static fromMnemonic(mnemonic, path) {
+        if (!path) {
+            path = exports.defaultPath;
+        }
+        return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
+    }
+    static fromPhrase(phrase, password, path, wordlist) {
+        if (password == null) {
+            password = "";
+        }
+        if (path == null) {
+            path = exports.defaultPath;
+        }
+        if (wordlist == null) {
+            wordlist = lang_en_js_1.langEn;
+        }
+        const mnemonic = mnemonic_js_1.Mnemonic.fromPhrase(phrase, password, wordlist);
+        return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
+    }
+    static fromSeed(seed) {
+        return HDNodeWallet.#fromSeed(seed, null);
     }
 }
 exports.HDNodeWallet = HDNodeWallet;

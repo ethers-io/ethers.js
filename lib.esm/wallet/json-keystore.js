@@ -58,7 +58,7 @@ function getAccount(data, _key) {
     }
     return account;
 }
-function getKdfParams(data) {
+function getDecryptKdfParams(data) {
     const kdf = spelunk(data, "crypto.kdf:string");
     if (kdf && typeof (kdf) === "string") {
         const throwError = function (name, value) {
@@ -103,18 +103,16 @@ function getKdfParams(data) {
 export function decryptKeystoreJsonSync(json, _password) {
     const data = JSON.parse(json);
     const password = getPassword(_password);
-    const params = getKdfParams(data);
+    const params = getDecryptKdfParams(data);
     if (params.name === "pbkdf2") {
         const { salt, count, dkLen, algorithm } = params;
         const key = pbkdf2(password, salt, count, dkLen, algorithm);
         return getAccount(data, key);
     }
-    else if (params.name === "scrypt") {
-        const { salt, N, r, p, dkLen } = params;
-        const key = scryptSync(password, salt, N, r, p, dkLen);
-        return getAccount(data, key);
-    }
-    throw new Error("unreachable");
+    assert(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
+    const { salt, N, r, p, dkLen } = params;
+    const key = scryptSync(password, salt, N, r, p, dkLen);
+    return getAccount(data, key);
 }
 function stall(duration) {
     return new Promise((resolve) => { setTimeout(() => { resolve(); }, duration); });
@@ -122,7 +120,7 @@ function stall(duration) {
 export async function decryptKeystoreJson(json, _password, progress) {
     const data = JSON.parse(json);
     const password = getPassword(_password);
-    const params = getKdfParams(data);
+    const params = getDecryptKdfParams(data);
     if (params.name === "pbkdf2") {
         if (progress) {
             progress(0);
@@ -136,63 +134,14 @@ export async function decryptKeystoreJson(json, _password, progress) {
         }
         return getAccount(data, key);
     }
-    else if (params.name === "scrypt") {
-        const { salt, N, r, p, dkLen } = params;
-        const key = await scrypt(password, salt, N, r, p, dkLen, progress);
-        return getAccount(data, key);
-    }
-    throw new Error("unreachable");
+    assert(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
+    const { salt, N, r, p, dkLen } = params;
+    const key = await scrypt(password, salt, N, r, p, dkLen, progress);
+    return getAccount(data, key);
 }
-export async function encryptKeystoreJson(account, password, options, progressCallback) {
-    // Check the address matches the private key
-    //if (getAddress(account.address) !== computeAddress(account.privateKey)) {
-    //    throw new Error("address/privateKey mismatch");
-    //}
-    // Check the mnemonic (if any) matches the private key
-    /*
-    if (hasMnemonic(account)) {
-        const mnemonic = account.mnemonic;
-        const node = HDNode.fromMnemonic(mnemonic.phrase, null, mnemonic.locale).derivePath(mnemonic.path || defaultPath);
-
-        if (node.privateKey != account.privateKey) {
-            throw new Error("mnemonic mismatch");
-        }
-    }
-    */
-    // The options are optional, so adjust the call as needed
-    if (typeof (options) === "function" && !progressCallback) {
-        progressCallback = options;
-        options = {};
-    }
-    if (!options) {
-        options = {};
-    }
-    const privateKey = getBytes(account.privateKey, "privateKey");
-    const passwordBytes = getPassword(password);
-    /*
-        let mnemonic: null | Mnemonic = null;
-        let entropy: Uint8Array = null
-        let path: string = null;
-        let locale: string = null;
-        if (hasMnemonic(account)) {
-            const srcMnemonic = account.mnemonic;
-            entropy = arrayify(mnemonicToEntropy(srcMnemonic.phrase, srcMnemonic.locale || "en"));
-            path = srcMnemonic.path || defaultPath;
-            locale = srcMnemonic.locale || "en";
-            mnemonic = Mnemonic.from(
-        }
-    */
+function getEncryptKdfParams(options) {
     // Check/generate the salt
-    const salt = (options.salt != null) ? getBytes(options.salt, "options.slat") : randomBytes(32);
-    // Override initialization vector
-    const iv = (options.iv != null) ? getBytes(options.iv, "options.iv") : randomBytes(16);
-    assertArgument(iv.length === 16, "invalid options.iv", "options.iv", options.iv);
-    // Override the uuid
-    const uuidRandom = (options.uuid != null) ? getBytes(options.uuid, "options.uuid") : randomBytes(16);
-    assertArgument(uuidRandom.length === 16, "invalid options.uuid", "options.uuid", options.iv);
-    if (uuidRandom.length !== 16) {
-        throw new Error("invalid uuid");
-    }
+    const salt = (options.salt != null) ? getBytes(options.salt, "options.salt") : randomBytes(32);
     // Override the scrypt password-based key derivation function parameters
     let N = (1 << 17), r = 8, p = 1;
     if (options.scrypt) {
@@ -206,12 +155,22 @@ export async function encryptKeystoreJson(account, password, options, progressCa
             p = options.scrypt.p;
         }
     }
-    // We take 64 bytes:
-    //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
-    //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-    const _key = await scrypt(passwordBytes, salt, N, r, p, 64, progressCallback);
-    const key = getBytes(_key);
+    assertArgument(typeof (N) === "number" && Number.isSafeInteger(N) && (BigInt(N) & BigInt(N - 1)) === BigInt(0), "invalid scrypt N parameter", "options.N", N);
+    assertArgument(typeof (r) === "number" && Number.isSafeInteger(r), "invalid scrypt r parameter", "options.r", r);
+    assertArgument(typeof (p) === "number" && Number.isSafeInteger(p), "invalid scrypt p parameter", "options.p", p);
+    return { name: "scrypt", dkLen: 32, salt, N, r, p };
+}
+export function _encryptKeystore(key, kdf, account, options) {
+    const privateKey = getBytes(account.privateKey, "privateKey");
+    // Override initialization vector
+    const iv = (options.iv != null) ? getBytes(options.iv, "options.iv") : randomBytes(16);
+    assertArgument(iv.length === 16, "invalid options.iv", "options.iv", options.iv);
+    // Override the uuid
+    const uuidRandom = (options.uuid != null) ? getBytes(options.uuid, "options.uuid") : randomBytes(16);
+    assertArgument(uuidRandom.length === 16, "invalid options.uuid", "options.uuid", options.iv);
     // This will be used to encrypt the wallet (as per Web3 secret storage)
+    // - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
+    // - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
     const derivedKey = key.slice(0, 16);
     const macPrefix = key.slice(16, 32);
     // Encrypt the private key
@@ -232,11 +191,11 @@ export async function encryptKeystoreJson(account, password, options, progressCa
             ciphertext: hexlify(ciphertext).substring(2),
             kdf: "scrypt",
             kdfparams: {
-                salt: hexlify(salt).substring(2),
-                n: N,
+                salt: hexlify(kdf.salt).substring(2),
+                n: kdf.N,
                 dklen: 32,
-                p: p,
-                r: r
+                p: kdf.p,
+                r: kdf.r
             },
             mac: mac.substring(2)
         }
@@ -267,5 +226,23 @@ export async function encryptKeystoreJson(account, password, options, progressCa
         };
     }
     return JSON.stringify(data);
+}
+export function encryptKeystoreJsonSync(account, password, options) {
+    if (options == null) {
+        options = {};
+    }
+    const passwordBytes = getPassword(password);
+    const kdf = getEncryptKdfParams(options);
+    const key = scryptSync(passwordBytes, kdf.salt, kdf.N, kdf.r, kdf.p, 64);
+    return _encryptKeystore(getBytes(key), kdf, account, options);
+}
+export async function encryptKeystoreJson(account, password, options) {
+    if (options == null) {
+        options = {};
+    }
+    const passwordBytes = getPassword(password);
+    const kdf = getEncryptKdfParams(options);
+    const key = await scrypt(passwordBytes, kdf.salt, kdf.N, kdf.r, kdf.p, 64, options.progressCallback);
+    return _encryptKeystore(getBytes(key), kdf, account, options);
 }
 //# sourceMappingURL=json-keystore.js.map

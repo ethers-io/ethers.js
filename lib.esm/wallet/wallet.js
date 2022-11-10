@@ -1,110 +1,34 @@
-import { randomBytes, SigningKey } from "../crypto/index.js";
-import { computeAddress } from "../transaction/index.js";
-import { isHexString, assertArgument } from "../utils/index.js";
+import { SigningKey } from "../crypto/index.js";
+import { assertArgument } from "../utils/index.js";
 import { BaseWallet } from "./base-wallet.js";
 import { HDNodeWallet } from "./hdwallet.js";
 import { decryptCrowdsaleJson, isCrowdsaleJson } from "./json-crowdsale.js";
 import { decryptKeystoreJson, decryptKeystoreJsonSync, isKeystoreJson } from "./json-keystore.js";
 import { Mnemonic } from "./mnemonic.js";
-function tryWallet(value) {
-    try {
-        if (!value || !value.signingKey) {
-            return null;
-        }
-        const key = trySigningKey(value.signingKey);
-        if (key == null || computeAddress(key.publicKey) !== value.address) {
-            return null;
-        }
-        if (value.mnemonic) {
-            const wallet = HDNodeWallet.fromMnemonic(value.mnemonic);
-            if (wallet.privateKey !== key.privateKey) {
-                return null;
-            }
-        }
-        return value;
-    }
-    catch (e) {
-        console.log(e);
-    }
-    return null;
-}
-// Try using value as mnemonic to derive the defaultPath HDodeWallet
-function tryMnemonic(value) {
-    try {
-        if (value == null || typeof (value.phrase) !== "string" ||
-            typeof (value.password) !== "string" ||
-            value.wordlist == null) {
-            return null;
-        }
-        return HDNodeWallet.fromPhrase(value.phrase, value.password, null, value.wordlist);
-    }
-    catch (error) {
-        console.log(error);
-    }
-    return null;
-}
-function trySigningKey(value) {
-    try {
-        if (!value || !isHexString(value.privateKey, 32)) {
-            return null;
-        }
-        const key = value.privateKey;
-        if (SigningKey.computePublicKey(key) !== value.publicKey) {
-            return null;
-        }
-        return new SigningKey(key);
-    }
-    catch (e) {
-        console.log(e);
-    }
-    return null;
-}
 function stall(duration) {
     return new Promise((resolve) => { setTimeout(() => { resolve(); }, duration); });
 }
 export class Wallet extends BaseWallet {
-    #mnemonic;
     constructor(key, provider) {
-        let signingKey = null;
-        let mnemonic = null;
-        // A normal private key
-        if (typeof (key) === "string") {
-            signingKey = new SigningKey(key);
-        }
-        // Try Wallet
-        if (signingKey == null) {
-            const wallet = tryWallet(key);
-            if (wallet) {
-                signingKey = wallet.signingKey;
-                mnemonic = wallet.mnemonic || null;
-            }
-        }
-        // Try Mnemonic, with the defaultPath wallet
-        if (signingKey == null) {
-            const wallet = tryMnemonic(key);
-            if (wallet) {
-                signingKey = wallet.signingKey;
-                mnemonic = wallet.mnemonic || null;
-            }
-        }
-        // A signing key
-        if (signingKey == null) {
-            signingKey = trySigningKey(key);
-        }
-        assertArgument(signingKey != null, "invalid key", "key", "[ REDACTED ]");
+        let signingKey = (typeof (key) === "string") ? new SigningKey(key) : key;
         super(signingKey, provider);
-        this.#mnemonic = mnemonic;
     }
-    // Store this in a getter to reduce visibility in console.log
-    get mnemonic() { return this.#mnemonic; }
     connect(provider) {
-        return new Wallet(this, provider);
+        return new Wallet(this.signingKey, provider);
     }
-    async encrypt(password, options, progressCallback) {
-        throw new Error("TODO");
-    }
-    encryptSync(password, options) {
-        throw new Error("TODO");
+    static #fromAccount(account) {
+        assertArgument(account, "invalid JSON wallet", "json", "[ REDACTED ]");
+        if ("mnemonic" in account && account.mnemonic && account.mnemonic.locale === "en") {
+            const mnemonic = Mnemonic.fromEntropy(account.mnemonic.entropy);
+            const wallet = HDNodeWallet.fromMnemonic(mnemonic, account.mnemonic.path);
+            if (wallet.address === account.address && wallet.privateKey === account.privateKey) {
+                return wallet;
+            }
+            console.log("WARNING: JSON mismatch address/privateKey != mnemonic; fallback onto private key");
+        }
+        const wallet = new Wallet(account.privateKey);
+        assertArgument(wallet.address === account.address, "address/privateKey mismatch", "json", "[ REDACTED ]");
+        return wallet;
     }
     static async fromEncryptedJson(json, password, progress) {
         let account = null;
@@ -122,13 +46,7 @@ export class Wallet extends BaseWallet {
                 await stall(0);
             }
         }
-        else {
-            assertArgument(false, "invalid JSON wallet", "json", "[ REDACTED ]");
-        }
-        const wallet = new Wallet(account.privateKey);
-        assertArgument(wallet.address === account.address, "address/privateKey mismatch", "json", "[ REDACTED ]");
-        // @TODO: mnemonic
-        return wallet;
+        return Wallet.#fromAccount(account);
     }
     static fromEncryptedJsonSync(json, password) {
         let account = null;
@@ -141,22 +59,21 @@ export class Wallet extends BaseWallet {
         else {
             assertArgument(false, "invalid JSON wallet", "json", "[ REDACTED ]");
         }
-        const wallet = new Wallet(account.privateKey);
-        assertArgument(wallet.address === account.address, "address/privateKey mismatch", "json", "[ REDACTED ]");
-        // @TODO: mnemonic
+        return Wallet.#fromAccount(account);
+    }
+    static createRandom(provider) {
+        const wallet = HDNodeWallet.createRandom();
+        if (provider) {
+            return wallet.connect(provider);
+        }
         return wallet;
     }
-    static createRandom(provider, password, wordlist) {
-        return new Wallet(Mnemonic.fromEntropy(randomBytes(16), password, wordlist), provider);
-    }
-    static fromMnemonic(mnemonic, provider) {
-        return new Wallet(mnemonic, provider);
-    }
-    static fromPhrase(phrase, provider, password, wordlist) {
-        if (password == null) {
-            password = "";
+    static fromPhrase(phrase, provider) {
+        const wallet = HDNodeWallet.fromPhrase(phrase);
+        if (provider) {
+            return wallet.connect(provider);
         }
-        return new Wallet(Mnemonic.fromPhrase(phrase, password, wordlist), provider);
+        return wallet;
     }
 }
 //# sourceMappingURL=wallet.js.map

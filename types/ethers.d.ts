@@ -18,5 +18,5 @@ export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 export type { Provider } from "./providers/index.js";
 export type { AccessList, AccessListish, AccessListSet, SignedTransaction, TransactionLike } from "./transaction/index.js";
 export type { BytesLike, BigNumberish, Numeric, ErrorCode, Utf8ErrorFunc, UnicodeNormalizationForm, Utf8ErrorReason, RlpStructuredData, GetUrlResponse, FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc, FetchGatewayFunc, FetchGetUrlFunc, EthersError, UnknownError, NotImplementedError, UnsupportedOperationError, NetworkError, ServerError, TimeoutError, BadDataError, CancelledError, BufferOverrunError, NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError, CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError, ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError, ActionRejectedError, CodedEthersError, } from "./utils/index.js";
-export type { KeystoreAccountParams, KeystoreAccount, EncryptOptions } from "./wallet/index.js";
+export type { KeystoreAccount, EncryptOptions } from "./wallet/index.js";
 //# sourceMappingURL=ethers.d.ts.map

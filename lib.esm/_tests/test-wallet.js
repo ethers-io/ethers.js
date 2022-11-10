@@ -69,4 +69,19 @@ describe("Test Typed-Data Signing (EIP-712)", function () {
         });
     }
 });
+describe("Test Wallet Encryption", function () {
+    const password = "foobar";
+    it("encrypts a wallet: sync", function () {
+        const wallet = Wallet.createRandom();
+        const json = wallet.encryptSync(password);
+        const decrypted = Wallet.fromEncryptedJsonSync(json, password);
+        assert.equal(decrypted.address, wallet.address, "address");
+    });
+    it("encrypts a wallet: async", async function () {
+        const wallet = Wallet.createRandom();
+        const json = await wallet.encrypt(password);
+        const decrypted = await Wallet.fromEncryptedJson(json, password);
+        assert.equal(decrypted.address, wallet.address, "address");
+    });
+});
 //# sourceMappingURL=test-wallet.js.map

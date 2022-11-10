@@ -6,6 +6,7 @@ const index_js_2 = require("../hash/index.js");
 const index_js_3 = require("../providers/index.js");
 const index_js_4 = require("../transaction/index.js");
 const index_js_5 = require("../utils/index.js");
+const json_keystore_js_1 = require("./json-keystore.js");
 class BaseWallet extends index_js_3.AbstractSigner {
     address;
     #signingKey;
@@ -21,6 +22,14 @@ class BaseWallet extends index_js_3.AbstractSigner {
     async getAddress() { return this.address; }
     connect(provider) {
         return new BaseWallet(this.#signingKey, provider);
+    }
+    async encrypt(password, progressCallback) {
+        const account = { address: this.address, privateKey: this.privateKey };
+        return await (0, json_keystore_js_1.encryptKeystoreJson)(account, password, { progressCallback });
+    }
+    encryptSync(password) {
+        const account = { address: this.address, privateKey: this.privateKey };
+        return (0, json_keystore_js_1.encryptKeystoreJsonSync)(account, password);
     }
     async signTransaction(tx) {
         // Replace any Addressable or ENS name with an address
@@ -54,6 +63,8 @@ class BaseWallet extends index_js_3.AbstractSigner {
     async signTypedData(domain, types, value) {
         // Populate any ENS names
         const populated = await index_js_2.TypedDataEncoder.resolveNames(domain, types, value, async (name) => {
+            // @TODO: this should use resolveName; addresses don't
+            //        need a provider
             (0, index_js_5.assert)(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
                 operation: "resolveName",
                 info: { name }

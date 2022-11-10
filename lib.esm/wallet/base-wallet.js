@@ -3,6 +3,7 @@ import { hashMessage, TypedDataEncoder } from "../hash/index.js";
 import { AbstractSigner } from "../providers/index.js";
 import { computeAddress, Transaction } from "../transaction/index.js";
 import { defineProperties, resolveProperties, assert, assertArgument } from "../utils/index.js";
+import { encryptKeystoreJson, encryptKeystoreJsonSync, } from "./json-keystore.js";
 export class BaseWallet extends AbstractSigner {
     address;
     #signingKey;
@@ -18,6 +19,14 @@ export class BaseWallet extends AbstractSigner {
     async getAddress() { return this.address; }
     connect(provider) {
         return new BaseWallet(this.#signingKey, provider);
+    }
+    async encrypt(password, progressCallback) {
+        const account = { address: this.address, privateKey: this.privateKey };
+        return await encryptKeystoreJson(account, password, { progressCallback });
+    }
+    encryptSync(password) {
+        const account = { address: this.address, privateKey: this.privateKey };
+        return encryptKeystoreJsonSync(account, password);
     }
     async signTransaction(tx) {
         // Replace any Addressable or ENS name with an address
@@ -51,6 +60,8 @@ export class BaseWallet extends AbstractSigner {
     async signTypedData(domain, types, value) {
         // Populate any ENS names
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name) => {
+            // @TODO: this should use resolveName; addresses don't
+            //        need a provider
             assert(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
                 operation: "resolveName",
                 info: { name }
