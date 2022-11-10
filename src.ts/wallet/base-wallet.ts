@@ -6,10 +6,17 @@ import {
     defineProperties, resolveProperties, assert, assertArgument
 } from "../utils/index.js";
 
+import {
+    encryptKeystoreJson, encryptKeystoreJsonSync,
+} from "./json-keystore.js";
+
 import type { SigningKey } from "../crypto/index.js";
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { Provider, TransactionRequest } from "../providers/index.js";
 import type { TransactionLike } from "../transaction/index.js";
+
+import type { ProgressCallback } from "../crypto/index.js";
+
 
 export class BaseWallet extends AbstractSigner {
     readonly address!: string;
@@ -32,6 +39,16 @@ export class BaseWallet extends AbstractSigner {
 
     connect(provider: null | Provider): BaseWallet {
         return new BaseWallet(this.#signingKey, provider);
+    }
+
+    async encrypt(password: Uint8Array | string, progressCallback?: ProgressCallback): Promise<string> {
+        const account = { address: this.address, privateKey: this.privateKey };
+        return await encryptKeystoreJson(account, password, { progressCallback });
+    }
+
+    encryptSync(password: Uint8Array | string): string {
+        const account = { address: this.address, privateKey: this.privateKey };
+        return encryptKeystoreJsonSync(account, password);
     }
 
     async signTransaction(tx: TransactionRequest): Promise<string> {
@@ -72,6 +89,9 @@ export class BaseWallet extends AbstractSigner {
 
         // Populate any ENS names
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name: string) => {
+            // @TODO: this should use resolveName; addresses don't
+            //        need a provider
+
             assert(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
                 operation: "resolveName",
                 info: { name }

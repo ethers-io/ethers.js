@@ -23,6 +23,5 @@ export { Wallet } from "./wallet.js";
 
 export type { CrowdsaleAccount } from "./json-crowdsale.js";
 export type {
-    KeystoreAccountParams, KeystoreAccount,
-    EncryptOptions
+    KeystoreAccount, EncryptOptions
 } from "./json-keystore.js"

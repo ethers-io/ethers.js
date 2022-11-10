@@ -194,21 +194,6 @@ export class HDNodeWallet extends BaseWallet {
             "m", 0, 0, mnemonic, null);
     }
 
-    static fromSeed(seed: BytesLike): HDNodeWallet {
-        return HDNodeWallet.#fromSeed(seed, null);
-    }
-
-    static fromPhrase(phrase: string, password: string = "", path: null | string = defaultPath, wordlist: Wordlist = langEn): HDNodeWallet {
-        if (!path) { path = defaultPath; }
-        const mnemonic = Mnemonic.fromPhrase(phrase, password, wordlist)
-        return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
-    }
-
-    static fromMnemonic(mnemonic: Mnemonic, path: null | string = defaultPath): HDNodeWallet {
-        if (!path) { path = defaultPath; }
-        return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
-    }
-
     static fromExtendedKey(extendedKey: string): HDNodeWallet | HDNodeVoidWallet {
         const bytes = getBytes(decodeBase58(extendedKey)); // @TODO: redact
 
@@ -240,10 +225,29 @@ export class HDNodeWallet extends BaseWallet {
         assertArgument(false, "invalid extended key prefix", "extendedKey", "[ REDACTED ]");
     }
 
-    static createRandom(password: string = "", path: null | string = defaultPath, wordlist: Wordlist = langEn): HDNodeWallet {
-        if (!path) { path = defaultPath; }
+    static createRandom(password?: string, path?: string, wordlist?: Wordlist): HDNodeWallet {
+        if (password == null) { password = ""; }
+        if (path == null) { path = defaultPath; }
+        if (wordlist == null) { wordlist = langEn; }
         const mnemonic = Mnemonic.fromEntropy(randomBytes(16), password, wordlist)
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
+    }
+
+    static fromMnemonic(mnemonic: Mnemonic, path?: string): HDNodeWallet {
+        if (!path) { path = defaultPath; }
+        return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
+    }
+
+    static fromPhrase(phrase: string, password?: string, path?: string, wordlist?: Wordlist): HDNodeWallet {
+        if (password == null) { password = ""; }
+        if (path == null) { path = defaultPath; }
+        if (wordlist == null) { wordlist = langEn; }
+        const mnemonic = Mnemonic.fromPhrase(phrase, password, wordlist)
+        return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
+    }
+
+    static fromSeed(seed: BytesLike): HDNodeWallet {
+        return HDNodeWallet.#fromSeed(seed, null);
     }
 }
 
