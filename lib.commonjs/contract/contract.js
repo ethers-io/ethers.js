@@ -96,6 +96,7 @@ async function resolveArgs(_runner, inputs, args) {
     const resolver = canResolve(runner) ? runner : null;
     return await Promise.all(inputs.map((param, index) => {
         return param.walkAsync(args[index], (type, value) => {
+            value = index_js_1.Typed.dereference(value, type);
             if (type === "address") {
                 return (0, index_js_2.resolveAddress)(value, resolver);
             }

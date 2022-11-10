@@ -31,7 +31,7 @@ function output(out, instance) {
         throw new Error(`digestInto() expects output buffer of length at least ${min}`);
     }
 }
-const assert = {
+const assert$1 = {
     number,
     bool,
     bytes,
@@ -145,7 +145,7 @@ const u64 = {
     add, add3L, add3H, add4L, add4H, add5H, add5L,
 };
 
-const version = "6.0.0-beta-exports.4";
+const version = "6.0.0-beta-exports.7";
 
 function defineReadOnly(object, name, value) {
     Object.defineProperty(object, name, {
@@ -295,22 +295,14 @@ function makeError(message, code, info) {
 }
 /**
  *  Throws an EthersError with %%message%%, %%code%% and additional error
- *  info.
+ *  %%info%% when %%check%% is falsish..
  *
  *  @see [[api:makeError]]
  */
-function throwError(message, code, info) {
-    throw makeError(message, code, info);
-}
-/**
- *  Throws an [[api:ArgumentError]] with %%message%% for the parameter with
- *  %%name%% and the %%value%%.
- */
-function throwArgumentError(message, name, value) {
-    return throwError(message, "INVALID_ARGUMENT", {
-        argument: name,
-        value: value
-    });
+function assert(check, message, code, info) {
+    if (!check) {
+        throw makeError(message, code, info);
+    }
 }
 /**
  *  A simple helper to simply ensuring provided arguments match expected
@@ -320,9 +312,7 @@ function throwArgumentError(message, name, value) {
  *  any further code does not need additional compile-time checks.
  */
 function assertArgument(check, message, name, value) {
-    if (!check) {
-        throwArgumentError(message, name, value);
-    }
+    assert(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
 }
 const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
     try {
@@ -351,11 +341,9 @@ const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
  *  Throws if the normalization %%form%% is not supported.
  */
 function assertNormalize(form) {
-    if (_normalizeForms.indexOf(form) === -1) {
-        throwError("platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
-            operation: "String.prototype.normalize", info: { form }
-        });
-    }
+    assert(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+        operation: "String.prototype.normalize", info: { form }
+    });
 }
 
 function _getBytes(value, name, copy) {
@@ -374,7 +362,7 @@ function _getBytes(value, name, copy) {
         }
         return result;
     }
-    return throwArgumentError("invalid BytesLike value", name || "value", value);
+    assertArgument(false, "invalid BytesLike value", name || "value", value);
 }
 /**
  *  Get a typed Uint8Array for %%value%%. If already a Uint8Array
@@ -401,7 +389,7 @@ function hexlify(data) {
 }
 
 function errorFunc(reason, offset, bytes, output, badCodepoint) {
-    return throwArgumentError(`invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
+    assertArgument(false, `invalid codepoint at offset ${offset}; ${reason}`, "bytes", bytes);
 }
 function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
     // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
@@ -543,9 +531,7 @@ function toUtf8Bytes(str, form) {
         else if ((c & 0xfc00) == 0xd800) {
             i++;
             const c2 = str.charCodeAt(i);
-            if (i >= str.length || (c2 & 0xfc00) !== 0xdc00) {
-                throw new Error("invalid utf-8 string");
-            }
+            assertArgument(i < str.length && ((c2 & 0xfc00) === 0xdc00), "invalid surrogate pair", "str", str);
             // Surrogate Pair
             const pair = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
             result.push((pair >> 18) | 0xf0);
@@ -661,7 +647,7 @@ class Keccak extends Hash {
         this.finished = false;
         this.destroyed = false;
         // Can be passed from user as dkLen
-        assert.number(outputLen);
+        assert$1.number(outputLen);
         // 1600 = 5x5 matrix of 64bit.  1600 bits === 200 bytes
         if (0 >= this.blockLen || this.blockLen >= 200)
             throw new Error('Sha3 supports only keccak-f1600 function');
@@ -674,7 +660,7 @@ class Keccak extends Hash {
         this.pos = 0;
     }
     update(data) {
-        assert.exists(this);
+        assert$1.exists(this);
         const { blockLen, state } = this;
         data = toBytes(data);
         const len = data.length;
@@ -700,8 +686,8 @@ class Keccak extends Hash {
         this.keccak();
     }
     writeInto(out) {
-        assert.exists(this, false);
-        assert.bytes(out);
+        assert$1.exists(this, false);
+        assert$1.bytes(out);
         this.finish();
         const bufferOut = this.state;
         const { blockLen } = this;
@@ -722,11 +708,11 @@ class Keccak extends Hash {
         return this.writeInto(out);
     }
     xof(bytes) {
-        assert.number(bytes);
+        assert$1.number(bytes);
         return this.xofInto(new Uint8Array(bytes));
     }
     digestInto(out) {
-        assert.output(out, this);
+        assert$1.output(out, this);
         if (this.finished)
             throw new Error('digest() was already called');
         this.writeInto(out);
@@ -894,9 +880,7 @@ class WordlistOwl extends Wordlist {
     }
     getWord(index) {
         const words = this.#loadWords();
-        if (index < 0 || index >= words.length) {
-            throwArgumentError(`invalid word index: ${index}`, "index", index);
-        }
+        assertArgument(index >= 0 && index < words.length, `invalid word index: ${index}`, "index", index);
         return words[index];
     }
     getWordIndex(word) {
@@ -1102,9 +1086,7 @@ class LangJa extends Wordlist {
     constructor() { super("ja"); }
     getWord(index) {
         const words = loadWords$2();
-        if (index < 0 || index >= words.length) {
-            throwArgumentError(`invalid word index: ${index}`, "index", index);
-        }
+        assertArgument(index >= 0 && index < words.length, `invalid word index: ${index}`, "index", index);
         return words[index];
     }
     getWordIndex(word) {
@@ -1174,9 +1156,7 @@ class LangKo extends Wordlist {
     }
     getWord(index) {
         const words = loadWords$1();
-        if (index < 0 || index >= words.length) {
-            throwArgumentError(`invalid word index: ${index}`, "index", index);
-        }
+        assertArgument(index >= 0 && index < words.length, `invalid word index: ${index}`, "index", index);
         return words[index];
     }
     getWordIndex(word) {
@@ -1246,9 +1226,7 @@ class LangZh extends Wordlist {
     constructor(country) { super("zh_" + country); }
     getWord(index) {
         const words = loadWords(this.locale);
-        if (index < 0 || index >= words.length) {
-            throwArgumentError(`invalid word index: ${index}`, "index", index);
-        }
+        assertArgument(index >= 0 && index < words.length, `invalid word index: ${index}`, "index", index);
         return words[index];
     }
     getWordIndex(word) {

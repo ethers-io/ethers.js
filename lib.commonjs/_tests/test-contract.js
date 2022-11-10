@@ -147,6 +147,66 @@ describe("Test Contract", function () {
         await allEvents;
     });
 });
+describe("Test Typed Contract Interaction", function () {
+    const tests = [
+        {
+            types: ["uint8", "uint16", "uint24", "uint32", "uint40", "uint48", "uint56", "uint64", "uint72", "uint80", "uint88", "uint96", "uint104", "uint112", "uint120", "uint128", "uint136", "uint144", "uint152", "uint160", "uint168", "uint176", "uint184", "uint192", "uint200", "uint208", "uint216", "uint224", "uint232", "uint240", "uint248", "uint256", "int8", "int16", "int24", "int32", "int40", "int48", "int56", "int64", "int72", "int80", "int88", "int96", "int104", "int112", "int120", "int128", "int136", "int144", "int152", "int160", "int168", "int176", "int184", "int192", "int200", "int208", "int216", "int224", "int232", "int240", "int248", "int256"],
+            valueFunc: (type) => { return 42; }
+        },
+        {
+            types: [
+                "bytes1", "bytes2", "bytes3", "bytes4", "bytes5", "bytes6", "bytes7", "bytes8", "bytes9", "bytes10", "bytes11", "bytes12", "bytes13", "bytes14", "bytes15", "bytes16", "bytes17", "bytes18", "bytes19", "bytes20", "bytes21", "bytes22", "bytes23", "bytes24", "bytes25", "bytes26", "bytes27", "bytes28", "bytes29", "bytes30", "bytes31", "bytes32",
+                "bytes"
+            ],
+            valueFunc: (type) => {
+                const length = type.substring(5);
+                if (length) {
+                    const value = new Uint8Array(parseInt(length));
+                    value.fill(42);
+                    return value;
+                }
+                return "0x123456";
+            }
+        }, {
+            types: ["bool"],
+            valueFunc: (type) => { return true; }
+        }, {
+            types: ["address"],
+            valueFunc: (type) => { return "0x643aA0A61eADCC9Cc202D1915D942d35D005400C"; }
+        }, {
+            types: ["string"],
+            valueFunc: (type) => { return "someString"; }
+        }
+    ];
+    const abi = [];
+    for (let i = 1; i <= 32; i++) {
+        abi.push(`function testTyped(uint${i * 8}) public pure returns (string memory)`);
+        abi.push(`function testTyped(int${i * 8}) public pure returns (string memory)`);
+        abi.push(`function testTyped(bytes${i}) public pure returns (string memory)`);
+    }
+    abi.push(`function testTyped(address) public pure returns (string memory)`);
+    abi.push(`function testTyped(bool) public pure returns (string memory)`);
+    abi.push(`function testTyped(bytes memory) public pure returns (string memory)`);
+    abi.push(`function testTyped(string memory) public pure returns (string memory)`);
+    const addr = "0x838f41545DA5e18AA0e1ab391085d22E172B7B02";
+    const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", "goerli");
+    const contract = new index_js_1.Contract(addr, abi, provider);
+    for (const { types, valueFunc } of tests) {
+        for (const type of types) {
+            const value = valueFunc(type);
+            it(`tests typed value: Typed.from(${type})`, async function () {
+                const v = index_js_1.Typed.from(type, value);
+                const result = await contract.testTyped(v);
+                assert_1.default.equal(result, type);
+            });
+            it(`tests typed value: Typed.${type}()`, async function () {
+                const v = index_js_1.Typed[type](value);
+                const result = await contract.testTyped(v);
+                assert_1.default.equal(result, type);
+            });
+        }
+    }
+});
 /*
 describe("Test Contract Calls", function() {
     it("finds typed methods", async function() {

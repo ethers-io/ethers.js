@@ -99,7 +99,6 @@ export declare class Typed {
     static int248(v: BigNumberish): Typed;
     static int256(v: BigNumberish): Typed;
     static int(v: BigNumberish): Typed;
-    static bytes(v: BytesLike): Typed;
     static bytes1(v: BytesLike): Typed;
     static bytes2(v: BytesLike): Typed;
     static bytes3(v: BytesLike): Typed;
@@ -134,6 +133,7 @@ export declare class Typed {
     static bytes32(v: BytesLike): Typed;
     static address(v: string | Addressable): Typed;
     static bool(v: any): Typed;
+    static bytes(v: BytesLike): Typed;
     static string(v: string): Typed;
     static array(v: Array<any | Typed>, dynamic?: null | boolean): Typed;
     static tuple(v: Array<any | Typed> | Record<string, any | Typed>, name?: string): Typed;

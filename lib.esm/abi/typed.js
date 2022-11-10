@@ -1,4 +1,4 @@
-import { defineProperties } from "../utils/index.js";
+import { assertPrivate, defineProperties } from "../utils/index.js";
 const _gaurd = {};
 function n(value, width) {
     let signed = false;
@@ -20,9 +20,7 @@ export class Typed {
     #options;
     _typedSymbol;
     constructor(gaurd, type, value, options = null) {
-        if (gaurd !== _gaurd) {
-            throw new Error("private constructor");
-        }
+        assertPrivate(_gaurd, gaurd, "Typed");
         defineProperties(this, { _typedSymbol, type, value });
         this.#options = options;
         // Check the value is valid
@@ -88,7 +86,7 @@ export class Typed {
     static uint24(v) { return n(v, 24); }
     static uint32(v) { return n(v, 32); }
     static uint40(v) { return n(v, 40); }
-    static uint48(v) { return n(v, 46); }
+    static uint48(v) { return n(v, 48); }
     static uint56(v) { return n(v, 56); }
     static uint64(v) { return n(v, 64); }
     static uint72(v) { return n(v, 72); }
@@ -121,7 +119,7 @@ export class Typed {
     static int24(v) { return n(v, -24); }
     static int32(v) { return n(v, -32); }
     static int40(v) { return n(v, -40); }
-    static int48(v) { return n(v, -46); }
+    static int48(v) { return n(v, -48); }
     static int56(v) { return n(v, -56); }
     static int64(v) { return n(v, -64); }
     static int72(v) { return n(v, -72); }
@@ -149,7 +147,6 @@ export class Typed {
     static int248(v) { return n(v, -248); }
     static int256(v) { return n(v, -256); }
     static int(v) { return n(v, -256); }
-    static bytes(v) { return b(v); }
     static bytes1(v) { return b(v, 1); }
     static bytes2(v) { return b(v, 2); }
     static bytes3(v) { return b(v, 3); }
@@ -184,6 +181,7 @@ export class Typed {
     static bytes32(v) { return b(v, 32); }
     static address(v) { return new Typed(_gaurd, "address", v); }
     static bool(v) { return new Typed(_gaurd, "bool", !!v); }
+    static bytes(v) { return new Typed(_gaurd, "bytes", v); }
     static string(v) { return new Typed(_gaurd, "string", v); }
     static array(v, dynamic) {
         throw new Error("not implemented yet");
