@@ -162,7 +162,6 @@ export type {
 } from "./utils/index.js";
 
 export type {
-    KeystoreAccountParams, KeystoreAccount,
-    EncryptOptions
+    KeystoreAccount, EncryptOptions
 } from "./wallet/index.js";
 
