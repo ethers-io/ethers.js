@@ -1,4 +1,4 @@
-import { defineProperties } from "../utils/index.js";
+import { assertPrivate, defineProperties } from "../utils/index.js";
 
 import type { Addressable } from "../address/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
@@ -54,7 +54,7 @@ export class Typed {
     readonly _typedSymbol!: Symbol;
 
     constructor(gaurd: any, type: string, value: any, options: any = null) {
-        if (gaurd !== _gaurd) { throw new Error("private constructor"); }
+        assertPrivate(_gaurd, gaurd, "Typed");
         defineProperties<Typed>(this, { _typedSymbol, type, value });
         this.#options = options;
 
@@ -123,7 +123,7 @@ export class Typed {
     static uint24(v: BigNumberish): Typed { return n(v, 24); }
     static uint32(v: BigNumberish): Typed { return n(v, 32); }
     static uint40(v: BigNumberish): Typed { return n(v, 40); }
-    static uint48(v: BigNumberish): Typed { return n(v, 46); }
+    static uint48(v: BigNumberish): Typed { return n(v, 48); }
     static uint56(v: BigNumberish): Typed { return n(v, 56); }
     static uint64(v: BigNumberish): Typed { return n(v, 64); }
     static uint72(v: BigNumberish): Typed { return n(v, 72); }
@@ -157,7 +157,7 @@ export class Typed {
     static int24(v: BigNumberish): Typed { return n(v, -24); }
     static int32(v: BigNumberish): Typed { return n(v, -32); }
     static int40(v: BigNumberish): Typed { return n(v, -40); }
-    static int48(v: BigNumberish): Typed { return n(v, -46); }
+    static int48(v: BigNumberish): Typed { return n(v, -48); }
     static int56(v: BigNumberish): Typed { return n(v, -56); }
     static int64(v: BigNumberish): Typed { return n(v, -64); }
     static int72(v: BigNumberish): Typed { return n(v, -72); }
@@ -186,7 +186,6 @@ export class Typed {
     static int256(v: BigNumberish): Typed { return n(v, -256); }
     static int(v: BigNumberish): Typed { return n(v, -256); }
 
-    static bytes(v: BytesLike): Typed { return b(v); }
     static bytes1(v: BytesLike): Typed { return b(v, 1); }
     static bytes2(v: BytesLike): Typed { return b(v, 2); }
     static bytes3(v: BytesLike): Typed { return b(v, 3); }
@@ -222,6 +221,7 @@ export class Typed {
 
     static address(v: string | Addressable): Typed { return new Typed(_gaurd, "address", v); }
     static bool(v: any): Typed { return new Typed(_gaurd, "bool", !!v); }
+    static bytes(v: BytesLike): Typed { return new Typed(_gaurd, "bytes", v); }
     static string(v: string): Typed { return new Typed(_gaurd, "string", v); }
 
     static array(v: Array<any | Typed>, dynamic?: null | boolean): Typed {
