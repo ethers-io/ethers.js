@@ -69,7 +69,7 @@ import { Eip1193Bridge } from "@ethersproject/experimental/retry-provider";
 const signer = "... any way you get an ethers Signer...";
 const provider = "... any way you get an ethers Provider...";
 
-const eip1193Provider = new Eip1193Provider(signer, provider);
+const eip1193Provider = new Eip1193Bridge(signer, provider);
 
 ```
 
