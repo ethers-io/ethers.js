@@ -357,7 +357,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
 
     // Payloads are queued and triggered in batches using the drainTimer
     #payloads: Array<Payload>;
-    #drainTimer: null | NodeJS.Timer;
+    #drainTimer: null | ReturnType<typeof setTimeout>;
 
     #notReady: null | {
         promise: Promise<void>,
