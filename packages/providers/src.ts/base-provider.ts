@@ -720,8 +720,8 @@ export class BaseProvider extends Provider implements EnsProvider {
     _emitted: { [ eventName: string ]: number | "pending" };
 
     _pollingInterval: number;
-    _poller: NodeJS.Timer;
-    _bootstrapPoll: NodeJS.Timer;
+    _poller: ReturnType<typeof setTimeout>;
+    _bootstrapPoll: ReturnType<typeof setTimeout>;
 
     _lastBlockNumber: number;
     _maxFilterBlockRange: number;
