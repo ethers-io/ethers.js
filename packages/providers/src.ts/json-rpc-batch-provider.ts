@@ -7,7 +7,7 @@ import { JsonRpcProvider } from "./json-rpc-provider";
 // Experimental
 
 export class JsonRpcBatchProvider extends JsonRpcProvider {
-    _pendingBatchAggregator: NodeJS.Timer;
+    _pendingBatchAggregator: ReturnType<typeof setTimeout>;
     _pendingBatch: Array<{
         request: { method: string, params: Array<any>, id: number, jsonrpc: "2.0" },
         resolve: (result: any) => void,
