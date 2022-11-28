@@ -13,6 +13,11 @@ const _keccak256 = function(data: Uint8Array): Uint8Array {
 
 let __keccak256: (data: Uint8Array) => BytesLike = _keccak256;
 
+/**
+ *  Compute the cryptographic KECCAK256 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 export function keccak256(_data: BytesLike): string {
     const data = getBytes(_data, "data");
     return hexlify(__keccak256(data));

@@ -1,12 +1,12 @@
 import { ZeroHash } from "../constants/index.js";
 import {
-    concat, dataLength, getBigInt, getBytes, getNumber, getStore, hexlify,
-    isHexString, setStore,
+    concat, dataLength, getBigInt, getBytes, getNumber, hexlify,
+    isHexString,
     assertArgument, assertPrivate
 } from "../utils/index.js";
 
 import type {
-    BigNumberish, BytesLike, Freezable, Frozen
+    BigNumberish, BytesLike
 } from "../utils/index.js";
 
 
@@ -42,41 +42,84 @@ export type SignatureLike = Signature | string | {
     yParityAndS?: string;
 };
 
+/**
+ *  A Signature  @TODO
+ */
+export class Signature {
+    #r: string;
+    #s: string;
+    #v: 27 | 28;
+    #networkV: null | bigint;
 
-export class Signature implements Freezable<Signature> {
-    #props: { r: string, s: string, v: 27 | 28, networkV: null | bigint };
-
-    get r(): string { return getStore(this.#props, "r"); }
+    /**
+     *  The ``r`` value for a signautre.
+     *
+     *  This represents the ``x`` coordinate of a "reference" or
+     *  challenge point, from which the ``y`` can be computed.
+     */
+    get r(): string { return this.#r; }
     set r(value: BytesLike) {
         assertArgument(dataLength(value) === 32, "invalid r", "value", value);
-        setStore(this.#props, "r", hexlify(value));
+        this.#r = hexlify(value);
     }
 
-    get s(): string { return getStore(this.#props, "s"); }
-    set s(value: BytesLike) {
-        assertArgument(dataLength(value) === 32, "invalid r", "value", value);
-        assertArgument((getBytes(value)[0] & 0x80) === 0, "non-canonical s", "value", value);
-        setStore(this.#props, "s", hexlify(value));
+    /**
+     *  The ``s`` value for a signature.
+     */
+    get s(): string { return this.#s; }
+    set s(_value: BytesLike) {
+        assertArgument(dataLength(_value) === 32, "invalid r", "value", _value);
+        const value = hexlify(_value);
+        assertArgument(parseInt(value.substring(0, 3)) < 8, "non-canonical s", "value", value);
+        this.#s = value;
     }
 
-    get v(): 27 | 28 { return getStore(this.#props, "v"); }
+    /**
+     *  The ``v`` value for a signature.
+     *
+     *  Since a given ``x`` value for ``r`` has two possible values for
+     *  its correspondin ``y``, the ``v`` indicates which of the two ``y``
+     *  values to use.
+     *
+     *  It is normalized to the values ``27`` or ``28`` for legacy
+     *  purposes.
+     */
+    get v(): 27 | 28 { return this.#v; }
     set v(value: BigNumberish) {
         const v = getNumber(value, "value");
         assertArgument(v === 27 || v === 28, "invalid v", "v", value);
-        setStore(this.#props, "v", v);
+        this.#v = v;
     }
 
-    get networkV(): null | bigint { return getStore(this.#props, "networkV"); }
+    /**
+     *  The EIP-155 ``v`` for legacy transactions. For non-legacy
+     *  transactions, this value is ``null``.
+     */
+    get networkV(): null | bigint { return this.#networkV; }
+
+    /**
+     *  The chain ID for EIP-155 legacy transactions. For non-legacy
+     *  transactions, this value is ``null``.
+     */
     get legacyChainId(): null | bigint {
         const v = this.networkV;
         if (v == null) { return null; }
         return Signature.getChainId(v);
     }
 
+    /**
+     *  The ``yParity`` for the signature.
+     *
+     *  See ``v`` for more details on how this value is used.
+     */
     get yParity(): 0 | 1 {
         return (this.v === 27) ? 0: 1;
     }
 
+    /**
+     *  The [[link-eip-2098]] compact representation of the ``yParity``
+     *  and ``s`` compacted into a single ``bytes32``.
+     */
     get yParityAndS(): string {
         // The EIP-2098 compact representation
         const yParityAndS = getBytes(this.s);
@@ -84,38 +127,47 @@ export class Signature implements Freezable<Signature> {
         return hexlify(yParityAndS);
     }
 
+    /**
+     *  The [[link-eip-2098]] compact representation.
+     */
     get compactSerialized(): string {
         return concat([ this.r, this.yParityAndS ]);
     }
 
+    /**
+     *  The serialized representation.
+     */
     get serialized(): string {
         return concat([ this.r, this.s, (this.yParity ? "0x1c": "0x1b") ]);
     }
 
+    /**
+     *  @private
+     */
     constructor(guard: any, r: string, s: string, v: 27 | 28) {
         assertPrivate(guard, _guard, "Signature");
-        this.#props = { r, s, v, networkV: null };
+        this.#r = r;
+        this.#s = s;
+        this.#v = v;
+        this.#networkV = null;
     }
 
     [Symbol.for('nodejs.util.inspect.custom')](): string {
         return `Signature { r: "${ this.r }", s: "${ this.s }", yParity: ${ this.yParity }, networkV: ${ this.networkV } }`;
     }
 
+    /**
+     *  Returns a new identical [[Signature]].
+     */
     clone(): Signature {
         const clone = new Signature(_guard, this.r, this.s, this.v);
-        if (this.networkV) { setStore(clone.#props, "networkV", this.networkV); }
+        if (this.networkV) { clone.#networkV = this.networkV; }
         return clone;
     }
 
-    freeze(): Frozen<Signature> {
-        Object.freeze(this.#props);
-        return this;
-    }
-
-    isFrozen(): boolean {
-        return Object.isFrozen(this.#props);
-    }
-
+    /**
+     *  Returns a representation that is compatible with ``JSON.stringify``.
+     */
     toJSON(): any {
         const networkV = this.networkV;
         return {
@@ -125,7 +177,9 @@ export class Signature implements Freezable<Signature> {
         };
     }
 
-    // Get the chain ID from an EIP-155 v
+    /**
+     *  Compute the chain ID from an EIP-155 ``v`` for legacy transactions.
+     */
     static getChainId(v: BigNumberish): bigint {
         const bv = getBigInt(v, "v");
 
@@ -138,12 +192,16 @@ export class Signature implements Freezable<Signature> {
         return (bv - BN_35) / BN_2;
     }
 
-    // Get the EIP-155 v transformed for a given chainId
+    /**
+     *  Compute the EIP-155 ``v`` for a chain ID for legacy transactions.
+     */
     static getChainIdV(chainId: BigNumberish, v: 27 | 28): bigint {
         return (getBigInt(chainId) * BN_2) + BigInt(35 + v - 27);
     }
 
-    // Convert an EIP-155 v into a normalized v
+    /**
+     *  Compute the normalized EIP-155 ``v`` for legacy transactions.
+     */
     static getNormalizedV(v: BigNumberish): 27 | 28 {
         const bv = getBigInt(v);
 
@@ -154,6 +212,14 @@ export class Signature implements Freezable<Signature> {
         return (bv & BN_1) ? 27: 28;
     }
 
+    /**
+     *  Creates a new [[Signature]].
+     *
+     *  If no %%sig%% is provided, a new [[Signature]] is created
+     *  with default values.
+     *
+     *  If %%sig%% is a string, it is parsed.
+     */
     static from(sig?: SignatureLike): Signature {
         function assertError(check: unknown, message: string): asserts check {
             assertArgument(check, message, "signature", sig);
@@ -236,7 +302,7 @@ export class Signature implements Freezable<Signature> {
         })(sig.v, sig.yParityAndS, sig.yParity);
 
         const result = new Signature(_guard, r, s, v);
-        if (networkV) { setStore(result.#props, "networkV", networkV); }
+        if (networkV) { result.#networkV =  networkV; }
 
         // If multiple of v, yParity, yParityAndS we given, check they match
         assertError(!("yParity" in sig && sig.yParity !== result.yParity), "yParity mismatch");

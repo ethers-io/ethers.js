@@ -19,6 +19,11 @@ let __sha512: (data: Uint8Array) => BytesLike = _sha512;
 let locked256 = false, locked512 = false;
 
 
+/**
+ *  Compute the cryptographic SHA2-256 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 export function sha256(_data: BytesLike): string {
     const data = getBytes(_data, "data");
     return hexlify(__sha256(data));
@@ -31,6 +36,12 @@ sha256.register = function(func: (data: Uint8Array) => BytesLike): void {
 }
 Object.freeze(sha256);
 
+
+/**
+ *  Compute the cryptographic SHA2-512 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 export function sha512(_data: BytesLike): string {
     const data = getBytes(_data, "data");
     return hexlify(__sha512(data));

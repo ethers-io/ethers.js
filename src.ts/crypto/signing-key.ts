@@ -9,7 +9,7 @@ import {
 import { computeHmac } from "./hmac.js";
 import { Signature } from "./signature.js";
 
-import type { BytesLike, Frozen } from "../utils/index.js";
+import type { BytesLike } from "../utils/index.js";
 
 import type { SignatureLike } from "./index.js";
 
@@ -25,12 +25,7 @@ export class SigningKey {
     #privateKey: string;
 
     constructor(privateKey: BytesLike) {
-        /* @TODO
-        logger.assertArgument(() => {
-            if (dataLength(privateKey) !== 32) { throw new Error("bad length"); }
-            return toBigInt(privateKey) < N;
-        }, "invalid private key", "privateKey", "[REDACTED]");
-        */
+        assertArgument(dataLength(privateKey) === 32, "invalid private key", "privateKey", "[REDACTED]");
         this.#privateKey = hexlify(privateKey);
     }
 
@@ -38,7 +33,7 @@ export class SigningKey {
     get publicKey(): string { return SigningKey.computePublicKey(this.#privateKey); }
     get compressedPublicKey(): string { return SigningKey.computePublicKey(this.#privateKey, true); }
 
-    sign(digest: BytesLike): Frozen<Signature> {
+    sign(digest: BytesLike): Signature {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
 
         const [ sigDer, recid ] = secp256k1.signSync(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
@@ -51,7 +46,7 @@ export class SigningKey {
             r: toHex("0x" + sig.r.toString(16), 32),
             s: toHex("0x" + sig.s.toString(16), 32),
             v: (recid ? 0x1c: 0x1b)
-        }).freeze();
+        });
     }
 
     computeShardSecret(other: BytesLike): string {

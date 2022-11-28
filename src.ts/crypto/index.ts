@@ -1,3 +1,9 @@
+/**
+ *  About Crypto?
+ *
+ *  @_section: api/crypto:Cryptographic Functions   [crypto]
+ */
+
 // We import all these so we can export lock()
 import { computeHmac } from "./hmac.js";
 import { keccak256 } from "./keccak.js";
