@@ -1,3 +1,8 @@
+/**
+ *  About hashing here...
+ *
+ *  @_section: api/hashing:Hashing Utilities  [hashing]
+ */
 
 export { id } from "./id.js"
 export { isValidName, namehash, dnsEncode } from "./namehash.js";

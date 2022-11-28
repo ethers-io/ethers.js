@@ -86,10 +86,9 @@ export function solidityPacked(types: ReadonlyArray<string>, values: ReadonlyArr
  *   @param {Array<string>} types - The Solidity types to interpret each value as [default: bar]
  *   @param {Array<any>} values - The values to pack
  *
- *   @returns: {HexString} the hexstring of the hash
  *   @example:
  *       solidityPackedKeccak256([ "address", "uint" ], [ "0x1234", 45 ]);
- *       //_result:
+ *       / /_result:
  *
  *   @see https://docs.soliditylang.org/en/v0.8.14/abi-spec.html#non-standard-packed-mode
  */
