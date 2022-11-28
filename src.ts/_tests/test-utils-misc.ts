@@ -2,6 +2,7 @@ import assert from "assert";
 
 import {
     decodeBase64, encodeBase64,
+    defineProperties, isError,
     toUtf8Bytes
 } from "../index.js";
 
@@ -30,4 +31,47 @@ describe("Base64 Coding", function() {
             }
         });
     }
-})
+});
+
+describe("Test Minor Features", function() {
+    it("checks types in defineProperties", function() {
+        const any = { };
+
+        const values = {
+            vAny: any,
+            vBigint: BigInt(60),
+            vBoolean: true,
+            vNumber: 42,
+            vString: "some string",
+        };
+
+        const item: any = { };
+        defineProperties(item, values, {
+            vAny: "any",
+            vBigint: "bigint",
+            vBoolean: "boolean",
+            vNumber: "number",
+            vString: "string"
+        });
+
+        assert.equal(item.vAny, any, "vAny");
+        assert.equal(item.vBoolean, true, "vBoolenay");
+        assert.equal(item.vNumber, 42, "nNumber");
+        assert.equal(item.vString, "some string", "any");
+    });
+
+    it("correctly throws if defineProperty type mismatch", function() {
+        assert.throws(() => {
+            const item: any = { };
+
+            const values = { vBoolean: 42 };
+            defineProperties(item, values, { vBoolean: "boolean" });
+
+            console.log(values);
+        }, (error) => {
+            return (isError(error, "INVALID_ARGUMENT") &&
+                error.argument === "value.vBoolean" &&
+                error.value === 42);
+        });
+    });
+});

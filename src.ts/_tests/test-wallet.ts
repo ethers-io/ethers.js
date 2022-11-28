@@ -7,7 +7,9 @@ import type {
 } from "./types.js";
 
 
-import { Wallet } from "../index.js";
+import { hexlify, randomBytes, Wallet } from "../index.js";
+
+import type { HDNodeWallet } from "../index.js";
 
 
 describe("Test Private Key Wallet", function() {
@@ -85,17 +87,25 @@ describe("Test Typed-Data Signing (EIP-712)", function() {
 describe("Test Wallet Encryption", function() {
     const password = "foobar";
 
-    it("encrypts a wallet: sync", function() {
-        const wallet = Wallet.createRandom();
-        const json = wallet.encryptSync(password);
-        const decrypted = Wallet.fromEncryptedJsonSync(json, password);
-        assert.equal(decrypted.address, wallet.address, "address");
-    });
+    // Loop:
+    //  1 : random wallet (uses HDNodeWallet under the hood)
+    //  2 : Wallet using private key (uses Wallet explicitly)
 
-    it("encrypts a wallet: async", async function() {
-        const wallet = Wallet.createRandom();
-        const json = await wallet.encrypt(password);
-        const decrypted = await Wallet.fromEncryptedJson(json, password);
-        assert.equal(decrypted.address, wallet.address, "address");
-    });
+    for (let i = 0; i < 2; i++) {
+        let wallet: Wallet | HDNodeWallet = Wallet.createRandom();
+
+        it("encrypts a random wallet: sync", function() {
+            const json = wallet.encryptSync(password);
+            const decrypted = Wallet.fromEncryptedJsonSync(json, password);
+            assert.equal(decrypted.address, wallet.address, "address");
+        });
+
+        it("encrypts a random wallet: async", async function() {
+            const json = await wallet.encrypt(password);
+            const decrypted = await Wallet.fromEncryptedJson(json, password);
+            assert.equal(decrypted.address, wallet.address, "address");
+        });
+
+        wallet = new Wallet(hexlify(randomBytes(32)));
+    }
 });

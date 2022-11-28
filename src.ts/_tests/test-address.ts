@@ -35,7 +35,7 @@ describe("computes checksum address", function() {
     ];
 
     invalidAddresses.forEach(({ name, value }) => {
-        it(`fails on invalid address: ${ name }`, function() {
+        it(`correctly fails on invalid address: ${ name }`, function() {
             assert.throws(function() {
                 getAddress(value);
             }, function(error: any) {
@@ -47,7 +47,7 @@ describe("computes checksum address", function() {
         });
     });
 
-    it("fails on invalid checksum", function() {
+    it("correctly fails on invalid checksum", function() {
         const value = "0x8ba1f109551bD432803012645Ac136ddd64DBa72"
         assert.throws(function() {
             getAddress(value);
@@ -59,7 +59,7 @@ describe("computes checksum address", function() {
         });
     });
 
-    it("fails on invalid IBAN checksum", function() {
+    it("correctly fails on invalid IBAN checksum", function() {
         const value = "XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK37";
         assert.throws(function() {
             getAddress(value);
@@ -108,7 +108,7 @@ describe("computes create2 address", function() {
     const salt = "0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8";
     const initCodeHash = "0x8452c9b9140222b08593a26daa782707297be9f7b3e8281d7b4974769f19afd0";
 
-    it("fails on invalid salt", function() {
+    it("correctly fails on invalid salt", function() {
         const badSalt = "0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36dea";
         assert.throws(function() {
             getCreate2Address(sender, badSalt, initCodeHash);
@@ -119,7 +119,7 @@ describe("computes create2 address", function() {
         });
     });
 
-    it("fails on invalid initCodeHash", function() {
+    it("correctly fails on invalid initCodeHash", function() {
         const badInitCodeHash = "0x8452c9b9140222b08593a26daa782707297be9f7b3e8281d7b4974769f19af";
         assert.throws(function() {
             getCreate2Address(sender, salt, badInitCodeHash);
