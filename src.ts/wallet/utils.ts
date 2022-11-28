@@ -1,9 +1,10 @@
+/**
+ *  @_ignore
+ */
+
 import {
-    getBytes, getBytesCopy, hexlify, assertArgument, toUtf8Bytes
+    getBytesCopy, assertArgument, toUtf8Bytes
 } from "../utils/index.js";
-
-import type { BytesLike } from "../utils/index.js";
-
 
 export function looseArrayify(hexString: string): Uint8Array {
     if (typeof(hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
@@ -25,7 +26,7 @@ export function getPassword(password: string | Uint8Array): Uint8Array {
     return getBytesCopy(password);
 }
 
-export function spelunk<T = string>(object: any, _path: string): T {
+export function spelunk<T>(object: any, _path: string): T {
 
     const match = _path.match(/^([a-z0-9$_.-]*)(:([a-z]+))?(!)?$/i);
     assertArgument(match != null, "invalid path", "path", _path);
@@ -120,6 +121,7 @@ export function followRequired(data: any, path: string): string {
 }
 */
 // See: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
+/*
 export function uuidV4(randomBytes: BytesLike): string {
     const bytes = getBytes(randomBytes, "randomBytes");
 
@@ -142,4 +144,4 @@ export function uuidV4(randomBytes: BytesLike): string {
        value.substring(22, 34),
     ].join("-");
 }
-
+*/

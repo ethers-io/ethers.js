@@ -1,13 +1,24 @@
+/**
+ *  The JSON Wallet formats allow a simple way to store the private
+ *  keys needed in Ethereum along with related information and allows
+ *  for extensible forms of encryption.
+ *
+ *  These utilities facilitate decrypting and encrypting the most common
+ *  JSON Wallet formats.
+ *
+ *  @_subsection: api/wallet:JSON Wallets  [json-wallets]
+ */
+
 import { CTR } from "aes-js";
 
 import { getAddress } from "../address/index.js";
 import { keccak256, pbkdf2, randomBytes, scrypt, scryptSync } from "../crypto/index.js";
 import { computeAddress } from "../transaction/index.js";
 import {
-    concat, getBytes, hexlify, assert, assertArgument
+    concat, getBytes, hexlify, uuidV4, assert, assertArgument
 } from "../utils/index.js";
 
-import { getPassword, spelunk, uuidV4, zpad } from "./utils.js";
+import { getPassword, spelunk, zpad } from "./utils.js";
 
 import type { ProgressCallback } from "../crypto/index.js";
 import type { BytesLike } from "../utils/index.js";
@@ -17,7 +28,9 @@ import { version } from "../_version.js";
 
 const defaultPath = "m/44'/60'/0'/0/0";
 
-
+/**
+ *  The contents of a JSON Keystore Wallet.
+ */
 export type KeystoreAccount = {
     address: string;
     privateKey: string;
@@ -28,6 +41,9 @@ export type KeystoreAccount = {
     }
 };
 
+/**
+ *  The parameters to use when encrypting a JSON Keystore Wallet.
+ */
 export type EncryptOptions = {
    progressCallback?: ProgressCallback;
    iv?: BytesLike;
@@ -42,6 +58,9 @@ export type EncryptOptions = {
    }
 }
 
+/**
+ *  Returns true if %%json%% is a valid JSON Keystore Wallet.
+ */
 export function isKeystoreJson(json: string): boolean {
     try {
         const data = JSON.parse(json);
@@ -52,7 +71,7 @@ export function isKeystoreJson(json: string): boolean {
 }
 
 function decrypt(data: any, key: Uint8Array, ciphertext: Uint8Array): string {
-    const cipher = spelunk(data, "crypto.cipher:string");
+    const cipher = spelunk<string>(data, "crypto.cipher:string");
     if (cipher === "aes-128-ctr") {
         const iv = spelunk<Uint8Array>(data, "crypto.cipherparams.iv:data!")
         const aesCtr = new CTR(key, iv);
@@ -69,7 +88,7 @@ function getAccount(data: any, _key: string): KeystoreAccount {
     const ciphertext = spelunk<Uint8Array>(data, "crypto.ciphertext:data!");
 
     const computedMAC = hexlify(keccak256(concat([ key.slice(16, 32), ciphertext ]))).substring(2);
-    assertArgument(computedMAC === spelunk(data, "crypto.mac:string!").toLowerCase(),
+    assertArgument(computedMAC === spelunk<string>(data, "crypto.mac:string!").toLowerCase(),
         "incorrect password", "password", "[ REDACTED ]");
 
     const privateKey = decrypt(data, key.slice(0, 16), ciphertext);
@@ -124,24 +143,18 @@ type KdfParams = ScryptParams | {
 function getDecryptKdfParams<T>(data: any): KdfParams {
     const kdf = spelunk(data, "crypto.kdf:string");
     if (kdf && typeof(kdf) === "string") {
-        const throwError = function(name: string, value: any): never {
-            assertArgument(false, "invalid key-derivation function parameters", name, value);
-        }
-
         if (kdf.toLowerCase() === "scrypt") {
             const salt = spelunk<Uint8Array>(data, "crypto.kdfparams.salt:data!");
             const N = spelunk<number>(data, "crypto.kdfparams.n:int!");
             const r = spelunk<number>(data, "crypto.kdfparams.r:int!");
             const p = spelunk<number>(data, "crypto.kdfparams.p:int!");
 
-            // Check for all required parameters
-            if (!N || !r || !p) { return throwError("kdf", kdf); }
-
             // Make sure N is a power of 2
-            if ((N & (N - 1)) !== 0) { return throwError("N", N); }
+            assertArgument(N > 0 && (N & (N - 1)) === 0, "invalid kdf.N", "kdf.N", N);
+            assertArgument(r > 0 && p > 0, "invalid kdf", "kdf", kdf);
 
             const dkLen = spelunk<number>(data, "crypto.kdfparams.dklen:int!");
-            if (dkLen !== 32) { return throwError("dklen", dkLen); }
+            assertArgument(dkLen === 32, "invalid kdf.dklen", "kdf.dflen", dkLen);
 
             return { name: "scrypt", salt, N, r, p, dkLen: 64 };
 
@@ -149,16 +162,14 @@ function getDecryptKdfParams<T>(data: any): KdfParams {
 
             const salt = spelunk<Uint8Array>(data, "crypto.kdfparams.salt:data!");
 
-            const prf = spelunk(data, "crypto.kdfparams.prf:string!");
+            const prf = spelunk<string>(data, "crypto.kdfparams.prf:string!");
             const algorithm = prf.split("-").pop();
-            if (algorithm !== "sha256" && algorithm !== "sha512") {
-                return throwError("prf", prf);
-            }
+            assertArgument(algorithm === "sha256" || algorithm === "sha512", "invalid kdf.pdf", "kdf.pdf", prf);
 
             const count = spelunk<number>(data, "crypto.kdfparams.c:int!");
 
             const dkLen = spelunk<number>(data, "crypto.kdfparams.dklen:int!");
-            if (dkLen !== 32) { throwError("dklen", dkLen); }
+            assertArgument(dkLen === 32, "invalid kdf.dklen", "kdf.dklen", dkLen);
 
             return { name: "pbkdf2", salt, count, dkLen, algorithm };
         }
@@ -168,6 +179,18 @@ function getDecryptKdfParams<T>(data: any): KdfParams {
 }
 
 
+/**
+ *  Returns the account details for the JSON Keystore Wallet %%json%%
+ *  using %%password%%.
+ *
+ *  It is preferred to use the [async version](decryptKeystoreJson)
+ *  instead, which allows a [[ProgressCallback]] to keep the user informed
+ *  as to the decryption status.
+ *
+ *  This method will block the event loop (freezing all UI) until decryption
+ *  is complete, which can take quite some time, depending on the wallet
+ *  paramters and platform.
+ */
 export function decryptKeystoreJsonSync(json: string, _password: string | Uint8Array): KeystoreAccount {
     const data = JSON.parse(json);
 
@@ -191,6 +214,17 @@ function stall(duration: number): Promise<void> {
     return new Promise((resolve) => { setTimeout(() => { resolve(); }, duration); });
 }
 
+/**
+ *  Resolves to the decrypted JSON Keystore Wallet %%json%% using the
+ *  %%password%%.
+ *
+ *  If provided, %%progress%% will be called periodically during the
+ *  decrpytion to provide feedback, and if the function returns
+ *  ``false`` will halt decryption.
+ *
+ *  The %%progressCallback%% will **always** receive ``0`` before
+ *  decryption begins and ``1`` when complete.
+ */
 export async function decryptKeystoreJson(json: string, _password: string | Uint8Array, progress?: ProgressCallback): Promise<KeystoreAccount> {
     const data = JSON.parse(json);
 
@@ -229,24 +263,24 @@ function getEncryptKdfParams(options: EncryptOptions): ScryptParams {
         if (options.scrypt.r) { r = options.scrypt.r; }
         if (options.scrypt.p) { p = options.scrypt.p; }
     }
-    assertArgument(typeof(N) === "number" && Number.isSafeInteger(N) && (BigInt(N) & BigInt(N - 1)) === BigInt(0), "invalid scrypt N parameter", "options.N", N);
-    assertArgument(typeof(r) === "number" && Number.isSafeInteger(r), "invalid scrypt r parameter", "options.r", r);
-    assertArgument(typeof(p) === "number" && Number.isSafeInteger(p), "invalid scrypt p parameter", "options.p", p);
+    assertArgument(typeof(N) === "number" && N > 0 && Number.isSafeInteger(N) && (BigInt(N) & BigInt(N - 1)) === BigInt(0), "invalid scrypt N parameter", "options.N", N);
+    assertArgument(typeof(r) === "number" && r > 0 && Number.isSafeInteger(r), "invalid scrypt r parameter", "options.r", r);
+    assertArgument(typeof(p) === "number" && p > 0 && Number.isSafeInteger(p), "invalid scrypt p parameter", "options.p", p);
 
     return { name: "scrypt", dkLen: 32, salt, N, r, p };
 }
 
-export function _encryptKeystore(key: Uint8Array, kdf: ScryptParams, account: KeystoreAccount, options: EncryptOptions): any {
+function _encryptKeystore(key: Uint8Array, kdf: ScryptParams, account: KeystoreAccount, options: EncryptOptions): any {
 
     const privateKey = getBytes(account.privateKey, "privateKey");
 
     // Override initialization vector
     const iv = (options.iv != null) ? getBytes(options.iv, "options.iv"): randomBytes(16);
-    assertArgument(iv.length === 16, "invalid options.iv", "options.iv", options.iv);
+    assertArgument(iv.length === 16, "invalid options.iv length", "options.iv", options.iv);
 
     // Override the uuid
     const uuidRandom = (options.uuid != null) ? getBytes(options.uuid, "options.uuid"): randomBytes(16);
-    assertArgument(uuidRandom.length === 16, "invalid options.uuid", "options.uuid", options.iv);
+    assertArgument(uuidRandom.length === 16, "invalid options.uuid length", "options.uuid", options.iv);
 
     // This will be used to encrypt the wallet (as per Web3 secret storage)
     // - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
@@ -318,6 +352,14 @@ export function _encryptKeystore(key: Uint8Array, kdf: ScryptParams, account: Ke
     return JSON.stringify(data);
 }
 
+/**
+ *  Return the JSON Keystore Wallet for %%account%% encrypted with
+ *  %%password%%.
+ *
+ *  The %%options%% can be used to tune the password-based key
+ *  derivation function parameters, explicitly set the random values
+ *  used. Any provided [[ProgressCallback]] is ignord.
+ */
 export function encryptKeystoreJsonSync(account: KeystoreAccount, password: string | Uint8Array, options?: EncryptOptions): string {
     if (options == null) { options = { }; }
 
@@ -327,6 +369,15 @@ export function encryptKeystoreJsonSync(account: KeystoreAccount, password: stri
     return _encryptKeystore(getBytes(key), kdf, account, options);
 }
 
+/**
+ *  Resolved to the JSON Keystore Wallet for %%account%% encrypted
+ *  with %%password%%.
+ *
+ *  The %%options%% can be used to tune the password-based key
+ *  derivation function parameters, explicitly set the random values
+ *  used and provide a [[ProgressCallback]] to receive periodic updates
+ *  on the completion status..
+ */
 export async function encryptKeystoreJson(account: KeystoreAccount, password: string | Uint8Array, options?: EncryptOptions): Promise<string> {
     if (options == null) { options = { }; }
 
