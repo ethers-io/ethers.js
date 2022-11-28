@@ -8,7 +8,7 @@ export { version } from "./_version.js";
 export {
     decodeBytes32String, encodeBytes32String,
 
-    AbiCoder, defaultAbiCoder,
+    AbiCoder,
     ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType,
 
     checkResultErrors, Indexed, Interface, LogDescription, Result, TransactionDescription,
@@ -22,7 +22,7 @@ export {
 
 export {
     ZeroAddress,
-    NegativeOne, Zero, One, Two, WeiPerEther, MaxUint256, MinInt256, MaxInt256, N,
+    WeiPerEther, MaxUint256, MinInt256, MaxInt256, N,
     ZeroHash,
     EtherSymbol, MessagePrefix
 } from "./constants/index.js";
@@ -82,10 +82,11 @@ export {
     decodeBase64, encodeBase64,
     concat, dataLength, dataSlice, getBytes, getBytesCopy, hexlify,
     isHexString, isBytesLike, stripZerosLeft, zeroPadBytes, zeroPadValue,
+    defineProperties,
     assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate,
     makeError,
     isCallException, isError,
-    getIpfsGatewayFunc, FetchRequest, FetchResponse, FetchCancelSignal,
+    FetchRequest, FetchResponse, FetchCancelSignal,
     FixedFormat, FixedNumber, formatFixed, parseFixed,
     getBigInt, getNumber, toArray, toBigInt, toHex, toNumber, toQuantity,
     fromTwos, toTwos, mask,
@@ -96,18 +97,21 @@ export {
 } from "./utils/index.js";
 
 export {
-    defaultPath,
-    getAccountPath,
-    HDNodeWallet, HDNodeVoidWallet, HDNodeWalletManager,
-    isCrowdsaleJson, decryptCrowdsaleJson,
-    isKeystoreJson, decryptKeystoreJsonSync, decryptKeystoreJson,
-    encryptKeystoreJson,
     Mnemonic,
-    Wallet
+    BaseWallet, HDNodeWallet, HDNodeVoidWallet, HDNodeWalletManager,
+    Wallet,
+
+    defaultPath,
+
+    getAccountPath,
+    isCrowdsaleJson, isKeystoreJson,
+
+    decryptCrowdsaleJson, decryptKeystoreJsonSync, decryptKeystoreJson,
+    encryptKeystoreJson, encryptKeystoreJsonSync,
 } from "./wallet/index.js";
 
 export {
-    Wordlist, langEn, LangEn, wordlists, WordlistOwl, WordlistOwlA
+    Wordlist, LangEn, WordlistOwl, WordlistOwlA
 } from "./wordlists/index.js";
 
 
