@@ -1,3 +1,8 @@
+/**
+ *  Explain fetching here...
+ *
+ *  @_section api/utils/fetching:Fetching Web Content  [fetching]
+ */
 import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";
 import { assert, assertArgument } from "./errors.js";
@@ -21,17 +26,17 @@ export type FetchThrottleParams = {
 /**
  *  Called before any network request, allowing updated headers (e.g. Bearer tokens), etc.
  */
-export type FetchPreflightFunc = (request: FetchRequest) => Promise<FetchRequest>;
+export type FetchPreflightFunc = (req: FetchRequest) => Promise<FetchRequest>;
 
 /**
  *  Called on the response, allowing client-based throttling logic or post-processing.
  */
-export type FetchProcessFunc = (request: FetchRequest, response: FetchResponse) => Promise<FetchResponse>;
+export type FetchProcessFunc = (req: FetchRequest, resp: FetchResponse) => Promise<FetchResponse>;
 
 /**
  *  Called prior to each retry; return true to retry, false to abort.
  */
-export type FetchRetryFunc = (request: FetchRequest, response: FetchResponse, attempt: number) => Promise<boolean>;
+export type FetchRetryFunc = (req: FetchRequest, resp: FetchResponse, attempt: number) => Promise<boolean>;
 
 /**
  *  Called on Gateway URLs.
@@ -44,7 +49,7 @@ export type FetchGatewayFunc = (url: string, signal?: FetchCancelSignal) => Prom
  *  and in the browser ``fetch`` is used. If you wish to use Axios, this is
  *  how you would register it.
  */
-export type FetchGetUrlFunc = (request: FetchRequest, signal?: FetchCancelSignal) => Promise<GetUrlResponse>;
+export type FetchGetUrlFunc = (req: FetchRequest, signal?: FetchCancelSignal) => Promise<GetUrlResponse>;
 
 
 const MAX_ATTEMPTS = 12;
@@ -60,7 +65,7 @@ const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
 let locked = false;
 
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
-async function gatewayData(url: string, signal?: FetchCancelSignal): Promise<FetchResponse> {
+async function dataGatewayFunc(url: string, signal?: FetchCancelSignal): Promise<FetchResponse> {
     try {
         const match = url.match(reData);
         if (!match) { throw new Error("invalid data"); }
@@ -76,7 +81,7 @@ async function gatewayData(url: string, signal?: FetchCancelSignal): Promise<Fet
  *  Returns a [[FetchGatewayFunc]] for fetching content from a standard
  *  IPFS gateway hosted at %%baseUrl%%.
  */
-export function getIpfsGatewayFunc(baseUrl: string): FetchGatewayFunc {
+function getIpfsGatewayFunc(baseUrl: string): FetchGatewayFunc {
     async function gatewayIpfs(url: string, signal?: FetchCancelSignal): Promise<FetchRequest | FetchResponse> {
         try {
             const match = url.match(reIpfs);
@@ -91,12 +96,15 @@ export function getIpfsGatewayFunc(baseUrl: string): FetchGatewayFunc {
 }
 
 const Gateways: Record<string, FetchGatewayFunc> = {
-    "data": gatewayData,
+    "data": dataGatewayFunc,
     "ipfs": getIpfsGatewayFunc("https:/\/gateway.ipfs.io/ipfs/")
 };
 
 const fetchSignals: WeakMap<FetchRequest, () => void> = new WeakMap();
 
+/**
+ *  @_ignore
+ */
 export class FetchCancelSignal {
     #listeners: Array<() => void>;
     #cancelled: boolean;
@@ -141,8 +149,10 @@ function checkSignal(signal?: FetchCancelSignal): FetchCancelSignal {
 /**
  *  Represents a request for a resource using a URI.
  *
- *  Requests can occur over http/https, data: URI or any
- *  URI scheme registered via the static [[register]] method.
+ *  By default, the supported schemes are ``HTTP``, ``HTTPS``, ``data:``,
+ *  and ``IPFS:``.
+ *
+ *  Additional schemes can be added globally using [[registerGateway]].
  */
 export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     #allowInsecure: boolean;
@@ -174,7 +184,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
-     *  The fetch body, if any, to send as the request body.
+     *  The fetch body, if any, to send as the request body. //(default: null)//
      *
      *  When setting a body, the intrinsic ``Content-Type`` is automatically
      *  set and will be used if **not overridden** by setting a custom
@@ -237,9 +247,15 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
-     *  The headers that will be used when requesting the URI.
+     *  The headers that will be used when requesting the URI. All
+     *  keys are lower-case.
+     *
+     *  This object is a copy, so any chnages will **NOT** be reflected
+     *  in the ``FetchRequest``.
+     *
+     *  To set a header entry, use the ``setHeader`` method.
      */
-    get headers(): Readonly<Record<string, string>> {
+    get headers(): Record<string, string> {
         const headers = Object.assign({ }, this.#headers);
 
         if (this.#creds) {
@@ -255,11 +271,11 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         }
         if (this.body) { headers["content-length"] = String(this.body.length); }
 
-        return Object.freeze(headers);
+        return headers;
     }
 
     /**
-     *  Get the header for %%key%%.
+     *  Get the header for %%key%%, ignoring case.
      */
     getHeader(key: string): string {
         return this.headers[key.toLowerCase()];
@@ -274,7 +290,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
-     *  Clear all headers.
+     *  Clear all headers, resetting all intrinsic headers.
      */
     clearHeaders(): void {
         this.#headers = { };
@@ -299,6 +315,8 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
 
     /**
      *  The value that will be sent for the ``Authorization`` header.
+     *
+     *  To set the credentials, use the ``setCredentials`` method.
      */
     get credentials(): null | string {
         return this.#creds || null;
@@ -313,7 +331,8 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
-     *  Allow gzip-encoded responses.
+     *  Enable and request gzip-encoded responses. The response will
+     *  automatically be decompressed. //(default: true)//
      */
     get allowGzip(): boolean {
         return this.#gzip;
@@ -324,7 +343,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
 
     /**
      *  Allow ``Authentication`` credentials to be sent over insecure
-     *  channels.
+     *  channels. //(default: false)//
      */
     get allowInsecureAuthentication(): boolean {
         return !!this.#allowInsecure;
@@ -335,6 +354,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
 
     /**
      *  The timeout (in milliseconds) to wait for a complere response.
+     *  //(default: 5 minutes)//
      */
     get timeout(): number { return this.#timeout; }
     set timeout(timeout: number) {
@@ -383,11 +403,17 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         this.#retry = retry;
     }
 
+    /**
+     *  Create a new FetchRequest instance with default values.
+     *
+     *  Once created, each property may be set before issuing a
+     *  ``.send()`` to make teh request.
+     */
     constructor(url: string) {
         this.#url = String(url);
 
         this.#allowInsecure = false;
-        this.#gzip = false;
+        this.#gzip = true;
         this.#headers = { };
         this.#method = "";
         this.#timeout = 300000;
@@ -398,6 +424,10 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         };
     }
 
+    /**
+     *  Update the throttle parameters used to determine maximum
+     *  attempts and exponential-backoff properties.
+     */
     setThrottleParams(params: FetchThrottleParams): void {
         if (params.slotInterval != null) {
             this.#throttle.slotInterval = params.slotInterval;
@@ -600,7 +630,12 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
-     *  Set the FetchGatewayFunc for %%scheme%% to %%func%%.
+     *  Use the %%func%% when fetching URIs using %%scheme%%.
+     *
+     *  This method affects all requests globally.
+     *
+     *  If [[lockConfig]] has been called, no change is made and this
+     *  throws.
      */
     static registerGateway(scheme: string, func: FetchGatewayFunc): void {
         scheme = scheme.toLowerCase();
@@ -612,11 +647,40 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
-     *  Set a custom function for fetching HTTP and HTTPS requests.
+     *  Use %%getUrl%% when fetching URIs over HTTP and HTTPS requests.
+     *
+     *  This method affects all requests globally.
+     *
+     *  If [[lockConfig]] has been called, no change is made and this
+     *  throws.
      */
     static registerGetUrl(getUrl: FetchGetUrlFunc): void {
         if (locked) { throw new Error("gateways locked"); }
         getUrlFunc = getUrl;
+    }
+
+    /**
+     *  Creates a function that can "fetch" data URIs.
+     *
+     *  Note that this is automatically done internally to support
+     *  data URIs, so it is not necessary to register it.
+     *
+     *  This is not generally something that is needed, but may
+     *  be useful in a wrapper to perfom custom data URI functionality.
+     */
+    static createDataGateway(): FetchGatewayFunc {
+        return dataGatewayFunc;
+    }
+
+    /**
+     *  Creates a function that will fetch IPFS (unvalidated) from
+     *  a custom gateway baseUrl.
+     *
+     *  The default IPFS gateway used internally is
+     *  ``"https:/\/gateway.ipfs.io/ipfs/"``.
+     */
+    static createIpfsGatewayFunc(baseUrl: string): FetchGatewayFunc {
+        return getIpfsGatewayFunc(baseUrl);
     }
 }
 
@@ -632,7 +696,7 @@ interface ThrottleError extends Error {
 export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     #statusCode: number;
     #statusMessage: string;
-    #headers: Readonly<Record<string, string>>;
+    #headers: Record<string, string>;
     #body: null | Readonly<Uint8Array>;
     #request: null | FetchRequest;
 
@@ -653,21 +717,22 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     get statusMessage(): string { return this.#statusMessage; }
 
     /**
-     *  The response headers.
+     *  The response headers. All keys are lower-case.
      */
-    get headers(): Record<string, string> { return this.#headers; }
+    get headers(): Record<string, string> { return Object.assign({ }, this.#headers); }
 
     /**
-     *  The response body.
+     *  The response body, or ``null`` if there was no body.
      */
     get body(): null | Readonly<Uint8Array> {
         return (this.#body == null) ? null: new Uint8Array(this.#body);
     }
 
     /**
-     *  The response body as a UTF-8 encoded string.
+     *  The response body as a UTF-8 encoded string, or the empty
+     *  string (i.e. ``""``) if there was no body.
      *
-     * An error is thrown if the body is invalid UTF-8 data.
+     *  An error is thrown if the body is invalid UTF-8 data.
      */
     get bodyText(): string {
         try {
@@ -682,7 +747,8 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     /**
      *  The response body, decoded as JSON.
      *
-     *  An error is thrown if the body is invalid JSON-encoded data.
+     *  An error is thrown if the body is invalid JSON-encoded data
+     *  or if there was no body.
      */
     get bodyJson(): any {
         try {
@@ -714,10 +780,10 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     constructor(statusCode: number, statusMessage: string, headers: Readonly<Record<string, string>>, body: null | Uint8Array, request?: FetchRequest) {
         this.#statusCode = statusCode;
         this.#statusMessage = statusMessage;
-        this.#headers = Object.freeze(Object.assign({ }, Object.keys(headers).reduce((accum, k) => {
+        this.#headers = Object.keys(headers).reduce((accum, k) => {
             accum[k.toLowerCase()] = String(headers[k]);
             return accum;
-        }, <Record<string, string>>{ })));
+        }, <Record<string, string>>{ });
         this.#body = ((body == null) ? null: new Uint8Array(body));
         this.#request = (request || null);
 
@@ -744,8 +810,9 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
-     *  If called within the [[processFunc]], causes the request to
-     *  retry as if throttled for %%stall%% milliseconds.
+     *  If called within a [request.processFunc](FetchRequest-processFunc)
+     *  call, causes the request to retry as if throttled for %%stall%%
+     *  milliseconds.
      */
     throwThrottleError(message?: string, stall?: number): never {
         if (stall == null) {
@@ -762,7 +829,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
-     *  Get the header value for %%key%%.
+     *  Get the header value for %%key%%, ignoring case.
      */
     getHeader(key: string): string {
         return this.headers[key.toLowerCase()];
@@ -781,7 +848,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     get request(): null | FetchRequest { return this.#request; }
 
     /**
-     *  Returns true if this response was a success statuscode.
+     *  Returns true if this response was a success statusCode.
      */
     ok(): boolean {
         return (this.#error.message === "" && this.statusCode >= 200 && this.statusCode < 300);

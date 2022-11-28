@@ -1,3 +1,11 @@
+/**
+ *  Using strings in Ethereum (or any security-basd system) requires
+ *  additional care. These utilities attempt to mitigate some of the
+ *  safety issues as well as provide the ability to recover and analyse
+ *  strings.
+ *
+ *  @_subsection api/utils:Strings and UTF-8  [strings]
+ */
 import { getBytes } from "./data.js";
 import { assertArgument, assertNormalize } from "./errors.js";
 
@@ -6,49 +14,75 @@ import type { BytesLike } from "./index.js";
 
 ///////////////////////////////
 
+/**
+ *  The stanard normalization forms.
+ */
 export type UnicodeNormalizationForm = "NFC" | "NFD" | "NFKC" | "NFKD";
 
-export type Utf8ErrorReason =
-    // A continuation byte was present where there was nothing to continue
-    // - offset = the index the codepoint began in
-    "UNEXPECTED_CONTINUE" |
+/**
+ *  When using the UTF-8 error API the following errors can be intercepted
+ *  and processed as the %%reason%% passed to the [[Utf8ErrorFunc]].
+ *
+ *  **``"UNEXPECTED_CONTINUE"``** - a continuation byte was present where there
+ *  was nothing to continue.
+ *
+ *  **``"BAD_PREFIX"``** - an invalid (non-continuation) byte to start a
+ *  UTF-8 codepoint was found.
+ *
+ *  **``"OVERRUN"``** - the string is too short to process the expected
+ *  codepoint length.
+ *
+ *  **``"MISSING_CONTINUE"``** - a missing continuation byte was expected but
+ *  not found. The %%offset%% indicates the index the continuation byte
+ *  was expected at.
+ *
+ *  **``"OUT_OF_RANGE"``** - the computed code point is outside the range
+ *  for UTF-8. The %%badCodepoint%% indicates the computed codepoint, which was
+ *  outside the valid UTF-8 range.
+ *
+ *  **``"UTF16_SURROGATE"``** - the UTF-8 strings contained a UTF-16 surrogate
+ *  pair. The %%badCodepoint%% is the computed codepoint, which was inside the
+ *  UTF-16 surrogate range.
+ *
+ *  **``"OVERLONG"``** - the string is an overlong representation. The
+ *  %%badCodepoint%% indicates the computed codepoint, which has already
+ *  been bounds checked.
+ *
+ *
+ *  @returns string
+ */
+export type Utf8ErrorReason = "UNEXPECTED_CONTINUE" | "BAD_PREFIX" | "OVERRUN" |
+    "MISSING_CONTINUE" | "OUT_OF_RANGE" | "UTF16_SURROGATE" | "OVERLONG";
 
-    // An invalid (non-continuation) byte to start a UTF-8 codepoint was found
-    // - offset = the index the codepoint began in
-    "BAD_PREFIX" |
 
-    // The string is too short to process the expected codepoint
-    // - offset = the index the codepoint began in
-    "OVERRUN" |
-
-    // A missing continuation byte was expected but not found
-    // - offset = the index the continuation byte was expected at
-    "MISSING_CONTINUE" |
-
-    // The computed code point is outside the range for UTF-8
-    // - offset       = start of this codepoint
-    // - badCodepoint = the computed codepoint; outside the UTF-8 range
-    "OUT_OF_RANGE" |
-
-    // UTF-8 strings may not contain UTF-16 surrogate pairs
-    // - offset       = start of this codepoint
-    // - badCodepoint = the computed codepoint; inside the UTF-16 surrogate range
-    "UTF16_SURROGATE" |
-
-    // The string is an overlong representation
-    // - offset       = start of this codepoint
-    // - badCodepoint = the computed codepoint; already bounds checked
-    "OVERLONG";
+/**
+ *  A callback that can be used with [[toUtf8String]] to analysis or
+ *  recovery from invalid UTF-8 data.
+ *
+ *  Parsing UTF-8 data is done through a simple Finite-State Machine (FSM)
+ *  which calls the ``Utf8ErrorFunc`` if a fault is detected.
+ *
+ *  The %%reason%% indicates where in the FSM execution the fault
+ *  occurred and the %%offset%% indicates where the input failed.
+ *
+ *  The %%bytes%% represents the raw UTF-8 data that was provided and
+ *  %%output%% is the current array of UTF-8 code-points, which may
+ *  be updated by the ``Utf8ErrorFunc``.
+ *
+ *  The value of the %%badCodepoint%% depends on the %%reason%%. See
+ *  [[Utf8ErrorReason]] for details.
+ *
+ *  The function should return the number of bytes that should be skipped
+ *  when control resumes to the FSM.
+ */
+export type Utf8ErrorFunc = (reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, output: Array<number>, badCodepoint?: number) => number;
 
 
-export type Utf8ErrorFunc = (reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number) => number;
-
-
-function errorFunc(reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number): number {
+function errorFunc(reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, output: Array<number>, badCodepoint?: number): number {
     assertArgument(false, `invalid codepoint at offset ${ offset }; ${ reason }`, "bytes", bytes);
 }
 
-function ignoreFunc(reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number): number {
+function ignoreFunc(reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, output: Array<number>, badCodepoint?: number): number {
 
     // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
     if (reason === "BAD_PREFIX" || reason === "UNEXPECTED_CONTINUE") {
@@ -70,11 +104,12 @@ function ignoreFunc(reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<nu
     return 0;
 }
 
-function replaceFunc(reason: Utf8ErrorReason, offset: number, bytes: ArrayLike<number>, output: Array<number>, badCodepoint?: number): number {
+function replaceFunc(reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, output: Array<number>, badCodepoint?: number): number {
 
     // Overlong representations are otherwise "valid" code points; just non-deistingtished
     if (reason === "OVERLONG") {
-        output.push((badCodepoint != null) ? badCodepoint: -1);
+        assertArgument(typeof(badCodepoint) === "number", "invalid bad code point for replacement", "badCodepoint", badCodepoint);
+        output.push(badCodepoint);
         return 0;
     }
 
@@ -191,6 +226,12 @@ function getUtf8CodePoints(_bytes: BytesLike, onError?: Utf8ErrorFunc): Array<nu
 }
 
 // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+
+/**
+ *  Returns the UTF-8 byte representation of %%str%%.
+ *
+ *  If %%form%% is specified, the string is normalized.
+ */
 export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8Array {
 
     if (form != null) {
@@ -233,7 +274,8 @@ export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8
     return new Uint8Array(result);
 };
 
-export function _toUtf8String(codePoints: Array<number>): string {
+//export 
+function _toUtf8String(codePoints: Array<number>): string {
     return codePoints.map((codePoint) => {
         if (codePoint <= 0xffff) {
             return String.fromCharCode(codePoint);
@@ -246,10 +288,22 @@ export function _toUtf8String(codePoints: Array<number>): string {
     }).join("");
 }
 
+/**
+ *  Returns the string represented by the UTF-8 data %%bytes%%.
+ *
+ *  When %%onError%% function is specified, it is called on UTF-8
+ *  errors allowing recovery using the [[Utf8ErrorFunc]] API.
+ *  (default: [error](Utf8ErrorFuncs-error))
+ */
 export function toUtf8String(bytes: BytesLike, onError?: Utf8ErrorFunc): string {
     return _toUtf8String(getUtf8CodePoints(bytes, onError));
 }
 
+/**
+ *  Returns the UTF-8 code-points for %%str%%.
+ *
+ *  If %%form%% is specified, the string is normalized.
+ */
 export function toUtf8CodePoints(str: string, form?: UnicodeNormalizationForm): Array<number> {
     return getUtf8CodePoints(toUtf8Bytes(str, form));
 }

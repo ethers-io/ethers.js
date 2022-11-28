@@ -1,6 +1,12 @@
+/**
+ *  About Errors.
+ *
+ *  @_section: api/utils/errors:Errors  [errors]
+ */
+
 import { version } from "../_version.js";
 
-import { defineReadOnly } from "./properties.js";
+import { defineProperties } from "./properties.js";
 
 import type {
     TransactionRequest, TransactionReceipt, TransactionResponse
@@ -11,11 +17,46 @@ import type { FetchRequest, FetchResponse } from "./fetch.js";
 
 export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
 
-// The type of error to use for various error codes
-const ErrorConstructors: Record<string, { new (...args: Array<any>): Error }> = { };
-ErrorConstructors.INVALID_ARGUMENT = TypeError;
-ErrorConstructors.NUMERIC_FAULT = RangeError;
-ErrorConstructors.BUFFER_OVERRUN = RangeError;
+
+function stringify(value: any): any {
+    if (value == null) { return "null"; }
+
+    if (Array.isArray(value)) {
+        return "[ " + (value.map(stringify)).join(", ") + " ]";
+    }
+
+    if (value instanceof Uint8Array) {
+        const HEX = "0123456789abcdef";
+        let result = "0x";
+        for (let i = 0; i < value.length; i++) {
+            result += HEX[value[i] >> 4];
+            result += HEX[value[i] & 0xf];
+        }
+        return result;
+    }
+
+    if (typeof(value) === "object" && typeof(value.toJSON) === "function") {
+        return stringify(value.toJSON());
+    }
+
+    switch (typeof(value)) {
+        case "boolean": case "symbol":
+            return value.toString();
+        case "bigint":
+            return BigInt(value).toString();
+        case "number":
+            return (value).toString();
+        case "string":
+            return JSON.stringify(value);
+        case "object": {
+            const keys = Object.keys(value);
+            keys.sort();
+            return "{ " + keys.map((k) => `${ stringify(k) }: ${ stringify(value[k]) }`).join(", ") + " }";
+        }
+    }
+
+    return `[ COULD NOT SERIALIZE ]`;
+}
 
 /**
  *  All errors emitted by ethers have an **ErrorCode** to help
@@ -59,15 +100,39 @@ export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
 
 // Generic Errors
 
+/**
+ *  This Error is a catch-all for when there is no way for Ethers to
+ *  know what the underlying problem is.
+ */
 export interface UnknownError extends EthersError<"UNKNOWN_ERROR"> {
     [ key: string ]: any;
 }
 
+/**
+ *  This Error is mostly used as a stub for functionality that is
+ *  intended for the future, but is currently not implemented.
+ */
 export interface NotImplementedError extends EthersError<"NOT_IMPLEMENTED"> {
+    /**
+     *  The attempted operation.
+     */
     operation: string;
 }
 
+/**
+ *  This Error indicates that the attempted operation is not supported.
+ *
+ *  This could range from a specifc JSON-RPC end-point not supporting
+ *  a feature to a specific configuration of an object prohibiting the
+ *  operation.
+ *
+ *  For example, a [[Wallet]] with no connected [[Provider]] is unable
+ *  to send a transaction.
+ */
 export interface UnsupportedOperationError extends EthersError<"UNSUPPORTED_OPERATION"> {
+    /**
+     *  The attempted operation.
+     */
     operation: string;
 }
 
@@ -75,45 +140,134 @@ export interface NetworkError extends EthersError<"NETWORK_ERROR"> {
     event: string;
 }
 
+/**
+ *  This Error indicates there was a problem fetching a resource from
+ *  a server.
+ */
 export interface ServerError extends EthersError<"SERVER_ERROR"> {
+    /**
+     *  The requested resource.
+     */
     request: FetchRequest | string;
+
+    /**
+     *  The response received from the server, if available.
+     */
     response?: FetchResponse;
 }
 
+/**
+ *  This Error indicates that the timeout duration has expired and
+ *  that the operation has been implicitly cancelled.
+ *
+ *  The side-effect of the operation may still occur, as this
+ *  generally means a request has been sent and there has simply
+ *  been no response to indicate whether it was processed or not.
+ */
 export interface TimeoutError extends EthersError<"TIMEOUT"> {
+    /**
+     *  The attempted operation.
+     */
     operation: string;
+
+    /**
+     *  The reason.
+     */
     reason: string;
+
+    /**
+     *  The resource request, if available.
+     */
     request?: FetchRequest;
 }
 
+/**
+ *  This Error indicates that a provided set of data cannot
+ *  be correctly interpretted.
+ */
 export interface BadDataError extends EthersError<"BAD_DATA"> {
+    /**
+     *  The data.
+     */
     value: any;
 }
 
+/**
+ *  This Error indicates that the operation was cancelled by a
+ *  programmatic call, for example to ``cancel()``.
+ */
 export interface CancelledError extends EthersError<"CANCELLED"> {
 }
 
 
 // Operational Errors
 
+/**
+ *  This Error indicates an attempt was made to read outside the bounds
+ *  of protected data.
+ *
+ *  Most operations in Ethers are protected by bounds checks, to mitigate
+ *  exploits when parsing data.
+ */
 export interface BufferOverrunError extends EthersError<"BUFFER_OVERRUN"> {
+    /**
+     *  The buffer that was overrun.
+     */
     buffer: Uint8Array;
+
+    /**
+     *  The length of the buffer.
+     */
     length: number;
+
+    /**
+     *  The offset that was requested.
+     */
     offset: number;
 }
 
+/**
+ *  This Error indicates an operation which would result in incorrect
+ *  arithmetic output has occurred.
+ *
+ *  For example, trying to divide by zero or using a ``uint8`` to store
+ *  a negative value.
+ */
 export interface NumericFaultError extends EthersError<"NUMERIC_FAULT"> {
+    /**
+     *  The attempted operation.
+     */
     operation: string;
+
+    /**
+     *  The fault reported.
+     */
     fault: string;
+
+    /**
+     *  The value the operation was attempted against.
+     */
     value: any;
 }
 
 
 // Argument Errors
 
+/**
+ *  This Error indicates an incorrect type or value was passed to
+ *  a function or method.
+ */
 export interface InvalidArgumentError extends EthersError<"INVALID_ARGUMENT"> {
+    /**
+     *  The name of the argument.
+     */
     argument: string;
+
+    /**
+     *  The value that was provided.
+     */
     value: any;
+
     info?: Record<string, any>
 }
 
@@ -168,6 +322,7 @@ export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
 //    transaction: any;//ErrorTransaction;
 //}
 
+
 export interface InsufficientFundsError extends EthersError<"INSUFFICIENT_FUNDS"> {
     transaction: TransactionRequest;
 }
@@ -193,12 +348,41 @@ export interface TransactionReplacedError extends EthersError<"TRANSACTION_REPLA
     receipt: TransactionReceipt;
 }
 
+/**
+ *  This Error indicates an ENS name was used, but the name has not
+ *  been configured.
+ *
+ *  This could indicate an ENS name is unowned or that the current
+ *  address being pointed to is the [[Zero]].
+ */
 export interface UnconfiguredNameError extends EthersError<"UNCONFIGURED_NAME"> {
+    /**
+     *  The ENS name that was requested
+     */
     value: string;
 }
 
+/**
+ *  This Error indicates a request was rejected by the user.
+ *
+ *  In most clients (such as MetaMask), when an operation requires user
+ *  authorization (such as ``signer.sendTransaction``), the client
+ *  presents a dialog box to the user. If the user denies the request
+ *  this error is thrown.
+ */
 export interface ActionRejectedError extends EthersError<"ACTION_REJECTED"> {
+    /**
+     *  The requested action.
+     */
     action: "requestAccess" | "sendTransaction" | "signMessage" | "signTransaction" | "signTypedData" | "unknown",
+
+    /**
+     *  The reason the action was rejected.
+     *
+     *  If there is already a pending request, some clients may indicate
+     *  there is already a ``"pending"`` action. This prevents an app
+     *  from spamming the user.
+     */
     reason: "expired" | "rejected" | "pending"
 }
 
@@ -252,7 +436,7 @@ export type CodedEthersError<T> =
  *  @See [ErrorCodes](api:ErrorCode)
  *  @example
  *  try {
- *      // code....
+ *      / / code....
  *  } catch (e) {
  *      if (isError(e, "CALL_EXCEPTION")) {
  *          console.log(e.data);
@@ -285,15 +469,16 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
         const details: Array<string> = [];
         if (info) {
             if ("message" in info || "code" in info || "name" in info) {
-                throw new Error(`value will overwrite populated values: ${ JSON.stringify(info) }`);
+                throw new Error(`value will overwrite populated values: ${ stringify(info) }`);
             }
             for (const key in info) {
                 const value = <any>(info[<keyof ErrorInfo<T>>key]);
-                try {
-                    details.push(key + "=" + JSON.stringify(value));
-                } catch (error) {
-                    details.push(key + "=[could not serialize object]");
-                }
+//                try {
+                    details.push(key + "=" + stringify(value));
+//                } catch (error: any) {
+//                console.log("MMM", error.message);
+//                    details.push(key + "=[could not serialize object]");
+//                }
             }
         }
         details.push(`code=${ code }`);
@@ -304,15 +489,22 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
         }
     }
 
-    const create = ErrorConstructors[code] || Error;
-    const error = <T>(new create(message));
-    defineReadOnly(error, "code", code);
-
-    if (info) {
-        for (const key in info) {
-            defineReadOnly(error, <keyof T>key, <any>(info[<keyof ErrorInfo<T>>key]));
-        }
+    let error;
+    switch (code) {
+        case "INVALID_ARGUMENT":
+            error = new TypeError(message);
+            break;
+        case "NUMERIC_FAULT":
+        case "BUFFER_OVERRUN":
+            error = new RangeError(message);
+            break;
+        default:
+            error = new Error(message);
     }
+
+    defineProperties<EthersError>(<EthersError>error, { code });
+
+    if (info) { defineProperties<any>(error, info); }
 
     return <T>error;
 }
@@ -339,7 +531,8 @@ export function assertArgument(check: unknown, message: string, name: string, va
     assert(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
 }
 
-export function assertArgumentCount(count: number, expectedCount: number, message: string = ""): void {
+export function assertArgumentCount(count: number, expectedCount: number, message?: string): void {
+    if (message == null) { message = ""; }
     if (message) { message = ": " + message; }
 
     assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
@@ -389,7 +582,8 @@ export function assertNormalize(form: string): void {
  *  by ensuring the %%givenGaurd%% matches the file-scoped %%guard%%,
  *  throwing if not, indicating the %%className%% if provided.
  */
-export function assertPrivate(givenGuard: any, guard: any, className: string = ""): void {
+export function assertPrivate(givenGuard: any, guard: any, className?: string): void {
+    if (className == null) { className = ""; }
     if (givenGuard !== guard) {
         let method = className, operation = "new";
         if (className) {

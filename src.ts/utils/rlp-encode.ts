@@ -52,7 +52,7 @@ function _encode(object: Array<any> | string): Array<number> {
 const nibbles = "0123456789abcdef";
 
 /**
- *  Encodes %%object%% as an RLP-encoded [[HexDataString]].
+ *  Encodes %%object%% as an RLP-encoded [[DataHexString]].
  */
 export function encodeRlp(object: RlpStructuredData): string {
     let result = "0x";

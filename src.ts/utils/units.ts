@@ -1,3 +1,24 @@
+/**
+ *  Most interactions with Ethereum requires integer values, which use
+ *  the smallest magnitude unit.
+ *
+ *  For example, imagine dealing with dollars and cents. Since dollars
+ *  are divisible, non-integer values are possible, such as ``$10.77``.
+ *  By using the smallest indivisible unit (i.e. cents), the value can
+ *  be kept as the integer ``1077``.
+ *
+ *  When receiving decimal input from the user (as a decimal string),
+ *  the value should be converted to an integer and when showing a user
+ *  a value, the integer value should be converted to a decimal string.
+ *
+ *  This creates a clear distinction, between values to be used by code
+ *  (integers) and values used for display logic to users (decimals).
+ *
+ *  The native unit in Ethereum, //ether// is divisible to 18 decimal places,
+ *  where each individual unit is called a //wei//.
+ *
+ *  @_subsection api/utils:Unit Conversion  [units]
+ */
 import { formatFixed, parseFixed } from "./fixednumber.js";
 import { assertArgument } from "./errors.js";
 

@@ -1,7 +1,29 @@
+/**
+ *  Some data helpers.
+ *
+ *
+ *  @_subsection api/utils:Data Helpers  [data]
+ */
 import { assert, assertArgument } from "./errors.js";
 
+/**
+ *  A [[HexString]] whose length is even, which ensures it is a valid
+ *  representation of binary data.
+ */
+export type DataHexString = string;
 
-export type BytesLike = string | Uint8Array;
+/**
+ *  A string which is prefixed with ``0x`` and followed by any number
+ *  of case-agnostic hexadecimal characters.
+ *
+ *  It must match the regular expression ``/0x[0-9A-Fa-f]*\/``.
+ */
+export type HexString = string;
+
+/**
+ *  An object that can be used to represent binary data.
+ */
+export type BytesLike = DataHexString | Uint8Array;
 
 function _getBytes(value: BytesLike, name?: string, copy?: boolean): Uint8Array {
     if (value instanceof Uint8Array) {
@@ -46,13 +68,10 @@ export function getBytesCopy(value: BytesLike, name?: string): Uint8Array {
 
 
 /**
- *  Returns true if %%value%% is a valid [[HexString]], with additional
- *  optional constraints depending on %%length%%.
+ *  Returns true if %%value%% is a valid [[HexString]].
  *
- *  If %%length%% is //true//, then %%value%% must additionally be a valid
- *  [[HexDataString]] (i.e. even length).
- *
- *  If %%length%% is //a number//, then %%value%% must represent that many
+ *  If %%length%% is ``true`` or a //number//, it also checks that
+ *  %%value%% is a valid [[DataHexString]] of %%length%% (if a //number//)
  *  bytes of data (e.g. ``0x1234`` is 2 bytes).
  */
 export function isHexString(value: any, length?: number | boolean): value is `0x${ string }` {
@@ -68,7 +87,7 @@ export function isHexString(value: any, length?: number | boolean): value is `0x
 
 /**
  *  Returns true if %%value%% is a valid representation of arbitrary
- *  data (i.e. a valid [[HexDataString]] or a Uint8Array).
+ *  data (i.e. a valid [[DataHexString]] or a Uint8Array).
  */
 export function isBytesLike(value: any): value is BytesLike {
     return (isHexString(value, true) || (value instanceof Uint8Array));
@@ -77,7 +96,7 @@ export function isBytesLike(value: any): value is BytesLike {
 const HexCharacters: string = "0123456789abcdef";
 
 /**
- *  Returns a [[HexDataString]] representation of %%data%%.
+ *  Returns a [[DataHexString]] representation of %%data%%.
  */
 export function hexlify(data: BytesLike): string {
     const bytes = getBytes(data);
@@ -91,7 +110,7 @@ export function hexlify(data: BytesLike): string {
 }
 
 /**
- *  Returns a [[HexDataString]] by concatenating all values
+ *  Returns a [[DataHexString]] by concatenating all values
  *  within %%data%%.
  */
 export function concat(datas: ReadonlyArray<BytesLike>): string {
@@ -107,7 +126,7 @@ export function dataLength(data: BytesLike): number {
 }
 
 /**
- *  Returns a [[HexDataString]] by slicing %%data%% from the %%start%%
+ *  Returns a [[DataHexString]] by slicing %%data%% from the %%start%%
  *  offset to the %%end%% offset.
  *
  *  By default %%start%% is 0 and %%end%% is the length of %%data%%.
@@ -123,7 +142,7 @@ export function dataSlice(data: BytesLike, start?: number, end?: number): string
 }
 
 /**
- *  Return the [[HexDataString]] result by stripping all **leading**
+ *  Return the [[DataHexString]] result by stripping all **leading**
  ** zero bytes from %%data%%.
  */
 export function stripZerosLeft(data: BytesLike): string {
@@ -152,7 +171,7 @@ function zeroPad(data: BytesLike, length: number, left: boolean): string {
 }
 
 /**
- *  Return the [[HexDataString]] of %%data%% padded on the **left**
+ *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
  */
 export function zeroPadValue(data: BytesLike, length: number): string {
@@ -160,7 +179,7 @@ export function zeroPadValue(data: BytesLike, length: number): string {
 }
 
 /**
- *  Return the [[HexDataString]] of %%data%% padded on the **right**
+ *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
  */
 export function zeroPadBytes(data: BytesLike, length: number): string {

@@ -1,3 +1,8 @@
+/**
+ *  Some mathematic operations.
+ *
+ *  @_subsection: api/utils:Math Helpers  [maths]
+ */
 import { hexlify, isBytesLike } from "./data.js";
 import { assertArgument } from "./errors.js";
 
@@ -21,7 +26,10 @@ const BN_1 = BigInt(1);
 const maxValue = 0x1fffffffffffff;
 
 /**
- *  Convert %%value%% from a twos-compliment value of %%width%% bits.
+ *  Convert %%value%% from a twos-compliment representation of %%width%%
+ *  bits to its value.
+ *
+ *  If the highest bit is ``1``, the result will be negative.
  */
 export function fromTwos(_value: BigNumberish, _width: Numeric): bigint {
     const value = getBigInt(_value, "value");
@@ -37,7 +45,10 @@ export function fromTwos(_value: BigNumberish, _width: Numeric): bigint {
 }
 
 /**
- *  Convert %%value%% to a twos-compliment value of %%width%% bits.
+ *  Convert %%value%% to a twos-compliment representation of
+ *  %%width%% bits.
+ *
+ *  The result will always be positive.
  */
 export function toTwos(_value: BigNumberish, _width: Numeric): bigint {
     const value = getBigInt(_value, "value");
@@ -47,6 +58,7 @@ export function toTwos(_value: BigNumberish, _width: Numeric): bigint {
         const mask = (BN_1 << width) - BN_1;
         return ((~(-value)) & mask) + BN_1;
     }
+
 
     return value;
 }
@@ -73,6 +85,7 @@ export function getBigInt(value: BigNumberish, name?: string): bigint {
             return BigInt(value);
         case "string":
             try {
+                if (value === "") { throw new Error("empty string"); }
                 if (value[0] === "-" && value[1] !== "-") {
                     return -BigInt(value.substring(1));
                 }
@@ -119,6 +132,7 @@ export function getNumber(value: BigNumberish, name?: string): number {
             return value;
         case "string":
             try {
+                if (value === "") { throw new Error("empty string"); }
                 return getNumber(BigInt(value), name);
             } catch(e: any) {
                 assertArgument(false, `invalid numeric string: ${ e.message }`, name || "value", value);
@@ -128,9 +142,9 @@ export function getNumber(value: BigNumberish, name?: string): number {
 }
 
 
-/*
- * Converts %%value%% to a number. If %%value%% is a Uint8Array, it
- * is treated as Big Endian data. Throws if the value is not safe.
+/**
+ *  Converts %%value%% to a number. If %%value%% is a Uint8Array, it
+ *  is treated as Big Endian data. Throws if the value is not safe.
  */
 export function toNumber(value: BigNumberish | Uint8Array): number {
     return getNumber(toBigInt(value));
@@ -142,7 +156,7 @@ export function toNumber(value: BigNumberish | Uint8Array): number {
  */
 export function toHex(_value: BigNumberish, _width?: Numeric): string {
     const value = getBigInt(_value, "value");
-    if (value < 0) { throw new Error("cannot convert negative value to hex"); }
+    assertArgument(value >= 0, "cannot toHex negative value", "value", _value);
 
     let result = value.toString(16);
 
@@ -151,7 +165,7 @@ export function toHex(_value: BigNumberish, _width?: Numeric): string {
         if (result.length % 2) { result = "0" + result; }
     } else {
         const width = getNumber(_width, "width");
-        if (width * 2 < result.length) { throw new Error(`value ${ value } exceeds width ${ width }`); }
+        assertArgument(width * 2 >= result.length, `value exceeds width`, "[ value, width ]", [ _value, _width ]);
 
         // Pad the value to the required width
         while (result.length < (width * 2)) { result = "0" + result; }
@@ -166,7 +180,7 @@ export function toHex(_value: BigNumberish, _width?: Numeric): string {
  */
 export function toArray(_value: BigNumberish): Uint8Array {
     const value = getBigInt(_value, "value");
-    if (value < 0) { throw new Error("cannot convert negative value to hex"); }
+    assertArgument(value >= 0, "cannot toArray negative value", "value", _value);
 
     if (value === BN_0) { return new Uint8Array([ ]); }
 

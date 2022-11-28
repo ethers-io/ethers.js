@@ -1,18 +1,10 @@
-
-////
-
-export interface Freezable<T> {
-    clone(): T;
-    freeze(): Frozen<T>;
-    isFrozen(): boolean;
-}
-
-export type Frozen<T> = Readonly<{
-    [ P in keyof T ]: T[P] extends (...args: Array<any>) => any ? T[P]:
-                      T[P] extends Freezable<any> ? Frozen<T[P]>:
-                      Readonly<T[P]>;
-}>;
-
+/**
+ *  There are many simple utilities required to interact with
+ *  Ethereum and to simplify the library, without increasing
+ *  the library dependencies for simple functions.
+ *
+ *  @_section api/utils:Utilities  [utils]
+ */
 
 export { decodeBase58, encodeBase58 } from "./base58.js";
 
@@ -31,7 +23,6 @@ export {
 export { EventPayload } from "./events.js";
 
 export {
-    getIpfsGatewayFunc,
     FetchRequest, FetchResponse, FetchCancelSignal,
 } from "./fetch.js";
 
@@ -42,12 +33,10 @@ export {
     getBigInt, getNumber, toBigInt, toNumber, toHex, toArray, toQuantity
 } from "./maths.js";
 
-export { resolveProperties, defineReadOnly, defineProperties} from "./properties.js";
+export { resolveProperties, defineProperties} from "./properties.js";
 
 export { decodeRlp } from "./rlp-decode.js";
 export { encodeRlp } from "./rlp-encode.js";
-
-export { getStore, setStore} from "./storage.js";
 
 export { formatEther, parseEther, formatUnits, parseUnits } from "./units.js";
 
@@ -59,6 +48,7 @@ export {
     Utf8ErrorFuncs,
 } from "./utf8.js";
 
+export { uuidV4 } from "./uuid.js";
 
 /////////////////////////////
 // Types

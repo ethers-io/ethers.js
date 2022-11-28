@@ -1,3 +1,8 @@
+/**
+ *  Explain events...
+ *
+ *  @_section api/utils/events:Events  [events]
+ */
 import { defineProperties } from "./properties.js";
 
 export type Listener = (...args: Array<any>) => void;

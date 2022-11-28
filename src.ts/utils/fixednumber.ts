@@ -1,3 +1,8 @@
+/**
+ *  About fixed-point math...
+ *
+ *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [fixed-point-math]
+ */
 import { getBytes } from "./data.js";
 import { assert, assertArgument, assertPrivate } from "./errors.js";
 import { getBigInt, getNumber, fromTwos, toBigInt, toHex, toTwos } from "./maths.js";
@@ -28,6 +33,12 @@ function getMultiplier(decimals: number): bigint {
     return BigInt("1" + zeros.substring(0, decimals));
 }
 
+/**
+ *  Returns the fixed-point string representation of %%value%% to
+ *  divided by %%decimal%% places.
+ *
+ *  @param {Numeric = 18} decimals
+ */
 export function formatFixed(_value: BigNumberish, _decimals?: Numeric): string {
     if (_decimals == null) { _decimals = 18; }
 
@@ -58,24 +69,29 @@ export function formatFixed(_value: BigNumberish, _decimals?: Numeric): string {
     return result;
 }
 
-export function parseFixed(value: string, _decimals: Numeric): bigint {
+/**
+ *  Returns the value of %%value%% multiplied by %%decimal%% places.
+ *
+ *  @param {Numeric = 18} decimals
+ */
+export function parseFixed(str: string, _decimals: Numeric): bigint {
     if (_decimals == null) { _decimals = 18; }
     const decimals = getNumber(_decimals, "decimals");
 
     const multiplier = getMultiplier(decimals);
 
-    assertArgument(typeof(value) === "string" && value.match(/^-?[0-9.]+$/),
-        "invalid decimal value", "value", value);
+    assertArgument(typeof(str) === "string" && str.match(/^-?[0-9.]+$/),
+        "invalid decimal value", "str", str);
 
     // Is it negative?
-    const negative = (value.substring(0, 1) === "-");
-    if (negative) { value = value.substring(1); }
+    const negative = (str.substring(0, 1) === "-");
+    if (negative) { str = str.substring(1); }
 
-    assertArgument(value !== ".", "missing value", "value", value);
+    assertArgument(str !== ".", "missing value", "str", str);
 
     // Split it into a whole and fractional part
-    const comps = value.split(".");
-    assertArgument(comps.length <= 2, "too many decimal points", "value", value);
+    const comps = str.split(".");
+    assertArgument(comps.length <= 2, "too many decimal points", "str", str);
 
     let whole = (comps[0] || "0"), fraction = (comps[1] || "0");
 
@@ -105,14 +121,41 @@ export function parseFixed(value: string, _decimals: Numeric): bigint {
     return wei;
 }
 
+/**
+ *  A FixedFormat encapsulates the properties required to describe
+ *  a fixed-point arithmetic field.
+ */
 export class FixedFormat {
+    /**
+     *  If true, negative values are permitted, otherwise only
+     *  positive values and zero are allowed.
+     */
     readonly signed: boolean;
+
+    /**
+     *  The number of bits available to store the value in the
+     *  fixed-point arithmetic field.
+     */
     readonly width: number;
+
+    /**
+     *  The number of decimal places in the fixed-point arithment field.
+     */
     readonly decimals: number;
+
+    /**
+     *  A human-readable representation of the fixed-point arithmetic field.
+     */
     readonly name: string;
 
+    /**
+     *  @private
+     */
     readonly _multiplier: bigint;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, signed: boolean, width: number, decimals: number) {
         assertPrivate(guard, _guard, "FixedFormat");
 
@@ -127,6 +170,25 @@ export class FixedFormat {
         Object.freeze(this);
     }
 
+    /**
+     *  Returns a new FixedFormat for %%value%%.
+     *
+     *  If %%value%% is specified as a ``number``, the bit-width is
+     *  128 bits and %%value%% is used for the ``decimals``.
+     *
+     *  A string %%value%% may begin with ``fixed`` or ``ufixed``
+     *  for signed and unsigned respectfully. If no other properties
+     *  are specified, the bit-width is 128-bits with 18 decimals.
+     *
+     *  To specify the bit-width and demicals, append them separated
+     *  by an ``"x"`` to the %%value%%.
+     *
+     *  For example, ``ufixed128x18`` describes an unsigned, 128-bit
+     *  wide format with 18 decimals.
+     *
+     *  If %%value%% is an other object, its properties for ``signed``,
+     *  ``width`` and ``decimals`` are checked.
+     */
     static from(value: any): FixedFormat {
         if (value instanceof FixedFormat) { return value; }
 
@@ -170,16 +232,26 @@ export class FixedFormat {
 }
 
 /**
- *  Fixed Number class
+ *  A FixedNumber represents a value over its [[FixedFormat]]
+ *  arithmetic field.
+ *
+ *  A FixedNumber can be used to perform math, losslessly, on
+ *  values which have decmial places.
  */
 export class FixedNumber {
     readonly format: FixedFormat;
 
+    /**
+     *  @private
+     */
     readonly _isFixedNumber: boolean;
 
     //#hex: string;
     #value: string;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, hex: string, value: string, format?: FixedFormat) {
         assertPrivate(guard, _guard, "FixedNumber");
 
@@ -198,7 +270,7 @@ export class FixedNumber {
     }
 
     /**
-     *  Returns a new [[FixedNumber]] with the result of this added
+     *  Returns a new [[FixedNumber]] with the result of %%this%% added
      *  to %%other%%.
      */
     addUnsafe(other: FixedNumber): FixedNumber {
@@ -208,6 +280,10 @@ export class FixedNumber {
         return FixedNumber.fromValue(a + b, this.format.decimals, this.format);
     }
 
+    /**
+     *  Returns a new [[FixedNumber]] with the result of %%other%% subtracted
+     *   %%this%%.
+     */
     subUnsafe(other: FixedNumber): FixedNumber {
         this.#checkFormat(other);
         const a = parseFixed(this.#value, this.format.decimals);
@@ -215,6 +291,10 @@ export class FixedNumber {
         return FixedNumber.fromValue(a - b, this.format.decimals, this.format);
     }
 
+    /**
+     *  Returns a new [[FixedNumber]] with the result of %%this%% multiplied
+     *  by %%other%%.
+     */
     mulUnsafe(other: FixedNumber): FixedNumber {
         this.#checkFormat(other);
         const a = parseFixed(this.#value, this.format.decimals);
@@ -222,6 +302,10 @@ export class FixedNumber {
         return FixedNumber.fromValue((a * b) / this.format._multiplier, this.format.decimals, this.format);
     }
 
+    /**
+     *  Returns a new [[FixedNumber]] with the result of %%this%% divided
+     *  by %%other%%.
+     */
     divUnsafe(other: FixedNumber): FixedNumber {
         this.#checkFormat(other);
         const a = parseFixed(this.#value, this.format.decimals);
@@ -229,6 +313,12 @@ export class FixedNumber {
         return FixedNumber.fromValue((a * this.format._multiplier) / b, this.format.decimals, this.format);
     }
 
+    /**
+     *  Returns a new [[FixedNumber]] which is the largest **integer**
+     *  that is less than or equal to %%this%%.
+     *
+     *  The decimal component of the result will always be ``0``.
+     */
     floor(): FixedNumber {
         const comps = this.toString().split(".");
         if (comps.length === 1) { comps.push("0"); }
@@ -243,6 +333,12 @@ export class FixedNumber {
         return result;
     }
 
+    /**
+     *  Returns a new [[FixedNumber]] which is the smallest **integer**
+     *  that is greater than or equal to %%this%%.
+     *
+     *  The decimal component of the result will always be ``0``.
+     */
     ceiling(): FixedNumber {
         const comps = this.toString().split(".");
         if (comps.length === 1) { comps.push("0"); }
@@ -257,7 +353,14 @@ export class FixedNumber {
         return result;
     }
 
-    // @TODO: Support other rounding algorithms
+    /**
+     *  Returns a new [[FixedNumber]] with the decimal component
+     *  rounded up on ties.
+     *
+     *  The decimal component of the result will always be ``0``.
+     *
+     *  @param {number = 0} decimals
+     */
     round(decimals?: number): FixedNumber {
         if (decimals == null) { decimals = 0; }
 
@@ -276,14 +379,23 @@ export class FixedNumber {
         return this.mulUnsafe(factor).addUnsafe(bump).floor().divUnsafe(factor);
     }
 
+    /**
+     *  Returns true if %%this%% is equal to ``0``.
+     */
     isZero(): boolean {
         return (this.#value === "0.0" || this.#value === "0");
     }
 
+    /**
+     *  Returns true if %%this%% is less than ``0``.
+     */
     isNegative(): boolean {
         return (this.#value[0] === "-");
     }
 
+    /**
+     *  Returns the string representation of %%this%%.
+     */
     toString(): string { return this.#value; }
 
     toHexString(_width: Numeric): string {
@@ -300,19 +412,45 @@ export class FixedNumber {
         */
     }
 
+    /**
+     *  Returns a float approximation.
+     *
+     *  Due to IEEE 754 precission (or lack thereof), this function
+     *  can only return an approximation and most values will contain
+     *  rounding errors.
+     */
     toUnsafeFloat(): number { return parseFloat(this.toString()); }
 
+    /**
+     *  Return a new [[FixedNumber]] with the same value but has had
+     *  its field set to %%format%%.
+     *
+     *  This will throw if the value cannot fit into %%format%%.
+     */
     toFormat(format: FixedFormat | string): FixedNumber {
         return FixedNumber.fromString(this.#value, format);
     }
 
-
-    static fromValue(value: BigNumberish, decimals: number = 0, format: FixedFormat | string | number = "fixed"): FixedNumber {
+    /**
+     *  Creates a new [[FixedNumber]] for %%value%% multiplied by
+     *  %%decimal%% places with %%format%%.
+     *
+     *  @param {number = 0} decimals
+     *  @param {FixedFormat | string | number = "fixed"} format
+     */
+    static fromValue(value: BigNumberish, decimals?: number, format?: FixedFormat | string | number): FixedNumber {
+        if (decimals == null) { decimals = 0; }
+        if (format == null) { format = "fixed"; }
         return FixedNumber.fromString(formatFixed(value, decimals), FixedFormat.from(format));
     }
 
-
-    static fromString(value: string, format: FixedFormat | string | number = "fixed"): FixedNumber {
+    /**
+     *  Creates a new [[FixedNumber]] for %%value%% with %%format%%.
+     *
+     *  @param {FixedFormat | string | number = "fixed"} format
+     */
+    static fromString(value: string, format?: FixedFormat | string | number): FixedNumber {
+        if (format == null) { format = "fixed"; }
         const fixedFormat = FixedFormat.from(format);
         const numeric = parseFixed(value, fixedFormat.decimals);
 
@@ -332,7 +470,12 @@ export class FixedNumber {
         return new FixedNumber(_guard, hex, decimal, fixedFormat);
     }
 
-    static fromBytes(_value: BytesLike, format: FixedFormat | string | number = "fixed"): FixedNumber {
+    /**
+     *  Creates a new [[FixedNumber]] with the big-endian representation
+     *  %%value%% with %%format%%.
+     */
+    static fromBytes(_value: BytesLike, format?: FixedFormat | string | number): FixedNumber {
+        if (format == null) { format = "fixed"; }
         const value = getBytes(_value, "value");
         const fixedFormat = FixedFormat.from(format);
 
@@ -349,6 +492,9 @@ export class FixedNumber {
         return new FixedNumber(_guard, hex, decimal, fixedFormat);
     }
 
+    /**
+     *  Creates a new [[FixedNumber]].
+     */
     static from(value: any, format?: FixedFormat | string | number): FixedNumber {
         if (typeof(value) === "string") {
             return FixedNumber.fromString(value, format);
@@ -370,6 +516,9 @@ export class FixedNumber {
         assertArgument(false, "invalid FixedNumber value", "value", value);
     }
 
+    /**
+     *  Returns true if %%value%% is a [[FixedNumber]].
+     */
     static isFixedNumber(value: any): value is FixedNumber {
         return !!(value && value._isFixedNumber);
     }
