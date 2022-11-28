@@ -1,3 +1,9 @@
+/**
+ *  About frgaments...
+ *
+ *  @_subsection api/abi/abi-coder:Fragments
+ */
+
 import {
     defineProperties, getBigInt, getNumber,
     assert, assertPrivate, assertArgument
@@ -460,6 +466,9 @@ export class ParamType {
     readonly arrayChildren!: null | ParamType;
 
 
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, type: string, baseType: string, indexed: null | boolean, components: null | ReadonlyArray<ParamType>, arrayLength: null | number, arrayChildren: null | ParamType) {
         assertPrivate(guard, _guard, "ParamType");
         Object.defineProperty(this, internal, { value: ParamTypeInternal });
@@ -489,7 +498,8 @@ export class ParamType {
     //   - sighash: "(uint256,address)"
     //   - minimal: "tuple(uint256,address) indexed"
     //   - full:    "tuple(uint256 foo, address bar) indexed baz"
-    format(format: FormatType = "sighash"): string {
+    format(format?: FormatType): string {
+        if (format == null) { format = "sighash"; }
         if (format === "json") {
             let result: any = {
                 type: ((this.baseType === "tuple") ? "tuple": this.type),
@@ -629,7 +639,7 @@ export class ParamType {
         }
     }
 
-    async walkAsync(value: any, process: (type: string, value: any) => any | Promise<any>): Promise<any> {
+    async walkAsync(value: any, process: FragmentWalkAsyncFunc): Promise<any> {
         const promises: Array<Promise<void>> = [ ];
         const result: [ any ] = [ value ];
         this.#walkAsync(promises, value, process, (value: any) => {
@@ -733,6 +743,9 @@ export abstract class Fragment {
     readonly type!: FragmentType;
     readonly inputs!: ReadonlyArray<ParamType>;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, type: FragmentType, inputs: ReadonlyArray<ParamType>) {
         assertPrivate(guard, _guard, "Fragment");
         inputs = Object.freeze(inputs.slice());
@@ -802,6 +815,9 @@ export abstract class Fragment {
 export abstract class NamedFragment extends Fragment {
     readonly name!: string;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, type: FragmentType, name: string, inputs: ReadonlyArray<ParamType>) {
         super(guard, type, inputs);
         assertArgument(typeof(name) === "string" && name.match(regexIdentifier),
@@ -816,6 +832,9 @@ function joinParams(format: FormatType, params: ReadonlyArray<ParamType>): strin
 }
 
 export class ErrorFragment extends NamedFragment {
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>) {
         super(guard, "error", name, inputs);
         Object.defineProperty(this, internal, { value: ErrorFragmentInternal });
@@ -825,7 +844,8 @@ export class ErrorFragment extends NamedFragment {
         return id(this.format("sighash")).substring(0, 10);
     }
 
-    format(format: FormatType = "sighash"): string {
+    format(format?: FormatType): string {
+        if (format == null) { format = "sighash"; }
         if (format === "json") {
             return JSON.stringify({
                 type: "error",
@@ -867,6 +887,9 @@ export class ErrorFragment extends NamedFragment {
 export class EventFragment extends NamedFragment {
     readonly anonymous!: boolean;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>, anonymous: boolean) {
         super(guard, "event", name, inputs);
         Object.defineProperty(this, internal, { value: EventFragmentInternal });
@@ -877,7 +900,8 @@ export class EventFragment extends NamedFragment {
         return id(this.format("sighash"));
     }
 
-    format(format: FormatType = "sighash"): string {
+    format(format?: FormatType): string {
+        if (format == null) { format = "sighash"; }
         if (format === "json") {
             return JSON.stringify({
                 type: "event",
@@ -923,14 +947,17 @@ export class ConstructorFragment extends Fragment {
     readonly payable!: boolean;
     readonly gas!: null | bigint;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, type: FragmentType, inputs: ReadonlyArray<ParamType>, payable: boolean, gas: null | bigint) {
         super(guard, type, inputs);
         Object.defineProperty(this, internal, { value: ConstructorFragmentInternal });
         defineProperties<ConstructorFragment>(this, { payable, gas });
     }
 
-    format(format: FormatType = "sighash"): string {
-        assert(format !== "sighash", "cannot format a constructor for sighash",
+    format(format?: FormatType): string {
+        assert(format != null && format !== "sighash", "cannot format a constructor for sighash",
             "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
 
         if (format === "json") {
@@ -983,6 +1010,9 @@ export class FunctionFragment extends NamedFragment {
     readonly payable!: boolean;
     readonly gas!: null | bigint;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, stateMutability: string, inputs: ReadonlyArray<ParamType>, outputs: ReadonlyArray<ParamType>, gas: null | bigint) {
         super(guard, "function", name, inputs);
         Object.defineProperty(this, internal, { value: FunctionFragmentInternal });
@@ -996,7 +1026,8 @@ export class FunctionFragment extends NamedFragment {
         return id(this.format("sighash")).substring(0, 10);
     }
 
-    format(format: FormatType = "sighash"): string {
+    format(format?: FormatType): string {
+        if (format == null) { format = "sighash"; }
         if (format === "json") {
             return JSON.stringify({
                 type: "function",
@@ -1068,6 +1099,10 @@ export class FunctionFragment extends NamedFragment {
 }
 
 export class StructFragment extends NamedFragment {
+
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>) {
         super(guard, "struct", name, inputs);
         Object.defineProperty(this, internal, { value: StructFragmentInternal });

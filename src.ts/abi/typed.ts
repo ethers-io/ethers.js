@@ -1,3 +1,9 @@
+/**
+ *  About typed...
+ *
+ *  @_subsection: api/abi:Typed Values
+ */
+
 import { assertPrivate, defineProperties } from "../utils/index.js";
 
 import type { Addressable } from "../address/index.js";
@@ -24,22 +30,26 @@ function b(value: BytesLike, size?: number): Typed {
 }
 
 export interface TypedNumber extends Typed {
+    value: number;
     defaultValue(): number;
     minValue(): number;
     maxValue(): number;
 }
 
 export interface TypedBigInt extends Typed {
+    value: bigint;
     defaultValue(): bigint;
     minValue(): bigint;
     maxValue(): bigint;
 }
 
 export interface TypedData extends Typed {
+    value: string;
     defaultValue(): string;
 }
 
 export interface TypedString extends Typed {
+    value: string;
     defaultValue(): string;
 }
 
@@ -53,7 +63,8 @@ export class Typed {
 
     readonly _typedSymbol!: Symbol;
 
-    constructor(gaurd: any, type: string, value: any, options: any = null) {
+    constructor(gaurd: any, type: string, value: any, options?: any) {
+        if (options == null) { options = null; }
         assertPrivate(_gaurd, gaurd, "Typed");
         defineProperties<Typed>(this, { _typedSymbol, type, value });
         this.#options = options;
@@ -238,10 +249,20 @@ export class Typed {
         return new Typed(_gaurd, "overrides", Object.assign({ }, v));
     }
 
+    /**
+     *  Returns true only if %%value%% is a [[Typed]] instance.
+     */
     static isTyped(value: any): value is Typed {
         return (value && value._typedSymbol === _typedSymbol);
     }
 
+    /**
+     *  If the value is a [[Typed]] instance, validates the underlying value
+     *  and returns it, otherwise returns value directly.
+     *
+     *  This is useful for functions that with to accept either a [[Typed]]
+     *  object or values.
+     */
     static dereference<T>(value: Typed | T, type: string): T {
         if (Typed.isTyped(value)) {
             if (value.type !== type) {

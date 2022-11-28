@@ -3,7 +3,9 @@ import { Coder } from "./abstract-coder.js";
 
 import type { Reader, Writer } from "./abstract-coder.js";
 
-
+/**
+ *  @_ignore
+ */
 export class BooleanCoder extends Coder {
 
     constructor(localName: string) {

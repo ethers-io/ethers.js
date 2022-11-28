@@ -7,6 +7,9 @@ import { pack, unpack } from "./array.js";
 
 import type { Reader, Writer } from "./abstract-coder.js";
 
+/**
+ *  @_ignore
+ */
 export class TupleCoder extends Coder {
     readonly coders!: ReadonlyArray<Coder>;
 

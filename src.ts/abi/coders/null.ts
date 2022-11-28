@@ -3,6 +3,9 @@ import type { Reader, Writer } from "./abstract-coder.js";
 
 const Empty = new Uint8Array([ ]);
 
+/**
+ *  @_ignore
+ */
 export class NullCoder extends Coder {
 
     constructor(localName: string) {

@@ -5,6 +5,9 @@ import { Coder } from "./abstract-coder.js";
 import type { Reader, Writer } from "./abstract-coder.js";
 
 
+/**
+ *  @_ignore
+ */
 export class DynamicBytesCoder extends Coder {
     constructor(type: string, localName: string) {
        super(type, type, localName, true);
@@ -26,6 +29,9 @@ export class DynamicBytesCoder extends Coder {
     }
 }
 
+/**
+ *  @_ignore
+ */
 export class BytesCoder extends DynamicBytesCoder {
     constructor(localName: string) {
         super("bytes", localName);

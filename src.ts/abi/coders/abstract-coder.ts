@@ -7,7 +7,7 @@ import {
 
 import type { BigNumberish, BytesLike } from "../../utils/index.js";
 
-export const WordSize = 32;
+export const WordSize: number = 32;
 const Padding = new Uint8Array(WordSize);
 
 // Properties used to immediate pass through to the underlying object
@@ -16,11 +16,21 @@ const passProperties = [ "then" ];
 
 const _guard = { };
 
+/**
+ *  A [[Result]] is a sub-class of Array, which allows accessing any
+ *  of its values either positionally by its index or, if keys are
+ *  provided by its name.
+ *
+ *  @_docloc: api/abi
+ */
 export class Result extends Array<any> {
     #indices: Map<string, Array<number>>;
 
     [ K: string | number ]: any
 
+    /**
+     *  @private
+     */
     constructor(guard: any, items: Array<any>, keys?: Array<null | string>) {
         assertPrivate(guard, _guard, "Result");
         super(...items);
@@ -85,6 +95,9 @@ export class Result extends Array<any> {
     }
     */
 
+    /**
+     *  @_ignore
+     */
     slice(start?: number | undefined, end?: number | undefined): Array<any> {
         if (start == null) { start = 0; }
         if (end == null) { end = this.length; }
@@ -108,6 +121,14 @@ export class Result extends Array<any> {
         throw wrapped;
     }
 
+    /**
+     *  Returns the value for %%name%%.
+     *
+     *  Since it is possible to have a key whose name conflicts with
+     *  a method on a [[Result]] or its superclass Array, or any
+     *  JavaScript keyword, this ensures all named values are still
+     *  accessible by name.
+     */
     getValue(name: string): any {
         const index = this.#indices.get(name);
         if (index != null && index.length === 1) {
@@ -121,11 +142,28 @@ export class Result extends Array<any> {
         throw new Error(`no named parameter: ${ JSON.stringify(name) }`);
     }
 
-    static fromItems(items: Array<any>, keys?: Array<null | string>) {
+    /**
+     *  Creates a new [[Result]] for %%items%% with each entry
+     *  also accessible by its corresponding name in %%keys%%.
+     */
+    static fromItems(items: Array<any>, keys?: Array<null | string>): Result {
         return new Result(_guard, items, keys);
     }
 }
 
+/**
+ *  Returns all errors found in a [[Result]].
+ *
+ *  Since certain errors encountered when creating a [[Result]] do
+ *  not impact the ability to continue parsing data, they are
+ *  deferred until they are actually accessed. Hence a faulty string
+ *  in an Event that is never used does not impact the program flow.
+ *
+ *  However, sometimes it may be useful to access, identify or
+ *  validate correctness of a [[Result]].
+ *
+ *  @_docloc api/abi
+ */
 export function checkResultErrors(result: Result): Array<{ path: Array<string | number>, error: Error }> {
     // Find the first error (if any)
     const errors: Array<{ path: Array<string | number>, error: Error }> = [ ];
@@ -162,7 +200,9 @@ function getValue(value: BigNumberish): Uint8Array {
     return bytes;
 }
 
-
+/**
+ *  @_ignore
+ */
 export abstract class Coder {
 
     // The coder name:
@@ -198,6 +238,9 @@ export abstract class Coder {
     abstract defaultValue(): any;
 }
 
+/**
+ *  @_ignore
+ */
 export class Writer {
     // An array of WordSize lengthed objects to concatenation
     #data: Array<Uint8Array>;
@@ -250,6 +293,9 @@ export class Writer {
     }
 }
 
+/**
+ *  @_ignore
+ */
 export class Reader {
     // Allows incomplete unpadded data to be read; otherwise an error
     // is raised if attempting to overrun the buffer. This is required

@@ -1,3 +1,9 @@
+/**
+ *  About Interface
+ *
+ *  @_subsection api/abi:Interfaces  [interfaces]
+ */
+
 import { keccak256 } from "../crypto/index.js"
 import { id } from "../hash/index.js"
 import {
@@ -6,7 +12,7 @@ import {
     assert
 } from "../utils/index.js";
 
-import { AbiCoder, defaultAbiCoder, getBuiltinCallException } from "./abi-coder.js";
+import { AbiCoder } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
 import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
 import { Typed } from "./typed.js";
@@ -144,9 +150,23 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
 //export type AbiCoder = any;
 //const defaultAbiCoder: AbiCoder = { };
 
+/**
+ *  @TODO
+ */
 export type InterfaceAbi = string | ReadonlyArray<Fragment | JsonFragment | string>;
 
+/**
+ *  An Interface abstracts many of the low-level details for
+ *  encoding and decoding the data on the blockchain.
+ *
+ *  An ABI provides information on how to encode data to send to
+ *  a Contract, how to decode the results and events and how to
+ *  interpret revert errors.
+ *
+ *  The ABI can be specified by [any supported format](InterfaceAbi).
+ */
 export class Interface {
+
     /**
      *  All the Contract ABI members (i.e. methods, events, errors, etc).
      */
@@ -164,6 +184,9 @@ export class Interface {
 
     #abiCoder: AbiCoder;
 
+    /**
+     *  Create a new Interface for the %%fragments%%.
+     */
     constructor(fragments: InterfaceAbi) {
         let abi: ReadonlyArray<Fragment | JsonFragment | string> = [ ];
         if (typeof(fragments) === "string") {
@@ -267,7 +290,7 @@ export class Interface {
      *  data.
      */
     getAbiCoder(): AbiCoder {
-        return defaultAbiCoder;
+        return AbiCoder.defaultAbiCoder();
     }
 
     // Find a function definition by any means necessary (unless it is ambiguous)
@@ -661,7 +684,7 @@ export class Interface {
     makeError(_data: BytesLike, tx: CallExceptionTransaction): CallExceptionError {
         const data = getBytes(_data, "data");
 
-        const error = getBuiltinCallException("call", tx, data);
+        const error = AbiCoder.getBuiltinCallException("call", tx, data);
 
         // Not a built-in error; try finding a custom error
         if (!error.message.match(/could not decode/)) {
@@ -980,7 +1003,7 @@ export class Interface {
      *  The %%value%% may be provided as an existing [[Interface]] object,
      *  a JSON-encoded ABI or any Human-Readable ABI format.
      */
-    static from(value: ReadonlyArray<Fragment | string | JsonFragment> | string | Interface): Interface {
+    static from(value: InterfaceAbi | Interface): Interface {
         // Already an Interface, which is immutable
         if (value instanceof Interface) { return value; }
 

@@ -14,6 +14,9 @@ const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
+/**
+ *  @_ignore
+ */
 export class NumberCoder extends Coder {
     readonly size!: number;
     readonly signed!: boolean;

@@ -1,3 +1,8 @@
+/**
+ *  About bytes32 strings...
+ *
+ *  @_docloc: api/utils:Bytes32 Strings
+ */
 
 import {
     getBytes, toUtf8Bytes, toUtf8String, zeroPadBytes
@@ -5,7 +10,9 @@ import {
 
 import type { BytesLike } from "../utils/index.js";
 
-
+/**
+ *  Encodes %%text%% as a Bytes32 string.
+ */
 export function encodeBytes32String(text: string): string {
 
     // Get the bytes
@@ -18,6 +25,9 @@ export function encodeBytes32String(text: string): string {
     return zeroPadBytes(bytes, 32);
 }
 
+/**
+ *  Encodes the Bytes32-encoded %%bytes%% into a string.
+ */
 export function decodeBytes32String(_bytes: BytesLike): string {
     const data = getBytes(_bytes, "bytes");
 
