@@ -1,5 +1,8 @@
 const Base64 = ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
 
+/**
+ *  @_ignore
+ */
 export function decodeBits(width: number, data: string): Array<number> {
     const maxValue = (1 << width) - 1;
     const result: Array<number> = [ ];

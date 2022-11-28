@@ -61,8 +61,21 @@ function loadWords(): Array<string> {
     return wordlist;
 }
 
+let wordlist: null | LangKo = null;
 
-class LangKo extends Wordlist {
+/**
+ *  The [[link-bip-39]] Wordlist for the Korean (ko) language.
+ *
+ *  @_docloc: api/wordlists
+ */
+export class LangKo extends Wordlist {
+
+    /**
+     *  Creates a new instance of the Korean language Wordlist.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langKo]] should suffice.
+     */
     constructor() {
         super("ko");
     }
@@ -77,6 +90,13 @@ class LangKo extends Wordlist {
     getWordIndex(word: string): number {
         return loadWords().indexOf(word);
     }
-}
 
-export const langKo = new LangKo();
+    /**
+     *  Returns a singleton instance of a ``LangKo``, creating it
+     *  if this is the first time being called.
+     */
+    static wordlist(): LangKo {
+        if (wordlist == null) { wordlist = new LangKo(); }
+        return wordlist;
+    }
+}

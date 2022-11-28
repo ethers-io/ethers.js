@@ -58,8 +58,31 @@ function loadWords(locale: string): Array<string> {
     return wordlist;
 }
 
-class LangZh extends Wordlist {
-    constructor(country: string) { super("zh_" + country); }
+const wordlists: Record<string, LangZh> = { };
+
+/**
+ *  The [[link-bip-39]] Wordlist for the Chinese language.
+ *
+ *  This Wordlist supports both simplified and traditional
+ *  character set, depending on which is specified in the
+ *  constructor.
+ *
+ *  For the ``zh_cn`` language use ``"cn"`` and for the ``zh_tw``
+ *  langauge, use ``"tw"``.
+ *
+ *  @_docloc: api/wordlists
+ */
+export class LangZh extends Wordlist {
+
+    /**
+     *  Creates a new instance of the Chinese language Wordlist for
+     *  the %%dialect%%, either ``"cn"`` or ``"tw"`` for simplified
+     *  or traditional, respectively.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langZhCn]] and [[langZhTw]] should suffice.
+     */
+    constructor(dialect: string) { super("zh_" + dialect); }
 
     getWord(index: number): string {
         const words = loadWords(this.locale);
@@ -72,11 +95,19 @@ class LangZh extends Wordlist {
         return loadWords(this.locale).indexOf(word);
     }
 
-    split(mnemonic: string): Array<string> {
-        mnemonic = mnemonic.replace(/(?:\u3000| )+/g, "");
-        return mnemonic.split("");
+    split(phrase: string): Array<string> {
+        phrase = phrase.replace(/(?:\u3000| )+/g, "");
+        return phrase.split("");
+    }
+
+    /**
+     *  Returns a singleton instance of a ``LangZh`` for %%dialect%%,
+     *  creating it if this is the first time being called.
+     */
+    static wordlist(dialect: string): LangZh {
+        if (wordlists[dialect] == null) {
+            wordlists[dialect] = new LangZh(dialect);
+        }
+        return wordlists[dialect];
     }
 }
-
-export const langZhCn = new LangZh("cn");
-export const langZhTw = new LangZh("tw");

@@ -19,6 +19,9 @@ function unfold(words: Array<string>, sep: string): Array<string> {
     }, <Array<string>>[]);
 }
 
+/**
+ *  @_ignore
+ */
 export function decode(data: string, subs: string): Array<string> {
 
     // Replace all the substitutions with their expanded form
@@ -43,6 +46,9 @@ export function decode(data: string, subs: string): Array<string> {
     return unfold(unfold(clumps, ";"), ":");
 }
 
+/**
+ *  @_ignore
+ */
 export function decodeOwl(data: string): Array<string> {
     assertArgument(data[0] === "0", "unsupported auwl data", "data", data);
 

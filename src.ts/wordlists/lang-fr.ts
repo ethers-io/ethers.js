@@ -4,8 +4,29 @@ const words = "0erreleontiteurinueiriet cegeanseali medenel q)eniluxaus ch0Ais}A
 const accents = "e7693&)U*o&)Ry^)*)W))))#X^))))@@)#Wf)m%)#!))AG)&IIAQIIIBIIHJNAgBIILIDJGo)))HIQIIIIA(IGgJHH(BIIxX#)Ou)@*IAAPIIIJHQJ)&QIQPYI(HYAQC%)!))QHJJ@)#)^f*^AXCJ))$%CP))%&m)u)@e^A#G#))W@!(IKK%!(I%))O@QA))@GG#e))))WHJIWh))my@IIBT^)!)HAYGETHI*))!QnUDG)))nBoKAC*HwyQh))$&)G&)UGO)G)))(BX#v**)%O,e7686)I))@)&)gdMP()))ud)p#L))I^FIHYdWG))D@DFV)QA)o%MyTh%*)Z)%)n(XANc^R)YS";
 const checksum = "0x51deb7ae009149dc61a6bd18a918eb7ac78d2775726c68e598b92d002519b045";
 
-export class LangFr extends WordlistOwlA {
-    constructor() { super("fr", words, accents, checksum); }
-}
+let wordlist: null | LangFr = null;
 
-export const langFr = new LangFr();
+/**
+ *  The [[link-bip-39]] Wordlist for the French (fr) language.
+ *
+ *  @_docloc: api/wordlists
+ */
+export class LangFr extends WordlistOwlA {
+
+    /**
+     *  Creates a new instance of the French language Wordlist.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langFr]] should suffice.
+     */
+    constructor() { super("fr", words, accents, checksum); }
+
+    /**
+     *  Returns a singleton instance of a ``LangFr``, creating it
+     *  if this is the first time being called.
+     */
+    static wordlist(): LangFr {
+        if (wordlist == null) { wordlist = new LangFr(); }
+        return wordlist;
+    }
+}

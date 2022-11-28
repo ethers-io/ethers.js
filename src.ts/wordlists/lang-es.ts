@@ -4,8 +4,30 @@ const words = "0arertoiotadonoaRteirroenaNonaLsolocoiliaralaorrenadaChoN$n0A>Dom
 const accents = "aeiou7695@@BZWWavwUJkO@Y-Kn))YEGq#E@O)cI@#ZkMHv$e*))M!!)D**$GW!oKm*Acoh^k&It-pi^SYW)$^n!G)bO!Wkzam(jS#X)Og*^l^RW!bQ#QygBKXfzE))hti!Qm)Cng%%c)mJiI*HJWbmYniCLwNdYyY%WKO^bnT$PuGOr!IvHu&G(GKbtBuhiW&!eO@XMeoYQeCa#!MrTJCq!OW&CHG(WCcW%%)$rfrIegu$)w!G)JGmWWw)MnD%SXXWIT^LWAZuVWB^W)eTL^x&$WGHW(nKWEMA)#$F$x$Waekqs,n7715)W*HM-$WAcCiu(a))VCZ)GG%(*CWWdW%$D!UCO$M";
 const checksum = "0xf74fb7092aeacdfbf8959557de22098da512207fb9f109cb526994938cf40300";
 
+let wordlist: null | LangEs = null;
+
+/**
+ *  The [[link-bip-39]] Wordlist for the Spanish (es) language.
+ *
+ *  @_docloc: api/wordlists
+ */
 export class LangEs extends WordlistOwlA {
+
+    /**
+     *  Creates a new instance of the Spanish language Wordlist.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langEs]] should suffice.
+     */
     constructor() { super("es", words, accents, checksum); }
+
+    /**
+     *  Returns a singleton instance of a ``LangEs``, creating it
+     *  if this is the first time being called.
+     */
+    static wordlist(): LangEs {
+        if (wordlist == null) { wordlist = new LangEs(); }
+        return wordlist;
+    }
 }
 
-export const langEs = new LangEs();

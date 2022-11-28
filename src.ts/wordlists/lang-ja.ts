@@ -35,7 +35,7 @@ const mapping = "~~AzB~X~a~KN~Q~D~S~C~G~E~Y~p~L~I~O~eH~g~V~hxyumi~~U~~Z~~v~~s~~d
 
 let _wordlist: null | Array<string> = null;
 
-function hex(word: string) {
+function hex(word: string): string {
     return hexlify(toUtf8Bytes(word));
 }
 
@@ -131,7 +131,21 @@ function loadWords(): Array<string> {
     return wordlist;
 }
 
-class LangJa extends Wordlist {
+let wordlist: null | LangJa = null;
+
+/**
+ *  The [[link-bip-39]] Wordlist for the Japanese (ja) language.
+ *
+ *  @_docloc: api/wordlists
+ */
+export class LangJa extends Wordlist {
+
+    /**
+     *  Creates a new instance of the Japanese language Wordlist.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langJa]] should suffice.
+     */
     constructor() { super("ja"); }
 
     getWord(index: number): string {
@@ -145,14 +159,21 @@ class LangJa extends Wordlist {
         return loadWords().indexOf(word);
     }
 
-    split(mnemonic: string): Array<string> {
+    split(phrase: string): Array<string> {
         //logger.assertNormalize();
-        return mnemonic.split(/(?:\u3000| )+/g);
+        return phrase.split(/(?:\u3000| )+/g);
     }
 
     join(words: Array<string>): string {
         return words.join("\u3000");
     }
-}
 
-export const langJa = new LangJa();
+    /**
+     *  Returns a singleton instance of a ``LangJa``, creating it
+     *  if this is the first time being called.
+     */
+    static wordlist(): LangJa {
+        if (wordlist == null) { wordlist = new LangJa(); }
+        return wordlist;
+    }
+}
