@@ -1,10 +1,12 @@
+/**
+ *  Some common constants useful for Ethereum.
+ *
+ *  @_section: api/constants: Constants  [constants]
+ */
+
 export { ZeroAddress } from "./addresses.js";
 export { ZeroHash } from "./hashes.js";
 export {
-    NegativeOne,
-    Zero,
-    One,
-    Two,
     N,
     WeiPerEther,
     MaxUint256,
