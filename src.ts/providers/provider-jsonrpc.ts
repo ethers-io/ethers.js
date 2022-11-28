@@ -3,7 +3,7 @@
 
 // https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
 
-import { getBuiltinCallException } from "../abi/index.js";
+import { AbiCoder } from "../abi/index.js";
 import { getAddress, resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
@@ -528,7 +528,8 @@ export class JsonRpcApiProvider extends AbstractProvider {
         return super._perform(req);
     }
 
-    /** Sub-classes may override this; it detects the *actual* network that
+    /**
+     *  Sub-classes may override this; it detects the *actual* network that
      *  we are **currently** connected to.
      *
      *  Keep in mind that [[send]] may only be used once [[ready]], otherwise the
@@ -783,7 +784,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
         if (method === "eth_call" || method === "eth_estimateGas") {
             const result = spelunkData(error);
 
-            const e = getBuiltinCallException(
+            const e = AbiCoder.getBuiltinCallException(
                 (method === "eth_call") ? "call": "estimateGas",
                 ((<any>payload).params[0]),
                 (result ? result.data: null)
@@ -961,7 +962,8 @@ export class JsonRpcApiProvider extends AbstractProvider {
      *
      *  Throws if the account doesn't exist.
      */
-    async getSigner(address: number | string = 0): Promise<JsonRpcSigner> {
+    async getSigner(address?: number | string): Promise<JsonRpcSigner> {
+        if (address == null) { address = 0; }
 
         const accountsPromise = this.send("eth_accounts", [ ]);
 

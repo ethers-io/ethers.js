@@ -44,8 +44,8 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
     readonly projectId!: string;
     readonly projectSecret!: null | string;
 
-    constructor(network?: Networkish, apiKey?: any) {
-        const provider = new InfuraProvider(network, apiKey);
+    constructor(network?: Networkish, projectId?: string) {
+        const provider = new InfuraProvider(network, projectId);
 
         const req = provider._getConnection();
         assert(!req.credentials, "INFURA WebSocket project secrets unsupported",
@@ -69,7 +69,8 @@ export class InfuraProvider extends JsonRpcProvider implements CommunityResourca
     readonly projectId!: string;
     readonly projectSecret!: null | string;
 
-    constructor(_network: Networkish = "mainnet", projectId?: null | string, projectSecret?: null | string) {
+    constructor(_network?: Networkish, projectId?: null | string, projectSecret?: null | string) {
+        if (_network == null) { _network = "mainnet"; }
         const network = Network.from(_network);
         if (projectId == null) { projectId = defaultProjectId; }
         if (projectSecret == null) { projectSecret = null; }
@@ -91,8 +92,8 @@ export class InfuraProvider extends JsonRpcProvider implements CommunityResourca
         return (this.projectId === defaultProjectId);
     }
 
-    static getWebSocketProvider(network?: Networkish, apiKey?: any): InfuraWebSocketProvider {
-        return new InfuraWebSocketProvider(network, apiKey);
+    static getWebSocketProvider(network?: Networkish, projectId?: string): InfuraWebSocketProvider {
+        return new InfuraWebSocketProvider(network, projectId);
     }
 
     static getRequest(network: Network, projectId?: null | string, projectSecret?: null | string): FetchRequest {
@@ -112,5 +113,4 @@ export class InfuraProvider extends JsonRpcProvider implements CommunityResourca
 
         return request;
     }
-
 }

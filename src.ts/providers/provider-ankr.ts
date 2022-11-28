@@ -17,10 +17,6 @@ function getHost(name: string): string {
     switch (name) {
         case "mainnet":
             return "rpc.ankr.com/eth";
-        case "ropsten":
-            return "rpc.ankr.com/eth_ropsten";
-        case "rinkeby":
-            return "rpc.ankr.com/eth_rinkeby";
         case "goerli":
             return "rpc.ankr.com/eth_goerli";
         case "matic":
@@ -36,7 +32,8 @@ function getHost(name: string): string {
 export class AnkrProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly apiKey!: string;
 
-    constructor(_network: Networkish = "mainnet", apiKey?: null | string) {
+    constructor(_network?: Networkish, apiKey?: null | string) {
+        if (_network == null) { _network = "mainnet"; }
         const network = Network.from(_network);
         if (apiKey == null) { apiKey = defaultApiKey; }
 

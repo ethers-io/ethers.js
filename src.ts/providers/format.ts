@@ -1,4 +1,6 @@
-
+/**
+ *  @_ignore
+ */
 import { getAddress, getCreateAddress } from "../address/index.js";
 import { Signature } from "../crypto/index.js"
 import { accessListify } from "../transaction/index.js";
@@ -7,6 +9,11 @@ import {
     assert, assertArgument
 } from "../utils/index.js";
 
+import type {
+    BlockParams, LogParams,
+    TransactionReceiptParams, TransactionResponseParams,
+    TransactionResponse
+} from "./provider.js";
 
 
 const BN_0 = BigInt(0);
@@ -83,7 +90,7 @@ export function formatUint256(value: any): string {
     return zeroPadValue(value, 32);
 }
 
-export const formatLog = object({
+const _formatLog = object({
     address: getAddress,
     blockHash: formatHash,
     blockNumber: getNumber,
@@ -97,7 +104,11 @@ export const formatLog = object({
     index: [ "logIndex" ]
 });
 
-function _formatBlock(txFunc: FormatFunc): FormatFunc {
+export function formatLog(value: any): LogParams {
+    return _formatLog(value);
+}
+
+function _formatBlockWith(txFunc: FormatFunc): FormatFunc {
     return object({
         hash: allowNull(formatHash),
         parentHash: formatHash,
@@ -119,11 +130,19 @@ function _formatBlock(txFunc: FormatFunc): FormatFunc {
     });
 }
 
-export const formatBlock = _formatBlock(formatHash);
+const _formatBlock = _formatBlockWith(formatHash);
 
-export const formatBlockWithTransactions = _formatBlock(formatTransactionResponse);
+export function formatBlock(value: any): BlockParams<string> {
+    return _formatBlock(value);
+}
 
-export const formatReceiptLog = object({
+const _formatBlockWithTransactions = _formatBlockWith(formatTransactionResponse);
+
+export function formatBlockWithTransactions(value: any): BlockParams<TransactionResponse> {
+    return _formatBlockWithTransactions(value);
+}
+
+const _formatReceiptLog = object({
     transactionIndex: getNumber,
     blockNumber: getNumber,
     transactionHash: formatHash,
@@ -136,7 +155,11 @@ export const formatReceiptLog = object({
     index: [ "logIndex" ]
 });
 
-export const formatTransactionReceipt = object({
+export function formatReceiptLog(value: any): LogParams {
+    return _formatReceiptLog(value);
+}
+
+const _formatTransactionReceipt = object({
     to: allowNull(getAddress, null),
     from: allowNull(getAddress, null),
     contractAddress: allowNull(getAddress, null),
@@ -160,7 +183,11 @@ export const formatTransactionReceipt = object({
     index: [ "transactionIndex" ],
 });
 
-export function formatTransactionResponse(value: any) {
+export function formatTransactionReceipt(value: any): TransactionReceiptParams {
+    return _formatTransactionReceipt(value);
+}
+
+export function formatTransactionResponse(value: any): TransactionResponseParams {
 
     // Some clients (TestRPC) do strange things like return 0x0 for the
     // 0 address; correct this to be a real address

@@ -1,4 +1,4 @@
-import { getBuiltinCallException } from "../abi/index.js";
+import { AbiCoder } from "../abi/index.js";
 import { accessListify } from "../transaction/index.js";
 import {
     defineProperties,
@@ -257,7 +257,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
     _checkError(req: PerformActionRequest, error: Error, transaction: any): never {
         if (req.method === "call" || req.method === "estimateGas") {
             if (error.message.match(/execution reverted/i)) {
-                const e = getBuiltinCallException(req.method, <any>req.transaction, (<any>error).data);
+                const e = AbiCoder.getBuiltinCallException(req.method, <any>req.transaction, (<any>error).data);
                 e.info = { request: req, error }
                 throw e;
             }

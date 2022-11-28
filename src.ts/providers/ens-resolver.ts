@@ -190,7 +190,8 @@ export class EnsResolver {
         return await this.#supports2544;
     }
 
-    async _fetch(selector: string, parameters: BytesLike = "0x"): Promise<null | string> {
+    async _fetch(selector: string, parameters?: BytesLike): Promise<null | string> {
+        if (parameters == null) { parameters = "0x"; }
 
         // e.g. keccak256("addr(bytes32,uint256)")
         const addrData = concat([ selector, namehash(this.name), parameters ]);
@@ -226,7 +227,8 @@ export class EnsResolver {
         return null;
     }
 
-    async getAddress(coinType: number = 60): Promise<null | string> {
+    async getAddress(coinType?: number): Promise<null | string> {
+        if (coinType == null) { coinType = 60; }
         if (coinType === 60) {
             try {
                 // keccak256("addr(bytes32)")

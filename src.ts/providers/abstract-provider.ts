@@ -384,8 +384,8 @@ export class AbstractProvider implements Provider {
         return <T>(this.#plugins.get(name)) || null;
     }
 
-    set disableCcipRead(value: boolean) { this.#disableCcipRead = !!value; }
     get disableCcipRead(): boolean { return this.#disableCcipRead; }
+    set disableCcipRead(value: boolean) { this.#disableCcipRead = !!value; }
 
     // Shares multiple identical requests made during the same 250ms
     async #perform<T = any>(req: PerformActionRequest): Promise<T> {
@@ -467,7 +467,7 @@ export class AbstractProvider implements Provider {
     }
 
     _wrapBlockWithTransactions(value: BlockParams<TransactionResponseParams>, network: Network): Block<TransactionResponse> {
-        return new Block(formatBlock(value), this);
+        return new Block(formatBlockWithTransactions(value), this);
     }
 
     _wrapLog(value: LogParams, network: Network): Log {
@@ -1034,7 +1034,8 @@ export class AbstractProvider implements Provider {
         this.#timers.delete(timerId);
     }
 
-    _setTimeout(_func: () => void, timeout: number = 0): number {
+    _setTimeout(_func: () => void, timeout?: number): number {
+        if (timeout == null) { timeout = 0; }
         const timerId = this.#nextTimer++;
         const func = () => {
             this.#timers.delete(timerId);
@@ -1330,7 +1331,7 @@ function bytesPad(value: Uint8Array): Uint8Array {
     return result;
 }
 
-const empty = new Uint8Array([ ]);
+const empty: Uint8Array = new Uint8Array([ ]);
 
 // ABI Encodes a series of (bytes, bytes, ...)
 function encodeBytes(datas: Array<BytesLike>): string {

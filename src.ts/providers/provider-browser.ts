@@ -13,7 +13,7 @@ export interface Eip1193Provider {
     request(request: { method: string, params?: Array<any> | Record<string, any> }): Promise<any>;
 };
 
-export type DebugEventJsonRpcApiProvider = {
+export type DebugEventBrowserProvider = {
     action: "sendEip1193Payload",
     payload: { method: string, params: Array<any> }
 } | {

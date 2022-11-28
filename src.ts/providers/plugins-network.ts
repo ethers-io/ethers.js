@@ -45,7 +45,8 @@ export class GasCostPlugin extends NetworkPlugin implements GasCostParameters {
     readonly txAccessListStorageKey!: number;
     readonly txAccessListAddress!: number;
 
-    constructor(effectiveBlock: number = 0, costs?: GasCostParameters) {
+    constructor(effectiveBlock?: number, costs?: GasCostParameters) {
+        if (effectiveBlock == null) { effectiveBlock = 0; }
         super(`org.ethers.network-plugins.gas-cost#${ (effectiveBlock || 0) }`);
 
         const props: Record<string, number> = { effectiveBlock };

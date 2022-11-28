@@ -5,7 +5,7 @@ export interface CommunityResourcable {
 
 // Show the throttle message only once
 const shown: Set<string> = new Set();
-export function showThrottleMessage(service: string) {
+export function showThrottleMessage(service: string): void {
     if (shown.has(service)) { return; }
     shown.add(service);
 
