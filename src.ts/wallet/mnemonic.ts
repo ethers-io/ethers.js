@@ -2,7 +2,7 @@ import { pbkdf2, sha256 } from "../crypto/index.js";
 import {
     defineProperties, getBytes, hexlify, assertNormalize, assertPrivate, assertArgument, toUtf8Bytes
 } from "../utils/index.js";
-import { langEn } from "../wordlists/lang-en.js";
+import { LangEn } from "../wordlists/lang-en.js";
 
 import type { BytesLike } from "../utils/index.js";
 import type { Wordlist } from "../wordlists/index.js";
@@ -19,10 +19,10 @@ function getLowerMask(bits: number): number {
 }
 
 
-function mnemonicToEntropy(mnemonic: string, wordlist: null | Wordlist = langEn): string {
+function mnemonicToEntropy(mnemonic: string, wordlist?: null | Wordlist): string {
     assertNormalize("NFKD");
 
-    if (wordlist == null) { wordlist = langEn; }
+    if (wordlist == null) { wordlist = LangEn.wordlist(); }
 
     const words = wordlist.split(mnemonic);
     assertArgument((words.length % 3) === 0 && words.length >= 12 && words.length <= 24,
@@ -57,11 +57,12 @@ function mnemonicToEntropy(mnemonic: string, wordlist: null | Wordlist = langEn)
     return hexlify(entropy.slice(0, entropyBits / 8));
 }
 
-function entropyToMnemonic(entropy: Uint8Array, wordlist: null | Wordlist = langEn): string {
+function entropyToMnemonic(entropy: Uint8Array, wordlist?: null | Wordlist): string {
+
     assertArgument((entropy.length % 4) === 0 && entropy.length >= 16 && entropy.length <= 32,
         "invalid entropy size", "entropy", "[ REDACTED ]");
 
-    if (wordlist == null) { wordlist = langEn; }
+    if (wordlist == null) { wordlist = LangEn.wordlist(); }
 
     const indices: Array<number> = [ 0 ];
 
@@ -107,9 +108,12 @@ export class Mnemonic {
 
     readonly entropy!: string;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, entropy: string, phrase: string, password?: null | string, wordlist?: null | Wordlist) {
         if (password == null) { password = ""; }
-        if (wordlist == null) { wordlist = langEn; }
+        if (wordlist == null) { wordlist = LangEn.wordlist(); }
         assertPrivate(guard, _guard, "Mnemonic");
         defineProperties<Mnemonic>(this, { phrase, password, wordlist, entropy });
     }
