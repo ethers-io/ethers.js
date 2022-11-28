@@ -6,49 +6,66 @@ import {
     defineProperties, resolveProperties, assert, assertArgument
 } from "../utils/index.js";
 
-import {
-    encryptKeystoreJson, encryptKeystoreJsonSync,
-} from "./json-keystore.js";
-
 import type { SigningKey } from "../crypto/index.js";
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { Provider, TransactionRequest } from "../providers/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 
-import type { ProgressCallback } from "../crypto/index.js";
 
-
+/**
+ *  The **BaseWallet** is a stream-lined implementation of a
+ *  [[Signer]] that operates with a private key.
+ *
+ *  It is preferred to use the [[Wallet]] class, as it offers
+ *  additional functionality and simplifies loading a variety
+ *  of JSON formats, Mnemonic Phrases, etc.
+ *
+ *  This class may be of use for those attempting to implement
+ *  a minimal Signer.
+ */
 export class BaseWallet extends AbstractSigner {
+    /**
+     *  The wallet address.
+     */
     readonly address!: string;
 
     readonly #signingKey: SigningKey;
 
+    /**
+     *  Creates a new BaseWallet for %%privateKey%%, optionally
+     *  connected to %%provider%%.
+     *
+     *  If %%provider%% is not specified, only offline methods can
+     *  be used.
+     */
     constructor(privateKey: SigningKey, provider?: null | Provider) {
         super(provider);
+
+        assertArgument(privateKey && typeof(privateKey.sign) === "function", "invalid private key", "privateKey", "[ REDACTED ]");
+
         this.#signingKey = privateKey;
 
         const address = computeAddress(this.signingKey.publicKey);
         defineProperties<BaseWallet>(this, { address });
     }
 
-    // Store these in getters to reduce visibility in console.log
+    // Store private values behind getters to reduce visibility
+    // in console.log
+
+    /**
+     *  The [[SigningKey]] used for signing payloads.
+     */
     get signingKey(): SigningKey { return this.#signingKey; }
+
+    /**
+     *  The private key for this wallet.
+     */
     get privateKey(): string { return this.signingKey.privateKey; }
 
     async getAddress(): Promise<string> { return this.address; }
 
     connect(provider: null | Provider): BaseWallet {
         return new BaseWallet(this.#signingKey, provider);
-    }
-
-    async encrypt(password: Uint8Array | string, progressCallback?: ProgressCallback): Promise<string> {
-        const account = { address: this.address, privateKey: this.privateKey };
-        return await encryptKeystoreJson(account, password, { progressCallback });
-    }
-
-    encryptSync(password: Uint8Array | string): string {
-        const account = { address: this.address, privateKey: this.privateKey };
-        return encryptKeystoreJsonSync(account, password);
     }
 
     async signTransaction(tx: TransactionRequest): Promise<string> {
@@ -76,11 +93,14 @@ export class BaseWallet extends AbstractSigner {
     }
 
     async signMessage(message: string | Uint8Array): Promise<string> {
-        return this.signingKey.sign(hashMessage(message)).serialized;
+        return this.signMessageSync(message);
     }
 
     // @TODO: Add a secialized signTx and signTyped sync that enforces
     // all parameters are known?
+    /**
+     *  Returns the signature for %%message%% signed with this wallet.
+     */
     signMessageSync(message: string | Uint8Array): string {
         return this.signingKey.sign(hashMessage(message)).serialized;
     }

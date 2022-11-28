@@ -1,23 +1,34 @@
+/**
+ *  Explain HD Wallets..
+ *
+ *  @_subsection: api/wallet:HD Wallets  [hd-wallets]
+ */
 import { computeHmac, randomBytes, ripemd160, SigningKey, sha256 } from "../crypto/index.js";
 import { VoidSigner } from "../providers/index.js";
 import { computeAddress } from "../transaction/index.js";
 import {
     concat, dataSlice, decodeBase58, defineProperties, encodeBase58,
     getBytes, hexlify, isBytesLike,
-    getNumber, toBigInt, toHex,
+    getNumber, toArray, toBigInt, toHex,
     assertPrivate, assert, assertArgument
 } from "../utils/index.js";
-import { langEn } from "../wordlists/lang-en.js";
+import { LangEn } from "../wordlists/lang-en.js";
 
-import { Mnemonic } from "./mnemonic.js";
 import { BaseWallet } from "./base-wallet.js";
+import { Mnemonic } from "./mnemonic.js";
+import {
+    encryptKeystoreJson, encryptKeystoreJsonSync,
+} from "./json-keystore.js";
 
-import type { BytesLike, Numeric } from "../utils/index.js";
+import type { ProgressCallback } from "../crypto/index.js";
 import type { Provider } from "../providers/index.js";
+import type { BytesLike, Numeric } from "../utils/index.js";
 import type { Wordlist } from "../wordlists/index.js";
 
+import type { KeystoreAccount } from "./json-keystore.js";
 
-export const defaultPath = "m/44'/60'/0'/0/0";
+
+export const defaultPath: string = "m/44'/60'/0'/0/0";
 
 
 // "Bitcoin seed"
@@ -114,6 +125,9 @@ export class HDNodeWallet extends BaseWallet {
     readonly index!: number;
     readonly depth!: number;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, signingKey: SigningKey, parentFingerprint: string, chainCode: string, path: null | string, index: number, depth: number, mnemonic: null | Mnemonic, provider: null | Provider) {
         super(signingKey, provider);
         assertPrivate(guard, _guard, "HDNodeWallet");
@@ -132,6 +146,45 @@ export class HDNodeWallet extends BaseWallet {
     connect(provider: null | Provider): HDNodeWallet {
         return new HDNodeWallet(_guard, this.signingKey, this.parentFingerprint,
             this.chainCode, this.path, this.index, this.depth, this.mnemonic, provider);
+    }
+
+    #account(): KeystoreAccount {
+        const account: KeystoreAccount = { address: this.address, privateKey: this.privateKey };
+        const m = this.mnemonic;
+        if (this.path && m && m.wordlist.locale === "en" && m.password === "") {
+            account.mnemonic = {
+                path: this.path,
+                locale: "en",
+                entropy: m.entropy
+            };
+        }
+
+        return account;
+    }
+
+    /**
+     *  Resolves to a [JSON Keystore Wallet](json-wallets) encrypted with
+     *  %%password%%.
+     *
+     *  If %%progressCallback%% is specified, it will receive periodic
+     *  updates as the encryption process progreses.
+     */
+    async encrypt(password: Uint8Array | string, progressCallback?: ProgressCallback): Promise<string> {
+        return await encryptKeystoreJson(this.#account(), password, { progressCallback });
+    }
+
+    /**
+     *  Returns a [JSON Keystore Wallet](json-wallets) encryped with
+     *  %%password%%.
+     *
+     *  It is preferred to use the [async version](encrypt) instead,
+     *  which allows a [[ProgressCallback]] to keep the user informed.
+     *
+     *  This method will block the event loop (freezing all UI) until
+     *  it is complete, which may be a non-trivial duration.
+     */
+    encryptSync(password: Uint8Array | string): string {
+        return encryptKeystoreJsonSync(this.#account(), password);
     }
 
     get extendedKey(): string {
@@ -195,7 +248,7 @@ export class HDNodeWallet extends BaseWallet {
     }
 
     static fromExtendedKey(extendedKey: string): HDNodeWallet | HDNodeVoidWallet {
-        const bytes = getBytes(decodeBase58(extendedKey)); // @TODO: redact
+        const bytes = toArray(decodeBase58(extendedKey)); // @TODO: redact
 
         assertArgument(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey,
             "invalid extended key", "extendedKey", "[ REDACTED ]");
@@ -228,7 +281,7 @@ export class HDNodeWallet extends BaseWallet {
     static createRandom(password?: string, path?: string, wordlist?: Wordlist): HDNodeWallet {
         if (password == null) { password = ""; }
         if (path == null) { path = defaultPath; }
-        if (wordlist == null) { wordlist = langEn; }
+        if (wordlist == null) { wordlist = LangEn.wordlist(); }
         const mnemonic = Mnemonic.fromEntropy(randomBytes(16), password, wordlist)
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
     }
@@ -241,7 +294,7 @@ export class HDNodeWallet extends BaseWallet {
     static fromPhrase(phrase: string, password?: string, path?: string, wordlist?: Wordlist): HDNodeWallet {
         if (password == null) { password = ""; }
         if (path == null) { path = defaultPath; }
-        if (wordlist == null) { wordlist = langEn; }
+        if (wordlist == null) { wordlist = LangEn.wordlist(); }
         const mnemonic = Mnemonic.fromPhrase(phrase, password, wordlist)
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
     }
@@ -263,6 +316,9 @@ export class HDNodeVoidWallet extends VoidSigner {
     readonly index!: number;
     readonly depth!: number;
 
+    /**
+     *  @private
+     */
     constructor(guard: any, address: string, publicKey: string, parentFingerprint: string, chainCode: string, path: null | string, index: number, depth: number, provider: null | Provider) {
         super(address, provider);
         assertPrivate(guard, _guard, "HDNodeVoidWallet");
@@ -330,7 +386,10 @@ export class HDNodeVoidWallet extends VoidSigner {
 export class HDNodeWalletManager {
     #root: HDNodeWallet;
 
-    constructor(phrase: string, password: string = "", path: string = "m/44'/60'/0'/0", locale: Wordlist = langEn) {
+    constructor(phrase: string, password?: null | string, path?: null | string, locale?: null | Wordlist) {
+        if (password == null) { password = ""; }
+        if (path == null) { path = "m/44'/60'/0'/0"; }
+        if (locale == null) { locale = LangEn.wordlist(); }
         this.#root = HDNodeWallet.fromPhrase(phrase, password, path, locale);
     }
 
