@@ -21,7 +21,7 @@ async function getNpmPackage(name: string): Promise<any> {
 }
 
 function writeVersion(version: string): void {
-    const content = `export const version = "${ version }";\n`;
+    const content = `export const version: string = "${ version }";\n`;
     atomicWrite(resolve("src.ts/_version.ts"), content);
 }
 
