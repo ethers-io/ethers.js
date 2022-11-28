@@ -1,4 +1,12 @@
+/**
+ *  Transactions..
+ *
+ *  @_section api/transaction:Transactions  [transactions]
+ */
 
+/**
+ *  Moo
+ */
 export type AccessListSet = { address: string, storageKeys: Array<string> };
 export type AccessList = Array<AccessListSet>;
 
