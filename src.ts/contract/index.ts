@@ -1,4 +1,8 @@
-
+/**
+ *  About contracts...
+ *
+ *  @_section: api/contract:Contracts  [contracts]
+ */
 export {
     BaseContract, Contract
 } from "./contract.js";

@@ -505,7 +505,8 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
 
     readonly [internal]: any;
 
-    constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner: null | ContractRunner = null, _deployTx?: null | TransactionResponse) {
+    constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _deployTx?: null | TransactionResponse) {
+        if (runner == null) { runner = null; }
         const iface = Interface.from(abi);
         defineProperties<BaseContract>(this, { target, runner, interface: iface });
 
@@ -657,7 +658,9 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         throw new Error("@TODO");
     }
 
-    async queryFilter(event: ContractEventName, fromBlock: BlockTag = 0, toBlock: BlockTag = "latest"): Promise<Array<EventLog | Log>> {
+    async queryFilter(event: ContractEventName, fromBlock?: BlockTag, toBlock?: BlockTag): Promise<Array<EventLog | Log>> {
+        if (fromBlock == null) { fromBlock = 0; }
+        if (toBlock == null) { toBlock = "latest"; }
         const { addr, addrPromise } = getInternal(this);
         const address = (addr ? addr: (await addrPromise));
         const { fragment, topics } = await getSubInfo(this, event);
@@ -786,8 +789,9 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         return CustomContract as any;
     };
 
-    static from<T = ContractInterface>(target: string, abi: InterfaceAbi, runner: null | ContractRunner = null): BaseContract & Omit<T, keyof BaseContract> {
-        const contract = new this(target, abi, runner);
+    static from<T = ContractInterface>(target: string, abi: InterfaceAbi, runner?: null | ContractRunner): BaseContract & Omit<T, keyof BaseContract> {
+        if (runner == null) { runner = null; }
+        const contract = new this(target, abi, runner );
         return contract as any;
     }
 }
