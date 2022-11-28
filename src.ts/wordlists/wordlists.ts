@@ -1,15 +1,25 @@
-import { langCz as cz } from "./lang-cz.js";
-import { langEn as en } from "./lang-en.js";
-import { langEs as es } from "./lang-es.js";
-import { langFr as fr } from "./lang-fr.js";
-import { langJa as ja } from "./lang-ja.js";
-import { langKo as ko } from "./lang-ko.js";
-import { langIt as it } from "./lang-it.js";
-import { langPt as pt } from "./lang-pt.js";
-import { langZhCn as zh_cn, langZhTw as zh_tw } from "./lang-zh.js";
+
+import { LangCz } from "./lang-cz.js";
+import { LangEn } from "./lang-en.js";
+import { LangEs } from "./lang-es.js";
+import { LangFr } from "./lang-fr.js";
+import { LangJa } from "./lang-ja.js";
+import { LangKo } from "./lang-ko.js";
+import { LangIt } from "./lang-it.js";
+import { LangPt } from "./lang-pt.js";
+import { LangZh } from "./lang-zh.js";
 
 import type { Wordlist } from "./wordlist.js";
 
-export const wordlists: Record<string, Wordlist> = Object.freeze({
-    cz, en, es, fr, ja, ko, it, pt, zh_cn, zh_tw
-});
+export const wordlists: Record<string, Wordlist> = {
+  cz: LangCz.wordlist(),
+  en: LangEn.wordlist(),
+  es: LangEs.wordlist(),
+  fr: LangFr.wordlist(),
+  it: LangIt.wordlist(),
+  pt: LangPt.wordlist(),
+  ja: LangJa.wordlist(),
+  ko: LangKo.wordlist(),
+  zh_cn: LangZh.wordlist("cn"),
+  zh_tw: LangZh.wordlist("tw"),
+};
