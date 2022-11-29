@@ -1,0 +1,511 @@
+[33mcommit 540b903215ef1e607d966f4270dc9af7305b01b6[m[33m ([m[1;36mHEAD -> [m[1;32mdharshan[m[33m, [m[1;31morigin/dharshan[m[33m)[m
+Author: Dharshan K <kdharshanprog@gmail.com>
+Date:   Tue Nov 29 18:06:26 2022 +0530
+
+    Possible missing word in void signer documentation #3422 rectified
+
+[33mcommit 3ed554f057529c9cd6bc5a8eaf61a48c0c79efce[m
+Author: Dharshan K <kdharshanprog@gmail.com>
+Date:   Tue Nov 29 13:56:57 2022 +0530
+
+    issue no. 3422 posssible missing word in void signer documentation rectified
+
+[33mcommit c80fcddf50a9023486e9f9acb1848aba4c19f7b6[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Oct 19 04:49:26 2022 -0400
+
+    admin: add env to workflow
+
+[33mcommit f3e67d230ea1c70d2338f217b878154709a77da6[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Oct 19 04:31:32 2022 -0400
+
+    admin: updated environment
+
+[33mcommit 0bfa7f497dc5793b66df7adfb42c6b846c51d794[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Oct 19 04:19:51 2022 -0400
+
+    admin: updated dist files
+
+[33mcommit 706d3ca27c233385944877eb64c099c74109b6c2[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Oct 19 04:16:23 2022 -0400
+
+    Updated tests for goerli.
+
+[33mcommit 60248f32491b13e914f801402d3041a37e4bf44a[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Oct 18 23:41:44 2022 -0400
+
+    admin: update dist files
+
+[33mcommit f5abaafb7f9d9ecad2c6512112ebbec5e5d694b4[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Oct 18 23:24:24 2022 -0400
+
+    admin: add environment to CI
+
+[33mcommit 139280390c32b80c533e6a74c84595e6bea706b9[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Oct 18 23:23:48 2022 -0400
+
+    Updated tests to use goerli instead of ropsten.
+
+[33mcommit 9f990c57f0486728902d4b8e049536f2bb3487ee[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Oct 18 23:22:07 2022 -0400
+
+    Added new error strings Pocket returns.
+
+[33mcommit 74e3d98d1df2bd97be258202a63517d4aa1ba8fd[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Oct 18 23:21:06 2022 -0400
+
+    Fixed Alchemy goerli URL. (#3320, #3323, #3340, #3358, #3423)
+
+[33mcommit 8745800cbc7f1da7fb3ada35b228e61d0f877a1b[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Oct 18 20:35:20 2022 -0400
+
+    admin: update dist files
+
+[33mcommit 2a3a2e1feda7b18c8e234c84e4de32d4246f18ed[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Oct 18 20:31:56 2022 -0400
+
+    Update testnets for third-party providers (#3320, #3323, #3340, #3358, #3423).
+
+[33mcommit 44cbc7fa4e199c1d6113ceec3c5162f53def5bb8[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Sep 13 21:28:52 2022 -0400
+
+    admin: updated dist files
+
+[33mcommit b14cb0fa2c31c09bfc4c668e5b9dbbc52e9b5dce[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Sep 13 21:24:31 2022 -0400
+
+    Fixed message signing errors that clobbered critical Error properties (#3356).
+
+[33mcommit 4c86dc9ed41fcf889daaaca41686a218a0c68e90[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Sep 13 20:49:15 2022 -0400
+
+    Add support for all data URL formats (#3341).
+
+[33mcommit d083522374b8e48e02688d2f8e29cd86f99e5fc4[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Sep 13 20:36:43 2022 -0400
+
+    Added Sepolia network (#3325).
+
+[33mcommit 01b5badbb616b29fd8b69ef7c3cc3833062da3d7[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Aug 18 16:17:26 2022 -0400
+
+    admin: update dist files
+
+[33mcommit 7357dd24ea064e0d1518355254123b80d4a48f16[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Aug 18 16:14:15 2022 -0400
+
+    tests: remove old Pocket tests
+
+[33mcommit d3592efc1d46ce080c2952e4604174b4f2254631[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Aug 18 15:38:05 2022 -0400
+
+    admin: update dist files
+
+[33mcommit 9f21b6bea83bb4de95870e644e7b9e15369a5177[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Aug 18 15:35:14 2022 -0400
+
+    tests: fix namehash matcher
+
+[33mcommit ec1b9583039a14a0e0fa15d0a2a6082a2f41cf5b[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Aug 18 14:48:39 2022 -0400
+
+    admin: updated dist files
+
+[33mcommit 9ccdd1711012351d71933104f12b9f27c64494fe[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Aug 18 14:38:00 2022 -0400
+
+    tests: updated pocket to normal API key.
+
+[33mcommit 10d07ca6ec0622fb5a58b7e61b089166ebe8ea15[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Aug 18 14:36:57 2022 -0400
+
+    Update PocketProvider to newer URL format (#2980).
+
+[33mcommit f274104865794f7f24db4244d591c39ad16f6688[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Aug 17 23:03:27 2022 -0400
+
+    Applied lastest changes from ens-normalize (#42, #2376, #2754).
+
+[33mcommit fce9aaa7345a001a4a56bce66298ee23948d120c[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Aug 16 17:00:34 2022 -0400
+
+    Relax ENS normalize for double-hyphen to only throw on punycode conflicts (#42, #2376, #2754).
+
+[33mcommit d9897e0fdb5f9ca34822929c95a478634cc2a460[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Aug 16 16:23:58 2022 -0400
+
+    Added ACTION_REJECTED error for UI-based Signers.
+
+[33mcommit 8314236143a300ae81c1dcc27a7a36640df22061[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Aug 16 16:02:04 2022 -0400
+
+    Include current baseFee in feeData for easier custom fee calculation.
+
+[33mcommit e52fbfbe70014e8033d3beed9c0dff2809eeef7f[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Mon Aug 15 22:45:19 2022 -0400
+
+    Add restrictions for new UTF-8 specification ENS names (#42, #2376, #2754).
+
+[33mcommit 00114d7b2f6e65a1cc974ea5b03abad568db4827[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Mon Aug 15 17:56:04 2022 -0400
+
+    Expand the definition of a WebSocketLikg (#2843).
+
+[33mcommit 60da870cf2f8b71a4ec0c4bec67e28a11463038d[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sun Aug 14 16:10:49 2022 -0400
+
+    Expanded type for queryFitler to allow string (#2882).
+
+[33mcommit 14bf407bd948bb1bc91161032c93a67d81fb5a02[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sun Aug 14 16:01:06 2022 -0400
+
+    Add new ENS normalization specification for wider UTF-8 support (#42, #2376, #2754).
+
+[33mcommit 549168cc4d0d3d18b12caa70bf5c58f4bcdc0175[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Aug 11 15:03:02 2022 -0400
+
+    Added finalized and safe blockTags (#3091).
+
+[33mcommit e72d13e651c236c0222265931285a466f1441134[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Aug 9 22:55:42 2022 -0400
+
+    Added arbitrum-goerli to Networks and AlchemyProvider (#3246).
+
+[33mcommit 7ce41cdec706def0cd41f7f294c4d31bcb99a4ec[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue Aug 9 22:48:56 2022 -0400
+
+    Add EIP-712 type exports (#221).
+
+[33mcommit f1cb0d2dd654890836810e5c8d221e2664b2ae4a[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Mon Aug 8 20:34:20 2022 -0400
+
+    Added optimism-goerli to AlchemyProvider (#3246).
+
+[33mcommit 7645cb0038fd03a954785b058b292360ba677925[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 27 16:50:12 2022 -0400
+
+    admin: added date to contributors
+
+[33mcommit 6bd13c312fd53eaa78269d2c10e6bc373d67a2a9[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 27 15:37:47 2022 -0400
+
+    Updated EtherscanProvider for new CommunityResource API throttling.
+
+[33mcommit ea2d2453a535a319ad55e7ca739ab1bcdb1432b7[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 20 16:36:30 2022 -0400
+
+    Fix old events from being emitted at the beginning of a filter (#3069, #3094).
+
+[33mcommit c004ae50f3df833380ca1540ef5024965ac8ef48[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 13 22:00:53 2022 -0400
+
+    Fixed Interface signautres missing strings as eventFragments (#3157).
+
+[33mcommit 17676e9597ef7610443e3a7d7bb2967e7b509c26[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 13 21:55:56 2022 -0400
+
+    Fix bug in EIP1193Bridge forwarding to the wrong method (#3166).
+
+[33mcommit 6f57e8b1564a0b5c80b742775d02b9fad710c8e6[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 13 21:50:14 2022 -0400
+
+    Use updated Web3 Secret Storage format for JSON wallets (#3075).
+
+[33mcommit abdf2e30a5169d6ddd368f2bc3cdcd5feed25ae5[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 13 21:37:57 2022 -0400
+
+    Relaxed nameprep length requirement dropping RFC-5891 section 4.2.4 (#3161).
+
+[33mcommit 450694e25760d383f3fe3b299d181ebe5fd6ab06[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 13 21:29:36 2022 -0400
+
+    Switch to hash.js for ripemd160 on node as it was removed from the default crypto provider in node 17 (#3082).
+
+[33mcommit 4d3e586701ca9ecd0ab63133d90185809d4f3811[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 13 21:01:53 2022 -0400
+
+    Add optimism-kovan to EtherscanProvider (#3135).
+
+[33mcommit ab43e7d171b6191abc47318e76ddec4ee7156cdd[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed Jul 13 20:58:23 2022 -0400
+
+    Forward any blockTag along in the FallbackProvider during call (#3168).
+
+[33mcommit c309df8a3e988b00b4bc636622be78e246379f73[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Jun 30 16:25:07 2022 -0400
+
+    Allow browser fetch option overrides (#3096).
+
+[33mcommit d9046dd5f59356a0b7a749f8c0d5fbcd7969d34a[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Jun 30 14:55:10 2022 -0400
+
+    admin: removed generated docs from repo
+
+[33mcommit 608864fc3f00390e1260048a157af00378a98e41[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat Jun 18 01:01:07 2022 -0400
+
+    admin: updated CONTRIBUTORS
+
+[33mcommit 1934ad3b48115cafb89142c8605f4187b2b60a22[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat Jun 18 00:56:15 2022 -0400
+
+    docs: added ConnectionInfo details (#2940).
+
+[33mcommit 64744990ffb13c86af6cb34fb745f3b10277cf98[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat Jun 18 00:40:42 2022 -0400
+
+    docs: fixed typo in constant defaults (#2991).
+
+[33mcommit 3c760d014b71931392cf429ed543b955b953c162[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat Jun 18 00:36:48 2022 -0400
+
+    docs: fixed type (#2997).
+
+[33mcommit c3b5a6e47e67c37b46f4ae58b4355c84e5f653f8[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat Jun 18 00:31:40 2022 -0400
+
+    docs: fixed typo in example (#3061).
+
+[33mcommit 45d3fea4014897ac4136b85e0be11ab973b62e3a[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat Jun 18 00:29:31 2022 -0400
+
+    docs: fixed typos (#3087).
+
+[33mcommit aaf40a1ccedd2664041938f1541d8a0fc3b8ae4d[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri Jun 17 14:56:33 2022 -0400
+
+    admin: updated dist files
+
+[33mcommit 509ff7db1dc96d4d6537927c0c1616a2bc894220[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri Jun 17 14:39:35 2022 -0400
+
+    test: remove Ankr from Ropsten send tests; the merge seems to have broke it.
+
+[33mcommit 3790671b424bfcfaaf27bab9f964c3ca407e8fea[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri Jun 17 14:38:46 2022 -0400
+
+    Removed Ankr for Ropsten default provider; the merge seems to have broke it.
+
+[33mcommit 109c0941eef9113614df9f22afcdf9662d5209a4[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri Jun 17 02:02:09 2022 -0400
+
+    admin: update dist files
+
+[33mcommit 0a28679994c844cef514f9e800c6cd8e1a21aa30[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri Jun 17 01:46:05 2022 -0400
+
+    Fix NonceManager for increment 0 and provided nonce (#3062, #3085).
+
+[33mcommit ac0165ebf4bb64cf19fadb5afa46ea6a8ec2dbb1[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri Jun 17 01:29:10 2022 -0400
+
+    admin: remove github cache from repo
+
+[33mcommit a76c9e830ec714f8c8d4a4e14a15919376725b3c[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri Jun 17 01:23:32 2022 -0400
+
+    admin: updated CONTRIBUTORS.md
+
+[33mcommit 6873b8068d947e2dae9cc5cb973b8fd369febd3d[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu Jun 16 00:52:08 2022 -0400
+
+    admin: added CONTRIBUTORS
+    
+    Co-authored-by: holic <kingersoll@gmail.com>
+
+[33mcommit 9668f98b69b420d047376658d605c1f871a93c3a[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed May 25 23:57:37 2022 -0400
+
+    docs: fixed typo (#2989).
+
+[33mcommit 0078e026f1b438dd0976200ee16c38ec5a7788f6[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Wed May 25 23:34:16 2022 -0400
+
+    Fixed topic filters for numeric types with string values (#3013).
+
+[33mcommit a71f51825571d1ea0fa997c1352d5b4d85643416[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue May 24 11:52:15 2022 -0400
+
+    admin: update dist files
+
+[33mcommit a27ef825772f72071439c51e51180b6fcc64f03c[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue May 24 11:45:35 2022 -0400
+
+    Lock versions for BigNumber fix (#3017).
+
+[33mcommit 30b716bf2cfd67ca38f76e344a26c0c2d5b75935[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Tue May 24 11:44:47 2022 -0400
+
+    Bump BN.js for hexstring bug fix (#3017).
+
+[33mcommit e85e32b8f74d6d1f809e3ab016170ff6b4bfb8dd[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri May 20 23:46:40 2022 -0400
+
+    admin: removed React-Native testing from CI
+
+[33mcommit 56fabe987bb8c1e4891fdf1e5d3fe8a4c0471751[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri May 20 19:13:34 2022 -0400
+
+    admin: updated spellcheck dictionary
+
+[33mcommit cf7d9da290639b2b6553df9ad027951c78272198[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri May 20 19:13:03 2022 -0400
+
+    admin: update dist files
+
+[33mcommit 13dd42c6c38d6977645555cdf7ab60354b0e2725[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri May 20 19:03:42 2022 -0400
+
+    Add Skynet support (#2853, #2866).
+
+[33mcommit d06aa26d74eecd06149f908ce25dbaf867754c0e[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri May 20 18:18:24 2022 -0400
+
+    Fix WebWorker support in rollup files (#2976).
+
+[33mcommit ed7e6a500e6087efcace8a5ff98997fbce2c6d6d[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Fri May 20 17:50:05 2022 -0400
+
+    Remove superfluous logging (#2995).
+
+[33mcommit a3012977b1b10110ea15625754e8fc117e1ea147[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sun May 15 02:49:34 2022 -0400
+
+    Add matic and optimism support to default provider.
+
+[33mcommit 8b62aeff9cce44cbd16ff41f8fc01ebb101f8265[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat May 14 02:50:53 2022 -0400
+
+    Use case-insensitive schemes for getDefaultProvider (#2320).
+
+[33mcommit 95708b9a4ae003db6c7d39e608af9ea6e123bae3[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat May 14 01:25:10 2022 -0400
+
+    docs: add Ankr to list of Providers (#2779).
+
+[33mcommit 1e6a3c23c4af088acc113f6615f66df86363c976[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat May 14 01:22:57 2022 -0400
+
+    docs: fixed typo (#2970).
+
+[33mcommit 8e31b4dcf4a88fa1eecbc1f1769e3d25dca290a5[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat May 14 01:21:44 2022 -0400
+
+    docs: fix type in comments of admin tools (#2981).
+
+[33mcommit d5815cc4f1c13e5265c748d8afc4c085a97b1945[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sat May 14 01:08:35 2022 -0400
+
+    Pad position in JSON-RPC getStorageAt calls (#2982).
+
+[33mcommit 01aea705ce60b1c42d2f465b162cb339a0e94392[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu May 12 17:30:28 2022 -0400
+
+    admin: updated dist files
+
+[33mcommit 2c3dae08745530b8c3ea3ab6c8f03e8fa8ac1e5c[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu May 12 17:23:13 2022 -0400
+
+    Ensure gas estimate errors are not call exceptions in disguise (#2954).
+
+[33mcommit c6eebf9928597cab305b663fa409d30e3122e7d0[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu May 12 16:38:29 2022 -0400
+
+    Added optimism to EtherscanProvider (#2968).
+
+[33mcommit 32b7373456972e0fbd47e7edaf056ed130adf1da[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Thu May 12 16:16:26 2022 -0400
+
+    Remove pedantic check for new keyword which broke some platforms for inheritance (#2860, #2861).
+
+[33mcommit fc1e006575d59792fa97b4efb9ea2f8cca1944cf[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sun May 1 02:11:22 2022 -0400
+
+    admin: update dist files
+
+[33mcommit d9f45b3b9db92c72f9c606bab8315d0eb02fec70[m
+Author: Richard Moore <github@ricmoo.com>
+Date:   Sun May 1 02:05:22 2022 -0400
+
+    Added testnets for AnkrProvider (#2949, #2950).
