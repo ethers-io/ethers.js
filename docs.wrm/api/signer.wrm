@@ -361,7 +361,7 @@ A **VoidSigner** is a simple Signer which cannot sign.
 
 It is useful as a read-only signer, when an API requires a
 Signer as a parameter, but it is known only read-only operations
-will be carried .
+will be carried out.
 
 For example, the ``call`` operation will automatically have the
 provided address passed along during the execution.
