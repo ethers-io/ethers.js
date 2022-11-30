@@ -4,6 +4,11 @@ import { NetworkPlugin } from "./plugins-network.js";
 import { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
 import type { TransactionRequest } from "./provider.js";
+/**
+ *  Aboud Etherscan Debug...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 export declare type DebugEventEtherscanProvider = {
     action: "sendRequest";
     id: number;
@@ -18,12 +23,22 @@ export declare type DebugEventEtherscanProvider = {
     id: number;
     error: any;
 };
+/**
+ *  Aboud Cloudflare...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 export declare class EtherscanPlugin extends NetworkPlugin {
     readonly baseUrl: string;
     readonly communityApiKey: string;
     constructor(baseUrl: string, communityApiKey: string);
     clone(): EtherscanPlugin;
 }
+/**
+ *  Aboud Etherscan...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 export declare class BaseEtherscanProvider extends AbstractProvider {
     #private;
     readonly network: Network;

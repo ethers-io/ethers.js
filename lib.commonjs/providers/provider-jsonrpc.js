@@ -1,8 +1,13 @@
 "use strict";
-// @TODO:
-// - Add the batching API
+/**
+ *  About JSON-RPC...
+ *
+ * @_section: api/providers/jsonrpc:JSON-RPC Provider  [about-jsonrpcProvider]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonRpcProvider = exports.JsonRpcApiPollingProvider = exports.JsonRpcApiProvider = exports.JsonRpcSigner = void 0;
+// @TODO:
+// - Add the batching API
 // https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
 const index_js_1 = require("../abi/index.js");
 const index_js_2 = require("../address/index.js");
@@ -295,16 +300,13 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         (0, index_js_5.assert)(this.#network, "network is not available yet", "NETWORK_ERROR");
         return this.#network;
     }
-    /**
-     *  Sends a JSON-RPC %%payload%% (or a batch) to the underlying channel.
-     *
-     *  Sub-classes **MUST** override this.
-     */
-    _send(payload) {
-        (0, index_js_5.assert)(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
+    /*
+     {
+        assert(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
             operation: "jsonRpcApiProvider._send"
         });
     }
+    */
     /**
      *  Resolves to the non-normalized value by performing %%req%%.
      *
@@ -335,7 +337,8 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         }
         return super._perform(req);
     }
-    /** Sub-classes may override this; it detects the *actual* network that
+    /**
+     *  Sub-classes may override this; it detects the *actual* network that
      *  we are **currently** connected to.
      *
      *  Keep in mind that [[send]] may only be used once [[ready]], otherwise the
@@ -564,7 +567,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         const { error } = _error;
         if (method === "eth_call" || method === "eth_estimateGas") {
             const result = spelunkData(error);
-            const e = (0, index_js_1.getBuiltinCallException)((method === "eth_call") ? "call" : "estimateGas", (payload.params[0]), (result ? result.data : null));
+            const e = index_js_1.AbiCoder.getBuiltinCallException((method === "eth_call") ? "call" : "estimateGas", (payload.params[0]), (result ? result.data : null));
             e.info = { error, payload };
             return e;
             /*
@@ -720,7 +723,10 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
      *
      *  Throws if the account doesn't exist.
      */
-    async getSigner(address = 0) {
+    async getSigner(address) {
+        if (address == null) {
+            address = 0;
+        }
         const accountsPromise = this.send("eth_accounts", []);
         // Account index
         if (typeof (address) === "number") {

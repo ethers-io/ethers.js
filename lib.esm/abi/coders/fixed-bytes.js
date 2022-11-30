@@ -1,6 +1,9 @@
 import { defineProperties, getBytesCopy, hexlify } from "../../utils/index.js";
 import { Typed } from "../typed.js";
 import { Coder } from "./abstract-coder.js";
+/**
+ *  @_ignore
+ */
 export class FixedBytesCoder extends Coder {
     size;
     constructor(size, localName) {

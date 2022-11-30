@@ -8,8 +8,18 @@ const Padding = new Uint8Array(exports.WordSize);
 // - `then` is used to detect if an object is a Promise for await
 const passProperties = ["then"];
 const _guard = {};
+/**
+ *  A [[Result]] is a sub-class of Array, which allows accessing any
+ *  of its values either positionally by its index or, if keys are
+ *  provided by its name.
+ *
+ *  @_docloc: api/abi
+ */
 class Result extends Array {
     #indices;
+    /**
+     *  @private
+     */
     constructor(guard, items, keys) {
         (0, index_js_1.assertPrivate)(guard, _guard, "Result");
         super(...items);
@@ -68,6 +78,9 @@ class Result extends Array {
         return this;
     }
     */
+    /**
+     *  @_ignore
+     */
     slice(start, end) {
         if (start == null) {
             start = 0;
@@ -93,6 +106,14 @@ class Result extends Array {
         wrapped.error = error;
         throw wrapped;
     }
+    /**
+     *  Returns the value for %%name%%.
+     *
+     *  Since it is possible to have a key whose name conflicts with
+     *  a method on a [[Result]] or its superclass Array, or any
+     *  JavaScript keyword, this ensures all named values are still
+     *  accessible by name.
+     */
     getValue(name) {
         const index = this.#indices.get(name);
         if (index != null && index.length === 1) {
@@ -104,11 +125,28 @@ class Result extends Array {
         }
         throw new Error(`no named parameter: ${JSON.stringify(name)}`);
     }
+    /**
+     *  Creates a new [[Result]] for %%items%% with each entry
+     *  also accessible by its corresponding name in %%keys%%.
+     */
     static fromItems(items, keys) {
         return new Result(_guard, items, keys);
     }
 }
 exports.Result = Result;
+/**
+ *  Returns all errors found in a [[Result]].
+ *
+ *  Since certain errors encountered when creating a [[Result]] do
+ *  not impact the ability to continue parsing data, they are
+ *  deferred until they are actually accessed. Hence a faulty string
+ *  in an Event that is never used does not impact the program flow.
+ *
+ *  However, sometimes it may be useful to access, identify or
+ *  validate correctness of a [[Result]].
+ *
+ *  @_docloc api/abi
+ */
 function checkResultErrors(result) {
     // Find the first error (if any)
     const errors = [];
@@ -139,6 +177,9 @@ function getValue(value) {
     }
     return bytes;
 }
+/**
+ *  @_ignore
+ */
 class Coder {
     // The coder name:
     //   - address, uint256, tuple, array, etc.
@@ -163,6 +204,9 @@ class Coder {
     }
 }
 exports.Coder = Coder;
+/**
+ *  @_ignore
+ */
 class Writer {
     // An array of WordSize lengthed objects to concatenation
     #data;
@@ -208,6 +252,9 @@ class Writer {
     }
 }
 exports.Writer = Writer;
+/**
+ *  @_ignore
+ */
 class Reader {
     // Allows incomplete unpadded data to be read; otherwise an error
     // is raised if attempting to overrun the buffer. This is required

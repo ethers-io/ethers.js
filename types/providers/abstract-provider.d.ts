@@ -1,3 +1,8 @@
+/**
+ *  About Subclassing the Provider...
+ *
+ *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
+ */
 import { FetchRequest } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { Network } from "./network.js";
@@ -6,7 +11,8 @@ import type { AddressLike } from "../address/index.js";
 import type { BigNumberish } from "../utils/index.js";
 import type { Listener } from "../utils/index.js";
 import type { Networkish } from "./network.js";
-import type { BlockParams, BlockTag, EventFilter, Filter, FilterByBlockHash, LogParams, OrphanFilter, PreparedTransactionRequest, Provider, ProviderEvent, TransactionReceiptParams, TransactionRequest, TransactionResponseParams } from "./provider.js";
+import type { BlockParams, LogParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
+import type { BlockTag, EventFilter, Filter, FilterByBlockHash, OrphanFilter, PreparedTransactionRequest, Provider, ProviderEvent, TransactionRequest } from "./provider.js";
 export declare type DebugEventAbstractProvider = {
     action: "sendCcipReadFetchRequest";
     request: FetchRequest;
@@ -151,11 +157,10 @@ export declare class AbstractProvider implements Provider {
     get plugins(): Array<AbstractProviderPlugin>;
     attachPlugin(plugin: AbstractProviderPlugin): this;
     getPlugin<T extends AbstractProviderPlugin = AbstractProviderPlugin>(name: string): null | T;
-    set disableCcipRead(value: boolean);
     get disableCcipRead(): boolean;
+    set disableCcipRead(value: boolean);
     ccipReadFetch(tx: PerformActionTransaction, calldata: string, urls: Array<string>): Promise<null | string>;
-    _wrapBlock(value: BlockParams<string>, network: Network): Block<string>;
-    _wrapBlockWithTransactions(value: BlockParams<TransactionResponseParams>, network: Network): Block<TransactionResponse>;
+    _wrapBlock(value: BlockParams, network: Network): Block;
     _wrapLog(value: LogParams, network: Network): Log;
     _wrapTransactionReceipt(value: TransactionReceiptParams, network: Network): TransactionReceipt;
     _wrapTransactionResponse(tx: TransactionResponseParams, network: Network): TransactionResponse;
@@ -175,8 +180,7 @@ export declare class AbstractProvider implements Provider {
     getCode(address: AddressLike, blockTag?: BlockTag): Promise<string>;
     getStorage(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string>;
     broadcastTransaction(signedTx: string): Promise<TransactionResponse>;
-    getBlock(block: BlockTag | string): Promise<null | Block<string>>;
-    getBlockWithTransactions(block: BlockTag | string): Promise<null | Block<TransactionResponse>>;
+    getBlock(block: BlockTag | string, prefetchTxs?: boolean): Promise<null | Block>;
     getTransaction(hash: string): Promise<null | TransactionResponse>;
     getTransactionReceipt(hash: string): Promise<null | TransactionReceipt>;
     getTransactionResult(hash: string): Promise<null | string>;
@@ -187,7 +191,7 @@ export declare class AbstractProvider implements Provider {
     resolveName(name: string): Promise<null | string>;
     lookupAddress(address: string): Promise<null | string>;
     waitForTransaction(hash: string, _confirms?: number, timeout?: number): Promise<null | TransactionReceipt>;
-    waitForBlock(blockTag?: BlockTag): Promise<Block<string>>;
+    waitForBlock(blockTag?: BlockTag): Promise<Block>;
     _clearTimeout(timerId: number): void;
     _setTimeout(_func: () => void, timeout?: number): number;
     _forEachSubscriber(func: (s: Subscriber) => void): void;

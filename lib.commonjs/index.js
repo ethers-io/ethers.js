@@ -27,6 +27,12 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ethers = void 0;
+/**
+ *  The Application Programming Interface (API) is the collection of
+ *  functions, classes and types offered by the Ethers library.
+ *
+ *  @_section: api:API Specification
+ */
 const ethers = __importStar(require("./ethers.js"));
 exports.ethers = ethers;
 __exportStar(require("./ethers.js"), exports);

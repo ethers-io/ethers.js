@@ -150,7 +150,7 @@ describe("Test Solidity Hash functions", function () {
         { types: ["blorb"], values: [false] },
     ];
     for (const { types, values } of badTypes) {
-        it("fails on invalid type", function () {
+        it("correctly fails on invalid type", function () {
             assert.throws(function () {
                 const result = solidityPacked(types, values);
                 console.log(result);

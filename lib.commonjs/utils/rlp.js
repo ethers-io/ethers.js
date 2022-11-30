@@ -1,4 +1,10 @@
 "use strict";
+/**
+ *  The [[link-rlp]] (RLP) encoding is used throughout Ethereum
+ *  to serialize nested structures of Arrays and data.
+ *
+ *  @_subsection api/utils:Recursive-Length Prefix  [rlp]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.encodeRlp = exports.decodeRlp = void 0;
 var rlp_decode_js_1 = require("./rlp-decode.js");

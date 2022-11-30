@@ -1,3 +1,8 @@
+/**
+ *  About Interface
+ *
+ *  @_subsection api/abi:Interfaces  [interfaces]
+ */
 import { AbiCoder } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
 import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
@@ -36,7 +41,20 @@ export declare class Indexed {
     static isIndexed(value: any): value is Indexed;
     constructor(hash: null | string);
 }
+/**
+ *  @TODO
+ */
 export declare type InterfaceAbi = string | ReadonlyArray<Fragment | JsonFragment | string>;
+/**
+ *  An Interface abstracts many of the low-level details for
+ *  encoding and decoding the data on the blockchain.
+ *
+ *  An ABI provides information on how to encode data to send to
+ *  a Contract, how to decode the results and events and how to
+ *  interpret revert errors.
+ *
+ *  The ABI can be specified by [any supported format](InterfaceAbi).
+ */
 export declare class Interface {
     #private;
     /**
@@ -47,6 +65,9 @@ export declare class Interface {
      *  The Contract constructor.
      */
     readonly deploy: ConstructorFragment;
+    /**
+     *  Create a new Interface for the %%fragments%%.
+     */
     constructor(fragments: InterfaceAbi);
     /**
      *  Returns the entire Human-Readable ABI, as an array of
@@ -208,6 +229,6 @@ export declare class Interface {
      *  The %%value%% may be provided as an existing [[Interface]] object,
      *  a JSON-encoded ABI or any Human-Readable ABI format.
      */
-    static from(value: ReadonlyArray<Fragment | string | JsonFragment> | string | Interface): Interface;
+    static from(value: InterfaceAbi | Interface): Interface;
 }
 //# sourceMappingURL=interface.d.ts.map

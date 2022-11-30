@@ -1,12 +1,23 @@
+/**
+ *  Property helper functions.
+ *
+ *  @_subsection api/utils:Properties  [properties]
+ */
+/**
+ *  Resolves to a new object that is a copy of %%value%%, but with all
+ *  values resolved.
+ */
 export declare function resolveProperties<T>(value: {
     [P in keyof T]: T[P] | Promise<T[P]>;
 }): Promise<T>;
-export declare function defineReadOnly<T, P extends keyof T>(object: T, name: P, value: T[P]): void;
+/**
+ *  Assigns the %%values%% to %%target%% as read-only values.
+ *
+ *  It %%types%% is specified, the values are checked.
+ */
 export declare function defineProperties<T>(target: T, values: {
-    [K in keyof T]?: undefined | T[K];
+    [K in keyof T]?: T[K];
 }, types?: {
     [K in keyof T]?: string;
-}, defaults?: {
-    [K in keyof T]?: T[K];
 }): void;
 //# sourceMappingURL=properties.d.ts.map

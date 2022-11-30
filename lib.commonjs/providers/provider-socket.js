@@ -1,13 +1,13 @@
 "use strict";
 /**
- *  SocketProvider
- *
  *  Generic long-lived socket provider.
  *
  *  Sub-classing notes
  *  - a sub-class MUST call the `_start()` method once connected
  *  - a sub-class MUST override the `_write(string)` method
  *  - a sub-class MUST call `_processMessage(string)` for each message
+ *
+ *  @_subsection: api/providers/abstract-provider
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketProvider = exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = void 0;
@@ -106,6 +106,10 @@ class SocketEventSubscriber extends SocketSubscriber {
     }
 }
 exports.SocketEventSubscriber = SocketEventSubscriber;
+/**
+ *  SocketProvider...
+ *
+ */
 class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
     #callbacks;
     // Maps each filterId to its subscriber

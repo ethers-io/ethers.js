@@ -1,11 +1,25 @@
 import { Wordlist } from "./wordlist.js";
-declare class LangJa extends Wordlist {
+/**
+ *  The [[link-bip-39]] Wordlist for the Japanese (ja) language.
+ *
+ *  @_docloc: api/wordlists
+ */
+export declare class LangJa extends Wordlist {
+    /**
+     *  Creates a new instance of the Japanese language Wordlist.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langJa]] should suffice.
+     */
     constructor();
     getWord(index: number): string;
     getWordIndex(word: string): number;
-    split(mnemonic: string): Array<string>;
+    split(phrase: string): Array<string>;
     join(words: Array<string>): string;
+    /**
+     *  Returns a singleton instance of a ``LangJa``, creating it
+     *  if this is the first time being called.
+     */
+    static wordlist(): LangJa;
 }
-export declare const langJa: LangJa;
-export {};
 //# sourceMappingURL=lang-ja.d.ts.map

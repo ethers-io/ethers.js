@@ -1,4 +1,11 @@
 "use strict";
+/**
+ *  About Subclassing the Provider...
+ *
+ *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractProvider = exports.UnmanagedSubscriber = void 0;
 // @TODO
 // Event coalescence
 //   When we register an event with an async value (e.g. address is a Signer
@@ -6,8 +13,6 @@
 //   need time to resolve the address. Upon resolving the address, we need to
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AbstractProvider = exports.UnmanagedSubscriber = void 0;
 const index_js_1 = require("../address/index.js");
 const index_js_2 = require("../transaction/index.js");
 const index_js_3 = require("../utils/index.js");
@@ -184,8 +189,8 @@ class AbstractProvider {
     getPlugin(name) {
         return (this.#plugins.get(name)) || null;
     }
-    set disableCcipRead(value) { this.#disableCcipRead = !!value; }
     get disableCcipRead() { return this.#disableCcipRead; }
+    set disableCcipRead(value) { this.#disableCcipRead = !!value; }
     // Shares multiple identical requests made during the same 250ms
     async #perform(req) {
         // Create a tag
@@ -249,9 +254,6 @@ class AbstractProvider {
         });
     }
     _wrapBlock(value, network) {
-        return new provider_js_1.Block((0, format_js_1.formatBlock)(value), this);
-    }
-    _wrapBlockWithTransactions(value, network) {
         return new provider_js_1.Block((0, format_js_1.formatBlock)(value), this);
     }
     _wrapLog(value, network) {
@@ -628,25 +630,15 @@ class AbstractProvider {
         });
     }
     // Queries
-    async getBlock(block) {
+    async getBlock(block, prefetchTxs) {
         const { network, params } = await (0, index_js_3.resolveProperties)({
             network: this.getNetwork(),
-            params: this.#getBlock(block, false)
+            params: this.#getBlock(block, !!prefetchTxs)
         });
         if (params == null) {
             return null;
         }
         return this._wrapBlock((0, format_js_1.formatBlock)(params), network);
-    }
-    async getBlockWithTransactions(block) {
-        const { network, params } = await (0, index_js_3.resolveProperties)({
-            network: this.getNetwork(),
-            params: this.#getBlock(block, true)
-        });
-        if (params == null) {
-            return null;
-        }
-        return this._wrapBlockWithTransactions((0, format_js_1.formatBlockWithTransactions)(params), network);
     }
     async getTransaction(hash) {
         const { network, params } = await (0, index_js_3.resolveProperties)({
@@ -793,7 +785,10 @@ class AbstractProvider {
         }
         this.#timers.delete(timerId);
     }
-    _setTimeout(_func, timeout = 0) {
+    _setTimeout(_func, timeout) {
+        if (timeout == null) {
+            timeout = 0;
+        }
         const timerId = this.#nextTimer++;
         const func = () => {
             this.#timers.delete(timerId);

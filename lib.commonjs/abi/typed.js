@@ -1,4 +1,9 @@
 "use strict";
+/**
+ *  About typed...
+ *
+ *  @_subsection: api/abi:Typed Values
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Typed = void 0;
 const index_js_1 = require("../utils/index.js");
@@ -22,7 +27,10 @@ class Typed {
     value;
     #options;
     _typedSymbol;
-    constructor(gaurd, type, value, options = null) {
+    constructor(gaurd, type, value, options) {
+        if (options == null) {
+            options = null;
+        }
         (0, index_js_1.assertPrivate)(_gaurd, gaurd, "Typed");
         (0, index_js_1.defineProperties)(this, { _typedSymbol, type, value });
         this.#options = options;
@@ -197,9 +205,19 @@ class Typed {
     static overrides(v) {
         return new Typed(_gaurd, "overrides", Object.assign({}, v));
     }
+    /**
+     *  Returns true only if %%value%% is a [[Typed]] instance.
+     */
     static isTyped(value) {
         return (value && value._typedSymbol === _typedSymbol);
     }
+    /**
+     *  If the value is a [[Typed]] instance, validates the underlying value
+     *  and returns it, otherwise returns value directly.
+     *
+     *  This is useful for functions that with to accept either a [[Typed]]
+     *  object or values.
+     */
     static dereference(value, type) {
         if (Typed.isTyped(value)) {
             if (value.type !== type) {

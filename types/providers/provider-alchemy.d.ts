@@ -4,6 +4,11 @@ import { JsonRpcProvider } from "./provider-jsonrpc.js";
 import type { AbstractProvider, PerformActionRequest } from "./abstract-provider.js";
 import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
+/**
+ *  The AlchemyProvider is backed by the [[alchemyapu]] API.
+ *
+ *  @_docloc: api/providers/thirdparty
+ */
 export declare class AlchemyProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly apiKey: string;
     constructor(_network?: Networkish, apiKey?: null | string);

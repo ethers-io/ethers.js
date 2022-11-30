@@ -2,6 +2,9 @@ import { defineProperties } from "../../utils/properties.js";
 import { Typed } from "../typed.js";
 import { Coder } from "./abstract-coder.js";
 import { pack, unpack } from "./array.js";
+/**
+ *  @_ignore
+ */
 export class TupleCoder extends Coder {
     coders;
     constructor(coders, localName) {

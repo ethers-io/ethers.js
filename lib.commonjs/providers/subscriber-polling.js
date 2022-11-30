@@ -5,6 +5,11 @@ const index_js_1 = require("../utils/index.js");
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 function getPollingSubscriber(provider, event) {
     if (event === "block") {
         return new PollingBlockSubscriber(provider);
@@ -18,6 +23,11 @@ function getPollingSubscriber(provider, event) {
 }
 exports.getPollingSubscriber = getPollingSubscriber;
 // @TODO: refactor this
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 class PollingBlockSubscriber {
     #provider;
     #poller;
@@ -73,6 +83,11 @@ class PollingBlockSubscriber {
     }
 }
 exports.PollingBlockSubscriber = PollingBlockSubscriber;
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 class OnBlockSubscriber {
     #provider;
     #poll;
@@ -96,6 +111,11 @@ class OnBlockSubscriber {
     resume() { this.start(); }
 }
 exports.OnBlockSubscriber = OnBlockSubscriber;
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 class PollingOrphanSubscriber extends OnBlockSubscriber {
     #filter;
     constructor(provider, filter) {
@@ -108,6 +128,11 @@ class PollingOrphanSubscriber extends OnBlockSubscriber {
     }
 }
 exports.PollingOrphanSubscriber = PollingOrphanSubscriber;
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 class PollingTransactionSubscriber extends OnBlockSubscriber {
     #hash;
     constructor(provider, hash) {
@@ -122,6 +147,11 @@ class PollingTransactionSubscriber extends OnBlockSubscriber {
     }
 }
 exports.PollingTransactionSubscriber = PollingTransactionSubscriber;
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 class PollingEventSubscriber {
     #provider;
     #filter;

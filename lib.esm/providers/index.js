@@ -1,4 +1,8 @@
-/////
+/**
+ *  About providers.
+ *
+ *  @_section: api/providers:Providers  [providers]
+ */
 export { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 export { AbstractSigner, VoidSigner, WrappedSigner } from "./abstract-signer.js";
 /*
@@ -27,8 +31,7 @@ export { AnkrProvider } from "./provider-ankr.js";
 export { CloudflareProvider } from "./provider-cloudflare.js";
 export { BaseEtherscanProvider, EtherscanPlugin } from "./provider-etherscan-base.js";
 export { EtherscanProvider } from "./provider-etherscan.js";
-export { InfuraProvider } from "./provider-infura.js";
-//export { PocketProvider } from "./provider-pocket.js";
+export { InfuraProvider, InfuraWebSocketProvider } from "./provider-infura.js";
 import { IpcSocketProvider } from "./provider-ipcsocket.js"; /*-browser*/
 export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";

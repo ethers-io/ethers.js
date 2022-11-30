@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CustomBlockNetworkPlugin = exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = void 0;
+exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = void 0;
 const properties_js_1 = require("../utils/properties.js");
 const index_js_1 = require("../utils/index.js");
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
@@ -22,7 +22,10 @@ class GasCostPlugin extends NetworkPlugin {
     txDataNonzero;
     txAccessListStorageKey;
     txAccessListAddress;
-    constructor(effectiveBlock = 0, costs) {
+    constructor(effectiveBlock, costs) {
+        if (effectiveBlock == null) {
+            effectiveBlock = 0;
+        }
         super(`org.ethers.network-plugins.gas-cost#${(effectiveBlock || 0)}`);
         const props = { effectiveBlock };
         function set(name, nullish) {
@@ -100,23 +103,28 @@ class FeeDataNetworkPlugin extends NetworkPlugin {
     }
 }
 exports.FeeDataNetworkPlugin = FeeDataNetworkPlugin;
-class CustomBlockNetworkPlugin extends NetworkPlugin {
-    #blockFunc;
-    #blockWithTxsFunc;
-    constructor(blockFunc, blockWithTxsFunc) {
+/*
+export class CustomBlockNetworkPlugin extends NetworkPlugin {
+    readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;
+    readonly #blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>;
+
+    constructor(blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>, blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>) {
         super("org.ethers.network-plugins.custom-block");
         this.#blockFunc = blockFunc;
         this.#blockWithTxsFunc = blockWithTxsFunc;
     }
-    async getBlock(provider, block) {
+
+    async getBlock(provider: Provider, block: BlockParams<string>): Promise<Block<string>> {
         return await this.#blockFunc(provider, block);
     }
-    async getBlockWithTransactions(provider, block) {
+
+    async getBlockions(provider: Provider, block: BlockParams<TransactionResponseParams>): Promise<Block<TransactionResponse>> {
         return await this.#blockWithTxsFunc(provider, block);
     }
-    clone() {
+
+    clone(): CustomBlockNetworkPlugin {
         return new CustomBlockNetworkPlugin(this.#blockFunc, this.#blockWithTxsFunc);
     }
 }
-exports.CustomBlockNetworkPlugin = CustomBlockNetworkPlugin;
+*/
 //# sourceMappingURL=plugins-network.js.map

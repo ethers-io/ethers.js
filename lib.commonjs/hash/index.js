@@ -1,4 +1,9 @@
 "use strict";
+/**
+ *  About hashing here...
+ *
+ *  @_section: api/hashing:Hashing Utilities  [hashing]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.id = void 0;
 var id_js_1 = require("./id.js");

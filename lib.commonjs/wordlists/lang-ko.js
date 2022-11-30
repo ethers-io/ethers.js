@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.langKo = void 0;
+exports.LangKo = void 0;
 const index_js_1 = require("../hash/index.js");
 const index_js_2 = require("../utils/index.js");
 const wordlist_js_1 = require("./wordlist.js");
@@ -52,7 +52,19 @@ function loadWords() {
     _wordlist = wordlist;
     return wordlist;
 }
+let wordlist = null;
+/**
+ *  The [[link-bip-39]] Wordlist for the Korean (ko) language.
+ *
+ *  @_docloc: api/wordlists
+ */
 class LangKo extends wordlist_js_1.Wordlist {
+    /**
+     *  Creates a new instance of the Korean language Wordlist.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langKo]] should suffice.
+     */
     constructor() {
         super("ko");
     }
@@ -64,6 +76,16 @@ class LangKo extends wordlist_js_1.Wordlist {
     getWordIndex(word) {
         return loadWords().indexOf(word);
     }
+    /**
+     *  Returns a singleton instance of a ``LangKo``, creating it
+     *  if this is the first time being called.
+     */
+    static wordlist() {
+        if (wordlist == null) {
+            wordlist = new LangKo();
+        }
+        return wordlist;
+    }
 }
-exports.langKo = new LangKo();
+exports.LangKo = LangKo;
 //# sourceMappingURL=lang-ko.js.map

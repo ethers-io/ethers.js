@@ -10,6 +10,11 @@ const plugins_network_js_1 = require("./plugins-network.js");
 const community_js_1 = require("./community.js");
 const THROTTLE = 2000;
 const EtherscanPluginId = "org.ethers.plugins.Etherscan";
+/**
+ *  Aboud Cloudflare...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 class EtherscanPlugin extends plugins_network_js_1.NetworkPlugin {
     baseUrl;
     communityApiKey;
@@ -24,6 +29,11 @@ class EtherscanPlugin extends plugins_network_js_1.NetworkPlugin {
 }
 exports.EtherscanPlugin = EtherscanPlugin;
 let nextId = 1;
+/**
+ *  Aboud Etherscan...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
     network;
     apiKey;
@@ -205,7 +215,7 @@ class BaseEtherscanProvider extends abstract_provider_js_1.AbstractProvider {
     _checkError(req, error, transaction) {
         if (req.method === "call" || req.method === "estimateGas") {
             if (error.message.match(/execution reverted/i)) {
-                const e = (0, index_js_1.getBuiltinCallException)(req.method, req.transaction, error.data);
+                const e = index_js_1.AbiCoder.getBuiltinCallException(req.method, req.transaction, error.data);
                 e.info = { request: req, error };
                 throw e;
             }

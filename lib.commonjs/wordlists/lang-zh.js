@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.langZhTw = exports.langZhCn = void 0;
+exports.LangZh = void 0;
 const index_js_1 = require("../hash/index.js");
 const index_js_2 = require("../utils/index.js");
 const wordlist_js_1 = require("./wordlist.js");
@@ -47,8 +47,29 @@ function loadWords(locale) {
     _wordlist[locale] = wordlist;
     return wordlist;
 }
+const wordlists = {};
+/**
+ *  The [[link-bip-39]] Wordlist for the Chinese language.
+ *
+ *  This Wordlist supports both simplified and traditional
+ *  character set, depending on which is specified in the
+ *  constructor.
+ *
+ *  For the ``zh_cn`` language use ``"cn"`` and for the ``zh_tw``
+ *  langauge, use ``"tw"``.
+ *
+ *  @_docloc: api/wordlists
+ */
 class LangZh extends wordlist_js_1.Wordlist {
-    constructor(country) { super("zh_" + country); }
+    /**
+     *  Creates a new instance of the Chinese language Wordlist for
+     *  the %%dialect%%, either ``"cn"`` or ``"tw"`` for simplified
+     *  or traditional, respectively.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langZhCn]] and [[langZhTw]] should suffice.
+     */
+    constructor(dialect) { super("zh_" + dialect); }
     getWord(index) {
         const words = loadWords(this.locale);
         (0, index_js_2.assertArgument)(index >= 0 && index < words.length, `invalid word index: ${index}`, "index", index);
@@ -57,11 +78,20 @@ class LangZh extends wordlist_js_1.Wordlist {
     getWordIndex(word) {
         return loadWords(this.locale).indexOf(word);
     }
-    split(mnemonic) {
-        mnemonic = mnemonic.replace(/(?:\u3000| )+/g, "");
-        return mnemonic.split("");
+    split(phrase) {
+        phrase = phrase.replace(/(?:\u3000| )+/g, "");
+        return phrase.split("");
+    }
+    /**
+     *  Returns a singleton instance of a ``LangZh`` for %%dialect%%,
+     *  creating it if this is the first time being called.
+     */
+    static wordlist(dialect) {
+        if (wordlists[dialect] == null) {
+            wordlists[dialect] = new LangZh(dialect);
+        }
+        return wordlists[dialect];
     }
 }
-exports.langZhCn = new LangZh("cn");
-exports.langZhTw = new LangZh("tw");
+exports.LangZh = LangZh;
 //# sourceMappingURL=lang-zh.js.map

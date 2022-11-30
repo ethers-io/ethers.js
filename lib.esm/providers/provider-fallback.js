@@ -238,10 +238,7 @@ export class FallbackProvider extends AbstractProvider {
                 return await provider.getBalance(req.address, req.blockTag);
             case "getBlock": {
                 const block = ("blockHash" in req) ? req.blockHash : req.blockTag;
-                if (req.includeTransactions) {
-                    return await provider.getBlockWithTransactions(block);
-                }
-                return await provider.getBlock(block);
+                return await provider.getBlock(block, req.includeTransactions);
             }
             case "getBlockNumber":
                 return await provider.getBlockNumber();

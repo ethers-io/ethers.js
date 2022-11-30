@@ -1,6 +1,9 @@
 import { toUtf8Bytes, toUtf8String } from "../../utils/utf8.js";
 import { Typed } from "../typed.js";
 import { DynamicBytesCoder } from "./bytes.js";
+/**
+ *  @_ignore
+ */
 export class StringCoder extends DynamicBytesCoder {
     constructor(localName) {
         super("string", localName);

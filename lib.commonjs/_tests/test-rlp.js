@@ -20,7 +20,7 @@ describe("Test RLP Coder", function () {
     });
 });
 describe("Test bad RLP Data", function () {
-    it("fails encoding data with invalid values", function () {
+    it("correctly fails encoding data with invalid values", function () {
         assert_1.default.throws(() => {
             (0, index_js_1.encodeRlp)(["0x1234", 1234]);
         }, (error) => {
@@ -29,7 +29,7 @@ describe("Test bad RLP Data", function () {
                 error.value === 1234);
         });
     });
-    it("fails decoding data with trailing junk", function () {
+    it("correctlyfails decoding data with trailing junk", function () {
         assert_1.default.throws(() => {
             // Zeros_1
             (0, index_js_1.decodeRlp)("0x0042");
@@ -40,7 +40,7 @@ describe("Test bad RLP Data", function () {
                 error.value === "0x0042");
         });
     });
-    it("fails decoding short data", function () {
+    it("correctlyfails decoding short data", function () {
         assert_1.default.throws(() => {
             (0, index_js_1.decodeRlp)("0x");
         }, (error) => {
@@ -51,7 +51,7 @@ describe("Test bad RLP Data", function () {
                 error.length === 0);
         });
     });
-    it("fails decoding short data in child", function () {
+    it("correctlyfails decoding short data in child", function () {
         assert_1.default.throws(() => {
             (0, index_js_1.decodeRlp)("0xc8880102030405060708");
         }, (error) => {
@@ -62,7 +62,7 @@ describe("Test bad RLP Data", function () {
                 error.length === 8);
         });
     });
-    it("fails decoding short segment data", function () {
+    it("correctlyfails decoding short segment data", function () {
         assert_1.default.throws(() => {
             // [["0x4243"], ["0x3145"]] = 0xc8 c3 82 4243 c3 82 3145
             //                                       XXXX

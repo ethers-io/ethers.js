@@ -1,6 +1,6 @@
 import assert from "assert";
 import { loadTests } from "./utils.js";
-import { defaultAbiCoder, Interface, decodeBytes32String, encodeBytes32String } from "../index.js";
+import { AbiCoder, Interface, decodeBytes32String, encodeBytes32String } from "../index.js";
 function equal(actual, expected) {
     switch (expected.type) {
         case "address":
@@ -27,13 +27,13 @@ describe("Tests ABI Coder", function () {
     const tests = loadTests("abi");
     for (const test of tests) {
         it(`tests ABI encoding: (${test.name})`, function () {
-            const encoded = defaultAbiCoder.encode([test.type], [test.value]);
+            const encoded = AbiCoder.defaultAbiCoder().encode([test.type], [test.value]);
             assert.equal(encoded, test.encoded, "encoded");
         });
     }
     for (const test of tests) {
         it(`tests ABI decoding: (${test.name})`, function () {
-            const decoded = defaultAbiCoder.decode([test.type], test.encoded)[0];
+            const decoded = AbiCoder.defaultAbiCoder().decode([test.type], test.encoded)[0];
             equal(decoded, test.verbose);
         });
     }

@@ -11,15 +11,15 @@ export declare type FetchThrottleParams = {
 /**
  *  Called before any network request, allowing updated headers (e.g. Bearer tokens), etc.
  */
-export declare type FetchPreflightFunc = (request: FetchRequest) => Promise<FetchRequest>;
+export declare type FetchPreflightFunc = (req: FetchRequest) => Promise<FetchRequest>;
 /**
  *  Called on the response, allowing client-based throttling logic or post-processing.
  */
-export declare type FetchProcessFunc = (request: FetchRequest, response: FetchResponse) => Promise<FetchResponse>;
+export declare type FetchProcessFunc = (req: FetchRequest, resp: FetchResponse) => Promise<FetchResponse>;
 /**
  *  Called prior to each retry; return true to retry, false to abort.
  */
-export declare type FetchRetryFunc = (request: FetchRequest, response: FetchResponse, attempt: number) => Promise<boolean>;
+export declare type FetchRetryFunc = (req: FetchRequest, resp: FetchResponse, attempt: number) => Promise<boolean>;
 /**
  *  Called on Gateway URLs.
  */
@@ -30,12 +30,10 @@ export declare type FetchGatewayFunc = (url: string, signal?: FetchCancelSignal)
  *  and in the browser ``fetch`` is used. If you wish to use Axios, this is
  *  how you would register it.
  */
-export declare type FetchGetUrlFunc = (request: FetchRequest, signal?: FetchCancelSignal) => Promise<GetUrlResponse>;
+export declare type FetchGetUrlFunc = (req: FetchRequest, signal?: FetchCancelSignal) => Promise<GetUrlResponse>;
 /**
- *  Returns a [[FetchGatewayFunc]] for fetching content from a standard
- *  IPFS gateway hosted at %%baseUrl%%.
+ *  @_ignore
  */
-export declare function getIpfsGatewayFunc(baseUrl: string): FetchGatewayFunc;
 export declare class FetchCancelSignal {
     #private;
     constructor(request: FetchRequest);
@@ -46,8 +44,10 @@ export declare class FetchCancelSignal {
 /**
  *  Represents a request for a resource using a URI.
  *
- *  Requests can occur over http/https, data: URI or any
- *  URI scheme registered via the static [[register]] method.
+ *  By default, the supported schemes are ``HTTP``, ``HTTPS``, ``data:``,
+ *  and ``IPFS:``.
+ *
+ *  Additional schemes can be added globally using [[registerGateway]].
  */
 export declare class FetchRequest implements Iterable<[key: string, value: string]> {
     #private;
@@ -57,7 +57,7 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
     get url(): string;
     set url(url: string);
     /**
-     *  The fetch body, if any, to send as the request body.
+     *  The fetch body, if any, to send as the request body. //(default: null)//
      *
      *  When setting a body, the intrinsic ``Content-Type`` is automatically
      *  set and will be used if **not overridden** by setting a custom
@@ -91,11 +91,17 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
     get method(): string;
     set method(method: null | string);
     /**
-     *  The headers that will be used when requesting the URI.
+     *  The headers that will be used when requesting the URI. All
+     *  keys are lower-case.
+     *
+     *  This object is a copy, so any chnages will **NOT** be reflected
+     *  in the ``FetchRequest``.
+     *
+     *  To set a header entry, use the ``setHeader`` method.
      */
-    get headers(): Readonly<Record<string, string>>;
+    get headers(): Record<string, string>;
     /**
-     *  Get the header for %%key%%.
+     *  Get the header for %%key%%, ignoring case.
      */
     getHeader(key: string): string;
     /**
@@ -104,12 +110,14 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
      */
     setHeader(key: string, value: string | number): void;
     /**
-     *  Clear all headers.
+     *  Clear all headers, resetting all intrinsic headers.
      */
     clearHeaders(): void;
     [Symbol.iterator](): Iterator<[key: string, value: string]>;
     /**
      *  The value that will be sent for the ``Authorization`` header.
+     *
+     *  To set the credentials, use the ``setCredentials`` method.
      */
     get credentials(): null | string;
     /**
@@ -117,18 +125,20 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
      */
     setCredentials(username: string, password: string): void;
     /**
-     *  Allow gzip-encoded responses.
+     *  Enable and request gzip-encoded responses. The response will
+     *  automatically be decompressed. //(default: true)//
      */
     get allowGzip(): boolean;
     set allowGzip(value: boolean);
     /**
      *  Allow ``Authentication`` credentials to be sent over insecure
-     *  channels.
+     *  channels. //(default: false)//
      */
     get allowInsecureAuthentication(): boolean;
     set allowInsecureAuthentication(value: boolean);
     /**
      *  The timeout (in milliseconds) to wait for a complere response.
+     *  //(default: 5 minutes)//
      */
     get timeout(): number;
     set timeout(timeout: number);
@@ -158,7 +168,17 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
      */
     get retryFunc(): null | FetchRetryFunc;
     set retryFunc(retry: null | FetchRetryFunc);
+    /**
+     *  Create a new FetchRequest instance with default values.
+     *
+     *  Once created, each property may be set before issuing a
+     *  ``.send()`` to make teh request.
+     */
     constructor(url: string);
+    /**
+     *  Update the throttle parameters used to determine maximum
+     *  attempts and exponential-backoff properties.
+     */
     setThrottleParams(params: FetchThrottleParams): void;
     /**
      *  Resolves to the response by sending the request.
@@ -188,13 +208,41 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
      */
     static getGateway(scheme: string): null | FetchGatewayFunc;
     /**
-     *  Set the FetchGatewayFunc for %%scheme%% to %%func%%.
+     *  Use the %%func%% when fetching URIs using %%scheme%%.
+     *
+     *  This method affects all requests globally.
+     *
+     *  If [[lockConfig]] has been called, no change is made and this
+     *  throws.
      */
     static registerGateway(scheme: string, func: FetchGatewayFunc): void;
     /**
-     *  Set a custom function for fetching HTTP and HTTPS requests.
+     *  Use %%getUrl%% when fetching URIs over HTTP and HTTPS requests.
+     *
+     *  This method affects all requests globally.
+     *
+     *  If [[lockConfig]] has been called, no change is made and this
+     *  throws.
      */
     static registerGetUrl(getUrl: FetchGetUrlFunc): void;
+    /**
+     *  Creates a function that can "fetch" data URIs.
+     *
+     *  Note that this is automatically done internally to support
+     *  data URIs, so it is not necessary to register it.
+     *
+     *  This is not generally something that is needed, but may
+     *  be useful in a wrapper to perfom custom data URI functionality.
+     */
+    static createDataGateway(): FetchGatewayFunc;
+    /**
+     *  Creates a function that will fetch IPFS (unvalidated) from
+     *  a custom gateway baseUrl.
+     *
+     *  The default IPFS gateway used internally is
+     *  ``"https:/\/gateway.ipfs.io/ipfs/"``.
+     */
+    static createIpfsGatewayFunc(baseUrl: string): FetchGatewayFunc;
 }
 /**
  *  The response for a FetchREquest.
@@ -211,23 +259,25 @@ export declare class FetchResponse implements Iterable<[key: string, value: stri
      */
     get statusMessage(): string;
     /**
-     *  The response headers.
+     *  The response headers. All keys are lower-case.
      */
     get headers(): Record<string, string>;
     /**
-     *  The response body.
+     *  The response body, or ``null`` if there was no body.
      */
     get body(): null | Readonly<Uint8Array>;
     /**
-     *  The response body as a UTF-8 encoded string.
+     *  The response body as a UTF-8 encoded string, or the empty
+     *  string (i.e. ``""``) if there was no body.
      *
-     * An error is thrown if the body is invalid UTF-8 data.
+     *  An error is thrown if the body is invalid UTF-8 data.
      */
     get bodyText(): string;
     /**
      *  The response body, decoded as JSON.
      *
-     *  An error is thrown if the body is invalid JSON-encoded data.
+     *  An error is thrown if the body is invalid JSON-encoded data
+     *  or if there was no body.
      */
     get bodyJson(): any;
     [Symbol.iterator](): Iterator<[key: string, value: string]>;
@@ -239,12 +289,13 @@ export declare class FetchResponse implements Iterable<[key: string, value: stri
      */
     makeServerError(message?: string, error?: Error): FetchResponse;
     /**
-     *  If called within the [[processFunc]], causes the request to
-     *  retry as if throttled for %%stall%% milliseconds.
+     *  If called within a [request.processFunc](FetchRequest-processFunc)
+     *  call, causes the request to retry as if throttled for %%stall%%
+     *  milliseconds.
      */
     throwThrottleError(message?: string, stall?: number): never;
     /**
-     *  Get the header value for %%key%%.
+     *  Get the header value for %%key%%, ignoring case.
      */
     getHeader(key: string): string;
     /**
@@ -258,7 +309,7 @@ export declare class FetchResponse implements Iterable<[key: string, value: stri
      */
     get request(): null | FetchRequest;
     /**
-     *  Returns true if this response was a success statuscode.
+     *  Returns true if this response was a success statusCode.
      */
     ok(): boolean;
     /**

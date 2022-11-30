@@ -1,6 +1,6 @@
 import assert from "assert";
 import { loadTests } from "./utils.js";
-import { Wallet } from "../index.js";
+import { hexlify, randomBytes, Wallet } from "../index.js";
 describe("Test Private Key Wallet", function () {
     const tests = loadTests("accounts");
     tests.forEach(({ name, privateKey, address }) => {
@@ -71,17 +71,24 @@ describe("Test Typed-Data Signing (EIP-712)", function () {
 });
 describe("Test Wallet Encryption", function () {
     const password = "foobar";
-    it("encrypts a wallet: sync", function () {
-        const wallet = Wallet.createRandom();
-        const json = wallet.encryptSync(password);
-        const decrypted = Wallet.fromEncryptedJsonSync(json, password);
-        assert.equal(decrypted.address, wallet.address, "address");
-    });
-    it("encrypts a wallet: async", async function () {
-        const wallet = Wallet.createRandom();
-        const json = await wallet.encrypt(password);
-        const decrypted = await Wallet.fromEncryptedJson(json, password);
-        assert.equal(decrypted.address, wallet.address, "address");
-    });
+    // Loop:
+    //  1 : random wallet (uses HDNodeWallet under the hood)
+    //  2 : Wallet using private key (uses Wallet explicitly)
+    for (let i = 0; i < 2; i++) {
+        let wallet = Wallet.createRandom();
+        it("encrypts a random wallet: sync", function () {
+            this.timeout(30000);
+            const json = wallet.encryptSync(password);
+            const decrypted = Wallet.fromEncryptedJsonSync(json, password);
+            assert.equal(decrypted.address, wallet.address, "address");
+        });
+        it("encrypts a random wallet: async", async function () {
+            this.timeout(30000);
+            const json = await wallet.encrypt(password);
+            const decrypted = await Wallet.fromEncryptedJson(json, password);
+            assert.equal(decrypted.address, wallet.address, "address");
+        });
+        wallet = new Wallet(hexlify(randomBytes(32)));
+    }
 });
 //# sourceMappingURL=test-wallet.js.map

@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.zeroPadBytes = exports.zeroPadValue = exports.stripZerosLeft = exports.dataSlice = exports.dataLength = exports.concat = exports.hexlify = exports.isBytesLike = exports.isHexString = exports.getBytesCopy = exports.getBytes = void 0;
+/**
+ *  Some data helpers.
+ *
+ *
+ *  @_subsection api/utils:Data Helpers  [data]
+ */
 const errors_js_1 = require("./errors.js");
 function _getBytes(value, name, copy) {
     if (value instanceof Uint8Array) {
@@ -43,13 +49,10 @@ function getBytesCopy(value, name) {
 }
 exports.getBytesCopy = getBytesCopy;
 /**
- *  Returns true if %%value%% is a valid [[HexString]], with additional
- *  optional constraints depending on %%length%%.
+ *  Returns true if %%value%% is a valid [[HexString]].
  *
- *  If %%length%% is //true//, then %%value%% must additionally be a valid
- *  [[HexDataString]] (i.e. even length).
- *
- *  If %%length%% is //a number//, then %%value%% must represent that many
+ *  If %%length%% is ``true`` or a //number//, it also checks that
+ *  %%value%% is a valid [[DataHexString]] of %%length%% (if a //number//)
  *  bytes of data (e.g. ``0x1234`` is 2 bytes).
  */
 function isHexString(value, length) {
@@ -67,7 +70,7 @@ function isHexString(value, length) {
 exports.isHexString = isHexString;
 /**
  *  Returns true if %%value%% is a valid representation of arbitrary
- *  data (i.e. a valid [[HexDataString]] or a Uint8Array).
+ *  data (i.e. a valid [[DataHexString]] or a Uint8Array).
  */
 function isBytesLike(value) {
     return (isHexString(value, true) || (value instanceof Uint8Array));
@@ -75,7 +78,7 @@ function isBytesLike(value) {
 exports.isBytesLike = isBytesLike;
 const HexCharacters = "0123456789abcdef";
 /**
- *  Returns a [[HexDataString]] representation of %%data%%.
+ *  Returns a [[DataHexString]] representation of %%data%%.
  */
 function hexlify(data) {
     const bytes = getBytes(data);
@@ -88,7 +91,7 @@ function hexlify(data) {
 }
 exports.hexlify = hexlify;
 /**
- *  Returns a [[HexDataString]] by concatenating all values
+ *  Returns a [[DataHexString]] by concatenating all values
  *  within %%data%%.
  */
 function concat(datas) {
@@ -106,7 +109,7 @@ function dataLength(data) {
 }
 exports.dataLength = dataLength;
 /**
- *  Returns a [[HexDataString]] by slicing %%data%% from the %%start%%
+ *  Returns a [[DataHexString]] by slicing %%data%% from the %%start%%
  *  offset to the %%end%% offset.
  *
  *  By default %%start%% is 0 and %%end%% is the length of %%data%%.
@@ -122,7 +125,7 @@ function dataSlice(data, start, end) {
 }
 exports.dataSlice = dataSlice;
 /**
- *  Return the [[HexDataString]] result by stripping all **leading**
+ *  Return the [[DataHexString]] result by stripping all **leading**
  ** zero bytes from %%data%%.
  */
 function stripZerosLeft(data) {
@@ -151,7 +154,7 @@ function zeroPad(data, length, left) {
     return hexlify(result);
 }
 /**
- *  Return the [[HexDataString]] of %%data%% padded on the **left**
+ *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
  */
 function zeroPadValue(data, length) {
@@ -159,7 +162,7 @@ function zeroPadValue(data, length) {
 }
 exports.zeroPadValue = zeroPadValue;
 /**
- *  Return the [[HexDataString]] of %%data%% padded on the **right**
+ *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
  */
 function zeroPadBytes(data, length) {

@@ -1,12 +1,12 @@
 /**
- *  SocketProvider
- *
  *  Generic long-lived socket provider.
  *
  *  Sub-classing notes
  *  - a sub-class MUST call the `_start()` method once connected
  *  - a sub-class MUST override the `_write(string)` method
  *  - a sub-class MUST call `_processMessage(string)` for each message
+ *
+ *  @_subsection: api/providers/abstract-provider
  */
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 import type { Subscriber, Subscription } from "./abstract-provider.js";
@@ -38,6 +38,10 @@ export declare class SocketEventSubscriber extends SocketSubscriber {
     constructor(provider: SocketProvider, filter: EventFilter);
     _emit(provider: SocketProvider, message: any): Promise<void>;
 }
+/**
+ *  SocketProvider...
+ *
+ */
 export declare class SocketProvider extends JsonRpcApiProvider {
     #private;
     constructor(network?: Networkish);

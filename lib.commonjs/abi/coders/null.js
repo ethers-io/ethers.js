@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NullCoder = void 0;
 const abstract_coder_js_1 = require("./abstract-coder.js");
 const Empty = new Uint8Array([]);
+/**
+ *  @_ignore
+ */
 class NullCoder extends abstract_coder_js_1.Coder {
     constructor(localName) {
         super("null", "", localName, false);

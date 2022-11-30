@@ -2,6 +2,11 @@ import { assert, isHexString } from "../utils/index.js";
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export function getPollingSubscriber(provider, event) {
     if (event === "block") {
         return new PollingBlockSubscriber(provider);
@@ -14,6 +19,11 @@ export function getPollingSubscriber(provider, event) {
     });
 }
 // @TODO: refactor this
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class PollingBlockSubscriber {
     #provider;
     #poller;
@@ -68,6 +78,11 @@ export class PollingBlockSubscriber {
         this.start();
     }
 }
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class OnBlockSubscriber {
     #provider;
     #poll;
@@ -90,6 +105,11 @@ export class OnBlockSubscriber {
     pause(dropWhilePaused) { this.stop(); }
     resume() { this.start(); }
 }
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class PollingOrphanSubscriber extends OnBlockSubscriber {
     #filter;
     constructor(provider, filter) {
@@ -101,6 +121,11 @@ export class PollingOrphanSubscriber extends OnBlockSubscriber {
         console.log(this.#filter);
     }
 }
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class PollingTransactionSubscriber extends OnBlockSubscriber {
     #hash;
     constructor(provider, hash) {
@@ -114,6 +139,11 @@ export class PollingTransactionSubscriber extends OnBlockSubscriber {
         }
     }
 }
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class PollingEventSubscriber {
     #provider;
     #filter;

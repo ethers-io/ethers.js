@@ -1,11 +1,14 @@
 "use strict";
+/**
+ *  Explain about ABI here...
+ *
+ *  @_section api/abi:Application Binary Interface  [abi]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Typed = exports.Result = exports.TransactionDescription = exports.LogDescription = exports.ErrorDescription = exports.Interface = exports.Indexed = exports.checkResultErrors = exports.StructFragment = exports.ParamType = exports.NamedFragment = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = exports.encodeBytes32String = exports.decodeBytes32String = exports.getBuiltinCallException = exports.defaultAbiCoder = exports.AbiCoder = void 0;
+exports.Typed = exports.Result = exports.TransactionDescription = exports.LogDescription = exports.ErrorDescription = exports.Interface = exports.Indexed = exports.checkResultErrors = exports.StructFragment = exports.ParamType = exports.NamedFragment = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = exports.encodeBytes32String = exports.decodeBytes32String = exports.AbiCoder = void 0;
 //////
 var abi_coder_js_1 = require("./abi-coder.js");
 Object.defineProperty(exports, "AbiCoder", { enumerable: true, get: function () { return abi_coder_js_1.AbiCoder; } });
-Object.defineProperty(exports, "defaultAbiCoder", { enumerable: true, get: function () { return abi_coder_js_1.defaultAbiCoder; } });
-Object.defineProperty(exports, "getBuiltinCallException", { enumerable: true, get: function () { return abi_coder_js_1.getBuiltinCallException; } });
 var bytes32_js_1 = require("./bytes32.js");
 Object.defineProperty(exports, "decodeBytes32String", { enumerable: true, get: function () { return bytes32_js_1.decodeBytes32String; } });
 Object.defineProperty(exports, "encodeBytes32String", { enumerable: true, get: function () { return bytes32_js_1.encodeBytes32String; } });

@@ -2,6 +2,9 @@ import { getAddress } from "../../address/index.js";
 import { toHex } from "../../utils/maths.js";
 import { Typed } from "../typed.js";
 import { Coder } from "./abstract-coder.js";
+/**
+ *  @_ignore
+ */
 export class AddressCoder extends Coder {
     constructor(localName) {
         super("address", "address", localName, false);

@@ -20,6 +20,9 @@ function unfold(words, sep) {
         return accum;
     }, []);
 }
+/**
+ *  @_ignore
+ */
 function decode(data, subs) {
     // Replace all the substitutions with their expanded form
     for (let i = subsChrs.length - 1; i >= 0; i--) {
@@ -46,6 +49,9 @@ function decode(data, subs) {
     return unfold(unfold(clumps, ";"), ":");
 }
 exports.decode = decode;
+/**
+ *  @_ignore
+ */
 function decodeOwl(data) {
     (0, index_js_1.assertArgument)(data[0] === "0", "unsupported auwl data", "data", data);
     return decode(data.substring(1 + 2 * subsChrs.length), data.substring(1, 1 + 2 * subsChrs.length));

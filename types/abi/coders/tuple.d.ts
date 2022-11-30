@@ -1,6 +1,9 @@
 import { Typed } from "../typed.js";
 import { Coder } from "./abstract-coder.js";
 import type { Reader, Writer } from "./abstract-coder.js";
+/**
+ *  @_ignore
+ */
 export declare class TupleCoder extends Coder {
     readonly coders: ReadonlyArray<Coder>;
     constructor(coders: Array<Coder>, localName: string);

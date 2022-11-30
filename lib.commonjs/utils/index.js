@@ -1,8 +1,14 @@
 "use strict";
-////
+/**
+ *  There are many simple utilities required to interact with
+ *  Ethereum and to simplify the library, without increasing
+ *  the library dependencies for simple functions.
+ *
+ *  @_section api/utils:Utilities  [utils]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.formatEther = exports.setStore = exports.getStore = exports.encodeRlp = exports.decodeRlp = exports.defineProperties = exports.defineReadOnly = exports.resolveProperties = exports.toQuantity = exports.toArray = exports.toHex = exports.toNumber = exports.toBigInt = exports.getNumber = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = exports.parseFixed = exports.formatFixed = exports.FixedNumber = exports.FixedFormat = exports.FetchCancelSignal = exports.FetchResponse = exports.FetchRequest = exports.getIpfsGatewayFunc = exports.EventPayload = exports.makeError = exports.assertNormalize = exports.assertPrivate = exports.assertArgumentCount = exports.assertArgument = exports.assert = exports.isError = exports.isCallException = exports.zeroPadBytes = exports.zeroPadValue = exports.stripZerosLeft = exports.dataSlice = exports.dataLength = exports.concat = exports.hexlify = exports.isBytesLike = exports.isHexString = exports.getBytesCopy = exports.getBytes = exports.encodeBase64 = exports.decodeBase64 = exports.encodeBase58 = exports.decodeBase58 = void 0;
-exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports.parseUnits = exports.formatUnits = exports.parseEther = void 0;
+exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.encodeRlp = exports.decodeRlp = exports.defineProperties = exports.resolveProperties = exports.toQuantity = exports.toArray = exports.toHex = exports.toNumber = exports.toBigInt = exports.getNumber = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = exports.FixedNumber = exports.FetchCancelSignal = exports.FetchResponse = exports.FetchRequest = exports.EventPayload = exports.makeError = exports.assertNormalize = exports.assertPrivate = exports.assertArgumentCount = exports.assertArgument = exports.assert = exports.isError = exports.isCallException = exports.zeroPadBytes = exports.zeroPadValue = exports.stripZerosLeft = exports.dataSlice = exports.dataLength = exports.concat = exports.hexlify = exports.isBytesLike = exports.isHexString = exports.getBytesCopy = exports.getBytes = exports.encodeBase64 = exports.decodeBase64 = exports.encodeBase58 = exports.decodeBase58 = void 0;
+exports.uuidV4 = void 0;
 var base58_js_1 = require("./base58.js");
 Object.defineProperty(exports, "decodeBase58", { enumerable: true, get: function () { return base58_js_1.decodeBase58; } });
 Object.defineProperty(exports, "encodeBase58", { enumerable: true, get: function () { return base58_js_1.encodeBase58; } });
@@ -33,15 +39,11 @@ Object.defineProperty(exports, "makeError", { enumerable: true, get: function ()
 var events_js_1 = require("./events.js");
 Object.defineProperty(exports, "EventPayload", { enumerable: true, get: function () { return events_js_1.EventPayload; } });
 var fetch_js_1 = require("./fetch.js");
-Object.defineProperty(exports, "getIpfsGatewayFunc", { enumerable: true, get: function () { return fetch_js_1.getIpfsGatewayFunc; } });
 Object.defineProperty(exports, "FetchRequest", { enumerable: true, get: function () { return fetch_js_1.FetchRequest; } });
 Object.defineProperty(exports, "FetchResponse", { enumerable: true, get: function () { return fetch_js_1.FetchResponse; } });
 Object.defineProperty(exports, "FetchCancelSignal", { enumerable: true, get: function () { return fetch_js_1.FetchCancelSignal; } });
 var fixednumber_js_1 = require("./fixednumber.js");
-Object.defineProperty(exports, "FixedFormat", { enumerable: true, get: function () { return fixednumber_js_1.FixedFormat; } });
 Object.defineProperty(exports, "FixedNumber", { enumerable: true, get: function () { return fixednumber_js_1.FixedNumber; } });
-Object.defineProperty(exports, "formatFixed", { enumerable: true, get: function () { return fixednumber_js_1.formatFixed; } });
-Object.defineProperty(exports, "parseFixed", { enumerable: true, get: function () { return fixednumber_js_1.parseFixed; } });
 var maths_js_1 = require("./maths.js");
 Object.defineProperty(exports, "fromTwos", { enumerable: true, get: function () { return maths_js_1.fromTwos; } });
 Object.defineProperty(exports, "toTwos", { enumerable: true, get: function () { return maths_js_1.toTwos; } });
@@ -55,15 +57,11 @@ Object.defineProperty(exports, "toArray", { enumerable: true, get: function () {
 Object.defineProperty(exports, "toQuantity", { enumerable: true, get: function () { return maths_js_1.toQuantity; } });
 var properties_js_1 = require("./properties.js");
 Object.defineProperty(exports, "resolveProperties", { enumerable: true, get: function () { return properties_js_1.resolveProperties; } });
-Object.defineProperty(exports, "defineReadOnly", { enumerable: true, get: function () { return properties_js_1.defineReadOnly; } });
 Object.defineProperty(exports, "defineProperties", { enumerable: true, get: function () { return properties_js_1.defineProperties; } });
 var rlp_decode_js_1 = require("./rlp-decode.js");
 Object.defineProperty(exports, "decodeRlp", { enumerable: true, get: function () { return rlp_decode_js_1.decodeRlp; } });
 var rlp_encode_js_1 = require("./rlp-encode.js");
 Object.defineProperty(exports, "encodeRlp", { enumerable: true, get: function () { return rlp_encode_js_1.encodeRlp; } });
-var storage_js_1 = require("./storage.js");
-Object.defineProperty(exports, "getStore", { enumerable: true, get: function () { return storage_js_1.getStore; } });
-Object.defineProperty(exports, "setStore", { enumerable: true, get: function () { return storage_js_1.setStore; } });
 var units_js_1 = require("./units.js");
 Object.defineProperty(exports, "formatEther", { enumerable: true, get: function () { return units_js_1.formatEther; } });
 Object.defineProperty(exports, "parseEther", { enumerable: true, get: function () { return units_js_1.parseEther; } });
@@ -74,4 +72,6 @@ Object.defineProperty(exports, "toUtf8Bytes", { enumerable: true, get: function 
 Object.defineProperty(exports, "toUtf8CodePoints", { enumerable: true, get: function () { return utf8_js_1.toUtf8CodePoints; } });
 Object.defineProperty(exports, "toUtf8String", { enumerable: true, get: function () { return utf8_js_1.toUtf8String; } });
 Object.defineProperty(exports, "Utf8ErrorFuncs", { enumerable: true, get: function () { return utf8_js_1.Utf8ErrorFuncs; } });
+var uuid_js_1 = require("./uuid.js");
+Object.defineProperty(exports, "uuidV4", { enumerable: true, get: function () { return uuid_js_1.uuidV4; } });
 //# sourceMappingURL=index.js.map

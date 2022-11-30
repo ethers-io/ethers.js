@@ -1,13 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAccountPath = exports.HDNodeWalletManager = exports.HDNodeVoidWallet = exports.HDNodeWallet = exports.defaultPath = void 0;
+/**
+ *  Explain HD Wallets..
+ *
+ *  @_subsection: api/wallet:HD Wallets  [hd-wallets]
+ */
 const index_js_1 = require("../crypto/index.js");
 const index_js_2 = require("../providers/index.js");
 const index_js_3 = require("../transaction/index.js");
 const index_js_4 = require("../utils/index.js");
 const lang_en_js_1 = require("../wordlists/lang-en.js");
-const mnemonic_js_1 = require("./mnemonic.js");
 const base_wallet_js_1 = require("./base-wallet.js");
+const mnemonic_js_1 = require("./mnemonic.js");
+const json_keystore_js_1 = require("./json-keystore.js");
 exports.defaultPath = "m/44'/60'/0'/0/0";
 // "Bitcoin seed"
 const MasterSecret = new Uint8Array([66, 105, 116, 99, 111, 105, 110, 32, 115, 101, 101, 100]);
@@ -86,6 +92,9 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
     path;
     index;
     depth;
+    /**
+     *  @private
+     */
     constructor(guard, signingKey, parentFingerprint, chainCode, path, index, depth, mnemonic, provider) {
         super(signingKey, provider);
         (0, index_js_4.assertPrivate)(guard, _guard, "HDNodeWallet");
@@ -99,6 +108,41 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
     }
     connect(provider) {
         return new HDNodeWallet(_guard, this.signingKey, this.parentFingerprint, this.chainCode, this.path, this.index, this.depth, this.mnemonic, provider);
+    }
+    #account() {
+        const account = { address: this.address, privateKey: this.privateKey };
+        const m = this.mnemonic;
+        if (this.path && m && m.wordlist.locale === "en" && m.password === "") {
+            account.mnemonic = {
+                path: this.path,
+                locale: "en",
+                entropy: m.entropy
+            };
+        }
+        return account;
+    }
+    /**
+     *  Resolves to a [JSON Keystore Wallet](json-wallets) encrypted with
+     *  %%password%%.
+     *
+     *  If %%progressCallback%% is specified, it will receive periodic
+     *  updates as the encryption process progreses.
+     */
+    async encrypt(password, progressCallback) {
+        return await (0, json_keystore_js_1.encryptKeystoreJson)(this.#account(), password, { progressCallback });
+    }
+    /**
+     *  Returns a [JSON Keystore Wallet](json-wallets) encryped with
+     *  %%password%%.
+     *
+     *  It is preferred to use the [async version](encrypt) instead,
+     *  which allows a [[ProgressCallback]] to keep the user informed.
+     *
+     *  This method will block the event loop (freezing all UI) until
+     *  it is complete, which may be a non-trivial duration.
+     */
+    encryptSync(password) {
+        return (0, json_keystore_js_1.encryptKeystoreJsonSync)(this.#account(), password);
     }
     get extendedKey() {
         // We only support the mainnet values for now, but if anyone needs
@@ -144,7 +188,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
         return new HDNodeWallet(_guard, signingKey, "0x00000000", (0, index_js_4.hexlify)(I.slice(32)), "m", 0, 0, mnemonic, null);
     }
     static fromExtendedKey(extendedKey) {
-        const bytes = (0, index_js_4.getBytes)((0, index_js_4.decodeBase58)(extendedKey)); // @TODO: redact
+        const bytes = (0, index_js_4.toArray)((0, index_js_4.decodeBase58)(extendedKey)); // @TODO: redact
         (0, index_js_4.assertArgument)(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey, "invalid extended key", "extendedKey", "[ REDACTED ]");
         const depth = bytes[4];
         const parentFingerprint = (0, index_js_4.hexlify)(bytes.slice(5, 9));
@@ -176,7 +220,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
             path = exports.defaultPath;
         }
         if (wordlist == null) {
-            wordlist = lang_en_js_1.langEn;
+            wordlist = lang_en_js_1.LangEn.wordlist();
         }
         const mnemonic = mnemonic_js_1.Mnemonic.fromEntropy((0, index_js_1.randomBytes)(16), password, wordlist);
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
@@ -195,7 +239,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
             path = exports.defaultPath;
         }
         if (wordlist == null) {
-            wordlist = lang_en_js_1.langEn;
+            wordlist = lang_en_js_1.LangEn.wordlist();
         }
         const mnemonic = mnemonic_js_1.Mnemonic.fromPhrase(phrase, password, wordlist);
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
@@ -213,6 +257,9 @@ class HDNodeVoidWallet extends index_js_2.VoidSigner {
     path;
     index;
     depth;
+    /**
+     *  @private
+     */
     constructor(guard, address, publicKey, parentFingerprint, chainCode, path, index, depth, provider) {
         super(address, provider);
         (0, index_js_4.assertPrivate)(guard, _guard, "HDNodeVoidWallet");
@@ -265,7 +312,16 @@ class HDNodeVoidWallet extends index_js_2.VoidSigner {
 exports.HDNodeVoidWallet = HDNodeVoidWallet;
 class HDNodeWalletManager {
     #root;
-    constructor(phrase, password = "", path = "m/44'/60'/0'/0", locale = lang_en_js_1.langEn) {
+    constructor(phrase, password, path, locale) {
+        if (password == null) {
+            password = "";
+        }
+        if (path == null) {
+            path = "m/44'/60'/0'/0";
+        }
+        if (locale == null) {
+            locale = lang_en_js_1.LangEn.wordlist();
+        }
         this.#root = HDNodeWallet.fromPhrase(phrase, password, path, locale);
     }
     getSigner(index) {

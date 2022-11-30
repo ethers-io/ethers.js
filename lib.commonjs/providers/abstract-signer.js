@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WrappedSigner = exports.VoidSigner = exports.AbstractSigner = void 0;
+/**
+ *  About Abstract Signer and subclassing
+ *
+ *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
+ */
 const index_js_1 = require("../transaction/index.js");
 const index_js_2 = require("../utils/index.js");
 class AbstractSigner {

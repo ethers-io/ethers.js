@@ -1,3 +1,8 @@
+/**
+ *  About networks
+ *
+ *  @_subsection: api/providers:Networks  [networks]
+ */
 import type { BigNumberish } from "../utils/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 import type { NetworkPlugin } from "./plugins-network.js";
@@ -16,7 +21,7 @@ export declare type Networkish = Network | number | bigint | string | {
 };
 export declare class Network {
     #private;
-    constructor(name: string, _chainId: BigNumberish);
+    constructor(name: string, chainId: BigNumberish);
     toJSON(): any;
     get name(): string;
     set name(value: string);

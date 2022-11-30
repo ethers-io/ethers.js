@@ -1,3 +1,8 @@
+/**
+ *  About Subclassing the Provider...
+ *
+ *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
+ */
 // @TODO
 // Event coalescence
 //   When we register an event with an async value (e.g. address is a Signer
@@ -9,7 +14,7 @@ import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
 import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, makeError, assert, assertArgument, FetchRequest, toArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
-import { formatBlock, formatBlockWithTransactions, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
+import { formatBlock, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
 import { Network } from "./network.js";
 import { copyRequest, Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
 import { PollingBlockSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber } from "./subscriber-polling.js";
@@ -180,8 +185,8 @@ export class AbstractProvider {
     getPlugin(name) {
         return (this.#plugins.get(name)) || null;
     }
-    set disableCcipRead(value) { this.#disableCcipRead = !!value; }
     get disableCcipRead() { return this.#disableCcipRead; }
+    set disableCcipRead(value) { this.#disableCcipRead = !!value; }
     // Shares multiple identical requests made during the same 250ms
     async #perform(req) {
         // Create a tag
@@ -245,9 +250,6 @@ export class AbstractProvider {
         });
     }
     _wrapBlock(value, network) {
-        return new Block(formatBlock(value), this);
-    }
-    _wrapBlockWithTransactions(value, network) {
         return new Block(formatBlock(value), this);
     }
     _wrapLog(value, network) {
@@ -624,25 +626,15 @@ export class AbstractProvider {
         });
     }
     // Queries
-    async getBlock(block) {
+    async getBlock(block, prefetchTxs) {
         const { network, params } = await resolveProperties({
             network: this.getNetwork(),
-            params: this.#getBlock(block, false)
+            params: this.#getBlock(block, !!prefetchTxs)
         });
         if (params == null) {
             return null;
         }
         return this._wrapBlock(formatBlock(params), network);
-    }
-    async getBlockWithTransactions(block) {
-        const { network, params } = await resolveProperties({
-            network: this.getNetwork(),
-            params: this.#getBlock(block, true)
-        });
-        if (params == null) {
-            return null;
-        }
-        return this._wrapBlockWithTransactions(formatBlockWithTransactions(params), network);
     }
     async getTransaction(hash) {
         const { network, params } = await resolveProperties({
@@ -789,7 +781,10 @@ export class AbstractProvider {
         }
         this.#timers.delete(timerId);
     }
-    _setTimeout(_func, timeout = 0) {
+    _setTimeout(_func, timeout) {
+        if (timeout == null) {
+            timeout = 0;
+        }
         const timerId = this.#nextTimer++;
         const func = () => {
             this.#timers.delete(timerId);

@@ -18,20 +18,12 @@ function handleAddress(value) {
     }
     return (0, index_js_1.getAddress)(value);
 }
-function handleData(value, param) {
-    try {
-        return (0, index_js_3.hexlify)(value);
-    }
-    catch (error) {
-        (0, index_js_3.assertArgument)(false, "invalid data", param, value);
-    }
-}
 function handleAccessList(value, param) {
     try {
         return (0, accesslist_js_1.accessListify)(value);
     }
     catch (error) {
-        (0, index_js_3.assertArgument)(false, "invalid accessList", param, value);
+        (0, index_js_3.assertArgument)(false, error.message, param, value);
     }
 }
 function handleNumber(_value, param) {
@@ -67,7 +59,7 @@ function _parseLegacy(data) {
         gasLimit: handleUint(fields[2], "gasLimit"),
         to: handleAddress(fields[3]),
         value: handleUint(fields[4], "value"),
-        data: handleData(fields[5], "dta"),
+        data: (0, index_js_3.hexlify)(fields[5]),
         chainId: BN_0
     };
     // Legacy unsigned transaction
@@ -177,7 +169,7 @@ function _parseEip1559(data) {
         gasLimit: handleUint(fields[4], "gasLimit"),
         to: handleAddress(fields[5]),
         value: handleUint(fields[6], "value"),
-        data: handleData(fields[7], "data"),
+        data: (0, index_js_3.hexlify)(fields[7]),
         accessList: handleAccessList(fields[8], "accessList"),
     };
     // Unsigned EIP-1559 Transaction
@@ -218,7 +210,7 @@ function _parseEip2930(data) {
         gasLimit: handleUint(fields[3], "gasLimit"),
         to: handleAddress(fields[4]),
         value: handleUint(fields[5], "value"),
-        data: handleData(fields[6], "data"),
+        data: (0, index_js_3.hexlify)(fields[6]),
         accessList: handleAccessList(fields[7], "accessList")
     };
     // Unsigned EIP-2930 Transaction
@@ -248,9 +240,20 @@ function _serializeEip2930(tx, sig) {
     return (0, index_js_3.concat)(["0x01", (0, index_js_3.encodeRlp)(fields)]);
 }
 class Transaction {
-    #props;
+    #type;
+    #to;
+    #data;
+    #nonce;
+    #gasLimit;
+    #gasPrice;
+    #maxPriorityFeePerGas;
+    #maxFeePerGas;
+    #value;
+    #chainId;
+    #sig;
+    #accessList;
     // A type of null indicates the type will be populated automatically
-    get type() { return (0, index_js_3.getStore)(this.#props, "type"); }
+    get type() { return this.#type; }
     get typeName() {
         switch (this.type) {
             case 0: return "legacy";
@@ -262,101 +265,108 @@ class Transaction {
     set type(value) {
         switch (value) {
             case null:
-                (0, index_js_3.setStore)(this.#props, "type", null);
+                this.#type = null;
                 break;
             case 0:
             case "legacy":
-                (0, index_js_3.setStore)(this.#props, "type", 0);
+                this.#type = 0;
                 break;
             case 1:
             case "berlin":
             case "eip-2930":
-                (0, index_js_3.setStore)(this.#props, "type", 1);
+                this.#type = 1;
                 break;
             case 2:
             case "london":
             case "eip-1559":
-                (0, index_js_3.setStore)(this.#props, "type", 2);
+                this.#type = 2;
                 break;
             default:
-                throw new Error(`unsupported transaction type`);
+                (0, index_js_3.assertArgument)(false, "unsupported transaction type", "type", value);
         }
     }
-    get to() { return (0, index_js_3.getStore)(this.#props, "to"); }
+    get to() { return this.#to; }
     set to(value) {
-        (0, index_js_3.setStore)(this.#props, "to", (value == null) ? null : (0, index_js_1.getAddress)(value));
+        this.#to = (value == null) ? null : (0, index_js_1.getAddress)(value);
     }
-    get nonce() { return (0, index_js_3.getStore)(this.#props, "nonce"); }
-    set nonce(value) { (0, index_js_3.setStore)(this.#props, "nonce", (0, index_js_3.getNumber)(value, "value")); }
-    get gasLimit() { return (0, index_js_3.getStore)(this.#props, "gasLimit"); }
-    set gasLimit(value) { (0, index_js_3.setStore)(this.#props, "gasLimit", (0, index_js_3.getBigInt)(value)); }
+    get nonce() { return this.#nonce; }
+    set nonce(value) { this.#nonce = (0, index_js_3.getNumber)(value, "value"); }
+    get gasLimit() { return this.#gasLimit; }
+    set gasLimit(value) { this.#gasLimit = (0, index_js_3.getBigInt)(value); }
     get gasPrice() {
-        const value = (0, index_js_3.getStore)(this.#props, "gasPrice");
+        const value = this.#gasPrice;
         if (value == null && (this.type === 0 || this.type === 1)) {
             return BN_0;
         }
         return value;
     }
     set gasPrice(value) {
-        (0, index_js_3.setStore)(this.#props, "gasPrice", (value == null) ? null : (0, index_js_3.getBigInt)(value, "gasPrice"));
+        this.#gasPrice = (value == null) ? null : (0, index_js_3.getBigInt)(value, "gasPrice");
     }
     get maxPriorityFeePerGas() {
-        const value = (0, index_js_3.getStore)(this.#props, "maxPriorityFeePerGas");
-        if (value == null && this.type === 2) {
-            return BN_0;
+        const value = this.#maxPriorityFeePerGas;
+        if (value == null) {
+            if (this.type === 2) {
+                return BN_0;
+            }
+            return null;
         }
         return value;
     }
     set maxPriorityFeePerGas(value) {
-        (0, index_js_3.setStore)(this.#props, "maxPriorityFeePerGas", (value == null) ? null : (0, index_js_3.getBigInt)(value, "maxPriorityFeePerGas"));
+        this.#maxPriorityFeePerGas = (value == null) ? null : (0, index_js_3.getBigInt)(value, "maxPriorityFeePerGas");
     }
     get maxFeePerGas() {
-        const value = (0, index_js_3.getStore)(this.#props, "maxFeePerGas");
-        if (value == null && this.type === 2) {
-            return BN_0;
+        const value = this.#maxFeePerGas;
+        if (value == null) {
+            if (this.type === 2) {
+                return BN_0;
+            }
+            return null;
         }
         return value;
     }
     set maxFeePerGas(value) {
-        (0, index_js_3.setStore)(this.#props, "maxFeePerGas", (value == null) ? null : (0, index_js_3.getBigInt)(value, "maxFeePerGas"));
+        this.#maxFeePerGas = (value == null) ? null : (0, index_js_3.getBigInt)(value, "maxFeePerGas");
     }
-    get data() { return (0, index_js_3.getStore)(this.#props, "data"); }
-    set data(value) { (0, index_js_3.setStore)(this.#props, "data", (0, index_js_3.hexlify)(value)); }
-    get value() { return (0, index_js_3.getStore)(this.#props, "value"); }
+    get data() { return this.#data; }
+    set data(value) { this.#data = (0, index_js_3.hexlify)(value); }
+    get value() { return this.#value; }
     set value(value) {
-        (0, index_js_3.setStore)(this.#props, "value", (0, index_js_3.getBigInt)(value, "value"));
+        this.#value = (0, index_js_3.getBigInt)(value, "value");
     }
-    get chainId() { return (0, index_js_3.getStore)(this.#props, "chainId"); }
-    set chainId(value) { (0, index_js_3.setStore)(this.#props, "chainId", (0, index_js_3.getBigInt)(value)); }
-    get signature() { return (0, index_js_3.getStore)(this.#props, "sig") || null; }
+    get chainId() { return this.#chainId; }
+    set chainId(value) { this.#chainId = (0, index_js_3.getBigInt)(value); }
+    get signature() { return this.#sig || null; }
     set signature(value) {
-        (0, index_js_3.setStore)(this.#props, "sig", (value == null) ? null : index_js_2.Signature.from(value));
+        this.#sig = (value == null) ? null : index_js_2.Signature.from(value);
     }
     get accessList() {
-        const value = (0, index_js_3.getStore)(this.#props, "accessList") || null;
-        if (value == null && (this.type === 1 || this.type === 2)) {
-            return [];
+        const value = this.#accessList || null;
+        if (value == null) {
+            if (this.type === 1 || this.type === 2) {
+                return [];
+            }
+            return null;
         }
         return value;
     }
     set accessList(value) {
-        (0, index_js_3.setStore)(this.#props, "accessList", (value == null) ? null : (0, accesslist_js_1.accessListify)(value));
+        this.#accessList = (value == null) ? null : (0, accesslist_js_1.accessListify)(value);
     }
     constructor() {
-        this.#props = {
-            type: null,
-            to: null,
-            nonce: 0,
-            gasLimit: BigInt(0),
-            gasPrice: null,
-            maxPriorityFeePerGas: null,
-            maxFeePerGas: null,
-            data: "0x",
-            value: BigInt(0),
-            chainId: BigInt(0),
-            sig: null,
-            accessList: null
-        };
+        this.#type = null;
+        this.#to = null;
+        this.#nonce = 0;
+        this.#gasLimit = BigInt(0);
+        this.#gasPrice = null;
+        this.#maxPriorityFeePerGas = null;
+        this.#maxFeePerGas = null;
+        this.#data = "0x";
+        this.#value = BigInt(0);
+        this.#chainId = BigInt(0);
+        this.#sig = null;
+        this.#accessList = null;
     }
     get hash() {
         if (this.signature == null) {
@@ -377,22 +387,14 @@ class Transaction {
         if (this.signature == null) {
             return null;
         }
-        throw new Error("@TODO");
-        // use ecrecover
-        return "";
+        return index_js_2.SigningKey.recoverPublicKey(this.unsignedHash, this.signature);
     }
     isSigned() {
         return this.signature != null;
     }
     get serialized() {
-        if (this.signature == null) {
-            throw new Error("cannot serialize unsigned transaction; maybe you meant .unsignedSerialized");
-        }
-        const types = this.inferTypes();
-        if (types.length !== 1) {
-            throw new Error("cannot determine transaction type; specify type manually");
-        }
-        switch (types[0]) {
+        (0, index_js_3.assert)(this.signature != null, "cannot serialize unsigned transaction; maybe you meant .unsignedSerialized", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
+        switch (this.inferType()) {
             case 0:
                 return _serializeLegacy(this, this.signature);
             case 1:
@@ -400,14 +402,10 @@ class Transaction {
             case 2:
                 return _serializeEip1559(this, this.signature);
         }
-        throw new Error("unsupported type");
+        (0, index_js_3.assert)(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
     }
     get unsignedSerialized() {
-        const types = this.inferTypes();
-        if (types.length !== 1) {
-            throw new Error("cannot determine transaction type; specify type manually");
-        }
-        switch (types[0]) {
+        switch (this.inferType()) {
             case 0:
                 return _serializeLegacy(this);
             case 1:
@@ -415,7 +413,14 @@ class Transaction {
             case 2:
                 return _serializeEip1559(this);
         }
-        throw new Error("unsupported type");
+        (0, index_js_3.assert)(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
+    }
+    /**
+     *  Return the most "likely" type; currently the highest
+     *  supported transaction type
+     */
+    inferType() {
+        return (this.inferTypes().pop());
     }
     // Validates properties and lists possible types this transaction adheres to
     inferTypes() {
@@ -427,19 +432,13 @@ class Transaction {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
         //}
         if (this.maxFeePerGas != null && this.maxPriorityFeePerGas != null) {
-            if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
-                throw new Error("priorityFee cannot be more than maxFee");
-            }
+            (0, index_js_3.assert)(this.maxFeePerGas >= this.maxPriorityFeePerGas, "priorityFee cannot be more than maxFee", "BAD_DATA", { value: this });
         }
         //if (this.type === 2 && hasGasPrice) {
         //    throw new Error("eip-1559 transaction cannot have gasPrice");
         //}
-        if ((this.type === 0 || this.type === 1) && hasFee) {
-            throw new Error("transaction type cannot have maxFeePerGas or maxPriorityFeePerGas");
-        }
-        if (this.type === 0 && hasAccessList) {
-            throw new Error("legacy transaction cannot have accessList");
-        }
+        (0, index_js_3.assert)(!hasFee || (this.type !== 0 && this.type !== 1), "transaction type cannot have maxFeePerGas or maxPriorityFeePerGas", "BAD_DATA", { value: this });
+        (0, index_js_3.assert)(this.type !== 0 || !hasAccessList, "legacy transaction cannot have accessList", "BAD_DATA", { value: this });
         const types = [];
         // Explicit type
         if (this.type != null) {
@@ -480,22 +479,6 @@ class Transaction {
     clone() {
         return Transaction.from(this);
     }
-    freeze() {
-        if (this.#props.sig) {
-            this.#props.sig = (this.#props.sig.clone().freeze());
-        }
-        if (this.#props.accessList) {
-            this.#props.accessList = Object.freeze(this.#props.accessList.map((set) => {
-                Object.freeze(set.storageKeys);
-                return Object.freeze(set);
-            }));
-        }
-        Object.freeze(this.#props);
-        return this;
-    }
-    isFrozen() {
-        return Object.isFrozen(this.#props);
-    }
     toJSON() {
         const s = (v) => {
             if (v == null) {
@@ -506,7 +489,7 @@ class Transaction {
         return {
             type: this.type,
             to: this.to,
-            from: this.from,
+            //            from: this.from,
             data: this.data,
             nonce: this.nonce,
             gasLimit: s(this.gasLimit),
@@ -529,7 +512,7 @@ class Transaction {
                 case 1: return Transaction.from(_parseEip2930(payload));
                 case 2: return Transaction.from(_parseEip1559(payload));
             }
-            throw new Error("unsupported transaction type");
+            (0, index_js_3.assert)(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
         }
         const result = new Transaction();
         if (tx.type != null) {
@@ -569,24 +552,12 @@ class Transaction {
             result.accessList = tx.accessList;
         }
         if (tx.hash != null) {
-            if (result.isSigned()) {
-                if (result.hash !== tx.hash) {
-                    throw new Error("hash mismatch");
-                }
-            }
-            else {
-                throw new Error("unsigned transaction cannot have a hashs");
-            }
+            (0, index_js_3.assertArgument)(result.isSigned(), "unsigned transaction cannot have define hash", "tx", tx);
+            (0, index_js_3.assertArgument)(result.hash === tx.hash, "hash mismatch", "tx", tx);
         }
         if (tx.from != null) {
-            if (result.isSigned()) {
-                if (result.from.toLowerCase() !== (tx.from || "").toLowerCase()) {
-                    throw new Error("from mismatch");
-                }
-            }
-            else {
-                throw new Error("unsigned transaction cannot have a from");
-            }
+            (0, index_js_3.assertArgument)(result.isSigned(), "unsigned transaction cannot have define from", "tx", tx);
+            (0, index_js_3.assertArgument)(result.from.toLowerCase() === (tx.from || "").toLowerCase(), "from mismatch", "tx", tx);
         }
         return result;
     }

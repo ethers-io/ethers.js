@@ -1,5 +1,9 @@
 import { Coder } from "./abstract-coder.js";
-// Clones the functionality of an existing Coder, but without a localName
+/**
+ *  Clones the functionality of an existing Coder, but without a localName
+ *
+ *  @_ignore
+ */
 export class AnonymousCoder extends Coder {
     coder;
     constructor(coder) {

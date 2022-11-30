@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { wordlists } from "../index.js";
+import { wordlists } from "../wordlists/wordlists.js";
 import { loadTests } from "./utils.js";
 describe('Check Wordlists', function () {
     const tests = loadTests("wordlists");

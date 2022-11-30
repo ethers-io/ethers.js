@@ -1,5 +1,8 @@
 import { getBytesCopy, hexlify } from "../../utils/index.js";
 import { Coder } from "./abstract-coder.js";
+/**
+ *  @_ignore
+ */
 export class DynamicBytesCoder extends Coder {
     constructor(type, localName) {
         super(type, type, localName, true);
@@ -17,6 +20,9 @@ export class DynamicBytesCoder extends Coder {
         return reader.readBytes(reader.readIndex(), true);
     }
 }
+/**
+ *  @_ignore
+ */
 export class BytesCoder extends DynamicBytesCoder {
     constructor(localName) {
         super("bytes", localName);

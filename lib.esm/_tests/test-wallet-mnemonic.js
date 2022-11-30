@@ -63,7 +63,7 @@ describe("Tests Bad Mnemonics Fail", function () {
     ];
     for (const _phrase of badLengths) {
         const phrase = _phrase.join(" ");
-        it(`fails on invalid mnemonic length: ${_phrase.length}`, function () {
+        it(`correctly fails on invalid mnemonic length: ${_phrase.length}`, function () {
             assert.ok(!Mnemonic.isValidMnemonic(phrase));
             assert.throws(function () {
                 Mnemonic.fromPhrase(phrase);
@@ -75,7 +75,7 @@ describe("Tests Bad Mnemonics Fail", function () {
             });
         });
     }
-    it("fails on invalid mnemonic word", function () {
+    it("correctly fails on invalid mnemonic word", function () {
         const phrase = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon wagmi";
         assert.ok(!Mnemonic.isValidMnemonic(phrase));
         assert.throws(function () {
@@ -87,7 +87,7 @@ describe("Tests Bad Mnemonics Fail", function () {
                 error.value === "[ REDACTED ]");
         });
     });
-    it("fails on invalid mnemonic checksum", function () {
+    it("correctly fails on invalid mnemonic checksum", function () {
         const phrase = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon";
         assert.ok(!Mnemonic.isValidMnemonic(phrase));
         assert.throws(function () {
@@ -106,7 +106,7 @@ describe("Tests Bad Mnemonics Fail", function () {
     ];
     for (const _entropy of badEntropyLengths) {
         const entropy = "0x" + _entropy.join("");
-        it(`fails on invalid entropy length: ${_entropy.length}`, function () {
+        it(`correctly fails on invalid entropy length: ${_entropy.length}`, function () {
             assert.throws(function () {
                 Mnemonic.fromEntropy(entropy);
             }, function (error) {

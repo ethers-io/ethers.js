@@ -1,20 +1,29 @@
+/**
+ *  About typed...
+ *
+ *  @_subsection: api/abi:Typed Values
+ */
 import type { Addressable } from "../address/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { Result } from "./coders/abstract-coder.js";
 export interface TypedNumber extends Typed {
+    value: number;
     defaultValue(): number;
     minValue(): number;
     maxValue(): number;
 }
 export interface TypedBigInt extends Typed {
+    value: bigint;
     defaultValue(): bigint;
     minValue(): bigint;
     maxValue(): bigint;
 }
 export interface TypedData extends Typed {
+    value: string;
     defaultValue(): string;
 }
 export interface TypedString extends Typed {
+    value: string;
     defaultValue(): string;
 }
 export declare class Typed {
@@ -138,7 +147,17 @@ export declare class Typed {
     static array(v: Array<any | Typed>, dynamic?: null | boolean): Typed;
     static tuple(v: Array<any | Typed> | Record<string, any | Typed>, name?: string): Typed;
     static overrides(v: Record<string, any>): Typed;
+    /**
+     *  Returns true only if %%value%% is a [[Typed]] instance.
+     */
     static isTyped(value: any): value is Typed;
+    /**
+     *  If the value is a [[Typed]] instance, validates the underlying value
+     *  and returns it, otherwise returns value directly.
+     *
+     *  This is useful for functions that with to accept either a [[Typed]]
+     *  object or values.
+     */
     static dereference<T>(value: Typed | T, type: string): T;
 }
 //# sourceMappingURL=typed.d.ts.map

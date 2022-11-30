@@ -109,7 +109,19 @@ function loadWords() {
     _wordlist = wordlist;
     return wordlist;
 }
-class LangJa extends Wordlist {
+let wordlist = null;
+/**
+ *  The [[link-bip-39]] Wordlist for the Japanese (ja) language.
+ *
+ *  @_docloc: api/wordlists
+ */
+export class LangJa extends Wordlist {
+    /**
+     *  Creates a new instance of the Japanese language Wordlist.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langJa]] should suffice.
+     */
     constructor() { super("ja"); }
     getWord(index) {
         const words = loadWords();
@@ -119,13 +131,22 @@ class LangJa extends Wordlist {
     getWordIndex(word) {
         return loadWords().indexOf(word);
     }
-    split(mnemonic) {
+    split(phrase) {
         //logger.assertNormalize();
-        return mnemonic.split(/(?:\u3000| )+/g);
+        return phrase.split(/(?:\u3000| )+/g);
     }
     join(words) {
         return words.join("\u3000");
     }
+    /**
+     *  Returns a singleton instance of a ``LangJa``, creating it
+     *  if this is the first time being called.
+     */
+    static wordlist() {
+        if (wordlist == null) {
+            wordlist = new LangJa();
+        }
+        return wordlist;
+    }
 }
-export const langJa = new LangJa();
 //# sourceMappingURL=lang-ja.js.map

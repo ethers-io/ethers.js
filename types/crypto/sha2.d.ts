@@ -1,10 +1,20 @@
 import type { BytesLike } from "../utils/index.js";
+/**
+ *  Compute the cryptographic SHA2-256 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 export declare function sha256(_data: BytesLike): string;
 export declare namespace sha256 {
     var _: (data: Uint8Array) => Uint8Array;
     var lock: () => void;
     var register: (func: (data: Uint8Array) => BytesLike) => void;
 }
+/**
+ *  Compute the cryptographic SHA2-512 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 export declare function sha512(_data: BytesLike): string;
 export declare namespace sha512 {
     var _: (data: Uint8Array) => Uint8Array;

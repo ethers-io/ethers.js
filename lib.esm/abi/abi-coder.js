@@ -1,3 +1,15 @@
+/**
+ *  When sending values to or receiving values from a [[Contract]], the
+ *  data is generally encoded using the [ABI standard](solc-abi-standard).
+ *
+ *  The AbiCoder provides a utility to encode values to ABI data and
+ *  decode values from ABI data.
+ *
+ *  Most of the time, developers should favour the [[Contract]] class,
+ *  which further abstracts a lot of the finer details of ABI data.
+ *
+ *  @_section api/abi/abi-coder:ABI Encoding
+ */
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 import { assertArgumentCount, assertArgument } from "../utils/index.js";
 import { Reader, Writer } from "./coders/abstract-coder.js";
@@ -13,8 +25,84 @@ import { TupleCoder } from "./coders/tuple.js";
 import { ParamType } from "./fragments.js";
 import { getAddress } from "../address/index.js";
 import { getBytes, hexlify, makeError } from "../utils/index.js";
+// https://docs.soliditylang.org/en/v0.8.17/control-structures.html
+const PanicReasons = new Map();
+PanicReasons.set(0x00, "GENERIC_PANIC");
+PanicReasons.set(0x01, "ASSERT_FALSE");
+PanicReasons.set(0x11, "OVERFLOW");
+PanicReasons.set(0x12, "DIVIDE_BY_ZERO");
+PanicReasons.set(0x21, "ENUM_RANGE_ERROR");
+PanicReasons.set(0x22, "BAD_STORAGE_DATA");
+PanicReasons.set(0x31, "STACK_UNDERFLOW");
+PanicReasons.set(0x32, "ARRAY_RANGE_ERROR");
+PanicReasons.set(0x41, "OUT_OF_MEMORY");
+PanicReasons.set(0x51, "UNINITIALIZED_FUNCTION_CALL");
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
+let defaultCoder = null;
+function getBuiltinCallException(action, tx, data, abiCoder) {
+    let message = "missing revert data";
+    let reason = null;
+    const invocation = null;
+    let revert = null;
+    if (data) {
+        message = "execution reverted";
+        const bytes = getBytes(data);
+        data = hexlify(data);
+        if (bytes.length % 32 !== 4) {
+            message += " (could not decode reason; invalid data length)";
+        }
+        else if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
+            // Error(string)
+            try {
+                reason = abiCoder.decode(["string"], bytes.slice(4))[0];
+                revert = {
+                    signature: "Error(string)",
+                    name: "Error",
+                    args: [reason]
+                };
+                message += `: ${JSON.stringify(reason)}`;
+            }
+            catch (error) {
+                console.log(error);
+                message += " (could not decode reason; invalid data)";
+            }
+        }
+        else if (hexlify(bytes.slice(0, 4)) === "0x4e487b71") {
+            // Panic(uint256)
+            try {
+                const code = Number(abiCoder.decode(["uint256"], bytes.slice(4))[0]);
+                revert = {
+                    signature: "Panic(uint256)",
+                    name: "Panic",
+                    args: [code]
+                };
+                reason = `Panic due to ${PanicReasons.get(code) || "UNKNOWN"}(${code})`;
+                message += `: ${reason}`;
+            }
+            catch (error) {
+                console.log(error);
+                message += " (could not decode panic reason)";
+            }
+        }
+        else {
+            message += " (unknown custom error)";
+        }
+    }
+    const transaction = {
+        to: (tx.to ? getAddress(tx.to) : null),
+        data: (tx.data || "0x")
+    };
+    if (tx.from) {
+        transaction.from = getAddress(tx.from);
+    }
+    return makeError(message, "CALL_EXCEPTION", {
+        action, data, reason, transaction, invocation, revert
+    });
+}
+/**
+  * About AbiCoder
+  */
 export class AbiCoder {
     #getCoder(param) {
         if (param.isArray()) {
@@ -51,11 +139,22 @@ export class AbiCoder {
         }
         assertArgument(false, "invalid type", "type", param.type);
     }
+    /**
+     *  Get the default values for the given %%types%%.
+     *
+     *  For example, a ``uint`` is by default ``0`` and ``bool``
+     *  is by default ``false``.
+     */
     getDefaultValue(types) {
         const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
         return coder.defaultValue();
     }
+    /**
+     *  Encode the %%values%% as the %%types%% into ABI data.
+     *
+     *  @returns DataHexstring
+     */
     encode(types, values) {
         assertArgumentCount(values.length, types.length, "types/values length mismatch");
         const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
@@ -64,83 +163,36 @@ export class AbiCoder {
         coder.encode(writer, values);
         return writer.data;
     }
+    /**
+     *  Decode the ABI %%data%% as the %%types%% into values.
+     *
+     *  If %%loose%% decoding is enabled, then strict padding is
+     *  not enforced. Some older versions of Solidity incorrectly
+     *  padded event data emitted from ``external`` functions.
+     */
     decode(types, data, loose) {
         const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
         return coder.decode(new Reader(data, loose));
     }
-}
-// https://docs.soliditylang.org/en/v0.8.17/control-structures.html
-const PanicReasons = new Map();
-PanicReasons.set(0x00, "GENERIC_PANIC");
-PanicReasons.set(0x01, "ASSERT_FALSE");
-PanicReasons.set(0x11, "OVERFLOW");
-PanicReasons.set(0x12, "DIVIDE_BY_ZERO");
-PanicReasons.set(0x21, "ENUM_RANGE_ERROR");
-PanicReasons.set(0x22, "BAD_STORAGE_DATA");
-PanicReasons.set(0x31, "STACK_UNDERFLOW");
-PanicReasons.set(0x32, "ARRAY_RANGE_ERROR");
-PanicReasons.set(0x41, "OUT_OF_MEMORY");
-PanicReasons.set(0x51, "UNINITIALIZED_FUNCTION_CALL");
-export function getBuiltinCallException(action, tx, data) {
-    let message = "missing revert data";
-    let reason = null;
-    const invocation = null;
-    let revert = null;
-    if (data) {
-        message = "execution reverted";
-        const bytes = getBytes(data);
-        data = hexlify(data);
-        if (bytes.length % 32 !== 4) {
-            message += " (could not decode reason; invalid data length)";
+    /**
+     *  Returns the shared singleton instance of a default [[AbiCoder]].
+     *
+     *  On the first call, the instance is created internally.
+     */
+    static defaultAbiCoder() {
+        if (defaultCoder == null) {
+            defaultCoder = new AbiCoder();
         }
-        else if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
-            // Error(string)
-            try {
-                reason = defaultAbiCoder.decode(["string"], bytes.slice(4))[0];
-                revert = {
-                    signature: "Error(string)",
-                    name: "Error",
-                    args: [reason]
-                };
-                message += `: ${JSON.stringify(reason)}`;
-            }
-            catch (error) {
-                console.log(error);
-                message += " (could not decode reason; invalid data)";
-            }
-        }
-        else if (hexlify(bytes.slice(0, 4)) === "0x4e487b71") {
-            // Panic(uint256)
-            try {
-                const code = Number(defaultAbiCoder.decode(["uint256"], bytes.slice(4))[0]);
-                revert = {
-                    signature: "Panic(uint256)",
-                    name: "Panic",
-                    args: [code]
-                };
-                reason = `Panic due to ${PanicReasons.get(code) || "UNKNOWN"}(${code})`;
-                message += `: ${reason}`;
-            }
-            catch (error) {
-                console.log(error);
-                message += " (could not decode panic reason)";
-            }
-        }
-        else {
-            message += " (unknown custom error)";
-        }
+        return defaultCoder;
     }
-    const transaction = {
-        to: (tx.to ? getAddress(tx.to) : null),
-        data: (tx.data || "0x")
-    };
-    if (tx.from) {
-        transaction.from = getAddress(tx.from);
+    /**
+     *  Returns an ethers-compatible [[CALL_EXCEPTION]] Error for the given
+     *  result %%data%% for the [[CallExceptionAction]] %%action%% against
+     *  the Transaction %%tx%%.
+     */
+    static getBuiltinCallException(action, tx, data) {
+        return getBuiltinCallException(action, tx, data, AbiCoder.defaultAbiCoder());
     }
-    return makeError(message, "CALL_EXCEPTION", {
-        action, data, reason, transaction, invocation, revert
-    });
 }
-export const defaultAbiCoder = new AbiCoder();
 //# sourceMappingURL=abi-coder.js.map

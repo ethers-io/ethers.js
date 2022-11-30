@@ -10,7 +10,16 @@ const lang_ko_js_1 = require("./lang-ko.js");
 const lang_it_js_1 = require("./lang-it.js");
 const lang_pt_js_1 = require("./lang-pt.js");
 const lang_zh_js_1 = require("./lang-zh.js");
-exports.wordlists = Object.freeze({
-    cz: lang_cz_js_1.langCz, en: lang_en_js_1.langEn, es: lang_es_js_1.langEs, fr: lang_fr_js_1.langFr, ja: lang_ja_js_1.langJa, ko: lang_ko_js_1.langKo, it: lang_it_js_1.langIt, pt: lang_pt_js_1.langPt, zh_cn: lang_zh_js_1.langZhCn, zh_tw: lang_zh_js_1.langZhTw
-});
+exports.wordlists = {
+    cz: lang_cz_js_1.LangCz.wordlist(),
+    en: lang_en_js_1.LangEn.wordlist(),
+    es: lang_es_js_1.LangEs.wordlist(),
+    fr: lang_fr_js_1.LangFr.wordlist(),
+    it: lang_it_js_1.LangIt.wordlist(),
+    pt: lang_pt_js_1.LangPt.wordlist(),
+    ja: lang_ja_js_1.LangJa.wordlist(),
+    ko: lang_ko_js_1.LangKo.wordlist(),
+    zh_cn: lang_zh_js_1.LangZh.wordlist("cn"),
+    zh_tw: lang_zh_js_1.LangZh.wordlist("tw"),
+};
 //# sourceMappingURL=wordlists.js.map

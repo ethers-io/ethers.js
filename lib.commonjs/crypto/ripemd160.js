@@ -8,6 +8,11 @@ const _ripemd160 = function (data) {
     return (0, ripemd160_1.ripemd160)(data);
 };
 let __ripemd160 = _ripemd160;
+/**
+ *  Compute the cryptographic RIPEMD-160 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 function ripemd160(_data) {
     const data = (0, index_js_1.getBytes)(_data, "data");
     return (0, index_js_1.hexlify)(__ripemd160(data));

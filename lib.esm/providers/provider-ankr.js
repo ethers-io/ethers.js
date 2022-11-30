@@ -7,10 +7,6 @@ function getHost(name) {
     switch (name) {
         case "mainnet":
             return "rpc.ankr.com/eth";
-        case "ropsten":
-            return "rpc.ankr.com/eth_ropsten";
-        case "rinkeby":
-            return "rpc.ankr.com/eth_rinkeby";
         case "goerli":
             return "rpc.ankr.com/eth_goerli";
         case "matic":
@@ -20,9 +16,17 @@ function getHost(name) {
     }
     assertArgument(false, "unsupported network", "network", name);
 }
+/**
+ *  About Ankr...
+ *
+ *  @_docloc: api/providers/thirdparty
+ */
 export class AnkrProvider extends JsonRpcProvider {
     apiKey;
-    constructor(_network = "mainnet", apiKey) {
+    constructor(_network, apiKey) {
+        if (_network == null) {
+            _network = "mainnet";
+        }
         const network = Network.from(_network);
         if (apiKey == null) {
             apiKey = defaultApiKey;

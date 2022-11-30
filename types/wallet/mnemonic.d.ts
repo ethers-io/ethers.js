@@ -5,6 +5,9 @@ export declare class Mnemonic {
     readonly password: string;
     readonly wordlist: Wordlist;
     readonly entropy: string;
+    /**
+     *  @private
+     */
     constructor(guard: any, entropy: string, phrase: string, password?: null | string, wordlist?: null | Wordlist);
     computeSeed(): string;
     static fromPhrase(phrase: string, password?: null | string, wordlist?: null | Wordlist): Mnemonic;

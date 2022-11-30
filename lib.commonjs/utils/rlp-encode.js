@@ -39,7 +39,7 @@ function _encode(object) {
 }
 const nibbles = "0123456789abcdef";
 /**
- *  Encodes %%object%% as an RLP-encoded [[HexDataString]].
+ *  Encodes %%object%% as an RLP-encoded [[DataHexString]].
  */
 function encodeRlp(object) {
     let result = "0x";

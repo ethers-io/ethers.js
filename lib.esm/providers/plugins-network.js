@@ -18,7 +18,10 @@ export class GasCostPlugin extends NetworkPlugin {
     txDataNonzero;
     txAccessListStorageKey;
     txAccessListAddress;
-    constructor(effectiveBlock = 0, costs) {
+    constructor(effectiveBlock, costs) {
+        if (effectiveBlock == null) {
+            effectiveBlock = 0;
+        }
         super(`org.ethers.network-plugins.gas-cost#${(effectiveBlock || 0)}`);
         const props = { effectiveBlock };
         function set(name, nullish) {
@@ -93,22 +96,28 @@ export class FeeDataNetworkPlugin extends NetworkPlugin {
         return new FeeDataNetworkPlugin(this.#feeDataFunc);
     }
 }
+/*
 export class CustomBlockNetworkPlugin extends NetworkPlugin {
-    #blockFunc;
-    #blockWithTxsFunc;
-    constructor(blockFunc, blockWithTxsFunc) {
+    readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;
+    readonly #blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>;
+
+    constructor(blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>, blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>) {
         super("org.ethers.network-plugins.custom-block");
         this.#blockFunc = blockFunc;
         this.#blockWithTxsFunc = blockWithTxsFunc;
     }
-    async getBlock(provider, block) {
+
+    async getBlock(provider: Provider, block: BlockParams<string>): Promise<Block<string>> {
         return await this.#blockFunc(provider, block);
     }
-    async getBlockWithTransactions(provider, block) {
+
+    async getBlockions(provider: Provider, block: BlockParams<TransactionResponseParams>): Promise<Block<TransactionResponse>> {
         return await this.#blockWithTxsFunc(provider, block);
     }
-    clone() {
+
+    clone(): CustomBlockNetworkPlugin {
         return new CustomBlockNetworkPlugin(this.#blockFunc, this.#blockWithTxsFunc);
     }
 }
+*/
 //# sourceMappingURL=plugins-network.js.map

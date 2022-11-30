@@ -1,6 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toUtf8CodePoints = exports.toUtf8String = exports._toUtf8String = exports.toUtf8Bytes = exports.Utf8ErrorFuncs = void 0;
+exports.toUtf8CodePoints = exports.toUtf8String = exports.toUtf8Bytes = exports.Utf8ErrorFuncs = void 0;
+/**
+ *  Using strings in Ethereum (or any security-basd system) requires
+ *  additional care. These utilities attempt to mitigate some of the
+ *  safety issues as well as provide the ability to recover and analyse
+ *  strings.
+ *
+ *  @_subsection api/utils:Strings and UTF-8  [strings]
+ */
 const data_js_1 = require("./data.js");
 const errors_js_1 = require("./errors.js");
 function errorFunc(reason, offset, bytes, output, badCodepoint) {
@@ -29,7 +37,8 @@ function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
 function replaceFunc(reason, offset, bytes, output, badCodepoint) {
     // Overlong representations are otherwise "valid" code points; just non-deistingtished
     if (reason === "OVERLONG") {
-        output.push((badCodepoint != null) ? badCodepoint : -1);
+        (0, errors_js_1.assertArgument)(typeof (badCodepoint) === "number", "invalid bad code point for replacement", "badCodepoint", badCodepoint);
+        output.push(badCodepoint);
         return 0;
     }
     // Put the replacement character into the output
@@ -129,6 +138,11 @@ function getUtf8CodePoints(_bytes, onError) {
     return result;
 }
 // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+/**
+ *  Returns the UTF-8 byte representation of %%str%%.
+ *
+ *  If %%form%% is specified, the string is normalized.
+ */
 function toUtf8Bytes(str, form) {
     if (form != null) {
         (0, errors_js_1.assertNormalize)(form);
@@ -165,6 +179,7 @@ function toUtf8Bytes(str, form) {
 }
 exports.toUtf8Bytes = toUtf8Bytes;
 ;
+//export 
 function _toUtf8String(codePoints) {
     return codePoints.map((codePoint) => {
         if (codePoint <= 0xffff) {
@@ -174,11 +189,22 @@ function _toUtf8String(codePoints) {
         return String.fromCharCode((((codePoint >> 10) & 0x3ff) + 0xd800), ((codePoint & 0x3ff) + 0xdc00));
     }).join("");
 }
-exports._toUtf8String = _toUtf8String;
+/**
+ *  Returns the string represented by the UTF-8 data %%bytes%%.
+ *
+ *  When %%onError%% function is specified, it is called on UTF-8
+ *  errors allowing recovery using the [[Utf8ErrorFunc]] API.
+ *  (default: [error](Utf8ErrorFuncs-error))
+ */
 function toUtf8String(bytes, onError) {
     return _toUtf8String(getUtf8CodePoints(bytes, onError));
 }
 exports.toUtf8String = toUtf8String;
+/**
+ *  Returns the UTF-8 code-points for %%str%%.
+ *
+ *  If %%form%% is specified, the string is normalized.
+ */
 function toUtf8CodePoints(str, form) {
     return getUtf8CodePoints(toUtf8Bytes(str, form));
 }

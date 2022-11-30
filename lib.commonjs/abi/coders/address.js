@@ -5,6 +5,9 @@ const index_js_1 = require("../../address/index.js");
 const maths_js_1 = require("../../utils/maths.js");
 const typed_js_1 = require("../typed.js");
 const abstract_coder_js_1 = require("./abstract-coder.js");
+/**
+ *  @_ignore
+ */
 class AddressCoder extends abstract_coder_js_1.Coder {
     constructor(localName) {
         super("address", "address", localName, false);

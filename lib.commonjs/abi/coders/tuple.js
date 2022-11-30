@@ -5,6 +5,9 @@ const properties_js_1 = require("../../utils/properties.js");
 const typed_js_1 = require("../typed.js");
 const abstract_coder_js_1 = require("./abstract-coder.js");
 const array_js_1 = require("./array.js");
+/**
+ *  @_ignore
+ */
 class TupleCoder extends abstract_coder_js_1.Coder {
     coders;
     constructor(coders, localName) {

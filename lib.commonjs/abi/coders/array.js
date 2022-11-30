@@ -5,6 +5,9 @@ const index_js_1 = require("../../utils/index.js");
 const typed_js_1 = require("../typed.js");
 const abstract_coder_js_1 = require("./abstract-coder.js");
 const anonymous_js_1 = require("./anonymous.js");
+/**
+ *  @_ignore
+ */
 function pack(writer, coders, values) {
     let arrayValues = [];
     if (Array.isArray(values)) {
@@ -51,6 +54,9 @@ function pack(writer, coders, values) {
     return length;
 }
 exports.pack = pack;
+/**
+ *  @_ignore
+ */
 function unpack(reader, coders) {
     let values = [];
     let keys = [];
@@ -99,6 +105,9 @@ function unpack(reader, coders) {
     return abstract_coder_js_1.Result.fromItems(values, keys);
 }
 exports.unpack = unpack;
+/**
+ *  @_ignore
+ */
 class ArrayCoder extends abstract_coder_js_1.Coder {
     coder;
     length;

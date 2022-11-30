@@ -1,3 +1,8 @@
+/**
+ *  About INFURA
+ *
+ *  @_subsection: api/providers/thirdparty:INFURA  [infura]
+ */
 import { defineProperties, FetchRequest, assert, assertArgument } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
 import { Network } from "./network.js";
@@ -27,11 +32,14 @@ function getHost(name) {
     }
     assertArgument(false, "unsupported network", "network", name);
 }
+/**
+ *  INFURA...
+ */
 export class InfuraWebSocketProvider extends WebSocketProvider {
     projectId;
     projectSecret;
-    constructor(network, apiKey) {
-        const provider = new InfuraProvider(network, apiKey);
+    constructor(network, projectId) {
+        const provider = new InfuraProvider(network, projectId);
         const req = provider._getConnection();
         assert(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
@@ -45,10 +53,16 @@ export class InfuraWebSocketProvider extends WebSocketProvider {
         return (this.projectId === defaultProjectId);
     }
 }
+/**
+ *  Aboud Cloudflare...
+ */
 export class InfuraProvider extends JsonRpcProvider {
     projectId;
     projectSecret;
-    constructor(_network = "mainnet", projectId, projectSecret) {
+    constructor(_network, projectId, projectSecret) {
+        if (_network == null) {
+            _network = "mainnet";
+        }
         const network = Network.from(_network);
         if (projectId == null) {
             projectId = defaultProjectId;
@@ -70,8 +84,8 @@ export class InfuraProvider extends JsonRpcProvider {
     isCommunityResource() {
         return (this.projectId === defaultProjectId);
     }
-    static getWebSocketProvider(network, apiKey) {
-        return new InfuraWebSocketProvider(network, apiKey);
+    static getWebSocketProvider(network, projectId) {
+        return new InfuraWebSocketProvider(network, projectId);
     }
     static getRequest(network, projectId, projectSecret) {
         if (projectId == null) {

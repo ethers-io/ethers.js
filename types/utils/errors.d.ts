@@ -1,3 +1,8 @@
+/**
+ *  About Errors.
+ *
+ *  @_section: api/utils/errors:Errors  [errors]
+ */
 import type { TransactionRequest, TransactionReceipt, TransactionResponse } from "../providers/index.js";
 import type { FetchRequest, FetchResponse } from "./fetch.js";
 export declare type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
@@ -17,44 +22,148 @@ export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
     info?: Record<string, any>;
     error?: Error;
 }
+/**
+ *  This Error is a catch-all for when there is no way for Ethers to
+ *  know what the underlying problem is.
+ */
 export interface UnknownError extends EthersError<"UNKNOWN_ERROR"> {
     [key: string]: any;
 }
+/**
+ *  This Error is mostly used as a stub for functionality that is
+ *  intended for the future, but is currently not implemented.
+ */
 export interface NotImplementedError extends EthersError<"NOT_IMPLEMENTED"> {
+    /**
+     *  The attempted operation.
+     */
     operation: string;
 }
+/**
+ *  This Error indicates that the attempted operation is not supported.
+ *
+ *  This could range from a specifc JSON-RPC end-point not supporting
+ *  a feature to a specific configuration of an object prohibiting the
+ *  operation.
+ *
+ *  For example, a [[Wallet]] with no connected [[Provider]] is unable
+ *  to send a transaction.
+ */
 export interface UnsupportedOperationError extends EthersError<"UNSUPPORTED_OPERATION"> {
+    /**
+     *  The attempted operation.
+     */
     operation: string;
 }
 export interface NetworkError extends EthersError<"NETWORK_ERROR"> {
     event: string;
 }
+/**
+ *  This Error indicates there was a problem fetching a resource from
+ *  a server.
+ */
 export interface ServerError extends EthersError<"SERVER_ERROR"> {
+    /**
+     *  The requested resource.
+     */
     request: FetchRequest | string;
+    /**
+     *  The response received from the server, if available.
+     */
     response?: FetchResponse;
 }
+/**
+ *  This Error indicates that the timeout duration has expired and
+ *  that the operation has been implicitly cancelled.
+ *
+ *  The side-effect of the operation may still occur, as this
+ *  generally means a request has been sent and there has simply
+ *  been no response to indicate whether it was processed or not.
+ */
 export interface TimeoutError extends EthersError<"TIMEOUT"> {
+    /**
+     *  The attempted operation.
+     */
     operation: string;
+    /**
+     *  The reason.
+     */
     reason: string;
+    /**
+     *  The resource request, if available.
+     */
     request?: FetchRequest;
 }
+/**
+ *  This Error indicates that a provided set of data cannot
+ *  be correctly interpretted.
+ */
 export interface BadDataError extends EthersError<"BAD_DATA"> {
+    /**
+     *  The data.
+     */
     value: any;
 }
+/**
+ *  This Error indicates that the operation was cancelled by a
+ *  programmatic call, for example to ``cancel()``.
+ */
 export interface CancelledError extends EthersError<"CANCELLED"> {
 }
+/**
+ *  This Error indicates an attempt was made to read outside the bounds
+ *  of protected data.
+ *
+ *  Most operations in Ethers are protected by bounds checks, to mitigate
+ *  exploits when parsing data.
+ */
 export interface BufferOverrunError extends EthersError<"BUFFER_OVERRUN"> {
+    /**
+     *  The buffer that was overrun.
+     */
     buffer: Uint8Array;
+    /**
+     *  The length of the buffer.
+     */
     length: number;
+    /**
+     *  The offset that was requested.
+     */
     offset: number;
 }
+/**
+ *  This Error indicates an operation which would result in incorrect
+ *  arithmetic output has occurred.
+ *
+ *  For example, trying to divide by zero or using a ``uint8`` to store
+ *  a negative value.
+ */
 export interface NumericFaultError extends EthersError<"NUMERIC_FAULT"> {
+    /**
+     *  The attempted operation.
+     */
     operation: string;
+    /**
+     *  The fault reported.
+     */
     fault: string;
+    /**
+     *  The value the operation was attempted against.
+     */
     value: any;
 }
+/**
+ *  This Error indicates an incorrect type or value was passed to
+ *  a function or method.
+ */
 export interface InvalidArgumentError extends EthersError<"INVALID_ARGUMENT"> {
+    /**
+     *  The name of the argument.
+     */
     argument: string;
+    /**
+     *  The value that was provided.
+     */
     value: any;
     info?: Record<string, any>;
 }
@@ -108,11 +217,39 @@ export interface TransactionReplacedError extends EthersError<"TRANSACTION_REPLA
     replacement: TransactionResponse;
     receipt: TransactionReceipt;
 }
+/**
+ *  This Error indicates an ENS name was used, but the name has not
+ *  been configured.
+ *
+ *  This could indicate an ENS name is unowned or that the current
+ *  address being pointed to is the [[Zero]].
+ */
 export interface UnconfiguredNameError extends EthersError<"UNCONFIGURED_NAME"> {
+    /**
+     *  The ENS name that was requested
+     */
     value: string;
 }
+/**
+ *  This Error indicates a request was rejected by the user.
+ *
+ *  In most clients (such as MetaMask), when an operation requires user
+ *  authorization (such as ``signer.sendTransaction``), the client
+ *  presents a dialog box to the user. If the user denies the request
+ *  this error is thrown.
+ */
 export interface ActionRejectedError extends EthersError<"ACTION_REJECTED"> {
+    /**
+     *  The requested action.
+     */
     action: "requestAccess" | "sendTransaction" | "signMessage" | "signTransaction" | "signTypedData" | "unknown";
+    /**
+     *  The reason the action was rejected.
+     *
+     *  If there is already a pending request, some clients may indicate
+     *  there is already a ``"pending"`` action. This prevents an app
+     *  from spamming the user.
+     */
     reason: "expired" | "rejected" | "pending";
 }
 /**
@@ -133,7 +270,7 @@ export declare type CodedEthersError<T> = T extends "UNKNOWN_ERROR" ? UnknownErr
  *  @See [ErrorCodes](api:ErrorCode)
  *  @example
  *  try {
- *      // code....
+ *      / / code....
  *  } catch (e) {
  *      if (isError(e, "CALL_EXCEPTION")) {
  *          console.log(e.data);

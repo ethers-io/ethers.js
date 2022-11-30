@@ -1,17 +1,58 @@
 import type { BigNumberish, BytesLike } from "../../utils/index.js";
-export declare const WordSize = 32;
+export declare const WordSize: number;
+/**
+ *  A [[Result]] is a sub-class of Array, which allows accessing any
+ *  of its values either positionally by its index or, if keys are
+ *  provided by its name.
+ *
+ *  @_docloc: api/abi
+ */
 export declare class Result extends Array<any> {
     #private;
     [K: string | number]: any;
+    /**
+     *  @private
+     */
     constructor(guard: any, items: Array<any>, keys?: Array<null | string>);
+    /**
+     *  @_ignore
+     */
     slice(start?: number | undefined, end?: number | undefined): Array<any>;
+    /**
+     *  Returns the value for %%name%%.
+     *
+     *  Since it is possible to have a key whose name conflicts with
+     *  a method on a [[Result]] or its superclass Array, or any
+     *  JavaScript keyword, this ensures all named values are still
+     *  accessible by name.
+     */
     getValue(name: string): any;
+    /**
+     *  Creates a new [[Result]] for %%items%% with each entry
+     *  also accessible by its corresponding name in %%keys%%.
+     */
     static fromItems(items: Array<any>, keys?: Array<null | string>): Result;
 }
+/**
+ *  Returns all errors found in a [[Result]].
+ *
+ *  Since certain errors encountered when creating a [[Result]] do
+ *  not impact the ability to continue parsing data, they are
+ *  deferred until they are actually accessed. Hence a faulty string
+ *  in an Event that is never used does not impact the program flow.
+ *
+ *  However, sometimes it may be useful to access, identify or
+ *  validate correctness of a [[Result]].
+ *
+ *  @_docloc api/abi
+ */
 export declare function checkResultErrors(result: Result): Array<{
     path: Array<string | number>;
     error: Error;
 }>;
+/**
+ *  @_ignore
+ */
 export declare abstract class Coder {
     readonly name: string;
     readonly type: string;
@@ -23,6 +64,9 @@ export declare abstract class Coder {
     abstract decode(reader: Reader): any;
     abstract defaultValue(): any;
 }
+/**
+ *  @_ignore
+ */
 export declare class Writer {
     #private;
     constructor();
@@ -33,6 +77,9 @@ export declare class Writer {
     writeValue(value: BigNumberish): number;
     writeUpdatableValue(): (value: BigNumberish) => void;
 }
+/**
+ *  @_ignore
+ */
 export declare class Reader {
     #private;
     readonly allowLoose: boolean;

@@ -1,4 +1,4 @@
-import type { BigNumberish, BytesLike, Freezable, Frozen } from "../utils/index.js";
+import type { BigNumberish, BytesLike } from "../utils/index.js";
 export declare type SignatureLike = Signature | string | {
     r: string;
     s: string;
@@ -18,28 +18,97 @@ export declare type SignatureLike = Signature | string | {
     v?: BigNumberish;
     yParityAndS?: string;
 };
-export declare class Signature implements Freezable<Signature> {
+/**
+ *  A Signature  @TODO
+ */
+export declare class Signature {
     #private;
+    /**
+     *  The ``r`` value for a signautre.
+     *
+     *  This represents the ``x`` coordinate of a "reference" or
+     *  challenge point, from which the ``y`` can be computed.
+     */
     get r(): string;
     set r(value: BytesLike);
+    /**
+     *  The ``s`` value for a signature.
+     */
     get s(): string;
-    set s(value: BytesLike);
+    set s(_value: BytesLike);
+    /**
+     *  The ``v`` value for a signature.
+     *
+     *  Since a given ``x`` value for ``r`` has two possible values for
+     *  its correspondin ``y``, the ``v`` indicates which of the two ``y``
+     *  values to use.
+     *
+     *  It is normalized to the values ``27`` or ``28`` for legacy
+     *  purposes.
+     */
     get v(): 27 | 28;
     set v(value: BigNumberish);
+    /**
+     *  The EIP-155 ``v`` for legacy transactions. For non-legacy
+     *  transactions, this value is ``null``.
+     */
     get networkV(): null | bigint;
+    /**
+     *  The chain ID for EIP-155 legacy transactions. For non-legacy
+     *  transactions, this value is ``null``.
+     */
     get legacyChainId(): null | bigint;
+    /**
+     *  The ``yParity`` for the signature.
+     *
+     *  See ``v`` for more details on how this value is used.
+     */
     get yParity(): 0 | 1;
+    /**
+     *  The [[link-eip-2098]] compact representation of the ``yParity``
+     *  and ``s`` compacted into a single ``bytes32``.
+     */
     get yParityAndS(): string;
+    /**
+     *  The [[link-eip-2098]] compact representation.
+     */
     get compactSerialized(): string;
+    /**
+     *  The serialized representation.
+     */
     get serialized(): string;
+    /**
+     *  @private
+     */
     constructor(guard: any, r: string, s: string, v: 27 | 28);
+    /**
+     *  Returns a new identical [[Signature]].
+     */
     clone(): Signature;
-    freeze(): Frozen<Signature>;
-    isFrozen(): boolean;
+    /**
+     *  Returns a representation that is compatible with ``JSON.stringify``.
+     */
     toJSON(): any;
+    /**
+     *  Compute the chain ID from an EIP-155 ``v`` for legacy transactions.
+     */
     static getChainId(v: BigNumberish): bigint;
+    /**
+     *  Compute the EIP-155 ``v`` for a chain ID for legacy transactions.
+     */
     static getChainIdV(chainId: BigNumberish, v: 27 | 28): bigint;
+    /**
+     *  Compute the normalized EIP-155 ``v`` for legacy transactions.
+     */
     static getNormalizedV(v: BigNumberish): 27 | 28;
+    /**
+     *  Creates a new [[Signature]].
+     *
+     *  If no %%sig%% is provided, a new [[Signature]] is created
+     *  with default values.
+     *
+     *  If %%sig%% is a string, it is parsed.
+     */
     static from(sig?: SignatureLike): Signature;
 }
 //# sourceMappingURL=signature.d.ts.map

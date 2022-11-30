@@ -1,3 +1,9 @@
+/**
+ *  Addresses in Ethereum can be of several formats. These functions
+ *  help convert between them, checksum them, etc.
+ *
+ *  @_section: api/address:Addresses  [addresses]
+ */
 export interface Addressable {
     getAddress(): Promise<string>;
 }

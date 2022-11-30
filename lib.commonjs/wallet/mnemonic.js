@@ -12,10 +12,10 @@ function getUpperMask(bits) {
 function getLowerMask(bits) {
     return ((1 << bits) - 1) & 0xff;
 }
-function mnemonicToEntropy(mnemonic, wordlist = lang_en_js_1.langEn) {
+function mnemonicToEntropy(mnemonic, wordlist) {
     (0, index_js_2.assertNormalize)("NFKD");
     if (wordlist == null) {
-        wordlist = lang_en_js_1.langEn;
+        wordlist = lang_en_js_1.LangEn.wordlist();
     }
     const words = wordlist.split(mnemonic);
     (0, index_js_2.assertArgument)((words.length % 3) === 0 && words.length >= 12 && words.length <= 24, "invalid mnemonic length", "mnemonic", "[ REDACTED ]");
@@ -38,10 +38,10 @@ function mnemonicToEntropy(mnemonic, wordlist = lang_en_js_1.langEn) {
     (0, index_js_2.assertArgument)(checksum === (entropy[entropy.length - 1] & checksumMask), "invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
     return (0, index_js_2.hexlify)(entropy.slice(0, entropyBits / 8));
 }
-function entropyToMnemonic(entropy, wordlist = lang_en_js_1.langEn) {
+function entropyToMnemonic(entropy, wordlist) {
     (0, index_js_2.assertArgument)((entropy.length % 4) === 0 && entropy.length >= 16 && entropy.length <= 32, "invalid entropy size", "entropy", "[ REDACTED ]");
     if (wordlist == null) {
-        wordlist = lang_en_js_1.langEn;
+        wordlist = lang_en_js_1.LangEn.wordlist();
     }
     const indices = [0];
     let remainingBits = 11;
@@ -75,12 +75,15 @@ class Mnemonic {
     password;
     wordlist;
     entropy;
+    /**
+     *  @private
+     */
     constructor(guard, entropy, phrase, password, wordlist) {
         if (password == null) {
             password = "";
         }
         if (wordlist == null) {
-            wordlist = lang_en_js_1.langEn;
+            wordlist = lang_en_js_1.LangEn.wordlist();
         }
         (0, index_js_2.assertPrivate)(guard, _guard, "Mnemonic");
         (0, index_js_2.defineProperties)(this, { phrase, password, wordlist, entropy });

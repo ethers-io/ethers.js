@@ -1,3 +1,8 @@
+/**
+ *  About frgaments...
+ *
+ *  @_subsection api/abi/abi-coder:Fragments
+ */
 export interface JsonFragmentType {
     readonly name?: string;
     readonly indexed?: boolean;
@@ -28,6 +33,9 @@ export declare class ParamType {
     readonly components: null | ReadonlyArray<ParamType>;
     readonly arrayLength: null | number;
     readonly arrayChildren: null | ParamType;
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, type: string, baseType: string, indexed: null | boolean, components: null | ReadonlyArray<ParamType>, arrayLength: null | number, arrayChildren: null | ParamType);
     format(format?: FormatType): string;
     static isArray(value: any): value is {
@@ -44,7 +52,7 @@ export declare class ParamType {
         indexed: boolean;
     });
     walk(value: any, process: FragmentWalkFunc): any;
-    walkAsync(value: any, process: (type: string, value: any) => any | Promise<any>): Promise<any>;
+    walkAsync(value: any, process: FragmentWalkAsyncFunc): Promise<any>;
     static from(obj: any, allowIndexed?: boolean): ParamType;
     static isParamType(value: any): value is ParamType;
 }
@@ -52,6 +60,9 @@ export declare type FragmentType = "constructor" | "error" | "event" | "function
 export declare abstract class Fragment {
     readonly type: FragmentType;
     readonly inputs: ReadonlyArray<ParamType>;
+    /**
+     *  @private
+     */
     constructor(guard: any, type: FragmentType, inputs: ReadonlyArray<ParamType>);
     abstract format(format?: FormatType): string;
     static from(obj: any): Fragment;
@@ -63,9 +74,15 @@ export declare abstract class Fragment {
 }
 export declare abstract class NamedFragment extends Fragment {
     readonly name: string;
+    /**
+     *  @private
+     */
     constructor(guard: any, type: FragmentType, name: string, inputs: ReadonlyArray<ParamType>);
 }
 export declare class ErrorFragment extends NamedFragment {
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>);
     get selector(): string;
     format(format?: FormatType): string;
@@ -74,6 +91,9 @@ export declare class ErrorFragment extends NamedFragment {
 }
 export declare class EventFragment extends NamedFragment {
     readonly anonymous: boolean;
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>, anonymous: boolean);
     get topicHash(): string;
     format(format?: FormatType): string;
@@ -83,6 +103,9 @@ export declare class EventFragment extends NamedFragment {
 export declare class ConstructorFragment extends Fragment {
     readonly payable: boolean;
     readonly gas: null | bigint;
+    /**
+     *  @private
+     */
     constructor(guard: any, type: FragmentType, inputs: ReadonlyArray<ParamType>, payable: boolean, gas: null | bigint);
     format(format?: FormatType): string;
     static from(obj: any): ConstructorFragment;
@@ -94,6 +117,9 @@ export declare class FunctionFragment extends NamedFragment {
     readonly stateMutability: string;
     readonly payable: boolean;
     readonly gas: null | bigint;
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, stateMutability: string, inputs: ReadonlyArray<ParamType>, outputs: ReadonlyArray<ParamType>, gas: null | bigint);
     get selector(): string;
     format(format?: FormatType): string;
@@ -101,6 +127,9 @@ export declare class FunctionFragment extends NamedFragment {
     static isFragment(value: any): value is FunctionFragment;
 }
 export declare class StructFragment extends NamedFragment {
+    /**
+     *  @private
+     */
     constructor(guard: any, name: string, inputs: ReadonlyArray<ParamType>);
     format(): string;
     static from(obj: any): StructFragment;

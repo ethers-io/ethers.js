@@ -1,6 +1,21 @@
 import { WordlistOwl } from "./wordlist-owl.js";
+/**
+ *  The [[link-bip-39]] Wordlist for the Portuguese (pt) language.
+ *
+ *  @_docloc: api/wordlists
+ */
 export declare class LangPt extends WordlistOwl {
+    /**
+     *  Creates a new instance of the Portuguese language Wordlist.
+     *
+     *  This should be unnecessary most of the time as the exported
+     *  [[langPt]] should suffice.
+     */
     constructor();
+    /**
+     *  Returns a singleton instance of a ``LangPt``, creating it
+     *  if this is the first time being called.
+     */
+    static wordlist(): LangPt;
 }
-export declare const langPt: LangPt;
 //# sourceMappingURL=lang-pt.d.ts.map

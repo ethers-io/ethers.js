@@ -2,17 +2,15 @@
 /////////////////////////////
 //
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scrypt = exports.pbkdf2 = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.keccak256 = exports.randomBytes = exports.computeHmac = exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.ContractEventPayload = exports.ContractFactory = exports.Contract = exports.BaseContract = exports.MessagePrefix = exports.EtherSymbol = exports.ZeroHash = exports.N = exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.ZeroAddress = exports.getCreate2Address = exports.getCreateAddress = exports.getIcapAddress = exports.getAddress = exports.Typed = exports.TransactionDescription = exports.Result = exports.LogDescription = exports.Interface = exports.Indexed = exports.checkResultErrors = exports.ParamType = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = exports.defaultAbiCoder = exports.AbiCoder = exports.encodeBytes32String = exports.decodeBytes32String = exports.version = void 0;
-exports.stripZerosLeft = exports.isBytesLike = exports.isHexString = exports.hexlify = exports.getBytesCopy = exports.getBytes = exports.dataSlice = exports.dataLength = exports.concat = exports.encodeBase64 = exports.decodeBase64 = exports.encodeBase58 = exports.decodeBase58 = exports.Transaction = exports.recoverAddress = exports.computeAddress = exports.accessListify = exports.Network = exports.WebSocketProvider = exports.SocketProvider = exports.IpcSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.BrowserProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.AbstractProvider = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.id = exports.SigningKey = exports.Signature = exports.lock = exports.scryptSync = void 0;
-exports.Mnemonic = exports.encryptKeystoreJson = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.isKeystoreJson = exports.decryptCrowdsaleJson = exports.isCrowdsaleJson = exports.HDNodeWalletManager = exports.HDNodeVoidWallet = exports.HDNodeWallet = exports.getAccountPath = exports.defaultPath = exports.encodeRlp = exports.decodeRlp = exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.mask = exports.toTwos = exports.fromTwos = exports.toQuantity = exports.toNumber = exports.toHex = exports.toBigInt = exports.toArray = exports.getNumber = exports.getBigInt = exports.parseFixed = exports.formatFixed = exports.FixedNumber = exports.FixedFormat = exports.FetchCancelSignal = exports.FetchResponse = exports.FetchRequest = exports.getIpfsGatewayFunc = exports.isError = exports.isCallException = exports.makeError = exports.assertPrivate = exports.assertNormalize = exports.assertArgumentCount = exports.assertArgument = exports.assert = exports.zeroPadValue = exports.zeroPadBytes = void 0;
-exports.WordlistOwlA = exports.WordlistOwl = exports.wordlists = exports.LangEn = exports.langEn = exports.Wordlist = exports.Wallet = void 0;
+exports.id = exports.SigningKey = exports.Signature = exports.lock = exports.scryptSync = exports.scrypt = exports.pbkdf2 = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.keccak256 = exports.randomBytes = exports.computeHmac = exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.ContractEventPayload = exports.ContractFactory = exports.Contract = exports.BaseContract = exports.MessagePrefix = exports.EtherSymbol = exports.ZeroHash = exports.N = exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.ZeroAddress = exports.getCreate2Address = exports.getCreateAddress = exports.getIcapAddress = exports.getAddress = exports.Typed = exports.TransactionDescription = exports.Result = exports.LogDescription = exports.Interface = exports.Indexed = exports.checkResultErrors = exports.ParamType = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = exports.AbiCoder = exports.encodeBytes32String = exports.decodeBytes32String = exports.version = void 0;
+exports.assertArgument = exports.assert = exports.defineProperties = exports.zeroPadValue = exports.zeroPadBytes = exports.stripZerosLeft = exports.isBytesLike = exports.isHexString = exports.hexlify = exports.getBytesCopy = exports.getBytes = exports.dataSlice = exports.dataLength = exports.concat = exports.encodeBase64 = exports.decodeBase64 = exports.encodeBase58 = exports.decodeBase58 = exports.Transaction = exports.recoverAddress = exports.computeAddress = exports.accessListify = exports.Network = exports.WebSocketProvider = exports.SocketProvider = exports.IpcSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.BrowserProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.AbstractProvider = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = void 0;
+exports.WordlistOwlA = exports.WordlistOwl = exports.LangEn = exports.Wordlist = exports.encryptKeystoreJsonSync = exports.encryptKeystoreJson = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.decryptCrowdsaleJson = exports.isKeystoreJson = exports.isCrowdsaleJson = exports.getAccountPath = exports.defaultPath = exports.Wallet = exports.HDNodeWalletManager = exports.HDNodeVoidWallet = exports.HDNodeWallet = exports.BaseWallet = exports.Mnemonic = exports.encodeRlp = exports.decodeRlp = exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.mask = exports.toTwos = exports.fromTwos = exports.toQuantity = exports.toNumber = exports.toHex = exports.toBigInt = exports.toArray = exports.getNumber = exports.getBigInt = exports.FixedNumber = exports.FetchCancelSignal = exports.FetchResponse = exports.FetchRequest = exports.isError = exports.isCallException = exports.makeError = exports.assertPrivate = exports.assertNormalize = exports.assertArgumentCount = void 0;
 var _version_js_1 = require("./_version.js");
 Object.defineProperty(exports, "version", { enumerable: true, get: function () { return _version_js_1.version; } });
 var index_js_1 = require("./abi/index.js");
 Object.defineProperty(exports, "decodeBytes32String", { enumerable: true, get: function () { return index_js_1.decodeBytes32String; } });
 Object.defineProperty(exports, "encodeBytes32String", { enumerable: true, get: function () { return index_js_1.encodeBytes32String; } });
 Object.defineProperty(exports, "AbiCoder", { enumerable: true, get: function () { return index_js_1.AbiCoder; } });
-Object.defineProperty(exports, "defaultAbiCoder", { enumerable: true, get: function () { return index_js_1.defaultAbiCoder; } });
 Object.defineProperty(exports, "ConstructorFragment", { enumerable: true, get: function () { return index_js_1.ConstructorFragment; } });
 Object.defineProperty(exports, "ErrorFragment", { enumerable: true, get: function () { return index_js_1.ErrorFragment; } });
 Object.defineProperty(exports, "EventFragment", { enumerable: true, get: function () { return index_js_1.EventFragment; } });
@@ -33,10 +31,6 @@ Object.defineProperty(exports, "getCreateAddress", { enumerable: true, get: func
 Object.defineProperty(exports, "getCreate2Address", { enumerable: true, get: function () { return index_js_2.getCreate2Address; } });
 var index_js_3 = require("./constants/index.js");
 Object.defineProperty(exports, "ZeroAddress", { enumerable: true, get: function () { return index_js_3.ZeroAddress; } });
-Object.defineProperty(exports, "NegativeOne", { enumerable: true, get: function () { return index_js_3.NegativeOne; } });
-Object.defineProperty(exports, "Zero", { enumerable: true, get: function () { return index_js_3.Zero; } });
-Object.defineProperty(exports, "One", { enumerable: true, get: function () { return index_js_3.One; } });
-Object.defineProperty(exports, "Two", { enumerable: true, get: function () { return index_js_3.Two; } });
 Object.defineProperty(exports, "WeiPerEther", { enumerable: true, get: function () { return index_js_3.WeiPerEther; } });
 Object.defineProperty(exports, "MaxUint256", { enumerable: true, get: function () { return index_js_3.MaxUint256; } });
 Object.defineProperty(exports, "MinInt256", { enumerable: true, get: function () { return index_js_3.MinInt256; } });
@@ -119,6 +113,7 @@ Object.defineProperty(exports, "isBytesLike", { enumerable: true, get: function 
 Object.defineProperty(exports, "stripZerosLeft", { enumerable: true, get: function () { return index_js_9.stripZerosLeft; } });
 Object.defineProperty(exports, "zeroPadBytes", { enumerable: true, get: function () { return index_js_9.zeroPadBytes; } });
 Object.defineProperty(exports, "zeroPadValue", { enumerable: true, get: function () { return index_js_9.zeroPadValue; } });
+Object.defineProperty(exports, "defineProperties", { enumerable: true, get: function () { return index_js_9.defineProperties; } });
 Object.defineProperty(exports, "assert", { enumerable: true, get: function () { return index_js_9.assert; } });
 Object.defineProperty(exports, "assertArgument", { enumerable: true, get: function () { return index_js_9.assertArgument; } });
 Object.defineProperty(exports, "assertArgumentCount", { enumerable: true, get: function () { return index_js_9.assertArgumentCount; } });
@@ -127,14 +122,10 @@ Object.defineProperty(exports, "assertPrivate", { enumerable: true, get: functio
 Object.defineProperty(exports, "makeError", { enumerable: true, get: function () { return index_js_9.makeError; } });
 Object.defineProperty(exports, "isCallException", { enumerable: true, get: function () { return index_js_9.isCallException; } });
 Object.defineProperty(exports, "isError", { enumerable: true, get: function () { return index_js_9.isError; } });
-Object.defineProperty(exports, "getIpfsGatewayFunc", { enumerable: true, get: function () { return index_js_9.getIpfsGatewayFunc; } });
 Object.defineProperty(exports, "FetchRequest", { enumerable: true, get: function () { return index_js_9.FetchRequest; } });
 Object.defineProperty(exports, "FetchResponse", { enumerable: true, get: function () { return index_js_9.FetchResponse; } });
 Object.defineProperty(exports, "FetchCancelSignal", { enumerable: true, get: function () { return index_js_9.FetchCancelSignal; } });
-Object.defineProperty(exports, "FixedFormat", { enumerable: true, get: function () { return index_js_9.FixedFormat; } });
 Object.defineProperty(exports, "FixedNumber", { enumerable: true, get: function () { return index_js_9.FixedNumber; } });
-Object.defineProperty(exports, "formatFixed", { enumerable: true, get: function () { return index_js_9.formatFixed; } });
-Object.defineProperty(exports, "parseFixed", { enumerable: true, get: function () { return index_js_9.parseFixed; } });
 Object.defineProperty(exports, "getBigInt", { enumerable: true, get: function () { return index_js_9.getBigInt; } });
 Object.defineProperty(exports, "getNumber", { enumerable: true, get: function () { return index_js_9.getNumber; } });
 Object.defineProperty(exports, "toArray", { enumerable: true, get: function () { return index_js_9.toArray; } });
@@ -156,24 +147,24 @@ Object.defineProperty(exports, "Utf8ErrorFuncs", { enumerable: true, get: functi
 Object.defineProperty(exports, "decodeRlp", { enumerable: true, get: function () { return index_js_9.decodeRlp; } });
 Object.defineProperty(exports, "encodeRlp", { enumerable: true, get: function () { return index_js_9.encodeRlp; } });
 var index_js_10 = require("./wallet/index.js");
-Object.defineProperty(exports, "defaultPath", { enumerable: true, get: function () { return index_js_10.defaultPath; } });
-Object.defineProperty(exports, "getAccountPath", { enumerable: true, get: function () { return index_js_10.getAccountPath; } });
+Object.defineProperty(exports, "Mnemonic", { enumerable: true, get: function () { return index_js_10.Mnemonic; } });
+Object.defineProperty(exports, "BaseWallet", { enumerable: true, get: function () { return index_js_10.BaseWallet; } });
 Object.defineProperty(exports, "HDNodeWallet", { enumerable: true, get: function () { return index_js_10.HDNodeWallet; } });
 Object.defineProperty(exports, "HDNodeVoidWallet", { enumerable: true, get: function () { return index_js_10.HDNodeVoidWallet; } });
 Object.defineProperty(exports, "HDNodeWalletManager", { enumerable: true, get: function () { return index_js_10.HDNodeWalletManager; } });
+Object.defineProperty(exports, "Wallet", { enumerable: true, get: function () { return index_js_10.Wallet; } });
+Object.defineProperty(exports, "defaultPath", { enumerable: true, get: function () { return index_js_10.defaultPath; } });
+Object.defineProperty(exports, "getAccountPath", { enumerable: true, get: function () { return index_js_10.getAccountPath; } });
 Object.defineProperty(exports, "isCrowdsaleJson", { enumerable: true, get: function () { return index_js_10.isCrowdsaleJson; } });
-Object.defineProperty(exports, "decryptCrowdsaleJson", { enumerable: true, get: function () { return index_js_10.decryptCrowdsaleJson; } });
 Object.defineProperty(exports, "isKeystoreJson", { enumerable: true, get: function () { return index_js_10.isKeystoreJson; } });
+Object.defineProperty(exports, "decryptCrowdsaleJson", { enumerable: true, get: function () { return index_js_10.decryptCrowdsaleJson; } });
 Object.defineProperty(exports, "decryptKeystoreJsonSync", { enumerable: true, get: function () { return index_js_10.decryptKeystoreJsonSync; } });
 Object.defineProperty(exports, "decryptKeystoreJson", { enumerable: true, get: function () { return index_js_10.decryptKeystoreJson; } });
 Object.defineProperty(exports, "encryptKeystoreJson", { enumerable: true, get: function () { return index_js_10.encryptKeystoreJson; } });
-Object.defineProperty(exports, "Mnemonic", { enumerable: true, get: function () { return index_js_10.Mnemonic; } });
-Object.defineProperty(exports, "Wallet", { enumerable: true, get: function () { return index_js_10.Wallet; } });
+Object.defineProperty(exports, "encryptKeystoreJsonSync", { enumerable: true, get: function () { return index_js_10.encryptKeystoreJsonSync; } });
 var index_js_11 = require("./wordlists/index.js");
 Object.defineProperty(exports, "Wordlist", { enumerable: true, get: function () { return index_js_11.Wordlist; } });
-Object.defineProperty(exports, "langEn", { enumerable: true, get: function () { return index_js_11.langEn; } });
 Object.defineProperty(exports, "LangEn", { enumerable: true, get: function () { return index_js_11.LangEn; } });
-Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return index_js_11.wordlists; } });
 Object.defineProperty(exports, "WordlistOwl", { enumerable: true, get: function () { return index_js_11.WordlistOwl; } });
 Object.defineProperty(exports, "WordlistOwlA", { enumerable: true, get: function () { return index_js_11.WordlistOwlA; } });
 //# sourceMappingURL=ethers.js.map

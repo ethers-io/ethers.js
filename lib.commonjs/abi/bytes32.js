@@ -1,7 +1,15 @@
 "use strict";
+/**
+ *  About bytes32 strings...
+ *
+ *  @_docloc: api/utils:Bytes32 Strings
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodeBytes32String = exports.encodeBytes32String = void 0;
 const index_js_1 = require("../utils/index.js");
+/**
+ *  Encodes %%text%% as a Bytes32 string.
+ */
 function encodeBytes32String(text) {
     // Get the bytes
     const bytes = (0, index_js_1.toUtf8Bytes)(text);
@@ -13,6 +21,9 @@ function encodeBytes32String(text) {
     return (0, index_js_1.zeroPadBytes)(bytes, 32);
 }
 exports.encodeBytes32String = encodeBytes32String;
+/**
+ *  Encodes the Bytes32-encoded %%bytes%% into a string.
+ */
 function decodeBytes32String(_bytes) {
     const data = (0, index_js_1.getBytes)(_bytes, "bytes");
     // Must be 32 bytes with a null-termination

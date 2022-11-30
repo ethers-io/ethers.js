@@ -1,4 +1,9 @@
 "use strict";
+/**
+ *  About frgaments...
+ *
+ *  @_subsection api/abi/abi-coder:Fragments
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StructFragment = exports.FunctionFragment = exports.ConstructorFragment = exports.EventFragment = exports.ErrorFragment = exports.NamedFragment = exports.Fragment = exports.ParamType = void 0;
 const index_js_1 = require("../utils/index.js");
@@ -347,6 +352,9 @@ class ParamType {
     //  - child type
     arrayLength;
     arrayChildren;
+    /**
+     *  @private
+     */
     constructor(guard, name, type, baseType, indexed, components, arrayLength, arrayChildren) {
         (0, index_js_1.assertPrivate)(guard, _guard, "ParamType");
         Object.defineProperty(this, internal, { value: ParamTypeInternal });
@@ -377,7 +385,10 @@ class ParamType {
     //   - sighash: "(uint256,address)"
     //   - minimal: "tuple(uint256,address) indexed"
     //   - full:    "tuple(uint256 foo, address bar) indexed baz"
-    format(format = "sighash") {
+    format(format) {
+        if (format == null) {
+            format = "sighash";
+        }
         if (format === "json") {
             let result = {
                 type: ((this.baseType === "tuple") ? "tuple" : this.type),
@@ -602,6 +613,9 @@ exports.ParamType = ParamType;
 class Fragment {
     type;
     inputs;
+    /**
+     *  @private
+     */
     constructor(guard, type, inputs) {
         (0, index_js_1.assertPrivate)(guard, _guard, "Fragment");
         inputs = Object.freeze(inputs.slice());
@@ -657,6 +671,9 @@ class Fragment {
 exports.Fragment = Fragment;
 class NamedFragment extends Fragment {
     name;
+    /**
+     *  @private
+     */
     constructor(guard, type, name, inputs) {
         super(guard, type, inputs);
         (0, index_js_1.assertArgument)(typeof (name) === "string" && name.match(regexIdentifier), "invalid identifier", "name", name);
@@ -669,6 +686,9 @@ function joinParams(format, params) {
     return "(" + params.map((p) => p.format(format)).join((format === "full") ? ", " : ",") + ")";
 }
 class ErrorFragment extends NamedFragment {
+    /**
+     *  @private
+     */
     constructor(guard, name, inputs) {
         super(guard, "error", name, inputs);
         Object.defineProperty(this, internal, { value: ErrorFragmentInternal });
@@ -676,7 +696,10 @@ class ErrorFragment extends NamedFragment {
     get selector() {
         return (0, index_js_2.id)(this.format("sighash")).substring(0, 10);
     }
-    format(format = "sighash") {
+    format(format) {
+        if (format == null) {
+            format = "sighash";
+        }
         if (format === "json") {
             return JSON.stringify({
                 type: "error",
@@ -713,6 +736,9 @@ class ErrorFragment extends NamedFragment {
 exports.ErrorFragment = ErrorFragment;
 class EventFragment extends NamedFragment {
     anonymous;
+    /**
+     *  @private
+     */
     constructor(guard, name, inputs, anonymous) {
         super(guard, "event", name, inputs);
         Object.defineProperty(this, internal, { value: EventFragmentInternal });
@@ -721,7 +747,10 @@ class EventFragment extends NamedFragment {
     get topicHash() {
         return (0, index_js_2.id)(this.format("sighash"));
     }
-    format(format = "sighash") {
+    format(format) {
+        if (format == null) {
+            format = "sighash";
+        }
         if (format === "json") {
             return JSON.stringify({
                 type: "event",
@@ -764,13 +793,16 @@ exports.EventFragment = EventFragment;
 class ConstructorFragment extends Fragment {
     payable;
     gas;
+    /**
+     *  @private
+     */
     constructor(guard, type, inputs, payable, gas) {
         super(guard, type, inputs);
         Object.defineProperty(this, internal, { value: ConstructorFragmentInternal });
         (0, index_js_1.defineProperties)(this, { payable, gas });
     }
-    format(format = "sighash") {
-        (0, index_js_1.assert)(format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
+    format(format) {
+        (0, index_js_1.assert)(format != null && format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
         if (format === "json") {
             return JSON.stringify({
                 type: "constructor",
@@ -815,6 +847,9 @@ class FunctionFragment extends NamedFragment {
     stateMutability;
     payable;
     gas;
+    /**
+     *  @private
+     */
     constructor(guard, name, stateMutability, inputs, outputs, gas) {
         super(guard, "function", name, inputs);
         Object.defineProperty(this, internal, { value: FunctionFragmentInternal });
@@ -826,7 +861,10 @@ class FunctionFragment extends NamedFragment {
     get selector() {
         return (0, index_js_2.id)(this.format("sighash")).substring(0, 10);
     }
-    format(format = "sighash") {
+    format(format) {
+        if (format == null) {
+            format = "sighash";
+        }
         if (format === "json") {
             return JSON.stringify({
                 type: "function",
@@ -886,6 +924,9 @@ class FunctionFragment extends NamedFragment {
 }
 exports.FunctionFragment = FunctionFragment;
 class StructFragment extends NamedFragment {
+    /**
+     *  @private
+     */
     constructor(guard, name, inputs) {
         super(guard, "struct", name, inputs);
         Object.defineProperty(this, internal, { value: StructFragmentInternal });

@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BooleanCoder = void 0;
 const typed_js_1 = require("../typed.js");
 const abstract_coder_js_1 = require("./abstract-coder.js");
+/**
+ *  @_ignore
+ */
 class BooleanCoder extends abstract_coder_js_1.Coder {
     constructor(localName) {
         super("bool", "bool", localName, false);

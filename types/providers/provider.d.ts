@@ -5,11 +5,47 @@ import type { AccessList, AccessListish, TransactionLike } from "../transaction/
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
 export declare type BlockTag = number | string;
+import { BlockParams, LogParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
+/**
+ *  A **FeeData** wraps all the fee-related values associated with
+ *  the network.
+ */
 export declare class FeeData {
+    /**
+     *  The gas price for legacy networks.
+     */
     readonly gasPrice: null | bigint;
+    /**
+     *  The maximum fee to pay per gas.
+     *
+     *  The base fee per gas is defined by the network and based on
+     *  congestion, increasing the cost during times of heavy load
+     *  and lowering when less busy.
+     *
+     *  The actual fee per gas will be the base fee for the block
+     *  and the priority fee, up to the max fee per gas.
+     *
+     *  This will be ``null`` on legacy networks (i.e. [pre-EIP-1559](link-eip-1559))
+     */
     readonly maxFeePerGas: null | bigint;
+    /**
+     *  The additional amout to pay per gas to encourage a validator
+     *  to include the transaction.
+     *
+     *  The purpose of this is to compensate the validator for the
+     *  adjusted risk for including a given transaction.
+     *
+     *  This will be ``null`` on legacy networks (i.e. [pre-EIP-1559](link-eip-1559))
+     */
     readonly maxPriorityFeePerGas: null | bigint;
+    /**
+     *  Creates a new FeeData for %%gasPrice%%, %%maxFeePerGas%% and
+     *  %%maxPriorityFeePerGas%%.
+     */
     constructor(gasPrice?: null | bigint, maxFeePerGas?: null | bigint, maxPriorityFeePerGas?: null | bigint);
+    /**
+     *  Returns a JSON-friendly value.
+     */
     toJSON(): any;
 }
 export interface TransactionRequest {
@@ -47,64 +83,126 @@ export interface PreparedTransactionRequest {
     enableCcipRead?: boolean;
 }
 export declare function copyRequest(req: TransactionRequest): PreparedTransactionRequest;
-export interface BlockParams<T extends string | TransactionResponseParams> {
-    hash?: null | string;
-    number: number;
-    timestamp: number;
-    parentHash: string;
-    nonce: string;
-    difficulty: bigint;
-    gasLimit: bigint;
-    gasUsed: bigint;
-    miner: string;
-    extraData: string;
-    baseFeePerGas: null | bigint;
-    transactions: ReadonlyArray<T>;
-}
-export interface MinedBlock<T extends string | TransactionResponse = string> extends Block<T> {
+export interface MinedBlock extends Block {
     readonly number: number;
     readonly hash: string;
     readonly timestamp: number;
     readonly date: Date;
     readonly miner: string;
 }
-export declare class Block<T extends string | TransactionResponse> implements BlockParams<T>, Iterable<T> {
+/**
+ *  A **Block** represents the data associated with a full block on
+ *  Ethereum.
+ */
+export declare class Block implements BlockParams, Iterable<string> {
     #private;
+    /**
+     *  The provider connected to the block used to fetch additional details
+     *  if necessary.
+     */
     readonly provider: Provider;
+    /**
+     *  The block number, sometimes called the block height. This is a
+     *  sequential number that is one higher than the parent block.
+     */
     readonly number: number;
+    /**
+     *  The block hash.
+     */
     readonly hash: null | string;
+    /**
+     *  The timestamp for this block, which is the number of seconds since
+     *  epoch that this block was included.
+     */
     readonly timestamp: number;
+    /**
+     *  The block hash of the parent block.
+     */
     readonly parentHash: string;
+    /**
+     *  The nonce.
+     *
+     *  On legacy networks, this is the random number inserted which
+     *  permitted the difficulty target to be reached.
+     */
     readonly nonce: string;
+    /**
+     *  The difficulty target.
+     *
+     *  On legacy networks, this is the proof-of-work target required
+     *  for a block to meet the protocol rules to be included.
+     *
+     *  On modern networks, this is a random number arrived at using
+     *  randao.  @TODO: Find links?
+     */
     readonly difficulty: bigint;
+    /**
+     *  The total gas limit for this block.
+     */
     readonly gasLimit: bigint;
+    /**
+     *  The total gas used in this block.
+     */
     readonly gasUsed: bigint;
+    /**
+     *  The miner coinbase address, wihch receives any subsidies for
+     *  including this block.
+     */
     readonly miner: string;
+    /**
+     *  Any extra data the validator wished to include.
+     */
     readonly extraData: string;
+    /**
+     *  The base fee per gas that all transactions in this block were
+     *  charged.
+     *
+     *  This adjusts after each block, depending on how congested the network
+     *  is.
+     */
     readonly baseFeePerGas: null | bigint;
-    constructor(block: BlockParams<T>, provider: Provider);
-    get transactions(): ReadonlyArray<T>;
+    /**
+     *  Create a new **Block** object.
+     *
+     *  This should generally not be necessary as the unless implementing a
+     *  low-level library.
+     */
+    constructor(block: BlockParams, provider: Provider);
+    /**
+     *  Returns the list of transaction hashes.
+     */
+    get transactions(): ReadonlyArray<string>;
+    /**
+     *  Returns a JSON-friendly value.
+     */
     toJSON(): any;
-    [Symbol.iterator](): Iterator<T>;
+    [Symbol.iterator](): Iterator<string>;
+    /**
+     *  The number of transactions in this block.
+     */
     get length(): number;
+    /**
+     *  The [date](link-js-data) this block was included at.
+     */
     get date(): null | Date;
-    getTransaction(index: number): Promise<TransactionResponse>;
-    isMined(): this is MinedBlock<T>;
-    isLondon(): this is (Block<T> & {
+    /**
+     *  Get the transaction at %%indexe%% within this block.
+     */
+    getTransaction(indexOrHash: number | string): Promise<TransactionResponse>;
+    /**
+     *  Has this block been mined.
+     *
+     *  If true, the block has been typed-gaurded that all mined
+     *  properties are non-null.
+     */
+    isMined(): this is MinedBlock;
+    /**
+     *
+     */
+    isLondon(): this is (Block & {
         baseFeePerGas: bigint;
     });
     orphanedEvent(): OrphanFilter;
-}
-export interface LogParams {
-    transactionHash: string;
-    blockHash: string;
-    blockNumber: number;
-    removed: boolean;
-    address: string;
-    data: string;
-    topics: ReadonlyArray<string>;
-    index: number;
-    transactionIndex: number;
 }
 export declare class Log implements LogParams {
     readonly provider: Provider;
@@ -119,28 +217,10 @@ export declare class Log implements LogParams {
     readonly transactionIndex: number;
     constructor(log: LogParams, provider: Provider);
     toJSON(): any;
-    getBlock(): Promise<Block<string>>;
+    getBlock(): Promise<Block>;
     getTransaction(): Promise<TransactionResponse>;
     getTransactionReceipt(): Promise<TransactionReceipt>;
     removedEvent(): OrphanFilter;
-}
-export interface TransactionReceiptParams {
-    to: null | string;
-    from: string;
-    contractAddress: null | string;
-    hash: string;
-    index: number;
-    blockHash: string;
-    blockNumber: number;
-    logsBloom: string;
-    logs: ReadonlyArray<LogParams>;
-    gasUsed: bigint;
-    cumulativeGasUsed: bigint;
-    gasPrice?: null | bigint;
-    effectiveGasPrice?: null | bigint;
-    type: number;
-    status: null | number;
-    root: null | string;
 }
 export declare class TransactionReceipt implements TransactionReceiptParams, Iterable<Log> {
     #private;
@@ -165,31 +245,12 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
     get length(): number;
     [Symbol.iterator](): Iterator<Log>;
     get fee(): bigint;
-    getBlock(): Promise<Block<string>>;
+    getBlock(): Promise<Block>;
     getTransaction(): Promise<TransactionResponse>;
     getResult(): Promise<string>;
     confirmations(): Promise<number>;
     removedEvent(): OrphanFilter;
     reorderedEvent(other?: TransactionResponse): OrphanFilter;
-}
-export interface TransactionResponseParams {
-    blockNumber: null | number;
-    blockHash: null | string;
-    hash: string;
-    index: number;
-    type: number;
-    to: null | string;
-    from: string;
-    nonce: number;
-    gasLimit: bigint;
-    gasPrice: bigint;
-    maxPriorityFeePerGas: null | bigint;
-    maxFeePerGas: null | bigint;
-    data: string;
-    value: bigint;
-    chainId: bigint;
-    signature: Signature;
-    accessList: null | AccessList;
 }
 export interface MinedTransactionResponse extends TransactionResponse {
     blockNumber: number;
@@ -226,7 +287,7 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
     readonly accessList: null | AccessList;
     constructor(tx: TransactionResponseParams, provider: Provider);
     toJSON(): any;
-    getBlock(): Promise<null | Block<string>>;
+    getBlock(): Promise<null | Block>;
     getTransaction(): Promise<null | TransactionResponse>;
     wait(_confirms?: number, _timeout?: number): Promise<null | TransactionReceipt>;
     isMined(): this is MinedTransactionResponse;
@@ -311,7 +372,34 @@ export interface FilterByBlockHash extends EventFilter {
     blockHash?: string;
 }
 export declare type ProviderEvent = string | Array<string | Array<string>> | EventFilter | OrphanFilter;
+/**
+ *  A **Provider** is the primary method to interact with the read-only
+ *  content on Ethereum.
+ *
+ *  It allows access to details about accounts, blocks and transactions
+ *  and the ability to query event logs and simulate contract execution.
+ *
+ *  Account data includes the [balance](getBalance),
+ *  [transaction count](getTransactionCount), [code](getCode) and
+ *  [state trie storage](getStorage).
+ *
+ *  Simulating execution can be used to [call](call),
+ *  [estimate gas](estimateGas) and
+ *  [get transaction results](getTransactionResult).
+ *
+ *  The [[broadcastTransaction]] is the only method which allows updating
+ *  the blockchain, but it is usually accessed by a [[Signer]], since a
+ *  private key must be used to sign the transaction before it can be
+ *  broadcast.
+ */
 export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent>, NameResolver {
+    /**
+     *  The provider iteself.
+     *
+     *  This is part of the necessary API for executing a contract, as
+     *  it provides a common property on any [[ContractRunner]] that
+     *  can be used to access the read-only portion of the runner.
+     */
     provider: this;
     /**
      *  Get the current block number.
@@ -326,44 +414,34 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     getFeeData(): Promise<FeeData>;
     /**
-     *  Get the account balance (in wei) of %%address%%. If %%blockTag%% is specified and
-     *  the node supports archive access, the balance is as of that [[BlockTag]].
-     *
-     *  @param {Address | Addressable} address - The account to lookup the balance of
-     *  @param blockTag - The block tag to use for historic archive access. [default: ``"latest"``]
+     *  Get the account balance (in wei) of %%address%%. If %%blockTag%%
+     *  is specified and the node supports archive access for that
+     *  %%blockTag%%, the balance is as of that [[BlockTag]].
      *
      *  @note On nodes without archive access enabled, the %%blockTag%% may be
      *        **silently ignored** by the node, which may cause issues if relied on.
      */
     getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint>;
     /**
-     *  Get the number of transactions ever sent for %%address%%, which is used as
-     *  the ``nonce`` when sending a transaction. If %%blockTag%% is specified and
-     *  the node supports archive access, the transaction count is as of that [[BlockTag]].
-     *
-     *  @param {Address | Addressable} address - The account to lookup the transaction count of
-     *  @param blockTag - The block tag to use for historic archive access. [default: ``"latest"``]
+     *  Get the number of transactions ever sent for %%address%%, which
+     *  is used as the ``nonce`` when sending a transaction. If
+     *  %%blockTag%% is specified and the node supports archive access
+     *  for that %%blockTag%%, the transaction count is as of that
+     *  [[BlockTag]].
      *
      *  @note On nodes without archive access enabled, the %%blockTag%% may be
      *        **silently ignored** by the node, which may cause issues if relied on.
      */
     getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number>;
     /**
-     *  Get the bytecode for //address//.
-     *
-     *  @param {Address | Addressable} address - The account to lookup the bytecode of
-     *  @param blockTag - The block tag to use for historic archive access. [default: ``"latest"``]
+     *  Get the bytecode for %%address%%.
      *
      *  @note On nodes without archive access enabled, the %%blockTag%% may be
      *        **silently ignored** by the node, which may cause issues if relied on.
      */
     getCode(address: AddressLike, blockTag?: BlockTag): Promise<string>;
     /**
-     *  Get the storage slot value for a given //address// and slot //position//.
-     *
-     *  @param {Address | Addressable} address - The account to lookup the storage of
-     *  @param position - The storage slot to fetch the value of
-     *  @param blockTag - The block tag to use for historic archive access. [default: ``"latest"``]
+     *  Get the storage slot value for %%address%% at slot %%position%%.
      *
      *  @note On nodes without archive access enabled, the %%blockTag%% may be
      *        **silently ignored** by the node, which may cause issues if relied on.
@@ -371,32 +449,78 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     getStorage(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>;
     /**
      *  Estimates the amount of gas required to executre %%tx%%.
-     *
-     *  @param tx - The transaction to estimate the gas requirement for
      */
     estimateGas(tx: TransactionRequest): Promise<bigint>;
     /**
-     *  Uses call to simulate execution of %%tx%%.
-     *
-     *  @param tx - The transaction to simulate
+     *  Simulate the execution of %%tx%%. If the call reverts, it will
+     *  throw a [[CallExceptionError]] which includes the revert data.
      */
     call(tx: TransactionRequest): Promise<string>;
     /**
-     *  Broadcasts the %%signedTx%% to the network, adding it to the memory pool
-     *  of any node for which the transaction meets the rebroadcast requirements.
-     *
-     *  @param signedTx - The transaction to broadcast
+     *  Broadcasts the %%signedTx%% to the network, adding it to the
+     *  memory pool of any node for which the transaction meets the
+     *  rebroadcast requirements.
      */
     broadcastTransaction(signedTx: string): Promise<TransactionResponse>;
-    getBlock(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<string>>;
-    getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<TransactionResponse>>;
+    /**
+     *  Resolves to the block for %%blockHashOrBlockTag%%.
+     *
+     *  If %%prefetchTxs%%, and the backend supports including transactions
+     *  with block requests, all transactions will be included and the
+     *  [[Block]] object will not need to make remote calls for getting
+     *  transactions.
+     */
+    getBlock(blockHashOrBlockTag: BlockTag | string, prefetchTxs?: boolean): Promise<null | Block>;
+    /**
+     *  Resolves to the transaction for %%hash%%.
+     *
+     *  If the transaction is unknown or on pruning nodes which
+     *  discard old transactions this resolves to ``null``.
+     */
     getTransaction(hash: string): Promise<null | TransactionResponse>;
+    /**
+     *  Resolves to the transaction receipt for %%hash%%, if mined.
+     *
+     *  If the transaction has not been mined, is unknown or on
+     *  pruning nodes which discard old transactions this resolves to
+     *  ``null``.
+     */
     getTransactionReceipt(hash: string): Promise<null | TransactionReceipt>;
+    /**
+     *  Resolves to the result returned by the executions of %%hash%%.
+     *
+     *  This is only supported on nodes with archive access and with
+     *  the necessary debug APIs enabled.
+     */
     getTransactionResult(hash: string): Promise<null | string>;
+    /**
+     *  Resolves to the list of Logs that match %%filter%%
+     */
     getLogs(filter: Filter | FilterByBlockHash): Promise<Array<Log>>;
-    resolveName(name: string): Promise<null | string>;
+    /**
+     *  Resolves to the address configured for the %%ensName%% or
+     *  ``null`` if unconfigured.
+     */
+    resolveName(ensName: string): Promise<null | string>;
+    /**
+     *  Resolves to the ENS name associated for the %%address%% or
+     *  ``null`` if the //primary name// is not configured.
+     *
+     *  Users must perform additional steps to configure a //primary name//,
+     *  which is not currently common.
+     */
     lookupAddress(address: string): Promise<null | string>;
+    /**
+     *  Waits until the transaction %%hash%% is mined and has %%confirms%%
+     *  confirmations.
+     */
     waitForTransaction(hash: string, confirms?: number, timeout?: number): Promise<null | TransactionReceipt>;
-    waitForBlock(blockTag?: BlockTag): Promise<Block<string>>;
+    /**
+     *  Resolves to the block at %%blockTag%% once it has been mined.
+     *
+     *  This can be useful for waiting some number of blocks by using
+     *  the ``currentBlockNumber + N``.
+     */
+    waitForBlock(blockTag?: BlockTag): Promise<Block>;
 }
 //# sourceMappingURL=provider.d.ts.map

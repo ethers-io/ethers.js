@@ -19,10 +19,42 @@ function toJson(value) {
     return value.toString();
 }
 // @TODO? <T extends FeeData = { }> implements Required<T>
+/**
+ *  A **FeeData** wraps all the fee-related values associated with
+ *  the network.
+ */
 class FeeData {
+    /**
+     *  The gas price for legacy networks.
+     */
     gasPrice;
+    /**
+     *  The maximum fee to pay per gas.
+     *
+     *  The base fee per gas is defined by the network and based on
+     *  congestion, increasing the cost during times of heavy load
+     *  and lowering when less busy.
+     *
+     *  The actual fee per gas will be the base fee for the block
+     *  and the priority fee, up to the max fee per gas.
+     *
+     *  This will be ``null`` on legacy networks (i.e. [pre-EIP-1559](link-eip-1559))
+     */
     maxFeePerGas;
+    /**
+     *  The additional amout to pay per gas to encourage a validator
+     *  to include the transaction.
+     *
+     *  The purpose of this is to compensate the validator for the
+     *  adjusted risk for including a given transaction.
+     *
+     *  This will be ``null`` on legacy networks (i.e. [pre-EIP-1559](link-eip-1559))
+     */
     maxPriorityFeePerGas;
+    /**
+     *  Creates a new FeeData for %%gasPrice%%, %%maxFeePerGas%% and
+     *  %%maxPriorityFeePerGas%%.
+     */
     constructor(gasPrice, maxFeePerGas, maxPriorityFeePerGas) {
         (0, index_js_1.defineProperties)(this, {
             gasPrice: getValue(gasPrice),
@@ -30,6 +62,9 @@ class FeeData {
             maxPriorityFeePerGas: getValue(maxPriorityFeePerGas)
         });
     }
+    /**
+     *  Returns a JSON-friendly value.
+     */
     toJSON() {
         const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = this;
         return {
@@ -83,29 +118,90 @@ function copyRequest(req) {
     return result;
 }
 exports.copyRequest = copyRequest;
-;
+/**
+ *  A **Block** represents the data associated with a full block on
+ *  Ethereum.
+ */
 class Block {
+    /**
+     *  The provider connected to the block used to fetch additional details
+     *  if necessary.
+     */
     provider;
+    /**
+     *  The block number, sometimes called the block height. This is a
+     *  sequential number that is one higher than the parent block.
+     */
     number;
+    /**
+     *  The block hash.
+     */
     hash;
+    /**
+     *  The timestamp for this block, which is the number of seconds since
+     *  epoch that this block was included.
+     */
     timestamp;
+    /**
+     *  The block hash of the parent block.
+     */
     parentHash;
+    /**
+     *  The nonce.
+     *
+     *  On legacy networks, this is the random number inserted which
+     *  permitted the difficulty target to be reached.
+     */
     nonce;
+    /**
+     *  The difficulty target.
+     *
+     *  On legacy networks, this is the proof-of-work target required
+     *  for a block to meet the protocol rules to be included.
+     *
+     *  On modern networks, this is a random number arrived at using
+     *  randao.  @TODO: Find links?
+     */
     difficulty;
+    /**
+     *  The total gas limit for this block.
+     */
     gasLimit;
+    /**
+     *  The total gas used in this block.
+     */
     gasUsed;
+    /**
+     *  The miner coinbase address, wihch receives any subsidies for
+     *  including this block.
+     */
     miner;
+    /**
+     *  Any extra data the validator wished to include.
+     */
     extraData;
+    /**
+     *  The base fee per gas that all transactions in this block were
+     *  charged.
+     *
+     *  This adjusts after each block, depending on how congested the network
+     *  is.
+     */
     baseFeePerGas;
     #transactions;
+    /**
+     *  Create a new **Block** object.
+     *
+     *  This should generally not be necessary as the unless implementing a
+     *  low-level library.
+     */
     constructor(block, provider) {
-        this.#transactions = Object.freeze(block.transactions.map((tx) => {
-            if (typeof (tx) !== "string" && tx.provider !== provider) {
-                return (new TransactionResponse(tx, provider));
+        this.#transactions = block.transactions.map((tx) => {
+            if (typeof (tx) !== "string") {
+                return new TransactionResponse(tx, provider);
             }
             return tx;
-        }));
-        ;
+        });
         (0, index_js_1.defineProperties)(this, {
             provider,
             hash: getValue(block.hash),
@@ -121,10 +217,20 @@ class Block {
             baseFeePerGas: getValue(block.baseFeePerGas)
         });
     }
-    get transactions() { return this.#transactions; }
-    //connect(provider: Provider): Block<T> {
-    //    return new Block(this, provider);
-    //}
+    /**
+     *  Returns the list of transaction hashes.
+     */
+    get transactions() {
+        return this.#transactions.map((tx) => {
+            if (typeof (tx) === "string") {
+                return tx;
+            }
+            return tx.hash;
+        });
+    }
+    /**
+     *  Returns a JSON-friendly value.
+     */
     toJSON() {
         const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, timestamp, transactions } = this;
         return {
@@ -140,26 +246,59 @@ class Block {
     }
     [Symbol.iterator]() {
         let index = 0;
+        const txs = this.transactions;
         return {
             next: () => {
                 if (index < this.length) {
                     return {
-                        value: this.transactions[index++], done: false
+                        value: txs[index++], done: false
                     };
                 }
                 return { value: undefined, done: true };
             }
         };
     }
-    get length() { return this.transactions.length; }
+    /**
+     *  The number of transactions in this block.
+     */
+    get length() { return this.#transactions.length; }
+    /**
+     *  The [date](link-js-data) this block was included at.
+     */
     get date() {
         if (this.timestamp == null) {
             return null;
         }
         return new Date(this.timestamp * 1000);
     }
-    async getTransaction(index) {
-        const tx = this.transactions[index];
+    /**
+     *  Get the transaction at %%indexe%% within this block.
+     */
+    async getTransaction(indexOrHash) {
+        // Find the internal value by its index or hash
+        let tx = undefined;
+        if (typeof (indexOrHash) === "number") {
+            tx = this.#transactions[indexOrHash];
+        }
+        else {
+            const hash = indexOrHash.toLowerCase();
+            for (const v of this.#transactions) {
+                if (typeof (v) === "string") {
+                    if (v !== hash) {
+                        continue;
+                    }
+                    tx = v;
+                    break;
+                }
+                else {
+                    if (v.hash === hash) {
+                        continue;
+                    }
+                    tx = v;
+                    break;
+                }
+            }
+        }
         if (tx == null) {
             throw new Error("no such tx");
         }
@@ -170,7 +309,16 @@ class Block {
             return tx;
         }
     }
+    /**
+     *  Has this block been mined.
+     *
+     *  If true, the block has been typed-gaurded that all mined
+     *  properties are non-null.
+     */
     isMined() { return !!this.hash; }
+    /**
+     *
+     */
     isLondon() {
         return !!this.baseFeePerGas;
     }
@@ -182,6 +330,25 @@ class Block {
     }
 }
 exports.Block = Block;
+//////////////////////
+// Log
+/*
+export interface LogParams {
+    transactionHash: string;
+    blockHash: string;
+    blockNumber: number;
+
+    removed: boolean;
+
+    address: string;
+    data: string;
+
+    topics: ReadonlyArray<string>;
+
+    index: number;
+    transactionIndex: number;
+}
+*/
 class Log {
     provider;
     transactionHash;
@@ -220,19 +387,53 @@ class Log {
         };
     }
     async getBlock() {
-        return (await this.provider.getBlock(this.blockHash));
+        const block = await this.provider.getBlock(this.blockHash);
+        (0, index_js_1.assert)(!!block, "failed to find transaction", "UNKNOWN_ERROR", {});
+        return block;
     }
     async getTransaction() {
-        return (await this.provider.getTransaction(this.transactionHash));
+        const tx = await this.provider.getTransaction(this.transactionHash);
+        (0, index_js_1.assert)(!!tx, "failed to find transaction", "UNKNOWN_ERROR", {});
+        return tx;
     }
     async getTransactionReceipt() {
-        return (await this.provider.getTransactionReceipt(this.transactionHash));
+        const receipt = await this.provider.getTransactionReceipt(this.transactionHash);
+        (0, index_js_1.assert)(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", {});
+        return receipt;
     }
     removedEvent() {
         return createRemovedLogFilter(this);
     }
 }
 exports.Log = Log;
+//////////////////////
+// Transaction Receipt
+/*
+export interface TransactionReceiptParams {
+    to: null | string;
+    from: string;
+    contractAddress: null | string;
+
+    hash: string;
+    index: number;
+
+    blockHash: string;
+    blockNumber: number;
+
+    logsBloom: string;
+    logs: ReadonlyArray<LogParams>;
+
+    gasUsed: bigint;
+    cumulativeGasUsed: bigint;
+    gasPrice?: null | bigint;
+    effectiveGasPrice?: null | bigint;
+
+    type: number;
+    //byzantium: boolean;
+    status: null | number;
+    root: null | string;
+}
+*/
 /*
 export interface LegacyTransactionReceipt {
     byzantium: false;
@@ -350,7 +551,6 @@ class TransactionReceipt {
     }
 }
 exports.TransactionReceipt = TransactionReceipt;
-;
 class TransactionResponse {
     provider;
     blockNumber;
@@ -470,16 +670,20 @@ class TransactionResponse {
                 if (stopScanning) {
                     return null;
                 }
-                const block = await this.provider.getBlockWithTransactions(nextScan);
+                const block = await this.provider.getBlock(nextScan, true);
                 // This should not happen; but we'll try again shortly
                 if (block == null) {
                     return;
                 }
-                for (const tx of block.transactions) {
-                    // We were mined; no replacement
-                    if (tx.hash === this.hash) {
+                // We were mined; no replacement
+                for (const hash of block) {
+                    if (hash === this.hash) {
                         return;
                     }
+                }
+                // Search for the transaction that replaced us
+                for (let i = 0; i < block.length; i++) {
+                    const tx = await block.getTransaction(i);
                     if (tx.from === this.from && tx.nonce === this.nonce) {
                         // Get the receipt
                         if (stopScanning) {

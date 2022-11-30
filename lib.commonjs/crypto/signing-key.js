@@ -36,12 +36,7 @@ secp256k1.utils.hmacSha256Sync = function (key, ...messages) {
 class SigningKey {
     #privateKey;
     constructor(privateKey) {
-        /* @TODO
-        logger.assertArgument(() => {
-            if (dataLength(privateKey) !== 32) { throw new Error("bad length"); }
-            return toBigInt(privateKey) < N;
-        }, "invalid private key", "privateKey", "[REDACTED]");
-        */
+        (0, index_js_1.assertArgument)((0, index_js_1.dataLength)(privateKey) === 32, "invalid private key", "privateKey", "[REDACTED]");
         this.#privateKey = (0, index_js_1.hexlify)(privateKey);
     }
     get privateKey() { return this.#privateKey; }
@@ -58,7 +53,7 @@ class SigningKey {
             r: (0, index_js_1.toHex)("0x" + sig.r.toString(16), 32),
             s: (0, index_js_1.toHex)("0x" + sig.s.toString(16), 32),
             v: (recid ? 0x1c : 0x1b)
-        }).freeze();
+        });
     }
     computeShardSecret(other) {
         const pubKey = SigningKey.computePublicKey(other);

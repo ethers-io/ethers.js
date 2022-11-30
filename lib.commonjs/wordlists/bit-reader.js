@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodeBits = void 0;
 const Base64 = ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+/**
+ *  @_ignore
+ */
 function decodeBits(width, data) {
     const maxValue = (1 << width) - 1;
     const result = [];

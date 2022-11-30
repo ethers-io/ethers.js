@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InfuraProvider = exports.InfuraWebSocketProvider = void 0;
+/**
+ *  About INFURA
+ *
+ *  @_subsection: api/providers/thirdparty:INFURA  [infura]
+ */
 const index_js_1 = require("../utils/index.js");
 const community_js_1 = require("./community.js");
 const network_js_1 = require("./network.js");
@@ -30,11 +35,14 @@ function getHost(name) {
     }
     (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }
+/**
+ *  INFURA...
+ */
 class InfuraWebSocketProvider extends provider_websocket_js_1.WebSocketProvider {
     projectId;
     projectSecret;
-    constructor(network, apiKey) {
-        const provider = new InfuraProvider(network, apiKey);
+    constructor(network, projectId) {
+        const provider = new InfuraProvider(network, projectId);
         const req = provider._getConnection();
         (0, index_js_1.assert)(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
@@ -49,10 +57,16 @@ class InfuraWebSocketProvider extends provider_websocket_js_1.WebSocketProvider 
     }
 }
 exports.InfuraWebSocketProvider = InfuraWebSocketProvider;
+/**
+ *  Aboud Cloudflare...
+ */
 class InfuraProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     projectId;
     projectSecret;
-    constructor(_network = "mainnet", projectId, projectSecret) {
+    constructor(_network, projectId, projectSecret) {
+        if (_network == null) {
+            _network = "mainnet";
+        }
         const network = network_js_1.Network.from(_network);
         if (projectId == null) {
             projectId = defaultProjectId;
@@ -74,8 +88,8 @@ class InfuraProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     isCommunityResource() {
         return (this.projectId === defaultProjectId);
     }
-    static getWebSocketProvider(network, apiKey) {
-        return new InfuraWebSocketProvider(network, apiKey);
+    static getWebSocketProvider(network, projectId) {
+        return new InfuraWebSocketProvider(network, projectId);
     }
     static getRequest(network, projectId, projectSecret) {
         if (projectId == null) {

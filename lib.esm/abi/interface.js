@@ -1,7 +1,12 @@
+/**
+ *  About Interface
+ *
+ *  @_subsection api/abi:Interfaces  [interfaces]
+ */
 import { keccak256 } from "../crypto/index.js";
 import { id } from "../hash/index.js";
 import { concat, dataSlice, getBigInt, getBytes, getBytesCopy, hexlify, zeroPadValue, isHexString, defineProperties, assertArgument, toHex, assert } from "../utils/index.js";
-import { defaultAbiCoder, getBuiltinCallException } from "./abi-coder.js";
+import { AbiCoder } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
 import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
 import { Typed } from "./typed.js";
@@ -91,6 +96,16 @@ const BuiltinErrors = {
         }
     }
 };
+/**
+ *  An Interface abstracts many of the low-level details for
+ *  encoding and decoding the data on the blockchain.
+ *
+ *  An ABI provides information on how to encode data to send to
+ *  a Contract, how to decode the results and events and how to
+ *  interpret revert errors.
+ *
+ *  The ABI can be specified by [any supported format](InterfaceAbi).
+ */
 export class Interface {
     /**
      *  All the Contract ABI members (i.e. methods, events, errors, etc).
@@ -105,6 +120,9 @@ export class Interface {
     #functions;
     //    #structs: Map<string, StructFragment>;
     #abiCoder;
+    /**
+     *  Create a new Interface for the %%fragments%%.
+     */
     constructor(fragments) {
         let abi = [];
         if (typeof (fragments) === "string") {
@@ -195,7 +213,7 @@ export class Interface {
      *  data.
      */
     getAbiCoder() {
-        return defaultAbiCoder;
+        return AbiCoder.defaultAbiCoder();
     }
     // Find a function definition by any means necessary (unless it is ambiguous)
     #getFunction(key, values, forceUnique) {
@@ -564,7 +582,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
     }
     makeError(_data, tx) {
         const data = getBytes(_data, "data");
-        const error = getBuiltinCallException("call", tx, data);
+        const error = AbiCoder.getBuiltinCallException("call", tx, data);
         // Not a built-in error; try finding a custom error
         if (!error.message.match(/could not decode/)) {
             const selector = hexlify(data.slice(0, 4));

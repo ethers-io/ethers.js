@@ -1,4 +1,10 @@
 "use strict";
+/**
+ *  Addresses in Ethereum can be of several formats. These functions
+ *  help convert between them, checksum them, etc.
+ *
+ *  @_section: api/address:Addresses  [addresses]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveAddress = exports.isAddress = exports.isAddressable = exports.getCreate2Address = exports.getCreateAddress = exports.getIcapAddress = exports.getAddress = void 0;
 var address_js_1 = require("./address.js");

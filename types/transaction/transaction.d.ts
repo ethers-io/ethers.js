@@ -1,5 +1,5 @@
 import { Signature } from "../crypto/index.js";
-import type { BigNumberish, BytesLike, Freezable, Frozen } from "../utils/index.js";
+import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { SignatureLike } from "../crypto/index.js";
 import type { AccessList, AccessListish } from "./index.js";
 export interface TransactionLike<A = string> {
@@ -24,7 +24,7 @@ export interface SignedTransaction extends Transaction {
     from: string;
     signature: Signature;
 }
-export declare class Transaction implements Freezable<Transaction>, TransactionLike<string> {
+export declare class Transaction implements TransactionLike<string> {
     #private;
     get type(): null | number;
     get typeName(): null | string;
@@ -59,6 +59,11 @@ export declare class Transaction implements Freezable<Transaction>, TransactionL
     isSigned(): this is SignedTransaction;
     get serialized(): string;
     get unsignedSerialized(): string;
+    /**
+     *  Return the most "likely" type; currently the highest
+     *  supported transaction type
+     */
+    inferType(): number;
     inferTypes(): Array<number>;
     isLegacy(): this is (Transaction & {
         type: 0;
@@ -76,8 +81,6 @@ export declare class Transaction implements Freezable<Transaction>, TransactionL
         maxPriorityFeePerGas: bigint;
     });
     clone(): Transaction;
-    freeze(): Frozen<Transaction>;
-    isFrozen(): boolean;
     toJSON(): any;
     static from(tx: string | TransactionLike<string>): Transaction;
 }

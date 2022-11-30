@@ -45,14 +45,14 @@ describe("Tests unit conversion", function () {
     }
 });
 describe("Tests bad unit conversion", function () {
-    it("fails to convert non-string value", function () {
+    it("correctly fails to convert non-string value", function () {
         assert.throws(() => {
             parseUnits(3, "ether");
         }, (error) => {
             return error.message.startsWith("value must be a string");
         });
     });
-    it("fails to convert unknown unit", function () {
+    it("correctly fails to convert unknown unit", function () {
         assert.throws(() => {
             parseUnits("3", "foobar");
         }, (error) => {

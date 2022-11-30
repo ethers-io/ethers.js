@@ -2,6 +2,9 @@ import { defineProperties, isError, assert, assertArgument, assertArgumentCount 
 import { Typed } from "../typed.js";
 import { Coder, Result, WordSize, Writer } from "./abstract-coder.js";
 import { AnonymousCoder } from "./anonymous.js";
+/**
+ *  @_ignore
+ */
 export function pack(writer, coders, values) {
     let arrayValues = [];
     if (Array.isArray(values)) {
@@ -47,6 +50,9 @@ export function pack(writer, coders, values) {
     length += writer.appendWriter(dynamicWriter);
     return length;
 }
+/**
+ *  @_ignore
+ */
 export function unpack(reader, coders) {
     let values = [];
     let keys = [];
@@ -94,6 +100,9 @@ export function unpack(reader, coders) {
     });
     return Result.fromItems(values, keys);
 }
+/**
+ *  @_ignore
+ */
 export class ArrayCoder extends Coder {
     coder;
     length;

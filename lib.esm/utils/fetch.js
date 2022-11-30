@@ -1,3 +1,8 @@
+/**
+ *  Explain fetching here...
+ *
+ *  @_section api/utils/fetching:Fetching Web Content  [fetching]
+ */
 import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";
 import { assert, assertArgument } from "./errors.js";
@@ -13,7 +18,7 @@ const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
 // If locked, new Gateways cannot be added
 let locked = false;
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
-async function gatewayData(url, signal) {
+async function dataGatewayFunc(url, signal) {
     try {
         const match = url.match(reData);
         if (!match) {
@@ -31,7 +36,7 @@ async function gatewayData(url, signal) {
  *  Returns a [[FetchGatewayFunc]] for fetching content from a standard
  *  IPFS gateway hosted at %%baseUrl%%.
  */
-export function getIpfsGatewayFunc(baseUrl) {
+function getIpfsGatewayFunc(baseUrl) {
     async function gatewayIpfs(url, signal) {
         try {
             const match = url.match(reIpfs);
@@ -47,10 +52,13 @@ export function getIpfsGatewayFunc(baseUrl) {
     return gatewayIpfs;
 }
 const Gateways = {
-    "data": gatewayData,
+    "data": dataGatewayFunc,
     "ipfs": getIpfsGatewayFunc("https:/\/gateway.ipfs.io/ipfs/")
 };
 const fetchSignals = new WeakMap();
+/**
+ *  @_ignore
+ */
 export class FetchCancelSignal {
     #listeners;
     #cancelled;
@@ -93,8 +101,10 @@ function checkSignal(signal) {
 /**
  *  Represents a request for a resource using a URI.
  *
- *  Requests can occur over http/https, data: URI or any
- *  URI scheme registered via the static [[register]] method.
+ *  By default, the supported schemes are ``HTTP``, ``HTTPS``, ``data:``,
+ *  and ``IPFS:``.
+ *
+ *  Additional schemes can be added globally using [[registerGateway]].
  */
 export class FetchRequest {
     #allowInsecure;
@@ -120,7 +130,7 @@ export class FetchRequest {
         this.#url = String(url);
     }
     /**
-     *  The fetch body, if any, to send as the request body.
+     *  The fetch body, if any, to send as the request body. //(default: null)//
      *
      *  When setting a body, the intrinsic ``Content-Type`` is automatically
      *  set and will be used if **not overridden** by setting a custom
@@ -192,7 +202,13 @@ export class FetchRequest {
         this.#method = String(method).toUpperCase();
     }
     /**
-     *  The headers that will be used when requesting the URI.
+     *  The headers that will be used when requesting the URI. All
+     *  keys are lower-case.
+     *
+     *  This object is a copy, so any chnages will **NOT** be reflected
+     *  in the ``FetchRequest``.
+     *
+     *  To set a header entry, use the ``setHeader`` method.
      */
     get headers() {
         const headers = Object.assign({}, this.#headers);
@@ -209,10 +225,10 @@ export class FetchRequest {
         if (this.body) {
             headers["content-length"] = String(this.body.length);
         }
-        return Object.freeze(headers);
+        return headers;
     }
     /**
-     *  Get the header for %%key%%.
+     *  Get the header for %%key%%, ignoring case.
      */
     getHeader(key) {
         return this.headers[key.toLowerCase()];
@@ -225,7 +241,7 @@ export class FetchRequest {
         this.#headers[String(key).toLowerCase()] = String(value);
     }
     /**
-     *  Clear all headers.
+     *  Clear all headers, resetting all intrinsic headers.
      */
     clearHeaders() {
         this.#headers = {};
@@ -248,6 +264,8 @@ export class FetchRequest {
     }
     /**
      *  The value that will be sent for the ``Authorization`` header.
+     *
+     *  To set the credentials, use the ``setCredentials`` method.
      */
     get credentials() {
         return this.#creds || null;
@@ -260,7 +278,8 @@ export class FetchRequest {
         this.#creds = `${username}:${password}`;
     }
     /**
-     *  Allow gzip-encoded responses.
+     *  Enable and request gzip-encoded responses. The response will
+     *  automatically be decompressed. //(default: true)//
      */
     get allowGzip() {
         return this.#gzip;
@@ -270,7 +289,7 @@ export class FetchRequest {
     }
     /**
      *  Allow ``Authentication`` credentials to be sent over insecure
-     *  channels.
+     *  channels. //(default: false)//
      */
     get allowInsecureAuthentication() {
         return !!this.#allowInsecure;
@@ -280,6 +299,7 @@ export class FetchRequest {
     }
     /**
      *  The timeout (in milliseconds) to wait for a complere response.
+     *  //(default: 5 minutes)//
      */
     get timeout() { return this.#timeout; }
     set timeout(timeout) {
@@ -324,10 +344,16 @@ export class FetchRequest {
     set retryFunc(retry) {
         this.#retry = retry;
     }
+    /**
+     *  Create a new FetchRequest instance with default values.
+     *
+     *  Once created, each property may be set before issuing a
+     *  ``.send()`` to make teh request.
+     */
     constructor(url) {
         this.#url = String(url);
         this.#allowInsecure = false;
-        this.#gzip = false;
+        this.#gzip = true;
         this.#headers = {};
         this.#method = "";
         this.#timeout = 300000;
@@ -336,6 +362,10 @@ export class FetchRequest {
             maxAttempts: MAX_ATTEMPTS
         };
     }
+    /**
+     *  Update the throttle parameters used to determine maximum
+     *  attempts and exponential-backoff properties.
+     */
     setThrottleParams(params) {
         if (params.slotInterval != null) {
             this.#throttle.slotInterval = params.slotInterval;
@@ -519,7 +549,12 @@ export class FetchRequest {
         return Gateways[scheme.toLowerCase()] || null;
     }
     /**
-     *  Set the FetchGatewayFunc for %%scheme%% to %%func%%.
+     *  Use the %%func%% when fetching URIs using %%scheme%%.
+     *
+     *  This method affects all requests globally.
+     *
+     *  If [[lockConfig]] has been called, no change is made and this
+     *  throws.
      */
     static registerGateway(scheme, func) {
         scheme = scheme.toLowerCase();
@@ -532,13 +567,40 @@ export class FetchRequest {
         Gateways[scheme] = func;
     }
     /**
-     *  Set a custom function for fetching HTTP and HTTPS requests.
+     *  Use %%getUrl%% when fetching URIs over HTTP and HTTPS requests.
+     *
+     *  This method affects all requests globally.
+     *
+     *  If [[lockConfig]] has been called, no change is made and this
+     *  throws.
      */
     static registerGetUrl(getUrl) {
         if (locked) {
             throw new Error("gateways locked");
         }
         getUrlFunc = getUrl;
+    }
+    /**
+     *  Creates a function that can "fetch" data URIs.
+     *
+     *  Note that this is automatically done internally to support
+     *  data URIs, so it is not necessary to register it.
+     *
+     *  This is not generally something that is needed, but may
+     *  be useful in a wrapper to perfom custom data URI functionality.
+     */
+    static createDataGateway() {
+        return dataGatewayFunc;
+    }
+    /**
+     *  Creates a function that will fetch IPFS (unvalidated) from
+     *  a custom gateway baseUrl.
+     *
+     *  The default IPFS gateway used internally is
+     *  ``"https:/\/gateway.ipfs.io/ipfs/"``.
+     */
+    static createIpfsGatewayFunc(baseUrl) {
+        return getIpfsGatewayFunc(baseUrl);
     }
 }
 ;
@@ -564,19 +626,20 @@ export class FetchResponse {
      */
     get statusMessage() { return this.#statusMessage; }
     /**
-     *  The response headers.
+     *  The response headers. All keys are lower-case.
      */
-    get headers() { return this.#headers; }
+    get headers() { return Object.assign({}, this.#headers); }
     /**
-     *  The response body.
+     *  The response body, or ``null`` if there was no body.
      */
     get body() {
         return (this.#body == null) ? null : new Uint8Array(this.#body);
     }
     /**
-     *  The response body as a UTF-8 encoded string.
+     *  The response body as a UTF-8 encoded string, or the empty
+     *  string (i.e. ``""``) if there was no body.
      *
-     * An error is thrown if the body is invalid UTF-8 data.
+     *  An error is thrown if the body is invalid UTF-8 data.
      */
     get bodyText() {
         try {
@@ -591,7 +654,8 @@ export class FetchResponse {
     /**
      *  The response body, decoded as JSON.
      *
-     *  An error is thrown if the body is invalid JSON-encoded data.
+     *  An error is thrown if the body is invalid JSON-encoded data
+     *  or if there was no body.
      */
     get bodyJson() {
         try {
@@ -622,10 +686,10 @@ export class FetchResponse {
     constructor(statusCode, statusMessage, headers, body, request) {
         this.#statusCode = statusCode;
         this.#statusMessage = statusMessage;
-        this.#headers = Object.freeze(Object.assign({}, Object.keys(headers).reduce((accum, k) => {
+        this.#headers = Object.keys(headers).reduce((accum, k) => {
             accum[k.toLowerCase()] = String(headers[k]);
             return accum;
-        }, {})));
+        }, {});
         this.#body = ((body == null) ? null : new Uint8Array(body));
         this.#request = (request || null);
         this.#error = { message: "" };
@@ -649,8 +713,9 @@ export class FetchResponse {
         return response;
     }
     /**
-     *  If called within the [[processFunc]], causes the request to
-     *  retry as if throttled for %%stall%% milliseconds.
+     *  If called within a [request.processFunc](FetchRequest-processFunc)
+     *  call, causes the request to retry as if throttled for %%stall%%
+     *  milliseconds.
      */
     throwThrottleError(message, stall) {
         if (stall == null) {
@@ -664,7 +729,7 @@ export class FetchResponse {
         throw error;
     }
     /**
-     *  Get the header value for %%key%%.
+     *  Get the header value for %%key%%, ignoring case.
      */
     getHeader(key) {
         return this.headers[key.toLowerCase()];
@@ -680,7 +745,7 @@ export class FetchResponse {
      */
     get request() { return this.#request; }
     /**
-     *  Returns true if this response was a success statuscode.
+     *  Returns true if this response was a success statusCode.
      */
     ok() {
         return (this.#error.message === "" && this.statusCode >= 200 && this.statusCode < 300);

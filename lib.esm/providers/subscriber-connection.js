@@ -1,4 +1,9 @@
 import { getNumber } from "../utils/index.js";
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class BlockConnectionSubscriber {
     #provider;
     #blockNumber;

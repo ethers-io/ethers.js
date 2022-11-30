@@ -1,3 +1,6 @@
+/**
+ *  @_ignore
+ */
 import { getAddress, getCreateAddress } from "../address/index.js";
 import { Signature } from "../crypto/index.js";
 import { accessListify } from "../transaction/index.js";
@@ -74,7 +77,7 @@ export function formatUint256(value) {
     }
     return zeroPadValue(value, 32);
 }
-export const formatLog = object({
+const _formatLog = object({
     address: getAddress,
     blockHash: formatHash,
     blockNumber: getNumber,
@@ -87,25 +90,33 @@ export const formatLog = object({
 }, {
     index: ["logIndex"]
 });
-function _formatBlock(txFunc) {
-    return object({
-        hash: allowNull(formatHash),
-        parentHash: formatHash,
-        number: getNumber,
-        timestamp: getNumber,
-        nonce: allowNull(formatData),
-        difficulty: getBigInt,
-        gasLimit: getBigInt,
-        gasUsed: getBigInt,
-        miner: allowNull(getAddress),
-        extraData: formatData,
-        transactions: arrayOf(txFunc),
-        baseFeePerGas: allowNull(getBigInt)
-    });
+export function formatLog(value) {
+    return _formatLog(value);
 }
-export const formatBlock = _formatBlock(formatHash);
-export const formatBlockWithTransactions = _formatBlock(formatTransactionResponse);
-export const formatReceiptLog = object({
+const _formatBlock = object({
+    hash: allowNull(formatHash),
+    parentHash: formatHash,
+    number: getNumber,
+    timestamp: getNumber,
+    nonce: allowNull(formatData),
+    difficulty: getBigInt,
+    gasLimit: getBigInt,
+    gasUsed: getBigInt,
+    miner: allowNull(getAddress),
+    extraData: formatData,
+    baseFeePerGas: allowNull(getBigInt)
+});
+export function formatBlock(value) {
+    const result = _formatBlock(value);
+    result.transactions = value.transactions.map((tx) => {
+        if (typeof (tx) === "string") {
+            return tx;
+        }
+        return formatTransactionResponse(tx);
+    });
+    return result;
+}
+const _formatReceiptLog = object({
     transactionIndex: getNumber,
     blockNumber: getNumber,
     transactionHash: formatHash,
@@ -117,7 +128,10 @@ export const formatReceiptLog = object({
 }, {
     index: ["logIndex"]
 });
-export const formatTransactionReceipt = object({
+export function formatReceiptLog(value) {
+    return _formatReceiptLog(value);
+}
+const _formatTransactionReceipt = object({
     to: allowNull(getAddress, null),
     from: allowNull(getAddress, null),
     contractAddress: allowNull(getAddress, null),
@@ -140,6 +154,9 @@ export const formatTransactionReceipt = object({
     hash: ["transactionHash"],
     index: ["transactionIndex"],
 });
+export function formatTransactionReceipt(value) {
+    return _formatTransactionReceipt(value);
+}
 export function formatTransactionResponse(value) {
     // Some clients (TestRPC) do strange things like return 0x0 for the
     // 0 address; correct this to be a real address

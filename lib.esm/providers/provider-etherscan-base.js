@@ -1,4 +1,4 @@
-import { getBuiltinCallException } from "../abi/index.js";
+import { AbiCoder } from "../abi/index.js";
 import { accessListify } from "../transaction/index.js";
 import { defineProperties, hexlify, toQuantity, FetchRequest, assert, assertArgument, toUtf8String } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
@@ -7,6 +7,11 @@ import { NetworkPlugin } from "./plugins-network.js";
 import { showThrottleMessage } from "./community.js";
 const THROTTLE = 2000;
 const EtherscanPluginId = "org.ethers.plugins.Etherscan";
+/**
+ *  Aboud Cloudflare...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 export class EtherscanPlugin extends NetworkPlugin {
     baseUrl;
     communityApiKey;
@@ -20,6 +25,11 @@ export class EtherscanPlugin extends NetworkPlugin {
     }
 }
 let nextId = 1;
+/**
+ *  Aboud Etherscan...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 export class BaseEtherscanProvider extends AbstractProvider {
     network;
     apiKey;
@@ -201,7 +211,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
     _checkError(req, error, transaction) {
         if (req.method === "call" || req.method === "estimateGas") {
             if (error.message.match(/execution reverted/i)) {
-                const e = getBuiltinCallException(req.method, req.transaction, error.data);
+                const e = AbiCoder.getBuiltinCallException(req.method, req.transaction, error.data);
                 e.info = { request: req, error };
                 throw e;
             }

@@ -405,7 +405,10 @@ class BaseContract {
     runner;
     filters;
     [internal];
-    constructor(target, abi, runner = null, _deployTx) {
+    constructor(target, abi, runner, _deployTx) {
+        if (runner == null) {
+            runner = null;
+        }
         const iface = index_js_1.Interface.from(abi);
         (0, index_js_4.defineProperties)(this, { target, runner, interface: iface });
         Object.defineProperty(this, internal, { value: {} });
@@ -546,7 +549,13 @@ class BaseContract {
         // Is this useful?
         throw new Error("@TODO");
     }
-    async queryFilter(event, fromBlock = 0, toBlock = "latest") {
+    async queryFilter(event, fromBlock, toBlock) {
+        if (fromBlock == null) {
+            fromBlock = 0;
+        }
+        if (toBlock == null) {
+            toBlock = "latest";
+        }
         const { addr, addrPromise } = getInternal(this);
         const address = (addr ? addr : (await addrPromise));
         const { fragment, topics } = await getSubInfo(this, event);
@@ -666,7 +675,10 @@ class BaseContract {
         return CustomContract;
     }
     ;
-    static from(target, abi, runner = null) {
+    static from(target, abi, runner) {
+        if (runner == null) {
+            runner = null;
+        }
         const contract = new this(target, abi, runner);
         return contract;
     }

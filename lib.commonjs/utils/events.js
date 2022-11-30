@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventPayload = void 0;
+/**
+ *  Explain events...
+ *
+ *  @_section api/utils/events:Events  [events]
+ */
 const properties_js_1 = require("./properties.js");
 class EventPayload {
     filter;

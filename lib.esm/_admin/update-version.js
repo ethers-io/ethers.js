@@ -14,7 +14,7 @@ async function getNpmPackage(name) {
     return cache[name] || null;
 }
 function writeVersion(version) {
-    const content = `export const version = "${version}";\n`;
+    const content = `export const version: string = "${version}";\n`;
     atomicWrite(resolve("src.ts/_version.ts"), content);
 }
 (async function () {

@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.formatTransactionResponse = exports.formatTransactionReceipt = exports.formatReceiptLog = exports.formatBlockWithTransactions = exports.formatBlock = exports.formatLog = exports.formatUint256 = exports.formatHash = exports.formatData = exports.formatBoolean = exports.object = exports.arrayOf = exports.allowNull = void 0;
+exports.formatTransactionResponse = exports.formatTransactionReceipt = exports.formatReceiptLog = exports.formatBlock = exports.formatLog = exports.formatUint256 = exports.formatHash = exports.formatData = exports.formatBoolean = exports.object = exports.arrayOf = exports.allowNull = void 0;
+/**
+ *  @_ignore
+ */
 const index_js_1 = require("../address/index.js");
 const index_js_2 = require("../crypto/index.js");
 const index_js_3 = require("../transaction/index.js");
@@ -84,7 +87,7 @@ function formatUint256(value) {
     return (0, index_js_4.zeroPadValue)(value, 32);
 }
 exports.formatUint256 = formatUint256;
-exports.formatLog = object({
+const _formatLog = object({
     address: index_js_1.getAddress,
     blockHash: formatHash,
     blockNumber: index_js_4.getNumber,
@@ -97,25 +100,35 @@ exports.formatLog = object({
 }, {
     index: ["logIndex"]
 });
-function _formatBlock(txFunc) {
-    return object({
-        hash: allowNull(formatHash),
-        parentHash: formatHash,
-        number: index_js_4.getNumber,
-        timestamp: index_js_4.getNumber,
-        nonce: allowNull(formatData),
-        difficulty: index_js_4.getBigInt,
-        gasLimit: index_js_4.getBigInt,
-        gasUsed: index_js_4.getBigInt,
-        miner: allowNull(index_js_1.getAddress),
-        extraData: formatData,
-        transactions: arrayOf(txFunc),
-        baseFeePerGas: allowNull(index_js_4.getBigInt)
-    });
+function formatLog(value) {
+    return _formatLog(value);
 }
-exports.formatBlock = _formatBlock(formatHash);
-exports.formatBlockWithTransactions = _formatBlock(formatTransactionResponse);
-exports.formatReceiptLog = object({
+exports.formatLog = formatLog;
+const _formatBlock = object({
+    hash: allowNull(formatHash),
+    parentHash: formatHash,
+    number: index_js_4.getNumber,
+    timestamp: index_js_4.getNumber,
+    nonce: allowNull(formatData),
+    difficulty: index_js_4.getBigInt,
+    gasLimit: index_js_4.getBigInt,
+    gasUsed: index_js_4.getBigInt,
+    miner: allowNull(index_js_1.getAddress),
+    extraData: formatData,
+    baseFeePerGas: allowNull(index_js_4.getBigInt)
+});
+function formatBlock(value) {
+    const result = _formatBlock(value);
+    result.transactions = value.transactions.map((tx) => {
+        if (typeof (tx) === "string") {
+            return tx;
+        }
+        return formatTransactionResponse(tx);
+    });
+    return result;
+}
+exports.formatBlock = formatBlock;
+const _formatReceiptLog = object({
     transactionIndex: index_js_4.getNumber,
     blockNumber: index_js_4.getNumber,
     transactionHash: formatHash,
@@ -127,7 +140,11 @@ exports.formatReceiptLog = object({
 }, {
     index: ["logIndex"]
 });
-exports.formatTransactionReceipt = object({
+function formatReceiptLog(value) {
+    return _formatReceiptLog(value);
+}
+exports.formatReceiptLog = formatReceiptLog;
+const _formatTransactionReceipt = object({
     to: allowNull(index_js_1.getAddress, null),
     from: allowNull(index_js_1.getAddress, null),
     contractAddress: allowNull(index_js_1.getAddress, null),
@@ -138,7 +155,7 @@ exports.formatTransactionReceipt = object({
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
     hash: formatHash,
-    logs: arrayOf(exports.formatReceiptLog),
+    logs: arrayOf(formatReceiptLog),
     blockNumber: index_js_4.getNumber,
     //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: index_js_4.getBigInt,
@@ -150,6 +167,10 @@ exports.formatTransactionReceipt = object({
     hash: ["transactionHash"],
     index: ["transactionIndex"],
 });
+function formatTransactionReceipt(value) {
+    return _formatTransactionReceipt(value);
+}
+exports.formatTransactionReceipt = formatTransactionReceipt;
 function formatTransactionResponse(value) {
     // Some clients (TestRPC) do strange things like return 0x0 for the
     // 0 address; correct this to be a real address

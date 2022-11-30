@@ -56,7 +56,6 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *        node to populate the nonce and fee data.
      *
      *  @param tx - The call to prepare
-     *  @returns The fully prepared {@link TransactionLike<string>}
      */
     populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>>;
     /**

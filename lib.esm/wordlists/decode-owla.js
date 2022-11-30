@@ -1,6 +1,9 @@
 import { assertArgument } from "../utils/index.js";
 import { decodeBits } from "./bit-reader.js";
 import { decodeOwl } from "./decode-owl.js";
+/**
+ *  @_ignore
+ */
 export function decodeOwlA(data, accents) {
     let words = decodeOwl(data).join(",");
     // Inject the accents

@@ -4,6 +4,9 @@ exports.FixedBytesCoder = void 0;
 const index_js_1 = require("../../utils/index.js");
 const typed_js_1 = require("../typed.js");
 const abstract_coder_js_1 = require("./abstract-coder.js");
+/**
+ *  @_ignore
+ */
 class FixedBytesCoder extends abstract_coder_js_1.Coder {
     size;
     constructor(size, localName) {

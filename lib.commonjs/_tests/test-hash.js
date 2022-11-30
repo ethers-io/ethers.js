@@ -155,7 +155,7 @@ describe("Test Solidity Hash functions", function () {
         { types: ["blorb"], values: [false] },
     ];
     for (const { types, values } of badTypes) {
-        it("fails on invalid type", function () {
+        it("correctly fails on invalid type", function () {
             assert_1.default.throws(function () {
                 const result = (0, index_js_1.solidityPacked)(types, values);
                 console.log(result);

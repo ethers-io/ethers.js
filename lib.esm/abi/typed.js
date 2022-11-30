@@ -1,3 +1,8 @@
+/**
+ *  About typed...
+ *
+ *  @_subsection: api/abi:Typed Values
+ */
 import { assertPrivate, defineProperties } from "../utils/index.js";
 const _gaurd = {};
 function n(value, width) {
@@ -19,7 +24,10 @@ export class Typed {
     value;
     #options;
     _typedSymbol;
-    constructor(gaurd, type, value, options = null) {
+    constructor(gaurd, type, value, options) {
+        if (options == null) {
+            options = null;
+        }
         assertPrivate(_gaurd, gaurd, "Typed");
         defineProperties(this, { _typedSymbol, type, value });
         this.#options = options;
@@ -194,9 +202,19 @@ export class Typed {
     static overrides(v) {
         return new Typed(_gaurd, "overrides", Object.assign({}, v));
     }
+    /**
+     *  Returns true only if %%value%% is a [[Typed]] instance.
+     */
     static isTyped(value) {
         return (value && value._typedSymbol === _typedSymbol);
     }
+    /**
+     *  If the value is a [[Typed]] instance, validates the underlying value
+     *  and returns it, otherwise returns value directly.
+     *
+     *  This is useful for functions that with to accept either a [[Typed]]
+     *  object or values.
+     */
     static dereference(value, type) {
         if (Typed.isTyped(value)) {
             if (value.type !== type) {

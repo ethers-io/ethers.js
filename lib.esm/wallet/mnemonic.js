@@ -1,6 +1,6 @@
 import { pbkdf2, sha256 } from "../crypto/index.js";
 import { defineProperties, getBytes, hexlify, assertNormalize, assertPrivate, assertArgument, toUtf8Bytes } from "../utils/index.js";
-import { langEn } from "../wordlists/lang-en.js";
+import { LangEn } from "../wordlists/lang-en.js";
 // Returns a byte with the MSB bits set
 function getUpperMask(bits) {
     return ((1 << bits) - 1) << (8 - bits) & 0xff;
@@ -9,10 +9,10 @@ function getUpperMask(bits) {
 function getLowerMask(bits) {
     return ((1 << bits) - 1) & 0xff;
 }
-function mnemonicToEntropy(mnemonic, wordlist = langEn) {
+function mnemonicToEntropy(mnemonic, wordlist) {
     assertNormalize("NFKD");
     if (wordlist == null) {
-        wordlist = langEn;
+        wordlist = LangEn.wordlist();
     }
     const words = wordlist.split(mnemonic);
     assertArgument((words.length % 3) === 0 && words.length >= 12 && words.length <= 24, "invalid mnemonic length", "mnemonic", "[ REDACTED ]");
@@ -35,10 +35,10 @@ function mnemonicToEntropy(mnemonic, wordlist = langEn) {
     assertArgument(checksum === (entropy[entropy.length - 1] & checksumMask), "invalid mnemonic checksum", "mnemonic", "[ REDACTED ]");
     return hexlify(entropy.slice(0, entropyBits / 8));
 }
-function entropyToMnemonic(entropy, wordlist = langEn) {
+function entropyToMnemonic(entropy, wordlist) {
     assertArgument((entropy.length % 4) === 0 && entropy.length >= 16 && entropy.length <= 32, "invalid entropy size", "entropy", "[ REDACTED ]");
     if (wordlist == null) {
-        wordlist = langEn;
+        wordlist = LangEn.wordlist();
     }
     const indices = [0];
     let remainingBits = 11;
@@ -72,12 +72,15 @@ export class Mnemonic {
     password;
     wordlist;
     entropy;
+    /**
+     *  @private
+     */
     constructor(guard, entropy, phrase, password, wordlist) {
         if (password == null) {
             password = "";
         }
         if (wordlist == null) {
-            wordlist = langEn;
+            wordlist = LangEn.wordlist();
         }
         assertPrivate(guard, _guard, "Mnemonic");
         defineProperties(this, { phrase, password, wordlist, entropy });

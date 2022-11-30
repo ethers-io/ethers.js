@@ -1,4 +1,9 @@
 "use strict";
+/**
+ *  About networks
+ *
+ *  @_subsection: api/providers:Networks  [networks]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Network = void 0;
 const index_js_1 = require("../transaction/index.js");
@@ -57,31 +62,33 @@ export class CcipPreflightPlugin extends NetworkPlugin {
 const Networks = new Map();
 // @TODO: Add a _ethersNetworkObj variable to better detect network ovjects
 class Network {
-    #props;
-    constructor(name, _chainId) {
-        const chainId = (0, index_js_2.getBigInt)(_chainId);
-        const plugins = new Map();
-        this.#props = { name, chainId, plugins };
+    #name;
+    #chainId;
+    #plugins;
+    constructor(name, chainId) {
+        this.#name = name;
+        this.#chainId = (0, index_js_2.getBigInt)(chainId);
+        this.#plugins = new Map();
     }
     toJSON() {
         return { name: this.name, chainId: this.chainId };
     }
-    get name() { return (0, index_js_2.getStore)(this.#props, "name"); }
-    set name(value) { (0, index_js_2.setStore)(this.#props, "name", value); }
-    get chainId() { return (0, index_js_2.getStore)(this.#props, "chainId"); }
-    set chainId(value) { (0, index_js_2.setStore)(this.#props, "chainId", (0, index_js_2.getBigInt)(value, "chainId")); }
+    get name() { return this.#name; }
+    set name(value) { this.#name = value; }
+    get chainId() { return this.#chainId; }
+    set chainId(value) { this.#chainId = (0, index_js_2.getBigInt)(value, "chainId"); }
     get plugins() {
-        return Array.from(this.#props.plugins.values());
+        return Array.from(this.#plugins.values());
     }
     attachPlugin(plugin) {
-        if (this.#props.plugins.get(plugin.name)) {
+        if (this.#plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${plugin.name} `);
         }
-        this.#props.plugins.set(plugin.name, plugin.clone());
+        this.#plugins.set(plugin.name, plugin.clone());
         return this;
     }
     getPlugin(name) {
-        return (this.#props.plugins.get(name)) || null;
+        return (this.#plugins.get(name)) || null;
     }
     // Gets a list of Plugins which match basename, ignoring any fragment
     getPlugins(basename) {
@@ -94,16 +101,6 @@ class Network {
         });
         return clone;
     }
-    /*
-        freeze(): Frozen<Network> {
-            Object.freeze(this.#props);
-            return this;
-        }
-    
-        isFrozen(): boolean {
-            return Object.isFrozen(this.#props);
-        }
-    */
     computeIntrinsicGas(tx) {
         const costs = this.getPlugin("org.ethers.gas-cost") || (new plugins_network_js_1.GasCostPlugin());
         let gas = costs.txBase;

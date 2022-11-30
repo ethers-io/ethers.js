@@ -1,5 +1,8 @@
 import { Typed } from "../typed.js";
 import { Coder } from "./abstract-coder.js";
+/**
+ *  @_ignore
+ */
 export class BooleanCoder extends Coder {
     constructor(localName) {
         super("bool", "bool", localName, false);

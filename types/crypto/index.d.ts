@@ -1,3 +1,8 @@
+/**
+ *  About Crypto?
+ *
+ *  @_section: api/crypto:Cryptographic Functions   [crypto]
+ */
 import { computeHmac } from "./hmac.js";
 import { keccak256 } from "./keccak.js";
 import { ripemd160 } from "./ripemd160.js";

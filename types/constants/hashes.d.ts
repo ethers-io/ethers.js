@@ -1,5 +1,5 @@
 /**
  *  A constant for the zero hash.
  */
-export declare const ZeroHash = "0x0000000000000000000000000000000000000000000000000000000000000000";
+export declare const ZeroHash: string;
 //# sourceMappingURL=hashes.d.ts.map

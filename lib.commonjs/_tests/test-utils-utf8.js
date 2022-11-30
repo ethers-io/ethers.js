@@ -89,7 +89,7 @@ describe("Tests UTF-8 bad strings", function () {
             });
         });
     }
-    it("fails to get UTF-8 bytes from incomplete surrogate", function () {
+    it("correctly fails to get UTF-8 bytes from incomplete surrogate", function () {
         assert_1.default.throws(() => {
             const text = String.fromCharCode(0xd800);
             ;
@@ -99,7 +99,7 @@ describe("Tests UTF-8 bad strings", function () {
             return (error.message.startsWith("invalid surrogate pair"));
         });
     });
-    it("fails to get UTF-8 bytes from invalid surrogate pair", function () {
+    it("correctly fails to get UTF-8 bytes from invalid surrogate pair", function () {
         assert_1.default.throws(() => {
             const text = String.fromCharCode(0xd800, 0xdbff);
             ;

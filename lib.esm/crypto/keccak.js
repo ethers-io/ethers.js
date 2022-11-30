@@ -5,6 +5,11 @@ const _keccak256 = function (data) {
     return keccak_256(data);
 };
 let __keccak256 = _keccak256;
+/**
+ *  Compute the cryptographic KECCAK256 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 export function keccak256(_data) {
     const data = getBytes(_data, "data");
     return hexlify(__keccak256(data));

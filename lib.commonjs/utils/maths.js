@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toQuantity = exports.toArray = exports.toHex = exports.toNumber = exports.getNumber = exports.toBigInt = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = void 0;
+/**
+ *  Some mathematic operations.
+ *
+ *  @_subsection: api/utils:Math Helpers  [maths]
+ */
 const data_js_1 = require("./data.js");
 const errors_js_1 = require("./errors.js");
 const BN_0 = BigInt(0);
@@ -8,11 +13,18 @@ const BN_1 = BigInt(1);
 // IEEE 754 support 53-bits of mantissa
 const maxValue = 0x1fffffffffffff;
 /**
- *  Convert %%value%% from a twos-compliment value of %%width%% bits.
+ *  Convert %%value%% from a twos-compliment representation of %%width%%
+ *  bits to its value.
+ *
+ *  If the highest bit is ``1``, the result will be negative.
  */
 function fromTwos(_value, _width) {
     const value = getBigInt(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
+    (0, errors_js_1.assertArgument)(value >= BN_0, "invalid twos complement value", "value", value);
+    (0, errors_js_1.assert)((value >> width) === BN_0, "overflow", "NUMERIC_FAULT", {
+        operation: "fromTwos", fault: "overflow", value: _value
+    });
     // Top bit set; treat as a negative value
     if (value >> (width - BN_1)) {
         const mask = (BN_1 << width) - BN_1;
@@ -22,14 +34,27 @@ function fromTwos(_value, _width) {
 }
 exports.fromTwos = fromTwos;
 /**
- *  Convert %%value%% to a twos-compliment value of %%width%% bits.
+ *  Convert %%value%% to a twos-compliment representation of
+ *  %%width%% bits.
+ *
+ *  The result will always be positive.
  */
 function toTwos(_value, _width) {
-    const value = getBigInt(_value, "value");
+    let value = getBigInt(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
+    const limit = (BN_1 << (width - BN_1));
     if (value < BN_0) {
+        value = -value;
+        (0, errors_js_1.assert)(value <= limit, "too low", "NUMERIC_FAULT", {
+            operation: "toTwos", fault: "overflow", value: _value
+        });
         const mask = (BN_1 << width) - BN_1;
-        return ((~(-value)) & mask) + BN_1;
+        return ((~value) & mask) + BN_1;
+    }
+    else {
+        (0, errors_js_1.assert)(value < limit, "too high", "NUMERIC_FAULT", {
+            operation: "toTwos", fault: "overflow", value: _value
+        });
     }
     return value;
 }
@@ -56,6 +81,9 @@ function getBigInt(value, name) {
             return BigInt(value);
         case "string":
             try {
+                if (value === "") {
+                    throw new Error("empty string");
+                }
                 if (value[0] === "-" && value[1] !== "-") {
                     return -BigInt(value.substring(1));
                 }
@@ -100,6 +128,9 @@ function getNumber(value, name) {
             return value;
         case "string":
             try {
+                if (value === "") {
+                    throw new Error("empty string");
+                }
                 return getNumber(BigInt(value), name);
             }
             catch (e) {
@@ -109,9 +140,9 @@ function getNumber(value, name) {
     (0, errors_js_1.assertArgument)(false, "invalid numeric value", name || "value", value);
 }
 exports.getNumber = getNumber;
-/*
- * Converts %%value%% to a number. If %%value%% is a Uint8Array, it
- * is treated as Big Endian data. Throws if the value is not safe.
+/**
+ *  Converts %%value%% to a number. If %%value%% is a Uint8Array, it
+ *  is treated as Big Endian data. Throws if the value is not safe.
  */
 function toNumber(value) {
     return getNumber(toBigInt(value));
@@ -123,9 +154,7 @@ exports.toNumber = toNumber;
  */
 function toHex(_value, _width) {
     const value = getBigInt(_value, "value");
-    if (value < 0) {
-        throw new Error("cannot convert negative value to hex");
-    }
+    (0, errors_js_1.assertArgument)(value >= 0, "cannot toHex negative value", "value", _value);
     let result = value.toString(16);
     if (_width == null) {
         // Ensure the value is of even length
@@ -135,9 +164,7 @@ function toHex(_value, _width) {
     }
     else {
         const width = getNumber(_width, "width");
-        if (width * 2 < result.length) {
-            throw new Error(`value ${value} exceeds width ${width}`);
-        }
+        (0, errors_js_1.assertArgument)(width * 2 >= result.length, `value exceeds width`, "[ value, width ]", [_value, _width]);
         // Pad the value to the required width
         while (result.length < (width * 2)) {
             result = "0" + result;
@@ -151,9 +178,7 @@ exports.toHex = toHex;
  */
 function toArray(_value) {
     const value = getBigInt(_value, "value");
-    if (value < 0) {
-        throw new Error("cannot convert negative value to hex");
-    }
+    (0, errors_js_1.assertArgument)(value >= 0, "cannot toArray negative value", "value", _value);
     if (value === BN_0) {
         return new Uint8Array([]);
     }

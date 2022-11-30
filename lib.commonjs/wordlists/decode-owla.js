@@ -4,6 +4,9 @@ exports.decodeOwlA = void 0;
 const index_js_1 = require("../utils/index.js");
 const bit_reader_js_1 = require("./bit-reader.js");
 const decode_owl_js_1 = require("./decode-owl.js");
+/**
+ *  @_ignore
+ */
 function decodeOwlA(data, accents) {
     let words = (0, decode_owl_js_1.decodeOwl)(data).join(",");
     // Inject the accents

@@ -4,6 +4,9 @@ exports.StringCoder = void 0;
 const utf8_js_1 = require("../../utils/utf8.js");
 const typed_js_1 = require("../typed.js");
 const bytes_js_1 = require("./bytes.js");
+/**
+ *  @_ignore
+ */
 class StringCoder extends bytes_js_1.DynamicBytesCoder {
     constructor(localName) {
         super("string", localName);

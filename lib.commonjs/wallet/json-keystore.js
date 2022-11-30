@@ -1,6 +1,16 @@
 "use strict";
+/**
+ *  The JSON Wallet formats allow a simple way to store the private
+ *  keys needed in Ethereum along with related information and allows
+ *  for extensible forms of encryption.
+ *
+ *  These utilities facilitate decrypting and encrypting the most common
+ *  JSON Wallet formats.
+ *
+ *  @_subsection: api/wallet:JSON Wallets  [json-wallets]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.encryptKeystoreJson = exports.encryptKeystoreJsonSync = exports._encryptKeystore = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.isKeystoreJson = void 0;
+exports.encryptKeystoreJson = exports.encryptKeystoreJsonSync = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.isKeystoreJson = void 0;
 const aes_js_1 = require("aes-js");
 const index_js_1 = require("../address/index.js");
 const index_js_2 = require("../crypto/index.js");
@@ -9,6 +19,9 @@ const index_js_4 = require("../utils/index.js");
 const utils_js_1 = require("./utils.js");
 const _version_js_1 = require("../_version.js");
 const defaultPath = "m/44'/60'/0'/0/0";
+/**
+ *  Returns true if %%json%% is a valid JSON Keystore Wallet.
+ */
 function isKeystoreJson(json) {
     try {
         const data = JSON.parse(json);
@@ -65,45 +78,43 @@ function getAccount(data, _key) {
 function getDecryptKdfParams(data) {
     const kdf = (0, utils_js_1.spelunk)(data, "crypto.kdf:string");
     if (kdf && typeof (kdf) === "string") {
-        const throwError = function (name, value) {
-            (0, index_js_4.assertArgument)(false, "invalid key-derivation function parameters", name, value);
-        };
         if (kdf.toLowerCase() === "scrypt") {
             const salt = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.salt:data!");
             const N = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.n:int!");
             const r = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.r:int!");
             const p = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.p:int!");
-            // Check for all required parameters
-            if (!N || !r || !p) {
-                return throwError("kdf", kdf);
-            }
             // Make sure N is a power of 2
-            if ((N & (N - 1)) !== 0) {
-                return throwError("N", N);
-            }
+            (0, index_js_4.assertArgument)(N > 0 && (N & (N - 1)) === 0, "invalid kdf.N", "kdf.N", N);
+            (0, index_js_4.assertArgument)(r > 0 && p > 0, "invalid kdf", "kdf", kdf);
             const dkLen = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.dklen:int!");
-            if (dkLen !== 32) {
-                return throwError("dklen", dkLen);
-            }
+            (0, index_js_4.assertArgument)(dkLen === 32, "invalid kdf.dklen", "kdf.dflen", dkLen);
             return { name: "scrypt", salt, N, r, p, dkLen: 64 };
         }
         else if (kdf.toLowerCase() === "pbkdf2") {
             const salt = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.salt:data!");
             const prf = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.prf:string!");
             const algorithm = prf.split("-").pop();
-            if (algorithm !== "sha256" && algorithm !== "sha512") {
-                return throwError("prf", prf);
-            }
+            (0, index_js_4.assertArgument)(algorithm === "sha256" || algorithm === "sha512", "invalid kdf.pdf", "kdf.pdf", prf);
             const count = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.c:int!");
             const dkLen = (0, utils_js_1.spelunk)(data, "crypto.kdfparams.dklen:int!");
-            if (dkLen !== 32) {
-                throwError("dklen", dkLen);
-            }
+            (0, index_js_4.assertArgument)(dkLen === 32, "invalid kdf.dklen", "kdf.dklen", dkLen);
             return { name: "pbkdf2", salt, count, dkLen, algorithm };
         }
     }
     (0, index_js_4.assertArgument)(false, "unsupported key-derivation function", "kdf", kdf);
 }
+/**
+ *  Returns the account details for the JSON Keystore Wallet %%json%%
+ *  using %%password%%.
+ *
+ *  It is preferred to use the [async version](decryptKeystoreJson)
+ *  instead, which allows a [[ProgressCallback]] to keep the user informed
+ *  as to the decryption status.
+ *
+ *  This method will block the event loop (freezing all UI) until decryption
+ *  is complete, which can take quite some time, depending on the wallet
+ *  paramters and platform.
+ */
 function decryptKeystoreJsonSync(json, _password) {
     const data = JSON.parse(json);
     const password = (0, utils_js_1.getPassword)(_password);
@@ -122,6 +133,17 @@ exports.decryptKeystoreJsonSync = decryptKeystoreJsonSync;
 function stall(duration) {
     return new Promise((resolve) => { setTimeout(() => { resolve(); }, duration); });
 }
+/**
+ *  Resolves to the decrypted JSON Keystore Wallet %%json%% using the
+ *  %%password%%.
+ *
+ *  If provided, %%progress%% will be called periodically during the
+ *  decrpytion to provide feedback, and if the function returns
+ *  ``false`` will halt decryption.
+ *
+ *  The %%progressCallback%% will **always** receive ``0`` before
+ *  decryption begins and ``1`` when complete.
+ */
 async function decryptKeystoreJson(json, _password, progress) {
     const data = JSON.parse(json);
     const password = (0, utils_js_1.getPassword)(_password);
@@ -161,19 +183,19 @@ function getEncryptKdfParams(options) {
             p = options.scrypt.p;
         }
     }
-    (0, index_js_4.assertArgument)(typeof (N) === "number" && Number.isSafeInteger(N) && (BigInt(N) & BigInt(N - 1)) === BigInt(0), "invalid scrypt N parameter", "options.N", N);
-    (0, index_js_4.assertArgument)(typeof (r) === "number" && Number.isSafeInteger(r), "invalid scrypt r parameter", "options.r", r);
-    (0, index_js_4.assertArgument)(typeof (p) === "number" && Number.isSafeInteger(p), "invalid scrypt p parameter", "options.p", p);
+    (0, index_js_4.assertArgument)(typeof (N) === "number" && N > 0 && Number.isSafeInteger(N) && (BigInt(N) & BigInt(N - 1)) === BigInt(0), "invalid scrypt N parameter", "options.N", N);
+    (0, index_js_4.assertArgument)(typeof (r) === "number" && r > 0 && Number.isSafeInteger(r), "invalid scrypt r parameter", "options.r", r);
+    (0, index_js_4.assertArgument)(typeof (p) === "number" && p > 0 && Number.isSafeInteger(p), "invalid scrypt p parameter", "options.p", p);
     return { name: "scrypt", dkLen: 32, salt, N, r, p };
 }
 function _encryptKeystore(key, kdf, account, options) {
     const privateKey = (0, index_js_4.getBytes)(account.privateKey, "privateKey");
     // Override initialization vector
     const iv = (options.iv != null) ? (0, index_js_4.getBytes)(options.iv, "options.iv") : (0, index_js_2.randomBytes)(16);
-    (0, index_js_4.assertArgument)(iv.length === 16, "invalid options.iv", "options.iv", options.iv);
+    (0, index_js_4.assertArgument)(iv.length === 16, "invalid options.iv length", "options.iv", options.iv);
     // Override the uuid
     const uuidRandom = (options.uuid != null) ? (0, index_js_4.getBytes)(options.uuid, "options.uuid") : (0, index_js_2.randomBytes)(16);
-    (0, index_js_4.assertArgument)(uuidRandom.length === 16, "invalid options.uuid", "options.uuid", options.iv);
+    (0, index_js_4.assertArgument)(uuidRandom.length === 16, "invalid options.uuid length", "options.uuid", options.iv);
     // This will be used to encrypt the wallet (as per Web3 secret storage)
     // - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
     // - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
@@ -187,7 +209,7 @@ function _encryptKeystore(key, kdf, account, options) {
     // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
     const data = {
         address: account.address.substring(2).toLowerCase(),
-        id: (0, utils_js_1.uuidV4)(uuidRandom),
+        id: (0, index_js_4.uuidV4)(uuidRandom),
         version: 3,
         Crypto: {
             cipher: "aes-128-ctr",
@@ -233,7 +255,14 @@ function _encryptKeystore(key, kdf, account, options) {
     }
     return JSON.stringify(data);
 }
-exports._encryptKeystore = _encryptKeystore;
+/**
+ *  Return the JSON Keystore Wallet for %%account%% encrypted with
+ *  %%password%%.
+ *
+ *  The %%options%% can be used to tune the password-based key
+ *  derivation function parameters, explicitly set the random values
+ *  used. Any provided [[ProgressCallback]] is ignord.
+ */
 function encryptKeystoreJsonSync(account, password, options) {
     if (options == null) {
         options = {};
@@ -244,6 +273,15 @@ function encryptKeystoreJsonSync(account, password, options) {
     return _encryptKeystore((0, index_js_4.getBytes)(key), kdf, account, options);
 }
 exports.encryptKeystoreJsonSync = encryptKeystoreJsonSync;
+/**
+ *  Resolved to the JSON Keystore Wallet for %%account%% encrypted
+ *  with %%password%%.
+ *
+ *  The %%options%% can be used to tune the password-based key
+ *  derivation function parameters, explicitly set the random values
+ *  used and provide a [[ProgressCallback]] to receive periodic updates
+ *  on the completion status..
+ */
 async function encryptKeystoreJson(account, password, options) {
     if (options == null) {
         options = {};

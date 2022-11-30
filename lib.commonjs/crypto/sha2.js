@@ -12,6 +12,11 @@ const _sha512 = function (data) {
 let __sha256 = _sha256;
 let __sha512 = _sha512;
 let locked256 = false, locked512 = false;
+/**
+ *  Compute the cryptographic SHA2-256 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 function sha256(_data) {
     const data = (0, index_js_1.getBytes)(_data, "data");
     return (0, index_js_1.hexlify)(__sha256(data));
@@ -26,6 +31,11 @@ sha256.register = function (func) {
     __sha256 = func;
 };
 Object.freeze(sha256);
+/**
+ *  Compute the cryptographic SHA2-512 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 function sha512(_data) {
     const data = (0, index_js_1.getBytes)(_data, "data");
     return (0, index_js_1.hexlify)(__sha512(data));

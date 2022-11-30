@@ -2,6 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlockConnectionSubscriber = void 0;
 const index_js_1 = require("../utils/index.js");
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 class BlockConnectionSubscriber {
     #provider;
     #blockNumber;

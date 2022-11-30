@@ -26,7 +26,7 @@ export declare class ContractTransactionResponse extends TransactionResponse {
 export declare class ContractUnknownEventPayload extends EventPayload<ContractEventName> {
     readonly log: Log;
     constructor(contract: BaseContract, listener: null | Listener, filter: ContractEventName, log: Log);
-    getBlock(): Promise<Block<string>>;
+    getBlock(): Promise<Block>;
     getTransaction(): Promise<TransactionResponse>;
     getTransactionReceipt(): Promise<TransactionReceipt>;
 }

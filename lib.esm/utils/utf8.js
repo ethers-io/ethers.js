@@ -1,3 +1,11 @@
+/**
+ *  Using strings in Ethereum (or any security-basd system) requires
+ *  additional care. These utilities attempt to mitigate some of the
+ *  safety issues as well as provide the ability to recover and analyse
+ *  strings.
+ *
+ *  @_subsection api/utils:Strings and UTF-8  [strings]
+ */
 import { getBytes } from "./data.js";
 import { assertArgument, assertNormalize } from "./errors.js";
 function errorFunc(reason, offset, bytes, output, badCodepoint) {
@@ -26,7 +34,8 @@ function ignoreFunc(reason, offset, bytes, output, badCodepoint) {
 function replaceFunc(reason, offset, bytes, output, badCodepoint) {
     // Overlong representations are otherwise "valid" code points; just non-deistingtished
     if (reason === "OVERLONG") {
-        output.push((badCodepoint != null) ? badCodepoint : -1);
+        assertArgument(typeof (badCodepoint) === "number", "invalid bad code point for replacement", "badCodepoint", badCodepoint);
+        output.push(badCodepoint);
         return 0;
     }
     // Put the replacement character into the output
@@ -126,6 +135,11 @@ function getUtf8CodePoints(_bytes, onError) {
     return result;
 }
 // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+/**
+ *  Returns the UTF-8 byte representation of %%str%%.
+ *
+ *  If %%form%% is specified, the string is normalized.
+ */
 export function toUtf8Bytes(str, form) {
     if (form != null) {
         assertNormalize(form);
@@ -161,7 +175,8 @@ export function toUtf8Bytes(str, form) {
     return new Uint8Array(result);
 }
 ;
-export function _toUtf8String(codePoints) {
+//export 
+function _toUtf8String(codePoints) {
     return codePoints.map((codePoint) => {
         if (codePoint <= 0xffff) {
             return String.fromCharCode(codePoint);
@@ -170,9 +185,21 @@ export function _toUtf8String(codePoints) {
         return String.fromCharCode((((codePoint >> 10) & 0x3ff) + 0xd800), ((codePoint & 0x3ff) + 0xdc00));
     }).join("");
 }
+/**
+ *  Returns the string represented by the UTF-8 data %%bytes%%.
+ *
+ *  When %%onError%% function is specified, it is called on UTF-8
+ *  errors allowing recovery using the [[Utf8ErrorFunc]] API.
+ *  (default: [error](Utf8ErrorFuncs-error))
+ */
 export function toUtf8String(bytes, onError) {
     return _toUtf8String(getUtf8CodePoints(bytes, onError));
 }
+/**
+ *  Returns the UTF-8 code-points for %%str%%.
+ *
+ *  If %%form%% is specified, the string is normalized.
+ */
 export function toUtf8CodePoints(str, form) {
     return getUtf8CodePoints(toUtf8Bytes(str, form));
 }

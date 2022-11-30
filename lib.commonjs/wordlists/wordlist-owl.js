@@ -7,9 +7,25 @@ const index_js_1 = require("../hash/index.js");
 const index_js_2 = require("../utils/index.js");
 const decode_owl_js_1 = require("./decode-owl.js");
 const wordlist_js_1 = require("./wordlist.js");
+/**
+ *  An OWL format Wordlist is an encoding method that exploits
+ *  the general locality of alphabetically sorted words to
+ *  achieve a simple but effective means of compression.
+ *
+ *  This class is generally not useful to most developers as
+ *  it is used mainly internally to keep Wordlists for languages
+ *  based on ASCII-7 small.
+ *
+ *  If necessary, there are tools within the ``generation/`` folder
+ *  to create these necessary data.
+ */
 class WordlistOwl extends wordlist_js_1.Wordlist {
     #data;
     #checksum;
+    /**
+     *  Creates a new Wordlist for %%locale%% using the OWL %%data%%
+     *  and validated against the %%checksum%%.
+     */
     constructor(locale, data, checksum) {
         super(locale);
         this.#data = data;

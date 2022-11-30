@@ -54,41 +54,4 @@ export class IpcSocketProvider extends SocketProvider {
         this.socket.write(message);
     }
 }
-/*
-
-import { defineProperties } from "@ethersproject/properties";
-
-import { SocketLike, SocketProvider } from "./provider-socket.js";
-
-import type { Socket } from "net";
-
-export class SocketWrapper implements SocketLike {
-    #socket: Socket;
-
-    constructor(path: string) {
-        this.#socket = connect(path);
-    }
-
-    send(data: string): void {
-        this.#socket.write(data, () => { });
-    }
-
-    addEventListener(event: string, listener: (data: string) => void): void {
-        //this.#socket.on(event, (value: ) => {
-        //});
-    }
-
-    close(): void {
-    }
-}
-
-export class IpcProvider extends SocketProvider {
-    readonly path!: string;
-
-    constructor(path: string) {
-        super(new SocketWrapper(path));
-        defineProperties<IpcProvider>(this, { path });
-    }
-}
-*/
 //# sourceMappingURL=provider-ipcsocket.js.map

@@ -4,6 +4,11 @@ import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
+/**
+ *  About Ankr...
+ *
+ *  @_docloc: api/providers/thirdparty
+ */
 export declare class AnkrProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly apiKey: string;
     constructor(_network?: Networkish, apiKey?: null | string);

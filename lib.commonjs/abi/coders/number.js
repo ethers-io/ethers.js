@@ -7,6 +7,9 @@ const abstract_coder_js_1 = require("./abstract-coder.js");
 const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+/**
+ *  @_ignore
+ */
 class NumberCoder extends abstract_coder_js_1.Coder {
     size;
     signed;
@@ -27,13 +30,10 @@ class NumberCoder extends abstract_coder_js_1.Coder {
             if (value > bounds || value < -(bounds + BN_1)) {
                 this._throwError("value out-of-bounds", _value);
             }
+            value = (0, index_js_1.toTwos)(value, 8 * abstract_coder_js_1.WordSize);
         }
         else if (value < BN_0 || value > (0, index_js_1.mask)(maxUintValue, this.size * 8)) {
             this._throwError("value out-of-bounds", _value);
-        }
-        value = (0, index_js_1.mask)((0, index_js_1.toTwos)(value, this.size * 8), this.size * 8);
-        if (this.signed) {
-            value = (0, index_js_1.toTwos)((0, index_js_1.fromTwos)(value, this.size * 8), 8 * abstract_coder_js_1.WordSize);
         }
         return writer.writeValue(value);
     }

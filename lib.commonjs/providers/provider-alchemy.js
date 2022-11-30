@@ -27,9 +27,17 @@ function getHost(name) {
     }
     (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }
+/**
+ *  The AlchemyProvider is backed by the [[alchemyapu]] API.
+ *
+ *  @_docloc: api/providers/thirdparty
+ */
 class AlchemyProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     apiKey;
-    constructor(_network = "mainnet", apiKey) {
+    constructor(_network, apiKey) {
+        if (_network == null) {
+            _network = "mainnet";
+        }
         const network = network_js_1.Network.from(_network);
         if (apiKey == null) {
             apiKey = defaultApiKey;

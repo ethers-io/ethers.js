@@ -26,12 +26,15 @@ function _pack(type, value, isArray) {
     }
     let match = type.match(regexNumber);
     if (match) {
+        let signed = (match[1] === "int");
         let size = parseInt(match[2] || "256");
         (0, index_js_2.assertArgument)((!match[2] || match[2] === String(size)) && (size % 8 === 0) && size !== 0 && size <= 256, "invalid number type", "type", type);
         if (isArray) {
             size = 256;
         }
-        value = (0, index_js_2.toTwos)(value, size);
+        if (signed) {
+            value = (0, index_js_2.toTwos)(value, size);
+        }
         return (0, index_js_2.getBytes)((0, index_js_2.zeroPadValue)((0, index_js_2.toArray)(value), size / 8));
     }
     match = type.match(regexBytes);
@@ -74,10 +77,9 @@ exports.solidityPacked = solidityPacked;
  *   @param {Array<string>} types - The Solidity types to interpret each value as [default: bar]
  *   @param {Array<any>} values - The values to pack
  *
- *   @returns: {HexString} the hexstring of the hash
  *   @example:
  *       solidityPackedKeccak256([ "address", "uint" ], [ "0x1234", 45 ]);
- *       //_result:
+ *       / /_result:
  *
  *   @see https://docs.soliditylang.org/en/v0.8.14/abi-spec.html#non-standard-packed-mode
  */

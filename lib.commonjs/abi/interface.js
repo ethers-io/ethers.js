@@ -1,4 +1,9 @@
 "use strict";
+/**
+ *  About Interface
+ *
+ *  @_subsection api/abi:Interfaces  [interfaces]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Interface = exports.Indexed = exports.ErrorDescription = exports.TransactionDescription = exports.LogDescription = exports.Result = exports.checkResultErrors = void 0;
 const index_js_1 = require("../crypto/index.js");
@@ -99,6 +104,16 @@ const BuiltinErrors = {
         }
     }
 };
+/**
+ *  An Interface abstracts many of the low-level details for
+ *  encoding and decoding the data on the blockchain.
+ *
+ *  An ABI provides information on how to encode data to send to
+ *  a Contract, how to decode the results and events and how to
+ *  interpret revert errors.
+ *
+ *  The ABI can be specified by [any supported format](InterfaceAbi).
+ */
 class Interface {
     /**
      *  All the Contract ABI members (i.e. methods, events, errors, etc).
@@ -113,6 +128,9 @@ class Interface {
     #functions;
     //    #structs: Map<string, StructFragment>;
     #abiCoder;
+    /**
+     *  Create a new Interface for the %%fragments%%.
+     */
     constructor(fragments) {
         let abi = [];
         if (typeof (fragments) === "string") {
@@ -203,7 +221,7 @@ class Interface {
      *  data.
      */
     getAbiCoder() {
-        return abi_coder_js_1.defaultAbiCoder;
+        return abi_coder_js_1.AbiCoder.defaultAbiCoder();
     }
     // Find a function definition by any means necessary (unless it is ambiguous)
     #getFunction(key, values, forceUnique) {
@@ -572,7 +590,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
     }
     makeError(_data, tx) {
         const data = (0, index_js_3.getBytes)(_data, "data");
-        const error = (0, abi_coder_js_1.getBuiltinCallException)("call", tx, data);
+        const error = abi_coder_js_1.AbiCoder.getBuiltinCallException("call", tx, data);
         // Not a built-in error; try finding a custom error
         if (!error.message.match(/could not decode/)) {
             const selector = (0, index_js_3.hexlify)(data.slice(0, 4));

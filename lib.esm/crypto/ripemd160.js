@@ -5,6 +5,11 @@ const _ripemd160 = function (data) {
     return noble_ripemd160(data);
 };
 let __ripemd160 = _ripemd160;
+/**
+ *  Compute the cryptographic RIPEMD-160 hash of %%data%%.
+ *
+ *  @returns DataHexstring
+ */
 export function ripemd160(_data) {
     const data = getBytes(_data, "data");
     return hexlify(__ripemd160(data));

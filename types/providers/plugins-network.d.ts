@@ -36,12 +36,4 @@ export declare class FeeDataNetworkPlugin extends NetworkPlugin {
     getFeeData(provider: Provider): Promise<FeeData>;
     clone(): FeeDataNetworkPlugin;
 }
-import type { Block, BlockParams, TransactionResponse, TransactionResponseParams } from "./provider.js";
-export declare class CustomBlockNetworkPlugin extends NetworkPlugin {
-    #private;
-    constructor(blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>, blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>);
-    getBlock(provider: Provider, block: BlockParams<string>): Promise<Block<string>>;
-    getBlockWithTransactions(provider: Provider, block: BlockParams<TransactionResponseParams>): Promise<Block<TransactionResponse>>;
-    clone(): CustomBlockNetworkPlugin;
-}
 //# sourceMappingURL=plugins-network.d.ts.map

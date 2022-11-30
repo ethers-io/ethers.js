@@ -204,17 +204,24 @@ describe("Tests Signed Transaction Parsing", function () {
     const tests = (0, utils_js_1.loadTests)("transactions");
     for (const test of tests) {
         it(`parses signed legacy transaction: ${test.name}`, function () {
-            const tx = index_js_1.Transaction.from(test.signedLegacy);
+            let tx = index_js_1.Transaction.from(test.signedLegacy);
             const expected = addDefaults(test.transaction);
             expected.maxFeePerGas = null;
             expected.maxPriorityFeePerGas = null;
             expected.accessList = null;
             expected.chainId = BN_0;
-            assertTxEqual(tx, expected);
-            assert_1.default.ok(!!tx.signature, "signature:!null");
-            assert_1.default.equal(tx.signature.r, test.signatureLegacy.r, "signature.r");
-            assert_1.default.equal(tx.signature.s, test.signatureLegacy.s, "signature.s");
-            assert_1.default.equal(BigInt(tx.signature.v), BigInt(test.signatureLegacy.v), "signature.v");
+            for (let i = 0; i < 2; i++) {
+                assertTxEqual(tx, expected);
+                assert_1.default.equal(tx.typeName, "legacy", "typeName");
+                assert_1.default.equal(tx.isLegacy(), true, "isLegacy");
+                assert_1.default.equal(tx.isBerlin(), false, "isBerlin");
+                assert_1.default.equal(tx.isLondon(), false, "isLondon");
+                assert_1.default.ok(!!tx.signature, "signature:!null");
+                assert_1.default.equal(tx.signature.r, test.signatureLegacy.r, "signature.r");
+                assert_1.default.equal(tx.signature.s, test.signatureLegacy.s, "signature.s");
+                assert_1.default.equal(BigInt(tx.signature.v), BigInt(test.signatureLegacy.v), "signature.v");
+                tx = tx.clone();
+            }
         });
     }
     for (const test of tests) {
@@ -222,41 +229,111 @@ describe("Tests Signed Transaction Parsing", function () {
             continue;
         }
         it(`parses signed EIP-155 transaction: ${test.name}`, function () {
-            const tx = index_js_1.Transaction.from(test.signedEip155);
+            let tx = index_js_1.Transaction.from(test.signedEip155);
             const expected = addDefaults(test.transaction);
             expected.maxFeePerGas = null;
             expected.maxPriorityFeePerGas = null;
             expected.accessList = null;
-            assertTxEqual(tx, expected);
-            assert_1.default.ok(!!tx.signature, "signature:!null");
-            assert_1.default.equal(tx.signature.r, test.signatureEip155.r, "signature.r");
-            assert_1.default.equal(tx.signature.s, test.signatureEip155.s, "signature.s");
-            assert_1.default.equal(tx.signature.networkV, BigInt(test.signatureEip155.v), "signature.v");
+            for (let i = 0; i < 2; i++) {
+                assertTxEqual(tx, expected);
+                assert_1.default.equal(tx.typeName, "legacy", "typeName");
+                assert_1.default.equal(tx.isLegacy(), true, "isLegacy");
+                assert_1.default.equal(tx.isBerlin(), false, "isBerlin");
+                assert_1.default.equal(tx.isLondon(), false, "isLondon");
+                assert_1.default.ok(!!tx.signature, "signature:!null");
+                assert_1.default.equal(tx.signature.r, test.signatureEip155.r, "signature.r");
+                assert_1.default.equal(tx.signature.s, test.signatureEip155.s, "signature.s");
+                assert_1.default.equal(tx.signature.networkV, BigInt(test.signatureEip155.v), "signature.v");
+                tx = tx.clone();
+            }
         });
     }
     for (const test of tests) {
         it(`parses signed Berlin transaction: ${test.name}`, function () {
-            const tx = index_js_1.Transaction.from(test.signedBerlin);
+            let tx = index_js_1.Transaction.from(test.signedBerlin);
             const expected = addDefaults(test.transaction);
             expected.maxFeePerGas = null;
             expected.maxPriorityFeePerGas = null;
-            assertTxEqual(tx, expected);
-            assert_1.default.ok(!!tx.signature, "signature:!null");
-            assert_1.default.equal(tx.signature.r, test.signatureBerlin.r, "signature.r");
-            assert_1.default.equal(tx.signature.s, test.signatureBerlin.s, "signature.s");
-            assert_1.default.equal(tx.signature.yParity, parseInt(test.signatureBerlin.v), "signature.v");
+            for (let i = 0; i < 2; i++) {
+                assertTxEqual(tx, expected);
+                assert_1.default.equal(tx.typeName, "eip-2930", "typeName");
+                assert_1.default.equal(tx.isLegacy(), false, "isLegacy");
+                assert_1.default.equal(tx.isBerlin(), true, "isBerlin");
+                assert_1.default.equal(tx.isLondon(), false, "isLondon");
+                assert_1.default.ok(!!tx.signature, "signature:!null");
+                assert_1.default.equal(tx.signature.r, test.signatureBerlin.r, "signature.r");
+                assert_1.default.equal(tx.signature.s, test.signatureBerlin.s, "signature.s");
+                assert_1.default.equal(tx.signature.yParity, parseInt(test.signatureBerlin.v), "signature.v");
+                tx = tx.clone();
+            }
         });
     }
     for (const test of tests) {
         it(`parses signed London transaction: ${test.name}`, function () {
-            const tx = index_js_1.Transaction.from(test.signedLondon);
+            let tx = index_js_1.Transaction.from(test.signedLondon);
             const expected = addDefaults(test.transaction);
             expected.gasPrice = null;
-            assertTxEqual(tx, expected);
-            assert_1.default.ok(!!tx.signature, "signature:!null");
-            assert_1.default.equal(tx.signature.r, test.signatureLondon.r, "signature.r");
-            assert_1.default.equal(tx.signature.s, test.signatureLondon.s, "signature.s");
-            assert_1.default.equal(tx.signature.yParity, parseInt(test.signatureLondon.v), "signature.v");
+            for (let i = 0; i < 2; i++) {
+                assertTxEqual(tx, expected);
+                assert_1.default.equal(tx.typeName, "eip-1559", "typeName");
+                assert_1.default.equal(tx.isLegacy(), false, "isLegacy");
+                assert_1.default.equal(tx.isBerlin(), false, "isBerlin");
+                assert_1.default.equal(tx.isLondon(), true, "isLondon");
+                assert_1.default.ok(!!tx.signature, "signature:!null");
+                assert_1.default.equal(tx.signature.r, test.signatureLondon.r, "signature.r");
+                assert_1.default.equal(tx.signature.s, test.signatureLondon.s, "signature.s");
+                assert_1.default.equal(tx.signature.yParity, parseInt(test.signatureLondon.v), "signature.v");
+                // Test cloning
+                tx = tx.clone();
+            }
+        });
+    }
+});
+describe("Tests Transaction Parameters", function () {
+    const badData = [
+        {
+            name: "accessList=0x09",
+            data: "0x02c9010203040580070809",
+            message: "invalid access list",
+            argument: "accessList"
+        },
+        {
+            name: "accessList=[0x09]",
+            data: "0x02ca0102030405800708c109",
+            message: "invalid address-slot set",
+            argument: "accessList"
+        },
+        {
+            name: "accessList=[0x09,0x10]",
+            data: "0x02cb0102030405800708c20910",
+            message: "invalid address-slot set",
+            argument: "accessList"
+        },
+        {
+            name: "accessList=[0x09,[HASH]] (bad address)",
+            data: "0x02ed0102030405800708e4e309e1a024412927c99a717115f5308c0ebd11136659b3cb6291abb4a8f87e9856a12538",
+            message: "invalid address",
+            argument: "accessList"
+        },
+        {
+            name: "accessList=[ADDR,[0x09]] (bad slot)",
+            data: "0x02e10102030405800708d8d794939d33ff01840e9eeeb67525ec2f7035af41a4b1c109",
+            message: "invalid slot",
+            argument: "accessList"
+        }
+    ];
+    for (const { name, data, argument, message } of badData) {
+        it(`correctly fails on bad accessList: ${name}`, function () {
+            assert_1.default.throws(() => {
+                // The access list is a single value: 0x09 instead of
+                // structured data
+                const result = index_js_1.Transaction.from(data);
+                console.log(result);
+            }, (error) => {
+                return ((0, index_js_1.isError)(error, "INVALID_ARGUMENT") &&
+                    error.argument === argument &&
+                    (message == null || error.message.startsWith(message)));
+            });
         });
     }
 });

@@ -8,11 +8,17 @@ export declare type Numeric = number | bigint;
  */
 export declare type BigNumberish = string | Numeric;
 /**
- *  Convert %%value%% from a twos-compliment value of %%width%% bits.
+ *  Convert %%value%% from a twos-compliment representation of %%width%%
+ *  bits to its value.
+ *
+ *  If the highest bit is ``1``, the result will be negative.
  */
 export declare function fromTwos(_value: BigNumberish, _width: Numeric): bigint;
 /**
- *  Convert %%value%% to a twos-compliment value of %%width%% bits.
+ *  Convert %%value%% to a twos-compliment representation of
+ *  %%width%% bits.
+ *
+ *  The result will always be positive.
  */
 export declare function toTwos(_value: BigNumberish, _width: Numeric): bigint;
 /**
@@ -30,6 +36,10 @@ export declare function toBigInt(value: BigNumberish | Uint8Array): bigint;
  *  a //number//, then an ArgumentError will be thrown for %%name%%.
  */
 export declare function getNumber(value: BigNumberish, name?: string): number;
+/**
+ *  Converts %%value%% to a number. If %%value%% is a Uint8Array, it
+ *  is treated as Big Endian data. Throws if the value is not safe.
+ */
 export declare function toNumber(value: BigNumberish | Uint8Array): number;
 /**
  *  Converts %%value%% to a Big Endian hexstring, optionally padded to

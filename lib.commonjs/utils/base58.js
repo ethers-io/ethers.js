@@ -1,4 +1,17 @@
 "use strict";
+/**
+ *  The [Base58 Encoding](link-base58) scheme allows a **numeric** value
+ *  to be encoded as a compact string using a radix of 58 using only
+ *  alpha-numeric characters. Confusingly similar characters are omitted
+ *  (i.e. ``"l0O"``).
+ *
+ *  Note that Base58 encodes a **numeric** value, not arbitrary bytes,
+ *  since any zero-bytes on the left would get removed. To mitigate this
+ *  issue most schemes that use Base58 choose specific high-order values
+ *  to ensure non-zero prefixes.
+ *
+ *  @_subsection: api/utils:Base58 Encoding [base58]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodeBase58 = exports.encodeBase58 = void 0;
 const data_js_1 = require("./data.js");
@@ -20,7 +33,7 @@ function getAlpha(letter) {
 const BN_0 = BigInt(0);
 const BN_58 = BigInt(58);
 /**
- *  Encode %%value%% as Base58-encoded data.
+ *  Encode %%value%% as a Base58-encoded string.
  */
 function encodeBase58(_value) {
     let value = (0, maths_js_1.toBigInt)((0, data_js_1.getBytes)(_value));
@@ -41,7 +54,7 @@ function decodeBase58(value) {
         result *= BN_58;
         result += getAlpha(value[i]);
     }
-    return (0, data_js_1.getBytes)((0, maths_js_1.toHex)(result));
+    return result;
 }
 exports.decodeBase58 = decodeBase58;
 //# sourceMappingURL=base58.js.map

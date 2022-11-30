@@ -1,3 +1,8 @@
+/**
+ *  About Abstract Signer and subclassing
+ *
+ *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
+ */
 import { Transaction } from "../transaction/index.js";
 import { defineProperties, getBigInt, resolveProperties, assert, assertArgument } from "../utils/index.js";
 export class AbstractSigner {

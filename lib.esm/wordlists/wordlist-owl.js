@@ -4,9 +4,25 @@ import { id } from "../hash/index.js";
 import { assertArgument } from "../utils/index.js";
 import { decodeOwl } from "./decode-owl.js";
 import { Wordlist } from "./wordlist.js";
+/**
+ *  An OWL format Wordlist is an encoding method that exploits
+ *  the general locality of alphabetically sorted words to
+ *  achieve a simple but effective means of compression.
+ *
+ *  This class is generally not useful to most developers as
+ *  it is used mainly internally to keep Wordlists for languages
+ *  based on ASCII-7 small.
+ *
+ *  If necessary, there are tools within the ``generation/`` folder
+ *  to create these necessary data.
+ */
 export class WordlistOwl extends Wordlist {
     #data;
     #checksum;
+    /**
+     *  Creates a new Wordlist for %%locale%% using the OWL %%data%%
+     *  and validated against the %%checksum%%.
+     */
     constructor(locale, data, checksum) {
         super(locale);
         this.#data = data;

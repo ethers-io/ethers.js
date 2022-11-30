@@ -2,6 +2,16 @@ import { PollingEventSubscriber } from "./subscriber-polling.js";
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
+/**
+ *  Some backends support subscribing to events using a Filter ID.
+ *
+ *  When subscribing with this technique, the node issues a unique
+ *  //Filter ID//. At this point the node dedicates resources to
+ *  the filter, so that periodic calls to follow up on the //Filter ID//
+ *  will receive any events since the last call.
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class FilterIdSubscriber {
     #provider;
     #filterIdPromise;
@@ -69,6 +79,11 @@ export class FilterIdSubscriber {
     }
     resume() { this.start(); }
 }
+/**
+ *  A **FilterIdSubscriber** for receiving contract events.
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class FilterIdEventSubscriber extends FilterIdSubscriber {
     #event;
     constructor(provider, filter) {
@@ -88,6 +103,11 @@ export class FilterIdEventSubscriber extends FilterIdSubscriber {
         }
     }
 }
+/**
+ *  A **FilterIdSubscriber** for receiving pending transactions events.
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class FilterIdPendingSubscriber extends FilterIdSubscriber {
     async _subscribe(provider) {
         return await provider.send("eth_newPendingTransactionFilter", []);

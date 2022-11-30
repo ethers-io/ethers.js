@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.ContractEventPayload = exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
+/**
+ *  About contracts...
+ *
+ *  @_section: api/contract:Contracts  [contracts]
+ */
 var contract_js_1 = require("./contract.js");
 Object.defineProperty(exports, "BaseContract", { enumerable: true, get: function () { return contract_js_1.BaseContract; } });
 Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return contract_js_1.Contract; } });

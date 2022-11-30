@@ -1,3 +1,8 @@
+/**
+ *  About JSON-RPC...
+ *
+ * @_section: api/providers/jsonrpc:JSON-RPC Provider  [about-jsonrpcProvider]
+ */
 import { FetchRequest } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { AbstractSigner } from "./abstract-signer.js";
@@ -35,6 +40,10 @@ export declare type JsonRpcError = {
         data?: any;
     };
 };
+/**
+ *  When subscribing to the ``"debug"`` event, the [[Listener]] will
+ *  receive this object as the first parameter.
+ */
 export declare type DebugEventJsonRpcApiProvider = {
     action: "sendRpcPayload";
     payload: JsonRpcPayload | Array<JsonRpcPayload>;
@@ -50,16 +59,13 @@ export declare type DebugEventJsonRpcApiProvider = {
  *  is targetted towards sub-classes, which often will not expose
  *  any of these options to their consumers.
  *
- *  _property: options.polling? => boolean
- *  If true, the polling strategy is used immediately for events.
- *  Otherwise, an attempt to use filters is made and on failure
- *  polling is used for that and all future events. (default: ``false``)
+ *  **``polling``** - use the polling strategy is used immediately
+ *  for events; otherwise, attempt to use filters and fall back onto
+ *  polling (default: ``false``)
  *
- *  _property: options.staticNetwork => [[Network]]
- *  If this is set, then there are no requests made for the chainId.
- *  (default: ``null``)
+ *  **``staticNetwork``** - do not request chain ID on requests to
+ *  validate the underlying chain has not changed (default: ``null``)
  *
- *  _warning:
  *  This should **ONLY** be used if it is **certain** that the network
  *  cannot change, such as when using INFURA (since the URL dictates the
  *  network). If the network is assumed static and it does change, this
@@ -67,21 +73,15 @@ export declare type DebugEventJsonRpcApiProvider = {
  *  with MetaMask, since the used can select a new network from the
  *  drop-down at any time.
  *
- *  _property: option.batchStallTime? => number
- *  The amount of time (in ms) to wait, allowing requests to be batched,
- *  before making the request. If ``0``, then batching will only occur
- *  within the same event loop. If the batchSize is ``1``, then this is
- *  ignored. (default: ``10``)
+ *  **``batchStallTime``** - how long (ms) to aggregate requests into a
+ *  single batch. ``0`` indicates batching will only encompass the current
+ *  event loop. If ``batchMaxCount = 1``, this is ignored. (default: ``10``)
  *
- *  _property: options.batchMaxSize? => number
- *  The target maximum size (in bytes) to allow a payload within a single
- *  batch. At least one request will be made per request, which may
- *  violate this constraint if it is set too small or a large request is
- *  present. (default: 1Mb)
+ *  **``batchMaxSize``** - target maximum size (bytes) to allow per batch
+ *  request (default: 1Mb)
  *
- *  _property: options.bstchMaxCount? => number
- *  The maximum number of payloads to allow in a single batch. Set this to
- *  ``1`` to disable batching entirely. (default: ``100``)
+ *  **``batchMaxCount``** - maximum number of requests to allow in a batch.
+ *  If ``batchMaxCount = 1``, then batching is disabled. (default: ``100``)
  */
 export declare type JsonRpcApiProviderOptions = {
     polling?: boolean;
@@ -131,7 +131,7 @@ export declare class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
  *  - a sub-class MUST override _send
  *  - a sub-class MUST call the `_start()` method once connected
  */
-export declare class JsonRpcApiProvider extends AbstractProvider {
+export declare abstract class JsonRpcApiProvider extends AbstractProvider {
     #private;
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions);
     /**
@@ -150,7 +150,7 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      *
      *  Sub-classes **MUST** override this.
      */
-    _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>>;
+    abstract _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>>;
     /**
      *  Resolves to the non-normalized value by performing %%req%%.
      *
@@ -158,7 +158,8 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      *  and should generally call ``super._perform`` as a fallback.
      */
     _perform(req: PerformActionRequest): Promise<any>;
-    /** Sub-classes may override this; it detects the *actual* network that
+    /**
+     *  Sub-classes may override this; it detects the *actual* network that
      *  we are **currently** connected to.
      *
      *  Keep in mind that [[send]] may only be used once [[ready]], otherwise the
@@ -239,7 +240,7 @@ export declare class JsonRpcApiProvider extends AbstractProvider {
      */
     getSigner(address?: number | string): Promise<JsonRpcSigner>;
 }
-export declare class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
+export declare abstract class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     #private;
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions);
     _getSubscriber(sub: Subscription): Subscriber;

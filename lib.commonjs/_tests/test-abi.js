@@ -32,13 +32,13 @@ describe("Tests ABI Coder", function () {
     const tests = (0, utils_js_1.loadTests)("abi");
     for (const test of tests) {
         it(`tests ABI encoding: (${test.name})`, function () {
-            const encoded = index_js_1.defaultAbiCoder.encode([test.type], [test.value]);
+            const encoded = index_js_1.AbiCoder.defaultAbiCoder().encode([test.type], [test.value]);
             assert_1.default.equal(encoded, test.encoded, "encoded");
         });
     }
     for (const test of tests) {
         it(`tests ABI decoding: (${test.name})`, function () {
-            const decoded = index_js_1.defaultAbiCoder.decode([test.type], test.encoded)[0];
+            const decoded = index_js_1.AbiCoder.defaultAbiCoder().decode([test.type], test.encoded)[0];
             equal(decoded, test.verbose);
         });
     }

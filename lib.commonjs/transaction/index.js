@@ -1,4 +1,9 @@
 "use strict";
+/**
+ *  Transactions..
+ *
+ *  @_section api/transaction:Transactions  [transactions]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transaction = exports.recoverAddress = exports.computeAddress = exports.accessListify = void 0;
 var accesslist_js_1 = require("./accesslist.js");
