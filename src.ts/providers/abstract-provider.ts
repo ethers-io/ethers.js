@@ -51,6 +51,8 @@ import type {
     TransactionRequest
 } from "./provider.js";
 
+type Timer = ReturnType<typeof setTimeout>;
+
 
 // Constants
 const BN_2 = BigInt(2);
@@ -341,7 +343,7 @@ export class AbstractProvider implements Provider {
     #lastBlockNumber: number;
 
     #nextTimer: number;
-    #timers: Map<number, { timer: null | NodeJS.Timer, func: () => void, time: number }>;
+    #timers: Map<number, { timer: null | Timer, func: () => void, time: number }>;
 
     #disableCcipRead: boolean;
 
@@ -983,7 +985,7 @@ export class AbstractProvider implements Provider {
         if (confirms === 0) { return this.getTransactionReceipt(hash); }
 
         return new Promise(async (resolve, reject) => {
-            let timer: null | NodeJS.Timer = null;
+            let timer: null | Timer = null;
 
             const listener = (async (blockNumber: number) => {
                 try {

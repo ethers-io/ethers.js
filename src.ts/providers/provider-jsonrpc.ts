@@ -32,6 +32,8 @@ import type { Networkish } from "./network.js";
 import type { Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
 
+type Timer = ReturnType<typeof setTimeout>;
+
 
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
@@ -358,7 +360,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
 
     // Payloads are queued and triggered in batches using the drainTimer
     #payloads: Array<Payload>;
-    #drainTimer: null | NodeJS.Timer;
+    #drainTimer: null | Timer;
 
     #notReady: null | {
         promise: Promise<void>,
