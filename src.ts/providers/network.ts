@@ -1,7 +1,7 @@
 /**
  *  About networks
  *
- *  @_subsection: api/providers:Networks
+ *  @_subsection: api/providers:Networks  [networks]
  */
 
 import { accessListify } from "../transaction/index.js";

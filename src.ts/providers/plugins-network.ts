@@ -2,7 +2,12 @@ import { defineProperties } from "../utils/properties.js";
 
 import { assertArgument } from "../utils/index.js";
 
-import type { FeeData, Provider } from "./provider.js";
+import type { BlockParams, TransactionResponseParams } from "./formatting.js";
+
+import type {
+    Block, FeeData, Provider, TransactionResponse
+} from "./provider.js";
+
 
 
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
@@ -137,8 +142,6 @@ export class FeeDataNetworkPlugin extends NetworkPlugin {
         return new FeeDataNetworkPlugin(this.#feeDataFunc);
     }
 }
-
-import type { Block, BlockParams, TransactionResponse, TransactionResponseParams } from "./provider.js";
 
 export class CustomBlockNetworkPlugin extends NetworkPlugin {
     readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;

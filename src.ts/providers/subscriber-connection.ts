@@ -6,12 +6,23 @@ import type { Subscriber } from "./abstract-provider.js";
 
 //#TODO: Temp
 import type { Provider } from "./provider.js";
+
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export interface ConnectionRpcProvider extends Provider {
     //send(method: string, params: Array<any>): Promise<any>;
     _subscribe(param: Array<any>, processFunc: (result: any) => void): number;
     _unsubscribe(filterId: number): void;
 }
 
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class BlockConnectionSubscriber implements Subscriber {
     #provider: ConnectionRpcProvider;
     #blockNumber: number;

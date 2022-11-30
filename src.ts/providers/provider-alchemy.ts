@@ -41,6 +41,8 @@ function getHost(name: string): string {
 
 /**
  *  The AlchemyProvider is backed by the [[alchemyapu]] API.
+ *
+ *  @_docloc: api/providers/thirdparty
  */
 export class AlchemyProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly apiKey!: string;

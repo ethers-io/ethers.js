@@ -1,3 +1,9 @@
+/**
+ *  About Subclassing the Provider...
+ *
+ *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
+ */
+
 // @TODO
 // Event coalescence
 //   When we register an event with an async value (e.g. address is a Signer
@@ -36,9 +42,14 @@ import type { Listener } from "../utils/index.js";
 import type { Networkish } from "./network.js";
 //import type { MaxPriorityFeePlugin } from "./plugins-network.js";
 import type {
-    BlockParams, BlockTag, EventFilter, Filter, FilterByBlockHash, LogParams, OrphanFilter,
+    BlockParams, LogParams, TransactionReceiptParams,
+    TransactionResponseParams
+} from "./formatting.js";
+
+import type {
+    BlockTag, EventFilter, Filter, FilterByBlockHash, OrphanFilter,
     PreparedTransactionRequest, Provider, ProviderEvent,
-    TransactionReceiptParams, TransactionRequest, TransactionResponseParams
+    TransactionRequest
 } from "./provider.js";
 
 

@@ -12,6 +12,9 @@ import {
 import type {
     BlockParams, LogParams,
     TransactionReceiptParams, TransactionResponseParams,
+} from "./formatting.js";
+
+import type {
     TransactionResponse
 } from "./provider.js";
 

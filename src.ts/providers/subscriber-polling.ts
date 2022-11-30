@@ -7,6 +7,11 @@ function copy(obj: any): any {
     return JSON.parse(JSON.stringify(obj));
 }
 
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export function getPollingSubscriber(provider: AbstractProvider, event: ProviderEvent): Subscriber {
     if (event === "block") { return new PollingBlockSubscriber(provider); }
     if (isHexString(event, 32)) { return new PollingTransactionSubscriber(provider, event); }
@@ -18,6 +23,11 @@ export function getPollingSubscriber(provider: AbstractProvider, event: Provider
 
 // @TODO: refactor this
 
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class PollingBlockSubscriber implements Subscriber{
     #provider: AbstractProvider;
     #poller: null | number;
@@ -81,6 +91,11 @@ export class PollingBlockSubscriber implements Subscriber{
     }
 }
 
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class OnBlockSubscriber implements Subscriber {
     #provider: AbstractProvider;
     #poll: (b: number) => void;
@@ -109,6 +124,11 @@ export class OnBlockSubscriber implements Subscriber {
     resume(): void { this.start(); }
 }
 
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class PollingOrphanSubscriber extends OnBlockSubscriber {
     #filter: OrphanFilter;
 
@@ -123,6 +143,11 @@ export class PollingOrphanSubscriber extends OnBlockSubscriber {
     }
 }
 
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class PollingTransactionSubscriber extends OnBlockSubscriber {
     #hash: string;
 
@@ -137,6 +162,11 @@ export class PollingTransactionSubscriber extends OnBlockSubscriber {
     }
 }
 
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
 export class PollingEventSubscriber implements Subscriber {
     #provider: AbstractProvider;
     #filter: EventFilter;

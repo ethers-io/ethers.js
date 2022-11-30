@@ -29,6 +29,11 @@ function getHost(name: string): string {
 }
 
 
+/**
+ *  About Ankr...
+ *
+ *  @_docloc: api/providers/thirdparty
+ */
 export class AnkrProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly apiKey!: string;
 

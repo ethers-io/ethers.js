@@ -20,6 +20,11 @@ import type { TransactionRequest } from "./provider.js";
 
 const THROTTLE = 2000;
 
+/**
+ *  Aboud Etherscan Debug...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 export type DebugEventEtherscanProvider = {
     action: "sendRequest",
     id: number,
@@ -37,6 +42,11 @@ export type DebugEventEtherscanProvider = {
 
 const EtherscanPluginId = "org.ethers.plugins.Etherscan";
 
+/**
+ *  Aboud Cloudflare...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 export class EtherscanPlugin extends NetworkPlugin {
     readonly baseUrl!: string;
     readonly communityApiKey!: string;
@@ -54,6 +64,11 @@ export class EtherscanPlugin extends NetworkPlugin {
 
 let nextId = 1;
 
+/**
+ *  Aboud Etherscan...
+ *
+ *  @_docloc: api/providers/thirdparty:Etherscan
+ */
 export class BaseEtherscanProvider extends AbstractProvider {
     readonly network!: Network;
     readonly apiKey!: string;

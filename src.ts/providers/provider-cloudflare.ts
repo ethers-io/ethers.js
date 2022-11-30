@@ -5,7 +5,11 @@ import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
 import type { Networkish } from "./network.js";
 
-
+/**
+ *  Aboud Cloudflare...
+ *
+ *  @_docloc: api/providers/thirdparty
+ */
 export class CloudflareProvider extends JsonRpcProvider {
     constructor(_network?: Networkish) {
         if (_network == null) { _network = "mainnet"; }

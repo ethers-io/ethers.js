@@ -1,3 +1,8 @@
+/**
+ *  About INFURA
+ *
+ *  @_subsection: api/providers/thirdparty:INFURA  [infura]
+ */
 import {
     defineProperties, FetchRequest, assert, assertArgument
 } from "../utils/index.js";
@@ -40,6 +45,9 @@ function getHost(name: string): string {
     assertArgument(false, "unsupported network", "network", name);
 }
 
+/**
+ *  INFURA...
+ */
 export class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourcable {
     readonly projectId!: string;
     readonly projectSecret!: null | string;
@@ -65,6 +73,9 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
     }
 }
 
+/**
+ *  Aboud Cloudflare...
+ */
 export class InfuraProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly projectId!: string;
     readonly projectSecret!: null | string;
