@@ -29,13 +29,14 @@ function _pack(type: string, value: any, isArray?: boolean): Uint8Array {
 
     let match =  type.match(regexNumber);
     if (match) {
+        let signed = (match[1] === "int");
         let size = parseInt(match[2] || "256")
 
         assertArgument((!match[2] || match[2] === String(size)) && (size % 8 === 0) && size !== 0 && size <= 256, "invalid number type", "type", type);
 
         if (isArray) { size = 256; }
 
-        value = toTwos(value, size);
+        if (signed) { value = toTwos(value, size); }
 
         return getBytes(zeroPadValue(toArray(value), size / 8));
     }

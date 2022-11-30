@@ -42,14 +42,9 @@ export class NumberCoder extends Coder {
             if (value > bounds || value < -(bounds + BN_1)) {
                 this._throwError("value out-of-bounds", _value);
             }
+            value = toTwos(value, 8 * WordSize);
         } else if (value < BN_0 || value > mask(maxUintValue, this.size * 8)) {
             this._throwError("value out-of-bounds", _value);
-        }
-
-        value = mask(toTwos(value, this.size * 8), this.size * 8);
-
-        if (this.signed) {
-            value = toTwos(fromTwos(value, this.size * 8), 8 * WordSize);
         }
 
         return writer.writeValue(value);

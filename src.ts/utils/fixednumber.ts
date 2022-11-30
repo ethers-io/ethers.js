@@ -162,10 +162,10 @@ function toString(val: bigint, decimals: number) {
     let str = val.toString();
 
     // No decimal point for whole values
-    if (decimals === 0) { return str; }
+    if (decimals === 0) { return (negative + str); }
 
-    // Pad out to the whole component
-    while (str.length < decimals) { str = Zeros + str; }
+    // Pad out to the whole component (including a whole digit)
+    while (str.length <= decimals) { str = Zeros + str; }
 
     // Insert the decimal point
     const index = str.length - decimals;

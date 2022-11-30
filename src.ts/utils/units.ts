@@ -52,7 +52,7 @@ export function formatUnits(value: BigNumberish, unit?: string | Numeric): strin
         decimals = getNumber(unit, "unit");
     }
 
-    return FixedNumber.fromValue(value, decimals, "fixed256x80").toString();
+    return FixedNumber.fromValue(value, decimals, { decimals }).toString();
 }
 
 /**
