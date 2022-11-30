@@ -242,7 +242,7 @@ export interface BlockParams<T extends string | TransactionResponseParams> {
 };
 */
 
-export interface MinedBlock<T extends string | TransactionResponse = string> extends Block<T> {
+export interface MinedBlock extends Block {
     readonly number: number;
     readonly hash: string;
     readonly timestamp: number;
@@ -254,7 +254,7 @@ export interface MinedBlock<T extends string | TransactionResponse = string> ext
  *  A **Block** represents the data associated with a full block on
  *  Ethereum.
  */
-export class Block<T extends string | TransactionResponse> implements BlockParams<T>, Iterable<T> {
+export class Block implements BlockParams, Iterable<string> {
     /**
      *  The provider connected to the block used to fetch additional details
      *  if necessary.
@@ -333,7 +333,7 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
      */
     readonly baseFeePerGas!: null | bigint;
 
-    readonly #transactions: ReadonlyArray<T>;
+    readonly #transactions: Array<string | TransactionResponse>;
 
     /**
      *  Create a new **Block** object.
@@ -341,16 +341,16 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
      *  This should generally not be necessary as the unless implementing a
      *  low-level library.
      */
-    constructor(block: BlockParams<T>, provider: Provider) {
+    constructor(block: BlockParams, provider: Provider) {
 
-        this.#transactions = Object.freeze(block.transactions.map((tx) => {
-            if (typeof(tx) !== "string" && tx.provider !== provider) {
-                return <T>(new TransactionResponse(tx, provider));
+        this.#transactions = block.transactions.map((tx) => {
+            if (typeof(tx) !== "string") {
+                return new TransactionResponse(tx, provider);
             }
-            return <T>tx;
-        }));;
+            return tx;
+        });
 
-        defineProperties<Block<T>>(this, {
+        defineProperties<Block>(this, {
             provider,
 
             hash: getValue(block.hash),
@@ -373,9 +373,14 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
     }
 
     /**
-     *  Returns the list of transactions.
+     *  Returns the list of transaction hashes.
      */
-    get transactions(): ReadonlyArray<T> { return this.#transactions; }
+    get transactions(): ReadonlyArray<string> {
+        return this.#transactions.map((tx) => {
+            if (typeof(tx) === "string") { return tx; }
+            return tx.hash;
+        });
+    }
 
     /**
      *  Returns a JSON-friendly value.
@@ -398,13 +403,14 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
         };
     }
 
-    [Symbol.iterator](): Iterator<T> {
+    [Symbol.iterator](): Iterator<string> {
         let index = 0;
+        const txs = this.transactions;
         return {
             next: () => {
                 if (index < this.length) {
                     return {
-                        value: this.transactions[index++], done: false
+                        value: txs[index++], done: false
                     }
                 }
                 return { value: undefined, done: true };
@@ -415,7 +421,7 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
     /**
      *  The number of transactions in this block.
      */
-    get length(): number { return this.transactions.length; }
+    get length(): number { return this.#transactions.length; }
 
     /**
      *  The [date](link-js-data) this block was included at.
@@ -424,14 +430,31 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
         if (this.timestamp == null) { return null; }
         return new Date(this.timestamp * 1000);
     }
-// @TODO: Don't have 2 block types?
-//  just populate this with all the values? simplifies provider
+
     /**
      *  Get the transaction at %%indexe%% within this block.
      */
-    async getTransaction(index: number): Promise<TransactionResponse> {
-        const tx = this.transactions[index];
+    async getTransaction(indexOrHash: number | string): Promise<TransactionResponse> {
+        // Find the internal value by its index or hash
+        let tx: string | TransactionResponse | undefined = undefined;
+        if (typeof(indexOrHash) === "number") {
+            tx = this.#transactions[indexOrHash];
+        } else {
+            const hash = indexOrHash.toLowerCase();
+            for (const v of this.#transactions) {
+                if (typeof(v) === "string") {
+                    if (v !== hash) { continue; }
+                    tx = v;
+                    break;
+                } else {
+                    if (v.hash === hash) { continue; }
+                    tx = v;
+                    break;
+                }
+            }
+        }
         if (tx == null) { throw new Error("no such tx"); }
+
         if (typeof(tx) === "string") {
             return <TransactionResponse>(await this.provider.getTransaction(tx));
         } else {
@@ -445,12 +468,12 @@ export class Block<T extends string | TransactionResponse> implements BlockParam
      *  If true, the block has been typed-gaurded that all mined
      *  properties are non-null.
      */
-    isMined(): this is MinedBlock<T> { return !!this.hash; }
+    isMined(): this is MinedBlock { return !!this.hash; }
 
     /**
      *
      */
-    isLondon(): this is (Block<T> & { baseFeePerGas: bigint }) {
+    isLondon(): this is (Block & { baseFeePerGas: bigint }) {
         return !!this.baseFeePerGas;
     }
 
@@ -536,16 +559,22 @@ export class Log implements LogParams {
         };
     }
 
-    async getBlock(): Promise<Block<string>> {
-        return <Block<string>>(await this.provider.getBlock(this.blockHash));
+    async getBlock(): Promise<Block> {
+        const block = await this.provider.getBlock(this.blockHash);
+        assert(!!block, "failed to find transaction", "UNKNOWN_ERROR", { });
+        return block;
     }
 
     async getTransaction(): Promise<TransactionResponse> {
-        return <TransactionResponse>(await this.provider.getTransaction(this.transactionHash));
+        const tx = await this.provider.getTransaction(this.transactionHash);
+        assert(!!tx, "failed to find transaction", "UNKNOWN_ERROR", { });
+        return tx;
     }
 
     async getTransactionReceipt(): Promise<TransactionReceipt> {
-        return <TransactionReceipt>(await this.provider.getTransactionReceipt(this.transactionHash));
+        const receipt = await this.provider.getTransactionReceipt(this.transactionHash);
+        assert(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", { });
+        return receipt;
     }
 
     removedEvent(): OrphanFilter {
@@ -697,7 +726,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
         return this.gasUsed * this.gasPrice;
     }
 
-    async getBlock(): Promise<Block<string>> {
+    async getBlock(): Promise<Block> {
         const block = await this.provider.getBlock(this.blockHash);
         if (block == null) { throw new Error("TODO"); }
         return block;
@@ -863,7 +892,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         };
     }
 
-    async getBlock(): Promise<null | Block<string>> {
+    async getBlock(): Promise<null | Block> {
         let blockNumber = this.blockNumber;
         if (blockNumber == null) {
             const tx = await this.getTransaction();
@@ -919,15 +948,19 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
                 // Get the next block to scan
                 if (stopScanning) { return null; }
-                const block = await this.provider.getBlockWithTransactions(nextScan);
+                const block = await this.provider.getBlock(nextScan, true);
 
                 // This should not happen; but we'll try again shortly
                 if (block == null) { return; }
 
-                for (const tx of block.transactions) {
+                // We were mined; no replacement
+                for (const hash of block) {
+                    if (hash === this.hash) { return; }
+                }
 
-                    // We were mined; no replacement
-                    if (tx.hash === this.hash) { return; }
+                // Search for the transaction that replaced us
+                for (let i = 0; i < block.length; i++) {
+                    const tx: TransactionResponse = await block.getTransaction(i);
 
                     if (tx.from === this.from && tx.nonce === this.nonce) {
                         // Get the receipt
@@ -1284,16 +1317,13 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
 
     /**
      *  Resolves to the block for %%blockHashOrBlockTag%%.
-     */
-    getBlock(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<string>>;
-
-    /**
-     *  Resolves to the block for %%blockHashOrBlockTag%%, including each
-     *  full transaction.
      *
-     *  If a block is unknonw, this resolved to ``null``.
+     *  If %%prefetchTxs%%, and the backend supports including transactions
+     *  with block requests, all transactions will be included and the
+     *  [[Block]] object will not need to make remote calls for getting
+     *  transactions.
      */
-    getBlockWithTransactions(blockHashOrBlockTag: BlockTag | string): Promise<null | Block<TransactionResponse>>
+    getBlock(blockHashOrBlockTag: BlockTag | string, prefetchTxs?: boolean): Promise<null | Block>;
 
     /**
      *  Resolves to the transaction for %%hash%%.
@@ -1360,5 +1390,5 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  This can be useful for waiting some number of blocks by using
      *  the ``currentBlockNumber + N``.
      */
-    waitForBlock(blockTag?: BlockTag): Promise<Block<string>>;
+    waitForBlock(blockTag?: BlockTag): Promise<Block>;
 }

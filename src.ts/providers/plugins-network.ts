@@ -2,10 +2,8 @@ import { defineProperties } from "../utils/properties.js";
 
 import { assertArgument } from "../utils/index.js";
 
-import type { BlockParams, TransactionResponseParams } from "./formatting.js";
-
 import type {
-    Block, FeeData, Provider, TransactionResponse
+    FeeData, Provider
 } from "./provider.js";
 
 
@@ -142,7 +140,7 @@ export class FeeDataNetworkPlugin extends NetworkPlugin {
         return new FeeDataNetworkPlugin(this.#feeDataFunc);
     }
 }
-
+/*
 export class CustomBlockNetworkPlugin extends NetworkPlugin {
     readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;
     readonly #blockWithTxsFunc: (provider: Provider, block: BlockParams<TransactionResponseParams>) => Block<TransactionResponse>;
@@ -157,7 +155,7 @@ export class CustomBlockNetworkPlugin extends NetworkPlugin {
         return await this.#blockFunc(provider, block);
     }
 
-    async getBlockWithTransactions(provider: Provider, block: BlockParams<TransactionResponseParams>): Promise<Block<TransactionResponse>> {
+    async getBlockions(provider: Provider, block: BlockParams<TransactionResponseParams>): Promise<Block<TransactionResponse>> {
         return await this.#blockWithTxsFunc(provider, block);
     }
 
@@ -165,3 +163,4 @@ export class CustomBlockNetworkPlugin extends NetworkPlugin {
         return new CustomBlockNetworkPlugin(this.#blockFunc, this.#blockWithTxsFunc);
     }
 }
+*/

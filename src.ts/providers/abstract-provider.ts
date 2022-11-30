@@ -26,8 +26,7 @@ import {
 
 import { EnsResolver } from "./ens-resolver.js";
 import {
-    formatBlock, formatBlockWithTransactions, formatLog, formatTransactionReceipt,
-    formatTransactionResponse
+    formatBlock, formatLog, formatTransactionReceipt, formatTransactionResponse
 } from "./format.js";
 import { Network } from "./network.js";
 import { copyRequest, Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
@@ -473,12 +472,8 @@ export class AbstractProvider implements Provider {
         });
     }
 
-    _wrapBlock(value: BlockParams<string>, network: Network): Block<string> {
+    _wrapBlock(value: BlockParams, network: Network): Block {
         return new Block(formatBlock(value), this);
-    }
-
-    _wrapBlockWithTransactions(value: BlockParams<TransactionResponseParams>, network: Network): Block<TransactionResponse> {
-        return new Block(formatBlockWithTransactions(value), this);
     }
 
     _wrapLog(value: LogParams, network: Network): Log {
@@ -884,24 +879,14 @@ export class AbstractProvider implements Provider {
     }
 
     // Queries
-    async getBlock(block: BlockTag | string): Promise<null | Block<string>> {
+    async getBlock(block: BlockTag | string, prefetchTxs?: boolean): Promise<null | Block> {
         const { network, params } = await resolveProperties({
             network: this.getNetwork(),
-            params: this.#getBlock(block, false)
+            params: this.#getBlock(block, !!prefetchTxs)
         });
         if (params == null) { return null; }
 
         return this._wrapBlock(formatBlock(params), network);
-    }
-
-    async getBlockWithTransactions(block: BlockTag | string): Promise<null | Block<TransactionResponse>> {
-        const { network, params } = await resolveProperties({
-            network: this.getNetwork(),
-            params: this.#getBlock(block, true)
-        });
-        if (params == null) { return null; }
-
-        return this._wrapBlockWithTransactions(formatBlockWithTransactions(params), network);
     }
 
     async getTransaction(hash: string): Promise<null | TransactionResponse> {
@@ -1033,7 +1018,7 @@ export class AbstractProvider implements Provider {
         });
     }
 
-    async waitForBlock(blockTag?: BlockTag): Promise<Block<string>> {
+    async waitForBlock(blockTag?: BlockTag): Promise<Block> {
         throw new Error();
         //return new Block(<any><unknown>{ }, this);
     }

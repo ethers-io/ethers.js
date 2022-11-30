@@ -14,10 +14,6 @@ import type {
     TransactionReceiptParams, TransactionResponseParams,
 } from "./formatting.js";
 
-import type {
-    TransactionResponse
-} from "./provider.js";
-
 
 const BN_0 = BigInt(0);
 
@@ -111,38 +107,31 @@ export function formatLog(value: any): LogParams {
     return _formatLog(value);
 }
 
-function _formatBlockWith(txFunc: FormatFunc): FormatFunc {
-    return object({
-        hash: allowNull(formatHash),
-        parentHash: formatHash,
-        number: getNumber,
+const _formatBlock = object({
+    hash: allowNull(formatHash),
+    parentHash: formatHash,
+    number: getNumber,
 
-        timestamp: getNumber,
-        nonce: allowNull(formatData),
-        difficulty: getBigInt,
+    timestamp: getNumber,
+    nonce: allowNull(formatData),
+    difficulty: getBigInt,
 
-        gasLimit: getBigInt,
-        gasUsed: getBigInt,
+    gasLimit: getBigInt,
+    gasUsed: getBigInt,
 
-        miner: allowNull(getAddress),
-        extraData: formatData,
+    miner: allowNull(getAddress),
+    extraData: formatData,
 
-        transactions: arrayOf(txFunc),
+    baseFeePerGas: allowNull(getBigInt)
+});
 
-        baseFeePerGas: allowNull(getBigInt)
+export function formatBlock(value: any): BlockParams {
+    const result = _formatBlock(value);
+    result.transactions = value.transactions.map((tx: string | TransactionResponseParams) => {
+        if (typeof(tx) === "string") { return tx; }
+        return formatTransactionResponse(tx);
     });
-}
-
-const _formatBlock = _formatBlockWith(formatHash);
-
-export function formatBlock(value: any): BlockParams<string> {
-    return _formatBlock(value);
-}
-
-const _formatBlockWithTransactions = _formatBlockWith(formatTransactionResponse);
-
-export function formatBlockWithTransactions(value: any): BlockParams<TransactionResponse> {
-    return _formatBlockWithTransactions(value);
+    return result;
 }
 
 const _formatReceiptLog = object({

@@ -72,7 +72,7 @@ export  class ContractUnknownEventPayload extends EventPayload<ContractEventName
         defineProperties<ContractUnknownEventPayload>(this, { log });
     }
 
-    async getBlock(): Promise<Block<string>> {
+    async getBlock(): Promise<Block> {
         return await this.log.getBlock();
     }
 

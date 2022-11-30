@@ -72,7 +72,7 @@ export interface PreparedTransactionRequest {
 //////////////////////
 // Block
 
-export interface BlockParams<T extends string | TransactionResponseParams> {
+export interface BlockParams {
     hash?: null | string;
 
     number: number;
@@ -91,7 +91,7 @@ export interface BlockParams<T extends string | TransactionResponseParams> {
 
     baseFeePerGas: null | bigint;
 
-    transactions: ReadonlyArray<T>;
+    transactions: ReadonlyArray<string | TransactionResponseParams>;
 };
 
 
