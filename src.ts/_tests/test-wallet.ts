@@ -95,12 +95,14 @@ describe("Test Wallet Encryption", function() {
         let wallet: Wallet | HDNodeWallet = Wallet.createRandom();
 
         it("encrypts a random wallet: sync", function() {
+            this.timeout(30000);
             const json = wallet.encryptSync(password);
             const decrypted = Wallet.fromEncryptedJsonSync(json, password);
             assert.equal(decrypted.address, wallet.address, "address");
         });
 
         it("encrypts a random wallet: async", async function() {
+            this.timeout(30000);
             const json = await wallet.encrypt(password);
             const decrypted = await Wallet.fromEncryptedJson(json, password);
             assert.equal(decrypted.address, wallet.address, "address");
