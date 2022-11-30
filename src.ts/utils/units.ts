@@ -19,8 +19,9 @@
  *
  *  @_subsection api/utils:Unit Conversion  [units]
  */
-import { formatFixed, parseFixed } from "./fixednumber.js";
 import { assertArgument } from "./errors.js";
+import { FixedNumber } from "./fixednumber.js";
+import { getNumber } from "./maths.js";
 
 import type { BigNumberish, Numeric } from "../utils/index.js";
 
@@ -42,12 +43,16 @@ const names = [
  *
  */
 export function formatUnits(value: BigNumberish, unit?: string | Numeric): string {
+    let decimals = 18;
     if (typeof(unit) === "string") {
         const index = names.indexOf(unit);
         assertArgument(index >= 0, "invalid unit", "unit", unit);
-        unit = 3 * index;
+        decimals = 3 * index;
+    } else if (unit != null) {
+        decimals = getNumber(unit, "unit");
     }
-    return formatFixed(value, (unit != null) ? unit: 18);
+
+    return FixedNumber.fromValue(value, decimals, "fixed256x80").toString();
 }
 
 /**
@@ -58,13 +63,16 @@ export function formatUnits(value: BigNumberish, unit?: string | Numeric): strin
 export function parseUnits(value: string, unit?: string | Numeric): bigint {
     assertArgument(typeof(value) === "string", "value must be a string", "value", value);
 
+    let decimals = 18;
     if (typeof(unit) === "string") {
         const index = names.indexOf(unit);
         assertArgument(index >= 0, "invalid unit", "unit", unit);
-        unit = 3 * index;
+        decimals = 3 * index;
+    } else if (unit != null) {
+        decimals = getNumber(unit, "unit");
     }
 
-    return parseFixed(value, (unit != null) ? unit: 18);
+    return FixedNumber.fromString(value, { decimals }).value;
 }
 
 /**

@@ -87,7 +87,7 @@ export {
     makeError,
     isCallException, isError,
     FetchRequest, FetchResponse, FetchCancelSignal,
-    FixedFormat, FixedNumber, formatFixed, parseFixed,
+    FixedNumber,
     getBigInt, getNumber, toArray, toBigInt, toHex, toNumber, toQuantity,
     fromTwos, toTwos, mask,
     formatEther, parseEther, formatUnits, parseUnits,
@@ -149,6 +149,7 @@ export type {
     BytesLike,
     BigNumberish, Numeric,
     ErrorCode,
+    FixedFormat,
     Utf8ErrorFunc, UnicodeNormalizationForm, Utf8ErrorReason,
     RlpStructuredData,
 

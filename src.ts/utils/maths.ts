@@ -4,7 +4,7 @@
  *  @_subsection: api/utils:Math Helpers  [maths]
  */
 import { hexlify, isBytesLike } from "./data.js";
-import { assertArgument } from "./errors.js";
+import { assert, assertArgument } from "./errors.js";
 
 import type { BytesLike } from "./data.js";
 
@@ -35,6 +35,11 @@ export function fromTwos(_value: BigNumberish, _width: Numeric): bigint {
     const value = getBigInt(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
 
+    assertArgument(value >= BN_0, "invalid twos complement value", "value", value);
+    assert((value >> width) === BN_0, "overflow", "NUMERIC_FAULT", {
+        operation: "fromTwos", fault: "overflow", value: _value
+    });
+
     // Top bit set; treat as a negative value
     if (value >> (width - BN_1)) {
         const mask = (BN_1 << width) - BN_1;
@@ -51,14 +56,23 @@ export function fromTwos(_value: BigNumberish, _width: Numeric): bigint {
  *  The result will always be positive.
  */
 export function toTwos(_value: BigNumberish, _width: Numeric): bigint {
-    const value = getBigInt(_value, "value");
+    let value = getBigInt(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
 
-    if (value < BN_0) {
-        const mask = (BN_1 << width) - BN_1;
-        return ((~(-value)) & mask) + BN_1;
-    }
+    const limit = (BN_1 << (width - BN_1));
 
+    if (value < BN_0) {
+        value = -value;
+        assert(value <= limit, "too low", "NUMERIC_FAULT", {
+            operation: "toTwos", fault: "overflow", value: _value
+        });
+        const mask = (BN_1 << width) - BN_1;
+        return ((~value) & mask) + BN_1;
+    } else {
+        assert(value < limit, "too high", "NUMERIC_FAULT", {
+            operation: "toTwos", fault: "overflow", value: _value
+        });
+    }
 
     return value;
 }

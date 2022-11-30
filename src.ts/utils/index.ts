@@ -26,7 +26,7 @@ export {
     FetchRequest, FetchResponse, FetchCancelSignal,
 } from "./fetch.js";
 
-export { FixedFormat, FixedNumber, formatFixed, parseFixed } from "./fixednumber.js"
+export { FixedNumber } from "./fixednumber.js"
 
 export {
     fromTwos, toTwos, mask,
@@ -82,7 +82,9 @@ export type {
     FetchGatewayFunc, FetchGetUrlFunc
 } from "./fetch.js";
 
-export { BigNumberish, Numeric } from "./maths.js";
+export type { FixedFormat } from "./fixednumber.js"
+
+export type { BigNumberish, Numeric } from "./maths.js";
 
 export type { RlpStructuredData } from "./rlp.js";
 
