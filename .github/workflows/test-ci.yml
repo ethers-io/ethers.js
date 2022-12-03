@@ -8,7 +8,7 @@ on:
 jobs:
 
   test-node:
-    if: ${{ false }}  # disable for now
+    #if: ${{ false }}  # disable for now
 
     name: Run Node.js Tests
 
@@ -46,7 +46,7 @@ jobs:
 
 
   coverage:
-    if: ${{ false }}  # disable for now
+    #if: ${{ false }}  # disable for now
 
     name: Generate Coverage Report
 
