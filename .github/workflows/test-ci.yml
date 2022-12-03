@@ -141,3 +141,13 @@ jobs:
         with:
           name: docs
           path: ./output/docs.tar
+
+      - name: Upload documentation to to docs.ethers.org
+        uses: ethers-io/sync-s3-action@main
+        with:
+          aws_access_key_id: ${{ secrets.DOCS_AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.DOCS_AWS_SECRET_ACCESS_KEY}}
+          aws_s3_bucket: ethers.org
+          source_folder: 'output/docs/'
+          destination_prefix: 'docs/v6-beta/'
+          aws_cloudfront_id: ${{ secrets.DOCS_AWS_CLOUDFRONT_ID }}
