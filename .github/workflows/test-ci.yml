@@ -8,6 +8,7 @@ on:
 jobs:
 
   test-node:
+    if: ${{ false }}  # disable for now
 
     name: Run Node.js Tests
 
@@ -45,6 +46,7 @@ jobs:
 
 
   coverage:
+    if: ${{ false }}  # disable for now
 
     name: Generate Coverage Report
 
@@ -99,3 +101,43 @@ jobs:
           source_folder: 'output/'
           destination_prefix: 'build/output/'
           aws_cloudfront_id: ${{ secrets.BUILD_AWS_CLOUDFRONT_ID }}
+
+  docs:
+
+    name: Generate Documentation
+
+    runs-on: ubuntu-latest
+
+    environment: ethers-tests
+    env:
+      FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
+
+    continue-on-error: true
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 18.x
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: "v6-beta-exports"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Flatworm
+        run: npm install --no-save 'https://github.com/ricmoo/flatworm.git#tsdocs'
+
+      - name: Build Documentation
+        run: node node_modules/flatworm/lib/test-api-index ./docs.wrm/config.js
+
+      - name: Tar documentation files
+        run: tar -cvf ./output/docs.tar ./output/docs/
+
+      - name: Store full coverage artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docs
+          path: ./output/docs.tar
