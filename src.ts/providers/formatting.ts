@@ -5,13 +5,9 @@
  */
 
 import type { Signature } from "../crypto/index.js";
-import type { AccessList, AccessListish } from "../transaction/index.js";
-import type { BigNumberish } from "../utils/index.js";
-import type { AddressLike } from "../address/index.js";
+import type { AccessList } from "../transaction/index.js";
 
-import type { BlockTag } from "./provider.js";
-
-
+/*
 export interface TransactionRequest {
     type?: null | number;
 
@@ -41,7 +37,6 @@ export interface TransactionRequest {
     // Todo?
     //gasMultiplier?: number;
 };
-
 export interface PreparedTransactionRequest {
     type?: number;
 
@@ -67,6 +62,7 @@ export interface PreparedTransactionRequest {
     blockTag?: BlockTag;
     enableCcipRead?: boolean;
 }
+*/
 
 
 //////////////////////
