@@ -20,6 +20,10 @@ In general, please be a patient as there is lots to do.
 Thanks! :)
 ```
 
+[![npm (tag)](https://img.shields.io/npm/v/ethers)](https://www.npmjs.com/package/ethers)
+[![Node.js CI](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml/badge.svg?branch=v6-beta-exports)](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml)
+[![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/ethers-io/ethers.js/badge)](https://www.gitpoap.io/gh/ethers-io/ethers.js)
+
 -----
 
 A complete, compact and simple library for Ethereum and ilk, written
