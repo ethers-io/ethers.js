@@ -16,6 +16,7 @@ function getConfig(opts) {
       format: "esm",
       sourcemap: true
     },
+    context: "window",
     treeshake: false,
     plugins: [ nodeResolve({
         exportConditions,
@@ -23,7 +24,6 @@ function getConfig(opts) {
         modulesOnly: true,
         preferBuiltins: false
     }) ],
-//    external: [ "crypto" ]
   };
 }
 
