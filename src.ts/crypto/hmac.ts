@@ -1,3 +1,11 @@
+/**
+ *  An **HMAC** enables verification that a given key was used
+ *  to authenticate a payload.
+ *
+ *  See: [[link-wiki-hmac]]
+ *
+ *  @_subsection: api/crypto:HMAC  [about-hmac]
+ */
 import { createHmac } from "./crypto.js";
 import { getBytes, hexlify } from "../utils/index.js";
 
@@ -12,6 +20,10 @@ const _computeHmac = function(algorithm: "sha256" | "sha512", key: Uint8Array, d
 
 let __computeHmac = _computeHmac;
 
+/**
+ *  Return the HMAC for %%data%% using the %%key%% key with the underlying
+ *  %%algo%% used for compression.
+ */
 export function computeHmac(algorithm: "sha256" | "sha512", _key: BytesLike, _data: BytesLike): string {
     const key = getBytes(_key, "key");
     const data = getBytes(_data, "data");

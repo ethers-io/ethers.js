@@ -64,7 +64,7 @@ function loadWords(): Array<string> {
 let wordlist: null | LangKo = null;
 
 /**
- *  The [[link-bip-39]] Wordlist for the Korean (ko) language.
+ *  The [[link-bip39-ko]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

@@ -14,6 +14,9 @@ function accessSetify(addr: string, storageKeys: Array<string>): { address: stri
     };
 }
 
+/**
+ *  Returns a [[AccessList]] from any ethers-supported access-list structure.
+ */
 export function accessListify(value: AccessListish): AccessList {
     if (Array.isArray(value)) {
         return (<Array<[ string, Array<string>] | { address: string, storageKeys: Array<string>}>>value).map((set, index) => {

@@ -1,7 +1,7 @@
 /**
  *  Explain fetching here...
  *
- *  @_section api/utils/fetching:Fetching Web Content  [fetching]
+ *  @_section api/utils/fetching:Fetching Web Content  [about-fetch]
  */
 import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";

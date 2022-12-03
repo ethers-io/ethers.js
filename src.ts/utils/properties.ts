@@ -1,21 +1,8 @@
 /**
  *  Property helper functions.
  *
- *  @_subsection api/utils:Properties  [properties]
+ *  @_subsection api/utils:Properties  [about-properties]
  */
-
-/**
- *  Resolves to a new object that is a copy of %%value%%, but with all
- *  values resolved.
- */
-export async function resolveProperties<T>(value: { [ P in keyof T ]: T[P] | Promise<T[P]>}): Promise<T> {
-    const keys = Object.keys(value);
-    const results = await Promise.all(keys.map((k) => Promise.resolve(value[<keyof T>k])));
-    return results.reduce((accum: any, v, index) => {
-        accum[keys[index]] = v;
-        return accum;
-    }, <{ [ P in keyof T]: T[P] }>{ });
-}
 
 function checkType(value: any, type: string, name: string): void {
     const types = type.split("|").map(t => t.trim());
@@ -37,6 +24,19 @@ function checkType(value: any, type: string, name: string): void {
     error.value = value;
 
     throw error;
+}
+
+/**
+ *  Resolves to a new object that is a copy of %%value%%, but with all
+ *  values resolved.
+ */
+export async function resolveProperties<T>(value: { [ P in keyof T ]: T[P] | Promise<T[P]>}): Promise<T> {
+    const keys = Object.keys(value);
+    const results = await Promise.all(keys.map((k) => Promise.resolve(value[<keyof T>k])));
+    return results.reduce((accum: any, v, index) => {
+        accum[keys[index]] = v;
+        return accum;
+    }, <{ [ P in keyof T]: T[P] }>{ });
 }
 
 /**

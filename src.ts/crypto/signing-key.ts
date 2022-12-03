@@ -21,18 +21,46 @@ secp256k1.utils.hmacSha256Sync = function(key: Uint8Array, ...messages: Array<Ui
     return getBytes(computeHmac("sha256", key, concat(messages)));
 }
 
+/**
+ *  A **SigningKey** provides high-level access to the elliptic curve
+ *  cryptography (ECC) operations and key management.
+ */
 export class SigningKey {
     #privateKey: string;
 
+    /**
+     *  Creates a new **SigningKey** for %%privateKey%%.
+     */
     constructor(privateKey: BytesLike) {
         assertArgument(dataLength(privateKey) === 32, "invalid private key", "privateKey", "[REDACTED]");
         this.#privateKey = hexlify(privateKey);
     }
 
+    /**
+     *  The private key.
+     */
     get privateKey(): string { return this.#privateKey; }
+
+    /**
+     *  The uncompressed public key.
+     *
+     * This will always begin with the prefix ``0x04`` and be 132
+     * characters long (the ``0x`` prefix and 130 hexadecimal nibbles).
+     */
     get publicKey(): string { return SigningKey.computePublicKey(this.#privateKey); }
+
+    /**
+     *  The compressed public key.
+     *
+     *  This will always begin with either the prefix ``0x02`` or ``0x03``
+     *  and be 68 characters long (the ``0x`` prefix and 33 hexadecimal
+     *  nibbles)
+     */
     get compressedPublicKey(): string { return SigningKey.computePublicKey(this.#privateKey, true); }
 
+    /**
+     *  Return the signature of the signed %%digest%%.
+     */
     sign(digest: BytesLike): Signature {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
 
@@ -49,11 +77,27 @@ export class SigningKey {
         });
     }
 
+    /**
+     *  Returns the [[link-wiki-ecdh]] shared secret between this
+     *  private key and the %%other%% key.
+     *
+     *  The %%other%% key may be any type of key, a raw public key,
+     *  a compressed/uncompressed pubic key or aprivate key.
+     *
+     *  Best practice is usually to use a cryptographic hash on the
+     *  returned value before using it as a symetric secret.
+     */
     computeShardSecret(other: BytesLike): string {
         const pubKey = SigningKey.computePublicKey(other);
         return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), pubKey));
     }
 
+    /**
+     *  Compute the public key for %%key%%, optionally %%compressed%%.
+     *
+     *  The %%key%% may be any type of key, a raw public key, a
+     *  compressed/uncompressed public key or private key.
+     */
     static computePublicKey(key: BytesLike, compressed?: boolean): string {
         let bytes = getBytes(key, "key");
 
@@ -73,6 +117,10 @@ export class SigningKey {
         return hexlify(point.toRawBytes(compressed));
     }
 
+    /**
+     *  Returns the public key for the private key which produced the
+     *  %%signature%% for the given %%digest%%.
+     */
     static recoverPublicKey(digest: BytesLike, signature: SignatureLike): string {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
 
@@ -85,7 +133,17 @@ export class SigningKey {
         assertArgument(false, "invalid signautre for digest", "signature", signature);
     }
 
-    static _addPoints(p0: BytesLike, p1: BytesLike, compressed?: boolean): string {
+    /**
+     *  Returns the point resulting from adding the ellipic curve points
+     *  %%p0%% and %%p1%%.
+     *
+     *  This is not a common function most developers should require, but
+     *  can be useful for certain privacy-specific techniques.
+     *
+     *  For example, it is used by [[HDNodeWallet]] to compute child
+     *  addresses from parent public keys and chain codes.
+     */
+    static addPoints(p0: BytesLike, p1: BytesLike, compressed?: boolean): string {
         const pub0 = secp256k1.Point.fromHex(SigningKey.computePublicKey(p0).substring(2));
         const pub1 = secp256k1.Point.fromHex(SigningKey.computePublicKey(p1).substring(2));
         return "0x" + pub0.add(pub1).toHex(!!compressed)

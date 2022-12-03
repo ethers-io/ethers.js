@@ -7,7 +7,7 @@ const checksum = "0xf74fb7092aeacdfbf8959557de22098da512207fb9f109cb526994938cf4
 let wordlist: null | LangEs = null;
 
 /**
- *  The [[link-bip-39]] Wordlist for the Spanish (es) language.
+ *  The [[link-bip39-es]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

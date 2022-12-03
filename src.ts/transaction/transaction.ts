@@ -23,27 +23,74 @@ const BN_35 = BigInt(35);
 const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
 export interface TransactionLike<A = string> {
+    /**
+     *  The type.
+     */
     type?: null | number;
 
+    /**
+     *  The recipient address or ``null`` for an ``init`` transaction.
+     */
     to?: null | A;
+
+    /**
+     *  The sender.
+     */
     from?: null | A;
 
+    /**
+     *  The nonce.
+     */
     nonce?: null | number;
 
+    /**
+     *  The maximum amount of gas that can be used.
+     */
     gasLimit?: null | BigNumberish;
+
+    /**
+     *  The gas price for legacy and berlin transactions.
+     */
     gasPrice?: null | BigNumberish;
 
+    /**
+     *  The maximum priority fee per gas for london transactions.
+     */
     maxPriorityFeePerGas?: null | BigNumberish;
+
+    /**
+     *  The maximum total fee per gas for london transactions.
+     */
     maxFeePerGas?: null | BigNumberish;
 
+    /**
+     *  The data.
+     */
     data?: null | string;
+
+    /**
+     *  The value (in wei) to send.
+     */
     value?: null | BigNumberish;
+
+    /**
+     *  The chain ID the transaction is valid on.
+     */
     chainId?: null | BigNumberish;
 
+    /**
+     *  The transaction hash.
+     */
     hash?: null | string;
 
+    /**
+     *  The signature provided by the sender.
+     */
     signature?: null | SignatureLike;
 
+    /**
+     *  The access list for berlin and london transactions.
+     */
     accessList?: null | AccessListish;
 }
 
@@ -305,14 +352,24 @@ function _serializeEip2930(tx: TransactionLike, sig?: Signature): string {
     return concat([ "0x01", encodeRlp(fields)]);
 }
 
+/**
+ *  A transactions which has been signed.
+ */
+ /*
 export interface SignedTransaction extends Transaction {
     type: number;
     typeName: string;
     from: string;
     signature: Signature;
 }
+*/
 
-
+/**
+ *  A **Transaction** describes an operation to be executed on
+ *  Ethereum by an Externally Owned Account (EOA). It includes
+ *  who (the [[to]] address), what (the [[data]]) and how much (the
+ *  [[value]] in ether) the operation should entail.
+ */
 export class Transaction implements TransactionLike<string> {
     #type: null | number;
     #to: null | string;
@@ -327,17 +384,13 @@ export class Transaction implements TransactionLike<string> {
     #sig: null | Signature;
     #accessList: null | AccessList;
 
-    // A type of null indicates the type will be populated automatically
+    /**
+     *  The transaction type.
+     *
+     *  If null, the type will be automatically inferred based on
+     *  explicit properties.
+     */
     get type(): null | number { return this.#type; }
-    get typeName(): null | string {
-        switch (this.type) {
-            case 0: return "legacy";
-            case 1: return "eip-2930";
-            case 2: return "eip-1559";
-        }
-
-        return null;
-    }
     set type(value: null | number | string) {
         switch (value) {
             case null:
@@ -357,17 +410,46 @@ export class Transaction implements TransactionLike<string> {
         }
     }
 
+    /**
+     *  The name of the transaction type.
+     */
+    get typeName(): null | string {
+        switch (this.type) {
+            case 0: return "legacy";
+            case 1: return "eip-2930";
+            case 2: return "eip-1559";
+        }
+
+        return null;
+    }
+
+    /**
+     *  The ``to`` address for the transaction or ``null`` if the
+     *  transaction is an ``init`` transaction.
+     */
     get to(): null | string { return this.#to; }
     set to(value: null | string) {
         this.#to = (value == null) ? null: getAddress(value);
     }
 
+    /**
+     *  The transaction nonce.
+     */
     get nonce(): number { return this.#nonce; }
     set nonce(value: BigNumberish) { this.#nonce = getNumber(value, "value"); }
 
+    /**
+     *  The gas limit.
+     */
     get gasLimit(): bigint { return this.#gasLimit; }
     set gasLimit(value: BigNumberish) { this.#gasLimit = getBigInt(value); }
 
+    /**
+     *  The gas price.
+     *
+     *  On legacy networks this defines the fee that will be paid. On
+     *  EIP-1559 networks, this should be ``null``.
+     */
     get gasPrice(): null | bigint {
         const value = this.#gasPrice;
         if (value == null && (this.type === 0 || this.type === 1)) { return BN_0; }
@@ -377,6 +459,10 @@ export class Transaction implements TransactionLike<string> {
         this.#gasPrice = (value == null) ? null: getBigInt(value, "gasPrice");
     }
 
+    /**
+     *  The maximum priority fee per unit of gas to pay. On legacy
+     *  networks this should be ``null``.
+     */
     get maxPriorityFeePerGas(): null | bigint {
         const value = this.#maxPriorityFeePerGas;
         if (value == null) {
@@ -389,6 +475,10 @@ export class Transaction implements TransactionLike<string> {
         this.#maxPriorityFeePerGas = (value == null) ? null: getBigInt(value, "maxPriorityFeePerGas");
     }
 
+    /**
+     *  The maximum total fee per unit of gas to pay. On legacy
+     *  networks this should be ``null``.
+     */
     get maxFeePerGas(): null | bigint {
         const value = this.#maxFeePerGas;
         if (value == null) {
@@ -401,22 +491,41 @@ export class Transaction implements TransactionLike<string> {
         this.#maxFeePerGas = (value == null) ? null: getBigInt(value, "maxFeePerGas");
     }
 
+    /**
+     *  The transaction data. For ``init`` transactions this is the
+     *  deployment code.
+     */
     get data(): string { return this.#data; }
     set data(value: BytesLike) { this.#data = hexlify(value); }
 
+    /**
+     *  The amount of ether to send in this transactions.
+     */
     get value(): bigint { return this.#value; }
     set value(value: BigNumberish) {
         this.#value = getBigInt(value, "value");
     }
 
+    /**
+     *  The chain ID this transaction is valid on.
+     */
     get chainId(): bigint { return this.#chainId; }
     set chainId(value: BigNumberish) { this.#chainId = getBigInt(value); }
 
+    /**
+     *  If signed, the signature for this transaction.
+     */
     get signature(): null | Signature { return this.#sig || null; }
     set signature(value: null | SignatureLike) {
         this.#sig = (value == null) ? null: Signature.from(value);
     }
 
+    /**
+     *  The access list.
+     *
+     *  An access list permits discounted (but pre-paid) access to
+     *  bytecode and state variable access within contract execution.
+     */
     get accessList(): null | AccessList {
         const value = this.#accessList || null;
         if (value == null) {
@@ -429,6 +538,9 @@ export class Transaction implements TransactionLike<string> {
         this.#accessList = (value == null) ? null: accessListify(value);
     }
 
+    /**
+     *  Creates a new Transaction with default values.
+     */
     constructor() {
         this.#type = null;
         this.#to = null;
@@ -444,29 +556,57 @@ export class Transaction implements TransactionLike<string> {
         this.#accessList = null;
     }
 
+    /**
+     *  The transaction hash, if signed. Otherwise, ``null``.
+     */
     get hash(): null | string {
         if (this.signature == null) { return null; }
         return keccak256(this.serialized);
     }
 
+    /**
+     *  The pre-image hash of this transaction.
+     *
+     *  This is the digest that a [[Signer]] must sign to authorize
+     *  this transaction.
+     */
     get unsignedHash(): string {
         return keccak256(this.unsignedSerialized);
     }
 
+    /**
+     *  The sending address, if signed. Otherwise, ``null``.
+     */
     get from(): null | string {
         if (this.signature == null) { return null; }
         return recoverAddress(this.unsignedHash, this.signature);
     }
 
+    /**
+     *  The public key of the sender, if signed. Otherwise, ``null``.
+     */
     get fromPublicKey(): null | string {
         if (this.signature == null) { return null; }
         return SigningKey.recoverPublicKey(this.unsignedHash, this.signature);
     }
 
-    isSigned(): this is SignedTransaction {
+    /**
+     *  Returns true if signed.
+     *
+     *  This provides a Type Guard that properties requiring a signed
+     *  transaction are non-null.
+     */
+    isSigned(): this is (Transaction & { type: number, typeName: string, from: string, signature: Signature }) {
+    //isSigned(): this is SignedTransaction {
         return this.signature != null;
     }
 
+    /**
+     *  The serialized transaction.
+     *
+     *  This throws if the transaction is unsigned. For the pre-image,
+     *  use [[unsignedSerialized]].
+     */
     get serialized(): string {
         assert(this.signature != null, "cannot serialize unsigned transaction; maybe you meant .unsignedSerialized", "UNSUPPORTED_OPERATION", { operation: ".serialized"});
 
@@ -482,6 +622,12 @@ export class Transaction implements TransactionLike<string> {
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
     }
 
+    /**
+     *  The transaction pre-image.
+     *
+     *  The hash of this is the digest which needs to be signed to
+     *  authorize this transaction.
+     */
     get unsignedSerialized(): string {
         switch (this.inferType()) {
             case 0:
@@ -497,13 +643,16 @@ export class Transaction implements TransactionLike<string> {
 
     /**
      *  Return the most "likely" type; currently the highest
-     *  supported transaction type
+     *  supported transaction type.
      */
     inferType(): number {
         return <number>(this.inferTypes().pop());
     }
 
-    // Validates properties and lists possible types this transaction adheres to
+    /**
+     *  Validates the explicit properties and returns a list of compatible
+     *  transaction types.
+     */
     inferTypes(): Array<number> {
 
         // Checks that there are no conflicting properties set
@@ -553,20 +702,49 @@ export class Transaction implements TransactionLike<string> {
         return types;
     }
 
+    /**
+     *  Returns true if this transaction is a legacy transaction (i.e.
+     *  ``type === 0``).
+     *
+     *  This provides a Type Guard that the related properties are
+     *  non-null.
+     */
     isLegacy(): this is (Transaction & { type: 0, gasPrice: bigint }) {
         return (this.type === 0);
     }
+
+    /**
+     *  Returns true if this transaction is berlin hardform transaction (i.e.
+     *  ``type === 1``).
+     *
+     *  This provides a Type Guard that the related properties are
+     *  non-null.
+     */
     isBerlin(): this is (Transaction & { type: 1, gasPrice: bigint, accessList: AccessList }) {
         return (this.type === 1);
     }
+
+    /**
+     *  Returns true if this transaction is london hardform transaction (i.e.
+     *  ``type === 2``).
+     *
+     *  This provides a Type Guard that the related properties are
+     *  non-null.
+     */
     isLondon(): this is (Transaction & { type: 2, accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint}) {
         return (this.type === 2);
     }
 
+    /**
+     *  Create a copy of this transaciton.
+     */
     clone(): Transaction {
         return Transaction.from(this);
     }
 
+    /**
+     *  Return a JSON-friendly object.
+     */
     toJSON(): any {
         const s = (v: null | bigint) => {
             if (v == null) { return null; }
@@ -590,7 +768,13 @@ export class Transaction implements TransactionLike<string> {
         };
     }
 
-    static from(tx: string | TransactionLike<string>): Transaction {
+    /**
+     *  Create a **Transaction** from a serialized transaction or a
+     *  Transaction-like object.
+     */
+    static from(tx?: string | TransactionLike<string>): Transaction {
+        if (tx == null) { return new Transaction(); }
+
         if (typeof(tx) === "string") {
             const payload = getBytes(tx);
 

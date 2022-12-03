@@ -424,7 +424,7 @@ export class Block implements BlockParams, Iterable<string> {
     get length(): number { return this.#transactions.length; }
 
     /**
-     *  The [date](link-js-data) this block was included at.
+     *  The [[link-js-date]] this block was included at.
      */
     get date(): null | Date {
         if (this.timestamp == null) { return null; }

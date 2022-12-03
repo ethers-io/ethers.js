@@ -1,3 +1,11 @@
+/**
+ *  A **Password-Based Key-Derivation Function** is designed to create
+ *  a sequence of bytes suitible as a **key** from a human-rememberable
+ *  password.
+ *
+ *  @_subsection: api/crypto:Passwords  [about-pbkdf]
+ */
+
 import { pbkdf2Sync } from "./crypto.js";
 
 import { getBytes, hexlify } from "../utils/index.js";
@@ -13,6 +21,13 @@ const _pbkdf2 = function(password: Uint8Array, salt: Uint8Array, iterations: num
 
 let __pbkdf2 = _pbkdf2;
 
+/**
+ *  Return the [[link-pbkdf2]] for %%keylen%% bytes for %%password%% using
+ *  the %%salt%% and using %%iterations%% of %%algo%%.
+ *
+ *  This PBKDF is outdated and should not be used in new projects, but is
+ *  required to decrypt older files.
+ */
 export function pbkdf2(_password: BytesLike, _salt: BytesLike, iterations: number, keylen: number, algo: "sha256" | "sha512"): string {
     const password = getBytes(_password, "password");
     const salt = getBytes(_salt, "salt");

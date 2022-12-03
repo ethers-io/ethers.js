@@ -1,7 +1,7 @@
 /**
  *  About Errors.
  *
- *  @_section: api/utils/errors:Errors  [errors]
+ *  @_section: api/utils/errors:Errors  [about-errors]
  */
 
 import { version } from "../_version.js";

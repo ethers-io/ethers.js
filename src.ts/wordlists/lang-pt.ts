@@ -6,7 +6,7 @@ const checksum = "0x2219000926df7b50d8aa0a3d495826b988287df4657fbd100e6fe596c8f7
 let wordlist: null | LangPt = null;
 
 /**
- *  The [[link-bip-39]] Wordlist for the Portuguese (pt) language.
+ *  The [[link-bip39-pt]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

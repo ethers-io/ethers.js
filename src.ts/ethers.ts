@@ -98,7 +98,7 @@ export {
 
 export {
     Mnemonic,
-    BaseWallet, HDNodeWallet, HDNodeVoidWallet, HDNodeWalletManager,
+    BaseWallet, HDNodeWallet, HDNodeVoidWallet,
     Wallet,
 
     defaultPath,
@@ -141,8 +141,8 @@ export type {
 } from "./providers/index.js";
 
 export type {
-    AccessList, AccessListish, AccessListSet,
-    SignedTransaction, TransactionLike
+    AccessList, AccessListish, AccessListEntry,
+    TransactionLike
 } from "./transaction/index.js";
 
 export type {

@@ -5,12 +5,31 @@
  *
  *  @_section: api/providers/thirdparty: Community Providers  [thirdparty]
  */
+
+/**
+ *  Providers which offer community credentials should extend this
+ *  to notify any interested consumers whether community credentials
+ *  are in-use.
+ */
 export interface CommunityResourcable {
+    /**
+     *  Returns true of the instance is connected using the community
+     *  credentials.
+     */
     isCommunityResource(): boolean;
 }
 
-// Show the throttle message only once
+// Show the throttle message only once per service
 const shown: Set<string> = new Set();
+
+/**
+ *  Displays a warning in tht console when the community resource is
+ *  being used too heavily by the app, recommending the developer
+ *  acquire their own credentials instead of using the community
+ *  credentials.
+ *
+ *  The notification will only occur once per service.
+ */
 export function showThrottleMessage(service: string): void {
     if (shown.has(service)) { return; }
     shown.add(service);

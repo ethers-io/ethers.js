@@ -26,7 +26,6 @@ export {
 
     HDNodeWallet,
     HDNodeVoidWallet,
-    HDNodeWalletManager,
 } from "./hdwallet.js";
 
 export { isCrowdsaleJson, decryptCrowdsaleJson } from "./json-crowdsale.js";
