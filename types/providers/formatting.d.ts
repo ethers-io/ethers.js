@@ -4,44 +4,7 @@
  *  @_section: api/providers/formatting:Formatting  [provider-formatting]
  */
 import type { Signature } from "../crypto/index.js";
-import type { AccessList, AccessListish } from "../transaction/index.js";
-import type { BigNumberish } from "../utils/index.js";
-import type { AddressLike } from "../address/index.js";
-import type { BlockTag } from "./provider.js";
-export interface TransactionRequest {
-    type?: null | number;
-    to?: null | AddressLike;
-    from?: null | AddressLike;
-    nonce?: null | number;
-    gasLimit?: null | BigNumberish;
-    gasPrice?: null | BigNumberish;
-    maxPriorityFeePerGas?: null | BigNumberish;
-    maxFeePerGas?: null | BigNumberish;
-    data?: null | string;
-    value?: null | BigNumberish;
-    chainId?: null | BigNumberish;
-    accessList?: null | AccessListish;
-    customData?: any;
-    blockTag?: BlockTag;
-    enableCcipRead?: boolean;
-}
-export interface PreparedTransactionRequest {
-    type?: number;
-    to?: AddressLike;
-    from?: AddressLike;
-    nonce?: number;
-    gasLimit?: bigint;
-    gasPrice?: bigint;
-    maxPriorityFeePerGas?: bigint;
-    maxFeePerGas?: bigint;
-    data?: string;
-    value?: bigint;
-    chainId?: bigint;
-    accessList?: AccessList;
-    customData?: any;
-    blockTag?: BlockTag;
-    enableCcipRead?: boolean;
-}
+import type { AccessList } from "../transaction/index.js";
 export interface BlockParams {
     hash?: null | string;
     number: number;
