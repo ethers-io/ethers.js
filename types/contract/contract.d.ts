@@ -1,5 +1,5 @@
 import { Interface } from "../abi/index.js";
-import { Log, TransactionResponse } from "../providers/index.js";
+import { Log, TransactionResponse } from "../providers/provider.js";
 import { ContractTransactionResponse, EventLog } from "./wrappers.js";
 import type { EventFragment, FunctionFragment, InterfaceAbi, ParamType } from "../abi/index.js";
 import type { Addressable } from "../address/index.js";

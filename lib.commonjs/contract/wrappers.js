@@ -1,22 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContractEventPayload = exports.ContractUnknownEventPayload = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.EventLog = void 0;
-const index_js_1 = require("../providers/index.js");
-const index_js_2 = require("../utils/index.js");
-class EventLog extends index_js_1.Log {
+// import from provider.ts instead of index.ts to prevent circular dep
+// from EtherscanProvider
+const provider_js_1 = require("../providers/provider.js");
+const index_js_1 = require("../utils/index.js");
+class EventLog extends provider_js_1.Log {
     interface;
     fragment;
     args;
     constructor(log, iface, fragment) {
         super(log, log.provider);
         const args = iface.decodeEventLog(fragment, log.data, log.topics);
-        (0, index_js_2.defineProperties)(this, { args, fragment, interface: iface });
+        (0, index_js_1.defineProperties)(this, { args, fragment, interface: iface });
     }
     get eventName() { return this.fragment.name; }
     get eventSignature() { return this.fragment.format(); }
 }
 exports.EventLog = EventLog;
-class ContractTransactionReceipt extends index_js_1.TransactionReceipt {
+class ContractTransactionReceipt extends provider_js_1.TransactionReceipt {
     #interface;
     constructor(iface, provider, tx) {
         super(tx, provider);
@@ -35,7 +37,7 @@ class ContractTransactionReceipt extends index_js_1.TransactionReceipt {
     }
 }
 exports.ContractTransactionReceipt = ContractTransactionReceipt;
-class ContractTransactionResponse extends index_js_1.TransactionResponse {
+class ContractTransactionResponse extends provider_js_1.TransactionResponse {
     #interface;
     constructor(iface, provider, tx) {
         super(tx, provider);
@@ -50,11 +52,11 @@ class ContractTransactionResponse extends index_js_1.TransactionResponse {
     }
 }
 exports.ContractTransactionResponse = ContractTransactionResponse;
-class ContractUnknownEventPayload extends index_js_2.EventPayload {
+class ContractUnknownEventPayload extends index_js_1.EventPayload {
     log;
     constructor(contract, listener, filter, log) {
         super(contract, listener, filter);
-        (0, index_js_2.defineProperties)(this, { log });
+        (0, index_js_1.defineProperties)(this, { log });
     }
     async getBlock() {
         return await this.log.getBlock();
@@ -71,7 +73,7 @@ class ContractEventPayload extends ContractUnknownEventPayload {
     constructor(contract, listener, filter, fragment, _log) {
         super(contract, listener, filter, new EventLog(_log, contract.interface, fragment));
         const args = contract.interface.decodeEventLog(fragment, this.log.data, this.log.topics);
-        (0, index_js_2.defineProperties)(this, { args, fragment });
+        (0, index_js_1.defineProperties)(this, { args, fragment });
     }
     get eventName() {
         return this.fragment.name;

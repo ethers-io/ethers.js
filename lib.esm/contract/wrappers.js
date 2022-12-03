@@ -1,4 +1,6 @@
-import { Log, TransactionReceipt, TransactionResponse } from "../providers/index.js";
+// import from provider.ts instead of index.ts to prevent circular dep
+// from EtherscanProvider
+import { Log, TransactionReceipt, TransactionResponse } from "../providers/provider.js";
 import { defineProperties, EventPayload } from "../utils/index.js";
 export class EventLog extends Log {
     interface;

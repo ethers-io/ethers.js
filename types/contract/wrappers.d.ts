@@ -1,4 +1,4 @@
-import { Block, Log, TransactionReceipt, TransactionResponse } from "../providers/index.js";
+import { Block, Log, TransactionReceipt, TransactionResponse } from "../providers/provider.js";
 import { EventPayload } from "../utils/index.js";
 import type { EventFragment, Interface, Result } from "../abi/index.js";
 import type { Listener } from "../utils/index.js";
