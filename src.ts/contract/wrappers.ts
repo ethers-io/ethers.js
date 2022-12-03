@@ -1,6 +1,8 @@
+// import from provider.ts instead of index.ts to prevent circular dep
+// from EtherscanProvider
 import {
     Block, Log, TransactionReceipt, TransactionResponse
-} from "../providers/index.js";
+} from "../providers/provider.js";
 import { defineProperties, EventPayload } from "../utils/index.js";
 
 import type { EventFragment, Interface, Result } from "../abi/index.js";

@@ -1,6 +1,8 @@
 import { Interface, Typed } from "../abi/index.js";
 import { resolveAddress } from "../address/index.js";
-import { copyRequest, Log, TransactionResponse } from "../providers/index.js";
+// import from provider.ts instead of index.ts to prevent circular dep
+// from EtherscanProvider
+import { copyRequest, Log, TransactionResponse } from "../providers/provider.js";
 import {
     defineProperties, isCallException, isHexString, resolveProperties,
     makeError, assert, assertArgument
