@@ -1,6 +1,6 @@
 import { WordlistOwlA } from "./wordlist-owla.js";
 /**
- *  The [[link-bip-39]] Wordlist for the French (fr) language.
+ *  The [[link-bip39-fr]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

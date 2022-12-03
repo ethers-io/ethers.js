@@ -8,7 +8,7 @@ export { id, isValidName, namehash, dnsEncode, hashMessage, solidityPacked, soli
 export { Block, FeeData, Log, TransactionReceipt, TransactionResponse, AbstractProvider, FallbackProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, BrowserProvider, AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, IpcSocketProvider, SocketProvider, WebSocketProvider, Network } from "./providers/index.js";
 export { accessListify, computeAddress, recoverAddress, Transaction } from "./transaction/index.js";
 export { decodeBase58, encodeBase58, decodeBase64, encodeBase64, concat, dataLength, dataSlice, getBytes, getBytesCopy, hexlify, isHexString, isBytesLike, stripZerosLeft, zeroPadBytes, zeroPadValue, defineProperties, assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, makeError, isCallException, isError, FetchRequest, FetchResponse, FetchCancelSignal, FixedNumber, getBigInt, getNumber, toArray, toBigInt, toHex, toNumber, toQuantity, fromTwos, toTwos, mask, formatEther, parseEther, formatUnits, parseUnits, toUtf8Bytes, toUtf8CodePoints, toUtf8String, Utf8ErrorFuncs, decodeRlp, encodeRlp } from "./utils/index.js";
-export { Mnemonic, BaseWallet, HDNodeWallet, HDNodeVoidWallet, HDNodeWalletManager, Wallet, defaultPath, getAccountPath, isCrowdsaleJson, isKeystoreJson, decryptCrowdsaleJson, decryptKeystoreJsonSync, decryptKeystoreJson, encryptKeystoreJson, encryptKeystoreJsonSync, } from "./wallet/index.js";
+export { Mnemonic, BaseWallet, HDNodeWallet, HDNodeVoidWallet, Wallet, defaultPath, getAccountPath, isCrowdsaleJson, isKeystoreJson, decryptCrowdsaleJson, decryptKeystoreJsonSync, decryptKeystoreJson, encryptKeystoreJson, encryptKeystoreJsonSync, } from "./wallet/index.js";
 export { Wordlist, LangEn, WordlistOwl, WordlistOwlA } from "./wordlists/index.js";
 export type { JsonFragment, JsonFragmentType, InterfaceAbi, } from "./abi/index.js";
 export type { Addressable } from "./address/index.js";
@@ -16,7 +16,7 @@ export type { ConstantContractMethod, ContractEvent, ContractEventArgs, Contract
 export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
 export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 export type { Provider } from "./providers/index.js";
-export type { AccessList, AccessListish, AccessListSet, SignedTransaction, TransactionLike } from "./transaction/index.js";
+export type { AccessList, AccessListish, AccessListEntry, TransactionLike } from "./transaction/index.js";
 export type { BytesLike, BigNumberish, Numeric, ErrorCode, FixedFormat, Utf8ErrorFunc, UnicodeNormalizationForm, Utf8ErrorReason, RlpStructuredData, GetUrlResponse, FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc, FetchGatewayFunc, FetchGetUrlFunc, EthersError, UnknownError, NotImplementedError, UnsupportedOperationError, NetworkError, ServerError, TimeoutError, BadDataError, CancelledError, BufferOverrunError, NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError, CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError, ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError, ActionRejectedError, CodedEthersError, } from "./utils/index.js";
 export type { KeystoreAccount, EncryptOptions } from "./wallet/index.js";
 //# sourceMappingURL=ethers.d.ts.map

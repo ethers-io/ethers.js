@@ -33,15 +33,41 @@ const signature_js_1 = require("./signature.js");
 secp256k1.utils.hmacSha256Sync = function (key, ...messages) {
     return (0, index_js_1.getBytes)((0, hmac_js_1.computeHmac)("sha256", key, (0, index_js_1.concat)(messages)));
 };
+/**
+ *  A **SigningKey** provides high-level access to the elliptic curve
+ *  cryptography (ECC) operations and key management.
+ */
 class SigningKey {
     #privateKey;
+    /**
+     *  Creates a new **SigningKey** for %%privateKey%%.
+     */
     constructor(privateKey) {
         (0, index_js_1.assertArgument)((0, index_js_1.dataLength)(privateKey) === 32, "invalid private key", "privateKey", "[REDACTED]");
         this.#privateKey = (0, index_js_1.hexlify)(privateKey);
     }
+    /**
+     *  The private key.
+     */
     get privateKey() { return this.#privateKey; }
+    /**
+     *  The uncompressed public key.
+     *
+     * This will always begin with the prefix ``0x04`` and be 132
+     * characters long (the ``0x`` prefix and 130 hexadecimal nibbles).
+     */
     get publicKey() { return SigningKey.computePublicKey(this.#privateKey); }
+    /**
+     *  The compressed public key.
+     *
+     *  This will always begin with either the prefix ``0x02`` or ``0x03``
+     *  and be 68 characters long (the ``0x`` prefix and 33 hexadecimal
+     *  nibbles)
+     */
     get compressedPublicKey() { return SigningKey.computePublicKey(this.#privateKey, true); }
+    /**
+     *  Return the signature of the signed %%digest%%.
+     */
     sign(digest) {
         (0, index_js_1.assertArgument)((0, index_js_1.dataLength)(digest) === 32, "invalid digest length", "digest", digest);
         const [sigDer, recid] = secp256k1.signSync((0, index_js_1.getBytesCopy)(digest), (0, index_js_1.getBytesCopy)(this.#privateKey), {
@@ -55,10 +81,26 @@ class SigningKey {
             v: (recid ? 0x1c : 0x1b)
         });
     }
+    /**
+     *  Returns the [[link-wiki-ecdh]] shared secret between this
+     *  private key and the %%other%% key.
+     *
+     *  The %%other%% key may be any type of key, a raw public key,
+     *  a compressed/uncompressed pubic key or aprivate key.
+     *
+     *  Best practice is usually to use a cryptographic hash on the
+     *  returned value before using it as a symetric secret.
+     */
     computeShardSecret(other) {
         const pubKey = SigningKey.computePublicKey(other);
         return (0, index_js_1.hexlify)(secp256k1.getSharedSecret((0, index_js_1.getBytesCopy)(this.#privateKey), pubKey));
     }
+    /**
+     *  Compute the public key for %%key%%, optionally %%compressed%%.
+     *
+     *  The %%key%% may be any type of key, a raw public key, a
+     *  compressed/uncompressed public key or private key.
+     */
     static computePublicKey(key, compressed) {
         let bytes = (0, index_js_1.getBytes)(key, "key");
         if (bytes.length === 32) {
@@ -74,6 +116,10 @@ class SigningKey {
         const point = secp256k1.Point.fromHex(bytes);
         return (0, index_js_1.hexlify)(point.toRawBytes(compressed));
     }
+    /**
+     *  Returns the public key for the private key which produced the
+     *  %%signature%% for the given %%digest%%.
+     */
     static recoverPublicKey(digest, signature) {
         (0, index_js_1.assertArgument)((0, index_js_1.dataLength)(digest) === 32, "invalid digest length", "digest", digest);
         const sig = signature_js_1.Signature.from(signature);
@@ -84,7 +130,17 @@ class SigningKey {
         }
         (0, index_js_1.assertArgument)(false, "invalid signautre for digest", "signature", signature);
     }
-    static _addPoints(p0, p1, compressed) {
+    /**
+     *  Returns the point resulting from adding the ellipic curve points
+     *  %%p0%% and %%p1%%.
+     *
+     *  This is not a common function most developers should require, but
+     *  can be useful for certain privacy-specific techniques.
+     *
+     *  For example, it is used by [[HDNodeWallet]] to compute child
+     *  addresses from parent public keys and chain codes.
+     */
+    static addPoints(p0, p1, compressed) {
         const pub0 = secp256k1.Point.fromHex(SigningKey.computePublicKey(p0).substring(2));
         const pub1 = secp256k1.Point.fromHex(SigningKey.computePublicKey(p1).substring(2));
         return "0x" + pub0.add(pub1).toHex(!!compressed);

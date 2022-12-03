@@ -3,7 +3,7 @@
  *  The [[link-rlp]] (RLP) encoding is used throughout Ethereum
  *  to serialize nested structures of Arrays and data.
  *
- *  @_subsection api/utils:Recursive-Length Prefix  [rlp]
+ *  @_subsection api/utils:Recursive-Length Prefix  [about-rlp]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.encodeRlp = exports.decodeRlp = void 0;

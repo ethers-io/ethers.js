@@ -1,8 +1,15 @@
 import { assert, assertArgument } from "../utils/index.js";
 import { getAddress } from "./address.js";
+/**
+ *  Returns true if %%value%% is an object which implements the
+ *  [[Addressable]] interface.
+ */
 export function isAddressable(value) {
     return (value && typeof (value.getAddress) === "function");
 }
+/**
+ *  Returns true if %%value%% is a valid address.
+ */
 export function isAddress(value) {
     try {
         getAddress(value);
@@ -19,8 +26,14 @@ async function checkAddress(target, promise) {
     }
     return getAddress(result);
 }
-// Resolves an Ethereum address, ENS name or Addressable object,
-// throwing if the result is null.
+/**
+ *  Resolves to an address for the %%target%%, which may be any
+ *  supported address type, an [[Addressable]] or a Promise which
+ *  resolves to an address.
+ *
+ *  If an ENS name is provided, but that name has not been correctly
+ *  configured a [[UnconfiguredNameError]] is thrown.
+ */
 export function resolveAddress(target, resolver) {
     if (typeof (target) === "string") {
         if (target.match(/^0x[0-9a-f]{40}$/i)) {

@@ -4,7 +4,7 @@ const accents = "e7693&)U*o&)Ry^)*)W))))#X^))))@@)#Wf)m%)#!))AG)&IIAQIIIBIIHJNAg
 const checksum = "0x51deb7ae009149dc61a6bd18a918eb7ac78d2775726c68e598b92d002519b045";
 let wordlist = null;
 /**
- *  The [[link-bip-39]] Wordlist for the French (fr) language.
+ *  The [[link-bip39-fr]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

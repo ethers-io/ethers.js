@@ -1,12 +1,21 @@
 "use strict";
 /**
- *  Addresses in Ethereum can be of several formats. These functions
- *  help convert between them, checksum them, etc.
+ *  Addresses are a fundamental part of interacting with Ethereum. They
+ *  represent the gloabal identity of Externally Owned Accounts (accounts
+ *  backed by a private key) and contracts.
+ *
+ *  The Ethereum Naming Service (ENS) provides an interconnected ecosystem
+ *  of contracts, standards and libraries which enable looking up an
+ *  address for an ENS name.
+ *
+ *  These functions help convert between various formats, validate
+ *  addresses and safely resolve ENS names.
  *
  *  @_section: api/address:Addresses  [addresses]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveAddress = exports.isAddress = exports.isAddressable = exports.getCreate2Address = exports.getCreateAddress = exports.getIcapAddress = exports.getAddress = void 0;
+null;
 var address_js_1 = require("./address.js");
 Object.defineProperty(exports, "getAddress", { enumerable: true, get: function () { return address_js_1.getAddress; } });
 Object.defineProperty(exports, "getIcapAddress", { enumerable: true, get: function () { return address_js_1.getIcapAddress; } });

@@ -1,6 +1,6 @@
 import { WordlistOwl } from "./wordlist-owl.js";
 /**
- *  The [[link-bip-39]] Wordlist for the Czech (cz) language.
+ *  The [[link-bip39-cz]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */
@@ -8,8 +8,8 @@ export declare class LangCz extends WordlistOwl {
     /**
      *  Creates a new instance of the Czech language Wordlist.
      *
-     *  This should be unnecessary most of the time as the exported
-     *  [[langCz]] should suffice.
+     *  Using the constructor should be unnecessary, instead use the
+     *  [[wordlist]] singleton method.
      */
     constructor();
     /**

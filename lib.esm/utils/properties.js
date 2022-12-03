@@ -1,20 +1,8 @@
 /**
  *  Property helper functions.
  *
- *  @_subsection api/utils:Properties  [properties]
+ *  @_subsection api/utils:Properties  [about-properties]
  */
-/**
- *  Resolves to a new object that is a copy of %%value%%, but with all
- *  values resolved.
- */
-export async function resolveProperties(value) {
-    const keys = Object.keys(value);
-    const results = await Promise.all(keys.map((k) => Promise.resolve(value[k])));
-    return results.reduce((accum, v, index) => {
-        accum[keys[index]] = v;
-        return accum;
-    }, {});
-}
 function checkType(value, type, name) {
     const types = type.split("|").map(t => t.trim());
     for (let i = 0; i < types.length; i++) {
@@ -35,6 +23,18 @@ function checkType(value, type, name) {
     error.argument = `value.${name}`;
     error.value = value;
     throw error;
+}
+/**
+ *  Resolves to a new object that is a copy of %%value%%, but with all
+ *  values resolved.
+ */
+export async function resolveProperties(value) {
+    const keys = Object.keys(value);
+    const results = await Promise.all(keys.map((k) => Promise.resolve(value[k])));
+    return results.reduce((accum, v, index) => {
+        accum[keys[index]] = v;
+        return accum;
+    }, {});
 }
 /**
  *  Assigns the %%values%% to %%target%% as read-only values.

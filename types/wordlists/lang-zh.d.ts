@@ -1,13 +1,7 @@
 import { Wordlist } from "./wordlist.js";
 /**
- *  The [[link-bip-39]] Wordlist for the Chinese language.
- *
- *  This Wordlist supports both simplified and traditional
- *  character set, depending on which is specified in the
- *  constructor.
- *
- *  For the ``zh_cn`` language use ``"cn"`` and for the ``zh_tw``
- *  langauge, use ``"tw"``.
+ *  The [[link-bip39-zh_cn]] and [[link-bip39-zh_tw]] for
+ *  [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

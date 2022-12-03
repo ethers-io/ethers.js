@@ -111,7 +111,7 @@ function loadWords() {
 }
 let wordlist = null;
 /**
- *  The [[link-bip-39]] Wordlist for the Japanese (ja) language.
+ *  The [[link-bip39-ja]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

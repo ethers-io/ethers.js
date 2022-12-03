@@ -4,7 +4,7 @@ exports.EventPayload = void 0;
 /**
  *  Explain events...
  *
- *  @_section api/utils/events:Events  [events]
+ *  @_section api/utils/events:Events  [about-events]
  */
 const properties_js_1 = require("./properties.js");
 class EventPayload {

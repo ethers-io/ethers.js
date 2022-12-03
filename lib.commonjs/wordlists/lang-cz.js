@@ -6,7 +6,7 @@ const words = "0itatkastcenaovo$taouleraeki&chor*teci%enbalodaeladet'!Chn=0Di#%E
 const checksum = "0x25f44555f4af25b51a711136e1c7d6e50ce9f8917d39d6b1f076b2bb4d2fac1a";
 let wordlist = null;
 /**
- *  The [[link-bip-39]] Wordlist for the Czech (cz) language.
+ *  The [[link-bip39-cz]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */
@@ -14,8 +14,8 @@ class LangCz extends wordlist_owl_js_1.WordlistOwl {
     /**
      *  Creates a new instance of the Czech language Wordlist.
      *
-     *  This should be unnecessary most of the time as the exported
-     *  [[langCz]] should suffice.
+     *  Using the constructor should be unnecessary, instead use the
+     *  [[wordlist]] singleton method.
      */
     constructor() { super("cz", words, checksum); }
     /**

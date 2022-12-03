@@ -4,7 +4,7 @@ exports.FixedNumber = void 0;
 /**
  *  About fixed-point math...
  *
- *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [fixed-point-math]
+ *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [about-fixed-point-math]
  */
 const data_js_1 = require("./data.js");
 const errors_js_1 = require("./errors.js");

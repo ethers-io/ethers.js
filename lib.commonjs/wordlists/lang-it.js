@@ -6,7 +6,7 @@ const words = "0torea noica!iosorolotaleratelanena%oiadoencotivomai t ca%a0A]Bag
 const checksum = "0x5c1362d88fd4cf614a96f3234941d29f7d37c08c5292fde03bf62c2db6ff7620";
 let wordlist = null;
 /**
- *  The [[link-bip-39]] Wordlist for the Italian (it) language.
+ *  The [[link-bip39-it]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

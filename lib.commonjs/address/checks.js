@@ -3,10 +3,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveAddress = exports.isAddress = exports.isAddressable = void 0;
 const index_js_1 = require("../utils/index.js");
 const address_js_1 = require("./address.js");
+/**
+ *  Returns true if %%value%% is an object which implements the
+ *  [[Addressable]] interface.
+ */
 function isAddressable(value) {
     return (value && typeof (value.getAddress) === "function");
 }
 exports.isAddressable = isAddressable;
+/**
+ *  Returns true if %%value%% is a valid address.
+ */
 function isAddress(value) {
     try {
         (0, address_js_1.getAddress)(value);
@@ -24,8 +31,14 @@ async function checkAddress(target, promise) {
     }
     return (0, address_js_1.getAddress)(result);
 }
-// Resolves an Ethereum address, ENS name or Addressable object,
-// throwing if the result is null.
+/**
+ *  Resolves to an address for the %%target%%, which may be any
+ *  supported address type, an [[Addressable]] or a Promise which
+ *  resolves to an address.
+ *
+ *  If an ENS name is provided, but that name has not been correctly
+ *  configured a [[UnconfiguredNameError]] is thrown.
+ */
 function resolveAddress(target, resolver) {
     if (typeof (target) === "string") {
         if (target.match(/^0x[0-9a-f]{40}$/i)) {

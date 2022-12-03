@@ -2,7 +2,7 @@
  *  Some data helpers.
  *
  *
- *  @_subsection api/utils:Data Helpers  [data]
+ *  @_subsection api/utils:Data Helpers  [about-data]
  */
 import { assert, assertArgument } from "./errors.js";
 function _getBytes(value, name, copy) {

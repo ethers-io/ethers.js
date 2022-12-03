@@ -1,6 +1,6 @@
 import { WordlistOwlA } from "./wordlist-owla.js";
 /**
- *  The [[link-bip-39]] Wordlist for the Spanish (es) language.
+ *  The [[link-bip39-es]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

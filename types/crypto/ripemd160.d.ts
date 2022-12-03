@@ -2,6 +2,7 @@ import type { BytesLike } from "../utils/index.js";
 /**
  *  Compute the cryptographic RIPEMD-160 hash of %%data%%.
  *
+ *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
  */
 export declare function ripemd160(_data: BytesLike): string;

@@ -2,7 +2,7 @@
 /**
  *  About Errors.
  *
- *  @_section: api/utils/errors:Errors  [errors]
+ *  @_section: api/utils/errors:Errors  [about-errors]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.assertPrivate = exports.assertNormalize = exports.assertArgumentCount = exports.assertArgument = exports.assert = exports.makeError = exports.isCallException = exports.isError = void 0;

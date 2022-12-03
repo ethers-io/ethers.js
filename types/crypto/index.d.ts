@@ -1,5 +1,6 @@
 /**
- *  About Crypto?
+ *  A fundamental building block of Ethereum is the underlying
+ *  cryptographic primitives.
  *
  *  @_section: api/crypto:Cryptographic Functions   [crypto]
  */

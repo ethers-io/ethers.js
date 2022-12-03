@@ -1,7 +1,7 @@
 /**
  *  About Errors.
  *
- *  @_section: api/utils/errors:Errors  [errors]
+ *  @_section: api/utils/errors:Errors  [about-errors]
  */
 import type { TransactionRequest, TransactionReceipt, TransactionResponse } from "../providers/index.js";
 import type { FetchRequest, FetchResponse } from "./fetch.js";

@@ -1,6 +1,6 @@
 import { WordlistOwl } from "./wordlist-owl.js";
 /**
- *  The [[link-bip-39]] Wordlist for the Italian (it) language.
+ *  The [[link-bip39-it]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

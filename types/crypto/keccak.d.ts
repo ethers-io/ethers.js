@@ -1,3 +1,8 @@
+/**
+ *  Cryptographic hashing functions
+ *
+ *  @_subsection: api/crypto:Hash Functions [about-crypto-hashing]
+ */
 import type { BytesLike } from "../utils/index.js";
 /**
  *  Compute the cryptographic KECCAK256 hash of %%data%%.

@@ -20,7 +20,7 @@ exports.parseEther = exports.formatEther = exports.parseUnits = exports.formatUn
  *  The native unit in Ethereum, //ether// is divisible to 18 decimal places,
  *  where each individual unit is called a //wei//.
  *
- *  @_subsection api/utils:Unit Conversion  [units]
+ *  @_subsection api/utils:Unit Conversion  [about-units]
  */
 const errors_js_1 = require("./errors.js");
 const fixednumber_js_1 = require("./fixednumber.js");

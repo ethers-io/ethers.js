@@ -12,6 +12,7 @@ let locked256 = false, locked512 = false;
 /**
  *  Compute the cryptographic SHA2-256 hash of %%data%%.
  *
+ *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
  */
 export function sha256(_data) {
@@ -30,6 +31,7 @@ Object.freeze(sha256);
 /**
  *  Compute the cryptographic SHA2-512 hash of %%data%%.
  *
+ *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
  */
 export function sha512(_data) {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WordlistOwlA = exports.WordlistOwl = exports.LangEn = exports.Wordlist = void 0;
+exports.wordlists = exports.WordlistOwlA = exports.WordlistOwl = exports.LangEn = exports.Wordlist = void 0;
 /**
  *  A Wordlist is a set of 2048 words used to encode private keys
  *  (or other binary data) that is easier for humans to write down,
@@ -28,4 +28,6 @@ var wordlist_owl_js_1 = require("./wordlist-owl.js");
 Object.defineProperty(exports, "WordlistOwl", { enumerable: true, get: function () { return wordlist_owl_js_1.WordlistOwl; } });
 var wordlist_owla_js_1 = require("./wordlist-owla.js");
 Object.defineProperty(exports, "WordlistOwlA", { enumerable: true, get: function () { return wordlist_owla_js_1.WordlistOwlA; } });
+var wordlists_js_1 = require("./wordlists.js");
+Object.defineProperty(exports, "wordlists", { enumerable: true, get: function () { return wordlists_js_1.wordlists; } });
 //# sourceMappingURL=index.js.map

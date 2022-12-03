@@ -8,6 +8,7 @@ let __ripemd160 = _ripemd160;
 /**
  *  Compute the cryptographic RIPEMD-160 hash of %%data%%.
  *
+ *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
  */
 export function ripemd160(_data) {

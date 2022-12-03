@@ -6,7 +6,7 @@ const words = "0erleonalorenseinceregesticitStanvetearctssi#ch2Athck&tneLl0And#I
 const checksum = "0x3c8acc1e7b08d8e76f9fda015ef48dc8c710a73cb7e0f77b2c18a9b5a7adde60";
 let wordlist = null;
 /**
- *  The [[link-bip-39]] Wordlist for the English (en) language.
+ *  The [[link-bip39-en]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

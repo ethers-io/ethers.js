@@ -4,7 +4,7 @@ exports.FetchResponse = exports.FetchRequest = exports.FetchCancelSignal = void 
 /**
  *  Explain fetching here...
  *
- *  @_section api/utils/fetching:Fetching Web Content  [fetching]
+ *  @_section api/utils/fetching:Fetching Web Content  [about-fetch]
  */
 const base64_js_1 = require("./base64.js");
 const data_js_1 = require("./data.js");

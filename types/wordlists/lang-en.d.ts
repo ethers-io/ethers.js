@@ -1,6 +1,6 @@
 import { WordlistOwl } from "./wordlist-owl.js";
 /**
- *  The [[link-bip-39]] Wordlist for the English (en) language.
+ *  The [[link-bip39-en]] for [mnemonic phrases](link-bip-39).
  *
  *  @_docloc: api/wordlists
  */

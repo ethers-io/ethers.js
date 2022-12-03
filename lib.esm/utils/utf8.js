@@ -4,7 +4,7 @@
  *  safety issues as well as provide the ability to recover and analyse
  *  strings.
  *
- *  @_subsection api/utils:Strings and UTF-8  [strings]
+ *  @_subsection api/utils:Strings and UTF-8  [about-strings]
  */
 import { getBytes } from "./data.js";
 import { assertArgument, assertNormalize } from "./errors.js";

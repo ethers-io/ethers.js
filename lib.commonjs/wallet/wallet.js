@@ -22,6 +22,10 @@ function stall(duration) {
  *  wallets.
  */
 class Wallet extends base_wallet_js_1.BaseWallet {
+    /**
+     *  Create a new wallet for the %%privateKey%%, optionally connected
+     *  to %%provider%%.
+     */
     constructor(key, provider) {
         let signingKey = (typeof (key) === "string") ? new index_js_1.SigningKey(key) : key;
         super(signingKey, provider);
@@ -68,6 +72,13 @@ class Wallet extends base_wallet_js_1.BaseWallet {
         (0, index_js_2.assertArgument)(wallet.address === account.address, "address/privateKey mismatch", "json", "[ REDACTED ]");
         return wallet;
     }
+    /**
+     *  Creates (asynchronously) a **Wallet** by decrypting the %%json%%
+     *  with %%password%%.
+     *
+     *  If %%progress%% is provided, it is called periodically during
+     *  decryption so that any UI can be updated.
+     */
     static async fromEncryptedJson(json, password, progress) {
         let account = null;
         if ((0, json_keystore_js_1.isKeystoreJson)(json)) {
@@ -86,6 +97,13 @@ class Wallet extends base_wallet_js_1.BaseWallet {
         }
         return Wallet.#fromAccount(account);
     }
+    /**
+     *  Creates a **Wallet** by decrypting the %%json%% with %%password%%.
+     *
+     *  The [[fromEncryptedJson]] method is preferred, as this method
+     *  will lock up and freeze the UI during decryption, which may take
+     *  some time.
+     */
     static fromEncryptedJsonSync(json, password) {
         let account = null;
         if ((0, json_keystore_js_1.isKeystoreJson)(json)) {
@@ -99,6 +117,12 @@ class Wallet extends base_wallet_js_1.BaseWallet {
         }
         return Wallet.#fromAccount(account);
     }
+    /**
+     *  Creates a new random [[HDNodeWallet]] using the avavilable
+     *  [cryptographic random source](randomBytes).
+     *
+     *  If there is no crytographic random source, this will throw.
+     */
     static createRandom(provider) {
         const wallet = hdwallet_js_1.HDNodeWallet.createRandom();
         if (provider) {
@@ -106,6 +130,9 @@ class Wallet extends base_wallet_js_1.BaseWallet {
         }
         return wallet;
     }
+    /**
+     *  Creates a [[HDNodeWallet]] for %%phrase%%.
+     */
     static fromPhrase(phrase, provider) {
         const wallet = hdwallet_js_1.HDNodeWallet.fromPhrase(phrase);
         if (provider) {

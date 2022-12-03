@@ -15,6 +15,10 @@ import type { Provider } from "../providers/index.js";
  */
 export declare class Wallet extends BaseWallet {
     #private;
+    /**
+     *  Create a new wallet for the %%privateKey%%, optionally connected
+     *  to %%provider%%.
+     */
     constructor(key: string | SigningKey, provider?: null | Provider);
     connect(provider: null | Provider): Wallet;
     /**
@@ -36,9 +40,32 @@ export declare class Wallet extends BaseWallet {
      *  it is complete, which may be a non-trivial duration.
      */
     encryptSync(password: Uint8Array | string): string;
+    /**
+     *  Creates (asynchronously) a **Wallet** by decrypting the %%json%%
+     *  with %%password%%.
+     *
+     *  If %%progress%% is provided, it is called periodically during
+     *  decryption so that any UI can be updated.
+     */
     static fromEncryptedJson(json: string, password: Uint8Array | string, progress?: ProgressCallback): Promise<HDNodeWallet | Wallet>;
+    /**
+     *  Creates a **Wallet** by decrypting the %%json%% with %%password%%.
+     *
+     *  The [[fromEncryptedJson]] method is preferred, as this method
+     *  will lock up and freeze the UI during decryption, which may take
+     *  some time.
+     */
     static fromEncryptedJsonSync(json: string, password: Uint8Array | string): HDNodeWallet | Wallet;
+    /**
+     *  Creates a new random [[HDNodeWallet]] using the avavilable
+     *  [cryptographic random source](randomBytes).
+     *
+     *  If there is no crytographic random source, this will throw.
+     */
     static createRandom(provider?: null | Provider): HDNodeWallet;
+    /**
+     *  Creates a [[HDNodeWallet]] for %%phrase%%.
+     */
     static fromPhrase(phrase: string, provider?: Provider): HDNodeWallet;
 }
 //# sourceMappingURL=wallet.d.ts.map

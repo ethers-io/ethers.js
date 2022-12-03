@@ -1,3 +1,8 @@
+/**
+ *  Cryptographic hashing functions
+ *
+ *  @_subsection: api/crypto:Hash Functions [about-crypto-hashing]
+ */
 import { keccak_256 } from "@noble/hashes/sha3";
 import { getBytes, hexlify } from "../utils/index.js";
 let locked = false;

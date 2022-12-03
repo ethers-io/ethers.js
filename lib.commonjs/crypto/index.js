@@ -1,11 +1,13 @@
 "use strict";
 /**
- *  About Crypto?
+ *  A fundamental building block of Ethereum is the underlying
+ *  cryptographic primitives.
  *
  *  @_section: api/crypto:Cryptographic Functions   [crypto]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lock = exports.Signature = exports.SigningKey = exports.scryptSync = exports.scrypt = exports.pbkdf2 = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.keccak256 = exports.randomBytes = exports.computeHmac = void 0;
+null;
 // We import all these so we can export lock()
 const hmac_js_1 = require("./hmac.js");
 Object.defineProperty(exports, "computeHmac", { enumerable: true, get: function () { return hmac_js_1.computeHmac; } });

@@ -7,7 +7,7 @@ exports.toUtf8CodePoints = exports.toUtf8String = exports.toUtf8Bytes = exports.
  *  safety issues as well as provide the ability to recover and analyse
  *  strings.
  *
- *  @_subsection api/utils:Strings and UTF-8  [strings]
+ *  @_subsection api/utils:Strings and UTF-8  [about-strings]
  */
 const data_js_1 = require("./data.js");
 const errors_js_1 = require("./errors.js");

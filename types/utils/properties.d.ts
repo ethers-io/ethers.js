@@ -1,7 +1,7 @@
 /**
  *  Property helper functions.
  *
- *  @_subsection api/utils:Properties  [properties]
+ *  @_subsection api/utils:Properties  [about-properties]
  */
 /**
  *  Resolves to a new object that is a copy of %%value%%, but with all

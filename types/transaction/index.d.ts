@@ -4,16 +4,22 @@
  *  @_section api/transaction:Transactions  [transactions]
  */
 /**
- *  Moo
+ *  A single [[AccessList]] entry of storage keys (slots) for an address.
  */
-export declare type AccessListSet = {
+export declare type AccessListEntry = {
     address: string;
     storageKeys: Array<string>;
 };
-export declare type AccessList = Array<AccessListSet>;
+/**
+ *  An ordered collection of [[AccessList]] entries.
+ */
+export declare type AccessList = Array<AccessListEntry>;
+/**
+ *  Any ethers-supported access list structure.
+ */
 export declare type AccessListish = AccessList | Array<[string, Array<string>]> | Record<string, Array<string>>;
 export { accessListify } from "./accesslist.js";
 export { computeAddress, recoverAddress } from "./address.js";
 export { Transaction } from "./transaction.js";
-export type { SignedTransaction, TransactionLike } from "./transaction.js";
+export type { TransactionLike } from "./transaction.js";
 //# sourceMappingURL=index.d.ts.map

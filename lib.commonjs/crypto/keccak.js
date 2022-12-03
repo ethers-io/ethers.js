@@ -1,4 +1,9 @@
 "use strict";
+/**
+ *  Cryptographic hashing functions
+ *
+ *  @_subsection: api/crypto:Hash Functions [about-crypto-hashing]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.keccak256 = void 0;
 const sha3_1 = require("@noble/hashes/sha3");

@@ -182,7 +182,7 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     get length(): number;
     /**
-     *  The [date](link-js-data) this block was included at.
+     *  The [[link-js-date]] this block was included at.
      */
     get date(): null | Date;
     /**

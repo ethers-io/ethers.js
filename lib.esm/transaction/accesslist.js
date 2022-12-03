@@ -9,6 +9,9 @@ function accessSetify(addr, storageKeys) {
         })
     };
 }
+/**
+ *  Returns a [[AccessList]] from any ethers-supported access-list structure.
+ */
 export function accessListify(value) {
     if (Array.isArray(value)) {
         return value.map((set, index) => {

@@ -258,7 +258,7 @@ export class Block {
      */
     get length() { return this.#transactions.length; }
     /**
-     *  The [date](link-js-data) this block was included at.
+     *  The [[link-js-date]] this block was included at.
      */
     get date() {
         if (this.timestamp == null) {

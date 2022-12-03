@@ -2,23 +2,10 @@
 /**
  *  Property helper functions.
  *
- *  @_subsection api/utils:Properties  [properties]
+ *  @_subsection api/utils:Properties  [about-properties]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defineProperties = exports.resolveProperties = void 0;
-/**
- *  Resolves to a new object that is a copy of %%value%%, but with all
- *  values resolved.
- */
-async function resolveProperties(value) {
-    const keys = Object.keys(value);
-    const results = await Promise.all(keys.map((k) => Promise.resolve(value[k])));
-    return results.reduce((accum, v, index) => {
-        accum[keys[index]] = v;
-        return accum;
-    }, {});
-}
-exports.resolveProperties = resolveProperties;
 function checkType(value, type, name) {
     const types = type.split("|").map(t => t.trim());
     for (let i = 0; i < types.length; i++) {
@@ -40,6 +27,19 @@ function checkType(value, type, name) {
     error.value = value;
     throw error;
 }
+/**
+ *  Resolves to a new object that is a copy of %%value%%, but with all
+ *  values resolved.
+ */
+async function resolveProperties(value) {
+    const keys = Object.keys(value);
+    const results = await Promise.all(keys.map((k) => Promise.resolve(value[k])));
+    return results.reduce((accum, v, index) => {
+        accum[keys[index]] = v;
+        return accum;
+    }, {});
+}
+exports.resolveProperties = resolveProperties;
 /**
  *  Assigns the %%values%% to %%target%% as read-only values.
  *

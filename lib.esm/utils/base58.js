@@ -9,7 +9,7 @@
  *  issue most schemes that use Base58 choose specific high-order values
  *  to ensure non-zero prefixes.
  *
- *  @_subsection: api/utils:Base58 Encoding [base58]
+ *  @_subsection: api/utils:Base58 Encoding [about-base58]
  */
 import { getBytes } from "./data.js";
 import { assertArgument } from "./errors.js";

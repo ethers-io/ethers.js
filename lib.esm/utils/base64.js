@@ -1,10 +1,10 @@
 /**
- *  [Base64 encoding](link-wiki-base64) using 6-bit words to encode
+ *  [Base64 encoding](link-base64) using 6-bit words to encode
  *  arbitrary bytes into a string using 65 printable symbols, the
  *  upper-case and lower-case alphabet, the digits ``0`` through ``9``,
  *  ``"+"`` and ``"/"`` with the ``"="`` used for padding.
  *
- *  @_subsection: api/utils:Base64 Encoding  [base64]
+ *  @_subsection: api/utils:Base64 Encoding  [about-base64]
  */
 import { getBytes, getBytesCopy } from "./data.js";
 /**

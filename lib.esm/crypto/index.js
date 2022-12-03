@@ -1,8 +1,10 @@
 /**
- *  About Crypto?
+ *  A fundamental building block of Ethereum is the underlying
+ *  cryptographic primitives.
  *
  *  @_section: api/crypto:Cryptographic Functions   [crypto]
  */
+null;
 // We import all these so we can export lock()
 import { computeHmac } from "./hmac.js";
 import { keccak256 } from "./keccak.js";

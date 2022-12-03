@@ -19,6 +19,10 @@ function stall(duration) {
  *  wallets.
  */
 export class Wallet extends BaseWallet {
+    /**
+     *  Create a new wallet for the %%privateKey%%, optionally connected
+     *  to %%provider%%.
+     */
     constructor(key, provider) {
         let signingKey = (typeof (key) === "string") ? new SigningKey(key) : key;
         super(signingKey, provider);
@@ -65,6 +69,13 @@ export class Wallet extends BaseWallet {
         assertArgument(wallet.address === account.address, "address/privateKey mismatch", "json", "[ REDACTED ]");
         return wallet;
     }
+    /**
+     *  Creates (asynchronously) a **Wallet** by decrypting the %%json%%
+     *  with %%password%%.
+     *
+     *  If %%progress%% is provided, it is called periodically during
+     *  decryption so that any UI can be updated.
+     */
     static async fromEncryptedJson(json, password, progress) {
         let account = null;
         if (isKeystoreJson(json)) {
@@ -83,6 +94,13 @@ export class Wallet extends BaseWallet {
         }
         return Wallet.#fromAccount(account);
     }
+    /**
+     *  Creates a **Wallet** by decrypting the %%json%% with %%password%%.
+     *
+     *  The [[fromEncryptedJson]] method is preferred, as this method
+     *  will lock up and freeze the UI during decryption, which may take
+     *  some time.
+     */
     static fromEncryptedJsonSync(json, password) {
         let account = null;
         if (isKeystoreJson(json)) {
@@ -96,6 +114,12 @@ export class Wallet extends BaseWallet {
         }
         return Wallet.#fromAccount(account);
     }
+    /**
+     *  Creates a new random [[HDNodeWallet]] using the avavilable
+     *  [cryptographic random source](randomBytes).
+     *
+     *  If there is no crytographic random source, this will throw.
+     */
     static createRandom(provider) {
         const wallet = HDNodeWallet.createRandom();
         if (provider) {
@@ -103,6 +127,9 @@ export class Wallet extends BaseWallet {
         }
         return wallet;
     }
+    /**
+     *  Creates a [[HDNodeWallet]] for %%phrase%%.
+     */
     static fromPhrase(phrase, provider) {
         const wallet = HDNodeWallet.fromPhrase(phrase);
         if (provider) {

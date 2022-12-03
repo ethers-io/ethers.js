@@ -4,7 +4,7 @@ exports.toQuantity = exports.toArray = exports.toHex = exports.toNumber = export
 /**
  *  Some mathematic operations.
  *
- *  @_subsection: api/utils:Math Helpers  [maths]
+ *  @_subsection: api/utils:Math Helpers  [about-maths]
  */
 const data_js_1 = require("./data.js");
 const errors_js_1 = require("./errors.js");

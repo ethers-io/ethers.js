@@ -1,3 +1,6 @@
+/**
+ *  Return %%length%% bytes of cryptographically secure random data.
+ */
 export declare function randomBytes(length: number): Uint8Array;
 export declare namespace randomBytes {
     var _: (length: number) => Uint8Array;

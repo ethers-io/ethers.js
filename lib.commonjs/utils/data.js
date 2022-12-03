@@ -5,7 +5,7 @@ exports.zeroPadBytes = exports.zeroPadValue = exports.stripZerosLeft = exports.d
  *  Some data helpers.
  *
  *
- *  @_subsection api/utils:Data Helpers  [data]
+ *  @_subsection api/utils:Data Helpers  [about-data]
  */
 const errors_js_1 = require("./errors.js");
 function _getBytes(value, name, copy) {

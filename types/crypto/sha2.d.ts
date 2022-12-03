@@ -2,6 +2,7 @@ import type { BytesLike } from "../utils/index.js";
 /**
  *  Compute the cryptographic SHA2-256 hash of %%data%%.
  *
+ *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
  */
 export declare function sha256(_data: BytesLike): string;
@@ -13,6 +14,7 @@ export declare namespace sha256 {
 /**
  *  Compute the cryptographic SHA2-512 hash of %%data%%.
  *
+ *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
  */
 export declare function sha512(_data: BytesLike): string;

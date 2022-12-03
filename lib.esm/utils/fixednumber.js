@@ -1,7 +1,7 @@
 /**
  *  About fixed-point math...
  *
- *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [fixed-point-math]
+ *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [about-fixed-point-math]
  */
 import { getBytes } from "./data.js";
 import { assert, assertArgument, assertPrivate } from "./errors.js";

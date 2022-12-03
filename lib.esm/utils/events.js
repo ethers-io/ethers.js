@@ -1,7 +1,7 @@
 /**
  *  Explain events...
  *
- *  @_section api/utils/events:Events  [events]
+ *  @_section api/utils/events:Events  [about-events]
  */
 import { defineProperties } from "./properties.js";
 export class EventPayload {
