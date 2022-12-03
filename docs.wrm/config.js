@@ -21,4 +21,8 @@ export default {
   links: [
     "./links.txt",
   ],
+  staticFiles: [
+    "logo.svg",
+    "social.jpg"
+  ]
 };
