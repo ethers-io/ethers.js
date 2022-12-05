@@ -661,7 +661,7 @@ export class Interface {
 
     // Given an event log, find the matching event fragment (if any) and
     // determine all its properties and values
-    parseLog(log: { topics: Array<string>, data: string}): LogDescription {
+    parseLog(log: { topics: Array<string>, data: string}): LogDescription | null {
         let fragment = this.getEvent(log.topics[0]);
 
         if (!fragment || fragment.anonymous) { return null; }

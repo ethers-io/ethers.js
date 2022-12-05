@@ -82,7 +82,7 @@ export declare class Interface {
     parseLog(log: {
         topics: Array<string>;
         data: string;
-    }): LogDescription;
+    }): LogDescription | null;
     parseError(data: BytesLike): ErrorDescription;
     static isInterface(value: any): value is Interface;
 }
