@@ -980,7 +980,7 @@ export class AbstractProvider implements Provider {
         //return "TODO";
     }
 
-    async waitForTransaction(hash: string, _confirms?: number, timeout?: number): Promise<null | TransactionReceipt> {
+    async waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt> {
         const confirms = (_confirms != null) ? _confirms: 1;
         if (confirms === 0) { return this.getTransactionReceipt(hash); }
 
