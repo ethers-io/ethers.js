@@ -1,4 +1,4 @@
-name: Continuous Integration Tests
+name: CI Tests
 
 on:
   push:
@@ -132,15 +132,6 @@ jobs:
 
       - name: Build Documentation
         run: node node_modules/flatworm/lib/test-api-index ./docs.wrm/config.js
-
-      - name: Tar documentation files
-        run: tar -cvf ./output/docs.tar ./output/docs/
-
-      - name: Store full coverage artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: docs
-          path: ./output/docs.tar
 
       - name: Upload documentation to to docs.ethers.org
         uses: ethers-io/sync-s3-action@main
