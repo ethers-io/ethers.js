@@ -21,8 +21,11 @@ Thanks! :)
 ```
 
 [![npm (tag)](https://img.shields.io/npm/v/ethers)](https://www.npmjs.com/package/ethers)
-[![Node.js CI](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml/badge.svg?branch=v6-beta-exports)](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml)
+[![CI Tests](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml/badge.svg?branch=v6-beta-exports)](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml)
 [![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/ethers-io/ethers.js/badge)](https://www.gitpoap.io/gh/ethers-io/ethers.js)
+![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/ethers/beta-exports)
+![npm (downloads)](https://img.shields.io/npm/dm/ethers)
+[![Twitter Follow](https://img.shields.io/twitter/follow/ricmoo?style=social)](https://twitter.com/ricmoo)
 
 -----
 
