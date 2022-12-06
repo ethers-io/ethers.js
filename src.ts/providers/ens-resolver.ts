@@ -1,3 +1,9 @@
+/**
+ *  About ENS Resolver
+ *
+ *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
+ */
+
 import { getAddress } from "../address/index.js";
 import { ZeroAddress, ZeroHash } from "../constants/index.js";
 import { dnsEncode, namehash } from "../hash/index.js";
@@ -100,6 +106,9 @@ function getIpfsLink(link: string): string {
     return `https:/\/gateway.ipfs.io/ipfs/${ link }`;
 }
 
+/**
+ *  The type of data found during a steip during avatar resolution.
+ */
 export type AvatarLinkageType = "name" | "avatar" | "!avatar" | "url" | "data" | "ipfs" |
     "erc721" | "erc1155" | "!erc721-caip" | "!erc1155-caip" |
     "!owner" | "owner" | "!balance" | "balance" |
@@ -107,16 +116,30 @@ export type AvatarLinkageType = "name" | "avatar" | "!avatar" | "url" | "data" |
     "!metadata" | "metadata" |
     "!imageUrl" | "imageUrl-ipfs" | "imageUrl" | "!imageUrl-ipfs";
 
+/**
+ *  An individual record for each step during avatar resolution.
+ */
 export interface AvatarLinkage {
     type: AvatarLinkageType;
     value: string;
 };
 
+/**
+ *  When resolving an avatar for an ENS name, there are many
+ *  steps involved, fetching metadata, validating results, et cetera.
+ *
+ *  Some applications may wish to analyse this data, or use this data
+ *  to diagnose promblems, so an **AvatarResult** provides details of
+ *  each completed step during avatar resolution.
+ */
 export interface AvatarResult {
     linkage: Array<AvatarLinkage>;
     url: null | string;
 };
 
+/**
+ *  A provider plugin super-class for processing multicoin address types.
+ */
 export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin {
     readonly name!: string;
 
@@ -143,6 +166,9 @@ export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin 
 
 const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoinProviderPlugin";
 
+/**
+ *  A basic multicoin provider plugin.
+ */
 export class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
     constructor() {
         super(BasicMulticoinPluginId);
@@ -157,10 +183,24 @@ const matchers = [
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
 
+/**
+ *  A connected object to a resolved ENS name resolver, which can be
+ *  used to query additional details.
+ */
 export class EnsResolver {
+    /**
+     *  The connected provider.
+     */
     provider!: AbstractProvider;
+
+    /**
+     *  The address of the resolver.
+     */
     address!: string;
 
+    /**
+     *  The name this resovler was resolved against.
+     */
     name!: string;
 
     // For EIP-2544 names, the ancestor that provided the resolver
@@ -171,6 +211,9 @@ export class EnsResolver {
         this.#supports2544 = null;
     }
 
+    /**
+     *  Resolves to true if the resolver supports wildcard resolution.
+     */
     async supportsWildcard(): Promise<boolean> {
         if (!this.#supports2544) {
             // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
@@ -190,6 +233,10 @@ export class EnsResolver {
         return await this.#supports2544;
     }
 
+    /**
+     *  Fetch the %%selector%% with %%parameters%% using call, resolving
+     *  recursively if the resolver supports it.
+     */
     async _fetch(selector: string, parameters?: BytesLike): Promise<null | string> {
         if (parameters == null) { parameters = "0x"; }
 
@@ -227,6 +274,10 @@ export class EnsResolver {
         return null;
     }
 
+    /**
+     *  Resolves to the address for %%coinType%% or null if the
+     *  provided %%coinType%% has not been configured.
+     */
     async getAddress(coinType?: number): Promise<null | string> {
         if (coinType == null) { coinType = 60; }
         if (coinType === 60) {
@@ -272,6 +323,10 @@ export class EnsResolver {
         });
     }
 
+    /**
+     *  Resovles to the EIP-643 text record for %%key%%, or ``null``
+     *  if unconfigured.
+     */
     async getText(key: string): Promise<null | string> {
         // The key encoded as parameter to fetchBytes
         let keyBytes = toUtf8Bytes(key);
@@ -286,6 +341,9 @@ export class EnsResolver {
         return toUtf8String(hexBytes);
     }
 
+    /**
+     *  Rsolves to the content-hash or ``null`` if unconfigured.
+     */
     async getContentHash(): Promise<null | string> {
         // keccak256("contenthash()")
         const hexBytes = parseBytes((await this._fetch("0xbc1c58d1")) || "0x", 0);
@@ -315,10 +373,26 @@ export class EnsResolver {
         });
     }
 
+    /**
+     *  Resolves to the avatar url or ``null`` if the avatar is either
+     *  unconfigured or incorrectly configured (e.g. references an NFT
+     *  not owned by the address).
+     *
+     *  If diagnosing issues with configurations, the [[_getAvatar]]
+     *  method may be useful.
+     */
     async getAvatar(): Promise<null | string> {
         return (await this._getAvatar()).url;
     }
 
+    /**
+     *  When resolving an avatar, there are many steps involved, such
+     *  fetching metadata and possibly validating ownership of an
+     *  NFT.
+     *
+     *  This method can be used to examine each step and the value it
+     *  was working from.
+     */
     async _getAvatar(): Promise<AvatarResult> {
         const linkage: Array<AvatarLinkage> = [ { type: "name", value: this.name } ];
         try {
@@ -510,6 +584,10 @@ export class EnsResolver {
         return null;
     }
 
+    /**
+     *  Resolve to the ENS resolver for %%name%% using %%provider%% or
+     *  ``null`` if uncinfigured.
+     */
     static async fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver> {
 
         let currentName = name;
