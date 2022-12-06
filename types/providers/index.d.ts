@@ -5,6 +5,9 @@
  */
 export { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 export { AbstractSigner, VoidSigner, WrappedSigner } from "./abstract-signer.js";
+export { showThrottleMessage } from "./community.js";
+export { getDefaultProvider } from "./default-provider.js";
+export { EnsResolver } from "./ens-resolver.js";
 export { Network } from "./network.js";
 export { NetworkPlugin, GasCostPlugin, EnsPlugin, } from "./plugins-network.js";
 export { Block, FeeData, Log, TransactionReceipt, TransactionResponse, copyRequest, } from "./provider.js";
@@ -17,6 +20,7 @@ export { CloudflareProvider } from "./provider-cloudflare.js";
 export { BaseEtherscanProvider, EtherscanPlugin } from "./provider-etherscan-base.js";
 export { EtherscanProvider } from "./provider-etherscan.js";
 export { InfuraProvider, InfuraWebSocketProvider } from "./provider-infura.js";
+export { QuickNodeProvider } from "./provider-quicknode.js";
 import { IpcSocketProvider } from "./provider-ipcsocket.js";
 export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";

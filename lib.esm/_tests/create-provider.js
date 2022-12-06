@@ -1,6 +1,6 @@
 import { AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
-FallbackProvider, isError, } from "../index.js";
+QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
 ;
 const ethNetworks = ["default", "mainnet", "goerli"];
 //const maticNetworks = [ "matic", "maticmum" ];
@@ -62,6 +62,13 @@ const ProviderCreators = [
         }
     },
     */
+    {
+        name: "QuickNodeProvider",
+        networks: ethNetworks,
+        create: function (network) {
+            return new QuickNodeProvider(network);
+        }
+    },
     {
         name: "FallbackProvider",
         networks: ethNetworks,

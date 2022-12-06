@@ -64,6 +64,13 @@ const ProviderCreators = [
     },
     */
     {
+        name: "QuickNodeProvider",
+        networks: ethNetworks,
+        create: function (network) {
+            return new index_js_1.QuickNodeProvider(network);
+        }
+    },
+    {
         name: "FallbackProvider",
         networks: ethNetworks,
         create: function (network) {

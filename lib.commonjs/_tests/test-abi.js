@@ -44,13 +44,26 @@ describe("Tests ABI Coder", function () {
     }
 });
 describe("Test Bytes32 strings", function () {
-    it("encodes and decodes Bytes32 strings @TODO: exapnd", function () {
-        const str = "ricmoo.firefly.eth";
-        const bytes32 = (0, index_js_1.encodeBytes32String)(str);
-        const str2 = (0, index_js_1.decodeBytes32String)(bytes32);
-        assert_1.default.equal(bytes32, '0x7269636d6f6f2e66697265666c792e6574680000000000000000000000000000', 'formatted correctly');
-        assert_1.default.equal(str2, str, "parsed correctly");
-    });
+    const tests = [
+        {
+            name: "ricmoo.firefly.eth",
+            str: "ricmoo.firefly.eth",
+            expected: '0x7269636d6f6f2e66697265666c792e6574680000000000000000000000000000'
+        },
+        {
+            name: "empty string",
+            str: "",
+            expected: '0x0000000000000000000000000000000000000000000000000000000000000000'
+        }
+    ];
+    for (const { name, str, expected } of tests) {
+        it(`encodes and decodes Bytes32 strings: ${name}`, function () {
+            const bytes32 = (0, index_js_1.encodeBytes32String)(str);
+            const decoded = (0, index_js_1.decodeBytes32String)(bytes32);
+            assert_1.default.equal(bytes32, expected, 'formatted correctly');
+            assert_1.default.equal(decoded, str, "parsed correctly");
+        });
+    }
 });
 describe("Test Interface", function () {
     const iface = new index_js_1.Interface([

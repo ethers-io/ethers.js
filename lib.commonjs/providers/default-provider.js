@@ -1,12 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDefaultProvider = void 0;
+const index_js_1 = require("../utils/index.js");
 const provider_ankr_js_1 = require("./provider-ankr.js");
 const provider_alchemy_js_1 = require("./provider-alchemy.js");
 const provider_cloudflare_js_1 = require("./provider-cloudflare.js");
 const provider_etherscan_js_1 = require("./provider-etherscan.js");
 const provider_infura_js_1 = require("./provider-infura.js");
 //import { PocketProvider } from "./provider-pocket.js";
+const provider_quicknode_js_1 = require("./provider-quicknode.js");
 const provider_fallback_js_1 = require("./provider-fallback.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 const provider_websocket_js_1 = require("./provider-websocket.js");
@@ -86,9 +88,18 @@ function getDefaultProvider(network, options) {
             } catch (error) { console.log(error); }
         }
     */
-    if (providers.length === 0) {
-        throw new Error("TODO");
+    if (options.quicknode !== "-") {
+        try {
+            let token = options.qquicknode;
+            providers.push(new provider_quicknode_js_1.QuickNodeProvider(network, token));
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
+    (0, index_js_1.assert)(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
+        operation: "getDefaultProvider"
+    });
     if (providers.length === 1) {
         return providers[0];
     }
