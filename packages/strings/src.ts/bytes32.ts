@@ -27,7 +27,11 @@ export function parseBytes32String(bytes: BytesLike): string {
 
     // Find the null termination
     let length = 31;
-    while (data[length - 1] === 0) { length--; }
+    while (data[length - 1] === 0) { length--;
+        if(length <= 0) {
+            throw new Error("invalid bytes32 string - no null terminator");
+        } 
+    }
 
     // Determine the string value
     return toUtf8String(data.slice(0, length));

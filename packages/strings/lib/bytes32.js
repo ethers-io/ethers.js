@@ -28,6 +28,9 @@ function parseBytes32String(bytes) {
     var length = 31;
     while (data[length - 1] === 0) {
         length--;
+        if(length <= 0) {
+            throw new Error("invalid bytes32 string - no null terminator");
+        }
     }
     // Determine the string value
     return (0, utf8_1.toUtf8String)(data.slice(0, length));
