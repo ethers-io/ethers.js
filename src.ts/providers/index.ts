@@ -15,7 +15,7 @@ export {
     VoidSigner,
     WrappedSigner
 } from "./abstract-signer.js";
-/*
+
 export {
     showThrottleMessage
 } from "./community.js";
@@ -23,7 +23,6 @@ export {
 export { getDefaultProvider } from "./default-provider.js";
 
 export { EnsResolver } from "./ens-resolver.js";
-*/
 
 export { Network } from "./network.js";
 
@@ -58,6 +57,7 @@ export { CloudflareProvider } from "./provider-cloudflare.js";
 export { BaseEtherscanProvider, EtherscanPlugin } from "./provider-etherscan-base.js";
 export { EtherscanProvider } from "./provider-etherscan.js";
 export { InfuraProvider, InfuraWebSocketProvider } from "./provider-infura.js";
+export { QuickNodeProvider } from "./provider-quicknode.js";
 
 import { IpcSocketProvider } from "./provider-ipcsocket.js"; /*-browser*/
 export { IpcSocketProvider };

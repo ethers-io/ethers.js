@@ -54,6 +54,8 @@ export {
 } from "./hash/index.js";
 
 export {
+    getDefaultProvider,
+
     Block, FeeData, Log, TransactionReceipt, TransactionResponse,
 
     AbstractProvider,
@@ -63,11 +65,13 @@ export {
 
     BrowserProvider,
 
-    AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider,
+    AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider,
+    InfuraProvider, QuickNodeProvider,
     //PocketProvider } from "./provider-pocket.js";
 
     IpcSocketProvider, SocketProvider, WebSocketProvider,
 
+    EnsResolver,
     Network
 } from "./providers/index.js";
 

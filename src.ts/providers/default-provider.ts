@@ -1,10 +1,13 @@
 
+import { assert } from "../utils/index.js";
+
 import { AnkrProvider } from "./provider-ankr.js";
 import { AlchemyProvider } from "./provider-alchemy.js";
 import { CloudflareProvider } from "./provider-cloudflare.js";
 import { EtherscanProvider } from "./provider-etherscan.js";
 import { InfuraProvider } from "./provider-infura.js";
 //import { PocketProvider } from "./provider-pocket.js";
+import { QuickNodeProvider } from "./provider-quicknode.js";
 
 import { FallbackProvider } from "./provider-fallback.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
@@ -82,7 +85,17 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
         } catch (error) { console.log(error); }
     }
 */
-    if (providers.length === 0) { throw new Error("TODO"); }
+    if (options.quicknode !== "-") {
+        try {
+            let token = options.qquicknode;
+            providers.push(new QuickNodeProvider(network, token));
+        } catch (error) { console.log(error); }
+    }
+
+    assert(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
+        operation: "getDefaultProvider"
+    });
+
     if (providers.length === 1) { return providers[0]; }
 
     return new FallbackProvider(providers);
