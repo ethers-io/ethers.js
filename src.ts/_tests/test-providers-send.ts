@@ -30,7 +30,7 @@ describe("Sends Transactions", function() {
         if ((<any>provider).destroy) { cleanup.push(() => { (<any>provider).destroy(); }); }
 
         it(`tests sending: ${ providerName }`, async function() {
-            this.timeout(60000);
+            this.timeout(180000);
 
             const w = wallet.connect(provider);
 
@@ -57,7 +57,7 @@ describe("Sends Transactions", function() {
             assert.ok(!!tx, "too many retries");
 
             //const receipt = 
-            await provider.waitForTransaction(tx.hash); //tx.wait();
+            await provider.waitForTransaction(tx.hash, null, 60000); //tx.wait();
             //console.log(receipt);
 
             const balance = await provider.getBalance(dustAddr);
