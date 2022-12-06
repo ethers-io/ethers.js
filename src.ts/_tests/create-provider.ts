@@ -5,6 +5,7 @@ import {
     EtherscanProvider,
     InfuraProvider,
 //    PocketProvider,
+    QuickNodeProvider,
 
     FallbackProvider,
     isError,
@@ -79,6 +80,13 @@ const ProviderCreators: Array<ProviderCreator> = [
         }
     },
     */
+    {
+        name: "QuickNodeProvider",
+        networks: ethNetworks,
+        create: function(network: string) {
+            return new QuickNodeProvider(network);
+        }
+    },
     {
         name: "FallbackProvider",
         networks: ethNetworks,
