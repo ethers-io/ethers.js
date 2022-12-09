@@ -1,0 +1,26 @@
+_section: ABI
+
+Explain about ABI here, what it does and does not do
+
+- encodes arbitrary (but defined) data structures to raw bytes
+
+_subsection: Call
+
+About encoding
+
+_heading: selector or signature hash (sighash)
+
+_heading: Results
+
+_subsection: Events
+
+
+_subsection: Deployment
+
+About initcode
+
+Another paragraph [[link-bip-39]].
+
+_heading: Foo?
+
+Bar?
