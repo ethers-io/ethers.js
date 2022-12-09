@@ -7,8 +7,8 @@
  *  @_section api/utils:Utilities  [utils]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Utf8ErrorFuncs = exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.encodeRlp = exports.decodeRlp = exports.defineProperties = exports.resolveProperties = exports.toQuantity = exports.toArray = exports.toHex = exports.toNumber = exports.toBigInt = exports.getNumber = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = exports.FixedNumber = exports.FetchCancelSignal = exports.FetchResponse = exports.FetchRequest = exports.EventPayload = exports.makeError = exports.assertNormalize = exports.assertPrivate = exports.assertArgumentCount = exports.assertArgument = exports.assert = exports.isError = exports.isCallException = exports.zeroPadBytes = exports.zeroPadValue = exports.stripZerosLeft = exports.dataSlice = exports.dataLength = exports.concat = exports.hexlify = exports.isBytesLike = exports.isHexString = exports.getBytesCopy = exports.getBytes = exports.encodeBase64 = exports.decodeBase64 = exports.encodeBase58 = exports.decodeBase58 = void 0;
-exports.uuidV4 = void 0;
+exports.toUtf8String = exports.toUtf8CodePoints = exports.toUtf8Bytes = exports.parseUnits = exports.formatUnits = exports.parseEther = exports.formatEther = exports.encodeRlp = exports.decodeRlp = exports.defineProperties = exports.resolveProperties = exports.toQuantity = exports.toBeArray = exports.toBeHex = exports.toNumber = exports.toBigInt = exports.getUint = exports.getNumber = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = exports.FixedNumber = exports.FetchCancelSignal = exports.FetchResponse = exports.FetchRequest = exports.EventPayload = exports.makeError = exports.assertNormalize = exports.assertPrivate = exports.assertArgumentCount = exports.assertArgument = exports.assert = exports.isError = exports.isCallException = exports.zeroPadBytes = exports.zeroPadValue = exports.stripZerosLeft = exports.dataSlice = exports.dataLength = exports.concat = exports.hexlify = exports.isBytesLike = exports.isHexString = exports.getBytesCopy = exports.getBytes = exports.encodeBase64 = exports.decodeBase64 = exports.encodeBase58 = exports.decodeBase58 = void 0;
+exports.uuidV4 = exports.Utf8ErrorFuncs = void 0;
 var base58_js_1 = require("./base58.js");
 Object.defineProperty(exports, "decodeBase58", { enumerable: true, get: function () { return base58_js_1.decodeBase58; } });
 Object.defineProperty(exports, "encodeBase58", { enumerable: true, get: function () { return base58_js_1.encodeBase58; } });
@@ -50,10 +50,11 @@ Object.defineProperty(exports, "toTwos", { enumerable: true, get: function () { 
 Object.defineProperty(exports, "mask", { enumerable: true, get: function () { return maths_js_1.mask; } });
 Object.defineProperty(exports, "getBigInt", { enumerable: true, get: function () { return maths_js_1.getBigInt; } });
 Object.defineProperty(exports, "getNumber", { enumerable: true, get: function () { return maths_js_1.getNumber; } });
+Object.defineProperty(exports, "getUint", { enumerable: true, get: function () { return maths_js_1.getUint; } });
 Object.defineProperty(exports, "toBigInt", { enumerable: true, get: function () { return maths_js_1.toBigInt; } });
 Object.defineProperty(exports, "toNumber", { enumerable: true, get: function () { return maths_js_1.toNumber; } });
-Object.defineProperty(exports, "toHex", { enumerable: true, get: function () { return maths_js_1.toHex; } });
-Object.defineProperty(exports, "toArray", { enumerable: true, get: function () { return maths_js_1.toArray; } });
+Object.defineProperty(exports, "toBeHex", { enumerable: true, get: function () { return maths_js_1.toBeHex; } });
+Object.defineProperty(exports, "toBeArray", { enumerable: true, get: function () { return maths_js_1.toBeArray; } });
 Object.defineProperty(exports, "toQuantity", { enumerable: true, get: function () { return maths_js_1.toQuantity; } });
 var properties_js_1 = require("./properties.js");
 Object.defineProperty(exports, "resolveProperties", { enumerable: true, get: function () { return properties_js_1.resolveProperties; } });

@@ -190,7 +190,7 @@ export declare class AbstractProvider implements Provider {
     getAvatar(name: string): Promise<null | string>;
     resolveName(name: string): Promise<null | string>;
     lookupAddress(address: string): Promise<null | string>;
-    waitForTransaction(hash: string, _confirms?: number, timeout?: number): Promise<null | TransactionReceipt>;
+    waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt>;
     waitForBlock(blockTag?: BlockTag): Promise<Block>;
     _clearTimeout(timerId: number): void;
     _setTimeout(_func: () => void, timeout?: number): number;

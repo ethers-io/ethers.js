@@ -42,7 +42,7 @@ function handleUint(_value, param) {
 }
 function formatNumber(_value, name) {
     const value = (0, index_js_3.getBigInt)(_value, "value");
-    const result = (0, index_js_3.toArray)(value);
+    const result = (0, index_js_3.toBeArray)(value);
     (0, index_js_3.assertArgument)(result.length <= 32, `value too large`, `tx.${name}`, value);
     return result;
 }
@@ -119,7 +119,7 @@ function _serializeLegacy(tx, sig) {
     if (!sig) {
         // We have an EIP-155 transaction (chainId was specified and non-zero)
         if (chainId !== BN_0) {
-            fields.push((0, index_js_3.toArray)(chainId));
+            fields.push((0, index_js_3.toBeArray)(chainId));
             fields.push("0x");
             fields.push("0x");
         }
@@ -133,9 +133,9 @@ function _serializeLegacy(tx, sig) {
     else if (BigInt(sig.v) !== v) {
         (0, index_js_3.assertArgument)(false, "tx.chainId/sig.v mismatch", "sig", sig);
     }
-    fields.push((0, index_js_3.toArray)(v));
-    fields.push((0, index_js_3.toArray)(sig.r));
-    fields.push((0, index_js_3.toArray)(sig.s));
+    fields.push((0, index_js_3.toBeArray)(v));
+    fields.push((0, index_js_3.toBeArray)(sig.r));
+    fields.push((0, index_js_3.toBeArray)(sig.s));
     return (0, index_js_3.encodeRlp)(fields);
 }
 function _parseEipSignature(tx, fields, serialize) {
@@ -194,8 +194,8 @@ function _serializeEip1559(tx, sig) {
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "yParity"));
-        fields.push((0, index_js_3.toArray)(sig.r));
-        fields.push((0, index_js_3.toArray)(sig.s));
+        fields.push((0, index_js_3.toBeArray)(sig.r));
+        fields.push((0, index_js_3.toBeArray)(sig.s));
     }
     return (0, index_js_3.concat)(["0x02", (0, index_js_3.encodeRlp)(fields)]);
 }
@@ -234,27 +234,23 @@ function _serializeEip2930(tx, sig) {
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "recoveryParam"));
-        fields.push((0, index_js_3.toArray)(sig.r));
-        fields.push((0, index_js_3.toArray)(sig.s));
+        fields.push((0, index_js_3.toBeArray)(sig.r));
+        fields.push((0, index_js_3.toBeArray)(sig.s));
     }
     return (0, index_js_3.concat)(["0x01", (0, index_js_3.encodeRlp)(fields)]);
 }
-/**
- *  A transactions which has been signed.
- */
-/*
-export interface SignedTransaction extends Transaction {
-   type: number;
-   typeName: string;
-   from: string;
-   signature: Signature;
-}
-*/
 /**
  *  A **Transaction** describes an operation to be executed on
  *  Ethereum by an Externally Owned Account (EOA). It includes
  *  who (the [[to]] address), what (the [[data]]) and how much (the
  *  [[value]] in ether) the operation should entail.
+ *
+ *  @example:
+ *    tx = new Transaction()
+ *    //_result:
+ *
+ *    tx.data = "0x1234";
+ *    //_result:
  */
 class Transaction {
     #type;

@@ -1,5 +1,6 @@
+import { getAddress } from "../address/index.js";
 import { keccak256 as _keccak256, sha256 as _sha256 } from "../crypto/index.js";
-import { concat, dataLength, getBytes, hexlify, toArray, toTwos, toUtf8Bytes, zeroPadBytes, zeroPadValue, assertArgument } from "../utils/index.js";
+import { concat, dataLength, getBytes, hexlify, toBeArray, toTwos, toUtf8Bytes, zeroPadBytes, zeroPadValue, assertArgument } from "../utils/index.js";
 const regexBytes = new RegExp("^bytes([0-9]+)$");
 const regexNumber = new RegExp("^(u?int)([0-9]*)$");
 const regexArray = new RegExp("^(.*)\\[([0-9]*)\\]$");
@@ -9,7 +10,7 @@ function _pack(type, value, isArray) {
             if (isArray) {
                 return getBytes(zeroPadValue(value, 32));
             }
-            return getBytes(value);
+            return getBytes(getAddress(value));
         case "string":
             return toUtf8Bytes(value);
         case "bytes":
@@ -32,7 +33,7 @@ function _pack(type, value, isArray) {
         if (signed) {
             value = toTwos(value, size);
         }
-        return getBytes(zeroPadValue(toArray(value), size / 8));
+        return getBytes(zeroPadValue(toBeArray(value), size / 8));
     }
     match = type.match(regexBytes);
     if (match) {
@@ -58,6 +59,15 @@ function _pack(type, value, isArray) {
     assertArgument(false, "invalid type", "type", type);
 }
 // @TODO: Array Enum
+/**
+ *   Computes the [[link-solc-packed]] representation of %%values%%
+ *   respectively to their %%types%%.
+ *
+ *   @example:
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPacked([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
+ */
 export function solidityPacked(types, values) {
     assertArgument(types.length === values.length, "wrong number of values; expected ${ types.length }", "values", values);
     const tight = [];
@@ -67,21 +77,26 @@ export function solidityPacked(types, values) {
     return hexlify(concat(tight));
 }
 /**
- *   Computes the non-standard packed (tightly packed) keccak256 hash of
- *   the values given the types.
- *
- *   @param {Array<string>} types - The Solidity types to interpret each value as [default: bar]
- *   @param {Array<any>} values - The values to pack
+ *   Computes the [[link-solc-packed]] [[keccak256]] hash of %%values%%
+ *   respectively to their %%types%%.
  *
  *   @example:
- *       solidityPackedKeccak256([ "address", "uint" ], [ "0x1234", 45 ]);
- *       / /_result:
- *
- *   @see https://docs.soliditylang.org/en/v0.8.14/abi-spec.html#non-standard-packed-mode
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPackedKeccak256([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
  */
 export function solidityPackedKeccak256(types, values) {
     return _keccak256(solidityPacked(types, values));
 }
+/**
+ *   Computes the [[link-solc-packed]] [[sha256]] hash of %%values%%
+ *   respectively to their %%types%%.
+ *
+ *   @example:
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPackedSha256([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
+ */
 export function solidityPackedSha256(types, values) {
     return _sha256(solidityPacked(types, values));
 }

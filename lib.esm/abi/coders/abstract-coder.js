@@ -1,4 +1,4 @@
-import { defineProperties, concat, getBytesCopy, getNumber, hexlify, toArray, toBigInt, toNumber, assert, assertPrivate, assertArgument } from "../../utils/index.js";
+import { defineProperties, concat, getBytesCopy, getNumber, hexlify, toBeArray, toBigInt, toNumber, assert, assertPrivate, assertArgument } from "../../utils/index.js";
 export const WordSize = 32;
 const Padding = new Uint8Array(WordSize);
 // Properties used to immediate pass through to the underlying object
@@ -165,7 +165,7 @@ export function checkResultErrors(result) {
     return errors;
 }
 function getValue(value) {
-    let bytes = toArray(value);
+    let bytes = toBeArray(value);
     assert(bytes.length <= WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: WordSize, offset: bytes.length });
     if (bytes.length !== WordSize) {
         bytes = getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));

@@ -29,6 +29,19 @@ export declare type ProgressCallback = (percent: number) => void;
  *  can also help, assuring the user their waiting is for a good reason.
  *
  *  @_docloc: api/crypto:Passwords
+ *
+ *  @example:
+ *    // The password must be converted to bytes, and it is generally
+ *    // best practices to ensure the string has been normalized. Many
+ *    // formats explicitly indicate the normalization form to use.
+ *    password = "hello"
+ *    passwordBytes = toUtf8Bytes(password, "NFKC")
+ *
+ *    salt = id("some-salt")
+ *
+ *    // Compute the scrypt
+ *    scrypt(passwordBytes, salt, 1024, 8, 1, 16)
+ *    //_result:
  */
 export declare function scrypt(_passwd: BytesLike, _salt: BytesLike, N: number, r: number, p: number, dkLen: number, progress?: ProgressCallback): Promise<string>;
 export declare namespace scrypt {
@@ -44,6 +57,19 @@ export declare namespace scrypt {
  *  preferred to use the [async variant](scrypt).
  *
  *  @_docloc: api/crypto:Passwords
+ *
+ *  @example:
+ *    // The password must be converted to bytes, and it is generally
+ *    // best practices to ensure the string has been normalized. Many
+ *    // formats explicitly indicate the normalization form to use.
+ *    password = "hello"
+ *    passwordBytes = toUtf8Bytes(password, "NFKC")
+ *
+ *    salt = id("some-salt")
+ *
+ *    // Compute the scrypt
+ *    scryptSync(passwordBytes, salt, 1024, 8, 1, 16)
+ *    //_result:
  */
 export declare function scryptSync(_passwd: BytesLike, _salt: BytesLike, N: number, r: number, p: number, dkLen: number): string;
 export declare namespace scryptSync {

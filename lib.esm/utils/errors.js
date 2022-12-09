@@ -52,13 +52,14 @@ function stringify(value) {
  *
  *  @See [ErrorCodes](api:ErrorCode)
  *  @example
- *  try {
- *      / / code....
- *  } catch (e) {
+ *    try {
+ *      // code....
+ *    } catch (e) {
  *      if (isError(e, "CALL_EXCEPTION")) {
+ *          // The Type Guard has validated this object
  *          console.log(e.data);
  *      }
- *  }
+ *    }
  */
 export function isError(error, code) {
     return (error && error.code === code);

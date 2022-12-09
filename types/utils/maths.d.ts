@@ -30,6 +30,7 @@ export declare function mask(_value: BigNumberish, _bits: Numeric): bigint;
  *  a BigInt, then an ArgumentError will be thrown for %%name%%.
  */
 export declare function getBigInt(value: BigNumberish, name?: string): bigint;
+export declare function getUint(value: BigNumberish, name?: string): bigint;
 export declare function toBigInt(value: BigNumberish | Uint8Array): bigint;
 /**
  *  Gets a //number// from %%value%%. If it is an invalid value for
@@ -45,11 +46,11 @@ export declare function toNumber(value: BigNumberish | Uint8Array): number;
  *  Converts %%value%% to a Big Endian hexstring, optionally padded to
  *  %%width%% bytes.
  */
-export declare function toHex(_value: BigNumberish, _width?: Numeric): string;
+export declare function toBeHex(_value: BigNumberish, _width?: Numeric): string;
 /**
  *  Converts %%value%% to a Big Endian Uint8Array.
  */
-export declare function toArray(_value: BigNumberish): Uint8Array;
+export declare function toBeArray(_value: BigNumberish): Uint8Array;
 /**
  *  Returns a [[HexString]] for %%value%% safe to use as a //Quantity//.
  *

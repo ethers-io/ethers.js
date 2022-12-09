@@ -22,8 +22,8 @@ function hexPadRight(value) {
     }
     return (0, index_js_3.hexlify)(bytes);
 }
-const hexTrue = (0, index_js_3.toHex)(BN_1, 32);
-const hexFalse = (0, index_js_3.toHex)(BN_0, 32);
+const hexTrue = (0, index_js_3.toBeHex)(BN_1, 32);
+const hexFalse = (0, index_js_3.toBeHex)(BN_0, 32);
 const domainFieldTypes = {
     name: "string",
     version: "string",
@@ -72,7 +72,7 @@ function getBaseEncoder(type) {
             return function (_value) {
                 const value = (0, index_js_3.getBigInt)(_value, "value");
                 (0, index_js_3.assertArgument)(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${type}`, "value", value);
-                return (0, index_js_3.toHex)((0, index_js_3.toTwos)(value, 256), 32);
+                return (0, index_js_3.toBeHex)((0, index_js_3.toTwos)(value, 256), 32);
             };
         }
     }

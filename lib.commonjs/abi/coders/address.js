@@ -26,7 +26,7 @@ class AddressCoder extends abstract_coder_js_1.Coder {
         return writer.writeValue(value);
     }
     decode(reader) {
-        return (0, index_js_1.getAddress)((0, maths_js_1.toHex)(reader.readValue(), 20));
+        return (0, index_js_1.getAddress)((0, maths_js_1.toBeHex)(reader.readValue(), 20));
     }
 }
 exports.AddressCoder = AddressCoder;

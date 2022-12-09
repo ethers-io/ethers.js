@@ -242,7 +242,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
             }
         }
         const { IR, IL } = ser_I(index, this.chainCode, this.publicKey, this.privateKey);
-        const ki = new index_js_1.SigningKey((0, index_js_4.toHex)(((0, index_js_4.toBigInt)(IL) + BigInt(this.privateKey)) % N, 32));
+        const ki = new index_js_1.SigningKey((0, index_js_4.toBeHex)(((0, index_js_4.toBigInt)(IL) + BigInt(this.privateKey)) % N, 32));
         return new HDNodeWallet(_guard, ki, this.fingerprint, (0, index_js_4.hexlify)(IR), path, index, this.depth + 1, this.mnemonic, this.provider);
     }
     /**
@@ -267,7 +267,7 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
      *  or full HD Node ([[HDNodeWallet) respectively.
      */
     static fromExtendedKey(extendedKey) {
-        const bytes = (0, index_js_4.toArray)((0, index_js_4.decodeBase58)(extendedKey)); // @TODO: redact
+        const bytes = (0, index_js_4.toBeArray)((0, index_js_4.decodeBase58)(extendedKey)); // @TODO: redact
         (0, index_js_4.assertArgument)(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey, "invalid extended key", "extendedKey", "[ REDACTED ]");
         const depth = bytes[4];
         const parentFingerprint = (0, index_js_4.hexlify)(bytes.slice(5, 9));

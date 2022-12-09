@@ -1072,7 +1072,7 @@ function _parseBytes(result, start) {
     return null;
 }
 function numPad(value) {
-    const result = (0, index_js_3.toArray)(value);
+    const result = (0, index_js_3.toBeArray)(value);
     if (result.length > 32) {
         throw new Error("internal; should not happen");
     }

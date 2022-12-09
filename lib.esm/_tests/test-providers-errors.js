@@ -1,5 +1,5 @@
 import assert from "assert";
-import { concat, dataSlice, id, toArray, zeroPadValue, isCallException } from "../index.js";
+import { concat, dataSlice, id, toBeArray, zeroPadValue, isCallException } from "../index.js";
 import { getProvider, providerNames } from "./create-provider.js";
 describe("Tests Provider Errors", function () {
     const panics = [
@@ -38,7 +38,7 @@ describe("Tests Provider Errors", function () {
                     this.timeout(10000);
                     const data = concat([
                         dataSlice(id("testPanic(uint256)"), 0, 4),
-                        zeroPadValue(toArray(code), 32)
+                        zeroPadValue(toBeArray(code), 32)
                     ]);
                     const tx = { to: testAddr, data };
                     try {

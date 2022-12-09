@@ -689,7 +689,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
                 value = (value ? "0x01" : "0x00");
             }
             if (param.type.match(/^u?int/)) {
-                value = (0, index_js_3.toHex)(value);
+                value = (0, index_js_3.toBeHex)(value);
             }
             // Check addresses are valid
             if (param.type === "address") {

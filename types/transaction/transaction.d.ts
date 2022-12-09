@@ -61,13 +61,17 @@ export interface TransactionLike<A = string> {
     accessList?: null | AccessListish;
 }
 /**
- *  A transactions which has been signed.
- */
-/**
  *  A **Transaction** describes an operation to be executed on
  *  Ethereum by an Externally Owned Account (EOA). It includes
  *  who (the [[to]] address), what (the [[data]]) and how much (the
  *  [[value]] in ether) the operation should entail.
+ *
+ *  @example:
+ *    tx = new Transaction()
+ *    //_result:
+ *
+ *    tx.data = "0x1234";
+ *    //_result:
  */
 export declare class Transaction implements TransactionLike<string> {
     #private;

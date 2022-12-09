@@ -10,9 +10,6 @@ const data_js_1 = require("./data.js");
 const errors_js_1 = require("./errors.js");
 const maths_js_1 = require("./maths.js");
 const properties_js_1 = require("./properties.js");
-if (0) {
-    console.log(data_js_1.getBytes, maths_js_1.toBigInt, maths_js_1.toHex, maths_js_1.toTwos);
-}
 const BN_N1 = BigInt(-1);
 const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);

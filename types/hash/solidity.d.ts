@@ -1,17 +1,31 @@
-export declare function solidityPacked(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
 /**
- *   Computes the non-standard packed (tightly packed) keccak256 hash of
- *   the values given the types.
- *
- *   @param {Array<string>} types - The Solidity types to interpret each value as [default: bar]
- *   @param {Array<any>} values - The values to pack
+ *   Computes the [[link-solc-packed]] representation of %%values%%
+ *   respectively to their %%types%%.
  *
  *   @example:
- *       solidityPackedKeccak256([ "address", "uint" ], [ "0x1234", 45 ]);
- *       / /_result:
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPacked([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
+ */
+export declare function solidityPacked(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
+/**
+ *   Computes the [[link-solc-packed]] [[keccak256]] hash of %%values%%
+ *   respectively to their %%types%%.
  *
- *   @see https://docs.soliditylang.org/en/v0.8.14/abi-spec.html#non-standard-packed-mode
+ *   @example:
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPackedKeccak256([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
  */
 export declare function solidityPackedKeccak256(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
+/**
+ *   Computes the [[link-solc-packed]] [[sha256]] hash of %%values%%
+ *   respectively to their %%types%%.
+ *
+ *   @example:
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPackedSha256([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
+ */
 export declare function solidityPackedSha256(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
 //# sourceMappingURL=solidity.d.ts.map

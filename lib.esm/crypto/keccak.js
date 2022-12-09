@@ -13,7 +13,20 @@ let __keccak256 = _keccak256;
 /**
  *  Compute the cryptographic KECCAK256 hash of %%data%%.
  *
+ *  The %%data%% **must** be a data representation, to compute the
+ *  hash of UTF-8 data use the [[id]] function.
+ *
  *  @returns DataHexstring
+ *  @example:
+ *    keccak256("0x")
+ *    //_result:
+ *
+ *    keccak256("0x1337")
+ *    //_result:
+ *
+ *    keccak256(new Uint8Array([ 0x13, 0x37 ]))
+ *    //_result:
+ *
  */
 export function keccak256(_data) {
     const data = getBytes(_data, "data");

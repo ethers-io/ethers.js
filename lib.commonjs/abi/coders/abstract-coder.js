@@ -170,7 +170,7 @@ function checkResultErrors(result) {
 }
 exports.checkResultErrors = checkResultErrors;
 function getValue(value) {
-    let bytes = (0, index_js_1.toArray)(value);
+    let bytes = (0, index_js_1.toBeArray)(value);
     (0, index_js_1.assert)(bytes.length <= exports.WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: exports.WordSize, offset: bytes.length });
     if (bytes.length !== exports.WordSize) {
         bytes = (0, index_js_1.getBytesCopy)((0, index_js_1.concat)([Padding.slice(bytes.length % exports.WordSize), bytes]));

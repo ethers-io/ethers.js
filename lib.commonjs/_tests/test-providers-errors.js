@@ -43,7 +43,7 @@ describe("Tests Provider Errors", function () {
                     this.timeout(10000);
                     const data = (0, index_js_1.concat)([
                         (0, index_js_1.dataSlice)((0, index_js_1.id)("testPanic(uint256)"), 0, 4),
-                        (0, index_js_1.zeroPadValue)((0, index_js_1.toArray)(code), 32)
+                        (0, index_js_1.zeroPadValue)((0, index_js_1.toBeArray)(code), 32)
                     ]);
                     const tx = { to: testAddr, data };
                     try {

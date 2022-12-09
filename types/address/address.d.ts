@@ -18,6 +18,20 @@
  *  that you wish to bypass the safegaurds in place to protect
  *  against an address that has been incorrectly copied from another
  *  source.
+ *
+ *  @example:
+ *    // Adds the checksum (via upper-casing specific letters)
+ *    getAddress("0x8ba1f109551bd432803012645ac136ddd64dba72")
+ *    //_result:
+ *
+ *    // Converts ICAP address and adds checksum
+ *    getAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK36");
+ *    //_result:
+ *
+ *    // Throws an error if an address contains mixed case,
+ *    // but the checksum fails
+ *    getAddress("0x8Ba1f109551bD432803012645Ac136ddd64DBA72")
+ *    //_error:
  */
 export declare function getAddress(address: string): string;
 /**
@@ -26,6 +40,17 @@ export declare function getAddress(address: string): string;
  *  industry [IBAN format](link-wiki-iban] for bank accounts.
  *
  *  It is no longer common or a recommended format.
+ *
+ *  @example:
+ *    getIcapAddress("0x8ba1f109551bd432803012645ac136ddd64dba72");
+ *    //_result:
+ *
+ *    getIcapAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK36");
+ *    //_result:
+ *
+ *    // Throws an error if the ICAP checksum is wrong
+ *    getIcapAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK37");
+ *    //_error:
  */
 export declare function getIcapAddress(address: string): string;
 //# sourceMappingURL=address.d.ts.map

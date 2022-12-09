@@ -43,18 +43,63 @@ export declare class SigningKey {
      *
      *  Best practice is usually to use a cryptographic hash on the
      *  returned value before using it as a symetric secret.
+     *
+     *  @example:
+     *    sign1 = new SigningKey(id("some-secret-1"))
+     *    sign2 = new SigningKey(id("some-secret-2"))
+     *
+     *    // Notice that privA.computeSharedSecret(pubB)...
+     *    sign1.computeSharedSecret(sign2.publicKey)
+     *    //_result:
+     *
+     *    // ...is equal to privB.computeSharedSecret(pubA).
+     *    sign2.computeSharedSecret(sign1.publicKey)
+     *    //_result:
      */
-    computeShardSecret(other: BytesLike): string;
+    computeSharedSecret(other: BytesLike): string;
     /**
      *  Compute the public key for %%key%%, optionally %%compressed%%.
      *
      *  The %%key%% may be any type of key, a raw public key, a
      *  compressed/uncompressed public key or private key.
+     *
+     *  @example:
+     *    sign = new SigningKey(id("some-secret"));
+     *
+     *    // Compute the uncompressed public key for a private key
+     *    SigningKey.computePublicKey(sign.privateKey)
+     *    //_result:
+     *
+     *    // Compute the compressed public key for a private key
+     *    SigningKey.computePublicKey(sign.privateKey, true)
+     *    //_result:
+     *
+     *    // Compute the uncompressed public key
+     *    SigningKey.computePublicKey(sign.publicKey, false);
+     *    //_result:
+     *
+     *    // Compute the Compressed a public key
+     *    SigningKey.computePublicKey(sign.publicKey, true);
+     *    //_result:
      */
     static computePublicKey(key: BytesLike, compressed?: boolean): string;
     /**
      *  Returns the public key for the private key which produced the
      *  %%signature%% for the given %%digest%%.
+     *
+     *  @example:
+     *    key = new SigningKey(id("some-secret"))
+     *    digest = id("hello world")
+     *    sig = key.sign(digest)
+     *
+     *    // Notice the signer public key...
+     *    key.publicKey
+     *    //_result:
+     *
+     *    // ...is equal to the recovered public key
+     *    SigningKey.recoverPublicKey(digest, sig)
+     *    //_result:
+     *
      */
     static recoverPublicKey(digest: BytesLike, signature: SignatureLike): string;
     /**

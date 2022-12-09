@@ -136,7 +136,14 @@ export class Signature {
         };
     }
     /**
-     *  Compute the chain ID from an EIP-155 ``v`` for legacy transactions.
+     *  Compute the chain ID from the ``v`` in a legacy EIP-155 transactions.
+     *
+     *  @example:
+     *    Signature.getChainId(45)
+     *    //_result:
+     *
+     *    Signature.getChainId(46)
+     *    //_result:
      */
     static getChainId(v) {
         const bv = getBigInt(v, "v");
@@ -149,22 +156,52 @@ export class Signature {
         return (bv - BN_35) / BN_2;
     }
     /**
-     *  Compute the EIP-155 ``v`` for a chain ID for legacy transactions.
+     *  Compute the ``v`` for a chain ID for a legacy EIP-155 transactions.
+     *
+     *  Legacy transactions which use [[link-eip-155]] hijack the ``v``
+     *  property to include the chain ID.
+     *
+     *  @example:
+     *    Signature.getChainIdV(5, 27)
+     *    //_result:
+     *
+     *    Signature.getChainIdV(5, 28)
+     *    //_result:
+     *
      */
     static getChainIdV(chainId, v) {
         return (getBigInt(chainId) * BN_2) + BigInt(35 + v - 27);
     }
     /**
-     *  Compute the normalized EIP-155 ``v`` for legacy transactions.
+     *  Compute the normalized legacy transaction ``v`` from a ``yParirty``,
+     *  a legacy transaction ``v`` or a legacy [[link-eip-155]] transaction.
+     *
+     *  @example:
+     *    // The values 0 and 1 imply v is actually yParity
+     *    Signature.getNormalizedV(0)
+     *    //_result:
+     *
+     *    // Legacy non-EIP-1559 transaction (i.e. 27 or 28)
+     *    Signature.getNormalizedV(27)
+     *    //_result:
+     *
+     *    // Legacy EIP-155 transaction (i.e. >= 35)
+     *    Signature.getNormalizedV(46)
+     *    //_result:
+     *
+     *    // Invalid values throw
+     *    Signature.getNormalizedV(5)
+     *    //_error:
      */
     static getNormalizedV(v) {
         const bv = getBigInt(v);
-        if (bv == BN_0) {
+        if (bv === BN_0 || bv === BN_27) {
             return 27;
         }
-        if (bv == BN_1) {
+        if (bv === BN_1 || bv === BN_28) {
             return 28;
         }
+        assertArgument(bv >= BN_35, "invalid v", "v", v);
         // Otherwise, EIP-155 v means odd is 27 and even is 28
         return (bv & BN_1) ? 27 : 28;
     }

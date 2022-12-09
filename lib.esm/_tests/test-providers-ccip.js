@@ -1,13 +1,13 @@
 import assert from "assert";
-import { concat, dataLength, keccak256, toArray, isCallException, isError } from "../index.js";
+import { concat, dataLength, keccak256, toBeArray, isCallException, isError } from "../index.js";
 import { connect } from "./create-provider.js";
 describe("Test CCIP execution", function () {
     // This matches the verify method in the Solidity contract against the
     // processed data from the endpoint
     const verify = function (sender, data, result) {
         const check = concat([
-            toArray(dataLength(sender)), sender,
-            toArray(dataLength(data)), data
+            toBeArray(dataLength(sender)), sender,
+            toBeArray(dataLength(data)), data
         ]);
         assert.equal(result, keccak256(check), "response is equal");
     };

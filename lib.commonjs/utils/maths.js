@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toQuantity = exports.toArray = exports.toHex = exports.toNumber = exports.getNumber = exports.toBigInt = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = void 0;
+exports.toQuantity = exports.toBeArray = exports.toBeHex = exports.toNumber = exports.getNumber = exports.toBigInt = exports.getUint = exports.getBigInt = exports.mask = exports.toTwos = exports.fromTwos = void 0;
 /**
  *  Some mathematic operations.
  *
@@ -10,6 +10,7 @@ const data_js_1 = require("./data.js");
 const errors_js_1 = require("./errors.js");
 const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);
+//const BN_Max256 = (BN_1 << BigInt(256)) - BN_1;
 // IEEE 754 support 53-bits of mantissa
 const maxValue = 0x1fffffffffffff;
 /**
@@ -19,9 +20,8 @@ const maxValue = 0x1fffffffffffff;
  *  If the highest bit is ``1``, the result will be negative.
  */
 function fromTwos(_value, _width) {
-    const value = getBigInt(_value, "value");
+    const value = getUint(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
-    (0, errors_js_1.assertArgument)(value >= BN_0, "invalid twos complement value", "value", value);
     (0, errors_js_1.assert)((value >> width) === BN_0, "overflow", "NUMERIC_FAULT", {
         operation: "fromTwos", fault: "overflow", value: _value
     });
@@ -63,7 +63,7 @@ exports.toTwos = toTwos;
  *  Mask %%value%% with a bitmask of %%bits%% ones.
  */
 function mask(_value, _bits) {
-    const value = getBigInt(_value, "value");
+    const value = getUint(_value, "value");
     const bits = BigInt(getNumber(_bits, "bits"));
     return value & ((BN_1 << bits) - BN_1);
 }
@@ -96,6 +96,14 @@ function getBigInt(value, name) {
     (0, errors_js_1.assertArgument)(false, "invalid BigNumberish value", name || "value", value);
 }
 exports.getBigInt = getBigInt;
+function getUint(value, name) {
+    const result = getBigInt(value, name);
+    (0, errors_js_1.assert)(result >= BN_0, "overflow", "NUMERIC_FAULT", {
+        fault: "overflow", operation: "getUint", value
+    });
+    return result;
+}
+exports.getUint = getUint;
 const Nibbles = "0123456789abcdef";
 /*
  * Converts %%value%% to a BigInt. If %%value%% is a Uint8Array, it
@@ -152,9 +160,8 @@ exports.toNumber = toNumber;
  *  Converts %%value%% to a Big Endian hexstring, optionally padded to
  *  %%width%% bytes.
  */
-function toHex(_value, _width) {
-    const value = getBigInt(_value, "value");
-    (0, errors_js_1.assertArgument)(value >= 0, "cannot toHex negative value", "value", _value);
+function toBeHex(_value, _width) {
+    const value = getUint(_value, "value");
     let result = value.toString(16);
     if (_width == null) {
         // Ensure the value is of even length
@@ -172,13 +179,12 @@ function toHex(_value, _width) {
     }
     return "0x" + result;
 }
-exports.toHex = toHex;
+exports.toBeHex = toBeHex;
 /**
  *  Converts %%value%% to a Big Endian Uint8Array.
  */
-function toArray(_value) {
-    const value = getBigInt(_value, "value");
-    (0, errors_js_1.assertArgument)(value >= 0, "cannot toArray negative value", "value", _value);
+function toBeArray(_value) {
+    const value = getUint(_value, "value");
     if (value === BN_0) {
         return new Uint8Array([]);
     }
@@ -193,7 +199,7 @@ function toArray(_value) {
     }
     return result;
 }
-exports.toArray = toArray;
+exports.toBeArray = toBeArray;
 /**
  *  Returns a [[HexString]] for %%value%% safe to use as a //Quantity//.
  *
@@ -202,7 +208,7 @@ exports.toArray = toArray;
  *  numeric values.
  */
 function toQuantity(value) {
-    let result = (0, data_js_1.hexlify)((0, data_js_1.isBytesLike)(value) ? value : toArray(value)).substring(2);
+    let result = (0, data_js_1.hexlify)((0, data_js_1.isBytesLike)(value) ? value : toBeArray(value)).substring(2);
     while (result.substring(0, 1) === "0") {
         result = result.substring(1);
     }

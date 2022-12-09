@@ -12,7 +12,7 @@ export { isCallException, isError, assert, assertArgument, assertArgumentCount, 
 export { EventPayload } from "./events.js";
 export { FetchRequest, FetchResponse, FetchCancelSignal, } from "./fetch.js";
 export { FixedNumber } from "./fixednumber.js";
-export { fromTwos, toTwos, mask, getBigInt, getNumber, toBigInt, toNumber, toHex, toArray, toQuantity } from "./maths.js";
+export { fromTwos, toTwos, mask, getBigInt, getNumber, getUint, toBigInt, toNumber, toBeHex, toBeArray, toQuantity } from "./maths.js";
 export { resolveProperties, defineProperties } from "./properties.js";
 export { decodeRlp } from "./rlp-decode.js";
 export { encodeRlp } from "./rlp-encode.js";

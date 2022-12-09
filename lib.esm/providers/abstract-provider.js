@@ -12,7 +12,7 @@
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
-import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, makeError, assert, assertArgument, FetchRequest, toArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
+import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, makeError, assert, assertArgument, FetchRequest, toBeArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { formatBlock, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
 import { Network } from "./network.js";
@@ -1067,7 +1067,7 @@ function _parseBytes(result, start) {
     return null;
 }
 function numPad(value) {
-    const result = toArray(value);
+    const result = toBeArray(value);
     if (result.length > 32) {
         throw new Error("internal; should not happen");
     }

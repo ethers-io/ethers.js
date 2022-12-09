@@ -1,4 +1,9 @@
 "use strict";
+/**
+ *  About ENS Resolver
+ *
+ *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EnsResolver = exports.BasicMulticoinProviderPlugin = exports.MulticoinProviderPlugin = void 0;
 const index_js_1 = require("../address/index.js");
@@ -26,7 +31,7 @@ function parseString(result, start) {
     return null;
 }
 function numPad(value) {
-    const result = (0, index_js_4.toArray)(value);
+    const result = (0, index_js_4.toBeArray)(value);
     if (result.length > 32) {
         throw new Error("internal; should not happen");
     }
@@ -82,6 +87,9 @@ function getIpfsLink(link) {
 }
 ;
 ;
+/**
+ *  A provider plugin super-class for processing multicoin address types.
+ */
 class MulticoinProviderPlugin {
     name;
     constructor(name) {
@@ -102,6 +110,9 @@ class MulticoinProviderPlugin {
 }
 exports.MulticoinProviderPlugin = MulticoinProviderPlugin;
 const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoinProviderPlugin";
+/**
+ *  A basic multicoin provider plugin.
+ */
 class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
     constructor() {
         super(BasicMulticoinPluginId);
@@ -115,9 +126,22 @@ const matchers = [
     matcherIpfs,
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
+/**
+ *  A connected object to a resolved ENS name resolver, which can be
+ *  used to query additional details.
+ */
 class EnsResolver {
+    /**
+     *  The connected provider.
+     */
     provider;
+    /**
+     *  The address of the resolver.
+     */
     address;
+    /**
+     *  The name this resovler was resolved against.
+     */
     name;
     // For EIP-2544 names, the ancestor that provided the resolver
     #supports2544;
@@ -125,6 +149,9 @@ class EnsResolver {
         (0, index_js_4.defineProperties)(this, { provider, address, name });
         this.#supports2544 = null;
     }
+    /**
+     *  Resolves to true if the resolver supports wildcard resolution.
+     */
     async supportsWildcard() {
         if (!this.#supports2544) {
             // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
@@ -144,6 +171,10 @@ class EnsResolver {
         }
         return await this.#supports2544;
     }
+    /**
+     *  Fetch the %%selector%% with %%parameters%% using call, resolving
+     *  recursively if the resolver supports it.
+     */
     async _fetch(selector, parameters) {
         if (parameters == null) {
             parameters = "0x";
@@ -181,6 +212,10 @@ class EnsResolver {
         }
         return null;
     }
+    /**
+     *  Resolves to the address for %%coinType%% or null if the
+     *  provided %%coinType%% has not been configured.
+     */
     async getAddress(coinType) {
         if (coinType == null) {
             coinType = 60;
@@ -231,6 +266,10 @@ class EnsResolver {
             info: { coinType, data }
         });
     }
+    /**
+     *  Resovles to the EIP-643 text record for %%key%%, or ``null``
+     *  if unconfigured.
+     */
     async getText(key) {
         // The key encoded as parameter to fetchBytes
         let keyBytes = (0, index_js_4.toUtf8Bytes)(key);
@@ -243,6 +282,9 @@ class EnsResolver {
         }
         return (0, index_js_4.toUtf8String)(hexBytes);
     }
+    /**
+     *  Rsolves to the content-hash or ``null`` if unconfigured.
+     */
     async getContentHash() {
         // keccak256("contenthash()")
         const hexBytes = parseBytes((await this._fetch("0xbc1c58d1")) || "0x", 0);
@@ -269,9 +311,25 @@ class EnsResolver {
             info: { data: hexBytes }
         });
     }
+    /**
+     *  Resolves to the avatar url or ``null`` if the avatar is either
+     *  unconfigured or incorrectly configured (e.g. references an NFT
+     *  not owned by the address).
+     *
+     *  If diagnosing issues with configurations, the [[_getAvatar]]
+     *  method may be useful.
+     */
     async getAvatar() {
         return (await this._getAvatar()).url;
     }
+    /**
+     *  When resolving an avatar, there are many steps involved, such
+     *  fetching metadata and possibly validating ownership of an
+     *  NFT.
+     *
+     *  This method can be used to examine each step and the value it
+     *  was working from.
+     */
     async _getAvatar() {
         const linkage = [{ type: "name", value: this.name }];
         try {
@@ -444,6 +502,10 @@ class EnsResolver {
         }
         return null;
     }
+    /**
+     *  Resolve to the ENS resolver for %%name%% using %%provider%% or
+     *  ``null`` if uncinfigured.
+     */
     static async fromName(provider, name) {
         let currentName = name;
         while (true) {

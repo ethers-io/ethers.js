@@ -109,6 +109,12 @@ function checkSignal(signal) {
  *  and ``IPFS:``.
  *
  *  Additional schemes can be added globally using [[registerGateway]].
+ *
+ *  @example:
+ *    req = new FetchRequest("https://www.ricmoo.com")
+ *    resp = await req.send()
+ *    resp.body.length
+ *    //_result:
  */
 class FetchRequest {
     #allowInsecure;

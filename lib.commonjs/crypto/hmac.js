@@ -19,6 +19,19 @@ let __computeHmac = _computeHmac;
 /**
  *  Return the HMAC for %%data%% using the %%key%% key with the underlying
  *  %%algo%% used for compression.
+ *
+ *  @example:
+ *    key = id("some-secret")
+ *
+ *    // Compute the HMAC
+ *    computeHmac("sha256", key, "0x1337")
+ *    //_result:
+ *
+ *    // To compute the HMAC of UTF-8 data, the data must be
+ *    // converted to UTF-8 bytes
+ *    computeHmac("sha256", key, toUtf8Bytes("Hello World"))
+ *    //_result:
+ *
  */
 function computeHmac(algorithm, _key, _data) {
     const key = (0, index_js_1.getBytes)(_key, "key");

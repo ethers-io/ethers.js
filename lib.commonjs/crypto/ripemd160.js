@@ -13,6 +13,17 @@ let __ripemd160 = _ripemd160;
  *
  *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
+ *
+ *  @example:
+ *    ripemd160("0x")
+ *    //_result:
+ *
+ *    ripemd160("0x1337")
+ *    //_result:
+ *
+ *    ripemd160(new Uint8Array([ 0x13, 0x37 ]))
+ *    //_result:
+ *
  */
 function ripemd160(_data) {
     const data = (0, index_js_1.getBytes)(_data, "data");

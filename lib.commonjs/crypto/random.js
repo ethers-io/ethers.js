@@ -17,6 +17,10 @@ const _randomBytes = function (length) {
 let __randomBytes = _randomBytes;
 /**
  *  Return %%length%% bytes of cryptographically secure random data.
+ *
+ *  @example:
+ *    randomBytes(8)
+ *    //_result:
  */
 function randomBytes(length) {
     return __randomBytes(length);

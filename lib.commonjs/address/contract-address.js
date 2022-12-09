@@ -15,6 +15,13 @@ const address_js_1 = require("./address.js");
  *  This can also be used to compute the address a contract will be
  *  deployed to by a contract, by using the contract's address as the
  *  ``to`` and the contract's nonce.
+ *
+ *  @example
+ *    from = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
+ *    nonce = 5;
+ *
+ *    getCreateAddress({ from, nonce });
+ *    //_result:
  */
 function getCreateAddress(tx) {
     const from = (0, address_js_1.getAddress)(tx.from);
@@ -38,6 +45,22 @@ exports.getCreateAddress = getCreateAddress;
  *
  *  To compute the %%initCodeHash%% from a contract's init code, use
  *  the [[keccak256]] function.
+ *
+ *  For a quick overview and example of ``CREATE2``, see [[link-ricmoo-wisps]].
+ *
+ *  @example
+ *    // The address of the contract
+ *    from = "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+ *
+ *    // The salt
+ *    salt = id("HelloWorld")
+ *
+ *    // The hash of the initCode
+ *    initCode = "0x6394198df16000526103ff60206004601c335afa6040516060f3";
+ *    initCodeHash = keccak256(initCode)
+ *
+ *    getCreate2Address(from, salt, initCodeHash)
+ *    //_result:
  */
 function getCreate2Address(_from, _salt, _initCodeHash) {
     const from = (0, address_js_1.getAddress)(_from);

@@ -11,8 +11,8 @@ describe("Test CCIP execution", function () {
     // processed data from the endpoint
     const verify = function (sender, data, result) {
         const check = (0, index_js_1.concat)([
-            (0, index_js_1.toArray)((0, index_js_1.dataLength)(sender)), sender,
-            (0, index_js_1.toArray)((0, index_js_1.dataLength)(data)), data
+            (0, index_js_1.toBeArray)((0, index_js_1.dataLength)(sender)), sender,
+            (0, index_js_1.toBeArray)((0, index_js_1.dataLength)(data)), data
         ]);
         assert_1.default.equal(result, (0, index_js_1.keccak256)(check), "response is equal");
     };
