@@ -17,7 +17,8 @@ export {
 
 export {
     getAddress, getIcapAddress,
-    getCreateAddress, getCreate2Address
+    getCreateAddress, getCreate2Address,
+    isAddressable, isAddress, resolveAddress
 } from "./address/index.js";
 
 export {
@@ -92,7 +93,7 @@ export {
     isCallException, isError,
     FetchRequest, FetchResponse, FetchCancelSignal,
     FixedNumber,
-    getBigInt, getNumber, toArray, toBigInt, toHex, toNumber, toQuantity,
+    getBigInt, getNumber, getUint, toBeArray, toBigInt, toBeHex, toNumber, toQuantity,
     fromTwos, toTwos, mask,
     formatEther, parseEther, formatUnits, parseUnits,
     toUtf8Bytes, toUtf8CodePoints, toUtf8String,

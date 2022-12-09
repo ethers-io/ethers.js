@@ -2,7 +2,7 @@ import assert from "assert";
 
 import {
     isError,
-    getBigInt, getNumber, toArray, toHex, toQuantity,
+    getBigInt, getNumber, toBeArray, toBeHex, toQuantity,
 } from "../index.js";
 
 describe("Tests Quantity Functions", function() {
@@ -146,7 +146,7 @@ describe("Tests Bad Math Values", function() {
         {
             name: "negative value",
             value: -4,
-            error: "cannot toHex negative value"
+            error: "cannot toBeHex negative value"
         },
         {
             name: "width too short",
@@ -157,9 +157,9 @@ describe("Tests Bad Math Values", function() {
     ];
 
     for (const { name, value, error, width } of badHex) {
-        it(`correctly fails on bad toHex values: ${ name }`, function() {
+        it(`correctly fails on bad toBeHex values: ${ name }`, function() {
             assert.throws(() => {
-                const result = toHex(value, width);
+                const result = toBeHex(value, width);
                 console.log(result);
             }, (e: any) => {
                 return (isError(e, "INVALID_ARGUMENT") &&
@@ -168,13 +168,13 @@ describe("Tests Bad Math Values", function() {
         });
     }
 
-    it(`correctly fails on nad toArray values: negative value`, function() {
+    it(`correctly fails on nad toBeArray values: negative value`, function() {
         assert.throws(() => {
-            const result = toArray(-4);
+            const result = toBeArray(-4);
             console.log(result);
         }, (e: any) => {
             return (isError(e, "INVALID_ARGUMENT") &&
-                e.message.startsWith("cannot toArray negative value"));
+                e.message.startsWith("cannot toBeArray negative value"));
         });
     });
 });

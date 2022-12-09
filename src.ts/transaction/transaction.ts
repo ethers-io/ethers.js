@@ -3,7 +3,7 @@ import { getAddress } from "../address/index.js";
 import { keccak256, Signature, SigningKey } from "../crypto/index.js";
 import {
     concat, decodeRlp, encodeRlp, getBytes, getBigInt, getNumber, hexlify,
-    assert, assertArgument, toArray, zeroPadValue
+    assert, assertArgument, toBeArray, zeroPadValue
 } from "../utils/index.js";
 
 import { accessListify } from "./accesslist.js";
@@ -121,7 +121,7 @@ function handleUint(_value: string, param: string): bigint {
 
 function formatNumber(_value: BigNumberish, name: string): Uint8Array {
     const value = getBigInt(_value, "value");
-    const result = toArray(value);
+    const result = toBeArray(value);
     assertArgument(result.length <= 32, `value too large`, `tx.${ name }`, value);
     return result;
 }
@@ -210,7 +210,7 @@ function _serializeLegacy(tx: Transaction, sig?: Signature): string {
     if (!sig) {
         // We have an EIP-155 transaction (chainId was specified and non-zero)
         if (chainId !== BN_0) {
-            fields.push(toArray(chainId));
+            fields.push(toBeArray(chainId));
             fields.push("0x");
             fields.push("0x");
         }
@@ -226,9 +226,9 @@ function _serializeLegacy(tx: Transaction, sig?: Signature): string {
         assertArgument(false, "tx.chainId/sig.v mismatch", "sig", sig);
     }
 
-    fields.push(toArray(v));
-    fields.push(toArray(sig.r));
-    fields.push(toArray(sig.s));
+    fields.push(toBeArray(v));
+    fields.push(toBeArray(sig.r));
+    fields.push(toBeArray(sig.s));
 
     return encodeRlp(fields);
 }
@@ -296,8 +296,8 @@ function _serializeEip1559(tx: TransactionLike, sig?: Signature): string {
 
     if (sig) {
         fields.push(formatNumber(sig.yParity, "yParity"));
-        fields.push(toArray(sig.r));
-        fields.push(toArray(sig.s));
+        fields.push(toBeArray(sig.r));
+        fields.push(toBeArray(sig.s));
     }
 
     return concat([ "0x02", encodeRlp(fields)]);
@@ -345,30 +345,25 @@ function _serializeEip2930(tx: TransactionLike, sig?: Signature): string {
 
     if (sig) {
         fields.push(formatNumber(sig.yParity, "recoveryParam"));
-        fields.push(toArray(sig.r));
-        fields.push(toArray(sig.s));
+        fields.push(toBeArray(sig.r));
+        fields.push(toBeArray(sig.s));
     }
 
     return concat([ "0x01", encodeRlp(fields)]);
 }
 
 /**
- *  A transactions which has been signed.
- */
- /*
-export interface SignedTransaction extends Transaction {
-    type: number;
-    typeName: string;
-    from: string;
-    signature: Signature;
-}
-*/
-
-/**
  *  A **Transaction** describes an operation to be executed on
  *  Ethereum by an Externally Owned Account (EOA). It includes
  *  who (the [[to]] address), what (the [[data]]) and how much (the
  *  [[value]] in ether) the operation should entail.
+ *
+ *  @example:
+ *    tx = new Transaction()
+ *    //_result:
+ *
+ *    tx.data = "0x1234";
+ *    //_result:
  */
 export class Transaction implements TransactionLike<string> {
     #type: null | number;

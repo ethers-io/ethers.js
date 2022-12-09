@@ -3,7 +3,7 @@ import assert from "assert";
 import {
     concat, dataLength,
     keccak256,
-    toArray,
+    toBeArray,
     isCallException, isError
 } from "../index.js";
 
@@ -15,8 +15,8 @@ describe("Test CCIP execution", function() {
     // processed data from the endpoint
     const verify = function(sender: string, data: string, result: string): void {
         const check = concat([
-            toArray(dataLength(sender)), sender,
-            toArray(dataLength(data)), data
+            toBeArray(dataLength(sender)), sender,
+            toBeArray(dataLength(data)), data
         ]);
         assert.equal(result, keccak256(check), "response is equal");
     }

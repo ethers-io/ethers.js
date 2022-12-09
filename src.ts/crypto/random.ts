@@ -18,6 +18,10 @@ let __randomBytes = _randomBytes;
 
 /**
  *  Return %%length%% bytes of cryptographically secure random data.
+ *
+ *  @example:
+ *    randomBytes(8)
+ *    //_result:
  */
 export function randomBytes(length: number): Uint8Array {
     return __randomBytes(length);

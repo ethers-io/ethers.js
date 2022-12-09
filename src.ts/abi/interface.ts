@@ -8,7 +8,7 @@ import { keccak256 } from "../crypto/index.js"
 import { id } from "../hash/index.js"
 import {
     concat, dataSlice, getBigInt, getBytes, getBytesCopy,
-    hexlify, zeroPadValue, isHexString, defineProperties, assertArgument, toHex,
+    hexlify, zeroPadValue, isHexString, defineProperties, assertArgument, toBeHex,
     assert
 } from "../utils/index.js";
 
@@ -789,7 +789,7 @@ export class Interface {
             }
 
             if (param.type.match(/^u?int/)) {
-                value = toHex(value);
+                value = toBeHex(value);
             }
 
             // Check addresses are valid

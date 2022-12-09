@@ -30,7 +30,7 @@ export { FixedNumber } from "./fixednumber.js"
 
 export {
     fromTwos, toTwos, mask,
-    getBigInt, getNumber, toBigInt, toNumber, toHex, toArray, toQuantity
+    getBigInt, getNumber, getUint, toBigInt, toNumber, toBeHex, toBeArray, toQuantity
 } from "./maths.js";
 
 export { resolveProperties, defineProperties} from "./properties.js";

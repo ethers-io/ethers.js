@@ -49,6 +49,19 @@ let __scryptSync: (passwd: Uint8Array, salt: Uint8Array, N: number, r: number, p
  *  can also help, assuring the user their waiting is for a good reason.
  *
  *  @_docloc: api/crypto:Passwords
+ *
+ *  @example:
+ *    // The password must be converted to bytes, and it is generally
+ *    // best practices to ensure the string has been normalized. Many
+ *    // formats explicitly indicate the normalization form to use.
+ *    password = "hello"
+ *    passwordBytes = toUtf8Bytes(password, "NFKC")
+ *
+ *    salt = id("some-salt")
+ *
+ *    // Compute the scrypt
+ *    scrypt(passwordBytes, salt, 1024, 8, 1, 16)
+ *    //_result:
  */
 export async function scrypt(_passwd: BytesLike, _salt: BytesLike, N: number, r: number, p: number, dkLen: number, progress?: ProgressCallback): Promise<string> {
     const passwd = getBytes(_passwd, "passwd");
@@ -71,6 +84,19 @@ Object.freeze(scrypt);
  *  preferred to use the [async variant](scrypt).
  *
  *  @_docloc: api/crypto:Passwords
+ *
+ *  @example:
+ *    // The password must be converted to bytes, and it is generally
+ *    // best practices to ensure the string has been normalized. Many
+ *    // formats explicitly indicate the normalization form to use.
+ *    password = "hello"
+ *    passwordBytes = toUtf8Bytes(password, "NFKC")
+ *
+ *    salt = id("some-salt")
+ *
+ *    // Compute the scrypt
+ *    scryptSync(passwordBytes, salt, 1024, 8, 1, 16)
+ *    //_result:
  */
 export function scryptSync(_passwd: BytesLike, _salt: BytesLike, N: number, r: number, p: number, dkLen: number): string {
     const passwd = getBytes(_passwd, "passwd");

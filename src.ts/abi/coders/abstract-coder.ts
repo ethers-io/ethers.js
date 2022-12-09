@@ -1,7 +1,7 @@
 
 import {
     defineProperties, concat, getBytesCopy, getNumber, hexlify,
-    toArray, toBigInt, toNumber,
+    toBeArray, toBigInt, toNumber,
     assert, assertPrivate, assertArgument
 } from "../../utils/index.js";
 
@@ -188,7 +188,7 @@ export function checkResultErrors(result: Result): Array<{ path: Array<string | 
 }
 
 function getValue(value: BigNumberish): Uint8Array {
-    let bytes = toArray(value);
+    let bytes = toBeArray(value);
 
     assert (bytes.length <= WordSize, "value out-of-bounds",
         "BUFFER_OVERRUN", { buffer: bytes, length: WordSize, offset: bytes.length });

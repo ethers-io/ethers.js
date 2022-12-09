@@ -2,7 +2,7 @@
 import assert from "assert";
 
 import {
-    concat, dataSlice, id, toArray, zeroPadValue,
+    concat, dataSlice, id, toBeArray, zeroPadValue,
     isCallException
 } from "../index.js";
 
@@ -60,7 +60,7 @@ describe("Tests Provider Errors", function() {
 
                     const data = concat([
                         dataSlice(id("testPanic(uint256)"), 0, 4),
-                        zeroPadValue(toArray(code), 32)
+                        zeroPadValue(toBeArray(code), 32)
                     ]);
 
                     const tx = { to: testAddr, data };

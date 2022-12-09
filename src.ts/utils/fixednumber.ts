@@ -6,15 +6,11 @@
 import { getBytes } from "./data.js";
 import { assert, assertArgument, assertPrivate } from "./errors.js";
 import {
-    getBigInt, fromTwos, mask, toBigInt, toHex, toTwos
+    getBigInt, fromTwos, mask, toBigInt
 } from "./maths.js";
 import { defineProperties } from "./properties.js";
 
 import type { BigNumberish, BytesLike } from "./index.js";
-
-if (0) {
-  console.log(getBytes, toBigInt, toHex, toTwos);
-}
 
 const BN_N1 = BigInt(-1);
 const BN_0 = BigInt(0);

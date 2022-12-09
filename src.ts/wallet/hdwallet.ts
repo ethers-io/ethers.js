@@ -9,7 +9,7 @@ import { computeAddress } from "../transaction/index.js";
 import {
     concat, dataSlice, decodeBase58, defineProperties, encodeBase58,
     getBytes, hexlify, isBytesLike,
-    getNumber, toArray, toBigInt, toHex,
+    getNumber, toBeArray, toBigInt, toBeHex,
     assertPrivate, assert, assertArgument
 } from "../utils/index.js";
 import { LangEn } from "../wordlists/lang-en.js";
@@ -294,7 +294,7 @@ export class HDNodeWallet extends BaseWallet {
         }
 
         const { IR, IL } = ser_I(index, this.chainCode, this.publicKey, this.privateKey);
-        const ki = new SigningKey(toHex((toBigInt(IL) + BigInt(this.privateKey)) % N, 32));
+        const ki = new SigningKey(toBeHex((toBigInt(IL) + BigInt(this.privateKey)) % N, 32));
 
         return new HDNodeWallet(_guard, ki, this.fingerprint, hexlify(IR),
             path, index, this.depth + 1, this.mnemonic, this.provider);
@@ -329,7 +329,7 @@ export class HDNodeWallet extends BaseWallet {
      *  or full HD Node ([[HDNodeWallet) respectively.
      */
     static fromExtendedKey(extendedKey: string): HDNodeWallet | HDNodeVoidWallet {
-        const bytes = toArray(decodeBase58(extendedKey)); // @TODO: redact
+        const bytes = toBeArray(decodeBase58(extendedKey)); // @TODO: redact
 
         assertArgument(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey,
             "invalid extended key", "extendedKey", "[ REDACTED ]");

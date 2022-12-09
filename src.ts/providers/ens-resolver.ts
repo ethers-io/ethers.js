@@ -9,7 +9,7 @@ import { ZeroAddress, ZeroHash } from "../constants/index.js";
 import { dnsEncode, namehash } from "../hash/index.js";
 import {
     concat, dataSlice, getBytes, hexlify, zeroPadValue,
-    defineProperties, encodeBase58, getBigInt, toArray,
+    defineProperties, encodeBase58, getBigInt, toBeArray,
     toNumber, toUtf8Bytes, toUtf8String,
     assert, assertArgument,
     FetchRequest
@@ -43,7 +43,7 @@ function parseString(result: string, start: number): null | string {
 }
 
 function numPad(value: BigNumberish): Uint8Array {
-    const result = toArray(value);
+    const result = toBeArray(value);
     if (result.length > 32) { throw new Error("internal; should not happen"); }
 
     const padded = new Uint8Array(32);

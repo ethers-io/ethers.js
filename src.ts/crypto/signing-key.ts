@@ -2,7 +2,7 @@
 import * as secp256k1 from "@noble/secp256k1";
 
 import {
-    concat, dataLength, getBytes, getBytesCopy, hexlify, toHex,
+    concat, dataLength, getBytes, getBytesCopy, hexlify, toBeHex,
     assertArgument
 } from "../utils/index.js";
 
@@ -71,8 +71,8 @@ export class SigningKey {
 
         const sig = secp256k1.Signature.fromHex(sigDer);
         return Signature.from({
-            r: toHex("0x" + sig.r.toString(16), 32),
-            s: toHex("0x" + sig.s.toString(16), 32),
+            r: toBeHex("0x" + sig.r.toString(16), 32),
+            s: toBeHex("0x" + sig.s.toString(16), 32),
             v: (recid ? 0x1c: 0x1b)
         });
     }
@@ -86,10 +86,23 @@ export class SigningKey {
      *
      *  Best practice is usually to use a cryptographic hash on the
      *  returned value before using it as a symetric secret.
+     *
+     *  @example:
+     *    sign1 = new SigningKey(id("some-secret-1"))
+     *    sign2 = new SigningKey(id("some-secret-2"))
+     *
+     *    // Notice that privA.computeSharedSecret(pubB)...
+     *    sign1.computeSharedSecret(sign2.publicKey)
+     *    //_result:
+     *
+     *    // ...is equal to privB.computeSharedSecret(pubA).
+     *    sign2.computeSharedSecret(sign1.publicKey)
+     *    //_result:
      */
-    computeShardSecret(other: BytesLike): string {
+    computeSharedSecret(other: BytesLike): string {
         const pubKey = SigningKey.computePublicKey(other);
-        return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), pubKey));
+        console.log(pubKey);
+        return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey)));
     }
 
     /**
@@ -97,6 +110,25 @@ export class SigningKey {
      *
      *  The %%key%% may be any type of key, a raw public key, a
      *  compressed/uncompressed public key or private key.
+     *
+     *  @example:
+     *    sign = new SigningKey(id("some-secret"));
+     *
+     *    // Compute the uncompressed public key for a private key
+     *    SigningKey.computePublicKey(sign.privateKey)
+     *    //_result:
+     *
+     *    // Compute the compressed public key for a private key
+     *    SigningKey.computePublicKey(sign.privateKey, true)
+     *    //_result:
+     *
+     *    // Compute the uncompressed public key
+     *    SigningKey.computePublicKey(sign.publicKey, false);
+     *    //_result:
+     *
+     *    // Compute the Compressed a public key
+     *    SigningKey.computePublicKey(sign.publicKey, true);
+     *    //_result:
      */
     static computePublicKey(key: BytesLike, compressed?: boolean): string {
         let bytes = getBytes(key, "key");
@@ -120,6 +152,20 @@ export class SigningKey {
     /**
      *  Returns the public key for the private key which produced the
      *  %%signature%% for the given %%digest%%.
+     *
+     *  @example:
+     *    key = new SigningKey(id("some-secret"))
+     *    digest = id("hello world")
+     *    sig = key.sign(digest)
+     *
+     *    // Notice the signer public key...
+     *    key.publicKey
+     *    //_result:
+     *
+     *    // ...is equal to the recovered public key
+     *    SigningKey.recoverPublicKey(digest, sig)
+     *    //_result:
+     *
      */
     static recoverPublicKey(digest: BytesLike, signature: SignatureLike): string {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
@@ -150,36 +196,3 @@ export class SigningKey {
     }
 }
 
-/*
-const key = new SigningKey("0x1234567890123456789012345678901234567890123456789012345678901234");
-console.log(key);
-console.log(key.sign("0x1234567890123456789012345678901234567890123456789012345678901234"));
-{
-  const privKey = "0x1234567812345678123456781234567812345678123456781234567812345678";
-  const signingKey = new SigningKey(privKey);
-  console.log("0", signingKey, signingKey.publicKey, signingKey.publicKeyCompressed);
-
-  let pubKey = SigningKey.computePublicKey(privKey);
-  let pubKeyComp = SigningKey.computePublicKey(privKey, true);
-  let pubKeyRaw = "0x" + SigningKey.computePublicKey(privKey).substring(4);
-  console.log("A", pubKey, pubKeyComp);
-
-  let a = SigningKey.computePublicKey(pubKey);
-  let b = SigningKey.computePublicKey(pubKey, true);
-  console.log("B", a, b);
-
-  a = SigningKey.computePublicKey(pubKeyComp);
-  b = SigningKey.computePublicKey(pubKeyComp, true);
-  console.log("C", a, b);
-
-  a = SigningKey.computePublicKey(pubKeyRaw);
-  b = SigningKey.computePublicKey(pubKeyRaw, true);
-  console.log("D", a, b);
-
-  const digest = "0x1122334411223344112233441122334411223344112233441122334411223344";
-  const sig = signingKey.sign(digest);
-  console.log("SS", sig, sig.r, sig.s, sig.yParity);
-
-  console.log("R", SigningKey.recoverPublicKey(digest, sig));
-}
-*/

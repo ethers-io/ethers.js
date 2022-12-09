@@ -2,7 +2,7 @@
 import { getAddress } from "../address/index.js";
 import { keccak256 } from "../crypto/index.js";
 import {
-    concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toHex, toTwos, zeroPadValue,
+    concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toBeHex, toTwos, zeroPadValue,
     assertArgument
 } from "../utils/index.js";
 
@@ -41,8 +41,8 @@ function hexPadRight(value: BytesLike): string {
     return hexlify(bytes);
 }
 
-const hexTrue = toHex(BN_1, 32);
-const hexFalse = toHex(BN_0, 32);
+const hexTrue = toBeHex(BN_1, 32);
+const hexFalse = toBeHex(BN_0, 32);
 
 const domainFieldTypes: Record<string, string> = {
     name: "string",
@@ -100,7 +100,7 @@ function getBaseEncoder(type: string): null | ((value: any) => string) {
 
                 assertArgument(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${ type }`, "value", value);
 
-                return toHex(toTwos(value, 256), 32);
+                return toBeHex(toTwos(value, 256), 32);
             };
         }
     }

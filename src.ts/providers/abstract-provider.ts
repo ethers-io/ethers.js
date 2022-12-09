@@ -19,7 +19,7 @@ import {
     getBigInt, getBytes, getNumber,
     isCallException, makeError, assert, assertArgument,
     FetchRequest,
-    toArray, toQuantity,
+    toBeArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
     toUtf8String
 } from "../utils/index.js";
@@ -1313,7 +1313,7 @@ function _parseBytes(result: string, start: number): null | string {
 }
 
 function numPad(value: number): Uint8Array {
-    const result = toArray(value);
+    const result = toBeArray(value);
     if (result.length > 32) { throw new Error("internal; should not happen"); }
 
     const padded = new Uint8Array(32);
