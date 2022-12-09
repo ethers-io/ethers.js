@@ -11,6 +11,7 @@ import { AccessList, accessListify, AccessListish } from "@ethersproject/transac
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./_version";
+import { ethers } from "ethers";
 
 const logger = new Logger(version);
 
@@ -708,7 +709,7 @@ export class BaseContract {
         defineReadOnly(this, "_runningEvents", { });
         defineReadOnly(this, "_wrappedEmits", { });
 
-        if (addressOrName == null) {
+        if (!ethers.utils.isAddress(addressOrName)) {
             logger.throwArgumentError("invalid contract address or ENS name", "addressOrName", addressOrName);
         }
 
