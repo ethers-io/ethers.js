@@ -9,6 +9,9 @@ const https_1 = __importDefault(require("https"));
 const zlib_1 = require("zlib");
 const errors_js_1 = require("./errors.js");
 const data_js_1 = require("./data.js");
+/**
+ *  @_ignore:
+ */
 async function getUrl(req, signal) {
     const protocol = req.url.split(":")[0].toLowerCase();
     (0, errors_js_1.assert)(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {

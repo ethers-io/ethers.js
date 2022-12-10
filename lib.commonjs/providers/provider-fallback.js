@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FallbackProvider = void 0;
+/**
+ *  Explain all the nitty-gritty about the **FallbackProvider**.
+ *
+ *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
+ */
 const index_js_1 = require("../utils/index.js");
 const abstract_provider_js_1 = require("./abstract-provider.js");
 const network_js_1 = require("./network.js");
@@ -185,6 +190,10 @@ function getFuzzyMode(quorum, results) {
     }
     return bestResult;
 }
+/**
+ *  A Fallback Provider.
+ *
+ */
 class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
     quorum;
     eventQuorum;

@@ -3,6 +3,9 @@ import https from "https";
 import { gunzipSync } from "zlib";
 import { assert } from "./errors.js";
 import { getBytes } from "./data.js";
+/**
+ *  @_ignore:
+ */
 export async function getUrl(req, signal) {
     const protocol = req.url.split(":")[0].toLowerCase();
     assert(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {

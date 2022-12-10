@@ -793,7 +793,20 @@ let __keccak256 = _keccak256;
 /**
  *  Compute the cryptographic KECCAK256 hash of %%data%%.
  *
+ *  The %%data%% **must** be a data representation, to compute the
+ *  hash of UTF-8 data use the [[id]] function.
+ *
  *  @returns DataHexstring
+ *  @example:
+ *    keccak256("0x")
+ *    //_result:
+ *
+ *    keccak256("0x1337")
+ *    //_result:
+ *
+ *    keccak256(new Uint8Array([ 0x13, 0x37 ]))
+ *    //_result:
+ *
  */
 function keccak256(_data) {
     const data = getBytes(_data, "data");
@@ -809,6 +822,17 @@ keccak256.register = function (func) {
 };
 Object.freeze(keccak256);
 
+/**
+ *  A simple hashing function which operates on UTF-8 strings to
+ *  compute an 32-byte irentifier.
+ *
+ *  This simply computes the [UTF-8 bytes](toUtf8Bytes) and computes
+ *  the [[keccak256]].
+ *
+ *  @example:
+ *    id("hello world")
+ *    //_result:
+ */
 function id(value) {
     return keccak256(toUtf8Bytes(value));
 }

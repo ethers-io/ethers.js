@@ -106,13 +106,14 @@ function stringify$1(value) {
  *
  *  @See [ErrorCodes](api:ErrorCode)
  *  @example
- *  try {
- *      / / code....
- *  } catch (e) {
+ *    try {
+ *      // code....
+ *    } catch (e) {
  *      if (isError(e, "CALL_EXCEPTION")) {
+ *          // The Type Guard has validated this object
  *          console.log(e.data);
  *      }
- *  }
+ *    }
  */
 function isError(error, code) {
     return (error && error.code === code);
@@ -428,6 +429,7 @@ function zeroPadBytes(data, length) {
  */
 const BN_0$9 = BigInt(0);
 const BN_1$6 = BigInt(1);
+//const BN_Max256 = (BN_1 << BigInt(256)) - BN_1;
 // IEEE 754 support 53-bits of mantissa
 const maxValue = 0x1fffffffffffff;
 /**
@@ -437,9 +439,8 @@ const maxValue = 0x1fffffffffffff;
  *  If the highest bit is ``1``, the result will be negative.
  */
 function fromTwos(_value, _width) {
-    const value = getBigInt(_value, "value");
+    const value = getUint(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
-    assertArgument(value >= BN_0$9, "invalid twos complement value", "value", value);
     assert$1((value >> width) === BN_0$9, "overflow", "NUMERIC_FAULT", {
         operation: "fromTwos", fault: "overflow", value: _value
     });
@@ -479,7 +480,7 @@ function toTwos(_value, _width) {
  *  Mask %%value%% with a bitmask of %%bits%% ones.
  */
 function mask(_value, _bits) {
-    const value = getBigInt(_value, "value");
+    const value = getUint(_value, "value");
     const bits = BigInt(getNumber(_bits, "bits"));
     return value & ((BN_1$6 << bits) - BN_1$6);
 }
@@ -509,6 +510,13 @@ function getBigInt(value, name) {
             }
     }
     assertArgument(false, "invalid BigNumberish value", name || "value", value);
+}
+function getUint(value, name) {
+    const result = getBigInt(value, name);
+    assert$1(result >= BN_0$9, "overflow", "NUMERIC_FAULT", {
+        fault: "overflow", operation: "getUint", value
+    });
+    return result;
 }
 const Nibbles$1 = "0123456789abcdef";
 /*
@@ -563,9 +571,8 @@ function toNumber(value) {
  *  Converts %%value%% to a Big Endian hexstring, optionally padded to
  *  %%width%% bytes.
  */
-function toHex(_value, _width) {
-    const value = getBigInt(_value, "value");
-    assertArgument(value >= 0, "cannot toHex negative value", "value", _value);
+function toBeHex(_value, _width) {
+    const value = getUint(_value, "value");
     let result = value.toString(16);
     if (_width == null) {
         // Ensure the value is of even length
@@ -586,9 +593,8 @@ function toHex(_value, _width) {
 /**
  *  Converts %%value%% to a Big Endian Uint8Array.
  */
-function toArray(_value) {
-    const value = getBigInt(_value, "value");
-    assertArgument(value >= 0, "cannot toArray negative value", "value", _value);
+function toBeArray(_value) {
+    const value = getUint(_value, "value");
     if (value === BN_0$9) {
         return new Uint8Array([]);
     }
@@ -611,7 +617,7 @@ function toArray(_value) {
  *  numeric values.
  */
 function toQuantity(value) {
-    let result = hexlify(isBytesLike(value) ? value : toArray(value)).substring(2);
+    let result = hexlify(isBytesLike(value) ? value : toBeArray(value)).substring(2);
     while (result.substring(0, 1) === "0") {
         result = result.substring(1);
     }
@@ -1053,6 +1059,12 @@ function checkSignal(signal) {
  *  and ``IPFS:``.
  *
  *  Additional schemes can be added globally using [[registerGateway]].
+ *
+ *  @example:
+ *    req = new FetchRequest("https://www.ricmoo.com")
+ *    resp = await req.send()
+ *    resp.body.length
+ *    //_result:
  */
 class FetchRequest {
     #allowInsecure;
@@ -1729,9 +1741,6 @@ function wait(delay) {
  *
  *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [about-fixed-point-math]
  */
-if (0) {
-    console.log(getBytes, toBigInt, toHex, toTwos);
-}
 const BN_N1 = BigInt(-1);
 const BN_0$7 = BigInt(0);
 const BN_1$5 = BigInt(1);
@@ -2648,7 +2657,7 @@ function checkResultErrors(result) {
     return errors;
 }
 function getValue$1(value) {
-    let bytes = toArray(value);
+    let bytes = toBeArray(value);
     assert$1(bytes.length <= WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: WordSize, offset: bytes.length });
     if (bytes.length !== WordSize) {
         bytes = getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));
@@ -3660,6 +3669,19 @@ let __computeHmac = _computeHmac;
 /**
  *  Return the HMAC for %%data%% using the %%key%% key with the underlying
  *  %%algo%% used for compression.
+ *
+ *  @example:
+ *    key = id("some-secret")
+ *
+ *    // Compute the HMAC
+ *    computeHmac("sha256", key, "0x1337")
+ *    //_result:
+ *
+ *    // To compute the HMAC of UTF-8 data, the data must be
+ *    // converted to UTF-8 bytes
+ *    computeHmac("sha256", key, toUtf8Bytes("Hello World"))
+ *    //_result:
+ *
  */
 function computeHmac(algorithm, _key, _data) {
     const key = getBytes(_key, "key");
@@ -3892,7 +3914,20 @@ let __keccak256 = _keccak256;
 /**
  *  Compute the cryptographic KECCAK256 hash of %%data%%.
  *
+ *  The %%data%% **must** be a data representation, to compute the
+ *  hash of UTF-8 data use the [[id]] function.
+ *
  *  @returns DataHexstring
+ *  @example:
+ *    keccak256("0x")
+ *    //_result:
+ *
+ *    keccak256("0x1337")
+ *    //_result:
+ *
+ *    keccak256(new Uint8Array([ 0x13, 0x37 ]))
+ *    //_result:
+ *
  */
 function keccak256(_data) {
     const data = getBytes(_data, "data");
@@ -4016,6 +4051,17 @@ let __ripemd160 = _ripemd160;
  *
  *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
+ *
+ *  @example:
+ *    ripemd160("0x")
+ *    //_result:
+ *
+ *    ripemd160("0x1337")
+ *    //_result:
+ *
+ *    ripemd160(new Uint8Array([ 0x13, 0x37 ]))
+ *    //_result:
+ *
  */
 function ripemd160(_data) {
     const data = getBytes(_data, "data");
@@ -4049,6 +4095,19 @@ let __pbkdf2 = _pbkdf2;
  *
  *  This PBKDF is outdated and should not be used in new projects, but is
  *  required to decrypt older files.
+ *
+ *  @example:
+ *    // The password must be converted to bytes, and it is generally
+ *    // best practices to ensure the string has been normalized. Many
+ *    // formats explicitly indicate the normalization form to use.
+ *    password = "hello"
+ *    passwordBytes = toUtf8Bytes(password, "NFKC")
+ *
+ *    salt = id("some-salt")
+ *
+ *    // Compute the PBKDF2
+ *    pbkdf2(passwordBytes, salt, 1024, 16, "sha256")
+ *    //_result:
  */
 function pbkdf2(_password, _salt, iterations, keylen, algo) {
     const password = getBytes(_password, "password");
@@ -4080,6 +4139,10 @@ const _randomBytes = function (length) {
 let __randomBytes = _randomBytes;
 /**
  *  Return %%length%% bytes of cryptographically secure random data.
+ *
+ *  @example:
+ *    randomBytes(8)
+ *    //_result:
  */
 function randomBytes(length) {
     return __randomBytes(length);
@@ -4340,6 +4403,19 @@ let __scryptSync = _scryptSync;
  *  can also help, assuring the user their waiting is for a good reason.
  *
  *  @_docloc: api/crypto:Passwords
+ *
+ *  @example:
+ *    // The password must be converted to bytes, and it is generally
+ *    // best practices to ensure the string has been normalized. Many
+ *    // formats explicitly indicate the normalization form to use.
+ *    password = "hello"
+ *    passwordBytes = toUtf8Bytes(password, "NFKC")
+ *
+ *    salt = id("some-salt")
+ *
+ *    // Compute the scrypt
+ *    scrypt(passwordBytes, salt, 1024, 8, 1, 16)
+ *    //_result:
  */
 async function scrypt(_passwd, _salt, N, r, p, dkLen, progress) {
     const passwd = getBytes(_passwd, "passwd");
@@ -4363,6 +4439,19 @@ Object.freeze(scrypt);
  *  preferred to use the [async variant](scrypt).
  *
  *  @_docloc: api/crypto:Passwords
+ *
+ *  @example:
+ *    // The password must be converted to bytes, and it is generally
+ *    // best practices to ensure the string has been normalized. Many
+ *    // formats explicitly indicate the normalization form to use.
+ *    password = "hello"
+ *    passwordBytes = toUtf8Bytes(password, "NFKC")
+ *
+ *    salt = id("some-salt")
+ *
+ *    // Compute the scrypt
+ *    scryptSync(passwordBytes, salt, 1024, 8, 1, 16)
+ *    //_result:
  */
 function scryptSync(_passwd, _salt, N, r, p, dkLen) {
     const passwd = getBytes(_passwd, "passwd");
@@ -4393,6 +4482,17 @@ let locked256 = false, locked512 = false;
  *
  *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
+ *
+ *  @example:
+ *    sha256("0x")
+ *    //_result:
+ *
+ *    sha256("0x1337")
+ *    //_result:
+ *
+ *    sha256(new Uint8Array([ 0x13, 0x37 ]))
+ *    //_result:
+ *
  */
 function sha256(_data) {
     const data = getBytes(_data, "data");
@@ -4412,6 +4512,16 @@ Object.freeze(sha256);
  *
  *  @_docloc: api/crypto:Hash Functions
  *  @returns DataHexstring
+ *
+ *  @example:
+ *    sha512("0x")
+ *    //_result:
+ *
+ *    sha512("0x1337")
+ *    //_result:
+ *
+ *    sha512(new Uint8Array([ 0x13, 0x37 ]))
+ *    //_result:
  */
 function sha512(_data) {
     const data = getBytes(_data, "data");
@@ -5586,40 +5696,61 @@ const utils = {
 
 /**
  *  A constant for the zero address.
+ *
+ *  (**i.e.** ``"0x0000000000000000000000000000000000000000"``)
  */
 const ZeroAddress = "0x0000000000000000000000000000000000000000";
 
 /**
  *  A constant for the zero hash.
+ *
+ *  (**i.e.** ``"0x0000000000000000000000000000000000000000000000000000000000000000"``)
  */
 const ZeroHash = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 /**
  *  A constant for the order N for the secp256k1 curve.
+ *
+ *  (**i.e.** ``0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n``)
  */
 const N$1 = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 /**
  *  A constant for the number of wei in a single ether.
+ *
+ *  (**i.e.** ``1000000000000000000n``)
  */
 const WeiPerEther = BigInt("1000000000000000000");
 /**
  *  A constant for the maximum value for a ``uint256``.
+ *
+ *  (**i.e.** ``0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn``)
  */
 const MaxUint256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 /**
  *  A constant for the minimum value for an ``int256``.
+ *
+ *  (**i.e.** ``-8000000000000000000000000000000000000000000000000000000000000000n``)
  */
 const MinInt256 = BigInt("0x8000000000000000000000000000000000000000000000000000000000000000") * BigInt(-1);
 /**
  *  A constant for the maximum value for an ``int256``.
+ *
+ *  (**i.e.** ``0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn``)
  */
 const MaxInt256 = BigInt("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
 // NFKC (composed)             // (decomposed)
 /**
  *  A constant for the ether symbol (normalized using NFKC).
+ *
+ *  (**i.e.** ``"\\u039e"``)
  */
 const EtherSymbol = "\u039e"; // "\uD835\uDF63";
+/**
+ *  A constant for the [[link-eip-191]] personal message prefix.
+ *
+ *  (**i.e.** ``"\\x19Ethereum Signed Message:\\n"``)
+ */
 const MessagePrefix = "\x19Ethereum Signed Message:\n";
 
 /**
@@ -5764,7 +5895,14 @@ class Signature {
         };
     }
     /**
-     *  Compute the chain ID from an EIP-155 ``v`` for legacy transactions.
+     *  Compute the chain ID from the ``v`` in a legacy EIP-155 transactions.
+     *
+     *  @example:
+     *    Signature.getChainId(45)
+     *    //_result:
+     *
+     *    Signature.getChainId(46)
+     *    //_result:
      */
     static getChainId(v) {
         const bv = getBigInt(v, "v");
@@ -5777,22 +5915,52 @@ class Signature {
         return (bv - BN_35$1) / BN_2$3;
     }
     /**
-     *  Compute the EIP-155 ``v`` for a chain ID for legacy transactions.
+     *  Compute the ``v`` for a chain ID for a legacy EIP-155 transactions.
+     *
+     *  Legacy transactions which use [[link-eip-155]] hijack the ``v``
+     *  property to include the chain ID.
+     *
+     *  @example:
+     *    Signature.getChainIdV(5, 27)
+     *    //_result:
+     *
+     *    Signature.getChainIdV(5, 28)
+     *    //_result:
+     *
      */
     static getChainIdV(chainId, v) {
         return (getBigInt(chainId) * BN_2$3) + BigInt(35 + v - 27);
     }
     /**
-     *  Compute the normalized EIP-155 ``v`` for legacy transactions.
+     *  Compute the normalized legacy transaction ``v`` from a ``yParirty``,
+     *  a legacy transaction ``v`` or a legacy [[link-eip-155]] transaction.
+     *
+     *  @example:
+     *    // The values 0 and 1 imply v is actually yParity
+     *    Signature.getNormalizedV(0)
+     *    //_result:
+     *
+     *    // Legacy non-EIP-1559 transaction (i.e. 27 or 28)
+     *    Signature.getNormalizedV(27)
+     *    //_result:
+     *
+     *    // Legacy EIP-155 transaction (i.e. >= 35)
+     *    Signature.getNormalizedV(46)
+     *    //_result:
+     *
+     *    // Invalid values throw
+     *    Signature.getNormalizedV(5)
+     *    //_error:
      */
     static getNormalizedV(v) {
         const bv = getBigInt(v);
-        if (bv == BN_0$6) {
+        if (bv === BN_0$6 || bv === BN_27$1) {
             return 27;
         }
-        if (bv == BN_1$4) {
+        if (bv === BN_1$4 || bv === BN_28$1) {
             return 28;
         }
+        assertArgument(bv >= BN_35$1, "invalid v", "v", v);
         // Otherwise, EIP-155 v means odd is 27 and even is 28
         return (bv & BN_1$4) ? 27 : 28;
     }
@@ -5933,8 +6101,8 @@ class SigningKey {
         });
         const sig = Signature$1.fromHex(sigDer);
         return Signature.from({
-            r: toHex("0x" + sig.r.toString(16), 32),
-            s: toHex("0x" + sig.s.toString(16), 32),
+            r: toBeHex("0x" + sig.r.toString(16), 32),
+            s: toBeHex("0x" + sig.s.toString(16), 32),
             v: (recid ? 0x1c : 0x1b)
         });
     }
@@ -5947,16 +6115,48 @@ class SigningKey {
      *
      *  Best practice is usually to use a cryptographic hash on the
      *  returned value before using it as a symetric secret.
+     *
+     *  @example:
+     *    sign1 = new SigningKey(id("some-secret-1"))
+     *    sign2 = new SigningKey(id("some-secret-2"))
+     *
+     *    // Notice that privA.computeSharedSecret(pubB)...
+     *    sign1.computeSharedSecret(sign2.publicKey)
+     *    //_result:
+     *
+     *    // ...is equal to privB.computeSharedSecret(pubA).
+     *    sign2.computeSharedSecret(sign1.publicKey)
+     *    //_result:
      */
-    computeShardSecret(other) {
+    computeSharedSecret(other) {
         const pubKey = SigningKey.computePublicKey(other);
-        return hexlify(getSharedSecret(getBytesCopy(this.#privateKey), pubKey));
+        console.log(pubKey);
+        return hexlify(getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey)));
     }
     /**
      *  Compute the public key for %%key%%, optionally %%compressed%%.
      *
      *  The %%key%% may be any type of key, a raw public key, a
      *  compressed/uncompressed public key or private key.
+     *
+     *  @example:
+     *    sign = new SigningKey(id("some-secret"));
+     *
+     *    // Compute the uncompressed public key for a private key
+     *    SigningKey.computePublicKey(sign.privateKey)
+     *    //_result:
+     *
+     *    // Compute the compressed public key for a private key
+     *    SigningKey.computePublicKey(sign.privateKey, true)
+     *    //_result:
+     *
+     *    // Compute the uncompressed public key
+     *    SigningKey.computePublicKey(sign.publicKey, false);
+     *    //_result:
+     *
+     *    // Compute the Compressed a public key
+     *    SigningKey.computePublicKey(sign.publicKey, true);
+     *    //_result:
      */
     static computePublicKey(key, compressed) {
         let bytes = getBytes(key, "key");
@@ -5976,6 +6176,20 @@ class SigningKey {
     /**
      *  Returns the public key for the private key which produced the
      *  %%signature%% for the given %%digest%%.
+     *
+     *  @example:
+     *    key = new SigningKey(id("some-secret"))
+     *    digest = id("hello world")
+     *    sig = key.sign(digest)
+     *
+     *    // Notice the signer public key...
+     *    key.publicKey
+     *    //_result:
+     *
+     *    // ...is equal to the recovered public key
+     *    SigningKey.recoverPublicKey(digest, sig)
+     *    //_result:
+     *
      */
     static recoverPublicKey(digest, signature) {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
@@ -6003,39 +6217,6 @@ class SigningKey {
         return "0x" + pub0.add(pub1).toHex(!!compressed);
     }
 }
-/*
-const key = new SigningKey("0x1234567890123456789012345678901234567890123456789012345678901234");
-console.log(key);
-console.log(key.sign("0x1234567890123456789012345678901234567890123456789012345678901234"));
-{
-  const privKey = "0x1234567812345678123456781234567812345678123456781234567812345678";
-  const signingKey = new SigningKey(privKey);
-  console.log("0", signingKey, signingKey.publicKey, signingKey.publicKeyCompressed);
-
-  let pubKey = SigningKey.computePublicKey(privKey);
-  let pubKeyComp = SigningKey.computePublicKey(privKey, true);
-  let pubKeyRaw = "0x" + SigningKey.computePublicKey(privKey).substring(4);
-  console.log("A", pubKey, pubKeyComp);
-
-  let a = SigningKey.computePublicKey(pubKey);
-  let b = SigningKey.computePublicKey(pubKey, true);
-  console.log("B", a, b);
-
-  a = SigningKey.computePublicKey(pubKeyComp);
-  b = SigningKey.computePublicKey(pubKeyComp, true);
-  console.log("C", a, b);
-
-  a = SigningKey.computePublicKey(pubKeyRaw);
-  b = SigningKey.computePublicKey(pubKeyRaw, true);
-  console.log("D", a, b);
-
-  const digest = "0x1122334411223344112233441122334411223344112233441122334411223344";
-  const sig = signingKey.sign(digest);
-  console.log("SS", sig, sig.r, sig.s, sig.yParity);
-
-  console.log("R", SigningKey.recoverPublicKey(digest, sig));
-}
-*/
 
 /**
  *  A fundamental building block of Ethereum is the underlying
@@ -6145,6 +6326,20 @@ function fromBase36(value) {
  *  that you wish to bypass the safegaurds in place to protect
  *  against an address that has been incorrectly copied from another
  *  source.
+ *
+ *  @example:
+ *    // Adds the checksum (via upper-casing specific letters)
+ *    getAddress("0x8ba1f109551bd432803012645ac136ddd64dba72")
+ *    //_result:
+ *
+ *    // Converts ICAP address and adds checksum
+ *    getAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK36");
+ *    //_result:
+ *
+ *    // Throws an error if an address contains mixed case,
+ *    // but the checksum fails
+ *    getAddress("0x8Ba1f109551bD432803012645Ac136ddd64DBA72")
+ *    //_error:
  */
 function getAddress(address) {
     assertArgument(typeof (address) === "string", "invalid address", "address", address);
@@ -6176,6 +6371,17 @@ function getAddress(address) {
  *  industry [IBAN format](link-wiki-iban] for bank accounts.
  *
  *  It is no longer common or a recommended format.
+ *
+ *  @example:
+ *    getIcapAddress("0x8ba1f109551bd432803012645ac136ddd64dba72");
+ *    //_result:
+ *
+ *    getIcapAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK36");
+ *    //_result:
+ *
+ *    // Throws an error if the ICAP checksum is wrong
+ *    getIcapAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK37");
+ *    //_error:
  */
 function getIcapAddress(address) {
     //let base36 = _base16To36(getAddress(address).substring(2)).toUpperCase();
@@ -6197,6 +6403,13 @@ function getIcapAddress(address) {
  *  This can also be used to compute the address a contract will be
  *  deployed to by a contract, by using the contract's address as the
  *  ``to`` and the contract's nonce.
+ *
+ *  @example
+ *    from = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
+ *    nonce = 5;
+ *
+ *    getCreateAddress({ from, nonce });
+ *    //_result:
  */
 function getCreateAddress(tx) {
     const from = getAddress(tx.from);
@@ -6219,6 +6432,22 @@ function getCreateAddress(tx) {
  *
  *  To compute the %%initCodeHash%% from a contract's init code, use
  *  the [[keccak256]] function.
+ *
+ *  For a quick overview and example of ``CREATE2``, see [[link-ricmoo-wisps]].
+ *
+ *  @example
+ *    // The address of the contract
+ *    from = "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
+ *
+ *    // The salt
+ *    salt = id("HelloWorld")
+ *
+ *    // The hash of the initCode
+ *    initCode = "0x6394198df16000526103ff60206004601c335afa6040516060f3";
+ *    initCodeHash = keccak256(initCode)
+ *
+ *    getCreate2Address(from, salt, initCodeHash)
+ *    //_result:
  */
 function getCreate2Address(_from, _salt, _initCodeHash) {
     const from = getAddress(_from);
@@ -6232,12 +6461,44 @@ function getCreate2Address(_from, _salt, _initCodeHash) {
 /**
  *  Returns true if %%value%% is an object which implements the
  *  [[Addressable]] interface.
+ *
+ *  @example:
+ *    // Wallets and AbstractSigner sub-classes
+ *    isAddressable(Wallet.createRandom())
+ *    //_result:
+ *
+ *    // Contracts
+ *    contract = new Contract("dai.tokens.ethers.eth", [ ], provider)
+ *    isAddressable(contract)
+ *    //_result:
  */
 function isAddressable(value) {
     return (value && typeof (value.getAddress) === "function");
 }
 /**
  *  Returns true if %%value%% is a valid address.
+ *
+ *  @example:
+ *    // Valid address
+ *    isAddress("0x8ba1f109551bD432803012645Ac136ddd64DBA72")
+ *    //_result:
+ *
+ *    // Valid ICAP address
+ *    isAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK36")
+ *    //_result:
+ *
+ *    // Invalid checksum
+ *    isAddress("0x8Ba1f109551bD432803012645Ac136ddd64DBa72")
+ *    //_result:
+ *
+ *    // Invalid ICAP checksum
+ *    isAddress("0x8Ba1f109551bD432803012645Ac136ddd64DBA72")
+ *    //_result:
+ *
+ *    // Not an address (an ENS name requires a provided and an
+ *    // asynchronous API to access)
+ *    isAddress("ricmoo.eth")
+ *    //_result:
  */
 function isAddress(value) {
     try {
@@ -6262,6 +6523,35 @@ async function checkAddress(target, promise) {
  *
  *  If an ENS name is provided, but that name has not been correctly
  *  configured a [[UnconfiguredNameError]] is thrown.
+ *
+ *  @example:
+ *    addr = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+ *
+ *    // Addresses are return synchronously
+ *    resolveAddress(addr, provider)
+ *    //_result:
+ *
+ *    // Address promises are resolved asynchronously
+ *    resolveAddress(Promise.resolve(addr))
+ *    //_result:
+ *
+ *    // ENS names are resolved asynchronously
+ *    resolveAddress("dai.tokens.ethers.eth", provider)
+ *    //_result:
+ *
+ *    // Addressable objects are resolved asynchronously
+ *    contract = new Contract(addr, [ ])
+ *    resolveAddress(contract, provider)
+ *    //_result:
+ *
+ *    // Unconfigured ENS names reject
+ *    resolveAddress("nothing-here.ricmoo.eth", provider)
+ *    //_error:
+ *
+ *    // ENS names require a NameResolver object passed in
+ *    // (notice the provider was omitted)
+ *    resolveAddress("nothing-here.ricmoo.eth")
+ *    //_error:
  */
 function resolveAddress(target, resolver) {
     if (typeof (target) === "string") {
@@ -6544,7 +6834,7 @@ class AddressCoder extends Coder {
         return writer.writeValue(value);
     }
     decode(reader) {
-        return getAddress(toHex(reader.readValue(), 20));
+        return getAddress(toBeHex(reader.readValue(), 20));
     }
 }
 
@@ -6943,6 +7233,17 @@ class TupleCoder extends Coder {
     }
 }
 
+/**
+ *  A simple hashing function which operates on UTF-8 strings to
+ *  compute an 32-byte irentifier.
+ *
+ *  This simply computes the [UTF-8 bytes](toUtf8Bytes) and computes
+ *  the [[keccak256]].
+ *
+ *  @example:
+ *    id("hello world")
+ *    //_result:
+ */
 function id(value) {
     return keccak256(toUtf8Bytes(value));
 }
@@ -7015,6 +7316,34 @@ function dnsEncode(name) {
     }))) + "00";
 }
 
+/**
+ *  Computes the [[link-eip-191]] personal-sign message digest to sign.
+ *
+ *  This prefixes the message with [[MessagePrefix]] and the decimal length
+ *  of %%message%% and computes the [[keccak256]] digest.
+ *
+ *  If %%message%% is a string, it is converted to its UTF-8 bytes
+ *  first. To compute the digest of a [[DataHexString]], it must be converted
+ *  to [bytes](getBytes).
+ *
+ *  @example:
+ *    hashMessage("Hello World")
+ *    //_result:
+ *
+ *    // Hashes the SIX (6) string characters, i.e.
+ *    // [ "0", "x", "4", "2", "4", "3" ]
+ *    hashMessage("0x4243")
+ *    //_result:
+ *
+ *    // Hashes the TWO (2) bytes [ 0x42, 0x43 ]...
+ *    hashMessage(getBytes("0x4243"))
+ *    //_result:
+ *
+ *    // ...which is equal to using data
+ *    hashMessage(new Uint8Array([ 0x42, 0x43 ]))
+ *    //_result:
+ *
+ */
 function hashMessage(message) {
     if (typeof (message) === "string") {
         message = toUtf8Bytes(message);
@@ -7035,7 +7364,7 @@ function _pack(type, value, isArray) {
             if (isArray) {
                 return getBytes(zeroPadValue(value, 32));
             }
-            return getBytes(value);
+            return getBytes(getAddress(value));
         case "string":
             return toUtf8Bytes(value);
         case "bytes":
@@ -7058,7 +7387,7 @@ function _pack(type, value, isArray) {
         if (signed) {
             value = toTwos(value, size);
         }
-        return getBytes(zeroPadValue(toArray(value), size / 8));
+        return getBytes(zeroPadValue(toBeArray(value), size / 8));
     }
     match = type.match(regexBytes);
     if (match) {
@@ -7084,6 +7413,15 @@ function _pack(type, value, isArray) {
     assertArgument(false, "invalid type", "type", type);
 }
 // @TODO: Array Enum
+/**
+ *   Computes the [[link-solc-packed]] representation of %%values%%
+ *   respectively to their %%types%%.
+ *
+ *   @example:
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPacked([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
+ */
 function solidityPacked(types, values) {
     assertArgument(types.length === values.length, "wrong number of values; expected ${ types.length }", "values", values);
     const tight = [];
@@ -7093,21 +7431,26 @@ function solidityPacked(types, values) {
     return hexlify(concat(tight));
 }
 /**
- *   Computes the non-standard packed (tightly packed) keccak256 hash of
- *   the values given the types.
- *
- *   @param {Array<string>} types - The Solidity types to interpret each value as [default: bar]
- *   @param {Array<any>} values - The values to pack
+ *   Computes the [[link-solc-packed]] [[keccak256]] hash of %%values%%
+ *   respectively to their %%types%%.
  *
  *   @example:
- *       solidityPackedKeccak256([ "address", "uint" ], [ "0x1234", 45 ]);
- *       / /_result:
- *
- *   @see https://docs.soliditylang.org/en/v0.8.14/abi-spec.html#non-standard-packed-mode
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPackedKeccak256([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
  */
 function solidityPackedKeccak256(types, values) {
     return keccak256(solidityPacked(types, values));
 }
+/**
+ *   Computes the [[link-solc-packed]] [[sha256]] hash of %%values%%
+ *   respectively to their %%types%%.
+ *
+ *   @example:
+ *       addr = "0x8ba1f109551bd432803012645ac136ddd64dba72"
+ *       solidityPackedSha256([ "address", "uint" ], [ addr, 45 ]);
+ *       //_result:
+ */
 function solidityPackedSha256(types, values) {
     return sha256(solidityPacked(types, values));
 }
@@ -7129,8 +7472,8 @@ function hexPadRight(value) {
     }
     return hexlify(bytes);
 }
-const hexTrue = toHex(BN_1$2, 32);
-const hexFalse = toHex(BN_0$3, 32);
+const hexTrue = toBeHex(BN_1$2, 32);
+const hexFalse = toBeHex(BN_0$3, 32);
 const domainFieldTypes = {
     name: "string",
     version: "string",
@@ -7179,7 +7522,7 @@ function getBaseEncoder(type) {
             return function (_value) {
                 const value = getBigInt(_value, "value");
                 assertArgument(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${type}`, "value", value);
-                return toHex(toTwos(value, 256), 32);
+                return toBeHex(toTwos(value, 256), 32);
             };
         }
     }
@@ -9339,7 +9682,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
                 value = (value ? "0x01" : "0x00");
             }
             if (param.type.match(/^u?int/)) {
-                value = toHex(value);
+                value = toBeHex(value);
             }
             // Check addresses are valid
             if (param.type === "address") {
@@ -9642,7 +9985,7 @@ function handleUint(_value, param) {
 }
 function formatNumber(_value, name) {
     const value = getBigInt(_value, "value");
-    const result = toArray(value);
+    const result = toBeArray(value);
     assertArgument(result.length <= 32, `value too large`, `tx.${name}`, value);
     return result;
 }
@@ -9719,7 +10062,7 @@ function _serializeLegacy(tx, sig) {
     if (!sig) {
         // We have an EIP-155 transaction (chainId was specified and non-zero)
         if (chainId !== BN_0$2) {
-            fields.push(toArray(chainId));
+            fields.push(toBeArray(chainId));
             fields.push("0x");
             fields.push("0x");
         }
@@ -9733,9 +10076,9 @@ function _serializeLegacy(tx, sig) {
     else if (BigInt(sig.v) !== v) {
         assertArgument(false, "tx.chainId/sig.v mismatch", "sig", sig);
     }
-    fields.push(toArray(v));
-    fields.push(toArray(sig.r));
-    fields.push(toArray(sig.s));
+    fields.push(toBeArray(v));
+    fields.push(toBeArray(sig.r));
+    fields.push(toBeArray(sig.s));
     return encodeRlp(fields);
 }
 function _parseEipSignature(tx, fields, serialize) {
@@ -9794,8 +10137,8 @@ function _serializeEip1559(tx, sig) {
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "yParity"));
-        fields.push(toArray(sig.r));
-        fields.push(toArray(sig.s));
+        fields.push(toBeArray(sig.r));
+        fields.push(toBeArray(sig.s));
     }
     return concat(["0x02", encodeRlp(fields)]);
 }
@@ -9834,27 +10177,23 @@ function _serializeEip2930(tx, sig) {
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "recoveryParam"));
-        fields.push(toArray(sig.r));
-        fields.push(toArray(sig.s));
+        fields.push(toBeArray(sig.r));
+        fields.push(toBeArray(sig.s));
     }
     return concat(["0x01", encodeRlp(fields)]);
 }
-/**
- *  A transactions which has been signed.
- */
-/*
-export interface SignedTransaction extends Transaction {
-   type: number;
-   typeName: string;
-   from: string;
-   signature: Signature;
-}
-*/
 /**
  *  A **Transaction** describes an operation to be executed on
  *  Ethereum by an Externally Owned Account (EOA). It includes
  *  who (the [[to]] address), what (the [[data]]) and how much (the
  *  [[value]] in ether) the operation should entail.
+ *
+ *  @example:
+ *    tx = new Transaction()
+ *    //_result:
+ *
+ *    tx.data = "0x1234";
+ *    //_result:
  */
 class Transaction {
     #type;
@@ -11971,6 +12310,11 @@ class ContractFactory {
  *  @_section: api/contract:Contracts  [contracts]
  */
 
+/**
+ *  About ENS Resolver
+ *
+ *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
+ */
 const BN_1$1 = BigInt(1);
 const Empty = new Uint8Array([]);
 function parseBytes(result, start) {
@@ -11992,7 +12336,7 @@ function parseString(result, start) {
     return null;
 }
 function numPad$1(value) {
-    const result = toArray(value);
+    const result = toBeArray(value);
     if (result.length > 32) {
         throw new Error("internal; should not happen");
     }
@@ -12048,6 +12392,9 @@ function getIpfsLink(link) {
 }
 ;
 ;
+/**
+ *  A provider plugin super-class for processing multicoin address types.
+ */
 class MulticoinProviderPlugin {
     name;
     constructor(name) {
@@ -12067,6 +12414,9 @@ class MulticoinProviderPlugin {
     }
 }
 const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoinProviderPlugin";
+/**
+ *  A basic multicoin provider plugin.
+ */
 class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
     constructor() {
         super(BasicMulticoinPluginId);
@@ -12079,9 +12429,22 @@ const matchers = [
     matcherIpfs,
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
+/**
+ *  A connected object to a resolved ENS name resolver, which can be
+ *  used to query additional details.
+ */
 class EnsResolver {
+    /**
+     *  The connected provider.
+     */
     provider;
+    /**
+     *  The address of the resolver.
+     */
     address;
+    /**
+     *  The name this resovler was resolved against.
+     */
     name;
     // For EIP-2544 names, the ancestor that provided the resolver
     #supports2544;
@@ -12089,6 +12452,9 @@ class EnsResolver {
         defineProperties(this, { provider, address, name });
         this.#supports2544 = null;
     }
+    /**
+     *  Resolves to true if the resolver supports wildcard resolution.
+     */
     async supportsWildcard() {
         if (!this.#supports2544) {
             // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
@@ -12108,6 +12474,10 @@ class EnsResolver {
         }
         return await this.#supports2544;
     }
+    /**
+     *  Fetch the %%selector%% with %%parameters%% using call, resolving
+     *  recursively if the resolver supports it.
+     */
     async _fetch(selector, parameters) {
         if (parameters == null) {
             parameters = "0x";
@@ -12145,6 +12515,10 @@ class EnsResolver {
         }
         return null;
     }
+    /**
+     *  Resolves to the address for %%coinType%% or null if the
+     *  provided %%coinType%% has not been configured.
+     */
     async getAddress(coinType) {
         if (coinType == null) {
             coinType = 60;
@@ -12195,6 +12569,10 @@ class EnsResolver {
             info: { coinType, data }
         });
     }
+    /**
+     *  Resovles to the EIP-643 text record for %%key%%, or ``null``
+     *  if unconfigured.
+     */
     async getText(key) {
         // The key encoded as parameter to fetchBytes
         let keyBytes = toUtf8Bytes(key);
@@ -12207,6 +12585,9 @@ class EnsResolver {
         }
         return toUtf8String(hexBytes);
     }
+    /**
+     *  Rsolves to the content-hash or ``null`` if unconfigured.
+     */
     async getContentHash() {
         // keccak256("contenthash()")
         const hexBytes = parseBytes((await this._fetch("0xbc1c58d1")) || "0x", 0);
@@ -12233,9 +12614,25 @@ class EnsResolver {
             info: { data: hexBytes }
         });
     }
+    /**
+     *  Resolves to the avatar url or ``null`` if the avatar is either
+     *  unconfigured or incorrectly configured (e.g. references an NFT
+     *  not owned by the address).
+     *
+     *  If diagnosing issues with configurations, the [[_getAvatar]]
+     *  method may be useful.
+     */
     async getAvatar() {
         return (await this._getAvatar()).url;
     }
+    /**
+     *  When resolving an avatar, there are many steps involved, such
+     *  fetching metadata and possibly validating ownership of an
+     *  NFT.
+     *
+     *  This method can be used to examine each step and the value it
+     *  was working from.
+     */
     async _getAvatar() {
         const linkage = [{ type: "name", value: this.name }];
         try {
@@ -12408,6 +12805,10 @@ class EnsResolver {
         }
         return null;
     }
+    /**
+     *  Resolve to the ENS resolver for %%name%% using %%provider%% or
+     *  ``null`` if uncinfigured.
+     */
     static async fromName(provider, name) {
         let currentName = name;
         while (true) {
@@ -14322,7 +14723,7 @@ function _parseBytes(result, start) {
     return null;
 }
 function numPad(value) {
-    const result = toArray(value);
+    const result = toBeArray(value);
     if (result.length > 32) {
         throw new Error("internal; should not happen");
     }
@@ -16809,6 +17210,11 @@ class QuickNodeProvider extends JsonRpcProvider {
     }
 }
 
+/**
+ *  Explain all the nitty-gritty about the **FallbackProvider**.
+ *
+ *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
+ */
 const BN_1 = BigInt("1");
 const BN_2 = BigInt("2");
 function shuffle(array) {
@@ -16990,6 +17396,10 @@ function getFuzzyMode(quorum, results) {
     }
     return bestResult;
 }
+/**
+ *  A Fallback Provider.
+ *
+ */
 class FallbackProvider extends AbstractProvider {
     quorum;
     eventQuorum;
@@ -19119,7 +19529,7 @@ class HDNodeWallet extends BaseWallet {
             }
         }
         const { IR, IL } = ser_I(index, this.chainCode, this.publicKey, this.privateKey);
-        const ki = new SigningKey(toHex((toBigInt(IL) + BigInt(this.privateKey)) % N, 32));
+        const ki = new SigningKey(toBeHex((toBigInt(IL) + BigInt(this.privateKey)) % N, 32));
         return new HDNodeWallet(_guard, ki, this.fingerprint, hexlify(IR), path, index, this.depth + 1, this.mnemonic, this.provider);
     }
     /**
@@ -19144,7 +19554,7 @@ class HDNodeWallet extends BaseWallet {
      *  or full HD Node ([[HDNodeWallet) respectively.
      */
     static fromExtendedKey(extendedKey) {
-        const bytes = toArray(decodeBase58(extendedKey)); // @TODO: redact
+        const bytes = toBeArray(decodeBase58(extendedKey)); // @TODO: redact
         assertArgument(bytes.length === 82 || encodeBase58Check(bytes.slice(0, 78)) === extendedKey, "invalid extended key", "extendedKey", "[ REDACTED ]");
         const depth = bytes[4];
         const parentFingerprint = hexlify(bytes.slice(5, 9));
@@ -19708,6 +20118,9 @@ var ethers = /*#__PURE__*/Object.freeze({
     getIcapAddress: getIcapAddress,
     getCreateAddress: getCreateAddress,
     getCreate2Address: getCreate2Address,
+    isAddressable: isAddressable,
+    isAddress: isAddress,
+    resolveAddress: resolveAddress,
     ZeroAddress: ZeroAddress,
     WeiPerEther: WeiPerEther,
     MaxUint256: MaxUint256,
@@ -19802,9 +20215,10 @@ var ethers = /*#__PURE__*/Object.freeze({
     FixedNumber: FixedNumber,
     getBigInt: getBigInt,
     getNumber: getNumber,
-    toArray: toArray,
+    getUint: getUint,
+    toBeArray: toBeArray,
     toBigInt: toBigInt,
-    toHex: toHex,
+    toBeHex: toBeHex,
     toNumber: toNumber,
     toQuantity: toQuantity,
     fromTwos: fromTwos,
@@ -19844,8 +20258,8 @@ var ethers = /*#__PURE__*/Object.freeze({
  *  The Application Programming Interface (API) is the collection of
  *  functions, classes and types offered by the Ethers library.
  *
- *  @_section: api:API Specification
+ *  @_section: api:API Specification  [about-api]
  */
 
-export { AbiCoder, AbstractProvider, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, EnsResolver, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FeeData, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, Network, ParamType, QuickNodeProvider, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, Utf8ErrorFuncs, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getNumber, hashMessage, hexlify, id, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toArray, toBigInt, toHex, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, zeroPadBytes, zeroPadValue };
+export { AbiCoder, AbstractProvider, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, EnsResolver, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FeeData, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, Network, ParamType, QuickNodeProvider, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, Utf8ErrorFuncs, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map

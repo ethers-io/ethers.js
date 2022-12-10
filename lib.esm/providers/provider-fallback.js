@@ -1,3 +1,8 @@
+/**
+ *  Explain all the nitty-gritty about the **FallbackProvider**.
+ *
+ *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
+ */
 import { getBigInt, getNumber, assert, assertArgument } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
@@ -182,6 +187,10 @@ function getFuzzyMode(quorum, results) {
     }
     return bestResult;
 }
+/**
+ *  A Fallback Provider.
+ *
+ */
 export class FallbackProvider extends AbstractProvider {
     quorum;
     eventQuorum;
