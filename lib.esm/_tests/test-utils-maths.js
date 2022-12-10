@@ -135,7 +135,7 @@ describe("Tests Bad Math Values", function () {
         {
             name: "negative value",
             value: -4,
-            error: "cannot toBeHex negative value"
+            error: "unsigned value cannot be negative"
         },
         {
             name: "width too short",
@@ -150,7 +150,7 @@ describe("Tests Bad Math Values", function () {
                 const result = toBeHex(value, width);
                 console.log(result);
             }, (e) => {
-                return (isError(e, "INVALID_ARGUMENT") &&
+                return (isError(e, "NUMERIC_FAULT") && e.fault === "overflow" &&
                     e.message.startsWith(error));
             });
         });
@@ -160,8 +160,8 @@ describe("Tests Bad Math Values", function () {
             const result = toBeArray(-4);
             console.log(result);
         }, (e) => {
-            return (isError(e, "INVALID_ARGUMENT") &&
-                e.message.startsWith("cannot toBeArray negative value"));
+            return (isError(e, "NUMERIC_FAULT") && e.fault === "overflow" &&
+                e.message.startsWith("unsigned value cannot be negative"));
         });
     });
 });

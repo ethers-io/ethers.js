@@ -513,7 +513,7 @@ function getBigInt(value, name) {
 }
 function getUint(value, name) {
     const result = getBigInt(value, name);
-    assert$1(result >= BN_0$9, "overflow", "NUMERIC_FAULT", {
+    assert$1(result >= BN_0$9, "unsigned value cannot be negative", "NUMERIC_FAULT", {
         fault: "overflow", operation: "getUint", value
     });
     return result;
@@ -582,7 +582,11 @@ function toBeHex(_value, _width) {
     }
     else {
         const width = getNumber(_width, "width");
-        assertArgument(width * 2 >= result.length, `value exceeds width`, "[ value, width ]", [_value, _width]);
+        assert$1(width * 2 >= result.length, `value exceeds width (${width} bits)`, "NUMERIC_FAULT", {
+            operation: "toBeHex",
+            fault: "overflow",
+            value: _value
+        });
         // Pad the value to the required width
         while (result.length < (width * 2)) {
             result = "0" + result;
