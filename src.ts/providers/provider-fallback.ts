@@ -1,4 +1,8 @@
-
+/**
+ *  Explain all the nitty-gritty about the **FallbackProvider**.
+ *
+ *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
+ */
 import {
     getBigInt, getNumber, assert, assertArgument
 } from "../utils/index.js";
@@ -36,6 +40,9 @@ function stringify(value: any): string {
     });
 }
 
+/**
+ *  A configuration entry for how to use a [[Provider]].
+ */
 export interface FallbackProviderConfig {
 
     // The provider
@@ -56,6 +63,9 @@ const defaultConfig = { stallTimeout: 400, priority: 1, weight: 1 };
 
 // We track a bunch of extra stuff that might help debug problems or
 // optimize infrastructure later on.
+/**
+ *  The statistics and state maintained for a [[Provider]].
+ */
 export interface FallbackProviderState extends Required<FallbackProviderConfig> {
 
     // The most recent blockNumber this provider has reported (-2 if none)
@@ -112,6 +122,9 @@ async function waitForSync(config: Config, blockNumber: number): Promise<void> {
     }
 }
 
+/**
+ *  Additional options to configure a [[FallbackProvider]].
+ */
 export type FallbackProviderOptions = {
     // How many providers must agree on a value before reporting
     // back the response
@@ -293,6 +306,10 @@ function getFuzzyMode(quorum: number, results: Array<TallyResult>): undefined | 
     return bestResult;
 }
 
+/**
+ *  A Fallback Provider.
+ *
+ */
 export class FallbackProvider extends AbstractProvider {
 
     readonly quorum: number;

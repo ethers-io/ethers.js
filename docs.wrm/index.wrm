@@ -1,4 +1,18 @@
-_section: Documentation
+_section: Documentation (BETA)  @<about-home>
+
+**NOTE:** This documentation is for the **beta branch** (i.e. ``v6-beta-exports``), which
+is still undergoing minor changes.
+
+To try it out:
+
+_code:
+/home/ricmoo> npm install ethers@beta-eports
+
+_null:
+
+Please [report any v6 issues](link-issue) and I will get to them right away.
+
+If you are looking v5 docs, please see the [v5 documentation here](link-v5).
 
 _subsection: What is Ethers?
 

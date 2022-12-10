@@ -1,5 +1,7 @@
 
 link-mail [link-mail](mailto:me@ricmoo.com)
+link-issue [Open GitHub Issue](https://github.com/ethers-io/ethers.js/issues/new/choose)
+link-v5 [V5 Documentation](https://docs.ethers.io/v5/)
 
 # Projects
 link-alchemy [Alchemy](https://alchemy.com/?a=ethers)

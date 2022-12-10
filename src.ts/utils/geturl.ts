@@ -7,7 +7,9 @@ import { getBytes } from "./data.js";
 
 import type { FetchRequest, FetchCancelSignal, GetUrlResponse } from "./fetch.js";
 
-
+/**
+ *  @_ignore:
+ */
 export async function getUrl(req: FetchRequest, signal?: FetchCancelSignal): Promise<GetUrlResponse> {
 
     const protocol = req.url.split(":")[0].toLowerCase();
