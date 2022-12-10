@@ -115,7 +115,7 @@ export function getBigInt(value: BigNumberish, name?: string): bigint {
 
 export function getUint(value: BigNumberish, name?: string): bigint {
     const result = getBigInt(value, name);
-    assert(result >= BN_0, "overflow", "NUMERIC_FAULT", {
+    assert(result >= BN_0, "unsigned value cannot be negative", "NUMERIC_FAULT", {
         fault: "overflow", operation: "getUint", value
     });
     return result;
@@ -187,7 +187,11 @@ export function toBeHex(_value: BigNumberish, _width?: Numeric): string {
         if (result.length % 2) { result = "0" + result; }
     } else {
         const width = getNumber(_width, "width");
-        assertArgument(width * 2 >= result.length, `value exceeds width`, "[ value, width ]", [ _value, _width ]);
+        assert(width * 2 >= result.length, `value exceeds width (${ width } bits)`, "NUMERIC_FAULT", {
+            operation: "toBeHex",
+            fault: "overflow",
+            value: _value
+        });
 
         // Pad the value to the required width
         while (result.length < (width * 2)) { result = "0" + result; }
