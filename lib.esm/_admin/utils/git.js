@@ -1,7 +1,11 @@
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 import { run } from "./run.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 // Returns the most recent git commit hash for a given filename
 export async function getGitTag(filename) {
-    const result = await run("git", ["log", "-n", "1", "--", filename]);
+    const result = await run("git", ["log", "-n", "1", "--", filename], __dirname);
     if (!result.ok) {
         throw new Error(`git log error`);
     }
@@ -14,6 +18,28 @@ export async function getGitTag(filename) {
         return null;
     }
     return hashMatch[1];
+}
+export async function getModifiedTime(filename) {
+    const result = await run("git", ["log", "-n", "1", "--", filename], __dirname);
+    if (!result.ok) {
+        throw new Error(`git log error`);
+    }
+    let log = result.stdout.trim();
+    if (!log) {
+        return null;
+    }
+    for (let line of log.split("\n")) {
+        line = line.trim();
+        if (!line) {
+            break;
+        }
+        const match = line.match(/^date:\s+(.*)$/i);
+        if (match) {
+            return (new Date(match[1].trim())).getTime();
+            ;
+        }
+    }
+    return null;
 }
 export async function getGitLog(filename, limit) {
     if (limit == null) {
