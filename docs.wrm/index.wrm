@@ -1,4 +1,4 @@
-_section: Documentation (BETA)  @<about-home>
+_section: Documentation (BETA)  @<about-home> @nav<Documentation>
 
 **NOTE:** This documentation is for the **beta branch** (i.e. ``v6-beta-exports``), which
 is still undergoing minor changes.
