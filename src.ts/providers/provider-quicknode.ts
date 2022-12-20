@@ -1,5 +1,5 @@
 /**
- *  About Quicknode
+ *  Grab a private QuickNode URL from https://www.quicknode.com/ethers to avoid rate limits.
  *
  *  @_subsection: api/providers/thirdparty:QuickNode  [backend-quicknode]
  */
@@ -46,7 +46,7 @@ function getHost(name: string): string {
 
 
 /**
- *  About QuickNode
+ *  Grab a private QuickNode URL from https://www.quicknode.com/ethers to avoid rate limits.
  */
 export class QuickNodeProvider extends JsonRpcProvider implements CommunityResourcable {
     readonly token!: string;
