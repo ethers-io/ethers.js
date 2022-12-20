@@ -29,10 +29,10 @@
 
 import { toUtf8CodePoints } from "@ethersproject/strings";
 
-import { getData } from './include.js';
+import { getData } from './include';
 const r = getData();
 
-import {read_member_array, read_mapped_map, read_emoji_trie} from './decoder.js';
+import {read_member_array, read_mapped_map, read_emoji_trie} from './decoder';
 
 // @TODO: This should be lazily loaded
 
