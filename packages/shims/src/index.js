@@ -83,7 +83,7 @@
     }
 
     // Shim crypto.getRandomValues
-    // @TOOD: Investigate: https://github.com/brix/crypto-js/issues/7
+    // @TODO: Investigate: https://github.com/brix/crypto-js/issues/7
     if (!global.crypto) { global.crypto = { }; }
     if (!global.crypto.getRandomValues) {
         shims.push("crypto.getRandomValues");
