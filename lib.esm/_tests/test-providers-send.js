@@ -39,7 +39,7 @@ describe("Sends Transactions", function () {
                     break;
                 }
                 catch (error) {
-                    if (isError(error, "REPLACEMENT_UNDERPRICED")) {
+                    if (isError(error, "REPLACEMENT_UNDERPRICED") || isError(error, "NONCE_EXPIRED")) {
                         await stall(1000);
                         continue;
                     }

@@ -1,4 +1,6 @@
-import { AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, 
+import { AlchemyProvider, AnkrProvider, 
+//    CloudflareProvider,
+EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
 QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
 ;
@@ -19,13 +21,15 @@ const ProviderCreators = [
             return new AnkrProvider(network);
         }
     },
+    /*
     {
         name: "CloudflareProvider",
-        networks: ["default", "mainnet"],
-        create: function (network) {
+        networks: [ "default", "mainnet" ],
+        create: function(network: string) {
             return new CloudflareProvider(network);
         }
     },
+    */
     {
         name: "EtherscanProvider",
         networks: ethNetworks,

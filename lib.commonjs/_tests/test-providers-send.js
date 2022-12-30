@@ -44,7 +44,7 @@ describe("Sends Transactions", function () {
                     break;
                 }
                 catch (error) {
-                    if ((0, index_js_1.isError)(error, "REPLACEMENT_UNDERPRICED")) {
+                    if ((0, index_js_1.isError)(error, "REPLACEMENT_UNDERPRICED") || (0, index_js_1.isError)(error, "NONCE_EXPIRED")) {
                         await stall(1000);
                         continue;
                     }

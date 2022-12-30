@@ -195,11 +195,13 @@ describe("Test Typed Contract Interaction", function () {
         for (const type of types) {
             const value = valueFunc(type);
             it(`tests typed value: Typed.from(${type})`, async function () {
+                this.timeout(10000);
                 const v = index_js_1.Typed.from(type, value);
                 const result = await contract.testTyped(v);
                 assert_1.default.equal(result, type);
             });
             it(`tests typed value: Typed.${type}()`, async function () {
+                this.timeout(10000);
                 const v = index_js_1.Typed[type](value);
                 const result = await contract.testTyped(v);
                 assert_1.default.equal(result, type);

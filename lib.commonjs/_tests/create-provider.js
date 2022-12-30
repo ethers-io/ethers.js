@@ -20,13 +20,15 @@ const ProviderCreators = [
             return new index_js_1.AnkrProvider(network);
         }
     },
+    /*
     {
         name: "CloudflareProvider",
-        networks: ["default", "mainnet"],
-        create: function (network) {
-            return new index_js_1.CloudflareProvider(network);
+        networks: [ "default", "mainnet" ],
+        create: function(network: string) {
+            return new CloudflareProvider(network);
         }
     },
+    */
     {
         name: "EtherscanProvider",
         networks: ethNetworks,
