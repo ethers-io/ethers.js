@@ -916,7 +916,6 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         let nextScan = -1;
         let stopScanning = (startBlock === -1) ? true: false;
         const checkReplacement = async () => {
-
             // Get the current transaction count for this sender
             if (stopScanning) { return null; }
             const { blockNumber, nonce } = await resolveProperties({
@@ -924,8 +923,8 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
                 nonce: this.provider.getTransactionCount(this.from)
             });
 
-            // No transaction for our nonce has been mined yet; but we can start
-            // scanning later when we do start
+            // No transaction or our nonce has not been mined yet; but we
+            // can start scanning later when we do start
             if (nonce < this.nonce) {
                 startBlock = blockNumber;
                 return;
@@ -945,7 +944,6 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
             }
 
             while (nextScan <= blockNumber) {
-
                 // Get the next block to scan
                 if (stopScanning) { return null; }
                 const block = await this.provider.getBlock(nextScan, true);
@@ -1000,6 +998,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
         if (receipt) {
             if ((await receipt.confirmations()) >= confirms) { return receipt; }
+
         } else {
             // Check for a replacement; throws if a replacement was found
             await checkReplacement();
@@ -1035,7 +1034,6 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
             };
             cancellers.push(() => { this.provider.off(this.hash, txListener); });
             this.provider.on(this.hash, txListener);
-
             // We support replacement detection; start checking
             if (startBlock >= 0) {
                 const replaceListener = async () => {
@@ -1053,7 +1051,9 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
                     }
 
                     // Rescheudle a check on the next block
-                    this.provider.once("block", replaceListener);
+                    if (!stopScanning) {
+                        this.provider.once("block", replaceListener);
+                    }
                 };
                 cancellers.push(() => { this.provider.off("block", replaceListener); });
                 this.provider.once("block", replaceListener);
@@ -1228,6 +1228,11 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     provider: this;
 
+    /**
+     *  Shutdown any resources this provider is using. No additional
+     *  calls should be made to this provider after calling this.
+     */
+    destroy(): void;
 
     ////////////////////
     // State
