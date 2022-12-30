@@ -13,6 +13,8 @@ export declare class LangZh extends Wordlist {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langZhCn]] and [[langZhTw]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor(dialect: string);
     getWord(index: number): string;
@@ -21,6 +23,9 @@ export declare class LangZh extends Wordlist {
     /**
      *  Returns a singleton instance of a ``LangZh`` for %%dialect%%,
      *  creating it if this is the first time being called.
+     *
+     *  Use the %%dialect%% ``"cn"`` or ``"tw"`` for simplified or
+     *  traditional, respectively.
      */
     static wordlist(dialect: string): LangZh;
 }

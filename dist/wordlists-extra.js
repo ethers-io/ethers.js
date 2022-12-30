@@ -145,7 +145,7 @@ const u64 = {
     add, add3L, add3H, add4L, add4H, add5H, add5L,
 };
 
-const version = "6.0.0-beta-exports.8";
+const version = "6.0.0-beta-exports.9";
 
 /**
  *  Property helper functions.
@@ -807,6 +807,10 @@ let __keccak256 = _keccak256;
  *    keccak256(new Uint8Array([ 0x13, 0x37 ]))
  *    //_result:
  *
+ *    // Strings are assumed to be DataHexString, otherwise it will
+ *    // throw. To hash UTF-8 data, see the note above.
+ *    keccak256("Hello World")
+ *    //_error:
  */
 function keccak256(_data) {
     const data = getBytes(_data, "data");
@@ -1001,6 +1005,8 @@ class LangCz extends WordlistOwl {
      *
      *  Using the constructor should be unnecessary, instead use the
      *  [[wordlist]] singleton method.
+     *
+     *  @_ignore:
      */
     constructor() { super("cz", words$4, checksum$4); }
     /**
@@ -1111,6 +1117,8 @@ class LangEs extends WordlistOwlA {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langEs]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("es", words$3, accents$1, checksum$3); }
     /**
@@ -1140,6 +1148,8 @@ class LangFr extends WordlistOwlA {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langFr]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("fr", words$2, accents, checksum$2); }
     /**
@@ -1274,6 +1284,8 @@ class LangJa extends Wordlist {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langJa]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("ja"); }
     getWord(index) {
@@ -1363,6 +1375,8 @@ class LangKo extends Wordlist {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langKo]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() {
         super("ko");
@@ -1401,6 +1415,8 @@ class LangIt extends WordlistOwl {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langIt]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("it", words$1, checksum$1); }
     /**
@@ -1429,6 +1445,8 @@ class LangPt extends WordlistOwl {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langPt]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("pt", words, checksum); }
     /**
@@ -1501,6 +1519,8 @@ class LangZh extends Wordlist {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langZhCn]] and [[langZhTw]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor(dialect) { super("zh_" + dialect); }
     getWord(index) {
@@ -1518,6 +1538,9 @@ class LangZh extends Wordlist {
     /**
      *  Returns a singleton instance of a ``LangZh`` for %%dialect%%,
      *  creating it if this is the first time being called.
+     *
+     *  Use the %%dialect%% ``"cn"`` or ``"tw"`` for simplified or
+     *  traditional, respectively.
      */
     static wordlist(dialect) {
         if (wordlists[dialect] == null) {

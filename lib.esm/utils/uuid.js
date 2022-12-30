@@ -1,3 +1,8 @@
+/**
+ *  Explain UUID and link to RFC here.
+ *
+ *  @_subsection: api/utils:UUID  [about-uuid]
+ */
 import { getBytes, hexlify } from "./data.js";
 /**
  *  Returns the version 4 [[link-uuid]] for the %%randomBytes%%.

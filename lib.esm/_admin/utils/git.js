@@ -25,18 +25,15 @@ export async function getModifiedTime(filename) {
         throw new Error(`git log error`);
     }
     let log = result.stdout.trim();
-    console.log("LL", log);
     if (!log) {
         return null;
     }
     for (let line of log.split("\n")) {
         line = line.trim();
-        console.log("L", line);
         if (!line) {
             break;
         }
         const match = line.match(/^date:\s+(.*)$/i);
-        console.log("M", match);
         if (match) {
             return (new Date(match[1].trim())).getTime();
             ;

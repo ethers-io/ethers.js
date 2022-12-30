@@ -30,6 +30,10 @@ let __keccak256 = _keccak256;
  *    keccak256(new Uint8Array([ 0x13, 0x37 ]))
  *    //_result:
  *
+ *    // Strings are assumed to be DataHexString, otherwise it will
+ *    // throw. To hash UTF-8 data, see the note above.
+ *    keccak256("Hello World")
+ *    //_error:
  */
 function keccak256(_data) {
     const data = (0, index_js_1.getBytes)(_data, "data");

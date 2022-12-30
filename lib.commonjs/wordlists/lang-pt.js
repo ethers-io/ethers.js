@@ -16,6 +16,8 @@ class LangPt extends wordlist_owl_js_1.WordlistOwl {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langPt]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("pt", words, checksum); }
     /**

@@ -124,6 +124,8 @@ class LangJa extends wordlist_js_1.Wordlist {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langJa]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("ja"); }
     getWord(index) {

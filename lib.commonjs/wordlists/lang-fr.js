@@ -17,6 +17,8 @@ class LangFr extends wordlist_owla_js_1.WordlistOwlA {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langFr]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("fr", words, accents, checksum); }
     /**

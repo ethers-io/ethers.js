@@ -3,6 +3,7 @@
  *  Explain about ABI here...
  *
  *  @_section api/abi:Application Binary Interface  [abi]
+ *  @_navTitle: ABI
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Typed = exports.Result = exports.TransactionDescription = exports.LogDescription = exports.ErrorDescription = exports.Interface = exports.Indexed = exports.checkResultErrors = exports.StructFragment = exports.ParamType = exports.NamedFragment = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = exports.encodeBytes32String = exports.decodeBytes32String = exports.AbiCoder = void 0;

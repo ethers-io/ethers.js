@@ -32,79 +32,67 @@
   },
   "exports": {
     ".": {
-      "flatworm-source": "./src.ts/index.js",
       "import": "./lib.esm/index.js",
       "require": "./lib.commonjs/index.js",
       "types": "./types/index.d.ts"
     },
     "./abi": {
-      "flatworm-source": "./src.ts/abi/index.js",
       "import": "./lib.esm/abi/index.js",
       "require": "./lib.commonjs/abi/index.js",
       "types": "./types/abi/index.d.ts"
     },
     "./address": {
-      "flatworm-source": "./src.ts/address/index.js",
       "import": "./lib.esm/address/index.js",
       "require": "./lib.commonjs/address/index.js",
       "types": "./types/address/index.d.ts"
     },
     "./constants": {
-      "flatworm-source": "./src.ts/constants/index.js",
       "import": "./lib.esm/constants/index.js",
       "require": "./lib.commonjs/constants/index.js",
       "types": "./types/constants/index.d.ts"
     },
     "./contract": {
-      "flatworm-source": "./src.ts/contract/index.js",
       "import": "./lib.esm/contract/index.js",
       "require": "./lib.commonjs/contract/index.js",
       "types": "./types/contract/index.d.ts"
     },
     "./crypto": {
-      "flatworm-source": "./src.ts/crypto/index.js",
       "import": "./lib.esm/crypto/index.js",
       "require": "./lib.commonjs/crypto/index.js",
       "types": "./types/crypto/index.d.ts"
     },
     "./hash": {
-      "flatworm-source": "./src.ts/hash/index.js",
       "import": "./lib.esm/hash/index.js",
       "require": "./lib.commonjs/hash/index.js",
       "types": "./types/hash/index.d.ts"
     },
     "./providers": {
-      "flatworm-source": "./src.ts/providers/index.js",
       "import": "./lib.esm/providers/index.js",
       "require": "./lib.commonjs/providers/index.js",
       "types": "./types/providers/index.d.ts"
     },
     "./transaction": {
-      "flatworm-source": "./src.ts/transaction/index.js",
       "import": "./lib.esm/transaction/index.js",
       "require": "./lib.commonjs/transaction/index.js",
       "types": "./types/transaction/index.d.ts"
     },
     "./utils": {
-      "flatworm-source": "./src.ts/utils/index.js",
       "import": "./lib.esm/utils/index.js",
       "require": "./lib.commonjs/utils/index.js",
       "types": "./types/utils/index.d.ts"
     },
     "./wallet": {
-      "flatworm-source": "./src.ts/wallet/index.js",
       "import": "./lib.esm/wallet/index.js",
       "require": "./lib.commonjs/wallet/index.js",
       "types": "./types/wallet/index.d.ts"
     },
     "./wordlists": {
-      "flatworm-source": "./src.ts/wordlists/index.js",
       "import": "./lib.esm/wordlists/index.js",
       "require": "./lib.commonjs/wordlists/index.js",
       "types": "./types/wordlistsindex.d.ts"
     }
   },
-  "gitHead": "0859f84bac6a5b9c94530d6c257bce1b13870f33",
+  "gitHead": "46ddc89441619f7cf0089a6c78f3213def9d4610",
   "keywords": [
     "ethereum",
     "ethers",
@@ -144,5 +132,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.0-beta-exports.8"
+  "version": "6.0.0-beta-exports.9"
 }

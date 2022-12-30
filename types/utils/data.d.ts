@@ -71,11 +71,23 @@ export declare function stripZerosLeft(data: BytesLike): string;
 /**
  *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
+ *
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  thrown.
+ *
+ *  This pads data the same as **values** are in Solidity
+ *  (e.g. ``uint128``).
  */
 export declare function zeroPadValue(data: BytesLike, length: number): string;
 /**
  *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
+ *
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  thrown.
+ *
+ *  This pads data the same as **bytes** are in Solidity
+ *  (e.g. ``bytes16``).
  */
 export declare function zeroPadBytes(data: BytesLike, length: number): string;
 //# sourceMappingURL=data.d.ts.map

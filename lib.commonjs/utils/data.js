@@ -156,6 +156,12 @@ function zeroPad(data, length, left) {
 /**
  *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
+ *
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  thrown.
+ *
+ *  This pads data the same as **values** are in Solidity
+ *  (e.g. ``uint128``).
  */
 function zeroPadValue(data, length) {
     return zeroPad(data, length, true);
@@ -164,6 +170,12 @@ exports.zeroPadValue = zeroPadValue;
 /**
  *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
+ *
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  thrown.
+ *
+ *  This pads data the same as **bytes** are in Solidity
+ *  (e.g. ``bytes16``).
  */
 function zeroPadBytes(data, length) {
     return zeroPad(data, length, false);

@@ -13,6 +13,8 @@ export class LangIt extends WordlistOwl {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langIt]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("it", words, checksum); }
     /**

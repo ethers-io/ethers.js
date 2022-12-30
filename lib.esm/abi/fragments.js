@@ -332,22 +332,47 @@ const EventFragmentInternal = "_EventInternal";
 const ConstructorFragmentInternal = "_ConstructorInternal";
 const FunctionFragmentInternal = "_FunctionInternal";
 const StructFragmentInternal = "_StructInternal";
+/**
+ *  Each input and output of a [[Fragment]] is an Array of **PAramType**.
+ */
 export class ParamType {
-    // The local name of the parameter (of "" if unbound)
+    /**
+     *  The local name of the parameter (or ``""`` if unbound)
+     */
     name;
-    // The fully qualified type (e.g. "address", "tuple(address)", "uint256[3][]"
+    /**
+     *  The fully qualified type (e.g. ``"address"``, ``"tuple(address)"``,
+     *  ``"uint256[3][]"``)
+     */
     type;
-    // The base type (e.g. "address", "tuple", "array")
+    /**
+     *  The base type (e.g. ``"address"``, ``"tuple"``, ``"array"``)
+     */
     baseType;
-    // Indexable Paramters ONLY (otherwise null)
+    /**
+     *  True if the parameters is indexed.
+     *
+     *  For non-indexable types (see [[ParamType_isIndexable]]) this
+     *  is ``null``.
+     */
     indexed;
-    // Tuples ONLY: (otherwise null)
-    //  - sub-components
+    /**
+     *  The components for the tuple.
+     *
+     *  For non-tuple types (see [[ParamType_isTuple]]) this is ``null``.
+     */
     components;
-    // Arrays ONLY: (otherwise null)
-    //  - length of the array (-1 for dynamic length)
-    //  - child type
+    /**
+     *  The array length, or ``-1`` for dynamic-lengthed arrays.
+     *
+     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     */
     arrayLength;
+    /**
+     *  The type of each child in the array.
+     *
+     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     */
     arrayChildren;
     /**
      *  @private
@@ -378,10 +403,17 @@ export class ParamType {
             name, type, baseType, indexed, components, arrayLength, arrayChildren
         });
     }
-    // Format the parameter fragment
-    //   - sighash: "(uint256,address)"
-    //   - minimal: "tuple(uint256,address) indexed"
-    //   - full:    "tuple(uint256 foo, address bar) indexed baz"
+    /**
+     *  Return a string representation of this type.
+     *
+     *  For example,
+     *
+     *  ``sighash" => "(uint256,address)"``
+     *
+     *  ``"minimal" => "tuple(uint256,address) indexed"``
+     *
+     *  ``"full" => "tuple(uint256 foo, address bar) indexed baz"``
+     */
     format(format) {
         if (format == null) {
             format = "sighash";
@@ -426,18 +458,46 @@ export class ParamType {
         }
         return result;
     }
-    static isArray(value) {
-        return value && (value.baseType === "array");
-    }
+    /*
+     *  Returns true if %%value%% is an Array type.
+     *
+     *  This provides a type gaurd ensuring that the
+     *  [[arrayChildren]] and [[arrayLength]] are non-null.
+     */
+    //static isArray(value: any): value is { arrayChildren: ParamType, arrayLength: number } {
+    //    return value && (value.baseType === "array")
+    //}
+    /**
+     *  Returns true if %%this%% is an Array type.
+     *
+     *  This provides a type gaurd ensuring that [[arrayChildren]]
+     *  and [[arrayLength]] are non-null.
+     */
     isArray() {
         return (this.baseType === "array");
     }
+    /**
+     *  Returns true if %%this%% is a Tuple type.
+     *
+     *  This provides a type gaurd ensuring that [[components]]
+     *  is non-null.
+     */
     isTuple() {
         return (this.baseType === "tuple");
     }
+    /**
+     *  Returns true if %%this%% is an Indexable type.
+     *
+     *  This provides a type gaurd ensuring that [[indexed]]
+     *  is non-null.
+     */
     isIndexable() {
         return (this.indexed != null);
     }
+    /**
+     *  Walks the **ParamType** with %%value%%, calling %%process%%
+     *  on each type, destructing the %%value%% recursively.
+     */
     walk(value, process) {
         if (this.isArray()) {
             if (!Array.isArray(value)) {
@@ -519,6 +579,13 @@ export class ParamType {
             setValue(result);
         }
     }
+    /**
+     *  Walks the **ParamType** with %%value%%, asynchronously calling
+     *  %%process%% on each type, destructing the %%value%% recursively.
+     *
+     *  This can be used to resolve ENS naes by walking and resolving each
+     *  ``"address"`` type.
+     */
     async walkAsync(value, process) {
         const promises = [];
         const result = [value];
@@ -530,6 +597,12 @@ export class ParamType {
         }
         return result[0];
     }
+    /**
+     *  Creates a new **ParamType** for %%obj%%.
+     *
+     *  If %%allowIndexed%% then the ``indexed`` keyword is permitted,
+     *  otherwise the ``indexed`` keyword will throw an error.
+     */
     static from(obj, allowIndexed) {
         if (ParamType.isParamType(obj)) {
             return obj;
@@ -602,12 +675,24 @@ export class ParamType {
         type = verifyBasicType(obj.type);
         return new ParamType(_guard, name, type, type, indexed, null, null, null);
     }
+    /**
+     *  Returns true if %%value%% is a **ParamType**.
+     */
     static isParamType(value) {
         return (value && value[internal] === ParamTypeInternal);
     }
 }
+/**
+ *  An abstract class to represent An individual fragment from a parse ABI.
+ */
 export class Fragment {
+    /**
+     *  The type of the fragment.
+     */
     type;
+    /**
+     *  The inputs for the fragment.
+     */
     inputs;
     /**
      *  @private
@@ -617,6 +702,10 @@ export class Fragment {
         inputs = Object.freeze(inputs.slice());
         defineProperties(this, { type, inputs });
     }
+    /**
+     *  Creates a new **Fragment** for %%obj%%, wich can be any supported
+     *  ABI frgament type.
+     */
     static from(obj) {
         if (typeof (obj) === "string") {
             try {
@@ -648,23 +737,45 @@ export class Fragment {
         }
         throw new Error(`unsupported type: ${obj}`);
     }
+    /**
+     *  Returns true if %%value%% is a [[ConstructorFragment]].
+     */
     static isConstructor(value) {
         return ConstructorFragment.isFragment(value);
     }
+    /**
+     *  Returns true if %%value%% is an [[ErrorFragment]].
+     */
     static isError(value) {
         return ErrorFragment.isFragment(value);
     }
+    /**
+     *  Returns true if %%value%% is an [[EventFragment]].
+     */
     static isEvent(value) {
         return EventFragment.isFragment(value);
     }
+    /**
+     *  Returns true if %%value%% is a [[FunctionFragment]].
+     */
     static isFunction(value) {
         return FunctionFragment.isFragment(value);
     }
+    /**
+     *  Returns true if %%value%% is a [[StructFragment]].
+     */
     static isStruct(value) {
         return StructFragment.isFragment(value);
     }
 }
+/**
+ *  An abstract class to represent An individual fragment
+ *  which has a name from a parse ABI.
+ */
 export class NamedFragment extends Fragment {
+    /**
+     *  The name of the fragment.
+     */
     name;
     /**
      *  @private
@@ -679,6 +790,9 @@ export class NamedFragment extends Fragment {
 function joinParams(format, params) {
     return "(" + params.map((p) => p.format(format)).join((format === "full") ? ", " : ",") + ")";
 }
+/**
+ *  A Fragment which represents a //Custom Error//.
+ */
 export class ErrorFragment extends NamedFragment {
     /**
      *  @private
@@ -687,6 +801,9 @@ export class ErrorFragment extends NamedFragment {
         super(guard, "error", name, inputs);
         Object.defineProperty(this, internal, { value: ErrorFragmentInternal });
     }
+    /**
+     *  The Custom Error selector.
+     */
     get selector() {
         return id(this.format("sighash")).substring(0, 10);
     }
@@ -727,6 +844,9 @@ export class ErrorFragment extends NamedFragment {
         return (value && value[internal] === ErrorFragmentInternal);
     }
 }
+/**
+ *  A Fragment which represents an Event.
+ */
 export class EventFragment extends NamedFragment {
     anonymous;
     /**
@@ -737,6 +857,9 @@ export class EventFragment extends NamedFragment {
         Object.defineProperty(this, internal, { value: EventFragmentInternal });
         defineProperties(this, { anonymous });
     }
+    /**
+     *  The Event topic hash.
+     */
     get topicHash() {
         return id(this.format("sighash"));
     }
@@ -782,6 +905,9 @@ export class EventFragment extends NamedFragment {
         return (value && value[internal] === EventFragmentInternal);
     }
 }
+/**
+ *  A Fragment which represents a constructor.
+ */
 export class ConstructorFragment extends Fragment {
     payable;
     gas;
@@ -832,11 +958,30 @@ export class ConstructorFragment extends Fragment {
         return (value && value[internal] === ConstructorFragmentInternal);
     }
 }
+/**
+ *  A Fragment which represents a method.
+ */
 export class FunctionFragment extends NamedFragment {
+    /**
+     *  If the function is constant (e.g. ``pure`` or ``view`` functions).
+     */
     constant;
+    /**
+     *  The returned types for the result of calling this function.
+     */
     outputs;
+    /**
+     *  The state mutability (e.g. ``payable``, ``nonpayable``, ``view``
+     *  or ``pure``)
+     */
     stateMutability;
+    /**
+     *  If the function can be send a value during invocation.
+     */
     payable;
+    /**
+     *  The amount of gas to send when calling this function
+     */
     gas;
     /**
      *  @private
@@ -849,6 +994,9 @@ export class FunctionFragment extends NamedFragment {
         const payable = (stateMutability === "payable");
         defineProperties(this, { constant, gas, outputs, payable, stateMutability });
     }
+    /**
+     *  The Function selector.
+     */
     get selector() {
         return id(this.format("sighash")).substring(0, 10);
     }
@@ -913,6 +1061,9 @@ export class FunctionFragment extends NamedFragment {
         return (value && value[internal] === FunctionFragmentInternal);
     }
 }
+/**
+ *  A Fragment which represents a structure.
+ */
 export class StructFragment extends NamedFragment {
     /**
      *  @private

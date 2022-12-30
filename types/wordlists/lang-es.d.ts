@@ -10,6 +10,8 @@ export declare class LangEs extends WordlistOwlA {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langEs]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor();
     /**

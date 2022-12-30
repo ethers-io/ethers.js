@@ -16,6 +16,8 @@ class LangIt extends wordlist_owl_js_1.WordlistOwl {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langIt]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("it", words, checksum); }
     /**

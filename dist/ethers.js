@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.8";
+const version = "6.0.0-beta-exports.9";
 
 /**
  *  Property helper functions.
@@ -410,6 +410,12 @@ function zeroPad(data, length, left) {
 /**
  *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
+ *
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  thrown.
+ *
+ *  This pads data the same as **values** are in Solidity
+ *  (e.g. ``uint128``).
  */
 function zeroPadValue(data, length) {
     return zeroPad(data, length, true);
@@ -417,6 +423,12 @@ function zeroPadValue(data, length) {
 /**
  *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
+ *
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  thrown.
+ *
+ *  This pads data the same as **bytes** are in Solidity
+ *  (e.g. ``bytes16``).
  */
 function zeroPadBytes(data, length) {
     return zeroPad(data, length, false);
@@ -2464,6 +2476,11 @@ function parseEther(ether) {
 }
 
 /**
+ *  Explain UUID and link to RFC here.
+ *
+ *  @_subsection: api/utils:UUID  [about-uuid]
+ */
+/**
  *  Returns the version 4 [[link-uuid]] for the %%randomBytes%%.
  *
  *  @see: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
@@ -3932,6 +3949,10 @@ let __keccak256 = _keccak256;
  *    keccak256(new Uint8Array([ 0x13, 0x37 ]))
  *    //_result:
  *
+ *    // Strings are assumed to be DataHexString, otherwise it will
+ *    // throw. To hash UTF-8 data, see the note above.
+ *    keccak256("Hello World")
+ *    //_error:
  */
 function keccak256(_data) {
     const data = getBytes(_data, "data");
@@ -8180,22 +8201,47 @@ const EventFragmentInternal = "_EventInternal";
 const ConstructorFragmentInternal = "_ConstructorInternal";
 const FunctionFragmentInternal = "_FunctionInternal";
 const StructFragmentInternal = "_StructInternal";
+/**
+ *  Each input and output of a [[Fragment]] is an Array of **PAramType**.
+ */
 class ParamType {
-    // The local name of the parameter (of "" if unbound)
+    /**
+     *  The local name of the parameter (or ``""`` if unbound)
+     */
     name;
-    // The fully qualified type (e.g. "address", "tuple(address)", "uint256[3][]"
+    /**
+     *  The fully qualified type (e.g. ``"address"``, ``"tuple(address)"``,
+     *  ``"uint256[3][]"``)
+     */
     type;
-    // The base type (e.g. "address", "tuple", "array")
+    /**
+     *  The base type (e.g. ``"address"``, ``"tuple"``, ``"array"``)
+     */
     baseType;
-    // Indexable Paramters ONLY (otherwise null)
+    /**
+     *  True if the parameters is indexed.
+     *
+     *  For non-indexable types (see [[ParamType_isIndexable]]) this
+     *  is ``null``.
+     */
     indexed;
-    // Tuples ONLY: (otherwise null)
-    //  - sub-components
+    /**
+     *  The components for the tuple.
+     *
+     *  For non-tuple types (see [[ParamType_isTuple]]) this is ``null``.
+     */
     components;
-    // Arrays ONLY: (otherwise null)
-    //  - length of the array (-1 for dynamic length)
-    //  - child type
+    /**
+     *  The array length, or ``-1`` for dynamic-lengthed arrays.
+     *
+     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     */
     arrayLength;
+    /**
+     *  The type of each child in the array.
+     *
+     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     */
     arrayChildren;
     /**
      *  @private
@@ -8226,10 +8272,17 @@ class ParamType {
             name, type, baseType, indexed, components, arrayLength, arrayChildren
         });
     }
-    // Format the parameter fragment
-    //   - sighash: "(uint256,address)"
-    //   - minimal: "tuple(uint256,address) indexed"
-    //   - full:    "tuple(uint256 foo, address bar) indexed baz"
+    /**
+     *  Return a string representation of this type.
+     *
+     *  For example,
+     *
+     *  ``sighash" => "(uint256,address)"``
+     *
+     *  ``"minimal" => "tuple(uint256,address) indexed"``
+     *
+     *  ``"full" => "tuple(uint256 foo, address bar) indexed baz"``
+     */
     format(format) {
         if (format == null) {
             format = "sighash";
@@ -8274,18 +8327,46 @@ class ParamType {
         }
         return result;
     }
-    static isArray(value) {
-        return value && (value.baseType === "array");
-    }
+    /*
+     *  Returns true if %%value%% is an Array type.
+     *
+     *  This provides a type gaurd ensuring that the
+     *  [[arrayChildren]] and [[arrayLength]] are non-null.
+     */
+    //static isArray(value: any): value is { arrayChildren: ParamType, arrayLength: number } {
+    //    return value && (value.baseType === "array")
+    //}
+    /**
+     *  Returns true if %%this%% is an Array type.
+     *
+     *  This provides a type gaurd ensuring that [[arrayChildren]]
+     *  and [[arrayLength]] are non-null.
+     */
     isArray() {
         return (this.baseType === "array");
     }
+    /**
+     *  Returns true if %%this%% is a Tuple type.
+     *
+     *  This provides a type gaurd ensuring that [[components]]
+     *  is non-null.
+     */
     isTuple() {
         return (this.baseType === "tuple");
     }
+    /**
+     *  Returns true if %%this%% is an Indexable type.
+     *
+     *  This provides a type gaurd ensuring that [[indexed]]
+     *  is non-null.
+     */
     isIndexable() {
         return (this.indexed != null);
     }
+    /**
+     *  Walks the **ParamType** with %%value%%, calling %%process%%
+     *  on each type, destructing the %%value%% recursively.
+     */
     walk(value, process) {
         if (this.isArray()) {
             if (!Array.isArray(value)) {
@@ -8367,6 +8448,13 @@ class ParamType {
             setValue(result);
         }
     }
+    /**
+     *  Walks the **ParamType** with %%value%%, asynchronously calling
+     *  %%process%% on each type, destructing the %%value%% recursively.
+     *
+     *  This can be used to resolve ENS naes by walking and resolving each
+     *  ``"address"`` type.
+     */
     async walkAsync(value, process) {
         const promises = [];
         const result = [value];
@@ -8378,6 +8466,12 @@ class ParamType {
         }
         return result[0];
     }
+    /**
+     *  Creates a new **ParamType** for %%obj%%.
+     *
+     *  If %%allowIndexed%% then the ``indexed`` keyword is permitted,
+     *  otherwise the ``indexed`` keyword will throw an error.
+     */
     static from(obj, allowIndexed) {
         if (ParamType.isParamType(obj)) {
             return obj;
@@ -8450,12 +8544,24 @@ class ParamType {
         type = verifyBasicType(obj.type);
         return new ParamType(_guard$2, name, type, type, indexed, null, null, null);
     }
+    /**
+     *  Returns true if %%value%% is a **ParamType**.
+     */
     static isParamType(value) {
         return (value && value[internal$1] === ParamTypeInternal);
     }
 }
+/**
+ *  An abstract class to represent An individual fragment from a parse ABI.
+ */
 class Fragment {
+    /**
+     *  The type of the fragment.
+     */
     type;
+    /**
+     *  The inputs for the fragment.
+     */
     inputs;
     /**
      *  @private
@@ -8465,6 +8571,10 @@ class Fragment {
         inputs = Object.freeze(inputs.slice());
         defineProperties(this, { type, inputs });
     }
+    /**
+     *  Creates a new **Fragment** for %%obj%%, wich can be any supported
+     *  ABI frgament type.
+     */
     static from(obj) {
         if (typeof (obj) === "string") {
             try {
@@ -8496,23 +8606,45 @@ class Fragment {
         }
         throw new Error(`unsupported type: ${obj}`);
     }
+    /**
+     *  Returns true if %%value%% is a [[ConstructorFragment]].
+     */
     static isConstructor(value) {
         return ConstructorFragment.isFragment(value);
     }
+    /**
+     *  Returns true if %%value%% is an [[ErrorFragment]].
+     */
     static isError(value) {
         return ErrorFragment.isFragment(value);
     }
+    /**
+     *  Returns true if %%value%% is an [[EventFragment]].
+     */
     static isEvent(value) {
         return EventFragment.isFragment(value);
     }
+    /**
+     *  Returns true if %%value%% is a [[FunctionFragment]].
+     */
     static isFunction(value) {
         return FunctionFragment.isFragment(value);
     }
+    /**
+     *  Returns true if %%value%% is a [[StructFragment]].
+     */
     static isStruct(value) {
         return StructFragment.isFragment(value);
     }
 }
+/**
+ *  An abstract class to represent An individual fragment
+ *  which has a name from a parse ABI.
+ */
 class NamedFragment extends Fragment {
+    /**
+     *  The name of the fragment.
+     */
     name;
     /**
      *  @private
@@ -8527,6 +8659,9 @@ class NamedFragment extends Fragment {
 function joinParams(format, params) {
     return "(" + params.map((p) => p.format(format)).join((format === "full") ? ", " : ",") + ")";
 }
+/**
+ *  A Fragment which represents a //Custom Error//.
+ */
 class ErrorFragment extends NamedFragment {
     /**
      *  @private
@@ -8535,6 +8670,9 @@ class ErrorFragment extends NamedFragment {
         super(guard, "error", name, inputs);
         Object.defineProperty(this, internal$1, { value: ErrorFragmentInternal });
     }
+    /**
+     *  The Custom Error selector.
+     */
     get selector() {
         return id(this.format("sighash")).substring(0, 10);
     }
@@ -8575,6 +8713,9 @@ class ErrorFragment extends NamedFragment {
         return (value && value[internal$1] === ErrorFragmentInternal);
     }
 }
+/**
+ *  A Fragment which represents an Event.
+ */
 class EventFragment extends NamedFragment {
     anonymous;
     /**
@@ -8585,6 +8726,9 @@ class EventFragment extends NamedFragment {
         Object.defineProperty(this, internal$1, { value: EventFragmentInternal });
         defineProperties(this, { anonymous });
     }
+    /**
+     *  The Event topic hash.
+     */
     get topicHash() {
         return id(this.format("sighash"));
     }
@@ -8630,6 +8774,9 @@ class EventFragment extends NamedFragment {
         return (value && value[internal$1] === EventFragmentInternal);
     }
 }
+/**
+ *  A Fragment which represents a constructor.
+ */
 class ConstructorFragment extends Fragment {
     payable;
     gas;
@@ -8680,11 +8827,30 @@ class ConstructorFragment extends Fragment {
         return (value && value[internal$1] === ConstructorFragmentInternal);
     }
 }
+/**
+ *  A Fragment which represents a method.
+ */
 class FunctionFragment extends NamedFragment {
+    /**
+     *  If the function is constant (e.g. ``pure`` or ``view`` functions).
+     */
     constant;
+    /**
+     *  The returned types for the result of calling this function.
+     */
     outputs;
+    /**
+     *  The state mutability (e.g. ``payable``, ``nonpayable``, ``view``
+     *  or ``pure``)
+     */
     stateMutability;
+    /**
+     *  If the function can be send a value during invocation.
+     */
     payable;
+    /**
+     *  The amount of gas to send when calling this function
+     */
     gas;
     /**
      *  @private
@@ -8697,6 +8863,9 @@ class FunctionFragment extends NamedFragment {
         const payable = (stateMutability === "payable");
         defineProperties(this, { constant, gas, outputs, payable, stateMutability });
     }
+    /**
+     *  The Function selector.
+     */
     get selector() {
         return id(this.format("sighash")).substring(0, 10);
     }
@@ -8761,6 +8930,9 @@ class FunctionFragment extends NamedFragment {
         return (value && value[internal$1] === FunctionFragmentInternal);
     }
 }
+/**
+ *  A Fragment which represents a structure.
+ */
 class StructFragment extends NamedFragment {
     /**
      *  @private
@@ -9902,6 +10074,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
  *  Explain about ABI here...
  *
  *  @_section api/abi:Application Binary Interface  [abi]
+ *  @_navTitle: ABI
  */
 
 function accessSetify(addr, storageKeys) {
@@ -18166,6 +18339,8 @@ class LangEn extends WordlistOwl {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langEn]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("en", words, checksum); }
     /**
@@ -20262,7 +20437,8 @@ var ethers = /*#__PURE__*/Object.freeze({
  *  The Application Programming Interface (API) is the collection of
  *  functions, classes and types offered by the Ethers library.
  *
- *  @_section: api:API Specification  [about-api]
+ *  @_section: api:Application Programming Interface  [about-api]
+ *  @_navTitle: API
  */
 
 export { AbiCoder, AbstractProvider, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, EnsResolver, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FeeData, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, Network, ParamType, QuickNodeProvider, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, Utf8ErrorFuncs, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, version, zeroPadBytes, zeroPadValue };

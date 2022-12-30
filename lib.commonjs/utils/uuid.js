@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.uuidV4 = void 0;
+/**
+ *  Explain UUID and link to RFC here.
+ *
+ *  @_subsection: api/utils:UUID  [about-uuid]
+ */
 const data_js_1 = require("./data.js");
 /**
  *  Returns the version 4 [[link-uuid]] for the %%randomBytes%%.

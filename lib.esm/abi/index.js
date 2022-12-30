@@ -2,6 +2,7 @@
  *  Explain about ABI here...
  *
  *  @_section api/abi:Application Binary Interface  [abi]
+ *  @_navTitle: ABI
  */
 //////
 export { AbiCoder } from "./abi-coder.js";

@@ -10,6 +10,8 @@ export declare class LangKo extends Wordlist {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langKo]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor();
     getWord(index: number): string;

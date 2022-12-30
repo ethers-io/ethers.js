@@ -16,6 +16,8 @@ class LangCz extends wordlist_owl_js_1.WordlistOwl {
      *
      *  Using the constructor should be unnecessary, instead use the
      *  [[wordlist]] singleton method.
+     *
+     *  @_ignore:
      */
     constructor() { super("cz", words, checksum); }
     /**
