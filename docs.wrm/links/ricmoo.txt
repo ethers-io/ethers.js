@@ -1,0 +1,21 @@
+link-mail [me@ricmoo](mailto:me@ricmoo.com)
+link-website [ethers.org](https://ethers.org)
+
+# Ethers links
+link-ci [Ethers CI](https://github.com/ethers-io/ethers.js/actions/runs/158006903)
+link-discussion [Ethers Discussion](https://github.com/ethers-io/ethers.js/discussions)
+link-issue [Open Ethers Issue](https://github.com/ethers-io/ethers.js/issues/new/choose)
+link-issues [Ethers Issues](https://github.com/ethers-io/ethers.js/issues)
+link-docs-v3 [V3 Documentation](https://docs.ethers.io/v3/)
+link-docs-v4 [V4 Documentation](https://docs.ethers.io/v4/)
+link-docs-v5 [V5 Documentation](https://docs.ethers.io/v5/)
+
+# Social profiles
+link-repo [GitHub Repo](https://github.com/ethers-io/ethers.js)
+link-mastodon [@ethers on Mastodon](http://mochi.social/@ethers)
+link-twitter [@ethersproject on Twitter](https://twitter.com/ethersproject)
+
+# Blog
+link-ricmoo-humanreadableabi [Human-Readable Contract ABIs](https://blog.ricmoo.com/human-readable-contract-abis-in-ethers-js-141902f4d917)
+link-ricmoo-wisps [Wisps: The Magical World of Create2](https://blog.ricmoo.com/wisps-the-magical-world-of-create2-5c2177027604);
+
