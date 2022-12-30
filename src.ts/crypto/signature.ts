@@ -1,7 +1,7 @@
 import { ZeroHash } from "../constants/index.js";
 import {
     concat, dataLength, getBigInt, getBytes, getNumber, hexlify,
-    isHexString,
+    toBeArray, isHexString, zeroPadValue,
     assertArgument, assertPrivate
 } from "../utils/index.js";
 
@@ -41,6 +41,10 @@ export type SignatureLike = Signature | string | {
     v?: BigNumberish;
     yParityAndS?: string;
 };
+
+function toUint256(value: BigNumberish): string {
+    return zeroPadValue(toBeArray(value), 32);
+}
 
 /**
  *  A Signature  @TODO
@@ -291,16 +295,13 @@ export class Signature {
         if (sig instanceof Signature) { return sig.clone(); }
 
         // Get r
-        const r = sig.r;
-        assertError(r != null, "missing r");
-        assertError(isHexString(r, 32), "invalid r");
+        const _r = sig.r;
+        assertError(_r != null, "missing r");
+        const r = toUint256(_r);
 
         // Get s; by any means necessary (we check consistency below)
         const s = (function(s?: string, yParityAndS?: string) {
-            if (s != null) {
-                assertError(isHexString(s, 32), "invalid s");
-                return s;
-            }
+            if (s != null) { return toUint256(s); }
 
             if (yParityAndS != null) {
                 assertError(isHexString(yParityAndS, 32), "invalid yParityAndS");
