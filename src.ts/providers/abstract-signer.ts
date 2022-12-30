@@ -3,11 +3,14 @@
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
  */
+import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, resolveProperties,
     assert, assertArgument
 } from "../utils/index.js";
+
+import { copyRequest } from "./provider.js";
 
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { TransactionLike } from "../transaction/index.js";
@@ -37,42 +40,35 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
 
-    async #populate(op: string, tx: TransactionRequest): Promise<{ provider: Provider, pop: TransactionLike<string> }> {
-        const provider = this.#checkProvider(op);
+    async #populate(tx: TransactionRequest): Promise<TransactionLike<string>> {
+        let pop: any = copyRequest(tx);
 
-        //let pop: Deferrable<TransactionRequest> = Object.assign({ }, tx);
-        let pop: any = Object.assign({ }, tx);
-
-        if (pop.to != null) {
-            pop.to = provider.resolveName(pop.to).then((to) => {
-                assertArgument(to != null, "transaction to ENS name not configured", "tx.to", pop.to);
-                return to;
-            });
-        }
+        if (pop.to != null) { pop.to = resolveAddress(pop.to, this); }
 
         if (pop.from != null) {
             const from = pop.from;
             pop.from = Promise.all([
                 this.getAddress(),
-                this.resolveName(from)
+                resolveAddress(from, this)
             ]).then(([ address, from ]) => {
-                assertArgument(from && address.toLowerCase() === from.toLowerCase(),
+                assertArgument(address.toLowerCase() === from.toLowerCase(),
                     "transaction from mismatch", "tx.from", from);
                 return address;
             });
         }
 
-        return { pop: await resolveProperties(pop), provider };
+        return await resolveProperties(pop);
     }
 
     async populateCall(tx: TransactionRequest): Promise<TransactionLike<string>> {
-        const { pop }  = await this.#populate("populateCall", tx);
-
+        const pop = await this.#populate(tx);
         return pop;
     }
 
     async populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>> {
-        const { pop, provider } = await this.#populate("populateTransaction", tx);
+        const provider = this.#checkProvider("populateTransaction");
+
+        const pop = await this.#populate(tx);
 
         if (pop.nonce == null) {
             pop.nonce = await this.getNonce("pending");
