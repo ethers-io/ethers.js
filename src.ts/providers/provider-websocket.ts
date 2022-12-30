@@ -76,8 +76,10 @@ export class WebSocketProvider extends SocketProvider {
     }
 
     async destroy(): Promise<void> {
-        if (this.#websocket == null) { return; }
-        this.#websocket.close();
-        this.#websocket = null;
+        if (this.#websocket != null) {
+            this.#websocket.close();
+            this.#websocket = null;
+        }
+        super.destroy();
     }
 }

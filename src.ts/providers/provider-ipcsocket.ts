@@ -56,9 +56,11 @@ export class IpcSocketProvider extends SocketProvider {
         });
     }
 
-    stop(): void {
+    destroy(): void {
         this.socket.destroy();
         this.socket.end();
+
+        super.destroy();
     }
 
     async _write(message: string): Promise<void> {

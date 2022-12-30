@@ -665,4 +665,11 @@ export class FallbackProvider extends AbstractProvider {
 
         return result;
     }
+
+    async destroy(): Promise<void> {
+        for (const { provider } of this.#configs) {
+            provider.destroy();
+        }
+        super.destroy();
+    }
 }
