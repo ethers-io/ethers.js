@@ -558,7 +558,7 @@ export class FallbackProvider extends AbstractProvider {
                 return checkQuorum(this.quorum, results);
 
             case "broadcastTransaction":
-                throw new Error("TODO");
+                return getAnyResult(this.quorum, results);
         }
 
         assert(false, "unsupported method", "UNSUPPORTED_OPERATION", {
@@ -642,6 +642,7 @@ export class FallbackProvider extends AbstractProvider {
                 request: "%sub-requests",
                 info: { request: req, results: results.map(stringify) }
             })
+            if (result instanceof Error) { throw result; }
             return result;
         }
 
