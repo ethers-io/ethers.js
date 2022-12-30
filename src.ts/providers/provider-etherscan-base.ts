@@ -1,10 +1,10 @@
 import { AbiCoder } from "../abi/index.js";
-import { accessListify } from "../transaction/index.js";
+import { accessListify, Transaction } from "../transaction/index.js";
 import {
     defineProperties,
     hexlify, toQuantity,
     FetchRequest,
-    assert, assertArgument,
+    assert, assertArgument, isError,
     toUtf8String
  } from "../utils/index.js";
 
@@ -191,30 +191,24 @@ export class BaseEtherscanProvider extends AbstractProvider {
             response.assertOk();
         } catch (error) {
             this.emit("debug", { action: "receiveError", id, error, reason: "assertOk" });
+            assert(false, "response error", "SERVER_ERROR", { request, response });
         }
 
         if (!response.hasBody()) {
             this.emit("debug", { action: "receiveError", id, error: "missing body", reason: "null body" });
-            throw new Error();
+            assert(false, "missing response", "SERVER_ERROR", { request, response });
         }
 
         const result = JSON.parse(toUtf8String(response.body));
         if (module === "proxy") {
             if (result.jsonrpc != "2.0") {
                 this.emit("debug", { action: "receiveError", id, result, reason: "invalid JSON-RPC" });
-
-                const error: any = new Error("invalid response");
-                error.result = JSON.stringify(result);
-                throw error;
+                assert(false, "invalid JSON-RPC response (missing jsonrpc='2.0')", "SERVER_ERROR", { request, response, info: { result } });
             }
 
             if (result.error) {
                 this.emit("debug", { action: "receiveError", id, result, reason: "JSON-RPC error" });
-
-                const error: any = new Error(result.error.message || "unknown error");
-                if (result.error.code) { error.code = result.error.code; }
-                if (result.error.data) { error.data = result.error.data; }
-                throw error;
+                assert(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
             }
 
             this.emit("debug", { action: "receiveRequest", id, result });
@@ -230,13 +224,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
 
             if (result.status != 1 || (typeof(result.message) === "string" && !result.message.match(/^OK/))) {
                 this.emit("debug", { action: "receiveError", id, result });
-
-                const error: any = new Error("invalid response");
-                error.result = JSON.stringify(result);
-        //        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
-        //            error.throttleRetry = true;
-        //        }
-                throw error;
+                assert(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
             }
 
             this.emit("debug", { action: "receiveRequest", id, result });
@@ -270,80 +258,60 @@ export class BaseEtherscanProvider extends AbstractProvider {
 
 
     _checkError(req: PerformActionRequest, error: Error, transaction: any): never {
+
+        // Pull any message out if, possible
+        let message = "";
+        if (isError(error, "SERVER_ERROR")) {
+            // Check for an error emitted by a proxy call
+            try {
+                message = (<any>error).info.result.error.message;
+            } catch (e) { }
+
+            if (!message) {
+                try {
+                    message = (<any>error).info.message;
+                } catch (e) { }
+            }
+        }
+
         if (req.method === "call" || req.method === "estimateGas") {
-            if (error.message.match(/execution reverted/i)) {
-                const e = AbiCoder.getBuiltinCallException(req.method, <any>req.transaction, (<any>error).data);
+            if (message.match(/execution reverted/i)) {
+                let data = "";
+                try {
+                    data = (<any>error).info.result.error.data;
+                } catch (error) { }
+
+                const e = AbiCoder.getBuiltinCallException(req.method, <any>req.transaction, data);
                 e.info = { request: req, error }
                 throw e;
             }
         }
-    /*
-        let body = "";
-        if (isError(error, Logger.Errors.SERVER_ERROR) && error.response && error.response.hasBody()) {
-            body = toUtf8String(error.response.body);
-        }
-        console.log(body);
 
-        // Undo the "convenience" some nodes are attempting to prevent backwards
-        // incompatibility; maybe for v6 consider forwarding reverts as errors
-        if (method === "call" && body) {
 
-            // Etherscan keeps changing their string
-            if (body.match(/reverted/i) || body.match(/VM execution error/i)) {
+        if (message) {
+            if (req.method === "broadcastTransaction") {
+                const transaction = Transaction.from(req.signedTransaction);
+                if (message.match(/replacement/i) && message.match(/underpriced/i)) {
+                    assert(false, "replacement fee too low", "REPLACEMENT_UNDERPRICED", {
+                        transaction
+                    });
+                }
 
-                // Etherscan prefixes the data like "Reverted 0x1234"
-                let data = e.data;
-                if (data) { data = "0x" + data.replace(/^.*0x/i, ""); }
-                if (!isHexString(data)) { data = "0x"; }
+                if (message.match(/insufficient funds/)) {
+                    assert(false, "insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
+                       transaction
+                    });
+                }
 
-                logger.throwError("call exception", Logger.Errors.CALL_EXCEPTION, {
-                    error, data
-                });
+                if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
+                    assert(false, "nonce has already been used", "NONCE_EXPIRED", {
+                       transaction
+                    });
+                }
             }
         }
 
-        // Get the message from any nested error structure
-        let message = error.message;
-        if (isError(error, Logger.Errors.SERVER_ERROR)) {
-            if (error.error && typeof(error.error.message) === "string") {
-                message = error.error.message;
-            } else if (typeof(error.body) === "string") {
-                message = error.body;
-            } else if (typeof(error.responseText) === "string") {
-                message = error.responseText;
-            }
-        }
-        message = (message || "").toLowerCase();
-
-        // "Insufficient funds. The account you tried to send transaction from
-        // does not have enough funds. Required 21464000000000 and got: 0"
-        if (message.match(/insufficient funds/)) {
-            logger.throwError("insufficient funds for intrinsic transaction cost", Logger.Errors.INSUFFICIENT_FUNDS, {
-               error, transaction, info: { method }
-            });
-        }
-
-        // "Transaction with the same hash was already imported."
-        if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
-            logger.throwError("nonce has already been used", Logger.Errors.NONCE_EXPIRED, {
-               error, transaction, info: { method }
-            });
-        }
-
-        // "Transaction gas price is too low. There is another transaction with
-        // same nonce in the queue. Try increasing the gas price or incrementing the nonce."
-        if (message.match(/another transaction with same nonce/)) {
-             logger.throwError("replacement fee too low", Logger.Errors.REPLACEMENT_UNDERPRICED, {
-                error, transaction, info: { method }
-             });
-        }
-
-        if (message.match(/execution failed due to an exception|execution reverted/)) {
-            logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.Errors.UNPREDICTABLE_GAS_LIMIT, {
-                error, transaction, info: { method }
-            });
-        }
-*/
+        // Something we could not process
         throw error;
     }
 
