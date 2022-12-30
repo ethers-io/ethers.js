@@ -56,11 +56,11 @@ export class WebSocketProvider extends SocketProvider {
         this.websocket.send(message);
     }
     async destroy() {
-        if (this.#websocket == null) {
-            return;
+        if (this.#websocket != null) {
+            this.#websocket.close();
+            this.#websocket = null;
         }
-        this.#websocket.close();
-        this.#websocket = null;
+        super.destroy();
     }
 }
 //# sourceMappingURL=provider-websocket.js.map

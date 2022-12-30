@@ -643,8 +643,8 @@ class TransactionResponse {
                 blockNumber: this.provider.getBlockNumber(),
                 nonce: this.provider.getTransactionCount(this.from)
             });
-            // No transaction for our nonce has been mined yet; but we can start
-            // scanning later when we do start
+            // No transaction or our nonce has not been mined yet; but we
+            // can start scanning later when we do start
             if (nonce < this.nonce) {
                 startBlock = blockNumber;
                 return;
@@ -772,7 +772,9 @@ class TransactionResponse {
                         }
                     }
                     // Rescheudle a check on the next block
-                    this.provider.once("block", replaceListener);
+                    if (!stopScanning) {
+                        this.provider.once("block", replaceListener);
+                    }
                 };
                 cancellers.push(() => { this.provider.off("block", replaceListener); });
                 this.provider.once("block", replaceListener);

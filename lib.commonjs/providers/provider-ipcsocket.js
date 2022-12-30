@@ -48,9 +48,10 @@ class IpcSocketProvider extends provider_socket_js_1.SocketProvider {
             this.socket.end();
         });
     }
-    stop() {
+    destroy() {
         this.socket.destroy();
         this.socket.end();
+        super.destroy();
     }
     async _write(message) {
         console.log(">>>", message);

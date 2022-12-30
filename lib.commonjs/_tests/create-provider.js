@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connect = exports.checkProvider = exports.getProvider = exports.getProviderNetworks = exports.providerNames = void 0;
+exports.connect = exports.checkProvider = exports.getProvider = exports.getProviderNetworks = exports.providerNames = exports.setupProviders = void 0;
 const index_js_1 = require("../index.js");
 ;
 const ethNetworks = ["default", "mainnet", "goerli"];
@@ -90,6 +90,17 @@ const ProviderCreators = [
         }
     },
 ];
+let setup = false;
+const cleanup = [];
+function setupProviders() {
+    after(function () {
+        for (const func of cleanup) {
+            func();
+        }
+    });
+    setup = true;
+}
+exports.setupProviders = setupProviders;
 exports.providerNames = Object.freeze(ProviderCreators.map((c) => (c.name)));
 function getCreator(provider) {
     const creators = ProviderCreators.filter((c) => (c.name === provider));
@@ -107,10 +118,17 @@ function getProviderNetworks(provider) {
 }
 exports.getProviderNetworks = getProviderNetworks;
 function getProvider(provider, network) {
+    if (setup == false) {
+        throw new Error("MUST CALL setupProviders in root context");
+    }
     const creator = getCreator(provider);
     try {
         if (creator) {
-            return creator.create(network);
+            const provider = creator.create(network);
+            if (provider) {
+                cleanup.push(() => { provider.destroy(); });
+            }
+            return provider;
         }
     }
     catch (error) {

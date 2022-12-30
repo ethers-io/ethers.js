@@ -988,7 +988,7 @@ class AbstractProvider {
     }
     // Sub-classes should override this to shutdown any sockets, etc.
     // but MUST call this super.shutdown.
-    async shutdown() {
+    destroy() {
         // Stop all listeners
         this.removeAllListeners();
         // Shut down all tiemrs

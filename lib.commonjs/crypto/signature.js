@@ -11,6 +11,9 @@ const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
 const BN_35 = BigInt(35);
 const _guard = {};
+function toUint256(value) {
+    return (0, index_js_2.zeroPadValue)((0, index_js_2.toBeArray)(value), 32);
+}
 /**
  *  A Signature  @TODO
  */
@@ -246,14 +249,13 @@ class Signature {
             return sig.clone();
         }
         // Get r
-        const r = sig.r;
-        assertError(r != null, "missing r");
-        assertError((0, index_js_2.isHexString)(r, 32), "invalid r");
+        const _r = sig.r;
+        assertError(_r != null, "missing r");
+        const r = toUint256(_r);
         // Get s; by any means necessary (we check consistency below)
         const s = (function (s, yParityAndS) {
             if (s != null) {
-                assertError((0, index_js_2.isHexString)(s, 32), "invalid s");
-                return s;
+                return toUint256(s);
             }
             if (yParityAndS != null) {
                 assertError((0, index_js_2.isHexString)(yParityAndS, 32), "invalid yParityAndS");

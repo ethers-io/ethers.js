@@ -9,24 +9,14 @@ const create_provider_js_1 = require("./create-provider.js");
 function stall(duration) {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
+(0, create_provider_js_1.setupProviders)();
 describe("Sends Transactions", function () {
-    const cleanup = [];
-    after(function () {
-        for (const func of cleanup) {
-            func();
-        }
-    });
     const wallet = new index_js_1.Wallet((process.env.FAUCET_PRIVATEKEY));
     const networkName = "goerli";
     for (const providerName of create_provider_js_1.providerNames) {
         const provider = (0, create_provider_js_1.getProvider)(providerName, networkName);
         if (provider == null) {
             continue;
-        }
-        // Shutdown socket-based provider, otherwise its socket will prevent
-        // this process from exiting
-        if (provider.destroy) {
-            cleanup.push(() => { provider.destroy(); });
         }
         it(`tests sending: ${providerName}`, async function () {
             this.timeout(180000);

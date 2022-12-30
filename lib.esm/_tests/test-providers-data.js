@@ -1,7 +1,8 @@
 import assert from "assert";
-import { checkProvider, getProvider, providerNames } from "./create-provider.js";
+import { checkProvider, getProvider, setupProviders, providerNames } from "./create-provider.js";
 import { retryIt } from "./utils.js";
 import { networkFeatureAtBlock, networkNames, testAddress, testBlock, testReceipt, testTransaction } from "./blockchain-data.js";
+setupProviders();
 function forEach(prefix, tests, func) {
     for (const networkName of networkNames) {
         const networkTests = tests[networkName];

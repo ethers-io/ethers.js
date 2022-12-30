@@ -415,7 +415,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
             case "getLogs":
                 return checkQuorum(this.quorum, results);
             case "broadcastTransaction":
-                throw new Error("TODO");
+                return getAnyResult(this.quorum, results);
         }
         (0, index_js_1.assert)(false, "unsupported method", "UNSUPPORTED_OPERATION", {
             operation: `_perform(${stringify(req.method)})`
@@ -490,6 +490,9 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
                 request: "%sub-requests",
                 info: { request: req, results: results.map(stringify) }
             });
+            if (result instanceof Error) {
+                throw result;
+            }
             return result;
         }
         await this.#initialSync();
@@ -507,6 +510,12 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
             }
         }
         return result;
+    }
+    async destroy() {
+        for (const { provider } of this.#configs) {
+            provider.destroy();
+        }
+        super.destroy();
     }
 }
 exports.FallbackProvider = FallbackProvider;

@@ -6,50 +6,48 @@ exports.WrappedSigner = exports.VoidSigner = exports.AbstractSigner = void 0;
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
  */
-const index_js_1 = require("../transaction/index.js");
-const index_js_2 = require("../utils/index.js");
+const index_js_1 = require("../address/index.js");
+const index_js_2 = require("../transaction/index.js");
+const index_js_3 = require("../utils/index.js");
+const provider_js_1 = require("./provider.js");
 class AbstractSigner {
     provider;
     constructor(provider) {
-        (0, index_js_2.defineProperties)(this, { provider: (provider || null) });
+        (0, index_js_3.defineProperties)(this, { provider: (provider || null) });
     }
     #checkProvider(operation) {
         if (this.provider) {
             return this.provider;
         }
-        (0, index_js_2.assert)(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
+        (0, index_js_3.assert)(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
     }
     async getNonce(blockTag) {
         return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
-    async #populate(op, tx) {
-        const provider = this.#checkProvider(op);
-        //let pop: Deferrable<TransactionRequest> = Object.assign({ }, tx);
-        let pop = Object.assign({}, tx);
+    async #populate(tx) {
+        let pop = (0, provider_js_1.copyRequest)(tx);
         if (pop.to != null) {
-            pop.to = provider.resolveName(pop.to).then((to) => {
-                (0, index_js_2.assertArgument)(to != null, "transaction to ENS name not configured", "tx.to", pop.to);
-                return to;
-            });
+            pop.to = (0, index_js_1.resolveAddress)(pop.to, this);
         }
         if (pop.from != null) {
             const from = pop.from;
             pop.from = Promise.all([
                 this.getAddress(),
-                this.resolveName(from)
+                (0, index_js_1.resolveAddress)(from, this)
             ]).then(([address, from]) => {
-                (0, index_js_2.assertArgument)(from && address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
+                (0, index_js_3.assertArgument)(address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
                 return address;
             });
         }
-        return { pop: await (0, index_js_2.resolveProperties)(pop), provider };
+        return await (0, index_js_3.resolveProperties)(pop);
     }
     async populateCall(tx) {
-        const { pop } = await this.#populate("populateCall", tx);
+        const pop = await this.#populate(tx);
         return pop;
     }
     async populateTransaction(tx) {
-        const { pop, provider } = await this.#populate("populateTransaction", tx);
+        const provider = this.#checkProvider("populateTransaction");
+        const pop = await this.#populate(tx);
         if (pop.nonce == null) {
             pop.nonce = await this.getNonce("pending");
         }
@@ -59,8 +57,8 @@ class AbstractSigner {
         // Populate the chain ID
         const network = await (this.provider).getNetwork();
         if (pop.chainId != null) {
-            const chainId = (0, index_js_2.getBigInt)(pop.chainId);
-            (0, index_js_2.assertArgument)(chainId === network.chainId, "transaction chainId mismatch", "tx.chainId", tx.chainId);
+            const chainId = (0, index_js_3.getBigInt)(pop.chainId);
+            (0, index_js_3.assertArgument)(chainId === network.chainId, "transaction chainId mismatch", "tx.chainId", tx.chainId);
         }
         else {
             pop.chainId = network.chainId;
@@ -68,10 +66,10 @@ class AbstractSigner {
         // Do not allow mixing pre-eip-1559 and eip-1559 properties
         const hasEip1559 = (pop.maxFeePerGas != null || pop.maxPriorityFeePerGas != null);
         if (pop.gasPrice != null && (pop.type === 2 || hasEip1559)) {
-            (0, index_js_2.assertArgument)(false, "eip-1559 transaction do not support gasPrice", "tx", tx);
+            (0, index_js_3.assertArgument)(false, "eip-1559 transaction do not support gasPrice", "tx", tx);
         }
         else if ((pop.type === 0 || pop.type === 1) && hasEip1559) {
-            (0, index_js_2.assertArgument)(false, "pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "tx", tx);
+            (0, index_js_3.assertArgument)(false, "pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "tx", tx);
         }
         if ((pop.type === 2 || pop.type == null) && (pop.maxFeePerGas != null && pop.maxPriorityFeePerGas != null)) {
             // Fully-formed EIP-1559 transaction (skip getFeeData)
@@ -81,7 +79,7 @@ class AbstractSigner {
             // Explicit Legacy or EIP-2930 transaction
             // We need to get fee data to determine things
             const feeData = await provider.getFeeData();
-            (0, index_js_2.assert)(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
+            (0, index_js_3.assert)(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
                 operation: "getGasPrice"
             });
             // Populate missing gasPrice
@@ -119,7 +117,7 @@ class AbstractSigner {
                 else if (feeData.gasPrice != null) {
                     // Network doesn't support EIP-1559...
                     // ...but they are trying to use EIP-1559 properties
-                    (0, index_js_2.assert)(hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
+                    (0, index_js_3.assert)(hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
                         operation: "populateTransaction"
                     });
                     // Populate missing fee data
@@ -132,7 +130,7 @@ class AbstractSigner {
                 }
                 else {
                     // getFeeData has failed us.
-                    (0, index_js_2.assert)(false, "failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
+                    (0, index_js_3.assert)(false, "failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
                         operation: "signer.getFeeData"
                     });
                 }
@@ -150,7 +148,7 @@ class AbstractSigner {
         }
         //@TOOD: Don't await all over the place; save them up for
         // the end for better batching
-        return await (0, index_js_2.resolveProperties)(pop);
+        return await (0, index_js_3.resolveProperties)(pop);
     }
     async estimateGas(tx) {
         return this.#checkProvider("estimateGas").estimateGas(await this.populateCall(tx));
@@ -165,7 +163,7 @@ class AbstractSigner {
     async sendTransaction(tx) {
         const provider = this.#checkProvider("sendTransaction");
         const pop = await this.populateTransaction(tx);
-        const txObj = index_js_1.Transaction.from(pop);
+        const txObj = index_js_2.Transaction.from(pop);
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
     }
 }
@@ -174,14 +172,14 @@ class VoidSigner extends AbstractSigner {
     address;
     constructor(address, provider) {
         super(provider);
-        (0, index_js_2.defineProperties)(this, { address });
+        (0, index_js_3.defineProperties)(this, { address });
     }
     async getAddress() { return this.address; }
     connect(provider) {
         return new VoidSigner(this.address, provider);
     }
     #throwUnsupported(suffix, operation) {
-        (0, index_js_2.assert)(false, `VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", { operation });
+        (0, index_js_3.assert)(false, `VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", { operation });
     }
     async signTransaction(tx) {
         this.#throwUnsupported("transactions", "signTransaction");

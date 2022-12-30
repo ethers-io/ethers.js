@@ -206,7 +206,7 @@ export declare class AbstractProvider implements Provider {
     removeAllListeners(event?: ProviderEvent): Promise<this>;
     addListener(event: ProviderEvent, listener: Listener): Promise<this>;
     removeListener(event: ProviderEvent, listener: Listener): Promise<this>;
-    shutdown(): Promise<void>;
+    destroy(): void;
     get paused(): boolean;
     set paused(pause: boolean);
     pause(dropWhilePaused?: boolean): void;

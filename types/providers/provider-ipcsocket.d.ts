@@ -6,7 +6,7 @@ export declare class IpcSocketProvider extends SocketProvider {
     #private;
     get socket(): Socket;
     constructor(path: string, network?: Networkish);
-    stop(): void;
+    destroy(): void;
     _write(message: string): Promise<void>;
 }
 //# sourceMappingURL=provider-ipcsocket.d.ts.map

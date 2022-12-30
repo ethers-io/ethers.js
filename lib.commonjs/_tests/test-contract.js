@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert_1 = __importDefault(require("assert"));
 const create_provider_js_1 = require("./create-provider.js");
 const index_js_1 = require("../index.js");
+(0, create_provider_js_1.setupProviders)();
 describe("Test Contract", function () {
     const addr = "0x99417252Aad7B065940eBdF50d665Fb8879c5958";
     const abi = [

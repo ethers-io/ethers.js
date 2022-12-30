@@ -46,5 +46,6 @@ export declare class FallbackProvider extends AbstractProvider {
     _detectNetwork(): Promise<Network>;
     _translatePerform(provider: AbstractProvider, req: PerformActionRequest): Promise<any>;
     _perform<T = any>(req: PerformActionRequest): Promise<T>;
+    destroy(): Promise<void>;
 }
 //# sourceMappingURL=provider-fallback.d.ts.map

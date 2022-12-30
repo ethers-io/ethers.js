@@ -5792,6 +5792,9 @@ const BN_27$1 = BigInt(27);
 const BN_28$1 = BigInt(28);
 const BN_35$1 = BigInt(35);
 const _guard$3 = {};
+function toUint256(value) {
+    return zeroPadValue(toBeArray(value), 32);
+}
 /**
  *  A Signature  @TODO
  */
@@ -6027,14 +6030,13 @@ class Signature {
             return sig.clone();
         }
         // Get r
-        const r = sig.r;
-        assertError(r != null, "missing r");
-        assertError(isHexString(r, 32), "invalid r");
+        const _r = sig.r;
+        assertError(_r != null, "missing r");
+        const r = toUint256(_r);
         // Get s; by any means necessary (we check consistency below)
         const s = (function (s, yParityAndS) {
             if (s != null) {
-                assertError(isHexString(s, 32), "invalid s");
-                return s;
+                return toUint256(s);
             }
             if (yParityAndS != null) {
                 assertError(isHexString(yParityAndS, 32), "invalid yParityAndS");
@@ -11463,8 +11465,8 @@ class TransactionResponse {
                 blockNumber: this.provider.getBlockNumber(),
                 nonce: this.provider.getTransactionCount(this.from)
             });
-            // No transaction for our nonce has been mined yet; but we can start
-            // scanning later when we do start
+            // No transaction or our nonce has not been mined yet; but we
+            // can start scanning later when we do start
             if (nonce < this.nonce) {
                 startBlock = blockNumber;
                 return;
@@ -11592,7 +11594,9 @@ class TransactionResponse {
                         }
                     }
                     // Rescheudle a check on the next block
-                    this.provider.once("block", replaceListener);
+                    if (!stopScanning) {
+                        this.provider.once("block", replaceListener);
+                    }
                 };
                 cancellers.push(() => { this.provider.off("block", replaceListener); });
                 this.provider.once("block", replaceListener);
@@ -14817,7 +14821,7 @@ class AbstractProvider {
     }
     // Sub-classes should override this to shutdown any sockets, etc.
     // but MUST call this super.shutdown.
-    async shutdown() {
+    destroy() {
         // Stop all listeners
         this.removeAllListeners();
         // Shut down all tiemrs
@@ -15018,34 +15022,30 @@ class AbstractSigner {
     async getNonce(blockTag) {
         return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
-    async #populate(op, tx) {
-        const provider = this.#checkProvider(op);
-        //let pop: Deferrable<TransactionRequest> = Object.assign({ }, tx);
-        let pop = Object.assign({}, tx);
+    async #populate(tx) {
+        let pop = copyRequest(tx);
         if (pop.to != null) {
-            pop.to = provider.resolveName(pop.to).then((to) => {
-                assertArgument(to != null, "transaction to ENS name not configured", "tx.to", pop.to);
-                return to;
-            });
+            pop.to = resolveAddress(pop.to, this);
         }
         if (pop.from != null) {
             const from = pop.from;
             pop.from = Promise.all([
                 this.getAddress(),
-                this.resolveName(from)
+                resolveAddress(from, this)
             ]).then(([address, from]) => {
-                assertArgument(from && address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
+                assertArgument(address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
                 return address;
             });
         }
-        return { pop: await resolveProperties(pop), provider };
+        return await resolveProperties(pop);
     }
     async populateCall(tx) {
-        const { pop } = await this.#populate("populateCall", tx);
+        const pop = await this.#populate(tx);
         return pop;
     }
     async populateTransaction(tx) {
-        const { pop, provider } = await this.#populate("populateTransaction", tx);
+        const provider = this.#checkProvider("populateTransaction");
+        const pop = await this.#populate(tx);
         if (pop.nonce == null) {
             pop.nonce = await this.getNonce("pending");
         }
@@ -16034,19 +16034,19 @@ class JsonRpcApiProvider extends AbstractProvider {
         }
         if (method === "eth_sendRawTransaction" || method === "eth_sendTransaction") {
             const transaction = (payload.params[0]);
-            if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
+            if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
                 return makeError("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
                     transaction
                 });
             }
-            if (message.match(/nonce/) && message.match(/too low/)) {
+            if (message.match(/nonce/i) && message.match(/too low/i)) {
                 return makeError("nonce has already been used", "NONCE_EXPIRED", { transaction });
             }
             // "replacement transaction underpriced"
-            if (message.match(/replacement transaction/) && message.match(/underpriced/)) {
+            if (message.match(/replacement transaction/i) && message.match(/underpriced/i)) {
                 return makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", { transaction });
             }
-            if (message.match(/only replay-protected/)) {
+            if (message.match(/only replay-protected/i)) {
                 return makeError("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
                     operation: method, info: { transaction }
                 });
@@ -16309,6 +16309,14 @@ class AnkrProvider extends JsonRpcProvider {
         }
         return request;
     }
+    getRpcError(payload, error) {
+        if (payload.method === "eth_sendRawTransaction") {
+            if (error && error.error && error.error.message === "INTERNAL_ERROR: could not replace existing tx") {
+                error.error.message = "replacement transaction underpriced";
+            }
+        }
+        return super.getRpcError(payload, error);
+    }
     isCommunityResource() {
         return (this.apiKey === defaultApiKey$1);
     }
@@ -16559,29 +16567,21 @@ class BaseEtherscanProvider extends AbstractProvider {
         }
         catch (error) {
             this.emit("debug", { action: "receiveError", id, error, reason: "assertOk" });
+            assert$1(false, "response error", "SERVER_ERROR", { request, response });
         }
         if (!response.hasBody()) {
             this.emit("debug", { action: "receiveError", id, error: "missing body", reason: "null body" });
-            throw new Error();
+            assert$1(false, "missing response", "SERVER_ERROR", { request, response });
         }
         const result = JSON.parse(toUtf8String(response.body));
         if (module === "proxy") {
             if (result.jsonrpc != "2.0") {
                 this.emit("debug", { action: "receiveError", id, result, reason: "invalid JSON-RPC" });
-                const error = new Error("invalid response");
-                error.result = JSON.stringify(result);
-                throw error;
+                assert$1(false, "invalid JSON-RPC response (missing jsonrpc='2.0')", "SERVER_ERROR", { request, response, info: { result } });
             }
             if (result.error) {
                 this.emit("debug", { action: "receiveError", id, result, reason: "JSON-RPC error" });
-                const error = new Error(result.error.message || "unknown error");
-                if (result.error.code) {
-                    error.code = result.error.code;
-                }
-                if (result.error.data) {
-                    error.data = result.error.data;
-                }
-                throw error;
+                assert$1(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
             }
             this.emit("debug", { action: "receiveRequest", id, result });
             return result.result;
@@ -16594,12 +16594,7 @@ class BaseEtherscanProvider extends AbstractProvider {
             }
             if (result.status != 1 || (typeof (result.message) === "string" && !result.message.match(/^OK/))) {
                 this.emit("debug", { action: "receiveError", id, result });
-                const error = new Error("invalid response");
-                error.result = JSON.stringify(result);
-                //        if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) {
-                //            error.throttleRetry = true;
-                //        }
-                throw error;
+                assert$1(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
             }
             this.emit("debug", { action: "receiveRequest", id, result });
             return result.result;
@@ -16633,80 +16628,54 @@ class BaseEtherscanProvider extends AbstractProvider {
         return result;
     }
     _checkError(req, error, transaction) {
+        // Pull any message out if, possible
+        let message = "";
+        if (isError(error, "SERVER_ERROR")) {
+            // Check for an error emitted by a proxy call
+            try {
+                message = error.info.result.error.message;
+            }
+            catch (e) { }
+            if (!message) {
+                try {
+                    message = error.info.message;
+                }
+                catch (e) { }
+            }
+        }
         if (req.method === "call" || req.method === "estimateGas") {
-            if (error.message.match(/execution reverted/i)) {
-                const e = AbiCoder.getBuiltinCallException(req.method, req.transaction, error.data);
+            if (message.match(/execution reverted/i)) {
+                let data = "";
+                try {
+                    data = error.info.result.error.data;
+                }
+                catch (error) { }
+                const e = AbiCoder.getBuiltinCallException(req.method, req.transaction, data);
                 e.info = { request: req, error };
                 throw e;
             }
         }
-        /*
-            let body = "";
-            if (isError(error, Logger.Errors.SERVER_ERROR) && error.response && error.response.hasBody()) {
-                body = toUtf8String(error.response.body);
-            }
-            console.log(body);
-    
-            // Undo the "convenience" some nodes are attempting to prevent backwards
-            // incompatibility; maybe for v6 consider forwarding reverts as errors
-            if (method === "call" && body) {
-    
-                // Etherscan keeps changing their string
-                if (body.match(/reverted/i) || body.match(/VM execution error/i)) {
-    
-                    // Etherscan prefixes the data like "Reverted 0x1234"
-                    let data = e.data;
-                    if (data) { data = "0x" + data.replace(/^.*0x/i, ""); }
-                    if (!isHexString(data)) { data = "0x"; }
-    
-                    logger.throwError("call exception", Logger.Errors.CALL_EXCEPTION, {
-                        error, data
+        if (message) {
+            if (req.method === "broadcastTransaction") {
+                const transaction = Transaction.from(req.signedTransaction);
+                if (message.match(/replacement/i) && message.match(/underpriced/i)) {
+                    assert$1(false, "replacement fee too low", "REPLACEMENT_UNDERPRICED", {
+                        transaction
+                    });
+                }
+                if (message.match(/insufficient funds/)) {
+                    assert$1(false, "insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
+                        transaction
+                    });
+                }
+                if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
+                    assert$1(false, "nonce has already been used", "NONCE_EXPIRED", {
+                        transaction
                     });
                 }
             }
-    
-            // Get the message from any nested error structure
-            let message = error.message;
-            if (isError(error, Logger.Errors.SERVER_ERROR)) {
-                if (error.error && typeof(error.error.message) === "string") {
-                    message = error.error.message;
-                } else if (typeof(error.body) === "string") {
-                    message = error.body;
-                } else if (typeof(error.responseText) === "string") {
-                    message = error.responseText;
-                }
-            }
-            message = (message || "").toLowerCase();
-    
-            // "Insufficient funds. The account you tried to send transaction from
-            // does not have enough funds. Required 21464000000000 and got: 0"
-            if (message.match(/insufficient funds/)) {
-                logger.throwError("insufficient funds for intrinsic transaction cost", Logger.Errors.INSUFFICIENT_FUNDS, {
-                   error, transaction, info: { method }
-                });
-            }
-    
-            // "Transaction with the same hash was already imported."
-            if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
-                logger.throwError("nonce has already been used", Logger.Errors.NONCE_EXPIRED, {
-                   error, transaction, info: { method }
-                });
-            }
-    
-            // "Transaction gas price is too low. There is another transaction with
-            // same nonce in the queue. Try increasing the gas price or incrementing the nonce."
-            if (message.match(/another transaction with same nonce/)) {
-                 logger.throwError("replacement fee too low", Logger.Errors.REPLACEMENT_UNDERPRICED, {
-                    error, transaction, info: { method }
-                 });
-            }
-    
-            if (message.match(/execution failed due to an exception|execution reverted/)) {
-                logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.Errors.UNPREDICTABLE_GAS_LIMIT, {
-                    error, transaction, info: { method }
-                });
-            }
-    */
+        }
+        // Something we could not process
         throw error;
     }
     async _detectNetwork() {
@@ -17200,11 +17169,11 @@ class WebSocketProvider extends SocketProvider {
         this.websocket.send(message);
     }
     async destroy() {
-        if (this.#websocket == null) {
-            return;
+        if (this.#websocket != null) {
+            this.#websocket.close();
+            this.#websocket = null;
         }
-        this.#websocket.close();
-        this.#websocket = null;
+        super.destroy();
     }
 }
 
@@ -17798,7 +17767,7 @@ class FallbackProvider extends AbstractProvider {
             case "getLogs":
                 return checkQuorum(this.quorum, results);
             case "broadcastTransaction":
-                throw new Error("TODO");
+                return getAnyResult(this.quorum, results);
         }
         assert$1(false, "unsupported method", "UNSUPPORTED_OPERATION", {
             operation: `_perform(${stringify(req.method)})`
@@ -17873,6 +17842,9 @@ class FallbackProvider extends AbstractProvider {
                 request: "%sub-requests",
                 info: { request: req, results: results.map(stringify) }
             });
+            if (result instanceof Error) {
+                throw result;
+            }
             return result;
         }
         await this.#initialSync();
@@ -17890,6 +17862,12 @@ class FallbackProvider extends AbstractProvider {
             }
         }
         return result;
+    }
+    async destroy() {
+        for (const { provider } of this.#configs) {
+            provider.destroy();
+        }
+        super.destroy();
     }
 }
 

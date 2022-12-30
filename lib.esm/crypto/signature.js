@@ -1,5 +1,5 @@
 import { ZeroHash } from "../constants/index.js";
-import { concat, dataLength, getBigInt, getBytes, getNumber, hexlify, isHexString, assertArgument, assertPrivate } from "../utils/index.js";
+import { concat, dataLength, getBigInt, getBytes, getNumber, hexlify, toBeArray, isHexString, zeroPadValue, assertArgument, assertPrivate } from "../utils/index.js";
 // Constants
 const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);
@@ -8,6 +8,9 @@ const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
 const BN_35 = BigInt(35);
 const _guard = {};
+function toUint256(value) {
+    return zeroPadValue(toBeArray(value), 32);
+}
 /**
  *  A Signature  @TODO
  */
@@ -243,14 +246,13 @@ export class Signature {
             return sig.clone();
         }
         // Get r
-        const r = sig.r;
-        assertError(r != null, "missing r");
-        assertError(isHexString(r, 32), "invalid r");
+        const _r = sig.r;
+        assertError(_r != null, "missing r");
+        const r = toUint256(_r);
         // Get s; by any means necessary (we check consistency below)
         const s = (function (s, yParityAndS) {
             if (s != null) {
-                assertError(isHexString(s, 32), "invalid s");
-                return s;
+                return toUint256(s);
             }
             if (yParityAndS != null) {
                 assertError(isHexString(yParityAndS, 32), "invalid yParityAndS");

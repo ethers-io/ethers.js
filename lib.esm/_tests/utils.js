@@ -29,7 +29,7 @@ export function log(context, text) {
         console.log(text);
     }
 }
-async function stall(duration) {
+export async function stall(duration) {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
 const ATTEMPTS = 5;

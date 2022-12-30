@@ -91,6 +91,16 @@ const ProviderCreators = [
         }
     },
 ];
+let setup = false;
+const cleanup = [];
+export function setupProviders() {
+    after(function () {
+        for (const func of cleanup) {
+            func();
+        }
+    });
+    setup = true;
+}
 export const providerNames = Object.freeze(ProviderCreators.map((c) => (c.name)));
 function getCreator(provider) {
     const creators = ProviderCreators.filter((c) => (c.name === provider));
@@ -107,10 +117,17 @@ export function getProviderNetworks(provider) {
     return [];
 }
 export function getProvider(provider, network) {
+    if (setup == false) {
+        throw new Error("MUST CALL setupProviders in root context");
+    }
     const creator = getCreator(provider);
     try {
         if (creator) {
-            return creator.create(network);
+            const provider = creator.create(network);
+            if (provider) {
+                cleanup.push(() => { provider.destroy(); });
+            }
+            return provider;
         }
     }
     catch (error) {

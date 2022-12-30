@@ -1,27 +1,17 @@
 import assert from "assert";
 import { isError, Wallet } from "../index.js";
-import { getProvider, providerNames } from "./create-provider.js";
+import { getProvider, providerNames, setupProviders } from "./create-provider.js";
 function stall(duration) {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
+setupProviders();
 describe("Sends Transactions", function () {
-    const cleanup = [];
-    after(function () {
-        for (const func of cleanup) {
-            func();
-        }
-    });
     const wallet = new Wallet((process.env.FAUCET_PRIVATEKEY));
     const networkName = "goerli";
     for (const providerName of providerNames) {
         const provider = getProvider(providerName, networkName);
         if (provider == null) {
             continue;
-        }
-        // Shutdown socket-based provider, otherwise its socket will prevent
-        // this process from exiting
-        if (provider.destroy) {
-            cleanup.push(() => { provider.destroy(); });
         }
         it(`tests sending: ${providerName}`, async function () {
             this.timeout(180000);

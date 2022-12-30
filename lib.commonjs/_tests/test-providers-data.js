@@ -7,6 +7,7 @@ const assert_1 = __importDefault(require("assert"));
 const create_provider_js_1 = require("./create-provider.js");
 const utils_js_1 = require("./utils.js");
 const blockchain_data_js_1 = require("./blockchain-data.js");
+(0, create_provider_js_1.setupProviders)();
 function forEach(prefix, tests, func) {
     for (const networkName of blockchain_data_js_1.networkNames) {
         const networkTests = tests[networkName];

@@ -412,7 +412,7 @@ export class FallbackProvider extends AbstractProvider {
             case "getLogs":
                 return checkQuorum(this.quorum, results);
             case "broadcastTransaction":
-                throw new Error("TODO");
+                return getAnyResult(this.quorum, results);
         }
         assert(false, "unsupported method", "UNSUPPORTED_OPERATION", {
             operation: `_perform(${stringify(req.method)})`
@@ -487,6 +487,9 @@ export class FallbackProvider extends AbstractProvider {
                 request: "%sub-requests",
                 info: { request: req, results: results.map(stringify) }
             });
+            if (result instanceof Error) {
+                throw result;
+            }
             return result;
         }
         await this.#initialSync();
@@ -504,6 +507,12 @@ export class FallbackProvider extends AbstractProvider {
             }
         }
         return result;
+    }
+    async destroy() {
+        for (const { provider } of this.#configs) {
+            provider.destroy();
+        }
+        super.destroy();
     }
 }
 //# sourceMappingURL=provider-fallback.js.map

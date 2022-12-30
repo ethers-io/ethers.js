@@ -4,6 +4,7 @@ import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
+import type { JsonRpcError, JsonRpcPayload } from "./provider-jsonrpc.js";
 /**
  *  About Ankr...
  *
@@ -14,6 +15,7 @@ export declare class AnkrProvider extends JsonRpcProvider implements CommunityRe
     constructor(_network?: Networkish, apiKey?: null | string);
     _getProvider(chainId: number): AbstractProvider;
     static getRequest(network: Network, apiKey?: null | string): FetchRequest;
+    getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error;
     isCommunityResource(): boolean;
 }
 //# sourceMappingURL=provider-ankr.d.ts.map

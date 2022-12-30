@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.retryIt = exports.log = exports.loadTests = void 0;
+exports.retryIt = exports.stall = exports.log = exports.loadTests = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const zlib_1 = __importDefault(require("zlib"));
@@ -40,6 +40,7 @@ exports.log = log;
 async function stall(duration) {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
+exports.stall = stall;
 const ATTEMPTS = 5;
 async function retryIt(name, func) {
     //const errors: Array<Error> = [ ];

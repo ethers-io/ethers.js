@@ -402,6 +402,11 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     provider: this;
     /**
+     *  Shutdown any resources this provider is using. No additional
+     *  calls should be made to this provider after calling this.
+     */
+    destroy(): void;
+    /**
      *  Get the current block number.
      */
     getBlockNumber(): Promise<number>;

@@ -656,19 +656,19 @@ export class JsonRpcApiProvider extends AbstractProvider {
         }
         if (method === "eth_sendRawTransaction" || method === "eth_sendTransaction") {
             const transaction = (payload.params[0]);
-            if (message.match(/insufficient funds|base fee exceeds gas limit/)) {
+            if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
                 return makeError("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
                     transaction
                 });
             }
-            if (message.match(/nonce/) && message.match(/too low/)) {
+            if (message.match(/nonce/i) && message.match(/too low/i)) {
                 return makeError("nonce has already been used", "NONCE_EXPIRED", { transaction });
             }
             // "replacement transaction underpriced"
-            if (message.match(/replacement transaction/) && message.match(/underpriced/)) {
+            if (message.match(/replacement transaction/i) && message.match(/underpriced/i)) {
                 return makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", { transaction });
             }
-            if (message.match(/only replay-protected/)) {
+            if (message.match(/only replay-protected/i)) {
                 return makeError("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
                     operation: method, info: { transaction }
                 });

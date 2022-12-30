@@ -59,11 +59,11 @@ class WebSocketProvider extends provider_socket_js_1.SocketProvider {
         this.websocket.send(message);
     }
     async destroy() {
-        if (this.#websocket == null) {
-            return;
+        if (this.#websocket != null) {
+            this.#websocket.close();
+            this.#websocket = null;
         }
-        this.#websocket.close();
-        this.#websocket = null;
+        super.destroy();
     }
 }
 exports.WebSocketProvider = WebSocketProvider;
