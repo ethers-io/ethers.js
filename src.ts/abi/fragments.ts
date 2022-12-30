@@ -10,30 +10,89 @@ import {
 } from "../utils/index.js";
 import { id } from "../hash/index.js";
 
+/**
+ *  A type description in a JSON API.
+ */
 export interface JsonFragmentType {
+    /**
+     *  The parameter name.
+     */
     readonly name?: string;
+
+    /**
+     *  If the parameter is indexed.
+     */
     readonly indexed?: boolean;
+
+    /**
+     *  The type of the parameter.
+     */
     readonly type?: string;
+
+    /**
+     *  The internal Solidity type.
+     */
     readonly internalType?: string;
+
+    /**
+     *  The components for a tuple.
+     */
     readonly components?: ReadonlyArray<JsonFragmentType>;
 }
 
+/**
+ *  A fragment for a method, event or error in a JSON API.
+ */
 export interface JsonFragment {
+    /**
+     *  The name of the error, event, function, etc.
+     */
     readonly name?: string;
+
+    /**
+     *  The type of the fragment (e.g. ``event``, ``"function"``, etc.)
+     */
     readonly type?: string;
 
+    /**
+     *  If the event is anonymous.
+     */
     readonly anonymous?: boolean;
 
+    /**
+     *  If the function is payable.
+     */
     readonly payable?: boolean;
+
+    /**
+     *  If the function is constant.
+     */
     readonly constant?: boolean;
+
+    /**
+     *  The mutability state of the function.
+     */
     readonly stateMutability?: string;
 
+    /**
+     *  The input parameters.
+     */
     readonly inputs?: ReadonlyArray<JsonFragmentType>;
+
+    /**
+     *  The output parameters.
+     */
     readonly outputs?: ReadonlyArray<JsonFragmentType>;
 
+    /**
+     *  The gas limit to use when sending a transaction for this function.
+     */
     readonly gas?: string;
 };
 
+/**
+ *  The format to serialize the output as.
+ */
 export type FormatType =
     // Bare formatting, as is needed for computing a sighash of an event or function
     "sighash" |
@@ -429,8 +488,17 @@ function verifyBasicType(type: string): string {
 const _guard = { };
 
 
-export type FragmentWalkFunc = (type: string, value: any) => any;
-export type FragmentWalkAsyncFunc = (type: string, value: any) => any | Promise<any>;
+/**
+ *  When [walking](ParamType-walk) a [[ParamType]], this is called
+ *  on each component.
+ */
+export type ParamTypeWalkFunc = (type: string, value: any) => any;
+
+/**
+ *  When [walking asynchronously](ParamType-walkAsync) a [[ParamType]],
+ *  this is called on each component.
+ */
+export type ParamTypeWalkAsyncFunc = (type: string, value: any) => any | Promise<any>;
 
 const internal = Symbol.for("_ethers_internal");
 
@@ -441,28 +509,54 @@ const ConstructorFragmentInternal = "_ConstructorInternal";
 const FunctionFragmentInternal = "_FunctionInternal";
 const StructFragmentInternal = "_StructInternal";
 
+/**
+ *  Each input and output of a [[Fragment]] is an Array of **PAramType**.
+ */
 export class ParamType {
 
-    // The local name of the parameter (of "" if unbound)
+    /**
+     *  The local name of the parameter (or ``""`` if unbound)
+     */
     readonly name!: string;
 
-    // The fully qualified type (e.g. "address", "tuple(address)", "uint256[3][]"
+    /**
+     *  The fully qualified type (e.g. ``"address"``, ``"tuple(address)"``,
+     *  ``"uint256[3][]"``)
+     */
     readonly type!: string;
 
-    // The base type (e.g. "address", "tuple", "array")
+    /**
+     *  The base type (e.g. ``"address"``, ``"tuple"``, ``"array"``)
+     */
     readonly baseType!: string;
 
-    // Indexable Paramters ONLY (otherwise null)
+    /**
+     *  True if the parameters is indexed.
+     *
+     *  For non-indexable types (see [[ParamType_isIndexable]]) this
+     *  is ``null``.
+     */
     readonly indexed!: null | boolean;
 
-    // Tuples ONLY: (otherwise null)
-    //  - sub-components
+    /**
+     *  The components for the tuple.
+     *
+     *  For non-tuple types (see [[ParamType_isTuple]]) this is ``null``.
+     */
     readonly components!: null | ReadonlyArray<ParamType>;
 
-    // Arrays ONLY: (otherwise null)
-    //  - length of the array (-1 for dynamic length)
-    //  - child type
+    /**
+     *  The array length, or ``-1`` for dynamic-lengthed arrays.
+     *
+     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     */
     readonly arrayLength!: null | number;
+
+    /**
+     *  The type of each child in the array.
+     *
+     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     */
     readonly arrayChildren!: null | ParamType;
 
 
@@ -494,10 +588,17 @@ export class ParamType {
         });
     }
 
-    // Format the parameter fragment
-    //   - sighash: "(uint256,address)"
-    //   - minimal: "tuple(uint256,address) indexed"
-    //   - full:    "tuple(uint256 foo, address bar) indexed baz"
+    /**
+     *  Return a string representation of this type.
+     *
+     *  For example,
+     *
+     *  ``sighash" => "(uint256,address)"``
+     *
+     *  ``"minimal" => "tuple(uint256,address) indexed"``
+     *
+     *  ``"full" => "tuple(uint256 foo, address bar) indexed baz"``
+     */
     format(format?: FormatType): string {
         if (format == null) { format = "sighash"; }
         if (format === "json") {
@@ -539,23 +640,51 @@ export class ParamType {
         return result;
     }
 
-    static isArray(value: any): value is { arrayChildren: ParamType } {
-        return value && (value.baseType === "array")
-    }
+    /*
+     *  Returns true if %%value%% is an Array type.
+     *
+     *  This provides a type gaurd ensuring that the
+     *  [[arrayChildren]] and [[arrayLength]] are non-null.
+     */
+    //static isArray(value: any): value is { arrayChildren: ParamType, arrayLength: number } {
+    //    return value && (value.baseType === "array")
+    //}
 
-    isArray(): this is (ParamType & { arrayLength: number, arrayChildren: ParamType }) {
+    /**
+     *  Returns true if %%this%% is an Array type.
+     *
+     *  This provides a type gaurd ensuring that [[arrayChildren]]
+     *  and [[arrayLength]] are non-null.
+     */
+    isArray(): this is (ParamType & { arrayChildren: ParamType, arrayLength: number }) {
         return (this.baseType === "array")
     }
 
+    /**
+     *  Returns true if %%this%% is a Tuple type.
+     *
+     *  This provides a type gaurd ensuring that [[components]]
+     *  is non-null.
+     */
     isTuple(): this is (ParamType & { components: ReadonlyArray<ParamType> }) {
         return (this.baseType === "tuple");
     }
 
+    /**
+     *  Returns true if %%this%% is an Indexable type.
+     *
+     *  This provides a type gaurd ensuring that [[indexed]]
+     *  is non-null.
+     */
     isIndexable(): this is (ParamType & { indexed: boolean }) {
         return (this.indexed != null);
     }
 
-    walk(value: any, process: FragmentWalkFunc): any {
+    /**
+     *  Walks the **ParamType** with %%value%%, calling %%process%%
+     *  on each type, destructing the %%value%% recursively.
+     */
+    walk(value: any, process: ParamTypeWalkFunc): any {
         if (this.isArray()) {
             if (!Array.isArray(value)) { throw new Error("invlaid array value"); }
             if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
@@ -577,7 +706,7 @@ export class ParamType {
         return process(this.type, value);
     }
 
-    #walkAsync(promises: Array<Promise<void>>, value: any, process: FragmentWalkAsyncFunc, setValue: (value: any) => void): void {
+    #walkAsync(promises: Array<Promise<void>>, value: any, process: ParamTypeWalkAsyncFunc, setValue: (value: any) => void): void {
 
         if (this.isArray()) {
             if (!Array.isArray(value)) { throw new Error("invlaid array value"); }
@@ -639,7 +768,14 @@ export class ParamType {
         }
     }
 
-    async walkAsync(value: any, process: FragmentWalkAsyncFunc): Promise<any> {
+    /**
+     *  Walks the **ParamType** with %%value%%, asynchronously calling
+     *  %%process%% on each type, destructing the %%value%% recursively.
+     *
+     *  This can be used to resolve ENS naes by walking and resolving each
+     *  ``"address"`` type.
+     */
+    async walkAsync(value: any, process: ParamTypeWalkAsyncFunc): Promise<any> {
         const promises: Array<Promise<void>> = [ ];
         const result: [ any ] = [ value ];
         this.#walkAsync(promises, value, process, (value: any) => {
@@ -649,6 +785,12 @@ export class ParamType {
         return result[0];
     }
 
+    /**
+     *  Creates a new **ParamType** for %%obj%%.
+     *
+     *  If %%allowIndexed%% then the ``indexed`` keyword is permitted,
+     *  otherwise the ``indexed`` keyword will throw an error.
+     */
     static from(obj: any, allowIndexed?: boolean): ParamType {
         if (ParamType.isParamType(obj)) { return obj; }
 
@@ -732,15 +874,31 @@ export class ParamType {
         return new ParamType(_guard, name, type, type, indexed, null, null, null);
     }
 
+    /**
+     *  Returns true if %%value%% is a **ParamType**.
+     */
     static isParamType(value: any): value is ParamType {
         return (value && value[internal] === ParamTypeInternal);
     }
 }
 
+/**
+ *  The type of a [[Fragment]].
+ */
 export type FragmentType = "constructor" | "error" | "event" | "function" | "struct";
 
+/**
+ *  An abstract class to represent An individual fragment from a parse ABI.
+ */
 export abstract class Fragment {
+    /**
+     *  The type of the fragment.
+     */
     readonly type!: FragmentType;
+
+    /**
+     *  The inputs for the fragment.
+     */
     readonly inputs!: ReadonlyArray<ParamType>;
 
     /**
@@ -752,8 +910,15 @@ export abstract class Fragment {
         defineProperties<Fragment>(this, { type, inputs });
     }
 
+    /**
+     *  Returns a string representation of this fragment.
+     */
     abstract format(format?: FormatType): string;
 
+    /**
+     *  Creates a new **Fragment** for %%obj%%, wich can be any supported
+     *  ABI frgament type.
+     */
     static from(obj: any): Fragment {
         if (typeof(obj) === "string") {
             try {
@@ -791,28 +956,50 @@ export abstract class Fragment {
         throw new Error(`unsupported type: ${ obj }`);
     }
 
+    /**
+     *  Returns true if %%value%% is a [[ConstructorFragment]].
+     */
     static isConstructor(value: any): value is ConstructorFragment {
         return ConstructorFragment.isFragment(value);
     }
 
+    /**
+     *  Returns true if %%value%% is an [[ErrorFragment]].
+     */
     static isError(value: any): value is ErrorFragment {
         return ErrorFragment.isFragment(value);
     }
 
+    /**
+     *  Returns true if %%value%% is an [[EventFragment]].
+     */
     static isEvent(value: any): value is EventFragment {
         return EventFragment.isFragment(value);
     }
 
+    /**
+     *  Returns true if %%value%% is a [[FunctionFragment]].
+     */
     static isFunction(value: any): value is FunctionFragment {
         return FunctionFragment.isFragment(value);
     }
 
+    /**
+     *  Returns true if %%value%% is a [[StructFragment]].
+     */
     static isStruct(value: any): value is StructFragment {
         return StructFragment.isFragment(value);
     }
 }
 
+/**
+ *  An abstract class to represent An individual fragment
+ *  which has a name from a parse ABI.
+ */
 export abstract class NamedFragment extends Fragment {
+    /**
+     *  The name of the fragment.
+     */
     readonly name!: string;
 
     /**
@@ -831,6 +1018,9 @@ function joinParams(format: FormatType, params: ReadonlyArray<ParamType>): strin
     return "(" + params.map((p) => p.format(format)).join((format === "full") ? ", ": ",") + ")";
 }
 
+/**
+ *  A Fragment which represents a //Custom Error//.
+ */
 export class ErrorFragment extends NamedFragment {
     /**
      *  @private
@@ -840,6 +1030,9 @@ export class ErrorFragment extends NamedFragment {
         Object.defineProperty(this, internal, { value: ErrorFragmentInternal });
     }
 
+    /**
+     *  The Custom Error selector.
+     */
     get selector(): string {
         return id(this.format("sighash")).substring(0, 10);
     }
@@ -883,7 +1076,9 @@ export class ErrorFragment extends NamedFragment {
     }
 }
 
-
+/**
+ *  A Fragment which represents an Event.
+ */
 export class EventFragment extends NamedFragment {
     readonly anonymous!: boolean;
 
@@ -896,6 +1091,9 @@ export class EventFragment extends NamedFragment {
         defineProperties<EventFragment>(this, { anonymous });
     }
 
+    /**
+     *  The Event topic hash.
+     */
     get topicHash(): string {
         return id(this.format("sighash"));
     }
@@ -942,7 +1140,9 @@ export class EventFragment extends NamedFragment {
     }
 }
 
-
+/**
+ *  A Fragment which represents a constructor.
+ */
 export class ConstructorFragment extends Fragment {
     readonly payable!: boolean;
     readonly gas!: null | bigint;
@@ -1002,12 +1202,34 @@ export class ConstructorFragment extends Fragment {
     }
 }
 
+/**
+ *  A Fragment which represents a method.
+ */
 export class FunctionFragment extends NamedFragment {
+    /**
+     *  If the function is constant (e.g. ``pure`` or ``view`` functions).
+     */
     readonly constant!: boolean;
+
+    /**
+     *  The returned types for the result of calling this function.
+     */
     readonly outputs!: ReadonlyArray<ParamType>;
+
+    /**
+     *  The state mutability (e.g. ``payable``, ``nonpayable``, ``view``
+     *  or ``pure``)
+     */
     readonly stateMutability!: string;
 
+    /**
+     *  If the function can be send a value during invocation.
+     */
     readonly payable!: boolean;
+
+    /**
+     *  The amount of gas to send when calling this function
+     */
     readonly gas!: null | bigint;
 
     /**
@@ -1022,6 +1244,9 @@ export class FunctionFragment extends NamedFragment {
         defineProperties<FunctionFragment>(this, { constant, gas, outputs, payable, stateMutability });
     }
 
+    /**
+     *  The Function selector.
+     */
     get selector(): string {
         return id(this.format("sighash")).substring(0, 10);
     }
@@ -1098,6 +1323,9 @@ export class FunctionFragment extends NamedFragment {
     }
 }
 
+/**
+ *  A Fragment which represents a structure.
+ */
 export class StructFragment extends NamedFragment {
 
     /**

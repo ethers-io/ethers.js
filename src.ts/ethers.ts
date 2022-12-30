@@ -127,6 +127,7 @@ export {
 export type {
     JsonFragment, JsonFragmentType,
     InterfaceAbi,
+    ParamTypeWalkFunc, ParamTypeWalkAsyncFunc
 } from "./abi/index.js";
 
 export type { Addressable } from "./address/index.js";

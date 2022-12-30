@@ -1,3 +1,8 @@
+/**
+ *  Explain UUID and link to RFC here.
+ *
+ *  @_subsection: api/utils:UUID  [about-uuid]
+ */
 import { getBytes, hexlify } from "./data.js";
 
 import type { BytesLike } from "./index.js";

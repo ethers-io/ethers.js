@@ -18,6 +18,8 @@ export class LangEs extends WordlistOwlA {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langEs]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("es", words, accents, checksum); }
 

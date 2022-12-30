@@ -17,6 +17,8 @@ export class LangCz extends WordlistOwl {
      *
      *  Using the constructor should be unnecessary, instead use the
      *  [[wordlist]] singleton method.
+     *
+     *  @_ignore:
      */
     constructor() { super("cz", words, checksum); }
 

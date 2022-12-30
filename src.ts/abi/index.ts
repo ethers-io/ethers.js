@@ -28,7 +28,7 @@ export { Typed } from "./typed.js";
 
 export type {
     JsonFragment, JsonFragmentType,
-    FormatType, FragmentType, FragmentWalkAsyncFunc, FragmentWalkFunc
+    FormatType, FragmentType, ParamTypeWalkAsyncFunc, ParamTypeWalkFunc
 } from "./fragments.js";
 
 export type {

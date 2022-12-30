@@ -173,6 +173,12 @@ function zeroPad(data: BytesLike, length: number, left: boolean): string {
 /**
  *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
+ *
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  thrown.
+ *
+ *  This pads data the same as **values** are in Solidity
+ *  (e.g. ``uint128``).
  */
 export function zeroPadValue(data: BytesLike, length: number): string {
     return zeroPad(data, length, true);
@@ -181,6 +187,12 @@ export function zeroPadValue(data: BytesLike, length: number): string {
 /**
  *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
+ *
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  thrown.
+ *
+ *  This pads data the same as **bytes** are in Solidity
+ *  (e.g. ``bytes16``).
  */
 export function zeroPadBytes(data: BytesLike, length: number): string {
     return zeroPad(data, length, false);

@@ -17,6 +17,8 @@ export class LangEn extends WordlistOwl {
      *
      *  This should be unnecessary most of the time as the exported
      *  [[langEn]] should suffice.
+     *
+     *  @_ignore:
      */
     constructor() { super("en", words, checksum); }
 
