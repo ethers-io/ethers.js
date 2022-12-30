@@ -9,6 +9,7 @@ import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
 import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
+import type { JsonRpcError, JsonRpcPayload } from "./provider-jsonrpc.js";
 
 
 const defaultApiKey = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
@@ -72,6 +73,16 @@ export class AnkrProvider extends JsonRpcProvider implements CommunityResourcabl
         }
 
         return request;
+    }
+
+    getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error {
+        if (payload.method === "eth_sendRawTransaction") {
+            if (error && error.error && error.error.message === "INTERNAL_ERROR: could not replace existing tx") {
+                error.error.message = "replacement transaction underpriced";
+            }
+        }
+
+        return super.getRpcError(payload, error);
     }
 
     isCommunityResource(): boolean {
