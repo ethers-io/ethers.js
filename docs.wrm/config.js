@@ -32,7 +32,12 @@ export default {
 
   codeRoot: "../src.ts/index.ts",
   links: [
-    "./links.txt",
+    "./links/javascript.txt",
+    "./links/npm.txt",
+    "./links/projects.txt",
+    "./links/ricmoo.txt",
+    "./links/specs.txt",
+    "./links/wiki.txt"
   ],
   staticFiles: [
     "logo.svg",
