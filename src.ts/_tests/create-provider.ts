@@ -1,7 +1,7 @@
 import {
     AlchemyProvider,
     AnkrProvider,
-    CloudflareProvider,
+//    CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
 //    PocketProvider,
@@ -37,6 +37,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new AnkrProvider(network);
         }
     },
+    /*
     {
         name: "CloudflareProvider",
         networks: [ "default", "mainnet" ],
@@ -44,6 +45,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new CloudflareProvider(network);
         }
     },
+    */
     {
         name: "EtherscanProvider",
         networks: ethNetworks,
