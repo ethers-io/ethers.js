@@ -1,3 +1,207 @@
 _section: Getting Started @<getting-started> @priority<100>
 
+This 
 The v6 getting started is coming soon...
+
+_heading: Installing
+
+_code: Install via NPM  @lang<shell>
+  # Create a new folder for your project
+  /home/ricmoo> mkdir test-ethers
+  /home/ricmoo> cd test-ethers
+
+  # Install ethers
+  /home/ricmoo/test-ethers> npm install ethers@beta-exports
+
+_heading: Importing
+
+Everything in Ethers is exported at the root as well as on the ``ethers``
+object. There are also ``exports`` in the ``package.json`` to facilitate
+sub-packages.
+
+Generally this documentation will presume all exports from ethers
+have been imported in the code examples, but you may import the
+necessary objects any way you wish.
+
+_code: Node.js  @lang<script>
+  // Import everything
+  import { ethers } from "ethers";
+
+  // Import just a few select items
+  import { BrowserProvider, parseUnits } from "ethers";
+
+  // Import from a specific export
+  import { HDNodeWallet } from "ethers/wallet";
+
+_code: Web Browsers (ESM)  @lang<script>
+  <script type="module">
+    import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.min.js";
+    // Your code here...
+  </script>
+
+
+_subsection: Some Common Terminology
+
+_heading: PROVIDER
+
+_heading: SIGNER
+
+_heading: TRANSACTION
+
+_heading: Receipt
+
+_heading: CONTRACT
+
+
+
+_subsection: Connecting to Ethereum
+
+_heading: MetaMask (and other injected providers)
+
+The quickest and easiest way to experiment and begin developing
+on Ethereum is to use [[link-metamask]], which is a browser
+extension that injects objects into the ``window``, providing:
+
+- read-only access to the Ethereum network (a [[Provider]])
+- authenticated write access backed by a private key (a [[Signer]])
+
+When requesting access to the authenticated methods, such as
+sending a transaction or even requesting the private key addess,
+MetaMask will show a pop-up to the user asking for permission.
+
+_code:  @lang<script>
+  let signer = null;
+
+  let provider;
+  if (window.ethereum == null) {
+
+      // If MetaMask is not installed, we use the default provider,
+      // which is backed by a variety of third-party services (such
+      // as INFURA). They do not have private keys installed so are
+      // only have read-only access
+      console.log("MetaMask not installed; using read-only defaults")
+      provider = ethers.getDefaultProvider()
+
+  } else {
+
+      // Connect to the MetaMask EIP-1193 object. This is a standard
+      // protocol that allows Ethers access to make all read-only
+      // requests through MetaMask.
+      provider = new ethers.BrowserProvider(window.ethereum)
+
+      // It also provides an opportunity to request access to write
+      // operations, which will be performed by the private key
+      // that MetaMask manages for the user.
+      signer = await provider.getSigner();
+  }
+
+
+_heading: Custom RPC Backend
+
+If you are running your own Ethereum node (e.g. [[link-geth]])
+or using a custom third-party service (e.g. [[link-infura]]),
+you can use the [[JsonRpcProvider]] directly, which communicates
+using the [[link-jsonrpc]] protocol.
+
+When using your own Ethereum node or a developer-base blockchain,
+such as Hardhat or Ganache, you can get access the accounts with
+[[JsonRpcProvider-getSigner]].
+
+_code:  @lang<script>
+
+  // If no %%url%% is provided, it connects to the default
+  // http://localhost:8545, which most nodes use.
+  provider = new ethers.JsonRpcProvider(url)
+
+  // Get write access as an account by getting the signer
+  signer = await provider.getSigner()
+
+
+_subsection: Interacting with the Blockchain
+
+_heading: Querying State (reading)
+
+Once you have a [[Provider]], you have a read-only connection to
+the data on the blockchain. This can be used to query the current
+account state, fetch historic logs, look up contract code and so on.
+
+_code:  @lang<javascript>
+  //_hide: provider = new InfuraProvider();
+
+  // Look up the current block number (i.e. height)
+  await provider.getBlockNumber()
+  //_result:
+
+  // Get the current balance of an account (by address or ENS name)
+  balance = await provider.getBalance("ethers.eth")
+  //_result:
+
+  // Since the balance is in wei, you may wish to display it
+  // in ether instead.
+  formatEther(balance)
+  //_result:
+
+  // Get the next nonce required to send a transaction
+  await provider.getTransactionCount("ethers.eth")
+  //_result:
+
+_heading: Sending Transactions (writing)
+
+To write to the blockchain you require access to a private key
+which controls some account. In most cases, those private keys
+are not accessible directly to your code, and instead you make
+requests via a [[Signer]], which dispatches the request to a
+service (such as [[link-metamask]]) which provides strictly
+gated access and requires feedback to the user to approve or
+reject operations.
+
+_code:  @lang<script>
+
+  // When sending a transaction, the value is in wei, so parseEther
+  // converts ether to wei.
+  tx = await signer.send({
+    to: "ethers.eth",
+    value: parseEther("1.0")
+  });
+  //_result:
+
+  // Often you may wish to wait until the transaction is mined
+  receipt = await tx.wait();
+  //_result:
+
+_heading: User Interaction
+
+explain ether vs gwei... format vs parse.  getAddress, resolveAddress
+
+_code:  @lang<javascript>
+  // Convert user-provided strings in ether to wei for a value
+  eth = parseEther("1.0")
+  //_result:
+
+  // Convert user-provided strings in gwei to wei for max base fee
+  feePerGas = parseUnits("4.5", "gwei")
+  //_result:
+
+  // Convert a value in wei to a string in ether to display in a UI
+  formatEther(eth)
+  //_result:
+
+  // Convert a value in wei to a string in gwei to display in a UI
+  formatUnits(feePerGas, "gwei")
+  //_result:
+
+_subsection: Contracts
+
+_heading: Read-only methods (i.e. ``view`` and ``pure``)
+
+_heading: State-changing Methods
+
+_heading: Estimating Gas and fees
+
+_heading: Listening to Events
+
+_heading: Query Historic Events
+
+
+_subsection: Signing Messages
+
