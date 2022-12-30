@@ -3,10 +3,14 @@ import assert from "assert";
 
 import {
     concat, dataSlice, id, toBeArray, zeroPadValue,
-    isCallException
+    isCallException, isError,
+    Wallet
 } from "../index.js";
 
-import { getProvider, providerNames } from "./create-provider.js";
+import { getProvider, setupProviders, providerNames } from "./create-provider.js";
+import { stall } from "./utils.js";
+
+import type { TransactionResponse } from "../index.js";
 
 type TestCustomError = {
     name: string;
@@ -21,7 +25,9 @@ type TestCustomError = {
     },
 };
 
-describe("Tests Provider Errors", function() {
+setupProviders();
+
+describe("Tests Provider Call Exception", function() {
 
     const panics: Array<{ code: number, reason: string }> = [
         //{ code: 0x00, reason: "GENERIC_PANIC" },
@@ -36,11 +42,6 @@ describe("Tests Provider Errors", function() {
         //{ code: 0x51, reason: "UNINITIALIZED_FUNCTION_CALL" },
     ];
 
-    const cleanup: Array<() => void> = [ ];
-    after(function() {
-        for (const func of cleanup) { func(); }
-    });
-
     const testAddr = "0xF20Ba47c47a32fc2d9ad846fF06f2fa6e89eeC74";
 
     const networkName = "goerli";
@@ -49,11 +50,6 @@ describe("Tests Provider Errors", function() {
             for (const providerName of providerNames) {
                 const provider = getProvider(providerName, networkName);
                 if (provider == null) { continue; }
-
-                // Shutdown socket-based provider, otherwise its socket will prevent
-                // this process from exiting
-                if ((<any>provider).destroy) { cleanup.push(() => {(<any>provider).destroy(); }); }
-
 
                 it(`tests panic code: ${ providerName }.${ method }.${ reason }`, async function() {
                     this.timeout(10000);
@@ -127,10 +123,6 @@ describe("Tests Provider Errors", function() {
                 const provider = getProvider(providerName, networkName);
                 if (provider == null) { continue; }
 
-                // Shutdown socket-based provider, otherwise its socket will prevent
-                // this process from exiting
-                if ((<any>provider).destroy) { cleanup.push(() => {(<any>provider).destroy(); }); }
-
                 it(`tests custom errors: ${ providerName }.${ method }.${ name }`, async function() {
                     this.timeout(10000)
                     try {
@@ -168,3 +160,110 @@ describe("Tests Provider Errors", function() {
         }
     }
 });
+
+describe("Test Provider Blockchain Errors", function() {
+    const wallet = new Wallet(<string>(process.env.FAUCET_PRIVATEKEY));
+
+    const networkName = "goerli";
+    for (const providerName of providerNames) {
+
+        const provider = getProvider(providerName, networkName);
+        if (provider == null) { continue; }
+
+        // The CI runs multiple tests at once; minimize colliding with
+        // the initial tx by using a random value, so we can detect
+        // replacements we didn't do.
+        const value = Math.trunc(Math.random() * 2048) + 2;
+
+        it(`tests underpriced replacement transaction: ${ providerName }`, async function() {
+            this.timeout(60000);
+
+            const w = wallet.connect(provider);
+
+            let tx1: null | TransactionResponse = null;
+            let nonce: null | number = null;;
+            for (let i = 0; i < 10; i++) {
+                nonce = await w.getNonce("pending");
+                try {
+                    tx1 = await w.sendTransaction({
+                        nonce, to: wallet, value
+                    });
+                } catch (error: any) {
+                    // Another CI host beat us to this nonce
+                    if (isError(error, "REPLACEMENT_UNDERPRICED") || isError(error, "NONCE_EXPIRED")) {
+                        await stall(1000);
+                        continue;
+                    }
+                    console.log("EE-tx1", nonce, value, error);
+                    throw error;
+                }
+                break;
+            }
+            if (tx1 == null || nonce == null) { throw new Error("could not send initial tx"); }
+
+            const rejection = assert.rejects(async function() {
+                // Send another tx with the same nonce
+                const tx2 = await w.sendTransaction({
+                    nonce, to: wallet, value: 1
+                });
+                console.log({ tx1, tx2 });
+            }, (error: unknown) => {
+                return isError(error, "REPLACEMENT_UNDERPRICED");
+            });
+
+            // Wait for the first tx to get mined so we start with a
+            // clean slate on the next provider
+            await tx1.wait();
+
+            // This should have already happened
+            await rejection;
+        });
+    }
+
+    for (const providerName of providerNames) {
+
+        const provider = getProvider(providerName, networkName);
+        if (provider == null) { continue; }
+
+        it(`tests insufficient funds: ${ providerName }`, async function() {
+            this.timeout(60000);
+
+            const w = Wallet.createRandom().connect(provider);
+
+            await assert.rejects(async function() {
+                const tx = await w.sendTransaction({
+                    to: wallet, value: 1
+                });
+                console.log(tx);
+            }, (error) => {
+                return isError(error, "INSUFFICIENT_FUNDS");
+            });
+        });
+    }
+
+    for (const providerName of providerNames) {
+
+        const provider = getProvider(providerName, networkName);
+        if (provider == null) { continue; }
+
+        it(`tests nonce expired: ${ providerName }`, async function() {
+            this.timeout(60000);
+
+            const w = wallet.connect(provider);
+
+            await assert.rejects(async function() {
+                const tx = await w.sendTransaction({
+                    to: wallet, nonce: 1, value: 1
+                });
+                console.log(tx);
+            }, (error) => {
+                if (!isError(error, "NONCE_EXPIRED")) {
+                    console.log(error);
+                }
+                return isError(error, "NONCE_EXPIRED");
+            });
+        });
+    }
+
+});
+
