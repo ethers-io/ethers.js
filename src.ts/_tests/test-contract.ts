@@ -1,10 +1,12 @@
 
 import assert from "assert";
 
-import { getProvider } from "./create-provider.js";
+import { getProvider, setupProviders } from "./create-provider.js";
 
 import { Contract, EventLog, Typed, Wallet } from "../index.js";
 import type { ContractEventPayload, ContractEventName, Log } from "../index.js";
+
+setupProviders();
 
 describe("Test Contract", function() {
     const addr = "0x99417252Aad7B065940eBdF50d665Fb8879c5958";

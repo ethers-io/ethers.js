@@ -31,7 +31,7 @@ export function log(context: any, text: string): void {
     }
 }
 
-async function stall(duration: number): Promise<void> {
+export async function stall(duration: number): Promise<void> {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
 

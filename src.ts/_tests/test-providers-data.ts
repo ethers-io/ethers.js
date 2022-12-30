@@ -1,6 +1,8 @@
 import assert from "assert";
 
-import { checkProvider, getProvider, providerNames } from "./create-provider.js";
+import {
+    checkProvider, getProvider, setupProviders, providerNames
+} from "./create-provider.js";
 import { retryIt } from "./utils.js";
 
 import type { Provider } from "../index.js";
@@ -12,6 +14,9 @@ import {
 } from "./blockchain-data.js";
 
 import type { TestBlockchainNetwork } from "./blockchain-data.js";
+
+
+setupProviders();
 
 
 function forEach<T extends { test: string }>(prefix: string, tests: Record<TestBlockchainNetwork, Array<T>>, func: (providerName: string, test: T) => (null | ((p: Provider) => Promise<void>))): void {

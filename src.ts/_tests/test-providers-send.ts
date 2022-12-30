@@ -2,7 +2,7 @@ import assert from "assert";
 
 import { isError, Wallet } from "../index.js";
 
-import { getProvider, providerNames } from "./create-provider.js";
+import { getProvider, providerNames, setupProviders } from "./create-provider.js";
 
 import type { TransactionResponse } from "../index.js";
 
@@ -10,13 +10,9 @@ function stall(duration: number): Promise<void> {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
 
+setupProviders();
 
 describe("Sends Transactions", function() {
-
-    const cleanup: Array<() => void> = [ ];
-    after(function() {
-        for (const func of cleanup) { func(); }
-    });
 
     const wallet = new Wallet(<string>(process.env.FAUCET_PRIVATEKEY));
 
@@ -24,10 +20,6 @@ describe("Sends Transactions", function() {
     for (const providerName of providerNames) {
         const provider = getProvider(providerName, networkName);
         if (provider == null) { continue; }
-
-        // Shutdown socket-based provider, otherwise its socket will prevent
-        // this process from exiting
-        if ((<any>provider).destroy) { cleanup.push(() => { (<any>provider).destroy(); }); }
 
         it(`tests sending: ${ providerName }`, async function() {
             this.timeout(180000);
