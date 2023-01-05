@@ -87,17 +87,11 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             case "homestead":
                 host = "mainnet.infura.io";
                 break;
-            case "ropsten":
-                host = "ropsten.infura.io";
-                break;
-            case "rinkeby":
-                host = "rinkeby.infura.io";
-                break;
-            case "kovan":
-                host = "kovan.infura.io";
-                break;
             case "goerli":
                 host = "goerli.infura.io";
+                break;
+            case "sepolia":
+                host = "sepolia.infura.io";
                 break;
             case "matic":
                 host = "polygon-mainnet.infura.io";
@@ -108,14 +102,14 @@ export class InfuraProvider extends UrlJsonRpcProvider {
             case "optimism":
                 host = "optimism-mainnet.infura.io";
                 break;
-            case "optimism-kovan":
-                host = "optimism-kovan.infura.io";
+            case "optimism-goerli":
+                host = "optimism-goerli.infura.io";
                 break;
             case "arbitrum":
                 host = "arbitrum-mainnet.infura.io";
                 break;
-            case "arbitrum-rinkeby":
-                host = "arbitrum-rinkeby.infura.io";
+            case "arbitrum-goerli":
+                host = "arbitrum-goerli.infura.io";
                 break;
             default:
                 logger.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {

@@ -91,7 +91,7 @@ function checkError(method, error, params) {
     }
     message = (message || "").toLowerCase();
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
+    if (message.match(/insufficient funds|base fee exceeds gas limit|InsufficientFunds/i)) {
         logger.throwError("insufficient funds for intrinsic transaction cost", Logger.errors.INSUFFICIENT_FUNDS, {
             error, method, transaction
         });
@@ -114,7 +114,7 @@ function checkError(method, error, params) {
             error, method, transaction
         });
     }
-    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted/)) {
+    if (errorGas.indexOf(method) >= 0 && message.match(/gas required exceeds allowance|always failing transaction|execution reverted|revert/)) {
         logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", Logger.errors.UNPREDICTABLE_GAS_LIMIT, {
             error, method, transaction
         });
@@ -281,7 +281,7 @@ export class JsonRpcSigner extends Signer {
                     logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "signMessage",
                         from: address,
-                        message: data
+                        messageData: message
                     });
                 }
                 throw error;
@@ -301,7 +301,7 @@ export class JsonRpcSigner extends Signer {
                     logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "_legacySignMessage",
                         from: address,
-                        message: data
+                        messageData: message
                     });
                 }
                 throw error;
@@ -326,7 +326,7 @@ export class JsonRpcSigner extends Signer {
                     logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
                         action: "_signTypedData",
                         from: address,
-                        message: { domain: populated.domain, types, value: populated.value }
+                        messageData: { domain: populated.domain, types, value: populated.value }
                     });
                 }
                 throw error;

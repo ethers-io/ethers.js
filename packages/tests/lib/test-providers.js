@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var assert_1 = __importDefault(require("assert"));
 //import Web3HttpProvider from "web3-providers-http";
 var ethers_1 = require("ethers");
+var utils_1 = require("./utils");
 var bnify = ethers_1.ethers.BigNumber.from;
 var blockchainData = {
     homestead: {
@@ -180,253 +181,6 @@ var blockchainData = {
             }
         ]
     },
-    kovan: {
-        addresses: [
-            {
-                address: "0x09c967A0385eE3B3717779738cA0B9D116e0EcE7",
-                balance: bnify("997787946734641021"),
-                code: "0x"
-            },
-        ],
-        blocks: [
-            {
-                hash: "0xf0ec9bf41b99a6bd1f6cd29f91302f71a1a82d14634d2e207edea4b7962f3676",
-                parentHash: "0xf110ecd84454f116e2222378e7bca81ac3e59be0dac96d7ec56d5ef1c3bc1d64",
-                number: 3,
-                timestamp: 1488459452,
-                difficulty: 131072,
-                gasLimit: bnify("0x5b48ec"),
-                gasUsed: bnify("0"),
-                miner: "0x00A0A24b9f0E5EC7Aa4c7389b8302fd0123194dE",
-                extraData: "0xd5830105048650617269747986312e31352e31826c69",
-                transactions: []
-            },
-            // Kovan Test Case with difficulty > 53-bits; See #711
-            {
-                hash: "0xd92891a6eeaed4892289edf9bd5ebff261da5c6a51f7131cc1a481c6f4d1aa75",
-                parentHash: "0xcc769a02513be1df80eee7d3a5cb87f14f37baee03c13f3e3ad1e7bdcaf7dac3",
-                number: 16265864,
-                timestamp: 1579621004,
-                difficulty: null,
-                gasLimit: bnify("0x989680"),
-                gasUsed: bnify("0x0705bf"),
-                miner: "0x596e8221A30bFe6e7eFF67Fee664A01C73BA3C56",
-                extraData: "0xde830206088f5061726974792d457468657265756d86312e34302e30826c69",
-                transactions: [
-                    "0x20e6760fa1297fb06c8c20e6ed99581e0ba964d51167ea3c8ff580bfcb10bfc3",
-                    "0x0ce7eba48b1bbdee05823b79ae24e741f3f290d0abfef8ae9adf32db108b7dd6",
-                    "0x1fa2baafa844bf4853e4abbbf49532bf570210d589dc626dbf7ebc4832bdfa5d",
-                    "0xdb5d1fa54d30a4b6aee0b242a2c68ea52d3dd28703f69e6e30871827850aa2fa",
-                    "0xcc898db85d7d2493d4778faf640be32a4a3b7f5f987257bdc0009ce75a18eeaa"
-                ]
-            },
-        ],
-        transactions: [],
-        transactionReceipts: []
-    },
-    rinkeby: {
-        addresses: [
-            {
-                address: "0xd09a624630a656a7dbb122cb05e41c12c7cd8c0e",
-                balance: bnify("3000000000000000000"),
-                code: "0x"
-            },
-        ],
-        blocks: [
-            {
-                hash: "0x9eb9db9c3ec72918c7db73ae44e520139e95319c421ed6f9fc11fa8dd0cddc56",
-                parentHash: "0x9b095b36c15eaf13044373aef8ee0bd3a382a5abb92e402afa44b8249c3a90e9",
-                number: 3,
-                timestamp: 1492010489,
-                nonce: "0x0000000000000000",
-                difficulty: 2,
-                gasLimit: bnify("0x47e7c4"),
-                gasUsed: bnify(0),
-                //                miner: "0x42EB768f2244C8811C63729A21A3569731535f06",
-                extraData: "0xd783010600846765746887676f312e372e33856c696e757800000000000000004e10f96536e45ceca7e34cc1bdda71db3f3bb029eb69afd28b57eb0202c0ec0859d383a99f63503c4df9ab6c1dc63bf6b9db77be952f47d86d2d7b208e77397301",
-                transactions: []
-            },
-        ],
-        transactions: [],
-        transactionReceipts: []
-    },
-    ropsten: {
-        addresses: [
-            {
-                address: "0x03a6F7a5ce5866d9A0CCC1D4C980b8d523f80480",
-                balance: bnify("15861113897828552666"),
-                code: "0x"
-            },
-        ],
-        blocks: [
-            {
-                hash: "0xaf2f2d55e6514389bcc388ccaf40c6ebf7b3814a199a214f1203fb674076e6df",
-                parentHash: "0x88e8bc1dd383672e96d77ee247e7524622ff3b15c337bd33ef602f15ba82d920",
-                number: 3,
-                timestamp: 1479642588,
-                nonce: "0x04668f72247a130c",
-                difficulty: 996427,
-                gasLimit: bnify("0xff4033"),
-                gasUsed: bnify("0"),
-                miner: "0xD1aEb42885A43b72B518182Ef893125814811048",
-                extraData: "0xd883010503846765746887676f312e372e318664617277696e",
-                transactions: []
-            },
-        ],
-        transactions: [
-            // Berlin tests (EIP-2930)
-            {
-                hash: "0x48bff7b0e603200118a672f7c622ab7d555a28f98938edb8318803eed7ea7395",
-                type: 1,
-                accessList: [
-                    {
-                        address: "0x0000000000000000000000000000000000000000",
-                        storageKeys: []
-                    }
-                ],
-                blockHash: "0x378e24bcd568bd24cf1f54d38f13f038ee28d89e82af4f2a0d79c1f88dcd8aac",
-                blockNumber: 9812343,
-                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
-                gasPrice: bnify("0x65cf89a0"),
-                gasLimit: bnify("0x5b68"),
-                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
-                value: bnify("0"),
-                nonce: 13,
-                data: "0x",
-                r: "0x9659cba42376dbea1433cd6afc9c8ffa38dbeff5408ffdca0ebde6207281a3ec",
-                s: "0x27efbab3e6ed30b088ce0a50533364778e101c9e52acf318daec131da64e7758",
-                v: 0,
-                creates: null,
-                chainId: 3
-            },
-            {
-                hash: "0x1675a417e728fd3562d628d06955ef35b913573d9e417eb4e6a209998499c9d3",
-                type: 1,
-                accessList: [
-                    {
-                        address: "0x0000000000000000000000000000000000000000",
-                        storageKeys: [
-                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-                            "0x0000000000111111111122222222223333333333444444444455555555556666",
-                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
-                        ]
-                    }
-                ],
-                blockHash: "0x7565688256f5801768237993b47ca0608796b3ace0c4b8b6e623c6092bef14b8",
-                blockNumber: 9812365,
-                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
-                gasPrice: bnify("0x65cf89a0"),
-                gasLimit: bnify("0x71ac"),
-                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
-                value: bnify("0"),
-                nonce: 14,
-                data: "0x",
-                r: "0xb0646756f89817d70cdb40aa2ae8b5f43ef65d0926dcf71a7dca5280c93763df",
-                s: "0x4d32dbd9a44a2c5639b8434b823938202f75b0a8459f3fcd9f37b2495b7a66a6",
-                v: 0,
-                creates: null,
-                chainId: 3
-            },
-            // London Tests (EIP-1559)
-            {
-                hash: '0xb8c7871d9d8597ee8a50395d8b39dafa280c90337dc501d0db1321806c6ea98c',
-                blockHash: '0xfd824501af65b1d0f21ea9eb7ec83f45108fcd6fd1bca5d6414ba5923ad87b49',
-                blockNumber: 10512507,
-                transactionIndex: 5,
-                type: 2,
-                creates: null,
-                from: '0xad252DD6C011E613610A36368f04aC84D5185b7c',
-                //gasPrice: bnify("0x0268ab0ed6"),
-                maxPriorityFeePerGas: bnify("0x0268ab0ed6"),
-                maxFeePerGas: bnify("0x0268ab0ed6"),
-                gasLimit: bnify("0x5208"),
-                to: '0x8210357f377E901f18E45294e86a2A32215Cc3C9',
-                value: bnify("0x7b"),
-                nonce: 0,
-                data: '0x',
-                r: '0x7426c348119eed4e9e0525b52aa77edbbf1107610702b4642fa9d2688dce6fa7',
-                s: '0x03f606ad1f12af5876280a34601a4eb3919b797cf3878161e2d24b61d2609846',
-                v: 1,
-                accessList: [],
-                chainId: 3,
-            },
-        ],
-        transactionReceipts: [
-            {
-                blockHash: "0xc9235b8253fce455942147aa8b450d23081b867ffbb2a1e4dec934827cd80f8f",
-                blockNumber: 0x1564d8,
-                type: 0,
-                contractAddress: null,
-                cumulativeGasUsed: bnify("0x80b9"),
-                from: "0xb346D5019EeafC028CfC01A5f789399C2314ae8D",
-                gasUsed: bnify("0x80b9"),
-                logs: [
-                    {
-                        address: "0x6fC21092DA55B392b045eD78F4732bff3C580e2c",
-                        blockHash: "0xc9235b8253fce455942147aa8b450d23081b867ffbb2a1e4dec934827cd80f8f",
-                        blockNumber: 0x1564d8,
-                        data: "0x00000000000000000000000006b5955a67d827cdf91823e3bb8f069e6c89c1d6000000000000000000000000000000000000000000000000016345785d8a0000",
-                        logIndex: 0x0,
-                        topics: [
-                            "0xac375770417e1cb46c89436efcf586a74d0298fee9838f66a38d40c65959ffda"
-                        ],
-                        transactionHash: "0x55c477790b105e69e98afadf0505cbda606414b0187356137132bf24945016ce",
-                        transactionIndex: 0x0,
-                    }
-                ],
-                logsBloom: "0x00000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000010000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-                //root: "0xf1c3506ab619ac1b5e8f1ca355b16d6b9a1b7436b2960b0e9ec9a91f4238b5cc",
-                to: "0x6fC21092DA55B392b045eD78F4732bff3C580e2c",
-                transactionHash: "0x55c477790b105e69e98afadf0505cbda606414b0187356137132bf24945016ce",
-                transactionIndex: 0x0
-            },
-            // Byzantium Receipt
-            {
-                byzantium: true,
-                blockHash: "0x61d343e0e081b60ac53bab381e07bdd5d0815b204091a576fd05106b814e7e1e",
-                blockNumber: 0x1e1e3b,
-                contractAddress: null,
-                cumulativeGasUsed: bnify("0x4142f"),
-                from: "0xdc8F20170C0946ACCF9627b3EB1513CFD1c0499f",
-                gasUsed: bnify("0x1eb6d"),
-                logs: [
-                    {
-                        address: "0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40",
-                        blockHash: "0x61d343e0e081b60ac53bab381e07bdd5d0815b204091a576fd05106b814e7e1e",
-                        blockNumber: 0x1e1e3b,
-                        data: "0x000000000000000000000000b70560a43a9abf6ea2016f40a3e84b8821e134c5f6c95607c490f4f379c0160ef5c8898770f8a52959abf0e9de914647b377fa290000000000000000000000000000000000000000000000000000000000001c20000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000030d4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004c6a736f6e2868747470733a2f2f6170692e6b72616b656e2e636f6d2f302f7075626c69632f5469636b65723f706169723d455448555344292e726573756c742e584554485a5553442e632e300000000000000000000000000000000000000000",
-                        logIndex: 0x1,
-                        topics: ["0xb76d0edd90c6a07aa3ff7a222d7f5933e29c6acc660c059c97837f05c4ca1a84"],
-                        transactionHash: "0xf724f1d6813f13fb523c5f6af6261d06d41138dd094fff723e09fb0f893f03e6",
-                        transactionIndex: 0x2,
-                    }
-                ],
-                logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000080000000202000000",
-                status: 1,
-                to: "0xB70560a43A9aBf6ea2016F40a3e84B8821E134c5",
-                transactionHash: "0xf724f1d6813f13fb523c5f6af6261d06d41138dd094fff723e09fb0f893f03e6",
-                transactionIndex: 0x2
-            },
-            // London Tests (EIP-1559)
-            {
-                blockNumber: 10512507,
-                blockHash: '0xfd824501af65b1d0f21ea9eb7ec83f45108fcd6fd1bca5d6414ba5923ad87b49',
-                transactionHash: '0xb8c7871d9d8597ee8a50395d8b39dafa280c90337dc501d0db1321806c6ea98c',
-                transactionIndex: 5,
-                byzantium: true,
-                type: 2,
-                to: '0x8210357f377E901f18E45294e86a2A32215Cc3C9',
-                from: '0xad252DD6C011E613610A36368f04aC84D5185b7c',
-                contractAddress: null,
-                gasUsed: bnify("0x5208"),
-                logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                logs: [],
-                cumulativeGasUsed: bnify("0x038f3e"),
-                effectiveGasPrice: bnify("0x268ab0ed6"),
-                status: 1,
-            }
-        ],
-    },
     goerli: {
         addresses: [
             {
@@ -537,7 +291,7 @@ function waiter(duration) {
         }
     });
 }
-var allNetworks = ["default", "homestead", "ropsten", "rinkeby", "goerli"];
+var allNetworks = ["default", "homestead", "goerli"];
 // We use separate API keys because otherwise the testcases sometimes
 // fail during CI because our default keys are pretty heavily used
 var _ApiKeys = {
@@ -577,7 +331,7 @@ var providerFunctions = [
     },
     {
         name: "AnkrProvider",
-        networks: ["default", "homestead", "ropsten", "rinkeby"],
+        networks: ["default", "homestead"],
         create: function (network) {
             if (network == "default") {
                 return new ethers_1.ethers.providers.AnkrProvider(null);
@@ -788,7 +542,7 @@ Object.keys(blockchainData).forEach(function (network) {
         var _this = this;
         testFunctions.push({
             name: "throws correct " + code + " error",
-            networks: ["ropsten"],
+            networks: ["goerli"],
             checkSkip: function (provider, network, test) {
                 return false;
             },
@@ -806,7 +560,7 @@ Object.keys(blockchainData).forEach(function (network) {
                             return [3 /*break*/, 3];
                         case 2:
                             error_1 = _a.sent();
-                            assert_1.default.equal(error_1.code, code, "incorrect error thrown");
+                            assert_1.default.equal(error_1.code, code, "incorrect error thrown: actual:" + error_1.code + " != expected:" + code);
                             return [3 /*break*/, 3];
                         case 3: return [2 /*return*/];
                     }
@@ -823,7 +577,7 @@ Object.keys(blockchainData).forEach(function (network) {
     // Wallet(id("foobar1234"))
     addErrorTest(ethers_1.ethers.utils.Logger.errors.NONCE_EXPIRED, function (provider) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            return [2 /*return*/, provider.sendTransaction("0xf86480850218711a00825208940000000000000000000000000000000000000000038029a04320fd28c8e6c95da9229d960d14ffa3de81f83abe3ad9c189642c83d7d951f3a009aac89e04a8bafdcf618e21fed5e7b1144ca1083a301fd5fde28b0419eb63ce")];
+            return [2 /*return*/, provider.sendTransaction("0x02f86e05808459682f008459682f14830186a09475544911a6f2e69ceea374f3f7e5ea9c987ece098304cb2f80c001a0d9585a780dde9e7d8c855aacec0564054b49114931fd7e320e4e983009d864f7a050bee916f2770ef17367256d8bccfbc49885467a6ba27cf5cc57e8553c73a191")];
         });
     }); });
     addErrorTest(ethers_1.ethers.utils.Logger.errors.INSUFFICIENT_FUNDS, function (provider) { return __awaiter(_this, void 0, void 0, function () {
@@ -835,7 +589,7 @@ Object.keys(blockchainData).forEach(function (network) {
                         to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
                         gasPrice: 9000000000,
                         gasLimit: 21000,
-                        chainId: 3,
+                        chainId: 5,
                         value: 1,
                     };
                     wallet = ethers_1.ethers.Wallet.createRandom();
@@ -854,8 +608,6 @@ Object.keys(blockchainData).forEach(function (network) {
                 gasPrice: 9000000000,
                 gasLimit: 21000,
                 value: 1,
-                // @TODO: Remove this once all providers are eip-1559 savvy
-                type: 0,
             };
             wallet = ethers_1.ethers.Wallet.createRandom().connect(provider);
             return [2 /*return*/, wallet.sendTransaction(txProps)];
@@ -869,59 +621,49 @@ Object.keys(blockchainData).forEach(function (network) {
         });
     }); });
 })();
+/*
 testFunctions.push({
     name: "sends a legacy transaction",
-    extras: ["funding"],
-    timeout: 900,
-    networks: ["ropsten"],
-    checkSkip: function (provider, network, test) {
+    extras: [ "funding" ],         // We need funding to the fundWallet
+    timeout: 900,                  // 15 minutes
+    networks: [ "goerli" ],       // Only test on Goerli
+    checkSkip: (provider: string, network: string, test: TestDescription) => {
         // This isn't working right now on Ankr
         return (provider === "AnkrProvider");
     },
-    execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
-        var gasPrice, wallet, addr, b0, tx, b1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, provider.getGasPrice()];
-                case 1:
-                    gasPrice = (_a.sent()).mul(10);
-                    wallet = fundWallet.connect(provider);
-                    addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
-                    return [4 /*yield*/, waiter(3000)];
-                case 2:
-                    _a.sent();
-                    return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 3:
-                    b0 = _a.sent();
-                    assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
-                    return [4 /*yield*/, wallet.sendTransaction({
-                            type: 0,
-                            to: addr,
-                            value: 123,
-                            gasPrice: gasPrice
-                        })];
-                case 4:
-                    tx = _a.sent();
-                    return [4 /*yield*/, tx.wait()];
-                case 5:
-                    _a.sent();
-                    return [4 /*yield*/, waiter(3000)];
-                case 6:
-                    _a.sent();
-                    return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 7:
-                    b1 = _a.sent();
-                    assert_1.default.ok(b0.gt(b1), "balance is decreased");
-                    return [2 /*return*/];
-            }
+    execute: async (provider: ethers.providers.Provider) => {
+        const gasPrice = (await provider.getGasPrice()).mul(10);
+
+        const wallet = fundWallet.connect(provider);
+
+        const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+
+        await waiter(3000);
+
+        const b0 = await provider.getBalance(wallet.address);
+        assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
+
+        const tx = await wallet.sendTransaction({
+            type: 0,
+            to: addr,
+            value: 123,
+            gasPrice: gasPrice
         });
-    }); }
+
+        await tx.wait();
+
+        await waiter(3000);
+
+        const b1 = await provider.getBalance(wallet.address);
+        assert.ok(b0.gt(b1), "balance is decreased");
+    }
 });
+*/
 testFunctions.push({
     name: "sends an EIP-2930 transaction",
     extras: ["funding"],
     timeout: 900,
-    networks: ["ropsten"],
+    networks: ["goerli"],
     checkSkip: function (provider, network, test) {
         // This isn't working right now on Ankr
         return (provider === "AnkrProvider");
@@ -944,6 +686,7 @@ testFunctions.push({
                     assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
                     return [4 /*yield*/, wallet.sendTransaction({
                             type: 1,
+                            //chainId: (await provider.getNetwork()).chainId,
                             accessList: {
                                 "0x8ba1f109551bD432803012645Ac136ddd64DBA72": [
                                     "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -975,7 +718,7 @@ testFunctions.push({
     name: "sends an EIP-1559 transaction",
     extras: ["funding"],
     timeout: 900,
-    networks: ["ropsten"],
+    networks: ["goerli"],
     checkSkip: function (provider, network, test) {
         // These don't support EIP-1559 yet for sending
         //return (provider === "AlchemyProvider" );
@@ -1025,30 +768,23 @@ testFunctions.push({
 });
 describe("Test Provider Methods", function () {
     var fundReceipt = null;
-    var faucet = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
     before(function () {
         return __awaiter(this, void 0, void 0, function () {
-            var provider, funder;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.timeout(300000);
-                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", getApiKeys("ropsten").infura);
-                        return [4 /*yield*/, ethers_1.ethers.utils.fetchJson("https://api.ethers.io/api/v1/?action=fundAccount&address=" + fundWallet.address.toLowerCase())];
-                    case 1:
-                        funder = _a.sent();
-                        fundReceipt = provider.waitForTransaction(funder.hash);
-                        fundReceipt.then(function (receipt) {
-                            console.log("*** Funded: " + fundWallet.address);
-                        });
-                        return [2 /*return*/];
-                }
+                this.timeout(300000);
+                // Get some ether from the faucet
+                //const funder = await ethers.utils.fetchJson(`https:/\/api.ethers.io/api/v1/?action=fundAccount&address=${ fundWallet.address.toLowerCase() }`);
+                fundReceipt = (0, utils_1.fundAddress)(fundWallet.address).then(function (hash) {
+                    console.log("*** Funded: " + fundWallet.address);
+                    return hash;
+                });
+                return [2 /*return*/];
             });
         });
     });
     after(function () {
         return __awaiter(this, void 0, void 0, function () {
-            var provider, gasPrice, balance, tx;
+            var hash;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1058,22 +794,10 @@ describe("Test Provider Methods", function () {
                     case 1:
                         // Wait until the funding is complete
                         _a.sent();
-                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", getApiKeys("ropsten").infura);
-                        return [4 /*yield*/, provider.getGasPrice()];
+                        return [4 /*yield*/, (0, utils_1.returnFunds)(fundWallet)];
                     case 2:
-                        gasPrice = _a.sent();
-                        return [4 /*yield*/, provider.getBalance(fundWallet.address)];
-                    case 3:
-                        balance = _a.sent();
-                        return [4 /*yield*/, fundWallet.connect(provider).sendTransaction({
-                                to: faucet,
-                                gasLimit: 21000,
-                                gasPrice: gasPrice,
-                                value: balance.sub(gasPrice.mul(21000))
-                            })];
-                    case 4:
-                        tx = _a.sent();
-                        console.log("*** Sweep Transaction:", tx.hash);
+                        hash = _a.sent();
+                        console.log("*** Sweep Transaction:", hash);
                         return [2 /*return*/];
                 }
             });
@@ -1419,7 +1143,7 @@ describe("Test Events", function () {
                 switch (_a.label) {
                     case 0:
                         this.timeout(60000);
-                        provider = new ethers_1.ethers.providers.InfuraProvider("rinkeby");
+                        provider = new ethers_1.ethers.providers.InfuraProvider("goerli");
                         return [4 /*yield*/, testBlockEvent(provider)];
                     case 1:
                         _a.sent();
@@ -1430,7 +1154,7 @@ describe("Test Events", function () {
     });
 });
 describe("Bad ENS resolution", function () {
-    var provider = providerFunctions[0].create("ropsten");
+    var provider = providerFunctions[0].create("goerli");
     it("signer has a bad ENS name", function () {
         return __awaiter(this, void 0, void 0, function () {
             var wallet, tx, error_2, tos, i, to, tx, error_3;
@@ -1482,9 +1206,9 @@ describe("Bad ENS resolution", function () {
 });
 describe("Resolve ENS avatar", function () {
     [
-        { title: "data", name: "data-avatar.tests.eth", value: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAMAAACeL25MAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyVpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDYuMC1jMDAyIDc5LjE2NDQ4OCwgMjAyMC8wNy8xMC0yMjowNjo1MyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIDIyLjAgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NUQ4NTEyNUIyOEIwMTFFQzg0NTBDNTU2RDk1NTA5NzgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NUQ4NTEyNUMyOEIwMTFFQzg0NTBDNTU2RDk1NTA5NzgiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo1RDg1MTI1OTI4QjAxMUVDODQ1MEM1NTZEOTU1MDk3OCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo1RDg1MTI1QTI4QjAxMUVDODQ1MEM1NTZEOTU1MDk3OCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PkbM0uMAAAAGUExURQAA/wAAAHtivz4AAAAOSURBVHjaYmDABAABBgAAFAABaEkyYwAAAABJRU5ErkJggg==" },
-        { title: "ipfs", name: "ipfs-avatar.tests.eth", value: "https:/\/gateway.ipfs.io/ipfs/QmQsQgpda6JAYkFoeVcj5iPbwV3xRcvaiXv3bhp1VuYUqw" },
-        { title: "url", name: "url-avatar.tests.eth", value: "https:/\/ethers.org/static/logo.png" },
+        { title: "data", name: "data-avatar.tests.ethers.eth", value: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAMAAACeL25MAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyVpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDYuMC1jMDAyIDc5LjE2NDQ4OCwgMjAyMC8wNy8xMC0yMjowNjo1MyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIDIyLjAgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NUQ4NTEyNUIyOEIwMTFFQzg0NTBDNTU2RDk1NTA5NzgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NUQ4NTEyNUMyOEIwMTFFQzg0NTBDNTU2RDk1NTA5NzgiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo1RDg1MTI1OTI4QjAxMUVDODQ1MEM1NTZEOTU1MDk3OCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo1RDg1MTI1QTI4QjAxMUVDODQ1MEM1NTZEOTU1MDk3OCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PkbM0uMAAAAGUExURQAA/wAAAHtivz4AAAAOSURBVHjaYmDABAABBgAAFAABaEkyYwAAAABJRU5ErkJggg==" },
+        { title: "ipfs", name: "ipfs-avatar.tests.ethers.eth", value: "https:/\/gateway.ipfs.io/ipfs/QmQsQgpda6JAYkFoeVcj5iPbwV3xRcvaiXv3bhp1VuYUqw" },
+        { title: "url", name: "url-avatar.tests.ethers.eth", value: "https:/\/ethers.org/static/logo.png" },
     ].forEach(function (test) {
         it("Resolves avatar for " + test.title, function () {
             return __awaiter(this, void 0, void 0, function () {
@@ -1493,7 +1217,7 @@ describe("Resolve ENS avatar", function () {
                     switch (_a.label) {
                         case 0:
                             this.timeout(60000);
-                            provider = ethers_1.ethers.getDefaultProvider("ropsten", getApiKeys("ropsten"));
+                            provider = ethers_1.ethers.getDefaultProvider("goerli", getApiKeys("goerli"));
                             return [4 /*yield*/, provider.getAvatar(test.name)];
                         case 1:
                             avatar = _a.sent();
@@ -1506,7 +1230,7 @@ describe("Resolve ENS avatar", function () {
     });
     [
         { title: "ERC-1155", name: "nick.eth", value: "https:/\/lh3.googleusercontent.com/hKHZTZSTmcznonu8I6xcVZio1IF76fq0XmcxnvUykC-FGuVJ75UPdLDlKJsfgVXH9wOSmkyHw0C39VAYtsGyxT7WNybjQ6s3fM3macE" },
-        { title: "ERC-721", name: "brantly.eth", value: "https:/\/api.wrappedpunks.com/images/punks/2430.png" }
+        //        { title: "ERC-721", name: "brantly.eth", value: "https:/\/api.wrappedpunks.com/images/punks/2430.png" }
     ].forEach(function (test) {
         it("Resolves avatar for " + test.title, function () {
             return __awaiter(this, void 0, void 0, function () {
@@ -1556,7 +1280,7 @@ describe("Resolve ENS content hash", function () {
     });
 });
 describe("Test EIP-2544 ENS wildcards", function () {
-    var provider = (providerFunctions[0].create("ropsten"));
+    var provider = (providerFunctions[0].create("goerli"));
     it("Resolves recursively", function () {
         return __awaiter(this, void 0, void 0, function () {
             var resolver, _a, _b, _c, _d, _e, _f;
@@ -1565,7 +1289,7 @@ describe("Test EIP-2544 ENS wildcards", function () {
                     case 0: return [4 /*yield*/, provider.getResolver("ricmoose.hatch.eth")];
                     case 1:
                         resolver = _g.sent();
-                        assert_1.default.equal(resolver.address, "0x8fc4C380c5d539aE631daF3Ca9182b40FB21D1ae", "found the correct resolver");
+                        assert_1.default.equal(resolver.address, "0x15abA1fa74Bfdecd63A71218DC632d4328Db8168", "found the correct resolver");
                         _b = (_a = assert_1.default).equal;
                         return [4 /*yield*/, resolver.supportsWildcard()];
                     case 2:
@@ -1577,7 +1301,7 @@ describe("Test EIP-2544 ENS wildcards", function () {
                         _f = (_e = assert_1.default).equal;
                         return [4 /*yield*/, resolver.getAddress()];
                     case 4:
-                        _f.apply(_e, [_g.sent(), "0x4FaBE0A3a4DDd9968A7b4565184Ad0eFA7BE5411", "gets resolved address"]);
+                        _f.apply(_e, [_g.sent(), "0x4B711A377B1b3534749FBe5e59Bcf7F94d92EA98", "gets resolved address"]);
                         return [2 /*return*/];
                 }
             });
@@ -1585,7 +1309,7 @@ describe("Test EIP-2544 ENS wildcards", function () {
     });
 });
 describe("Test CCIP execution", function () {
-    var address = "0xAe375B05A08204C809b3cA67C680765661998886";
+    var address = "0x6C5ed35574a9b4d163f75bBf0595F7540D8FCc2d";
     var ABI = [
         //'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
         'function testGet(bytes callData) view returns (bytes32)',
@@ -1596,7 +1320,7 @@ describe("Test CCIP execution", function () {
         'function testPost(bytes callData) view returns (bytes32)',
         'function verifyTest(bytes result, bytes extraData) pure returns (bytes32)'
     ];
-    var provider = providerFunctions[0].create("ropsten");
+    var provider = providerFunctions[0].create("goerli");
     var contract = new ethers_1.ethers.Contract(address, ABI, provider);
     // This matches the verify method in the Solidity contract against the
     // processed data from the endpoint
@@ -1665,7 +1389,7 @@ describe("Test CCIP execution", function () {
                 switch (_a.label) {
                     case 0:
                         this.timeout(60000);
-                        provider = providerFunctions[0].create("ropsten");
+                        provider = providerFunctions[0].create("goerli");
                         provider.disableCcipRead = true;
                         contract = new ethers_1.ethers.Contract(address, ABI, provider);
                         _a.label = 1;

@@ -58,17 +58,8 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
             case "homestead":
                 host = "eth-mainnet.alchemyapi.io/v2/";
                 break;
-            case "ropsten":
-                host = "eth-ropsten.alchemyapi.io/v2/";
-                break;
-            case "rinkeby":
-                host = "eth-rinkeby.alchemyapi.io/v2/";
-                break;
             case "goerli":
-                host = "eth-goerli.alchemyapi.io/v2/";
-                break;
-            case "kovan":
-                host = "eth-kovan.alchemyapi.io/v2/";
+                host = "eth-goerli.g.alchemy.com/v2/";
                 break;
             case "matic":
                 host = "polygon-mainnet.g.alchemy.com/v2/";
@@ -79,17 +70,11 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
             case "arbitrum":
                 host = "arb-mainnet.g.alchemy.com/v2/";
                 break;
-            case "arbitrum-rinkeby":
-                host = "arb-rinkeby.g.alchemy.com/v2/";
-                break;
             case "arbitrum-goerli":
                 host = "arb-goerli.g.alchemy.com/v2/";
                 break;
             case "optimism":
                 host = "opt-mainnet.g.alchemy.com/v2/";
-                break;
-            case "optimism-kovan":
-                host = "opt-kovan.g.alchemy.com/v2/";
                 break;
             case "optimism-goerli":
                 host = "opt-goerli.g.alchemy.com/v2/"

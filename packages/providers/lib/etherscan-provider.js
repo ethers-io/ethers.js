@@ -220,18 +220,22 @@ var EtherscanProvider = /** @class */ (function (_super) {
         switch (this.network ? this.network.name : "invalid") {
             case "homestead":
                 return "https:/\/api.etherscan.io";
-            case "ropsten":
-                return "https:/\/api-ropsten.etherscan.io";
-            case "rinkeby":
-                return "https:/\/api-rinkeby.etherscan.io";
-            case "kovan":
-                return "https:/\/api-kovan.etherscan.io";
             case "goerli":
                 return "https:/\/api-goerli.etherscan.io";
+            case "sepolia":
+                return "https:/\/api-sepolia.etherscan.io";
+            case "matic":
+                return "https:/\/api.polygonscan.com";
+            case "maticmum":
+                return "https:/\/api-testnet.polygonscan.com";
+            case "arbitrum":
+                return "https:/\/api.arbiscan.io";
+            case "arbitrum-goerli":
+                return "https:/\/api-goerli.arbiscan.io";
             case "optimism":
                 return "https:/\/api-optimistic.etherscan.io";
-            case "optimism-kovan":
-                return "https:/\/api-kovan-optimistic.etherscan.io";
+            case "optimism-goerli":
+                return "https:/\/api-goerli-optimistic.etherscan.io";
             default:
         }
         return logger.throwArgumentError("unsupported network", "network", this.network.name);
