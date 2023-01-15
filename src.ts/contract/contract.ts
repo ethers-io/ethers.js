@@ -80,8 +80,13 @@ class PreparedTopicFilter implements DeferredTopicFilter {
         const resolver = canResolve(runner) ? runner: null;
         this.#filter = (async function() {
             const resolvedArgs = await Promise.all(fragment.inputs.map((param, index) => {
+                const arg = args[index];
+                if (arg == null) { return null; }
+
                 return param.walkAsync(args[index], (type, value) => {
-                    if (type === "address") { return resolveAddress(value, resolver); }
+                    if (type === "address") {
+                        return resolveAddress(value, resolver);
+                    }
                     return value;
                 });
             }));
@@ -443,17 +448,21 @@ async function getSub(contract: BaseContract, operation: string, event: Contract
             }
         };
 
-        let started = false;
+        let starting: Array<Promise<any>> = [ ];
         const start = () => {
-            if (started) { return; }
-            provider.on(filter, listener);
-            started = true;
+            if (starting.length) { return; }
+            starting.push(provider.on(filter, listener));
         };
-        const stop = () => {
-            if (!started) { return; }
+
+        const stop = async () => {
+            if (starting.length == 0) { return; }
+
+            let started = starting;
+            starting = [ ];
+            await Promise.all(started);
             provider.off(filter, listener);
-            started = false;
         };
+
         sub = { tag, listeners: [ ], start, stop };
         subs.set(tag, sub);
     }

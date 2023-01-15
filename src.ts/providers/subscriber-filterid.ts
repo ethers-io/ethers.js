@@ -28,6 +28,8 @@ export class FilterIdSubscriber implements Subscriber {
 
     #network: null | Network;
 
+    #hault: boolean;
+
     constructor(provider: JsonRpcApiProvider) {
         this.#provider = provider;
 
@@ -35,6 +37,8 @@ export class FilterIdSubscriber implements Subscriber {
         this.#poller = this.#poll.bind(this);
 
         this.#network = null;
+
+        this.#hault = false;
     }
 
     _subscribe(provider: JsonRpcApiProvider): Promise<string> {
@@ -68,6 +72,8 @@ export class FilterIdSubscriber implements Subscriber {
                 throw new Error("chaid changed");
             }
 
+            if (this.#hault) { return; }
+
             const result = await this.#provider.send("eth_getFilterChanges", [ filterId ]);
             await this._emitResults(this.#provider, result);
         } catch (error) { console.log("@TODO", error); }
@@ -88,6 +94,7 @@ export class FilterIdSubscriber implements Subscriber {
     start(): void { this.#poll(-2); }
 
     stop(): void {
+        this.#hault = true;
         this.#teardown();
         this.#provider.off("block", this.#poller);
     }
