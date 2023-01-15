@@ -48,7 +48,7 @@ export function isAddressable(value: any): value is Addressable {
  *    isAddress("ricmoo.eth")
  *    //_result:
  */
-export function isAddress(value: any): boolean {
+export function isAddress(value: any): value is string {
     try {
         getAddress(value);
         return true;
@@ -115,7 +115,7 @@ export function resolveAddress(target: AddressLike, resolver?: null | NameResolv
     } else if (isAddressable(target)) {
         return checkAddress(target, target.getAddress());
 
-    } else if (typeof(target.then) === "function") {
+    } else if (target && typeof(target.then) === "function") {
         return checkAddress(target, target);
     }
 
