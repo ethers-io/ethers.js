@@ -1,0 +1,145 @@
+_section: Migrating from v5 @<migrating> @priority<-10>
+
+This guide aims to capture some of the high-level differences
+between v5 and v6 to help those migrating an existing app and
+those already familiar with v5 that just need a quick primer.
+
+The biggest differnce in v6 is the use of modern ES6 features,
+so a lot of changes are largely internal.
+
+- [Contracts](migrate-contracts)
+- [Importing](migrate-importing)
+
+
+_subsection: Contracts @<migrate-contracts>
+
+The [[Contract]] is an ES6 Proxy, which means it can resolve
+method names at run-time.
+
+_heading: Ambiguous Methods
+
+In v5, in the case of an ambiguous method, it was necessary to
+look up a method by its canonical normalized signature. In v6
+the signature does not need to be normalized and the Typed API
+provides a cleaner way to access the desired method.
+
+In v5, duplicate definitions also injected warnings into the
+console, since there was no way to detect them at run-time.
+
+_code: contracts in v5 @lang<script>
+  abi = [
+    "function foo(address bar)",
+    "function foo(uint160 bar)",
+  ]
+  contract = new Contract(address, abi, provider)
+
+  // In v5 it was necessary to specify the fully-qualified normalized
+  // signature to access the desired method. For example:
+  contract["foo(address)"](addr)
+
+  // These would fail, since there signature is not normalized:
+  contract["foo(address )"](addr)
+  contract["foo(address addr)"](addr)
+
+  // This would fail, since the method is ambiguous:
+  contract.foo(addr)
+
+_code: contracts in v6  @lang<script>
+  abi = [
+    "function foo(address bar)",
+    "function foo(uint160 bar)",
+  ]
+  contract = new Contract(address, abi, provider)
+
+  // Any of these work fine:
+  contract["foo(address)"](addr)
+  contract["foo(address )"](addr)
+  contract["foo(address addr)"](addr)
+
+  // This still fails, since there is no way to know which
+  // method was intended
+  contract.foo(addr)
+
+  // However, the Typed API makes things a bit easier, since it
+  // allows providing typing information to the Contract:
+  contract.foo(Typed.address(addr))
+
+_heading: Other Method Operations
+
+In v5, contracts contained a series of method buckets, which
+then in turn had all signatures and non-ambiguous names
+attached to them to perform less-common operations.
+
+In v6, the methods each have their own less-common operations
+attached directly to them.
+
+_code: other operations in v5  @lang<script>
+
+  // The default action chooses send or call base on method
+  // type (pure, view, constant, non-payable or payable)
+  contract.foo(addr)
+
+  // This would perform the default action, but return a Result
+  // object, instead of destructing the value
+  contract.functions.foo(addr)
+
+  // Forces using call
+  contract.staticCall.foo(addr)
+
+  // Estimate the gas
+  contract.estimateGas.foo(addr)
+
+  // Populate a transaction
+  contract.populateTransaction.foo(addr)
+
+_code: other operations in v6  @lang<script>
+
+  // Still behaves the same
+  contract.foo(addr)
+
+  // Perform a call, returning a Result object directly
+  contract.foo.staticCallResult(addr)
+
+  // Forces using call (even for payable and non-payable)
+  contract.foo.staticCall(addr)
+
+  // Forces sending a transaction (even for pure and view)
+  contract.foo.send(addr)
+
+  // Estimate the gas
+  contract.foo.estimateGas(addr)
+
+  // Populate a transaction
+  contract.foo.populateTransaction(addr)
+
+
+_subsection: Importing  @<migrate-importing>
+
+In v5, the project was maintained as a large set of sub-packages
+managed as a monorepo.
+
+In v6 all imports are available in the root package, and for those
+who wish to have finer-grained control, the ``pkg.exports`` makes
+certain folders avilable directly.
+
+_code: importing in v5  @lang<script>
+
+  // Many things (but not all) we available on the root package
+  import { ethers } from "ethers"
+
+  // But some packages were grouped behind an additional property
+  import { providers } from "ethers"
+  const { InfuraProvider } = providers
+
+  // For granular control, importing from the sub-package
+  // was necessary
+  import { InfuraProvider } from "@ethersproject/providers"
+
+_code: importing in v6  @lang<script>
+
+  // Everything is available on the root package
+  import { ethers } from "ethers"
+  import { InfuraProvider } from "ethers"
+
+  // The pkg.exports provides granular access
+  import { InfuraProvider } from "ethers/providers"
