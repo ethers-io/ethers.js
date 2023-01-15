@@ -6,8 +6,8 @@ export { getAddress, getIcapAddress, getCreateAddress, getCreate2Address, isAddr
 export { ZeroAddress, WeiPerEther, MaxUint256, MinInt256, MaxInt256, N, ZeroHash, EtherSymbol, MessagePrefix } from "./constants/index.js";
 export { BaseContract, Contract, ContractFactory, ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EventLog, } from "./contract/index.js";
 export { computeHmac, randomBytes, keccak256, ripemd160, sha256, sha512, pbkdf2, scrypt, scryptSync, lock, Signature, SigningKey } from "./crypto/index.js";
-export { id, isValidName, namehash, dnsEncode, hashMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, TypedDataEncoder } from "./hash/index.js";
-export { getDefaultProvider, Block, FeeData, Log, TransactionReceipt, TransactionResponse, AbstractProvider, FallbackProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, BrowserProvider, AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, QuickNodeProvider, 
+export { id, isValidName, namehash, dnsEncode, hashMessage, verifyMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, TypedDataEncoder } from "./hash/index.js";
+export { getDefaultProvider, Block, FeeData, Log, TransactionReceipt, TransactionResponse, AbstractSigner, VoidSigner, AbstractProvider, FallbackProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, BrowserProvider, AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider, InfuraProvider, QuickNodeProvider, 
 //PocketProvider } from "./provider-pocket.js";
 IpcSocketProvider, SocketProvider, WebSocketProvider, EnsResolver, Network } from "./providers/index.js";
 export { accessListify, computeAddress, recoverAddress, Transaction } from "./transaction/index.js";

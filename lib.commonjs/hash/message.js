@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hashMessage = void 0;
+exports.verifyMessage = exports.hashMessage = void 0;
 const index_js_1 = require("../crypto/index.js");
 const index_js_2 = require("../constants/index.js");
-const index_js_3 = require("../utils/index.js");
+const index_js_3 = require("../transaction/index.js");
+const index_js_4 = require("../utils/index.js");
 /**
  *  Computes the [[link-eip-191]] personal-sign message digest to sign.
  *
@@ -34,13 +35,18 @@ const index_js_3 = require("../utils/index.js");
  */
 function hashMessage(message) {
     if (typeof (message) === "string") {
-        message = (0, index_js_3.toUtf8Bytes)(message);
+        message = (0, index_js_4.toUtf8Bytes)(message);
     }
-    return (0, index_js_1.keccak256)((0, index_js_3.concat)([
-        (0, index_js_3.toUtf8Bytes)(index_js_2.MessagePrefix),
-        (0, index_js_3.toUtf8Bytes)(String(message.length)),
+    return (0, index_js_1.keccak256)((0, index_js_4.concat)([
+        (0, index_js_4.toUtf8Bytes)(index_js_2.MessagePrefix),
+        (0, index_js_4.toUtf8Bytes)(String(message.length)),
         message
     ]));
 }
 exports.hashMessage = hashMessage;
+function verifyMessage(message, sig) {
+    const digest = hashMessage(message);
+    return (0, index_js_3.recoverAddress)(digest, sig);
+}
+exports.verifyMessage = verifyMessage;
 //# sourceMappingURL=message.js.map

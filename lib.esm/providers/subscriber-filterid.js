@@ -17,11 +17,13 @@ export class FilterIdSubscriber {
     #filterIdPromise;
     #poller;
     #network;
+    #hault;
     constructor(provider) {
         this.#provider = provider;
         this.#filterIdPromise = null;
         this.#poller = this.#poll.bind(this);
         this.#network = null;
+        this.#hault = false;
     }
     _subscribe(provider) {
         throw new Error("subclasses must override this");
@@ -49,6 +51,9 @@ export class FilterIdSubscriber {
             if (this.#network.chainId !== network.chainId) {
                 throw new Error("chaid changed");
             }
+            if (this.#hault) {
+                return;
+            }
             const result = await this.#provider.send("eth_getFilterChanges", [filterId]);
             await this._emitResults(this.#provider, result);
         }
@@ -68,6 +73,7 @@ export class FilterIdSubscriber {
     }
     start() { this.#poll(-2); }
     stop() {
+        this.#hault = true;
         this.#teardown();
         this.#provider.off("block", this.#poller);
     }

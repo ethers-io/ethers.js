@@ -33,6 +33,10 @@ class PreparedTopicFilter {
         const resolver = canResolve(runner) ? runner : null;
         this.#filter = (async function () {
             const resolvedArgs = await Promise.all(fragment.inputs.map((param, index) => {
+                const arg = args[index];
+                if (arg == null) {
+                    return null;
+                }
                 return param.walkAsync(args[index], (type, value) => {
                     if (type === "address") {
                         return (0, index_js_2.resolveAddress)(value, resolver);
@@ -347,20 +351,21 @@ async function getSub(contract, operation, event) {
                 });
             }
         };
-        let started = false;
+        let starting = [];
         const start = () => {
-            if (started) {
+            if (starting.length) {
                 return;
             }
-            provider.on(filter, listener);
-            started = true;
+            starting.push(provider.on(filter, listener));
         };
-        const stop = () => {
-            if (!started) {
+        const stop = async () => {
+            if (starting.length == 0) {
                 return;
             }
+            let started = starting;
+            starting = [];
+            await Promise.all(started);
             provider.off(filter, listener);
-            started = false;
         };
         sub = { tag, listeners: [], start, stop };
         subs.set(tag, sub);

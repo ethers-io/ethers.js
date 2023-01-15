@@ -111,7 +111,7 @@ function resolveAddress(target, resolver) {
     else if (isAddressable(target)) {
         return checkAddress(target, target.getAddress());
     }
-    else if (typeof (target.then) === "function") {
+    else if (target && typeof (target.then) === "function") {
         return checkAddress(target, target);
     }
     (0, index_js_1.assertArgument)(false, "unsupported addressable value", "target", target);

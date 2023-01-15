@@ -1,5 +1,6 @@
 import { keccak256 } from "../crypto/index.js";
 import { MessagePrefix } from "../constants/index.js";
+import { recoverAddress } from "../transaction/index.js";
 import { concat, toUtf8Bytes } from "../utils/index.js";
 /**
  *  Computes the [[link-eip-191]] personal-sign message digest to sign.
@@ -38,5 +39,9 @@ export function hashMessage(message) {
         toUtf8Bytes(String(message.length)),
         message
     ]));
+}
+export function verifyMessage(message, sig) {
+    const digest = hashMessage(message);
+    return recoverAddress(digest, sig);
 }
 //# sourceMappingURL=message.js.map

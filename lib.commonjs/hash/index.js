@@ -5,7 +5,7 @@
  *  @_section: api/hashing:Hashing Utilities  [hashing]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.id = void 0;
+exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.verifyMessage = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.id = void 0;
 var id_js_1 = require("./id.js");
 Object.defineProperty(exports, "id", { enumerable: true, get: function () { return id_js_1.id; } });
 var namehash_js_1 = require("./namehash.js");
@@ -14,6 +14,7 @@ Object.defineProperty(exports, "namehash", { enumerable: true, get: function () 
 Object.defineProperty(exports, "dnsEncode", { enumerable: true, get: function () { return namehash_js_1.dnsEncode; } });
 var message_js_1 = require("./message.js");
 Object.defineProperty(exports, "hashMessage", { enumerable: true, get: function () { return message_js_1.hashMessage; } });
+Object.defineProperty(exports, "verifyMessage", { enumerable: true, get: function () { return message_js_1.verifyMessage; } });
 var solidity_js_1 = require("./solidity.js");
 Object.defineProperty(exports, "solidityPacked", { enumerable: true, get: function () { return solidity_js_1.solidityPacked; } });
 Object.defineProperty(exports, "solidityPackedKeccak256", { enumerable: true, get: function () { return solidity_js_1.solidityPackedKeccak256; } });

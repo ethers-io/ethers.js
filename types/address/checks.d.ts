@@ -39,7 +39,7 @@ export declare function isAddressable(value: any): value is Addressable;
  *    isAddress("ricmoo.eth")
  *    //_result:
  */
-export declare function isAddress(value: any): boolean;
+export declare function isAddress(value: any): value is string;
 /**
  *  Resolves to an address for the %%target%%, which may be any
  *  supported address type, an [[Addressable]] or a Promise which
