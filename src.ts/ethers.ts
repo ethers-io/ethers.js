@@ -49,7 +49,7 @@ export {
 export {
     id,
     isValidName, namehash, dnsEncode,
-    hashMessage,
+    hashMessage, verifyMessage,
     solidityPacked, solidityPackedKeccak256, solidityPackedSha256,
     TypedDataEncoder
 } from "./hash/index.js";
@@ -58,6 +58,8 @@ export {
     getDefaultProvider,
 
     Block, FeeData, Log, TransactionReceipt, TransactionResponse,
+
+    AbstractSigner, VoidSigner,
 
     AbstractProvider,
 
