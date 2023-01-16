@@ -365,6 +365,21 @@ describe('Test Hash Functions', function () {
         });
     });
 });
+describe('Test Hash Constants', function () {
+    var tests = (0, testcases_1.loadTests)('hashes');
+    it('returns HashZero correctly', function () {
+        this.timeout(120000);
+        tests.forEach(function (test) {
+            assert_1.default.strictEqual(ethers_1.ethers.constants.HashZero, "0x0000000000000000000000000000000000000000000000000000000000000000");
+        });
+    });
+    it('returns HashZero16Bytes correctly', function () {
+        this.timeout(120000);
+        tests.forEach(function (test) {
+            assert_1.default.strictEqual(ethers_1.ethers.constants.HashZero16Bytes, "0x00000000000000000000000000000000");
+        });
+    });
+});
 describe('Test Solidity splitSignature', function () {
     it('splits a canonical signature', function () {
         this.timeout(120000);

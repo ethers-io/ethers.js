@@ -7972,8 +7972,11 @@
 	var hashes = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.HashZero = void 0;
-	exports.HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
+	exports.HashZero16Bytes = exports.HashZero = void 0;
+	var HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
+	exports.HashZero = HashZero;
+	var HashZero16Bytes = "0x00000000000000000000000000000000";
+	exports.HashZero16Bytes = HashZero16Bytes;
 
 	});
 
@@ -7993,7 +7996,7 @@
 	var lib$7 = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.EtherSymbol = exports.HashZero = exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.AddressZero = void 0;
+	exports.EtherSymbol = exports.HashZero16Bytes = exports.HashZero = exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.AddressZero = void 0;
 
 	Object.defineProperty(exports, "AddressZero", { enumerable: true, get: function () { return addresses.AddressZero; } });
 
@@ -8007,6 +8010,7 @@
 	Object.defineProperty(exports, "MaxInt256", { enumerable: true, get: function () { return bignumbers.MaxInt256; } });
 
 	Object.defineProperty(exports, "HashZero", { enumerable: true, get: function () { return hashes.HashZero; } });
+	Object.defineProperty(exports, "HashZero16Bytes", { enumerable: true, get: function () { return hashes.HashZero16Bytes; } });
 
 	Object.defineProperty(exports, "EtherSymbol", { enumerable: true, get: function () { return strings.EtherSymbol; } });
 

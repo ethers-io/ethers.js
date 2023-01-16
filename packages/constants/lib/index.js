@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EtherSymbol = exports.HashZero = exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.AddressZero = void 0;
+exports.EtherSymbol = exports.HashZero16Bytes = exports.HashZero = exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.Two = exports.One = exports.Zero = exports.NegativeOne = exports.AddressZero = void 0;
 var addresses_1 = require("./addresses");
 Object.defineProperty(exports, "AddressZero", { enumerable: true, get: function () { return addresses_1.AddressZero; } });
 var bignumbers_1 = require("./bignumbers");
@@ -14,6 +14,7 @@ Object.defineProperty(exports, "MinInt256", { enumerable: true, get: function ()
 Object.defineProperty(exports, "MaxInt256", { enumerable: true, get: function () { return bignumbers_1.MaxInt256; } });
 var hashes_1 = require("./hashes");
 Object.defineProperty(exports, "HashZero", { enumerable: true, get: function () { return hashes_1.HashZero; } });
+Object.defineProperty(exports, "HashZero16Bytes", { enumerable: true, get: function () { return hashes_1.HashZero16Bytes; } });
 var strings_1 = require("./strings");
 Object.defineProperty(exports, "EtherSymbol", { enumerable: true, get: function () { return strings_1.EtherSymbol; } });
 //# sourceMappingURL=index.js.map

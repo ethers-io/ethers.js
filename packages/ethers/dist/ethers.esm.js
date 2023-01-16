@@ -7391,6 +7391,7 @@ const MinInt256 = ( /*#__PURE__*/BigNumber.from("-0x8000000000000000000000000000
 const MaxInt256 = ( /*#__PURE__*/BigNumber.from("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
 
 const HashZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
+const HashZero16Bytes = "0x00000000000000000000000000000000";
 
 // NFKC (composed)             // (decomposed)
 const EtherSymbol = "\u039e"; // "\uD835\uDF63";
@@ -7409,6 +7410,7 @@ var index$1 = /*#__PURE__*/Object.freeze({
 	MinInt256: MinInt256,
 	MaxInt256: MaxInt256,
 	HashZero: HashZero,
+	HashZero16Bytes: HashZero16Bytes,
 	EtherSymbol: EtherSymbol
 });
 

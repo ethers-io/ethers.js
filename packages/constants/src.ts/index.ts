@@ -11,6 +11,6 @@ export {
     MinInt256,
     MaxInt256
 } from "./bignumbers";
-export { HashZero } from "./hashes";
+export { HashZero, HashZero16Bytes } from "./hashes";
 export { EtherSymbol } from "./strings";
 
