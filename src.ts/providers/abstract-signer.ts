@@ -55,6 +55,8 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                     "transaction from mismatch", "tx.from", from);
                 return address;
             });
+        } else {
+            pop.from = this.getAddress();
         }
 
         return await resolveProperties(pop);
@@ -203,6 +205,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         const provider = this.#checkProvider("sendTransaction");
 
         const pop = await this.populateTransaction(tx);
+        delete pop.from;
         const txObj = Transaction.from(pop);
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
     }
