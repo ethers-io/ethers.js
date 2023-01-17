@@ -690,11 +690,11 @@ class Transaction {
             result.accessList = tx.accessList;
         }
         if (tx.hash != null) {
-            (0, index_js_3.assertArgument)(result.isSigned(), "unsigned transaction cannot have define hash", "tx", tx);
+            (0, index_js_3.assertArgument)(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);
             (0, index_js_3.assertArgument)(result.hash === tx.hash, "hash mismatch", "tx", tx);
         }
         if (tx.from != null) {
-            (0, index_js_3.assertArgument)(result.isSigned(), "unsigned transaction cannot have define from", "tx", tx);
+            (0, index_js_3.assertArgument)(result.isSigned(), "unsigned transaction cannot define from", "tx", tx);
             (0, index_js_3.assertArgument)(result.from.toLowerCase() === (tx.from || "").toLowerCase(), "from mismatch", "tx", tx);
         }
         return result;

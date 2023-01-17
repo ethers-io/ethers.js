@@ -39,6 +39,9 @@ class AbstractSigner {
                 return address;
             });
         }
+        else {
+            pop.from = this.getAddress();
+        }
         return await (0, index_js_3.resolveProperties)(pop);
     }
     async populateCall(tx) {
@@ -163,6 +166,7 @@ class AbstractSigner {
     async sendTransaction(tx) {
         const provider = this.#checkProvider("sendTransaction");
         const pop = await this.populateTransaction(tx);
+        delete pop.from;
         const txObj = index_js_2.Transaction.from(pop);
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
     }

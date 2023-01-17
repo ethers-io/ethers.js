@@ -92,7 +92,7 @@
       "types": "./types/wordlistsindex.d.ts"
     }
   },
-  "gitHead": "f13a7c64b396a0d7db4bec28c9f9bdf67adf0b2e",
+  "gitHead": "be3f6293985f05728119187c2517b964a94229dc",
   "keywords": [
     "ethereum",
     "ethers",
@@ -132,5 +132,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.0-beta-exports.10"
+  "version": "6.0.0-beta-exports.11"
 }

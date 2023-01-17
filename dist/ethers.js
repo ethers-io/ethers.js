@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.10";
+const version = "6.0.0-beta-exports.11";
 
 /**
  *  Property helper functions.
@@ -8076,11 +8076,11 @@ class Transaction {
             result.accessList = tx.accessList;
         }
         if (tx.hash != null) {
-            assertArgument(result.isSigned(), "unsigned transaction cannot have define hash", "tx", tx);
+            assertArgument(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);
             assertArgument(result.hash === tx.hash, "hash mismatch", "tx", tx);
         }
         if (tx.from != null) {
-            assertArgument(result.isSigned(), "unsigned transaction cannot have define from", "tx", tx);
+            assertArgument(result.isSigned(), "unsigned transaction cannot define from", "tx", tx);
             assertArgument(result.from.toLowerCase() === (tx.from || "").toLowerCase(), "from mismatch", "tx", tx);
         }
         return result;
@@ -15046,6 +15046,9 @@ class AbstractSigner {
                 return address;
             });
         }
+        else {
+            pop.from = this.getAddress();
+        }
         return await resolveProperties(pop);
     }
     async populateCall(tx) {
@@ -15170,6 +15173,7 @@ class AbstractSigner {
     async sendTransaction(tx) {
         const provider = this.#checkProvider("sendTransaction");
         const pop = await this.populateTransaction(tx);
+        delete pop.from;
         const txObj = Transaction.from(pop);
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
     }
@@ -16204,6 +16208,7 @@ class JsonRpcProvider extends JsonRpcApiPollingProvider {
         // Configure a POST connection for the requested method
         const request = this._getConnection();
         request.body = JSON.stringify(payload);
+        request.setHeader("content-type", "application/json");
         const response = await request.send();
         response.assertOk();
         let resp = response.bodyJson;

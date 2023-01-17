@@ -811,6 +811,7 @@ export class JsonRpcProvider extends JsonRpcApiPollingProvider {
         // Configure a POST connection for the requested method
         const request = this._getConnection();
         request.body = JSON.stringify(payload);
+        request.setHeader("content-type", "application/json");
         const response = await request.send();
         response.assertOk();
         let resp = response.bodyJson;
