@@ -249,7 +249,7 @@ service (such as [[link-metamask]]) which provides strictly
 gated access and requires feedback to the user to approve or
 reject operations.
 
-_code:  @lang<javascript>
+_code:  @lang<script>
 
   //_hide: provider = new JsonRpcProvider("http:/\/localhost:8545")
   //_hide: provider.resolveName = () => "0x643aA0A61eADCC9Cc202D1915D942d35D005400C";
