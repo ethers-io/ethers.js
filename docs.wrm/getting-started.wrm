@@ -11,7 +11,7 @@ If using NPM, you must first install Ethers.
 
 _code: installing via NPM @lang<shell>
   # Install ethers
-  /home/ricmoo/test-ethers> npm install ethers@beta
+  /home/ricmoo/test-ethers> npm install ethers@beta-exports
 
 _null:
 
@@ -249,11 +249,15 @@ service (such as [[link-metamask]]) which provides strictly
 gated access and requires feedback to the user to approve or
 reject operations.
 
-_code:  @lang<script>
+_code:  @lang<javascript>
+
+  //_hide: provider = new JsonRpcProvider("http:/\/localhost:8545")
+  //_hide: provider.resolveName = () => "0x643aA0A61eADCC9Cc202D1915D942d35D005400C";
+  //_hide: signer = new Wallet(id("test"), provider);
 
   // When sending a transaction, the value is in wei, so parseEther
   // converts ether to wei.
-  tx = await signer.send({
+  tx = await signer.sendTransaction({
     to: "ethers.eth",
     value: parseEther("1.0")
   });

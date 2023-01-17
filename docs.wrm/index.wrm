@@ -6,7 +6,7 @@ is still undergoing minor changes.
 To try it out:
 
 _code:
-/home/ricmoo> npm install ethers@beta-eports
+/home/ricmoo> npm install ethers@beta-exports
 
 _null:
 
