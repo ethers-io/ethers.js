@@ -799,12 +799,12 @@ export class Transaction implements TransactionLike<string> {
         if (tx.accessList != null) { result.accessList = tx.accessList; }
 
         if (tx.hash != null) {
-            assertArgument(result.isSigned(), "unsigned transaction cannot have define hash", "tx", tx);
+            assertArgument(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);
             assertArgument(result.hash === tx.hash, "hash mismatch", "tx", tx);
         }
 
         if (tx.from != null) {
-            assertArgument(result.isSigned(), "unsigned transaction cannot have define from", "tx", tx);
+            assertArgument(result.isSigned(), "unsigned transaction cannot define from", "tx", tx);
             assertArgument(result.from.toLowerCase() === (tx.from || "").toLowerCase(), "from mismatch", "tx", tx);
         }
 
