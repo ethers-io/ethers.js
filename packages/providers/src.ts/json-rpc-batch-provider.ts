@@ -66,7 +66,10 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
                     // on whether it was a success or error
                     batch.forEach((inflightRequest, index) => {
                         const payload = result[index];
-                        if (payload.error) {
+                        if (!payload) {
+                            const error = new Error("no payload received")
+                            inflightRequest.reject(error)
+                        } else if (payload.error) {
                             const error = new Error(payload.error.message);
                             (<any>error).code = payload.error.code;
                             (<any>error).data = payload.error.data;
