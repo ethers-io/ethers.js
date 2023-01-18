@@ -122,11 +122,12 @@ _property: signer._signTypedData(domain, types, value) => Promise<string<[RawSig
 
 Signs the typed data //value// with //types// data structure for //domain// using
 the [[link-eip-712]] specification.
+If [[link-eip-712]] is unimplemented by the signer, falls back to using ``eth_sign``.
 
 _warning: Experimental feature (this method name will change)
 
 This is still an experimental feature. If using it, please specify the **exact**
-version of ethers you are using (e.g. spcify ``"5.0.18"``, **not** ``"^5.0.18"``) as
+version of ethers you are using (e.g. specify ``"5.0.18"``, **not** ``"^5.0.18"``) as
 the method name will be renamed from ``_signTypedData`` to ``signTypedData`` once
 it has been used in the field a bit.
 

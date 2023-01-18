@@ -340,10 +340,21 @@ export class JsonRpcSigner extends Signer implements TypedDataSigner {
         const address = await this.getAddress();
 
         try {
-            return await this.provider.send("eth_signTypedData_v4", [
-                address.toLowerCase(),
-                JSON.stringify(_TypedDataEncoder.getPayload(populated.domain, types, populated.value))
-            ]);
+            try {
+                return await this.provider.send("eth_signTypedData_v4", [
+                    address.toLowerCase(),
+                    JSON.stringify(_TypedDataEncoder.getPayload(populated.domain, types, populated.value))
+                ]);
+            } catch (error) {
+                // Fallback to eth_sign in case eth_signTypedData_v4 (EIP-712) is unimplemented.
+                if (typeof(error.message) === "string" && error.message.match(/not found/i)) {
+                    return await this.provider.send("eth_sign", [
+                        address.toLowerCase(),
+                        _TypedDataEncoder.hash(populated.domain, types, populated.value)
+                    ])
+                }
+                throw error
+            }
         } catch (error) {
             if (typeof(error.message) === "string" && error.message.match(/user denied/i)) {
                 logger.throwError("user rejected signing", Logger.errors.ACTION_REJECTED, {
