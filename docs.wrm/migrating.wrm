@@ -7,8 +7,56 @@ those already familiar with v5 that just need a quick primer.
 The biggest differnce in v6 is the use of modern ES6 features,
 so a lot of changes are largely internal.
 
+- [BigNumbers](migrate-bigint)
 - [Contracts](migrate-contracts)
 - [Importing](migrate-importing)
+- [Odds and Ends](migrate-other)
+
+
+_subsection: Big Numbers  @<migrate-bigint>
+
+One of the biggest changes in v6 is that the //BigNumber// class has
+been replaced with the built-in ES2020 BigInt offered by modern
+JavaScript environments.
+
+There is plenty of [online documentation](link-js-bigint) to get
+you started with JavaScript ES2020 BigInt. Keep in mind, just like
+//BigNumber//, a ES2020 BigInt can **only** operate on integers.
+
+The [[FixedNumber]] class still exists for performing fixed-point
+maths.
+
+
+_code: creating large numbers  @lang<script>
+
+  // Using BigNumber in v5
+  value = BigNumber.from("1000")
+
+  // Using BigInt in v6 (ysing literal notation).
+  // Notice the suffix n
+  value = 1000n
+
+  // Using the BigInt function for strings
+  value = BigInt("1000")
+
+
+_code: simple maths on large numbers  @lang<script>
+
+  // Adding two values in v5
+  sum = value1.add(value2)
+
+  // Using BigInt in v6; keep in mind, both values
+  // must be a BigInt
+  sum = value1 + value2
+
+
+_code: simple comparison on large numbers  @lang<script>
+
+  // Checking equality in v5
+  isEqual = value1.eq(value2)
+
+  // Using BigInt in v6
+  isEqaul = (value1 == value2)
 
 
 _subsection: Contracts @<migrate-contracts>
@@ -143,3 +191,18 @@ _code: importing in v6  @lang<script>
 
   // The pkg.exports provides granular access
   import { InfuraProvider } from "ethers/providers"
+
+
+_subsection: Odds and Ends @<migrate-other>
+
+
+_code: default AbiCoder  @lang<script>
+  // In v5, it is a property of AbiCoder
+  coder = AbiCoder.defaultAbiCoder
+
+  // In v6, it is a static function on AbiCoder, which uses
+  // a singleton pattern; the first time it is called, the
+  // AbiCoder is created and on subsequent calls that initial
+  // instance is returned.
+  coder = AbiCoder.defaultAbiCoder()
+
