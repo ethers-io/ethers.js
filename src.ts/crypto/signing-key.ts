@@ -133,11 +133,13 @@ export class SigningKey {
     static computePublicKey(key: BytesLike, compressed?: boolean): string {
         let bytes = getBytes(key, "key");
 
+        // private key
         if (bytes.length === 32) {
             const pubKey = secp256k1.getPublicKey(bytes, !!compressed);
             return hexlify(pubKey);
         }
 
+        // raw public key; use uncompressed key with 0x04 prefix
         if (bytes.length === 64) {
             const pub = new Uint8Array(65);
             pub[0] = 0x04;
