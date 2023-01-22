@@ -15,7 +15,7 @@ export type { Addressable } from "./address/index.js";
 export type { ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName, ContractInterface, ContractMethod, ContractMethodArgs, ContractTransaction, DeferredTopicFilter, Overrides } from "./contract/index.js";
 export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
 export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
-export type { Provider } from "./providers/index.js";
+export type { Provider, Signer } from "./providers/index.js";
 export type { AccessList, AccessListish, AccessListEntry, TransactionLike } from "./transaction/index.js";
 export type { BytesLike, BigNumberish, Numeric, ErrorCode, FixedFormat, Utf8ErrorFunc, UnicodeNormalizationForm, Utf8ErrorReason, RlpStructuredData, GetUrlResponse, FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc, FetchGatewayFunc, FetchGetUrlFunc, EthersError, UnknownError, NotImplementedError, UnsupportedOperationError, NetworkError, ServerError, TimeoutError, BadDataError, CancelledError, BufferOverrunError, NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError, CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError, ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError, ActionRejectedError, CodedEthersError, } from "./utils/index.js";
 export type { KeystoreAccount, EncryptOptions } from "./wallet/index.js";

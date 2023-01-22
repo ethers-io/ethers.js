@@ -1338,6 +1338,9 @@ class FetchRequest {
             maxAttempts: MAX_ATTEMPTS
         };
     }
+    toString() {
+        return `<FetchRequest method=${JSON.stringify(this.method)} url=${JSON.stringify(this.url)} headers=${JSON.stringify(this.headers)} body=${this.#body ? hexlify(this.#body) : "null"}>`;
+    }
     /**
      *  Update the throttle parameters used to determine maximum
      *  attempts and exponential-backoff properties.
@@ -1591,7 +1594,7 @@ class FetchResponse {
     #request;
     #error;
     toString() {
-        return `<Response status=${this.statusCode} body=${this.#body ? hexlify(this.#body) : "null"}>`;
+        return `<FetchResponse status=${this.statusCode} body=${this.#body ? hexlify(this.#body) : "null"}>`;
     }
     /**
      *  The response status code.
@@ -6187,10 +6190,12 @@ class SigningKey {
      */
     static computePublicKey(key, compressed) {
         let bytes = getBytes(key, "key");
+        // private key
         if (bytes.length === 32) {
             const pubKey = getPublicKey(bytes, !!compressed);
             return hexlify(pubKey);
         }
+        // raw public key; use uncompressed key with 0x04 prefix
         if (bytes.length === 64) {
             const pub = new Uint8Array(65);
             pub[0] = 0x04;
@@ -9285,21 +9290,21 @@ class ParamType {
         let type = obj.type;
         let arrayMatch = type.match(regexArrayType);
         if (arrayMatch) {
-            const arrayLength = arrayMatch[2];
+            const arrayLength = parseInt(arrayMatch[2]);
             const arrayChildren = ParamType.from({
                 type: arrayMatch[1],
                 components: obj.components
             });
-            return new ParamType(_guard$2, name, type, "array", indexed, null, arrayLength, arrayChildren);
+            return new ParamType(_guard$2, name || "", type, "array", indexed, null, arrayLength, arrayChildren);
         }
         if (type === "tuple" || type.substring(0, 5) === "tuple(" || type[0] === "(") {
             const comps = (obj.components != null) ? obj.components.map((c) => ParamType.from(c)) : null;
-            const tuple = new ParamType(_guard$2, name, type, "tuple", indexed, comps, null, null);
+            const tuple = new ParamType(_guard$2, name || "", type, "tuple", indexed, comps, null, null);
             // @TODO: use lexer to validate and normalize type
             return tuple;
         }
         type = verifyBasicType(obj.type);
-        return new ParamType(_guard$2, name, type, type, indexed, null, null, null);
+        return new ParamType(_guard$2, name || "", type, type, indexed, null, null, null);
     }
     /**
      *  Returns true if %%value%% is a **ParamType**.
@@ -10251,6 +10256,17 @@ class Interface {
     getFunction(key, values) {
         return this.#getFunction(key, values || null, true);
     }
+    /**
+     *  Iterate over all functions, calling %%callback%%, sorted by their name.
+     */
+    forEachFunction(callback) {
+        const names = Array.from(this.#functions.keys());
+        names.sort((a, b) => a.localeCompare(b));
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            callback((this.#functions.get(name)), i);
+        }
+    }
     // Find an event definition by any means necessary (unless it is ambiguous)
     #getEvent(key, values, forceUnique) {
         // EventTopic
@@ -10329,6 +10345,17 @@ class Interface {
         return this.#getEvent(key, values || null, true);
     }
     /**
+     *  Iterate over all events, calling %%callback%%, sorted by their name.
+     */
+    forEachEvent(callback) {
+        const names = Array.from(this.#events.keys());
+        names.sort((a, b) => a.localeCompare(b));
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            callback((this.#events.get(name)), i);
+        }
+    }
+    /**
      *  Get the [[ErrorFragment]] for %%key%%, which may be an error
      *  selector, error name or error signature that belongs to the ABI.
      *
@@ -10387,6 +10414,17 @@ class Interface {
             return result;
         }
         assertArgument(false, "no matching error", "signature", key);
+    }
+    /**
+     *  Iterate over all errors, calling %%callback%%, sorted by their name.
+     */
+    forEachError(callback) {
+        const names = Array.from(this.#errors.keys());
+        names.sort((a, b) => a.localeCompare(b));
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            callback((this.#errors.get(name)), i);
+        }
     }
     // Get the 4-byte selector used by Solidity to identify a function
     /*

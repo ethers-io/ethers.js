@@ -181,6 +181,7 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
      *  ``.send()`` to make teh request.
      */
     constructor(url: string);
+    toString(): string;
     /**
      *  Update the throttle parameters used to determine maximum
      *  attempts and exponential-backoff properties.

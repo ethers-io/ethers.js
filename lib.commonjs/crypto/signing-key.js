@@ -135,10 +135,12 @@ class SigningKey {
      */
     static computePublicKey(key, compressed) {
         let bytes = (0, index_js_1.getBytes)(key, "key");
+        // private key
         if (bytes.length === 32) {
             const pubKey = secp256k1.getPublicKey(bytes, !!compressed);
             return (0, index_js_1.hexlify)(pubKey);
         }
+        // raw public key; use uncompressed key with 0x04 prefix
         if (bytes.length === 64) {
             const pub = new Uint8Array(65);
             pub[0] = 0x04;

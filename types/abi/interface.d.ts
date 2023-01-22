@@ -102,6 +102,10 @@ export declare class Interface {
      */
     getFunction(key: string, values?: Array<any | Typed>): FunctionFragment;
     /**
+     *  Iterate over all functions, calling %%callback%%, sorted by their name.
+     */
+    forEachFunction(callback: (func: FunctionFragment, index: number) => void): void;
+    /**
      *  Get the event name for %%key%%, which may be a topic hash,
      *  event name or event signature that belongs to the ABI.
      */
@@ -118,6 +122,10 @@ export declare class Interface {
      */
     getEvent(key: string, values?: Array<any | Typed>): EventFragment;
     /**
+     *  Iterate over all events, calling %%callback%%, sorted by their name.
+     */
+    forEachEvent(callback: (func: EventFragment, index: number) => void): void;
+    /**
      *  Get the [[ErrorFragment]] for %%key%%, which may be an error
      *  selector, error name or error signature that belongs to the ABI.
      *
@@ -128,6 +136,10 @@ export declare class Interface {
      *  the ABI, this will throw.
      */
     getError(key: string, values?: Array<any | Typed>): ErrorFragment;
+    /**
+     *  Iterate over all errors, calling %%callback%%, sorted by their name.
+     */
+    forEachError(callback: (func: ErrorFragment, index: number) => void): void;
     _decodeParams(params: ReadonlyArray<ParamType>, data: BytesLike): Result;
     _encodeParams(params: ReadonlyArray<ParamType>, values: ReadonlyArray<any>): string;
     /**

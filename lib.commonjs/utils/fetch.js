@@ -372,6 +372,9 @@ class FetchRequest {
             maxAttempts: MAX_ATTEMPTS
         };
     }
+    toString() {
+        return `<FetchRequest method=${JSON.stringify(this.method)} url=${JSON.stringify(this.url)} headers=${JSON.stringify(this.headers)} body=${this.#body ? (0, data_js_1.hexlify)(this.#body) : "null"}>`;
+    }
     /**
      *  Update the throttle parameters used to determine maximum
      *  attempts and exponential-backoff properties.
@@ -626,7 +629,7 @@ class FetchResponse {
     #request;
     #error;
     toString() {
-        return `<Response status=${this.statusCode} body=${this.#body ? (0, data_js_1.hexlify)(this.#body) : "null"}>`;
+        return `<FetchResponse status=${this.statusCode} body=${this.#body ? (0, data_js_1.hexlify)(this.#body) : "null"}>`;
     }
     /**
      *  The response status code.

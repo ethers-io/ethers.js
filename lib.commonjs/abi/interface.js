@@ -325,6 +325,17 @@ class Interface {
     getFunction(key, values) {
         return this.#getFunction(key, values || null, true);
     }
+    /**
+     *  Iterate over all functions, calling %%callback%%, sorted by their name.
+     */
+    forEachFunction(callback) {
+        const names = Array.from(this.#functions.keys());
+        names.sort((a, b) => a.localeCompare(b));
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            callback((this.#functions.get(name)), i);
+        }
+    }
     // Find an event definition by any means necessary (unless it is ambiguous)
     #getEvent(key, values, forceUnique) {
         // EventTopic
@@ -403,6 +414,17 @@ class Interface {
         return this.#getEvent(key, values || null, true);
     }
     /**
+     *  Iterate over all events, calling %%callback%%, sorted by their name.
+     */
+    forEachEvent(callback) {
+        const names = Array.from(this.#events.keys());
+        names.sort((a, b) => a.localeCompare(b));
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            callback((this.#events.get(name)), i);
+        }
+    }
+    /**
      *  Get the [[ErrorFragment]] for %%key%%, which may be an error
      *  selector, error name or error signature that belongs to the ABI.
      *
@@ -461,6 +483,17 @@ class Interface {
             return result;
         }
         (0, index_js_3.assertArgument)(false, "no matching error", "signature", key);
+    }
+    /**
+     *  Iterate over all errors, calling %%callback%%, sorted by their name.
+     */
+    forEachError(callback) {
+        const names = Array.from(this.#errors.keys());
+        names.sort((a, b) => a.localeCompare(b));
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            callback((this.#errors.get(name)), i);
+        }
     }
     // Get the 4-byte selector used by Solidity to identify a function
     /*
