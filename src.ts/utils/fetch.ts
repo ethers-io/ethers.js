@@ -430,6 +430,10 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         };
     }
 
+    toString(): string {
+        return `<FetchRequest method=${ JSON.stringify(this.method) } url=${ JSON.stringify(this.url) } headers=${ JSON.stringify(this.headers) } body=${ this.#body ? hexlify(this.#body): "null" }>`;
+    }
+
     /**
      *  Update the throttle parameters used to determine maximum
      *  attempts and exponential-backoff properties.
@@ -709,7 +713,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
     #error: { error?: Error, message: string };
 
     toString(): string {
-        return `<Response status=${ this.statusCode } body=${ this.#body ? hexlify(this.#body): "null" }>`;
+        return `<FetchResponse status=${ this.statusCode } body=${ this.#body ? hexlify(this.#body): "null" }>`;
     }
 
     /**
