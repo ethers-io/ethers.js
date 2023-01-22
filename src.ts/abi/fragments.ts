@@ -853,25 +853,25 @@ export class ParamType {
 
         let arrayMatch = type.match(regexArrayType);
         if (arrayMatch) {
-            const arrayLength = arrayMatch[2];
+            const arrayLength = parseInt(arrayMatch[2]);
             const arrayChildren = ParamType.from({
                 type: arrayMatch[1],
                 components: obj.components
             });
 
-            return new ParamType(_guard, name, type, "array", indexed, null, arrayLength, arrayChildren);
+            return new ParamType(_guard, name || "", type, "array", indexed, null, arrayLength, arrayChildren);
         }
 
         if (type === "tuple" || type.substring(0, 5) === "tuple(" || type[0] === "(") {
             const comps = (obj.components != null) ? obj.components.map((c: any) => ParamType.from(c)): null;
-            const tuple = new ParamType(_guard, name, type, "tuple", indexed, comps, null, null);
+            const tuple = new ParamType(_guard, name || "", type, "tuple", indexed, comps, null, null);
             // @TODO: use lexer to validate and normalize type
             return tuple;
         }
 
         type = verifyBasicType(obj.type);
 
-        return new ParamType(_guard, name, type, type, indexed, null, null, null);
+        return new ParamType(_guard, name || "", type, type, indexed, null, null, null);
     }
 
     /**
