@@ -321,7 +321,7 @@ function toHex(value: string | BN): string {
     }
 
     // Add a "0x" prefix if missing
-    if (value.substring(0, 2) !== "0x") { value = "0x" + value; }
+    if (!value.startsWith("0x")) { value = "0x" + value; }
 
     // Normalize zero
     if (value === "0x") { return "0x00"; }
@@ -330,7 +330,7 @@ function toHex(value: string | BN): string {
     if (value.length % 2) { value = "0x0" + value.substring(2); }
 
     // Trim to smallest even-length string
-    while (value.length > 4 && value.substring(0, 4) === "0x00") {
+    while (value.length > 4 && value.startsWith("0x00")) {
         value = "0x" + value.substring(4);
     }
 

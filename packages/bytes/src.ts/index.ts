@@ -108,7 +108,7 @@ export function arrayify(value: BytesLike | Hexable | number, options?: DataOpti
         return addSlice(new Uint8Array(result));
     }
 
-    if (options.allowMissingPrefix && typeof(value) === "string" && value.substring(0, 2) !== "0x") {
+    if (options.allowMissingPrefix && typeof(value) === "string" && !value.startsWith("0x")) {
          value = "0x" + value;
     }
 
@@ -221,7 +221,7 @@ export function hexlify(value: BytesLike | Hexable | number | bigint, options?: 
         return "0x" + value;
     }
 
-    if (options.allowMissingPrefix && typeof(value) === "string" && value.substring(0, 2) !== "0x") {
+    if (options.allowMissingPrefix && typeof(value) === "string" && !value.startsWith("0x")) {
          value = "0x" + value;
     }
 
@@ -254,7 +254,7 @@ export function hexlify(value: BytesLike | Hexable | number | bigint, options?: 
 
 /*
 function unoddify(value: BytesLike | Hexable | number): BytesLike | Hexable | number {
-    if (typeof(value) === "string" && value.length % 2 && value.substring(0, 2) === "0x") {
+    if (typeof(value) === "string" && value.length % 2 && !value.startsWith("0x")) {
         return "0x0" + value.substring(2);
     }
     return value;

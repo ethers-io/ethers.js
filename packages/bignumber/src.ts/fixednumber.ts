@@ -77,7 +77,7 @@ export function parseFixed(value: string, decimals?: BigNumberish): BigNumber {
     }
 
     // Is it negative?
-    const negative = (value.substring(0, 1) === "-");
+    const negative = (value.startsWith("-"));
     if (negative) { value = value.substring(1); }
 
     if (value === ".") {

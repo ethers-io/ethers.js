@@ -245,7 +245,7 @@ export class LiteralNode extends ValueNode {
     async assemble(assembler: Assembler, visit: AssembleVisitFunc): Promise<void> {
         assembler.start(this);
         if (this.verbatim) {
-            if (this.value.substring(0, 2) === "0x") {
+            if (this.value.startsWith("0x")) {
                 visit(this, this.value);
             } else {
                 visit(this, ethers.BigNumber.from(this.value).toHexString());

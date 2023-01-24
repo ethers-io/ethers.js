@@ -27,7 +27,7 @@ import { dirnames, getPackageJsonPath } from "../path";
                 }
             } else {
                 if (prefix === "ethers" || prefix === "@ethersproject") {
-                    if (version.substring(0, 1) !== "^") {
+                    if (!version.startsWith("^")) {
                         throw new Error(`bad version for bumping: ${ dirname }:${ name }:${ version }`);
                     }
                     version = "^" + newVersion;

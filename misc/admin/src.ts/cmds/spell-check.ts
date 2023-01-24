@@ -180,17 +180,13 @@ function checkWord(word: string): boolean {
     return false;
 }
 
-function starts(text: string, prefix: string): boolean {
-    return (text.substring(0, prefix.length) === prefix);
-}
-
 (async function() {
     console.log(colorify.bold("Spell checking source code strings..."));
 
     let count = 0;
     getAllStrings(resolve(__dirname, "../../../../packages")).forEach((file: Foo) => {
-        if (starts(file.filename, "/testcases/src.ts/generation-scripts")) { return; }
-        if (starts(file.filename, "/asm/src.ts/opcodes.ts")) { return; }
+        if (file.filename.startsWith("/testcases/src.ts/generation-scripts")) { return; }
+        if (file.filename.startsWith("/asm/src.ts/opcodes.ts")) { return; }
 
         file.values.forEach((entry) => {
             function problem(word: string): void {
@@ -210,7 +206,7 @@ function starts(text: string, prefix: string): boolean {
 
             // Prolly a require
             if (value.match(/^@ethersproject\/[a-z0-9-]+$/)) { return; }
-            if (value.substring(0, 2) === "./") { return; }
+            if (value.startsWith("./")) { return; }
 
             // Prolly encoded binary data
             if (value.indexOf(" ") === -1 && value.length > 20) { return; }

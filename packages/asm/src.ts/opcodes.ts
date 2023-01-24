@@ -46,7 +46,7 @@ export class Opcode {
 
     // Returns the number of of bytes this performs if a PUSH; 0 otherwise
     isPush(): number {
-        if (this.mnemonic.substring(0, 4) === "PUSH") {
+        if (this.mnemonic.startsWith("PUSH")) {
             return this.value - 0x60 + 1;
         }
         return 0;
