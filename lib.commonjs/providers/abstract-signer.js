@@ -120,7 +120,7 @@ class AbstractSigner {
                 else if (feeData.gasPrice != null) {
                     // Network doesn't support EIP-1559...
                     // ...but they are trying to use EIP-1559 properties
-                    (0, index_js_3.assert)(hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
+                    (0, index_js_3.assert)(!hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
                         operation: "populateTransaction"
                     });
                     // Populate missing fee data

@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.12";
+const version = "6.0.0-beta-exports.13";
 
 /**
  *  Property helper functions.
@@ -16384,7 +16384,7 @@ class AbstractSigner {
                 else if (feeData.gasPrice != null) {
                     // Network doesn't support EIP-1559...
                     // ...but they are trying to use EIP-1559 properties
-                    assert$1(hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
+                    assert$1(!hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
                         operation: "populateTransaction"
                     });
                     // Populate missing fee data
