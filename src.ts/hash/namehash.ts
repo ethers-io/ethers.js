@@ -5,17 +5,13 @@ import {
 } from "../utils/index.js";
 
 
-//import { ens_normalize } from "./ens-normalize/lib";
-// @TOOD:
-function ens_normalize(name: string): string {
-    return name;
-}
+import { ens_normalize } from "@adraffy/ens-normalize";
 
 const Zeros = new Uint8Array(32);
 Zeros.fill(0);
 
 function checkComponent(comp: Uint8Array): Uint8Array {
-    if (comp.length === 0) { throw new Error("invalid ENS name; empty component"); }
+    assertArgument(comp.length !== 0, "invalid ENS name; empty component", "comp", comp)
     return comp;
 }
 
@@ -37,7 +33,7 @@ function ensNameSplit(name: string): Array<Uint8Array> {
     }
 
     // There was a stray separator at the end of the name
-    if (last >= bytes.length) { throw new Error("invalid ENS name; empty component"); }
+    assertArgument(last < bytes.length, "invalid ENS name; empty component", "name", name);
 
     comps.push(checkComponent(bytes.slice(last)));
     return comps;
@@ -47,7 +43,7 @@ export function ensNormalize(name: string): string {
     return ensNameSplit(name).map((comp) => toUtf8String(comp)).join(".");
 }
 
-export function isValidName(name: string): boolean {
+export function isValidName(name: string): name is string {
     try {
         return (ensNameSplit(name).length !== 0);
     } catch (error) { }
@@ -55,7 +51,6 @@ export function isValidName(name: string): boolean {
 }
 
 export function namehash(name: string): string {
-    /* istanbul ignore if */
     assertArgument(typeof(name) === "string", "invalid ENS name; not a string", "name", name);
 
     let result: string | Uint8Array = Zeros;
