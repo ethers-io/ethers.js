@@ -30,9 +30,9 @@ export {
     NetworkPlugin,
     GasCostPlugin,
     EnsPlugin,
-    //LayerOneConnectionPlugin,
     //MaxPriorityFeePlugin,
-    //PriceOraclePlugin,
+    FeeDataNetworkPlugin,
+    //CustomBlockNetworkPlugin
 } from "./plugins-network.js";
 
 export {
@@ -72,9 +72,16 @@ export {
 export type {
     Subscription, Subscriber,
     AbstractProviderPlugin,
-    PerformActionFilter, PerformActionTransaction, PerformActionRequest
+    PerformActionFilter, PerformActionTransaction, PerformActionRequest,
 } from "./abstract-provider.js"
+
 export type { ContractRunner } from "./contracts.js";
+
+export type {
+    BlockParams, LogParams, TransactionReceiptParams,
+    TransactionResponseParams,
+} from "./formatting.js";
+
 /*
 export type {
     CommunityResourcable
@@ -89,17 +96,17 @@ export type { Networkish } from "./network.js";
 export type { GasCostParameters } from "./plugins-network.js";
 
 export type {
-    BlockParams, LogParams, TransactionReceiptParams,
-    TransactionResponseParams,
-} from "./formatting.js";
-
-export type {
     BlockTag,
     TransactionRequest, PreparedTransactionRequest,
     EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent,
     TopicFilter,
     Provider,
+    MinedBlock, MinedTransactionResponse
 } from "./provider.js";
+
+export type {
+    DebugEventBrowserProvider, Eip1193Provider
+} from "./provider-browser.js";
 
 export type {
     JsonRpcPayload, JsonRpcResult, JsonRpcError,
@@ -107,7 +114,9 @@ export type {
     JsonRpcTransactionRequest,
 } from "./provider-jsonrpc.js";
 
-export type { WebSocketLike } from "./provider-websocket.js";
+export type {
+    WebSocketCreator, WebSocketLike
+} from "./provider-websocket.js";
 
 export type { Signer } from "./signer.js";
 
