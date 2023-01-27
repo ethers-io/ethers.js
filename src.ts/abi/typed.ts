@@ -102,7 +102,7 @@ export class Typed {
     }
 
     isData(): this is TypedData {
-        return (this.type.substring(0, 5) === "bytes");
+        return (this.type.startsWith("bytes"));
     }
 
     isString(): this is TypedString {

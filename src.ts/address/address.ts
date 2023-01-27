@@ -123,7 +123,7 @@ export function getAddress(address: string): string {
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
 
         // Missing the 0x prefix
-        if (address.substring(0, 2) !== "0x") { address = "0x" + address; }
+        if (!address.startsWith("0x")) { address = "0x" + address; }
 
         const result = getChecksumAddress(address);
 

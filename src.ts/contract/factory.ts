@@ -33,7 +33,7 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
             bytecode = hexlify(getBytes(bytecode));
         } else {
             if (typeof(bytecode) === "object") { bytecode = bytecode.object; }
-            if (bytecode.substring(0, 2) !== "0x") { bytecode = "0x" + bytecode; }
+            if (!bytecode.startsWith("0x")) { bytecode = "0x" + bytecode; }
             bytecode = hexlify(getBytes(bytecode));
         }
 
