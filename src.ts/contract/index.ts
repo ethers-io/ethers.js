@@ -12,12 +12,16 @@ export {
 } from "./factory.js";
 
 export {
-    ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse,
-    EventLog
+    ContractEventPayload, ContractUnknownEventPayload,
+    ContractTransactionReceipt, ContractTransactionResponse,
+    EventLog,
 } from "./wrappers.js";
 
 export type {
-    ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName,
+    BaseContractMethod, ConstantContractMethod,
+    PostfixOverrides,
+    ContractEvent, ContractEventArgs, ContractEventName,
+    ContractDeployTransaction,
     ContractInterface, ContractMethod, ContractMethodArgs, ContractTransaction,
     DeferredTopicFilter, Overrides
 } from "./types.js";

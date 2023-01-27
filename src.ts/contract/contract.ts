@@ -126,6 +126,9 @@ function getProvider(value: null | ContractRunner): null | Provider {
     return value.provider || null;
 }
 
+/**
+ *  @_ignore:
+ */
 export async function copyOverrides(arg: any): Promise<Omit<ContractTransaction, "data" | "to">> {
 
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
@@ -147,6 +150,9 @@ export async function copyOverrides(arg: any): Promise<Omit<ContractTransaction,
     return <Omit<ContractTransaction, "data" | "to">>overrides;
 }
 
+/**
+ *  @_ignore:
+ */
 export async function resolveArgs(_runner: null | ContractRunner, inputs: ReadonlyArray<ParamType>, args: Array<any>): Promise<Array<any>> {
     // Recursively descend into args and resolve any addresses
     const runner = getRunner(_runner, "resolveName");
