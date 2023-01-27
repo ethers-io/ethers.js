@@ -383,6 +383,25 @@ export class Block implements BlockParams, Iterable<string> {
     }
 
     /**
+     *  Returns the complete transactions for blocks which
+     *  prefetched them, by passing ``true`` to %%prefetchTxs%%
+     *  into [[provider_getBlock]].
+     */
+    get transactionResponses(): Array<TransactionResponse> {
+        const txs = this.#transactions.slice();
+
+        // Doesn't matter...
+        if (txs.length === 0) { return [ ]; }
+
+        // Make sure we prefetched the transactions
+        assert(typeof(txs[0]) === "object", "transactions were not prefetched with block request", "UNSUPPORTED_OPERATION", {
+            operation: "transactionResponses()"
+        });
+
+        return <Array<TransactionResponse>>txs;
+    }
+
+    /**
      *  Returns a JSON-friendly value.
      */
     toJSON(): any {
@@ -460,6 +479,20 @@ export class Block implements BlockParams, Iterable<string> {
         } else {
             return tx;
         }
+    }
+
+    getTransactionResponse(indexOrHash: number | string): TransactionResponse {
+        const txs = this.transactionResponses;
+        if (typeof(indexOrHash) === "number") {
+            return txs[indexOrHash];
+        }
+
+        indexOrHash = indexOrHash.toLowerCase();
+        for (const tx of txs) {
+            if (tx.hash === indexOrHash) { return tx; }
+        }
+
+        throw new Error("no such tx");
     }
 
     /**
@@ -797,6 +830,7 @@ export interface MinedTransactionResponse extends TransactionResponse {
     date: Date;
 }
 
+/*
 export type ReplacementDetectionSetup = {
     to: string;
     from: string;
@@ -805,7 +839,7 @@ export type ReplacementDetectionSetup = {
     nonce: number;
     block: number;
 };
-
+*/
 export class TransactionResponse implements TransactionLike<string>, TransactionResponseParams {
     readonly provider: Provider;
 
