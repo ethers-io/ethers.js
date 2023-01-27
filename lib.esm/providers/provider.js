@@ -224,6 +224,23 @@ export class Block {
         });
     }
     /**
+     *  Returns the complete transactions for blocks which
+     *  prefetched them, by passing ``true`` to %%prefetchTxs%%
+     *  into [[provider_getBlock]].
+     */
+    get transactionResponses() {
+        const txs = this.#transactions.slice();
+        // Doesn't matter...
+        if (txs.length === 0) {
+            return [];
+        }
+        // Make sure we prefetched the transactions
+        assert(typeof (txs[0]) === "object", "transactions were not prefetched with block request", "UNSUPPORTED_OPERATION", {
+            operation: "transactionResponses()"
+        });
+        return txs;
+    }
+    /**
      *  Returns a JSON-friendly value.
      */
     toJSON() {
@@ -303,6 +320,19 @@ export class Block {
         else {
             return tx;
         }
+    }
+    getTransactionResponse(indexOrHash) {
+        const txs = this.transactionResponses;
+        if (typeof (indexOrHash) === "number") {
+            return txs[indexOrHash];
+        }
+        indexOrHash = indexOrHash.toLowerCase();
+        for (const tx of txs) {
+            if (tx.hash === indexOrHash) {
+                return tx;
+            }
+        }
+        throw new Error("no such tx");
     }
     /**
      *  Has this block been mined.
@@ -543,6 +573,16 @@ export class TransactionReceipt {
         return createReorderedTransactionFilter(this, other);
     }
 }
+/*
+export type ReplacementDetectionSetup = {
+    to: string;
+    from: string;
+    value: bigint;
+    data: string;
+    nonce: number;
+    block: number;
+};
+*/
 export class TransactionResponse {
     provider;
     blockNumber;

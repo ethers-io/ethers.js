@@ -173,6 +173,12 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     get transactions(): ReadonlyArray<string>;
     /**
+     *  Returns the complete transactions for blocks which
+     *  prefetched them, by passing ``true`` to %%prefetchTxs%%
+     *  into [[provider_getBlock]].
+     */
+    get transactionResponses(): Array<TransactionResponse>;
+    /**
      *  Returns a JSON-friendly value.
      */
     toJSON(): any;
@@ -189,6 +195,7 @@ export declare class Block implements BlockParams, Iterable<string> {
      *  Get the transaction at %%indexe%% within this block.
      */
     getTransaction(indexOrHash: number | string): Promise<TransactionResponse>;
+    getTransactionResponse(indexOrHash: number | string): TransactionResponse;
     /**
      *  Has this block been mined.
      *
@@ -257,14 +264,6 @@ export interface MinedTransactionResponse extends TransactionResponse {
     blockHash: string;
     date: Date;
 }
-export declare type ReplacementDetectionSetup = {
-    to: string;
-    from: string;
-    value: bigint;
-    data: string;
-    nonce: number;
-    block: number;
-};
 export declare class TransactionResponse implements TransactionLike<string>, TransactionResponseParams {
     #private;
     readonly provider: Provider;

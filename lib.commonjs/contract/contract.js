@@ -78,6 +78,9 @@ function getProvider(value) {
     }
     return value.provider || null;
 }
+/**
+ *  @_ignore:
+ */
 async function copyOverrides(arg) {
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
     const overrides = (0, provider_js_1.copyRequest)(index_js_1.Typed.dereference(arg, "overrides"));
@@ -96,6 +99,9 @@ async function copyOverrides(arg) {
     return overrides;
 }
 exports.copyOverrides = copyOverrides;
+/**
+ *  @_ignore:
+ */
 async function resolveArgs(_runner, inputs, args) {
     // Recursively descend into args and resolve any addresses
     const runner = getRunner(_runner, "resolveName");

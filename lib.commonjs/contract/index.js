@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.ContractEventPayload = exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
+exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.ContractUnknownEventPayload = exports.ContractEventPayload = exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
 /**
  *  About contracts...
  *
@@ -13,6 +13,7 @@ var factory_js_1 = require("./factory.js");
 Object.defineProperty(exports, "ContractFactory", { enumerable: true, get: function () { return factory_js_1.ContractFactory; } });
 var wrappers_js_1 = require("./wrappers.js");
 Object.defineProperty(exports, "ContractEventPayload", { enumerable: true, get: function () { return wrappers_js_1.ContractEventPayload; } });
+Object.defineProperty(exports, "ContractUnknownEventPayload", { enumerable: true, get: function () { return wrappers_js_1.ContractUnknownEventPayload; } });
 Object.defineProperty(exports, "ContractTransactionReceipt", { enumerable: true, get: function () { return wrappers_js_1.ContractTransactionReceipt; } });
 Object.defineProperty(exports, "ContractTransactionResponse", { enumerable: true, get: function () { return wrappers_js_1.ContractTransactionResponse; } });
 Object.defineProperty(exports, "EventLog", { enumerable: true, get: function () { return wrappers_js_1.EventLog; } });

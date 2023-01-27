@@ -6,7 +6,13 @@ import type { Addressable } from "../address/index.js";
 import type { EventEmitterable, Listener } from "../utils/index.js";
 import type { BlockTag, ContractRunner } from "../providers/index.js";
 import type { ContractEventName, ContractInterface, ContractMethod, ContractEvent, ContractTransaction } from "./types.js";
+/**
+ *  @_ignore:
+ */
 export declare function copyOverrides(arg: any): Promise<Omit<ContractTransaction, "data" | "to">>;
+/**
+ *  @_ignore:
+ */
 export declare function resolveArgs(_runner: null | ContractRunner, inputs: ReadonlyArray<ParamType>, args: Array<any>): Promise<Array<any>>;
 declare const internal: unique symbol;
 export declare class BaseContract implements Addressable, EventEmitterable<ContractEventName> {

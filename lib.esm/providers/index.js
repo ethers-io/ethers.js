@@ -9,10 +9,10 @@ export { showThrottleMessage } from "./community.js";
 export { getDefaultProvider } from "./default-provider.js";
 export { EnsResolver } from "./ens-resolver.js";
 export { Network } from "./network.js";
-export { NetworkPlugin, GasCostPlugin, EnsPlugin,
-//LayerOneConnectionPlugin,
+export { NetworkPlugin, GasCostPlugin, EnsPlugin, 
 //MaxPriorityFeePlugin,
-//PriceOraclePlugin,
+FeeDataNetworkPlugin,
+//CustomBlockNetworkPlugin
  } from "./plugins-network.js";
 export { Block, FeeData, Log, TransactionReceipt, TransactionResponse, copyRequest,
 //resolveTransactionRequest,

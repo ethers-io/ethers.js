@@ -6,26 +6,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert_1 = __importDefault(require("assert"));
 const index_js_1 = require("../index.js");
 const utils_js_1 = require("./utils.js");
-/*
-
-import { dnsEncode, isValidName, namehash } from "../index.js";
-
-describe("Tests Namehash", function() {
-    const tests = loadTests<TestCaseNamehash>("namehash");
+//import { dnsEncode, isValidName, namehash } from "../index.js";
+describe("Tests Namehash", function () {
+    const tests = (0, utils_js_1.loadTests)("namehash");
     for (const test of tests) {
-        it(`hashes ENS names: ${ JSON.stringify(test.ensName) }`, function() {
-            const actual = namehash(test.ensName);
-
-            assert.equal(actual, test.namehash, "namehash");
-
-            // The empty string is not a valid ENS name
-            if (test.ensName) {
-                assert.ok(isValidName(test.ensName), "isValidName");
-            }
-        });
+        if (test.error) {
+        }
+        else {
+            it(`hashes ENS name: ${JSON.stringify(test.name)}`, function () {
+                const actual = (0, index_js_1.namehash)(test.ensName);
+                assert_1.default.equal(actual, test.namehash, "namehash");
+                // The empty string is not a valid ENS name
+                if (test.ensName) {
+                    assert_1.default.ok((0, index_js_1.isValidName)(test.ensName), "isValidName");
+                }
+            });
+        }
     }
 });
-
+/*
 describe("Tests Bad ENS Names", function() {
     const badTests: Array<{ ensName: any, prefix: string }> = [
         { ensName: ".", prefix: "missing component" },

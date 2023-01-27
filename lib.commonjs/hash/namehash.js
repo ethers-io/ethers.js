@@ -3,21 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = void 0;
 const index_js_1 = require("../crypto/index.js");
 const index_js_2 = require("../utils/index.js");
-//import { ens_normalize } from "./ens-normalize/lib";
-// @TOOD:
-function ens_normalize(name) {
-    return name;
-}
+const ens_normalize_1 = require("@adraffy/ens-normalize");
 const Zeros = new Uint8Array(32);
 Zeros.fill(0);
 function checkComponent(comp) {
-    if (comp.length === 0) {
-        throw new Error("invalid ENS name; empty component");
-    }
+    (0, index_js_2.assertArgument)(comp.length !== 0, "invalid ENS name; empty component", "comp", comp);
     return comp;
 }
 function ensNameSplit(name) {
-    const bytes = (0, index_js_2.toUtf8Bytes)(ens_normalize(name));
+    const bytes = (0, index_js_2.toUtf8Bytes)((0, ens_normalize_1.ens_normalize)(name));
     const comps = [];
     if (name.length === 0) {
         return comps;
@@ -32,9 +26,7 @@ function ensNameSplit(name) {
         }
     }
     // There was a stray separator at the end of the name
-    if (last >= bytes.length) {
-        throw new Error("invalid ENS name; empty component");
-    }
+    (0, index_js_2.assertArgument)(last < bytes.length, "invalid ENS name; empty component", "name", name);
     comps.push(checkComponent(bytes.slice(last)));
     return comps;
 }
@@ -51,7 +43,6 @@ function isValidName(name) {
 }
 exports.isValidName = isValidName;
 function namehash(name) {
-    /* istanbul ignore if */
     (0, index_js_2.assertArgument)(typeof (name) === "string", "invalid ENS name; not a string", "name", name);
     let result = Zeros;
     const comps = ensNameSplit(name);

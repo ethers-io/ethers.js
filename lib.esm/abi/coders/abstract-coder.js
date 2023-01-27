@@ -1,10 +1,18 @@
-import { defineProperties, concat, getBytesCopy, getNumber, hexlify, toBeArray, toBigInt, toNumber, assert, assertPrivate, assertArgument } from "../../utils/index.js";
+import { defineProperties, concat, getBytesCopy, getNumber, hexlify, toBeArray, toBigInt, toNumber, assert, assertArgument } from "../../utils/index.js";
+/**
+ * @_ignore:
+ */
 export const WordSize = 32;
 const Padding = new Uint8Array(WordSize);
 // Properties used to immediate pass through to the underlying object
 // - `then` is used to detect if an object is a Promise for await
 const passProperties = ["then"];
 const _guard = {};
+function throwError(name, error) {
+    const wrapped = new Error(`deferred error during ABI decoding triggered accessing ${name}`);
+    wrapped.error = error;
+    throw wrapped;
+}
 /**
  *  A [[Result]] is a sub-class of Array, which allows accessing any
  *  of its values either positionally by its index or, if keys are
@@ -13,32 +21,55 @@ const _guard = {};
  *  @_docloc: api/abi
  */
 export class Result extends Array {
-    #indices;
+    #names;
     /**
      *  @private
      */
-    constructor(guard, items, keys) {
-        assertPrivate(guard, _guard, "Result");
-        super(...items);
-        // Name lookup table
-        this.#indices = new Map();
-        if (keys) {
-            keys.forEach((key, index) => {
-                if (key == null) {
-                    return;
-                }
-                if (this.#indices.has(key)) {
-                    (this.#indices.get(key)).push(index);
-                }
-                else {
-                    this.#indices.set(key, [index]);
-                }
-            });
+    constructor(...args) {
+        // To properly sub-class Array so the other built-in
+        // functions work, the constructor has to behave fairly
+        // well. So, in the event we are created via fromItems()
+        // we build the read-only Result object we want, but on
+        // any other input, we use the default constructor
+        // constructor(guard: any, items: Array<any>, keys?: Array<null | string>);
+        const guard = args[0];
+        let items = args[1];
+        let names = (args[2] || []).slice();
+        let wrap = true;
+        if (guard !== _guard) {
+            items = args;
+            names = [];
+            wrap = false;
         }
+        // Can't just pass in ...items since an array of length 1
+        // is a special case in the super.
+        super(items.length);
+        items.forEach((item, index) => { this[index] = item; });
+        // Find all unique keys
+        const nameCounts = names.reduce((accum, name) => {
+            if (typeof (name) === "string") {
+                accum.set(name, (accum.get(name) || 0) + 1);
+            }
+            return accum;
+        }, (new Map()));
+        // Remove any key thats not unique
+        this.#names = Object.freeze(items.map((item, index) => {
+            const name = names[index];
+            if (name != null && nameCounts.get(name) === 1) {
+                return name;
+            }
+            return null;
+        }));
+        if (!wrap) {
+            return;
+        }
+        // A wrapped Result is immutable
         Object.freeze(this);
+        // Proxy indices and names so we can trap deferred errors
         return new Proxy(this, {
             get: (target, prop, receiver) => {
                 if (typeof (prop) === "string") {
+                    // Index accessor
                     if (prop.match(/^[0-9]+$/)) {
                         const index = getNumber(prop, "%index");
                         if (index < 0 || index >= this.length) {
@@ -46,35 +77,63 @@ export class Result extends Array {
                         }
                         const item = target[index];
                         if (item instanceof Error) {
-                            this.#throwError(`index ${index}`, item);
+                            throwError(`index ${index}`, item);
                         }
                         return item;
                     }
                     // Pass important checks (like `then` for Promise) through
-                    if (prop in target || passProperties.indexOf(prop) >= 0) {
+                    if (passProperties.indexOf(prop) >= 0) {
                         return Reflect.get(target, prop, receiver);
                     }
-                    // Something that could be a result keyword value
-                    if (!(prop in target)) {
-                        return target.getValue(prop);
+                    const value = target[prop];
+                    if (value instanceof Function) {
+                        // Make sure functions work with private variables
+                        // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy#no_private_property_forwarding
+                        return function (...args) {
+                            return value.apply((this === receiver) ? target : this, args);
+                        };
+                    }
+                    else if (!(prop in target)) {
+                        // Possible name accessor
+                        return target.getValue.apply((this === receiver) ? target : this, [prop]);
                     }
                 }
                 return Reflect.get(target, prop, receiver);
             }
         });
     }
-    /*
-    toJSON(): any {
-        if (this.#indices.length === this.length) {
-            const result: Record<string, any> = { };
-            for (const key of this.#indices.keys()) {
-                result[key] = ths.getValue(key);
+    /**
+     *  Returns the Result as a normal Array.
+     *
+     *  This will throw if there are any outstanding deferred
+     *  errors.
+     */
+    toArray() {
+        this.forEach((item, index) => {
+            if (item instanceof Error) {
+                throwError(`index ${index}`, item);
             }
-            return result;
-        }
-        return this;
+        });
+        return Array.of(this);
     }
-    */
+    /**
+     *  Returns the Result as an Object with each name-value pair.
+     *
+     *  This will throw if any value is unnamed, or if there are
+     *  any outstanding deferred errors.
+     */
+    toObject() {
+        return this.#names.reduce((accum, name, index) => {
+            assert(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
+                operation: "toObject()"
+            });
+            // Add values for names that don't conflict
+            if (!(name in accum)) {
+                accum[name] = this.getValue(name);
+            }
+            return accum;
+        }, {});
+    }
     /**
      *  @_ignore
      */
@@ -85,23 +144,29 @@ export class Result extends Array {
         if (end == null) {
             end = this.length;
         }
-        const result = [];
+        const result = [], names = [];
         for (let i = start; i < end; i++) {
-            let value;
-            try {
-                value = this[i];
-            }
-            catch (error) {
-                value = error.error;
-            }
-            result.push(value);
+            result.push(this[i]);
+            names.push(this.#names[i]);
         }
-        return result;
+        return new Result(_guard, result, names);
     }
-    #throwError(name, error) {
-        const wrapped = new Error(`deferred error during ABI decoding triggered accessing ${name}`);
-        wrapped.error = error;
-        throw wrapped;
+    /**
+     *  @_ignore
+     */
+    filter(callback, thisArg) {
+        const result = [], names = [];
+        for (let i = 0; i < this.length; i++) {
+            const item = this[i];
+            if (item instanceof Error) {
+                throwError(`index ${i}`, item);
+            }
+            if (callback.call(thisArg, item, i, this)) {
+                result.push(item);
+                names.push(this.#names[i]);
+            }
+        }
+        return new Result(_guard, result, names);
     }
     /**
      *  Returns the value for %%name%%.
@@ -112,15 +177,15 @@ export class Result extends Array {
      *  accessible by name.
      */
     getValue(name) {
-        const index = this.#indices.get(name);
-        if (index != null && index.length === 1) {
-            const item = this[index[0]];
-            if (item instanceof Error) {
-                this.#throwError(`property ${JSON.stringify(name)}`, item);
-            }
-            return item;
+        const index = this.#names.indexOf(name);
+        if (index === -1) {
+            return undefined;
         }
-        throw new Error(`no named parameter: ${JSON.stringify(name)}`);
+        const value = this[index];
+        if (value instanceof Error) {
+            throwError(`property ${JSON.stringify(name)}`, value.error);
+        }
+        return value;
     }
     /**
      *  Creates a new [[Result]] for %%items%% with each entry

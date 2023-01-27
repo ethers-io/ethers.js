@@ -1,16 +1,10 @@
 import { keccak256 } from "../crypto/index.js";
 import { concat, hexlify, assertArgument, toUtf8Bytes, toUtf8String } from "../utils/index.js";
-//import { ens_normalize } from "./ens-normalize/lib";
-// @TOOD:
-function ens_normalize(name) {
-    return name;
-}
+import { ens_normalize } from "@adraffy/ens-normalize";
 const Zeros = new Uint8Array(32);
 Zeros.fill(0);
 function checkComponent(comp) {
-    if (comp.length === 0) {
-        throw new Error("invalid ENS name; empty component");
-    }
+    assertArgument(comp.length !== 0, "invalid ENS name; empty component", "comp", comp);
     return comp;
 }
 function ensNameSplit(name) {
@@ -29,9 +23,7 @@ function ensNameSplit(name) {
         }
     }
     // There was a stray separator at the end of the name
-    if (last >= bytes.length) {
-        throw new Error("invalid ENS name; empty component");
-    }
+    assertArgument(last < bytes.length, "invalid ENS name; empty component", "name", name);
     comps.push(checkComponent(bytes.slice(last)));
     return comps;
 }
@@ -46,7 +38,6 @@ export function isValidName(name) {
     return false;
 }
 export function namehash(name) {
-    /* istanbul ignore if */
     assertArgument(typeof (name) === "string", "invalid ENS name; not a string", "name", name);
     let result = Zeros;
     const comps = ensNameSplit(name);

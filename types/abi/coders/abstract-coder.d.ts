@@ -1,4 +1,7 @@
 import type { BigNumberish, BytesLike } from "../../utils/index.js";
+/**
+ * @_ignore:
+ */
 export declare const WordSize: number;
 /**
  *  A [[Result]] is a sub-class of Array, which allows accessing any
@@ -13,11 +16,29 @@ export declare class Result extends Array<any> {
     /**
      *  @private
      */
-    constructor(guard: any, items: Array<any>, keys?: Array<null | string>);
+    constructor(...args: Array<any>);
+    /**
+     *  Returns the Result as a normal Array.
+     *
+     *  This will throw if there are any outstanding deferred
+     *  errors.
+     */
+    toArray(): Array<any>;
+    /**
+     *  Returns the Result as an Object with each name-value pair.
+     *
+     *  This will throw if any value is unnamed, or if there are
+     *  any outstanding deferred errors.
+     */
+    toObject(): Record<string, any>;
     /**
      *  @_ignore
      */
-    slice(start?: number | undefined, end?: number | undefined): Array<any>;
+    slice(start?: number | undefined, end?: number | undefined): Result;
+    /**
+     *  @_ignore
+     */
+    filter(callback: (el: any, index: number, array: Result) => boolean, thisArg?: any): Result;
     /**
      *  Returns the value for %%name%%.
      *

@@ -1,26 +1,25 @@
 import assert from "assert";
-import { hashMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, isError } from "../index.js";
+import { hashMessage, namehash, isValidName, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, isError } from "../index.js";
 import { loadTests } from "./utils.js";
-/*
-
-import { dnsEncode, isValidName, namehash } from "../index.js";
-
-describe("Tests Namehash", function() {
-    const tests = loadTests<TestCaseNamehash>("namehash");
+//import { dnsEncode, isValidName, namehash } from "../index.js";
+describe("Tests Namehash", function () {
+    const tests = loadTests("namehash");
     for (const test of tests) {
-        it(`hashes ENS names: ${ JSON.stringify(test.ensName) }`, function() {
-            const actual = namehash(test.ensName);
-
-            assert.equal(actual, test.namehash, "namehash");
-
-            // The empty string is not a valid ENS name
-            if (test.ensName) {
-                assert.ok(isValidName(test.ensName), "isValidName");
-            }
-        });
+        if (test.error) {
+        }
+        else {
+            it(`hashes ENS name: ${JSON.stringify(test.name)}`, function () {
+                const actual = namehash(test.ensName);
+                assert.equal(actual, test.namehash, "namehash");
+                // The empty string is not a valid ENS name
+                if (test.ensName) {
+                    assert.ok(isValidName(test.ensName), "isValidName");
+                }
+            });
+        }
     }
 });
-
+/*
 describe("Tests Bad ENS Names", function() {
     const badTests: Array<{ ensName: any, prefix: string }> = [
         { ensName: ".", prefix: "missing component" },

@@ -662,7 +662,7 @@ class ParamType {
         let type = obj.type;
         let arrayMatch = type.match(regexArrayType);
         if (arrayMatch) {
-            const arrayLength = parseInt(arrayMatch[2]);
+            const arrayLength = parseInt(arrayMatch[2] || "-1");
             const arrayChildren = ParamType.from({
                 type: arrayMatch[1],
                 components: obj.components

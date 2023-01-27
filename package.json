@@ -9,6 +9,7 @@
     "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js"
   },
   "dependencies": {
+    "@adraffy/ens-normalize": "1.8.8",
     "@noble/hashes": "1.1.2",
     "@noble/secp256k1": "1.6.3",
     "aes-js": "4.0.0-beta.3",
@@ -92,7 +93,7 @@
       "types": "./types/wordlistsindex.d.ts"
     }
   },
-  "gitHead": "530efeb885c0b92699e0f13fbf2ba49094272d33",
+  "gitHead": "360835e301bec25d70aa4840b1df98c3fa3b616f",
   "keywords": [
     "ethereum",
     "ethers",
@@ -132,5 +133,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.0-beta-exports.11"
+  "version": "6.0.0-beta-exports.12"
 }
