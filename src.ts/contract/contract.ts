@@ -195,11 +195,19 @@ class WrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | Co
 
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
     get fragment(): FunctionFragment {
-        return this._contract.interface.getFunction(this._key);
+        const fragment = this._contract.interface.getFunction(this._key);
+        assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
 
     getFragment(...args: ContractMethodArgs<A>): FunctionFragment {
-        return this._contract.interface.getFunction(this._key, args);
+        const fragment = this._contract.interface.getFunction(this._key, args);
+        assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
 
     async populateTransaction(...args: ContractMethodArgs<A>): Promise<ContractTransaction> {
@@ -299,11 +307,23 @@ class WrappedEvent<A extends Array<any> = Array<any>> extends _WrappedEventBase(
 
     // Only works on non-ambiguous keys
     get fragment(): EventFragment {
-        return this._contract.interface.getEvent(this._key);
+        const fragment = this._contract.interface.getEvent(this._key);
+
+        assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+
+        return fragment;
     }
 
     getFragment(...args: ContractEventArgs<A>): EventFragment {
-        return this._contract.interface.getEvent(this._key, args);
+        const fragment = this._contract.interface.getEvent(this._key, args);
+
+        assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+
+        return fragment;
     }
 };
 
@@ -355,7 +375,9 @@ async function getSubInfo(contract: BaseContract, event: ContractEventName): Pro
     if (Array.isArray(event)) {
         const topicHashify = function(name: string): string {
             if (isHexString(name, 32)) { return name; }
-            return contract.interface.getEvent(name).topicHash;
+            const fragment = contract.interface.getEvent(name);
+            assertArgument(fragment, "unknown fragment", "name", name);
+            return fragment.topicHash;
         }
 
         // Array of Topics and Names; e.g. `[ "0x1234...89ab", "Transfer(address)" ]`
@@ -375,6 +397,7 @@ async function getSubInfo(contract: BaseContract, event: ContractEventName): Pro
         } else {
            // Name or Signature; e.g. `"Transfer", `"Transfer(address)"`
             fragment = contract.interface.getEvent(event);
+            assertArgument(fragment, "unknown fragment", "event", event);
             topics = [ fragment.topicHash ];
         }
 
