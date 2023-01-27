@@ -107,7 +107,8 @@ export interface TestCaseHash {
 export interface TestCaseNamehash {
     name: string;
     ensName: string;
-    namehash: string;
+    error?: string;
+    namehash?: string;
 }
 
 export interface TestCaseTypedDataDomain {
