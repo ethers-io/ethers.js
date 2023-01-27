@@ -565,6 +565,14 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
     getRpcError(payload, _error) {
         const { method } = payload;
         const { error } = _error;
+        if (method === "eth_estimateGas" && error.message) {
+            const msg = error.message;
+            if (!msg.match(/revert/i) && msg.match(/insufficient funds/i)) {
+                return (0, index_js_5.makeError)("insufficient funds", "INSUFFICIENT_FUNDS", {
+                    transaction: (payload.params[0]),
+                });
+            }
+        }
         if (method === "eth_call" || method === "eth_estimateGas") {
             const result = spelunkData(error);
             const e = index_js_1.AbiCoder.getBuiltinCallException((method === "eth_call") ? "call" : "estimateGas", (payload.params[0]), (result ? result.data : null));

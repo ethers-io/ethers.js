@@ -561,6 +561,14 @@ export class JsonRpcApiProvider extends AbstractProvider {
     getRpcError(payload, _error) {
         const { method } = payload;
         const { error } = _error;
+        if (method === "eth_estimateGas" && error.message) {
+            const msg = error.message;
+            if (!msg.match(/revert/i) && msg.match(/insufficient funds/i)) {
+                return makeError("insufficient funds", "INSUFFICIENT_FUNDS", {
+                    transaction: (payload.params[0]),
+                });
+            }
+        }
         if (method === "eth_call" || method === "eth_estimateGas") {
             const result = spelunkData(error);
             const e = AbiCoder.getBuiltinCallException((method === "eth_call") ? "call" : "estimateGas", (payload.params[0]), (result ? result.data : null));

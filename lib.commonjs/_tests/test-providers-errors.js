@@ -200,7 +200,9 @@ describe("Test Provider Blockchain Errors", function () {
                 });
                 console.log(tx);
             }, (error) => {
-                return (0, index_js_1.isError)(error, "INSUFFICIENT_FUNDS");
+                return ((0, index_js_1.isError)(error, "INSUFFICIENT_FUNDS") &&
+                    typeof (error.transaction.from) === "string" &&
+                    error.transaction.from.toLowerCase() === w.address.toLowerCase());
             });
         });
     }
