@@ -151,7 +151,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                     // Network doesn't support EIP-1559...
 
                     // ...but they are trying to use EIP-1559 properties
-                    assert(hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
+                    assert(!hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
                             operation: "populateTransaction" });
 
                     // Populate missing fee data
