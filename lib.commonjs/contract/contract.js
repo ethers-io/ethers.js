@@ -141,10 +141,18 @@ class WrappedMethod extends _WrappedMethodBase() {
     }
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
     get fragment() {
-        return this._contract.interface.getFunction(this._key);
+        const fragment = this._contract.interface.getFunction(this._key);
+        (0, index_js_3.assert)(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
     getFragment(...args) {
-        return this._contract.interface.getFunction(this._key, args);
+        const fragment = this._contract.interface.getFunction(this._key, args);
+        (0, index_js_3.assert)(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
     async populateTransaction(...args) {
         const fragment = this.getFragment(...args);
@@ -223,10 +231,18 @@ class WrappedEvent extends _WrappedEventBase() {
     }
     // Only works on non-ambiguous keys
     get fragment() {
-        return this._contract.interface.getEvent(this._key);
+        const fragment = this._contract.interface.getEvent(this._key);
+        (0, index_js_3.assert)(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
     getFragment(...args) {
-        return this._contract.interface.getEvent(this._key, args);
+        const fragment = this._contract.interface.getEvent(this._key, args);
+        (0, index_js_3.assert)(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
 }
 ;
@@ -256,7 +272,9 @@ async function getSubInfo(contract, event) {
             if ((0, index_js_3.isHexString)(name, 32)) {
                 return name;
             }
-            return contract.interface.getEvent(name).topicHash;
+            const fragment = contract.interface.getEvent(name);
+            (0, index_js_3.assertArgument)(fragment, "unknown fragment", "name", name);
+            return fragment.topicHash;
         };
         // Array of Topics and Names; e.g. `[ "0x1234...89ab", "Transfer(address)" ]`
         topics = event.map((e) => {
@@ -280,6 +298,7 @@ async function getSubInfo(contract, event) {
         else {
             // Name or Signature; e.g. `"Transfer", `"Transfer(address)"`
             fragment = contract.interface.getEvent(event);
+            (0, index_js_3.assertArgument)(fragment, "unknown fragment", "event", event);
             topics = [fragment.topicHash];
         }
     }

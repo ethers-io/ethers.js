@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.13";
+const version = "6.0.0-beta-exports.14";
 
 /**
  *  Property helper functions.
@@ -11337,7 +11337,7 @@ class Interface {
                     return fragment;
                 }
             }
-            assertArgument(false, "no matching function", "selector", key);
+            return null;
         }
         // It is a bare name, look up the function (will return null if ambiguous)
         if (key.indexOf("(") === -1) {
@@ -11395,10 +11395,12 @@ class Interface {
                     matching.splice(0, 1);
                 }
             }
-            assertArgument(matching.length !== 0, "no matching function", "name", key);
+            if (matching.length === 0) {
+                return null;
+            }
             if (matching.length > 1 && forceUnique) {
                 const matchStr = matching.map((m) => JSON.stringify(m.format())).join(", ");
-                assertArgument(false, `multiple matching functions (i.e. ${matchStr})`, "name", key);
+                assertArgument(false, `ambiguous function description (i.e. matches ${matchStr})`, "key", key);
             }
             return matching[0];
         }
@@ -11407,14 +11409,16 @@ class Interface {
         if (result) {
             return result;
         }
-        assertArgument(false, "no matching function", "signature", key);
+        return null;
     }
     /**
      *  Get the function name for %%key%%, which may be a function selector,
      *  function name or function signature that belongs to the ABI.
      */
     getFunctionName(key) {
-        return (this.#getFunction(key, null, false)).name;
+        const fragment = this.#getFunction(key, null, false);
+        assertArgument(fragment, "no matching function", "key", key);
+        return fragment.name;
     }
     /**
      *  Get the [[FunctionFragment]] for %%key%%, which may be a function
@@ -11450,7 +11454,7 @@ class Interface {
                     return fragment;
                 }
             }
-            assertArgument(false, "no matching event", "eventTopic", key);
+            return null;
         }
         // It is a bare name, look up the function (will return null if ambiguous)
         if (key.indexOf("(") === -1) {
@@ -11483,10 +11487,12 @@ class Interface {
                     }
                 }
             }
-            assertArgument(matching.length > 0, "no matching event", "name", key);
+            if (matching.length === 0) {
+                return null;
+            }
             if (matching.length > 1 && forceUnique) {
-                // @TODO: refine by Typed
-                assertArgument(false, "multiple matching events", "name", key);
+                const matchStr = matching.map((m) => JSON.stringify(m.format())).join(", ");
+                assertArgument(false, `ambiguous event description (i.e. matches ${matchStr})`, "key", key);
             }
             return matching[0];
         }
@@ -11495,14 +11501,16 @@ class Interface {
         if (result) {
             return result;
         }
-        assertArgument(false, "no matching event", "signature", key);
+        return null;
     }
     /**
      *  Get the event name for %%key%%, which may be a topic hash,
      *  event name or event signature that belongs to the ABI.
      */
     getEventName(key) {
-        return (this.#getEvent(key, null, false)).name;
+        const fragment = this.#getEvent(key, null, false);
+        assertArgument(fragment, "no matching event", "key", key);
+        return fragment.name;
     }
     /**
      *  Get the [[EventFragment]] for %%key%%, which may be a topic hash,
@@ -11549,7 +11557,7 @@ class Interface {
                     return fragment;
                 }
             }
-            assertArgument(false, "no matching error", "selector", key);
+            return null;
         }
         // It is a bare name, look up the function (will return null if ambiguous)
         if (key.indexOf("(") === -1) {
@@ -11566,11 +11574,11 @@ class Interface {
                 if (key === "Panic") {
                     return ErrorFragment.from("error Panic(uint256)");
                 }
-                assertArgument(false, "no matching error", "name", key);
+                return null;
             }
             else if (matching.length > 1) {
-                // @TODO: refine by Typed
-                assertArgument(false, "multiple matching errors", "name", key);
+                const matchStr = matching.map((m) => JSON.stringify(m.format())).join(", ");
+                assertArgument(false, `ambiguous error description (i.e. ${matchStr})`, "name", key);
             }
             return matching[0];
         }
@@ -11586,7 +11594,7 @@ class Interface {
         if (result) {
             return result;
         }
-        assertArgument(false, "no matching error", "signature", key);
+        return null;
     }
     /**
      *  Iterate over all errors, calling %%callback%%, sorted by their name.
@@ -11651,7 +11659,9 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
      */
     decodeErrorResult(fragment, data) {
         if (typeof (fragment) === "string") {
-            fragment = this.getError(fragment);
+            const f = this.getError(fragment);
+            assertArgument(f, "unknown error", "fragment", fragment);
+            fragment = f;
         }
         assertArgument(dataSlice(data, 0, 4) === fragment.selector, `data signature does not match error ${fragment.name}.`, "data", data);
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
@@ -11659,13 +11669,17 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
     /**
      *  Encodes the transaction revert data for a call result that
      *  reverted from the the Contract with the sepcified %%error%%
-     *  (see [[getError]] for valid values for %%key%%) with the %%values%%.
+     *  (see [[getError]] for valid values for %%fragment%%) with the %%values%%.
      *
      *  This is generally not used by most developers, unless trying to mock
      *  a result from a Contract.
      */
-    encodeErrorResult(key, values) {
-        const fragment = (typeof (key) === "string") ? this.getError(key) : key;
+    encodeErrorResult(fragment, values) {
+        if (typeof (fragment) === "string") {
+            const f = this.getError(fragment);
+            assertArgument(f, "unknown error", "fragment", fragment);
+            fragment = f;
+        }
         return concat([
             fragment.selector,
             this._encodeParams(fragment.inputs, values || [])
@@ -11674,23 +11688,31 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
     /**
      *  Decodes the %%data%% from a transaction ``tx.data`` for
      *  the function specified (see [[getFunction]] for valid values
-     *  for %%key%%).
+     *  for %%fragment%%).
      *
      *  Most developers should prefer the [[parseTransaction]] method
      *  instead, which will automatically detect the fragment.
      */
-    decodeFunctionData(key, data) {
-        const fragment = (typeof (key) === "string") ? this.getFunction(key) : key;
+    decodeFunctionData(fragment, data) {
+        if (typeof (fragment) === "string") {
+            const f = this.getFunction(fragment);
+            assertArgument(f, "unknown function", "fragment", fragment);
+            fragment = f;
+        }
         assertArgument(dataSlice(data, 0, 4) === fragment.selector, `data signature does not match function ${fragment.name}.`, "data", data);
         return this._decodeParams(fragment.inputs, dataSlice(data, 4));
     }
     /**
      *  Encodes the ``tx.data`` for a transaction that calls the function
-     *  specified (see [[getFunction]] for valid values for %%key%%) with
+     *  specified (see [[getFunction]] for valid values for %%fragment%%) with
      *  the %%values%%.
      */
-    encodeFunctionData(key, values) {
-        const fragment = (typeof (key) === "string") ? this.getFunction(key) : key;
+    encodeFunctionData(fragment, values) {
+        if (typeof (fragment) === "string") {
+            const f = this.getFunction(fragment);
+            assertArgument(f, "unknown function", "fragment", fragment);
+            fragment = f;
+        }
         return concat([
             fragment.selector,
             this._encodeParams(fragment.inputs, values || [])
@@ -11707,7 +11729,9 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
      */
     decodeFunctionResult(fragment, data) {
         if (typeof (fragment) === "string") {
-            fragment = this.getFunction(fragment);
+            const f = this.getFunction(fragment);
+            assertArgument(f, "unknown function", "fragment", fragment);
+            fragment = f;
         }
         let message = "invalid length for result data";
         const bytes = getBytesCopy(data);
@@ -11732,8 +11756,8 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         if (!error.message.match(/could not decode/)) {
             const selector = hexlify(data.slice(0, 4));
             error.message = "execution reverted (unknown custom error)";
-            try {
-                const ef = this.getError(selector);
+            const ef = this.getError(selector);
+            if (ef) {
                 try {
                     error.revert = {
                         name: ef.name,
@@ -11746,9 +11770,6 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
                 catch (e) {
                     error.message = `execution reverted (coult not decode custom error)`;
                 }
-            }
-            catch (error) {
-                console.log(error); // @TODO: remove
             }
         }
         // Add the invocation, if available
@@ -11765,13 +11786,17 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
     /**
      *  Encodes the result data (e.g. from an ``eth_call``) for the
      *  specified function (see [[getFunction]] for valid values
-     *  for %%key%%) with %%values%%.
+     *  for %%fragment%%) with %%values%%.
      *
      *  This is generally not used by most developers, unless trying to mock
      *  a result from a Contract.
      */
-    encodeFunctionResult(key, values) {
-        const fragment = (typeof (key) === "string") ? this.getFunction(key) : key;
+    encodeFunctionResult(fragment, values) {
+        if (typeof (fragment) === "string") {
+            const f = this.getFunction(fragment);
+            assertArgument(f, "unknown function", "fragment", fragment);
+            fragment = f;
+        }
         return hexlify(this.#abiCoder.encode(fragment.outputs, values || []));
     }
     /*
@@ -11805,14 +11830,16 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         }
     */
     // Create the filter for the event with search criteria (e.g. for eth_filterLog)
-    encodeFilterTopics(eventFragment, values) {
-        if (typeof (eventFragment) === "string") {
-            eventFragment = this.getEvent(eventFragment);
+    encodeFilterTopics(fragment, values) {
+        if (typeof (fragment) === "string") {
+            const f = this.getEvent(fragment);
+            assertArgument(f, "unknown event", "eventFragment", fragment);
+            fragment = f;
         }
-        assert$1(values.length <= eventFragment.inputs.length, `too many arguments for ${eventFragment.format()}`, "UNEXPECTED_ARGUMENT", { count: values.length, expectedCount: eventFragment.inputs.length });
+        assert$1(values.length <= fragment.inputs.length, `too many arguments for ${fragment.format()}`, "UNEXPECTED_ARGUMENT", { count: values.length, expectedCount: fragment.inputs.length });
         const topics = [];
-        if (!eventFragment.anonymous) {
-            topics.push(eventFragment.topicHash);
+        if (!fragment.anonymous) {
+            topics.push(fragment.topicHash);
         }
         // @TODO: Use the coders for this; to properly support tuples, etc.
         const encodeTopic = (param, value) => {
@@ -11836,7 +11863,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
             //@TOOD should probably be return toHex(value, 32)
         };
         values.forEach((value, index) => {
-            const param = eventFragment.inputs[index];
+            const param = fragment.inputs[index];
             if (!param.indexed) {
                 assertArgument(value == null, "cannot filter non-indexed parameters; must be null", ("contract." + param.name), value);
                 return;
@@ -11860,18 +11887,20 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         }
         return topics;
     }
-    encodeEventLog(eventFragment, values) {
-        if (typeof (eventFragment) === "string") {
-            eventFragment = this.getEvent(eventFragment);
+    encodeEventLog(fragment, values) {
+        if (typeof (fragment) === "string") {
+            const f = this.getEvent(fragment);
+            assertArgument(f, "unknown event", "eventFragment", fragment);
+            fragment = f;
         }
         const topics = [];
         const dataTypes = [];
         const dataValues = [];
-        if (!eventFragment.anonymous) {
-            topics.push(eventFragment.topicHash);
+        if (!fragment.anonymous) {
+            topics.push(fragment.topicHash);
         }
-        assertArgument(values.length === eventFragment.inputs.length, "event arguments/values mismatch", "values", values);
-        eventFragment.inputs.forEach((param, index) => {
+        assertArgument(values.length === fragment.inputs.length, "event arguments/values mismatch", "values", values);
+        fragment.inputs.forEach((param, index) => {
             const value = values[index];
             if (param.indexed) {
                 if (param.type === "string") {
@@ -11899,19 +11928,21 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         };
     }
     // Decode a filter for the event and the search criteria
-    decodeEventLog(eventFragment, data, topics) {
-        if (typeof (eventFragment) === "string") {
-            eventFragment = this.getEvent(eventFragment);
+    decodeEventLog(fragment, data, topics) {
+        if (typeof (fragment) === "string") {
+            const f = this.getEvent(fragment);
+            assertArgument(f, "unknown event", "eventFragment", fragment);
+            fragment = f;
         }
-        if (topics != null && !eventFragment.anonymous) {
-            const eventTopic = eventFragment.topicHash;
+        if (topics != null && !fragment.anonymous) {
+            const eventTopic = fragment.topicHash;
             assertArgument(isHexString(topics[0], 32) && topics[0].toLowerCase() === eventTopic, "fragment/topic mismatch", "topics[0]", topics[0]);
             topics = topics.slice(1);
         }
         const indexed = [];
         const nonIndexed = [];
         const dynamic = [];
-        eventFragment.inputs.forEach((param, index) => {
+        fragment.inputs.forEach((param, index) => {
             if (param.indexed) {
                 if (param.type === "string" || param.type === "bytes" || param.baseType === "tuple" || param.baseType === "array") {
                     indexed.push(ParamType.from({ type: "bytes32", name: param.name }));
@@ -11933,7 +11964,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         const values = [];
         const keys = [];
         let nonIndexedIndex = 0, indexedIndex = 0;
-        eventFragment.inputs.forEach((param, index) => {
+        fragment.inputs.forEach((param, index) => {
             let value = null;
             if (param.indexed) {
                 if (resultIndexed == null) {
@@ -13123,10 +13154,18 @@ class WrappedMethod extends _WrappedMethodBase() {
     }
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
     get fragment() {
-        return this._contract.interface.getFunction(this._key);
+        const fragment = this._contract.interface.getFunction(this._key);
+        assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
     getFragment(...args) {
-        return this._contract.interface.getFunction(this._key, args);
+        const fragment = this._contract.interface.getFunction(this._key, args);
+        assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
     async populateTransaction(...args) {
         const fragment = this.getFragment(...args);
@@ -13205,10 +13244,18 @@ class WrappedEvent extends _WrappedEventBase() {
     }
     // Only works on non-ambiguous keys
     get fragment() {
-        return this._contract.interface.getEvent(this._key);
+        const fragment = this._contract.interface.getEvent(this._key);
+        assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
     getFragment(...args) {
-        return this._contract.interface.getEvent(this._key, args);
+        const fragment = this._contract.interface.getEvent(this._key, args);
+        assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
+        });
+        return fragment;
     }
 }
 ;
@@ -13238,7 +13285,9 @@ async function getSubInfo(contract, event) {
             if (isHexString(name, 32)) {
                 return name;
             }
-            return contract.interface.getEvent(name).topicHash;
+            const fragment = contract.interface.getEvent(name);
+            assertArgument(fragment, "unknown fragment", "name", name);
+            return fragment.topicHash;
         };
         // Array of Topics and Names; e.g. `[ "0x1234...89ab", "Transfer(address)" ]`
         topics = event.map((e) => {
@@ -13262,6 +13311,7 @@ async function getSubInfo(contract, event) {
         else {
             // Name or Signature; e.g. `"Transfer", `"Transfer(address)"`
             fragment = contract.interface.getEvent(event);
+            assertArgument(fragment, "unknown fragment", "event", event);
             topics = [fragment.topicHash];
         }
     }
