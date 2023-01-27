@@ -274,6 +274,14 @@ export class BaseEtherscanProvider extends AbstractProvider {
             }
         }
 
+        if (req.method === "estimateGas") {
+            if (!message.match(/revert/i) && message.match(/insufficient funds/i)) {
+                assert(false, "insufficient funds", "INSUFFICIENT_FUNDS", {
+                    transaction: req.transaction
+                });
+            }
+        }
+
         if (req.method === "call" || req.method === "estimateGas") {
             if (message.match(/execution reverted/i)) {
                 let data = "";
@@ -286,7 +294,6 @@ export class BaseEtherscanProvider extends AbstractProvider {
                 throw e;
             }
         }
-
 
         if (message) {
             if (req.method === "broadcastTransaction") {
