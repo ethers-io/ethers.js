@@ -10,15 +10,30 @@ const utils_js_1 = require("./utils.js");
 describe("Tests Namehash", function () {
     const tests = (0, utils_js_1.loadTests)("namehash");
     for (const test of tests) {
-        if (test.error) {
-        }
-        else {
+        if (!test.error) {
             it(`hashes ENS name: ${JSON.stringify(test.name)}`, function () {
                 const actual = (0, index_js_1.namehash)(test.ensName);
                 assert_1.default.equal(actual, test.namehash, "namehash");
                 // The empty string is not a valid ENS name
                 if (test.ensName) {
                     assert_1.default.ok((0, index_js_1.isValidName)(test.ensName), "isValidName");
+                }
+            });
+        }
+    }
+    for (const test of tests) {
+        if (test.error) {
+            it(`correctly fails to hash ENS name: ${test.error} ${JSON.stringify(test.name)}`, function () {
+                assert_1.default.throws(function () {
+                    const actual = (0, index_js_1.namehash)(test.ensName);
+                    console.log("Failed to throw", actual);
+                }, (error) => {
+                    return ((0, index_js_1.isError)(error, "INVALID_ARGUMENT") &&
+                        error.argument === "name" && error.value === test.ensName);
+                });
+                // The empty string is not a valid ENS name
+                if (test.ensName) {
+                    assert_1.default.ok(!(0, index_js_1.isValidName)(test.ensName), "!isValidName");
                 }
             });
         }

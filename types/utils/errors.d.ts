@@ -17,9 +17,24 @@ export declare type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
  *  _property: ``"NOT_IMPLEMENTED"``
  */
 export declare type ErrorCode = "UNKNOWN_ERROR" | "NOT_IMPLEMENTED" | "UNSUPPORTED_OPERATION" | "NETWORK_ERROR" | "SERVER_ERROR" | "TIMEOUT" | "BAD_DATA" | "CANCELLED" | "BUFFER_OVERRUN" | "NUMERIC_FAULT" | "INVALID_ARGUMENT" | "MISSING_ARGUMENT" | "UNEXPECTED_ARGUMENT" | "VALUE_MISMATCH" | "CALL_EXCEPTION" | "INSUFFICIENT_FUNDS" | "NONCE_EXPIRED" | "REPLACEMENT_UNDERPRICED" | "TRANSACTION_REPLACED" | "UNCONFIGURED_NAME" | "OFFCHAIN_FAULT" | "ACTION_REJECTED";
+/**
+ *  All errors in Ethers include properties to assist in
+ *  machine-readable errors.
+ */
 export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
+    /**
+     *  The string error code.
+     */
     code: ErrorCode;
+    /**
+     *  Additional info regarding the error that may be useful.
+     *
+     *  This is generally helpful mostly for human-based debugging.
+     */
     info?: Record<string, any>;
+    /**
+     *  Any related error.
+     */
     error?: Error;
 }
 /**
@@ -167,54 +182,150 @@ export interface InvalidArgumentError extends EthersError<"INVALID_ARGUMENT"> {
     value: any;
     info?: Record<string, any>;
 }
+/**
+ *  This Error indicates there were too few arguments were provided.
+ */
 export interface MissingArgumentError extends EthersError<"MISSING_ARGUMENT"> {
+    /**
+     *  The number of arguments received.
+     */
     count: number;
+    /**
+     *  The number of arguments expected.
+     */
     expectedCount: number;
 }
+/**
+ *  This Error indicates too many arguments were provided.
+ */
 export interface UnexpectedArgumentError extends EthersError<"UNEXPECTED_ARGUMENT"> {
+    /**
+     *  The number of arguments received.
+     */
     count: number;
+    /**
+     *  The number of arguments expected.
+     */
     expectedCount: number;
 }
+/**
+ *  The action that resulted in the error.
+ */
 export declare type CallExceptionAction = "call" | "estimateGas" | "getTransactionResult" | "unknown";
+/**
+ *  The related transaction that caused the error.
+ */
 export declare type CallExceptionTransaction = {
     to: null | string;
     from?: string;
     data: string;
 };
+/**
+ *  This **Error** indicates a transaction reverted.
+ */
 export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
+    /**
+     *  The action being performed when the revert was encountered.
+     */
     action: CallExceptionAction;
+    /**
+     *  The revert data returned.
+     */
     data: null | string;
+    /**
+     *  A human-readable representation of data, if possible.
+     */
     reason: null | string;
+    /**
+     *  The transaction that triggered the exception.
+     */
     transaction: CallExceptionTransaction;
+    /**
+     *  The contract invocation details, if available.
+     */
     invocation: null | {
         method: string;
         signature: string;
         args: Array<any>;
     };
+    /**
+     *  The built-in or custom revert error, if available
+     */
     revert: null | {
         signature: string;
         name: string;
         args: Array<any>;
     };
 }
+/**
+ *  The sending account has insufficient funds to cover the
+ *  entire transaction cost.
+ */
 export interface InsufficientFundsError extends EthersError<"INSUFFICIENT_FUNDS"> {
+    /**
+     *  The transaction.
+     */
     transaction: TransactionRequest;
 }
+/**
+ *  The sending account has already used this nonce in a
+ *  transaction that has been included.
+ */
 export interface NonceExpiredError extends EthersError<"NONCE_EXPIRED"> {
+    /**
+     *  The transaction.
+     */
     transaction: TransactionRequest;
 }
+/**
+ *  A CCIP-read exception, which cannot be recovered from or
+ *  be further processed.
+ */
 export interface OffchainFaultError extends EthersError<"OFFCHAIN_FAULT"> {
+    /**
+     *  The transaction.
+     */
     transaction?: TransactionRequest;
+    /**
+     *  The reason the CCIP-read failed.
+     */
     reason: string;
 }
+/**
+ *  An attempt was made to replace a transaction, but with an
+ *  insufficient additional fee to afford evicting the old
+ *  transaction from the memory pool.
+ */
 export interface ReplacementUnderpricedError extends EthersError<"REPLACEMENT_UNDERPRICED"> {
+    /**
+     *  The transaction.
+     */
     transaction: TransactionRequest;
 }
+/**
+ *  A pending transaction was replaced by another.
+ */
 export interface TransactionReplacedError extends EthersError<"TRANSACTION_REPLACED"> {
+    /**
+     *  If the transaction was cancelled, such that the original
+     *  effects of the transaction cannot be assured.
+     */
     cancelled: boolean;
+    /**
+     *  The reason the transaction was replaced.
+     */
     reason: "repriced" | "cancelled" | "replaced";
+    /**
+     *  The hash of the replaced transaction.
+     */
     hash: string;
+    /**
+     *  The transaction that replaced the transaction.
+     */
     replacement: TransactionResponse;
+    /**
+     *  The receipt of the transaction that replace the transaction.
+     */
     receipt: TransactionReceipt;
 }
 /**

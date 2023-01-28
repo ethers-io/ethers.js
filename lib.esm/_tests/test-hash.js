@@ -5,15 +5,30 @@ import { loadTests } from "./utils.js";
 describe("Tests Namehash", function () {
     const tests = loadTests("namehash");
     for (const test of tests) {
-        if (test.error) {
-        }
-        else {
+        if (!test.error) {
             it(`hashes ENS name: ${JSON.stringify(test.name)}`, function () {
                 const actual = namehash(test.ensName);
                 assert.equal(actual, test.namehash, "namehash");
                 // The empty string is not a valid ENS name
                 if (test.ensName) {
                     assert.ok(isValidName(test.ensName), "isValidName");
+                }
+            });
+        }
+    }
+    for (const test of tests) {
+        if (test.error) {
+            it(`correctly fails to hash ENS name: ${test.error} ${JSON.stringify(test.name)}`, function () {
+                assert.throws(function () {
+                    const actual = namehash(test.ensName);
+                    console.log("Failed to throw", actual);
+                }, (error) => {
+                    return (isError(error, "INVALID_ARGUMENT") &&
+                        error.argument === "name" && error.value === test.ensName);
+                });
+                // The empty string is not a valid ENS name
+                if (test.ensName) {
+                    assert.ok(!isValidName(test.ensName), "!isValidName");
                 }
             });
         }

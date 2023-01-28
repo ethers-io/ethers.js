@@ -1,13 +1,16 @@
 "use strict";
+/**
+ *  About Cloudflare
+ *
+ *  @_subsection: api/providers/thirdparty:Cloudflare  [providers-cloudflare]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CloudflareProvider = void 0;
 const index_js_1 = require("../utils/index.js");
 const network_js_1 = require("./network.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 /**
- *  Aboud Cloudflare...
- *
- *  @_docloc: api/providers/thirdparty
+ *  About Cloudflare...
  */
 class CloudflareProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     constructor(_network) {

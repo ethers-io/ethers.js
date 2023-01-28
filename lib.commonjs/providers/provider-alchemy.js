@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AlchemyProvider = void 0;
+/**
+ *  About Alchemy
+ *
+ *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
+ */
 const index_js_1 = require("../utils/index.js");
 const community_js_1 = require("./community.js");
 const network_js_1 = require("./network.js");
@@ -28,7 +33,13 @@ function getHost(name) {
     (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }
 /**
- *  The AlchemyProvider is backed by the [[alchemyapu]] API.
+ *  The **AlchemyProvider** connects to the [[link-alchemy]]
+ *  JSON-RPC end-points.
+ *
+ *  By default, a highly-throttled API key is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-alchemy-signup).
  *
  *  @_docloc: api/providers/thirdparty
  */

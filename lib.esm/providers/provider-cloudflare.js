@@ -1,10 +1,13 @@
+/**
+ *  About Cloudflare
+ *
+ *  @_subsection: api/providers/thirdparty:Cloudflare  [providers-cloudflare]
+ */
 import { assertArgument } from "../utils/index.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 /**
- *  Aboud Cloudflare...
- *
- *  @_docloc: api/providers/thirdparty
+ *  About Cloudflare...
  */
 export class CloudflareProvider extends JsonRpcProvider {
     constructor(_network) {

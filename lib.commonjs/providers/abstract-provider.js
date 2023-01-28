@@ -1114,13 +1114,13 @@ function parseOffchainLookup(data) {
     const result = {
         sender: "", urls: [], calldata: "", selector: "", extraData: "", errorArgs: []
     };
-    if ((0, index_js_3.dataLength)(data) < 5 * 32) {
-        throw new Error("insufficient OffchainLookup data");
-    }
+    (0, index_js_3.assert)((0, index_js_3.dataLength)(data) >= 5 * 32, "insufficient OffchainLookup data", "OFFCHAIN_FAULT", {
+        reason: "insufficient OffchainLookup data"
+    });
     const sender = (0, index_js_3.dataSlice)(data, 0, 32);
-    if ((0, index_js_3.dataSlice)(sender, 0, 12) !== (0, index_js_3.dataSlice)(zeros, 0, 12)) {
-        throw new Error("corrupt OffchainLookup sender");
-    }
+    (0, index_js_3.assert)((0, index_js_3.dataSlice)(sender, 0, 12) === (0, index_js_3.dataSlice)(zeros, 0, 12), "corrupt OffchainLookup sender", "OFFCHAIN_FAULT", {
+        reason: "corrupt OffchainLookup sender"
+    });
     result.sender = (0, index_js_3.dataSlice)(sender, 12);
     // Read the URLs from the response
     try {
@@ -1138,7 +1138,9 @@ function parseOffchainLookup(data) {
         result.urls = urls;
     }
     catch (error) {
-        throw new Error("corrupt OffchainLookup urls");
+        (0, index_js_3.assert)(false, "corrupt OffchainLookup urls", "OFFCHAIN_FAULT", {
+            reason: "corrupt OffchainLookup urls"
+        });
     }
     // Get the CCIP calldata to forward
     try {
@@ -1149,12 +1151,14 @@ function parseOffchainLookup(data) {
         result.calldata = calldata;
     }
     catch (error) {
-        throw new Error("corrupt OffchainLookup calldata");
+        (0, index_js_3.assert)(false, "corrupt OffchainLookup calldata", "OFFCHAIN_FAULT", {
+            reason: "corrupt OffchainLookup calldata"
+        });
     }
     // Get the callbackSelector (bytes4)
-    if ((0, index_js_3.dataSlice)(data, 100, 128) !== (0, index_js_3.dataSlice)(zeros, 0, 28)) {
-        throw new Error("corrupt OffchainLookup callbaackSelector");
-    }
+    (0, index_js_3.assert)((0, index_js_3.dataSlice)(data, 100, 128) === (0, index_js_3.dataSlice)(zeros, 0, 28), "corrupt OffchainLookup callbaackSelector", "OFFCHAIN_FAULT", {
+        reason: "corrupt OffchainLookup callbaackSelector"
+    });
     result.selector = (0, index_js_3.dataSlice)(data, 96, 100);
     // Get the extra data to send back to the contract as context
     try {
@@ -1165,7 +1169,9 @@ function parseOffchainLookup(data) {
         result.extraData = extraData;
     }
     catch (error) {
-        throw new Error("corrupt OffchainLookup extraData");
+        (0, index_js_3.assert)(false, "corrupt OffchainLookup extraData", "OFFCHAIN_FAULT", {
+            reason: "corrupt OffchainLookup extraData"
+        });
     }
     result.errorArgs = "sender,urls,calldata,selector,extraData".split(/,/).map((k) => result[k]);
     return result;

@@ -1,7 +1,20 @@
 /**
- *  About INFURA
+ *  [[link-infura]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
  *
- *  @_subsection: api/providers/thirdparty:INFURA  [infura]
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``maticmum``)
+ *
+ *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
  */
 import { defineProperties, FetchRequest, assert, assertArgument } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
@@ -33,11 +46,29 @@ function getHost(name) {
     assertArgument(false, "unsupported network", "network", name);
 }
 /**
- *  INFURA...
+ *  The **InfuraWebSocketProvider** connects to the [[link-infura]]
+ *  WebSocket end-points.
+ *
+ *  By default, a highly-throttled API key is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-infura-signup).
  */
 export class InfuraWebSocketProvider extends WebSocketProvider {
+    /**
+     *  The Project ID for the INFURA connection.
+     */
     projectId;
+    /**
+     *  The Project Secret.
+     *
+     *  If null, no authenticated requests are made. This should not
+     *  be used outside of private contexts.
+     */
     projectSecret;
+    /**
+     *  Creates a new **InfuraWebSocketProvider**.
+     */
     constructor(network, projectId) {
         const provider = new InfuraProvider(network, projectId);
         const req = provider._getConnection();
@@ -54,11 +85,29 @@ export class InfuraWebSocketProvider extends WebSocketProvider {
     }
 }
 /**
- *  Aboud Cloudflare...
+ *  The **InfuraProvider** connects to the [[link-infura]]
+ *  JSON-RPC end-points.
+ *
+ *  By default, a highly-throttled API key is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-infura-signup).
  */
 export class InfuraProvider extends JsonRpcProvider {
+    /**
+     *  The Project ID for the INFURA connection.
+     */
     projectId;
+    /**
+     *  The Project Secret.
+     *
+     *  If null, no authenticated requests are made. This should not
+     *  be used outside of private contexts.
+     */
     projectSecret;
+    /**
+     *  Creates a new **InfuraProvider**.
+     */
     constructor(_network, projectId, projectSecret) {
         if (_network == null) {
             _network = "mainnet";
@@ -84,9 +133,16 @@ export class InfuraProvider extends JsonRpcProvider {
     isCommunityResource() {
         return (this.projectId === defaultProjectId);
     }
+    /**
+     *  Creates a new **InfuraWebSocketProvider**.
+     */
     static getWebSocketProvider(network, projectId) {
         return new InfuraWebSocketProvider(network, projectId);
     }
+    /**
+     *  Returns a prepared request for connecting to %%network%%
+     *  with %%projectId%% and %%projectSecret%%.
+     */
     static getRequest(network, projectId, projectSecret) {
         if (projectId == null) {
             projectId = defaultProjectId;

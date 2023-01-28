@@ -1,6 +1,6 @@
 import { keccak256 } from "../crypto/index.js";
-import { concat, hexlify, assertArgument, toUtf8Bytes, toUtf8String } from "../utils/index.js";
-import { ens_normalize } from "@adraffy/ens-normalize";
+import { concat, hexlify, assertArgument, toUtf8Bytes } from "../utils/index.js";
+import { ens_normalize } from "@adraffy/ens-normalize/xnf";
 const Zeros = new Uint8Array(32);
 Zeros.fill(0);
 function checkComponent(comp) {
@@ -8,7 +8,7 @@ function checkComponent(comp) {
     return comp;
 }
 function ensNameSplit(name) {
-    const bytes = toUtf8Bytes(ens_normalize(name));
+    const bytes = toUtf8Bytes(ensNormalize(name));
     const comps = [];
     if (name.length === 0) {
         return comps;
@@ -27,9 +27,20 @@ function ensNameSplit(name) {
     comps.push(checkComponent(bytes.slice(last)));
     return comps;
 }
+/**
+ *  Returns the ENS %%name%% normalized.
+ */
 export function ensNormalize(name) {
-    return ensNameSplit(name).map((comp) => toUtf8String(comp)).join(".");
+    try {
+        return ens_normalize(name);
+    }
+    catch (error) {
+        assertArgument(false, `invalid ENS name (${error.message})`, "name", name);
+    }
 }
+/**
+ *  Returns ``true`` if %%name%% is a valid ENS name.
+ */
 export function isValidName(name) {
     try {
         return (ensNameSplit(name).length !== 0);
@@ -37,6 +48,9 @@ export function isValidName(name) {
     catch (error) { }
     return false;
 }
+/**
+ *  Returns the [[link-namehash]] for %%name%%.
+ */
 export function namehash(name) {
     assertArgument(typeof (name) === "string", "invalid ENS name; not a string", "name", name);
     let result = Zeros;
@@ -46,6 +60,12 @@ export function namehash(name) {
     }
     return hexlify(result);
 }
+/**
+ *  Returns the DNS encoded %%name%%.
+ *
+ *  This is used for various parts of ENS name resolution, such
+ *  as the wildcard resolution.
+ */
 export function dnsEncode(name) {
     return hexlify(concat(ensNameSplit(name).map((comp) => {
         // DNS does not allow components over 63 bytes in length

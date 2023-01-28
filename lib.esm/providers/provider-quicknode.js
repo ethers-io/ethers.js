@@ -1,7 +1,19 @@
 /**
- *  About Quicknode
+ *  [[link-quicknode]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
  *
- *  @_subsection: api/providers/thirdparty:QuickNode  [backend-quicknode]
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``maticmum``)
+ *
+ *  @_subsection: api/providers/thirdparty:QuickNode  [providers-quicknode]
  */
 import { defineProperties, FetchRequest, assertArgument } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
@@ -32,10 +44,22 @@ function getHost(name) {
     assertArgument(false, "unsupported network", "network", name);
 }
 /**
- *  About QuickNode
+ *  The **QuickNodeProvider** connects to the [[link-quicknode]]
+ *  JSON-RPC end-points.
+ *
+ *  By default, a highly-throttled API token is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-quicknode).
  */
 export class QuickNodeProvider extends JsonRpcProvider {
+    /**
+     *  The API token.
+     */
     token;
+    /**
+     *  Creates a new **QuickNodeProvider**.
+     */
     constructor(_network, token) {
         if (_network == null) {
             _network = "mainnet";
@@ -58,6 +82,10 @@ export class QuickNodeProvider extends JsonRpcProvider {
     isCommunityResource() {
         return (this.token === defaultToken);
     }
+    /**
+     *  Returns a new request prepared for %%network%% and the
+     *  %%token%%.
+     */
     static getRequest(network, token) {
         if (token == null) {
             token = defaultToken;

@@ -1,6 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AnkrProvider = void 0;
+/**
+ *  [[link-ankr]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Polygon (``matic``)
+ *  - Arbitrum (``arbitrum``)
+ *
+ *  @_subsection: api/providers/thirdparty:Ankr  [providers-ankr]
+ */
 const index_js_1 = require("../utils/index.js");
 const community_js_1 = require("./community.js");
 const network_js_1 = require("./network.js");
@@ -20,12 +33,25 @@ function getHost(name) {
     (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }
 /**
- *  About Ankr...
+ *  The **AnkrProvider** connects to the [[link-ankr]]
+ *  JSON-RPC end-points.
  *
- *  @_docloc: api/providers/thirdparty
+ *  By default, a highly-throttled API key is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-ankr-signup).
  */
 class AnkrProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
+    /**
+     *  The API key for the Ankr connection.
+     */
     apiKey;
+    /**
+     *  Create a new **AnkrProvider**.
+     *
+     *  By default connecting to ``mainnet`` with a highly throttled
+     *  API key.
+     */
     constructor(_network, apiKey) {
         if (_network == null) {
             _network = "mainnet";
@@ -47,6 +73,10 @@ class AnkrProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
         catch (error) { }
         return super._getProvider(chainId);
     }
+    /**
+     *  Returns a prepared request for connecting to %%network%% with
+     *  %%apiKey%%.
+     */
     static getRequest(network, apiKey) {
         if (apiKey == null) {
             apiKey = defaultApiKey;

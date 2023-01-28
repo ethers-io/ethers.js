@@ -1,11 +1,23 @@
 "use strict";
+/**
+ *  [[link-quicknode]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``maticmum``)
+ *
+ *  @_subsection: api/providers/thirdparty:QuickNode  [providers-quicknode]
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuickNodeProvider = void 0;
-/**
- *  About Quicknode
- *
- *  @_subsection: api/providers/thirdparty:QuickNode  [backend-quicknode]
- */
 const index_js_1 = require("../utils/index.js");
 const community_js_1 = require("./community.js");
 const network_js_1 = require("./network.js");
@@ -35,10 +47,22 @@ function getHost(name) {
     (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }
 /**
- *  About QuickNode
+ *  The **QuickNodeProvider** connects to the [[link-quicknode]]
+ *  JSON-RPC end-points.
+ *
+ *  By default, a highly-throttled API token is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-quicknode).
  */
 class QuickNodeProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
+    /**
+     *  The API token.
+     */
     token;
+    /**
+     *  Creates a new **QuickNodeProvider**.
+     */
     constructor(_network, token) {
         if (_network == null) {
             _network = "mainnet";
@@ -61,6 +85,10 @@ class QuickNodeProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     isCommunityResource() {
         return (this.token === defaultToken);
     }
+    /**
+     *  Returns a new request prepared for %%network%% and the
+     *  %%token%%.
+     */
     static getRequest(network, token) {
         if (token == null) {
             token = defaultToken;
