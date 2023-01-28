@@ -1,7 +1,7 @@
 
 import { keccak256 } from "../crypto/index.js";
 import {
-    concat, hexlify, assertArgument, toUtf8Bytes, toUtf8String
+    concat, hexlify, assertArgument, toUtf8Bytes
 } from "../utils/index.js";
 
 
@@ -16,7 +16,7 @@ function checkComponent(comp: Uint8Array): Uint8Array {
 }
 
 function ensNameSplit(name: string): Array<Uint8Array> {
-    const bytes = toUtf8Bytes(ens_normalize(name));
+    const bytes = toUtf8Bytes(ensNormalize(name));
     const comps: Array<Uint8Array> = [ ];
 
     if (name.length === 0) { return comps; }
@@ -40,7 +40,11 @@ function ensNameSplit(name: string): Array<Uint8Array> {
 }
 
 export function ensNormalize(name: string): string {
-    return ensNameSplit(name).map((comp) => toUtf8String(comp)).join(".");
+    try {
+        return ens_normalize(name);
+    } catch (error: any) {
+        assertArgument(false, `invalid ENS name (${ error.message })`, "name", name);
+    }
 }
 
 export function isValidName(name: string): name is string {
