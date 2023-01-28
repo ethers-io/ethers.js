@@ -21,7 +21,9 @@ import type { TransactionRequest } from "./provider.js";
 const THROTTLE = 2000;
 
 /**
- *  Aboud Etherscan Debug...
+ *  When subscribing to the ``"debug"`` event on an Etherscan-based
+ *  provider, the events receive a **DebugEventEtherscanProvider**
+ *  payload.
  *
  *  @_docloc: api/providers/thirdparty:Etherscan
  */
@@ -43,48 +45,68 @@ export type DebugEventEtherscanProvider = {
 const EtherscanPluginId = "org.ethers.plugins.Etherscan";
 
 /**
- *  Aboud Cloudflare...
+ *  A Network can include an **EtherscanPlugin** to provide
+ *  a custom base URL.
  *
  *  @_docloc: api/providers/thirdparty:Etherscan
  */
 export class EtherscanPlugin extends NetworkPlugin {
+    /**
+     *  The Etherscan API base URL.
+     */
     readonly baseUrl!: string;
-    readonly communityApiKey!: string;
 
-    constructor(baseUrl: string, communityApiKey: string) {
+    /**
+     *  Creates a new **EtherscanProvider** which will use
+     *  %%baseUrl%%.
+     */
+    constructor(baseUrl: string) {
         super(EtherscanPluginId);
-        //if (communityApiKey == null) { communityApiKey = null; }
-        defineProperties<EtherscanPlugin>(this, { baseUrl, communityApiKey });
+        defineProperties<EtherscanPlugin>(this, { baseUrl });
     }
 
     clone(): EtherscanPlugin {
-        return new EtherscanPlugin(this.baseUrl, this.communityApiKey);
+        return new EtherscanPlugin(this.baseUrl);
     }
 }
 
 let nextId = 1;
 
 /**
- *  Aboud Etherscan...
+ *  The **EtherscanBaseProvider** is the super-class of
+ *  [[EtherscanProvider]], which should generally be used instead.
+ *
+ *  Since the **EtherscanProvider** includes additional code for
+ *  [[Contract]] access, in //rare cases// that contracts are not
+ *  used, this class can reduce code size.
  *
  *  @_docloc: api/providers/thirdparty:Etherscan
  */
 export class BaseEtherscanProvider extends AbstractProvider {
+
+    /**
+     *  The connected network.
+     */
     readonly network!: Network;
-    readonly apiKey!: string;
+
+    /**
+     *  The API key or null if using the community provided bandwidth.
+     */
+    readonly apiKey!: null | string;
 
     readonly #plugin: null | EtherscanPlugin;
 
-    constructor(_network?: Networkish, apiKey?: string) {
+    /**
+     *  Creates a new **EtherscanBaseProvider**.
+     */
+    constructor(_network?: Networkish, _apiKey?: string) {
+        const apiKey = (_apiKey != null) ? _apiKey: null;
+
         super();
 
         const network = Network.from(_network);
 
         this.#plugin = network.getPlugin<EtherscanPlugin>(EtherscanPluginId);
-
-        if (apiKey == null && this.#plugin) {
-            apiKey = this.#plugin.communityApiKey;
-        }
 
         defineProperties<BaseEtherscanProvider>(this, { apiKey, network });
 
@@ -92,6 +114,13 @@ export class BaseEtherscanProvider extends AbstractProvider {
         this.getBaseUrl();
     }
 
+    /**
+     *  Returns the base URL.
+     *
+     *  If an [[EtherscanPlugin]] is configured on the
+     *  [[EtherscanBaseProvider_network]], returns the plugin's
+     *  baseUrl.
+     */
     getBaseUrl(): string {
         if (this.#plugin) { return this.#plugin.baseUrl; }
 
@@ -121,6 +150,9 @@ export class BaseEtherscanProvider extends AbstractProvider {
         assertArgument(false, "unsupported network", "network", this.network);
     }
 
+    /**
+     *  Returns the URL for the %%module%% and %%params%%.
+     */
     getUrl(module: string, params: Record<string, string>): string {
         const query = Object.keys(params).reduce((accum, key) => {
             const value = params[key];
@@ -133,10 +165,16 @@ export class BaseEtherscanProvider extends AbstractProvider {
         return `${ this.getBaseUrl() }/api?module=${ module }${ query }${ apiKey }`;
     }
 
+    /**
+     *  Returns the URL for using POST requests.
+     */
     getPostUrl(): string {
         return `${ this.getBaseUrl() }/api`;
     }
 
+    /**
+     *  Returns the parameters for using POST requests.
+     */
     getPostData(module: string, params: Record<string, any>): Record<string, any> {
         params.module = module;
         params.apikey = this.apiKey;
@@ -147,6 +185,11 @@ export class BaseEtherscanProvider extends AbstractProvider {
         return this.network;
     }
 
+    /**
+     *  Resolves to the result of calling %%module%% with %%params%%.
+     *
+     *  If %%post%%, the request is made as a POST request.
+     */
     async fetch(module: string, params: Record<string, any>, post?: boolean): Promise<any> {
         const id = nextId++;
 
@@ -233,7 +276,9 @@ export class BaseEtherscanProvider extends AbstractProvider {
         }
     }
 
-    // The transaction has already been sanitized by the calls in Provider
+    /**
+     *  Returns %%transaction%% normalized for the Etherscan API.
+     */
     _getTransactionPostData(transaction: TransactionRequest): Record<string, string> {
         const result: Record<string, string> = { };
         for (let key in transaction) {
@@ -256,7 +301,9 @@ export class BaseEtherscanProvider extends AbstractProvider {
         return result;
     }
 
-
+    /**
+     *  Throws the normalized Etherscan error.
+     */
     _checkError(req: PerformActionRequest, error: Error, transaction: any): never {
 
         // Pull any message out if, possible
@@ -491,15 +538,17 @@ export class BaseEtherscanProvider extends AbstractProvider {
         return this.network;
     }
 
+    /**
+     *  Resolves to the current price of ether.
+     *
+     *  This returns ``0`` on any network other than ``mainnet``.
+     */
     async getEtherPrice(): Promise<number> {
         if (this.network.name !== "mainnet") { return 0.0; }
         return parseFloat((await this.fetch("stats", { action: "ethprice" })).ethusd);
     }
 
     isCommunityResource(): boolean {
-        const plugin = this.network.getPlugin<EtherscanPlugin>(EtherscanPluginId);
-        if (plugin) { return (plugin.communityApiKey === this.apiKey); }
-
         return (this.apiKey == null);
     }
 }

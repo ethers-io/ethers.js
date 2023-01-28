@@ -1,7 +1,20 @@
 /**
- *  About INFURA
+ *  [[link-infura]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
  *
- *  @_subsection: api/providers/thirdparty:INFURA  [infura]
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``maticmum``)
+ *
+ *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
  */
 import {
     defineProperties, FetchRequest, assert, assertArgument
@@ -46,12 +59,32 @@ function getHost(name: string): string {
 }
 
 /**
- *  INFURA...
+ *  The **InfuraWebSocketProvider** connects to the [[link-infura]]
+ *  WebSocket end-points.
+ *
+ *  By default, a highly-throttled API key is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-infura-signup).
  */
 export class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourcable {
+
+    /**
+     *  The Project ID for the INFURA connection.
+     */
     readonly projectId!: string;
+
+    /**
+     *  The Project Secret.
+     *
+     *  If null, no authenticated requests are made. This should not
+     *  be used outside of private contexts.
+     */
     readonly projectSecret!: null | string;
 
+    /**
+     *  Creates a new **InfuraWebSocketProvider**.
+     */
     constructor(network?: Networkish, projectId?: string) {
         const provider = new InfuraProvider(network, projectId);
 
@@ -74,12 +107,31 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
 }
 
 /**
- *  Aboud Cloudflare...
+ *  The **InfuraProvider** connects to the [[link-infura]]
+ *  JSON-RPC end-points.
+ *
+ *  By default, a highly-throttled API key is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-infura-signup).
  */
 export class InfuraProvider extends JsonRpcProvider implements CommunityResourcable {
+    /**
+     *  The Project ID for the INFURA connection.
+     */
     readonly projectId!: string;
+
+    /**
+     *  The Project Secret.
+     *
+     *  If null, no authenticated requests are made. This should not
+     *  be used outside of private contexts.
+     */
     readonly projectSecret!: null | string;
 
+    /**
+     *  Creates a new **InfuraProvider**.
+     */
     constructor(_network?: Networkish, projectId?: null | string, projectSecret?: null | string) {
         if (_network == null) { _network = "mainnet"; }
         const network = Network.from(_network);
@@ -103,10 +155,17 @@ export class InfuraProvider extends JsonRpcProvider implements CommunityResourca
         return (this.projectId === defaultProjectId);
     }
 
+    /**
+     *  Creates a new **InfuraWebSocketProvider**.
+     */
     static getWebSocketProvider(network?: Networkish, projectId?: string): InfuraWebSocketProvider {
         return new InfuraWebSocketProvider(network, projectId);
     }
 
+    /**
+     *  Returns a prepared request for connecting to %%network%%
+     *  with %%projectId%% and %%projectSecret%%.
+     */
     static getRequest(network: Network, projectId?: null | string, projectSecret?: null | string): FetchRequest {
         if (projectId == null) { projectId = defaultProjectId; }
         if (projectSecret == null) { projectSecret = null; }

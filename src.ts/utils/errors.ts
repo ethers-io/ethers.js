@@ -14,7 +14,6 @@ import type {
 
 import type { FetchRequest, FetchResponse } from "./fetch.js";
 
-
 export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
 
 
@@ -91,10 +90,26 @@ export type ErrorCode =
     "ACTION_REJECTED"
 ;
 
+/**
+ *  All errors in Ethers include properties to assist in
+ *  machine-readable errors.
+ */
 export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
+    /**
+     *  The string error code.
+     */
     code: ErrorCode;
-//    recover?: (...args: Array<any>) => any;
+
+    /**
+     *  Additional info regarding the error that may be useful.
+     *
+     *  This is generally helpful mostly for human-based debugging.
+     */
     info?: Record<string, any>;
+
+    /**
+     *  Any related error.
+     */
     error?: Error;
 }
 
@@ -271,45 +286,89 @@ export interface InvalidArgumentError extends EthersError<"INVALID_ARGUMENT"> {
     info?: Record<string, any>
 }
 
+/**
+ *  This Error indicates there were too few arguments were provided.
+ */
 export interface MissingArgumentError extends EthersError<"MISSING_ARGUMENT"> {
+    /**
+     *  The number of arguments received.
+     */
     count: number;
+
+    /**
+     *  The number of arguments expected.
+     */
     expectedCount: number;
 }
 
+/**
+ *  This Error indicates too many arguments were provided.
+ */
 export interface UnexpectedArgumentError extends EthersError<"UNEXPECTED_ARGUMENT"> {
+    /**
+     *  The number of arguments received.
+     */
     count: number;
+
+    /**
+     *  The number of arguments expected.
+     */
     expectedCount: number;
 }
 
 
 // Blockchain Errors
+
+/**
+ *  The action that resulted in the error.
+ */
 export type CallExceptionAction = "call" | "estimateGas" | "getTransactionResult" | "unknown";
+
+/**
+ *  The related transaction that caused the error.
+ */
 export type CallExceptionTransaction = {
     to: null | string;
     from?: string;
     data: string;
 };
+
+/**
+ *  This **Error** indicates a transaction reverted.
+ */
 export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
-    // What was being performed when the call exception occurred
+    /**
+     *  The action being performed when the revert was encountered.
+     */
     action: CallExceptionAction;
 
-    // The revert data
+    /**
+     *  The revert data returned.
+     */
     data: null | string;
 
-    // If possible, a human-readable representation of data
+    /**
+     *  A human-readable representation of data, if possible.
+     */
     reason: null | string;
 
-    // The transaction that triggered the exception
+    /**
+     *  The transaction that triggered the exception.
+     */
     transaction: CallExceptionTransaction,
 
-    // If avaiable, the contract invocation details
+    /**
+     *  The contract invocation details, if available.
+     */
     invocation: null | {
         method: string;
         signature: string;
         args: Array<any>;
     }
 
-    // The built-in or custom revert error if available
+    /**
+     *  The built-in or custom revert error, if available
+     */
     revert: null | {
         signature: string;
         name: string;
@@ -317,34 +376,84 @@ export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
     }
 }
 
-//export interface ContractCallExceptionError extends CallExceptionError {
-    // The transaction call
-//    transaction: any;//ErrorTransaction;
-//}
-
-
+/**
+ *  The sending account has insufficient funds to cover the
+ *  entire transaction cost.
+ */
 export interface InsufficientFundsError extends EthersError<"INSUFFICIENT_FUNDS"> {
+    /**
+     *  The transaction.
+     */
     transaction: TransactionRequest;
 }
 
+/**
+ *  The sending account has already used this nonce in a
+ *  transaction that has been included.
+ */
 export interface NonceExpiredError extends EthersError<"NONCE_EXPIRED"> {
+    /**
+     *  The transaction.
+     */
     transaction: TransactionRequest;
 }
 
+/**
+ *  A CCIP-read exception, which cannot be recovered from or
+ *  be further processed.
+ */
 export interface OffchainFaultError extends EthersError<"OFFCHAIN_FAULT"> {
+    /**
+     *  The transaction.
+     */
     transaction?: TransactionRequest;
+
+    /**
+     *  The reason the CCIP-read failed.
+     */
     reason: string;
 }
 
+/**
+ *  An attempt was made to replace a transaction, but with an
+ *  insufficient additional fee to afford evicting the old
+ *  transaction from the memory pool.
+ */
 export interface ReplacementUnderpricedError extends EthersError<"REPLACEMENT_UNDERPRICED"> {
+    /**
+     *  The transaction.
+     */
     transaction: TransactionRequest;
 }
 
+/**
+ *  A pending transaction was replaced by another.
+ */
 export interface TransactionReplacedError extends EthersError<"TRANSACTION_REPLACED"> {
+    /**
+     *  If the transaction was cancelled, such that the original
+     *  effects of the transaction cannot be assured.
+     */
     cancelled: boolean;
+
+    /**
+     *  The reason the transaction was replaced.
+     */
     reason: "repriced" | "cancelled" | "replaced";
+
+    /**
+     *  The hash of the replaced transaction.
+     */
     hash: string;
+
+    /**
+     *  The transaction that replaced the transaction.
+     */
     replacement: TransactionResponse;
+
+    /**
+     *  The receipt of the transaction that replace the transaction.
+     */
     receipt: TransactionReceipt;
 }
 
