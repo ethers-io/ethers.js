@@ -48,7 +48,7 @@ export {
 
 export {
     id,
-    isValidName, namehash, dnsEncode,
+    ensNormalize, isValidName, namehash, dnsEncode,
     hashMessage, verifyMessage,
     solidityPacked, solidityPackedKeccak256, solidityPackedSha256,
     TypedDataEncoder
