@@ -145,7 +145,7 @@ export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
 export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 
 export type {
-    Provider, Signer
+    Provider, Signer, GetDefaultProviderOptions
 } from "./providers/index.js";
 
 export type {

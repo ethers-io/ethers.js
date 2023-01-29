@@ -22,7 +22,16 @@ function isWebSocketLike(value: any): value is WebSocketLike {
         typeof(value.close) === "function");
 }
 
-export function getDefaultProvider(network: string | Networkish | WebSocketLike, options?: any): AbstractProvider {
+export type GetDefaultProviderOptions = {
+    alchemy?: string | undefined | null
+    ankr?: string | undefined | null
+    cloudflare?: string | undefined | null
+    etherscan?: string | undefined 
+    infura?: string | { projectSecret: string, projectId: null | string } | null
+    quicknode?: string | undefined | null
+}
+
+export function getDefaultProvider(network: string | Networkish | WebSocketLike, options?: GetDefaultProviderOptions): AbstractProvider {
     if (options == null) { options = { }; }
 
     if (typeof(network) === "string" && network.match(/^https?:/)) {
@@ -64,8 +73,8 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
             let projectId = options.infura;
             let projectSecret: undefined | string = undefined;
             if (typeof(projectId) === "object") {
-                projectSecret = projectId.projectSecret;
-                projectId = projectId.projectId;
+                projectSecret = projectId?.projectSecret;
+                projectId = projectId?.projectId;
             }
             providers.push(new InfuraProvider(network, projectId, projectSecret));
         } catch (error) { console.log(error); }
