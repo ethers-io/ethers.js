@@ -87,7 +87,7 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
 */
     if (options.quicknode !== "-") {
         try {
-            let token = options.qquicknode;
+            let token = options.quicknode;
             providers.push(new QuickNodeProvider(network, token));
         } catch (error) { console.log(error); }
     }
