@@ -1128,6 +1128,12 @@ export class EventFragment extends NamedFragment {
         return result.join(" ");
     }
 
+    static getTopicHash(name: string, params?: Array<any>): string {
+        params = (params || []).map((p) => ParamType.from(p));
+        const fragment = new EventFragment(_guard, name, params, false);
+        return fragment.topicHash;
+    }
+
     static from(obj: any): EventFragment {
         if (EventFragment.isFragment(obj)) { return obj; }
 
