@@ -1394,6 +1394,12 @@ export class FunctionFragment extends NamedFragment {
         return result.join(" ");
     }
 
+    static getSelector(name: string, params?: Array<any>): string {
+        params = (params || []).map((p) => ParamType.from(p));
+        const fragment = new FunctionFragment(_guard, name, "view", params, [ ], null);
+        return fragment.selector;
+    }
+
     static from(obj: any): FunctionFragment {
         if (FunctionFragment.isFragment(obj)) { return obj; }
 
