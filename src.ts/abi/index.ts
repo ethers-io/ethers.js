@@ -12,8 +12,8 @@ export { AbiCoder } from "./abi-coder.js";
 export { decodeBytes32String, encodeBytes32String } from "./bytes32.js";
 
 export {
-    ConstructorFragment, ErrorFragment, EventFragment, Fragment,
-    FunctionFragment, NamedFragment, ParamType, StructFragment,
+    ConstructorFragment, ErrorFragment, EventFragment, FallbackFragment,
+    Fragment, FunctionFragment, NamedFragment, ParamType, StructFragment,
 } from "./fragments.js";
 
 export {

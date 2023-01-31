@@ -14,7 +14,10 @@ import {
 
 import { AbiCoder } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
-import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
+import {
+    ConstructorFragment, ErrorFragment, EventFragment, FallbackFragment,
+    Fragment, FunctionFragment, ParamType
+} from "./fragments.js";
 import { Typed } from "./typed.js";
 
 import type { BigNumberish, BytesLike, CallExceptionError, CallExceptionTransaction } from "../utils/index.js";
@@ -175,6 +178,16 @@ export class Interface {
      */
     readonly deploy!: ConstructorFragment;
 
+    /**
+     *  The Fallback method, if any.
+     */
+    readonly fallback!: null | FallbackFragment;
+
+    /**
+     *  If receiving ether is supported.
+     */
+    readonly receive!: boolean;
+
     #errors: Map<string, ErrorFragment>;
     #events: Map<string, EventFragment>;
     #functions: Map<string, FunctionFragment>;
@@ -212,10 +225,13 @@ export class Interface {
             fragments: Object.freeze(frags)
         });
 
+        let fallback: null | FallbackFragment = null;
+        let receive = false;
+
         this.#abiCoder = this.getAbiCoder();
 
         // Add all fragments by their signature
-        this.fragments.forEach((fragment) => {
+        this.fragments.forEach((fragment, index) => {
             let bucket: Map<string, Fragment>;
             switch (fragment.type) {
                 case "constructor":
@@ -225,6 +241,17 @@ export class Interface {
                     }
                     //checkNames(fragment, "input", fragment.inputs);
                     defineProperties<Interface>(this, { deploy: <ConstructorFragment>fragment });
+                    return;
+
+                case "fallback":
+                    if (fragment.inputs.length === 0) {
+                        receive = true;
+                    } else {
+                        assertArgument(!fallback || (<FallbackFragment>fragment).payable !== fallback.payable,
+                            "conflicting fallback fragments", `fragments[${ index }]`, fragment);
+                        fallback = <FallbackFragment>fragment;
+                        receive = fallback.payable;
+                    }
                     return;
 
                 case "function":
@@ -259,6 +286,8 @@ export class Interface {
                 deploy: ConstructorFragment.from("constructor()")
             });
         }
+
+        defineProperties<Interface>(this, { fallback, receive });
     }
 
     /**

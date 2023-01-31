@@ -3,7 +3,9 @@ import assert from "assert";
 
 import { getProvider, setupProviders } from "./create-provider.js";
 
-import { Contract, EventLog, Typed, Wallet } from "../index.js";
+import {
+    Contract, EventLog, isError, Typed, Wallet
+} from "../index.js";
 import type { ContractEventPayload, ContractEventName, Log } from "../index.js";
 
 setupProviders();
@@ -22,7 +24,7 @@ describe("Test Contract", function() {
         "function testErrorString(bool pass, string calldata message) pure returns (uint256)",
         "function testPanic(uint256 code) returns (uint256)",
         "function testEvent(uint256 valueUint256, address valueAddress, string valueString, bytes valueBytes) public",
-        "function testCallAdd(uint256 a, uint256 b) pure returns (uint256 result)"
+        "function testCallAdd(uint256 a, uint256 b) pure returns (uint256 result)",
     ];
 
     it("tests contract calls", async function() {
@@ -319,3 +321,146 @@ describe("Test Contract Interface", function() {
     });
 });
 */
+
+type TestContractFallbackResult = {
+    data: string;
+} | {
+    error: string;
+};
+
+type TestContractFallback = {
+    name: string;
+    address: string;
+    abi: Array<string>;
+    sendNone: TestContractFallbackResult;
+    sendData: TestContractFallbackResult;
+    sendValue: TestContractFallbackResult;
+    sendDataAndValue: TestContractFallbackResult;
+};
+
+describe("Test Contract Fallback", function() {
+    const tests: Array<TestContractFallback> = [
+        {
+            name: "none",
+            address: "0x0ccdace3d8353fed9b87a2d63c40452923ccdae5",
+            abi: [ ],
+            sendNone: { error: "no fallback" },
+            sendData: { error: "no fallback" },
+            sendValue: { error: "no fallback" },
+            sendDataAndValue: { error: "no fallback" },
+        },
+        {
+            name: "non-payable fallback",
+            address: "0x3f10193f79a639b11ec9d2ab42a25a4a905a8870",
+            abi: [
+                "fallback()"
+            ],
+            sendNone: { data: "0x" },
+            sendData: { data: "0x1234" },
+            sendValue: { error: "overrides.value" },
+            sendDataAndValue: { error: "overrides.value" },
+        },
+        {
+            name: "payable fallback",
+            address: "0xe2de6b97c5eb9fee8a47ca6c0fa642331e0b6330",
+            abi: [
+                "fallback() payable"
+            ],
+            sendNone: { data: "0x" },
+            sendData: { data: "0x1234" },
+            sendValue: { data: "0x" },
+            sendDataAndValue: { data: "0x1234" },
+        },
+        {
+            name: "receive-only",
+            address: "0xf8f2afbbe37f6a4520e4db7f99495655aa31229b",
+            abi: [
+                "receive()"
+            ],
+            sendNone: { data: "0x" },
+            sendData: { error: "overrides.data" },
+            sendValue: { data: "0x" },
+            sendDataAndValue: { error: "overrides.data" },
+        },
+        {
+            name: "receive and payable fallback",
+            address: "0x7d97ca5d9dea1cd0364f1d493252006a3c4e18a0",
+            abi: [
+                "fallback() payable",
+                "receive()"
+            ],
+            sendNone: { data: "0x" },
+            sendData: { data: "0x1234" },
+            sendValue: { data: "0x" },
+            sendDataAndValue: { data: "0x1234" },
+        },
+        {
+            name: "receive and non-payable fallback",
+            address: "0x5b59d934f0d22b15e73b5d6b9ae83486b70df67e",
+            abi: [
+                "fallback() payable",
+                "receive()"
+            ],
+            sendNone: { data: "0x" },
+            sendData: { data: "0x" },
+            sendValue: { data: "0x" },
+            sendDataAndValue: { error: "overrides.value" },
+        },
+    ];
+
+    const provider = getProvider("InfuraProvider", "goerli");
+
+    const testGroups: Array<{ group: "sendNone" | "sendData" | "sendValue" | "sendDataAndValue", tx: any }> = [
+        {
+            group: "sendNone",
+            tx: { }
+        },
+        {
+            group: "sendData",
+            tx: { data: "0x1234" }
+        },
+        {
+            group: "sendValue",
+            tx: { value: 123 }
+        },
+        {
+            group: "sendDataAndValue",
+            tx: { data: "0x1234", value: 123 }
+        },
+    ];
+
+    for (const { group, tx } of testGroups) {
+        for (const test of tests) {
+            const { name, address, abi } = test;
+            const send = test[group];
+
+            const contract = new Contract(address, abi, provider);
+            it(`test contract fallback checks: ${ group } - ${ name }`, async function() {
+                const func = async function() {
+                    if (abi.length === 0) {
+                        throw new Error("no fallback");
+                    }
+                    assert.ok(contract.fallback);
+                    return await contract.fallback.populateTransaction(tx)
+                };
+
+                if ("data" in send) {
+                    await func();
+                    //const result = await func();
+                    //@TODO: Test for the correct populated tx
+                    //console.log(result);
+                    assert.ok(true);
+                } else {
+                    assert.rejects(func, function(error: any) {
+                        if (error.message === send.error) { return true; }
+                        if (isError(error, "INVALID_ARGUMENT")) {
+                            return error.argument === send.error;
+                        }
+                        console.log("EE", error);
+                        return true;
+                    });
+                }
+            });
+        }
+    }
+});
