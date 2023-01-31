@@ -123,6 +123,14 @@ class Interface {
      *  The Contract constructor.
      */
     deploy;
+    /**
+     *  The Fallback method, if any.
+     */
+    fallback;
+    /**
+     *  If receiving ether is supported.
+     */
+    receive;
     #errors;
     #events;
     #functions;
@@ -155,9 +163,11 @@ class Interface {
         (0, index_js_3.defineProperties)(this, {
             fragments: Object.freeze(frags)
         });
+        let fallback = null;
+        let receive = false;
         this.#abiCoder = this.getAbiCoder();
         // Add all fragments by their signature
-        this.fragments.forEach((fragment) => {
+        this.fragments.forEach((fragment, index) => {
             let bucket;
             switch (fragment.type) {
                 case "constructor":
@@ -167,6 +177,16 @@ class Interface {
                     }
                     //checkNames(fragment, "input", fragment.inputs);
                     (0, index_js_3.defineProperties)(this, { deploy: fragment });
+                    return;
+                case "fallback":
+                    if (fragment.inputs.length === 0) {
+                        receive = true;
+                    }
+                    else {
+                        (0, index_js_3.assertArgument)(!fallback || fragment.payable !== fallback.payable, "conflicting fallback fragments", `fragments[${index}]`, fragment);
+                        fallback = fragment;
+                        receive = fallback.payable;
+                    }
                     return;
                 case "function":
                     //checkNames(fragment, "input", fragment.inputs);
@@ -196,6 +216,7 @@ class Interface {
                 deploy: fragments_js_1.ConstructorFragment.from("constructor()")
             });
         }
+        (0, index_js_3.defineProperties)(this, { fallback, receive });
     }
     /**
      *  Returns the entire Human-Readable ABI, as an array of

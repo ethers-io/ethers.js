@@ -4,16 +4,24 @@ import { ContractTransactionResponse, EventLog } from "./wrappers.js";
 import type { EventFragment, FunctionFragment, InterfaceAbi, ParamType } from "../abi/index.js";
 import type { Addressable } from "../address/index.js";
 import type { EventEmitterable, Listener } from "../utils/index.js";
-import type { BlockTag, ContractRunner } from "../providers/index.js";
+import type { BlockTag, ContractRunner, TransactionRequest } from "../providers/index.js";
 import type { ContractEventName, ContractInterface, ContractMethod, ContractEvent, ContractTransaction } from "./types.js";
 /**
  *  @_ignore:
  */
-export declare function copyOverrides(arg: any): Promise<Omit<ContractTransaction, "data" | "to">>;
+export declare function copyOverrides<O extends string = "data" | "to">(arg: any, allowed?: Array<string>): Promise<Omit<ContractTransaction, O>>;
 /**
  *  @_ignore:
  */
 export declare function resolveArgs(_runner: null | ContractRunner, inputs: ReadonlyArray<ParamType>, args: Array<any>): Promise<Array<any>>;
+declare class WrappedFallback {
+    readonly _contract: BaseContract;
+    constructor(contract: BaseContract);
+    populateTransaction(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransaction>;
+    staticCall(overrides?: Omit<TransactionRequest, "to">): Promise<string>;
+    send(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse>;
+    estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint>;
+}
 declare const internal: unique symbol;
 export declare class BaseContract implements Addressable, EventEmitterable<ContractEventName> {
     readonly target: string | Addressable;
@@ -21,6 +29,7 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
     readonly runner: null | ContractRunner;
     readonly filters: Record<string, ContractEvent>;
     readonly [internal]: any;
+    readonly fallback: null | WrappedFallback;
     constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _deployTx?: null | TransactionResponse);
     connect(runner: null | ContractRunner): BaseContract;
     getAddress(): Promise<string>;

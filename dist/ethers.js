@@ -439,7 +439,7 @@ function zeroPadBytes(data, length) {
  *
  *  @_subsection: api/utils:Math Helpers  [about-maths]
  */
-const BN_0$9 = BigInt(0);
+const BN_0$a = BigInt(0);
 const BN_1$6 = BigInt(1);
 //const BN_Max256 = (BN_1 << BigInt(256)) - BN_1;
 // IEEE 754 support 53-bits of mantissa
@@ -453,7 +453,7 @@ const maxValue = 0x1fffffffffffff;
 function fromTwos(_value, _width) {
     const value = getUint(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
-    assert$1((value >> width) === BN_0$9, "overflow", "NUMERIC_FAULT", {
+    assert$1((value >> width) === BN_0$a, "overflow", "NUMERIC_FAULT", {
         operation: "fromTwos", fault: "overflow", value: _value
     });
     // Top bit set; treat as a negative value
@@ -473,7 +473,7 @@ function toTwos(_value, _width) {
     let value = getBigInt(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
     const limit = (BN_1$6 << (width - BN_1$6));
-    if (value < BN_0$9) {
+    if (value < BN_0$a) {
         value = -value;
         assert$1(value <= limit, "too low", "NUMERIC_FAULT", {
             operation: "toTwos", fault: "overflow", value: _value
@@ -525,7 +525,7 @@ function getBigInt(value, name) {
 }
 function getUint(value, name) {
     const result = getBigInt(value, name);
-    assert$1(result >= BN_0$9, "unsigned value cannot be negative", "NUMERIC_FAULT", {
+    assert$1(result >= BN_0$a, "unsigned value cannot be negative", "NUMERIC_FAULT", {
         fault: "overflow", operation: "getUint", value
     });
     return result;
@@ -611,7 +611,7 @@ function toBeHex(_value, _width) {
  */
 function toBeArray(_value) {
     const value = getUint(_value, "value");
-    if (value === BN_0$9) {
+    if (value === BN_0$a) {
         return new Uint8Array([]);
     }
     let hex = value.toString(16);
@@ -669,7 +669,7 @@ function getAlpha(letter) {
     assertArgument(result != null, `invalid base58 value`, "letter", letter);
     return result;
 }
-const BN_0$8 = BigInt(0);
+const BN_0$9 = BigInt(0);
 const BN_58 = BigInt(58);
 /**
  *  Encode %%value%% as a Base58-encoded string.
@@ -687,7 +687,7 @@ function encodeBase58(_value) {
  *  Decode the Base58-encoded %%value%%.
  */
 function decodeBase58(value) {
-    let result = BN_0$8;
+    let result = BN_0$9;
     for (let i = 0; i < value.length; i++) {
         result *= BN_58;
         result += getAlpha(value[i]);
@@ -1779,7 +1779,7 @@ function wait(delay) {
  *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [about-fixed-point-math]
  */
 const BN_N1 = BigInt(-1);
-const BN_0$7 = BigInt(0);
+const BN_0$8 = BigInt(0);
 const BN_1$5 = BigInt(1);
 const BN_5 = BigInt(5);
 const _guard$5 = {};
@@ -1803,7 +1803,7 @@ function checkValue(val, format, safeOp) {
         assert$1(safeOp == null || (val >= -limit && val < limit), "overflow", "NUMERIC_FAULT", {
             operation: safeOp, fault: "overflow", value: val
         });
-        if (val > BN_0$7) {
+        if (val > BN_0$8) {
             val = fromTwos(mask(val, width), width);
         }
         else {
@@ -1863,7 +1863,7 @@ function getFormat(value) {
 }
 function toString(val, decimals) {
     let negative = "";
-    if (val < BN_0$7) {
+    if (val < BN_0$8) {
         negative = "-";
         val *= BN_N1;
     }
@@ -2054,13 +2054,13 @@ class FixedNumber {
     mulSignal(other) {
         this.#checkFormat(other);
         const value = this.#val * other.#val;
-        assert$1((value % this.#tens) === BN_0$7, "precision lost during signalling mul", "NUMERIC_FAULT", {
+        assert$1((value % this.#tens) === BN_0$8, "precision lost during signalling mul", "NUMERIC_FAULT", {
             operation: "mulSignal", fault: "underflow", value: this
         });
         return this.#checkValue(value / this.#tens, "mulSignal");
     }
     #div(o, safeOp) {
-        assert$1(o.#val !== BN_0$7, "division by zero", "NUMERIC_FAULT", {
+        assert$1(o.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
             operation: "div", fault: "divide-by-zero", value: this
         });
         this.#checkFormat(o);
@@ -2084,12 +2084,12 @@ class FixedNumber {
      *  (precision loss) occurs.
      */
     divSignal(other) {
-        assert$1(other.#val !== BN_0$7, "division by zero", "NUMERIC_FAULT", {
+        assert$1(other.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
             operation: "div", fault: "divide-by-zero", value: this
         });
         this.#checkFormat(other);
         const value = (this.#val * this.#tens);
-        assert$1((value % other.#val) === BN_0$7, "precision lost during signalling div", "NUMERIC_FAULT", {
+        assert$1((value % other.#val) === BN_0$8, "precision lost during signalling div", "NUMERIC_FAULT", {
             operation: "divSignal", fault: "underflow", value: this
         });
         return this.#checkValue(value / other.#val, "divSignal");
@@ -2148,7 +2148,7 @@ class FixedNumber {
      */
     floor() {
         let val = this.#val;
-        if (this.#val < BN_0$7) {
+        if (this.#val < BN_0$8) {
             val -= this.#tens - BN_1$5;
         }
         val = (this.#val / this.#tens) * this.#tens;
@@ -2162,7 +2162,7 @@ class FixedNumber {
      */
     ceiling() {
         let val = this.#val;
-        if (this.#val > BN_0$7) {
+        if (this.#val > BN_0$8) {
             val += this.#tens - BN_1$5;
         }
         val = (this.#val / this.#tens) * this.#tens;
@@ -2191,11 +2191,11 @@ class FixedNumber {
     /**
      *  Returns true if %%this%% is equal to ``0``.
      */
-    isZero() { return (this.#val === BN_0$7); }
+    isZero() { return (this.#val === BN_0$8); }
     /**
      *  Returns true if %%this%% is less than ``0``.
      */
-    isNegative() { return (this.#val < BN_0$7); }
+    isNegative() { return (this.#val < BN_0$8); }
     /**
      *  Returns the string representation of %%this%%.
      */
@@ -2234,7 +2234,7 @@ class FixedNumber {
         const delta = decimals - format.decimals;
         if (delta > 0) {
             const tens = getTens(delta);
-            assert$1((value % tens) === BN_0$7, "value loses precision for format", "NUMERIC_FAULT", {
+            assert$1((value % tens) === BN_0$8, "value loses precision for format", "NUMERIC_FAULT", {
                 operation: "fromValue", fault: "underflow", value: _value
             });
             value /= tens;
@@ -5871,7 +5871,7 @@ const MessagePrefix = "\x19Ethereum Signed Message:\n";
  */
 
 // Constants
-const BN_0$6 = BigInt(0);
+const BN_0$7 = BigInt(0);
 const BN_1$4 = BigInt(1);
 const BN_2$3 = BigInt(2);
 const BN_27$1 = BigInt(27);
@@ -6022,7 +6022,7 @@ class Signature {
         const bv = getBigInt(v, "v");
         // The v is not an EIP-155 v, so it is the unspecified chain ID
         if ((bv == BN_27$1) || (bv == BN_28$1)) {
-            return BN_0$6;
+            return BN_0$7;
         }
         // Bad value for an EIP-155 v
         assertArgument(bv >= BN_35$1, "invalid EIP-155 v", "v", v);
@@ -6068,7 +6068,7 @@ class Signature {
      */
     static getNormalizedV(v) {
         const bv = getBigInt(v);
-        if (bv === BN_0$6 || bv === BN_27$1) {
+        if (bv === BN_0$7 || bv === BN_27$1) {
             return 27;
         }
         if (bv === BN_1$4 || bv === BN_28$1) {
@@ -6353,7 +6353,7 @@ function lock() {
     randomBytes.lock();
 }
 
-const BN_0$5 = BigInt(0);
+const BN_0$6 = BigInt(0);
 const BN_36 = BigInt(36);
 function getChecksumAddress(address) {
     //    if (!isHexString(address, 20)) {
@@ -6415,7 +6415,7 @@ const Base36 = (function () {
 })();
 function fromBase36(value) {
     value = value.toLowerCase();
-    let result = BN_0$5;
+    let result = BN_0$6;
     for (let i = 0; i < value.length; i++) {
         result = result * BN_36 + Base36[value[i]];
     }
@@ -7229,7 +7229,7 @@ class NullCoder extends Coder {
     }
 }
 
-const BN_0$4 = BigInt(0);
+const BN_0$5 = BigInt(0);
 const BN_1$3 = BigInt(1);
 const BN_MAX_UINT256$1 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 /**
@@ -7257,7 +7257,7 @@ class NumberCoder extends Coder {
             }
             value = toTwos(value, 8 * WordSize);
         }
-        else if (value < BN_0$4 || value > mask(maxUintValue, this.size * 8)) {
+        else if (value < BN_0$5 || value > mask(maxUintValue, this.size * 8)) {
             this._throwError("value out-of-bounds", _value);
         }
         return writer.writeValue(value);
@@ -8455,7 +8455,7 @@ function recoverAddress(digest, signature) {
     return computeAddress(SigningKey.recoverPublicKey(digest, signature));
 }
 
-const BN_0$3 = BigInt(0);
+const BN_0$4 = BigInt(0);
 const BN_2$2 = BigInt(2);
 const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
@@ -8483,7 +8483,7 @@ function handleNumber(_value, param) {
 }
 function handleUint(_value, param) {
     if (_value === "0x") {
-        return BN_0$3;
+        return BN_0$4;
     }
     const value = getBigInt(_value, param);
     assertArgument(value <= BN_MAX_UINT, "value exceeds uint size", param, value);
@@ -8509,7 +8509,7 @@ function _parseLegacy(data) {
         to: handleAddress(fields[3]),
         value: handleUint(fields[4], "value"),
         data: hexlify(fields[5]),
-        chainId: BN_0$3
+        chainId: BN_0$4
     };
     // Legacy unsigned transaction
     if (fields.length === 6) {
@@ -8518,19 +8518,19 @@ function _parseLegacy(data) {
     const v = handleUint(fields[6], "v");
     const r = handleUint(fields[7], "r");
     const s = handleUint(fields[8], "s");
-    if (r === BN_0$3 && s === BN_0$3) {
+    if (r === BN_0$4 && s === BN_0$4) {
         // EIP-155 unsigned transaction
         tx.chainId = v;
     }
     else {
         // Compute the EIP-155 chain ID (or 0 for legacy)
         let chainId = (v - BN_35) / BN_2$2;
-        if (chainId < BN_0$3) {
-            chainId = BN_0$3;
+        if (chainId < BN_0$4) {
+            chainId = BN_0$4;
         }
         tx.chainId = chainId;
         // Signed Legacy Transaction
-        assertArgument(chainId !== BN_0$3 || (v === BN_27 || v === BN_28), "non-canonical legacy v", "v", fields[6]);
+        assertArgument(chainId !== BN_0$4 || (v === BN_27 || v === BN_28), "non-canonical legacy v", "v", fields[6]);
         tx.signature = Signature.from({
             r: zeroPadValue(fields[7], 32),
             s: zeroPadValue(fields[8], 32),
@@ -8549,7 +8549,7 @@ function _serializeLegacy(tx, sig) {
         formatNumber(tx.value || 0, "value"),
         (tx.data || "0x"),
     ];
-    let chainId = BN_0$3;
+    let chainId = BN_0$4;
     if (tx.chainId != null) {
         // A chainId was provided; if non-zero we'll use EIP-155
         chainId = getBigInt(tx.chainId, "tx.chainId");
@@ -8567,7 +8567,7 @@ function _serializeLegacy(tx, sig) {
     // Requesting an unsigned transaction
     if (!sig) {
         // We have an EIP-155 transaction (chainId was specified and non-zero)
-        if (chainId !== BN_0$3) {
+        if (chainId !== BN_0$4) {
             fields.push(toBeArray(chainId));
             fields.push("0x");
             fields.push("0x");
@@ -8576,7 +8576,7 @@ function _serializeLegacy(tx, sig) {
     }
     // We pushed a chainId and null r, s on for hashing only; remove those
     let v = BigInt(27 + sig.yParity);
-    if (chainId !== BN_0$3) {
+    if (chainId !== BN_0$4) {
         v = Signature.getChainIdV(chainId, sig.v);
     }
     else if (BigInt(sig.v) !== v) {
@@ -8782,7 +8782,7 @@ class Transaction {
     get gasPrice() {
         const value = this.#gasPrice;
         if (value == null && (this.type === 0 || this.type === 1)) {
-            return BN_0$3;
+            return BN_0$4;
         }
         return value;
     }
@@ -8797,7 +8797,7 @@ class Transaction {
         const value = this.#maxPriorityFeePerGas;
         if (value == null) {
             if (this.type === 2) {
-                return BN_0$3;
+                return BN_0$4;
             }
             return null;
         }
@@ -8814,7 +8814,7 @@ class Transaction {
         const value = this.#maxFeePerGas;
         if (value == null) {
             if (this.type === 2) {
-                return BN_0$3;
+                return BN_0$4;
             }
             return null;
         }
@@ -9304,7 +9304,7 @@ function solidityPackedSha256(types, values) {
 const padding = new Uint8Array(32);
 padding.fill(0);
 const BN__1 = BigInt(-1);
-const BN_0$2 = BigInt(0);
+const BN_0$3 = BigInt(0);
 const BN_1$2 = BigInt(1);
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 ;
@@ -9318,7 +9318,7 @@ function hexPadRight(value) {
     return hexlify(bytes);
 }
 const hexTrue = toBeHex(BN_1$2, 32);
-const hexFalse = toBeHex(BN_0$2, 32);
+const hexFalse = toBeHex(BN_0$3, 32);
 const domainFieldTypes = {
     name: "string",
     version: "string",
@@ -9363,7 +9363,7 @@ function getBaseEncoder(type) {
             const width = parseInt(match[2] || "256");
             assertArgument(width % 8 === 0 && width !== 0 && width <= 256 && (match[2] == null || match[2] === String(width)), "invalid numeric width", "type", type);
             const boundsUpper = mask(BN_MAX_UINT256, signed ? (width - 1) : width);
-            const boundsLower = signed ? ((boundsUpper + BN_1$2) * BN__1) : BN_0$2;
+            const boundsLower = signed ? ((boundsUpper + BN_1$2) * BN__1) : BN_0$3;
             return function (_value) {
                 const value = getBigInt(_value, "value");
                 assertArgument(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${type}`, "value", value);
@@ -9704,7 +9704,7 @@ function setify(items) {
 // Visibility Keywords
 const _kwVisib = "constant external internal payable private public pure view";
 const KwVisib = setify(_kwVisib.split(" "));
-const _kwTypes = "constructor error event function struct";
+const _kwTypes = "constructor error event fallback function receive struct";
 const KwTypes = setify(_kwTypes.split(" "));
 const _kwModifiers = "calldata memory storage payable indexed";
 const KwModifiers = setify(_kwModifiers.split(" "));
@@ -10019,6 +10019,7 @@ const ParamTypeInternal = "_ParamTypeInternal";
 const ErrorFragmentInternal = "_ErrorInternal";
 const EventFragmentInternal = "_EventInternal";
 const ConstructorFragmentInternal = "_ConstructorInternal";
+const FallbackFragmentInternal = "_FallbackInternal";
 const FunctionFragmentInternal = "_FunctionInternal";
 const StructFragmentInternal = "_StructInternal";
 /**
@@ -10397,34 +10398,45 @@ class Fragment {
      */
     static from(obj) {
         if (typeof (obj) === "string") {
+            // Try parsing JSON...
             try {
                 Fragment.from(JSON.parse(obj));
             }
             catch (e) { }
+            // ...otherwise, use the human-readable lexer
             return Fragment.from(lex(obj));
         }
         if (obj instanceof TokenString) {
-            const type = obj.popKeyword(KwTypes);
+            // Human-readable ABI (already lexed)
+            const type = obj.peekKeyword(KwTypes);
             switch (type) {
                 case "constructor": return ConstructorFragment.from(obj);
                 case "error": return ErrorFragment.from(obj);
                 case "event": return EventFragment.from(obj);
+                case "fallback":
+                case "receive":
+                    return FallbackFragment.from(obj);
                 case "function": return FunctionFragment.from(obj);
                 case "struct": return StructFragment.from(obj);
             }
-            throw new Error(`unsupported type: ${type}`);
         }
-        if (typeof (obj) === "object") {
+        else if (typeof (obj) === "object") {
+            // JSON ABI
             switch (obj.type) {
                 case "constructor": return ConstructorFragment.from(obj);
                 case "error": return ErrorFragment.from(obj);
                 case "event": return EventFragment.from(obj);
+                case "fallback":
+                case "receive":
+                    return FallbackFragment.from(obj);
                 case "function": return FunctionFragment.from(obj);
                 case "struct": return StructFragment.from(obj);
             }
-            throw new Error(`not implemented yet: ${obj.type}`);
+            assert$1(false, `unsupported type: ${obj.type}`, "UNSUPPORTED_OPERATION", {
+                operation: "Fragment.from"
+            });
         }
-        throw new Error(`unsupported type: ${obj}`);
+        assertArgument(false, "unsupported frgament object", "obj", obj);
     }
     /**
      *  Returns true if %%value%% is a [[ConstructorFragment]].
@@ -10650,6 +10662,79 @@ class ConstructorFragment extends Fragment {
 /**
  *  A Fragment which represents a method.
  */
+class FallbackFragment extends Fragment {
+    /**
+     *  If the function can be sent value during invocation.
+     */
+    payable;
+    constructor(guard, inputs, payable) {
+        super(guard, "fallback", inputs);
+        Object.defineProperty(this, internal$1, { value: FallbackFragmentInternal });
+        defineProperties(this, { payable });
+    }
+    format(format) {
+        const type = ((this.inputs.length === 0) ? "receive" : "fallback");
+        if (format === "json") {
+            const stateMutability = (this.payable ? "payable" : "nonpayable");
+            return JSON.stringify({ type, stateMutability });
+        }
+        return `${type}()${this.payable ? " payable" : ""}`;
+    }
+    static from(obj) {
+        if (FallbackFragment.isFragment(obj)) {
+            return obj;
+        }
+        if (typeof (obj) === "string") {
+            return FallbackFragment.from(lex(obj));
+        }
+        else if (obj instanceof TokenString) {
+            const errorObj = obj.toString();
+            const topIsValid = obj.peekKeyword(setify(["fallback", "receive"]));
+            assertArgument(topIsValid, "type must be fallback or receive", "obj", errorObj);
+            const type = obj.popKeyword(setify(["fallback", "receive"]));
+            // receive()
+            if (type === "receive") {
+                const inputs = consumeParams(obj);
+                assertArgument(inputs.length === 0, `receive cannot have arguments`, "obj.inputs", inputs);
+                consumeKeywords(obj, setify(["payable"]));
+                consumeEoi(obj);
+                return new FallbackFragment(_guard$2, [], true);
+            }
+            // fallback() [payable]
+            // fallback(bytes) [payable] returns (bytes)
+            let inputs = consumeParams(obj);
+            if (inputs.length) {
+                assertArgument(inputs.length === 1 && inputs[0].type === "bytes", "invalid fallback inputs", "obj.inputs", inputs.map((i) => i.format("minimal")).join(", "));
+            }
+            else {
+                inputs = [ParamType.from("bytes")];
+            }
+            const mutability = consumeMutability(obj);
+            assertArgument(mutability === "nonpayable" || mutability === "payable", "fallback cannot be constants", "obj.stateMutability", mutability);
+            if (consumeKeywords(obj, setify(["returns"])).has("returns")) {
+                const outputs = consumeParams(obj);
+                assertArgument(outputs.length === 1 && outputs[0].type === "bytes", "invalid fallback outputs", "obj.outputs", outputs.map((i) => i.format("minimal")).join(", "));
+            }
+            consumeEoi(obj);
+            return new FallbackFragment(_guard$2, inputs, mutability === "payable");
+        }
+        if (obj.type === "receive") {
+            return new FallbackFragment(_guard$2, [], true);
+        }
+        if (obj.type === "fallback") {
+            const inputs = [ParamType.from("bytes")];
+            const payable = (obj.stateMutability === "payable");
+            return new FallbackFragment(_guard$2, inputs, payable);
+        }
+        assertArgument(false, "invalid fallback description", "obj", obj);
+    }
+    static isFragment(value) {
+        return (value && value[internal$1] === FallbackFragmentInternal);
+    }
+}
+/**
+ *  A Fragment which represents a method.
+ */
 class FunctionFragment extends NamedFragment {
     /**
      *  If the function is constant (e.g. ``pure`` or ``view`` functions).
@@ -10665,7 +10750,7 @@ class FunctionFragment extends NamedFragment {
      */
     stateMutability;
     /**
-     *  If the function can be send a value during invocation.
+     *  If the function can be sent value during invocation.
      */
     payable;
     /**
@@ -11112,6 +11197,14 @@ class Interface {
      *  The Contract constructor.
      */
     deploy;
+    /**
+     *  The Fallback method, if any.
+     */
+    fallback;
+    /**
+     *  If receiving ether is supported.
+     */
+    receive;
     #errors;
     #events;
     #functions;
@@ -11144,9 +11237,11 @@ class Interface {
         defineProperties(this, {
             fragments: Object.freeze(frags)
         });
+        let fallback = null;
+        let receive = false;
         this.#abiCoder = this.getAbiCoder();
         // Add all fragments by their signature
-        this.fragments.forEach((fragment) => {
+        this.fragments.forEach((fragment, index) => {
             let bucket;
             switch (fragment.type) {
                 case "constructor":
@@ -11156,6 +11251,16 @@ class Interface {
                     }
                     //checkNames(fragment, "input", fragment.inputs);
                     defineProperties(this, { deploy: fragment });
+                    return;
+                case "fallback":
+                    if (fragment.inputs.length === 0) {
+                        receive = true;
+                    }
+                    else {
+                        assertArgument(!fallback || fragment.payable !== fallback.payable, "conflicting fallback fragments", `fragments[${index}]`, fragment);
+                        fallback = fragment;
+                        receive = fallback.payable;
+                    }
                     return;
                 case "function":
                     //checkNames(fragment, "input", fragment.inputs);
@@ -11185,6 +11290,7 @@ class Interface {
                 deploy: ConstructorFragment.from("constructor()")
             });
         }
+        defineProperties(this, { fallback, receive });
     }
     /**
      *  Returns the entire Human-Readable ABI, as an array of
@@ -11962,7 +12068,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
  */
 
 //import { resolveAddress } from "@ethersproject/address";
-const BN_0$1 = BigInt(0);
+const BN_0$2 = BigInt(0);
 // -----------------------
 function getValue(value) {
     if (value == null) {
@@ -12696,7 +12802,7 @@ class TransactionResponse {
                         if (tx.data === this.data && tx.to === this.to && tx.value === this.value) {
                             reason = "repriced";
                         }
-                        else if (tx.data === "0x" && tx.from === tx.to && tx.value === BN_0$1) {
+                        else if (tx.data === "0x" && tx.from === tx.to && tx.value === BN_0$2) {
                             reason = "cancelled";
                         }
                         assert$1(false, "transaction was replaced", "TRANSACTION_REPLACED", {
@@ -12908,6 +13014,7 @@ class ContractEventPayload extends ContractUnknownEventPayload {
     }
 }
 
+const BN_0$1 = BigInt(0);
 function canCall(value) {
     return (value && typeof (value.call) === "function");
 }
@@ -12981,17 +13088,11 @@ function getProvider(value) {
 /**
  *  @_ignore:
  */
-async function copyOverrides(arg) {
+async function copyOverrides(arg, allowed) {
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
     const overrides = copyRequest(Typed.dereference(arg, "overrides"));
-    // Some sanity checking; these are what these methods adds
-    //if ((<any>overrides).to) {
-    if (overrides.to) {
-        assertArgument(false, "cannot override to", "overrides.to", overrides.to);
-    }
-    else if (overrides.data) {
-        assertArgument(false, "cannot override data", "overrides.data", overrides.data);
-    }
+    assertArgument(overrides.to == null || (allowed || []).indexOf("to") >= 0, "cannot override to", "overrides.to", overrides.to);
+    assertArgument(overrides.data == null || (allowed || []).indexOf("data") >= 0, "cannot override data", "overrides.data", overrides.data);
     // Resolve any from
     if (overrides.from) {
         overrides.from = await resolveAddress(overrides.from);
@@ -13014,6 +13115,59 @@ async function resolveArgs(_runner, inputs, args) {
             return value;
         });
     }));
+}
+class WrappedFallback {
+    _contract;
+    constructor(contract) {
+        defineProperties(this, { _contract: contract });
+        const proxy = new Proxy(this, {
+            // Perform send when called
+            apply: async (target, thisArg, args) => {
+                return await target.send(...args);
+            },
+        });
+        return proxy;
+    }
+    async populateTransaction(overrides) {
+        // If an overrides was passed in, copy it and normalize the values
+        const tx = (await copyOverrides(overrides, ["data"]));
+        tx.to = await this._contract.getAddress();
+        const iface = this._contract.interface;
+        // Only allow payable contracts to set non-zero value
+        const payable = iface.receive || (iface.fallback && iface.fallback.payable);
+        assertArgument(payable || (tx.value || BN_0$1) === BN_0$1, "cannot send value to non-payable contract", "overrides.value", tx.value);
+        // Only allow fallback contracts to set non-empty data
+        assertArgument(iface.fallback || (tx.data || "0x") === "0x", "cannot send data to receive-only contract", "overrides.data", tx.data);
+        return tx;
+    }
+    async staticCall(overrides) {
+        const runner = getRunner(this._contract.runner, "call");
+        assert$1(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
+        const tx = await this.populateTransaction(overrides);
+        try {
+            return await runner.call(tx);
+        }
+        catch (error) {
+            if (isCallException(error) && error.data) {
+                throw this._contract.interface.makeError(error.data, tx);
+            }
+            throw error;
+        }
+    }
+    async send(overrides) {
+        const runner = this._contract.runner;
+        assert$1(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
+        const tx = await runner.sendTransaction(await this.populateTransaction(overrides));
+        const provider = getProvider(this._contract.runner);
+        // @TODO: the provider can be null; make a custom dummy provider that will throw a
+        // meaningful error
+        return new ContractTransactionResponse(this._contract.interface, provider, tx);
+    }
+    async estimateGas(overrides) {
+        const runner = getRunner(this._contract.runner, "estimateGas");
+        assert$1(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
+        return await runner.estimateGas(await this.populateTransaction(overrides));
+    }
 }
 class WrappedMethod extends _WrappedMethodBase() {
     name = ""; // Investigate!
@@ -13335,6 +13489,7 @@ class BaseContract {
     runner;
     filters;
     [internal];
+    fallback;
     constructor(target, abi, runner, _deployTx) {
         if (runner == null) {
             runner = null;
@@ -13401,6 +13556,9 @@ class BaseContract {
             }
         });
         defineProperties(this, { filters });
+        defineProperties(this, {
+            fallback: ((iface.receive || iface.fallback) ? (new WrappedFallback(this)) : null)
+        });
         // Return a Proxy that will respond to functions
         return new Proxy(this, {
             get: (target, _prop, receiver) => {

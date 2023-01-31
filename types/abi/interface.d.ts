@@ -5,7 +5,7 @@
  */
 import { AbiCoder } from "./abi-coder.js";
 import { checkResultErrors, Result } from "./coders/abstract-coder.js";
-import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
+import { ConstructorFragment, ErrorFragment, EventFragment, FallbackFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
 import { Typed } from "./typed.js";
 import type { BigNumberish, BytesLike, CallExceptionError, CallExceptionTransaction } from "../utils/index.js";
 import type { JsonFragment } from "./fragments.js";
@@ -65,6 +65,14 @@ export declare class Interface {
      *  The Contract constructor.
      */
     readonly deploy: ConstructorFragment;
+    /**
+     *  The Fallback method, if any.
+     */
+    readonly fallback: null | FallbackFragment;
+    /**
+     *  If receiving ether is supported.
+     */
+    readonly receive: boolean;
     /**
      *  Create a new Interface for the %%fragments%%.
      */

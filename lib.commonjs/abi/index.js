@@ -6,7 +6,7 @@
  *  @_navTitle: ABI
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Typed = exports.Result = exports.TransactionDescription = exports.LogDescription = exports.ErrorDescription = exports.Interface = exports.Indexed = exports.checkResultErrors = exports.StructFragment = exports.ParamType = exports.NamedFragment = exports.FunctionFragment = exports.Fragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = exports.encodeBytes32String = exports.decodeBytes32String = exports.AbiCoder = void 0;
+exports.Typed = exports.Result = exports.TransactionDescription = exports.LogDescription = exports.ErrorDescription = exports.Interface = exports.Indexed = exports.checkResultErrors = exports.StructFragment = exports.ParamType = exports.NamedFragment = exports.FunctionFragment = exports.Fragment = exports.FallbackFragment = exports.EventFragment = exports.ErrorFragment = exports.ConstructorFragment = exports.encodeBytes32String = exports.decodeBytes32String = exports.AbiCoder = void 0;
 //////
 var abi_coder_js_1 = require("./abi-coder.js");
 Object.defineProperty(exports, "AbiCoder", { enumerable: true, get: function () { return abi_coder_js_1.AbiCoder; } });
@@ -17,6 +17,7 @@ var fragments_js_1 = require("./fragments.js");
 Object.defineProperty(exports, "ConstructorFragment", { enumerable: true, get: function () { return fragments_js_1.ConstructorFragment; } });
 Object.defineProperty(exports, "ErrorFragment", { enumerable: true, get: function () { return fragments_js_1.ErrorFragment; } });
 Object.defineProperty(exports, "EventFragment", { enumerable: true, get: function () { return fragments_js_1.EventFragment; } });
+Object.defineProperty(exports, "FallbackFragment", { enumerable: true, get: function () { return fragments_js_1.FallbackFragment; } });
 Object.defineProperty(exports, "Fragment", { enumerable: true, get: function () { return fragments_js_1.Fragment; } });
 Object.defineProperty(exports, "FunctionFragment", { enumerable: true, get: function () { return fragments_js_1.FunctionFragment; } });
 Object.defineProperty(exports, "NamedFragment", { enumerable: true, get: function () { return fragments_js_1.NamedFragment; } });

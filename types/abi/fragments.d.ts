@@ -198,7 +198,7 @@ export declare class ParamType {
 /**
  *  The type of a [[Fragment]].
  */
-export declare type FragmentType = "constructor" | "error" | "event" | "function" | "struct";
+export declare type FragmentType = "constructor" | "error" | "event" | "fallback" | "function" | "struct";
 /**
  *  An abstract class to represent An individual fragment from a parse ABI.
  */
@@ -309,6 +309,19 @@ export declare class ConstructorFragment extends Fragment {
 /**
  *  A Fragment which represents a method.
  */
+export declare class FallbackFragment extends Fragment {
+    /**
+     *  If the function can be sent value during invocation.
+     */
+    readonly payable: boolean;
+    constructor(guard: any, inputs: ReadonlyArray<ParamType>, payable: boolean);
+    format(format?: FormatType): string;
+    static from(obj: any): FallbackFragment;
+    static isFragment(value: any): value is FallbackFragment;
+}
+/**
+ *  A Fragment which represents a method.
+ */
 export declare class FunctionFragment extends NamedFragment {
     /**
      *  If the function is constant (e.g. ``pure`` or ``view`` functions).
@@ -322,9 +335,9 @@ export declare class FunctionFragment extends NamedFragment {
      *  The state mutability (e.g. ``payable``, ``nonpayable``, ``view``
      *  or ``pure``)
      */
-    readonly stateMutability: string;
+    readonly stateMutability: "payable" | "nonpayable" | "view" | "pure";
     /**
-     *  If the function can be send a value during invocation.
+     *  If the function can be sent value during invocation.
      */
     readonly payable: boolean;
     /**
@@ -334,7 +347,7 @@ export declare class FunctionFragment extends NamedFragment {
     /**
      *  @private
      */
-    constructor(guard: any, name: string, stateMutability: string, inputs: ReadonlyArray<ParamType>, outputs: ReadonlyArray<ParamType>, gas: null | bigint);
+    constructor(guard: any, name: string, stateMutability: "payable" | "nonpayable" | "view" | "pure", inputs: ReadonlyArray<ParamType>, outputs: ReadonlyArray<ParamType>, gas: null | bigint);
     /**
      *  The Function selector.
      */

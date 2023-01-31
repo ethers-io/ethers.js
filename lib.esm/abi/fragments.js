@@ -15,7 +15,7 @@ function setify(items) {
 // Visibility Keywords
 const _kwVisib = "constant external internal payable private public pure view";
 const KwVisib = setify(_kwVisib.split(" "));
-const _kwTypes = "constructor error event function struct";
+const _kwTypes = "constructor error event fallback function receive struct";
 const KwTypes = setify(_kwTypes.split(" "));
 const _kwModifiers = "calldata memory storage payable indexed";
 const KwModifiers = setify(_kwModifiers.split(" "));
@@ -330,6 +330,7 @@ const ParamTypeInternal = "_ParamTypeInternal";
 const ErrorFragmentInternal = "_ErrorInternal";
 const EventFragmentInternal = "_EventInternal";
 const ConstructorFragmentInternal = "_ConstructorInternal";
+const FallbackFragmentInternal = "_FallbackInternal";
 const FunctionFragmentInternal = "_FunctionInternal";
 const StructFragmentInternal = "_StructInternal";
 /**
@@ -708,34 +709,45 @@ export class Fragment {
      */
     static from(obj) {
         if (typeof (obj) === "string") {
+            // Try parsing JSON...
             try {
                 Fragment.from(JSON.parse(obj));
             }
             catch (e) { }
+            // ...otherwise, use the human-readable lexer
             return Fragment.from(lex(obj));
         }
         if (obj instanceof TokenString) {
-            const type = obj.popKeyword(KwTypes);
+            // Human-readable ABI (already lexed)
+            const type = obj.peekKeyword(KwTypes);
             switch (type) {
                 case "constructor": return ConstructorFragment.from(obj);
                 case "error": return ErrorFragment.from(obj);
                 case "event": return EventFragment.from(obj);
+                case "fallback":
+                case "receive":
+                    return FallbackFragment.from(obj);
                 case "function": return FunctionFragment.from(obj);
                 case "struct": return StructFragment.from(obj);
             }
-            throw new Error(`unsupported type: ${type}`);
         }
-        if (typeof (obj) === "object") {
+        else if (typeof (obj) === "object") {
+            // JSON ABI
             switch (obj.type) {
                 case "constructor": return ConstructorFragment.from(obj);
                 case "error": return ErrorFragment.from(obj);
                 case "event": return EventFragment.from(obj);
+                case "fallback":
+                case "receive":
+                    return FallbackFragment.from(obj);
                 case "function": return FunctionFragment.from(obj);
                 case "struct": return StructFragment.from(obj);
             }
-            throw new Error(`not implemented yet: ${obj.type}`);
+            assert(false, `unsupported type: ${obj.type}`, "UNSUPPORTED_OPERATION", {
+                operation: "Fragment.from"
+            });
         }
-        throw new Error(`unsupported type: ${obj}`);
+        assertArgument(false, "unsupported frgament object", "obj", obj);
     }
     /**
      *  Returns true if %%value%% is a [[ConstructorFragment]].
@@ -961,6 +973,79 @@ export class ConstructorFragment extends Fragment {
 /**
  *  A Fragment which represents a method.
  */
+export class FallbackFragment extends Fragment {
+    /**
+     *  If the function can be sent value during invocation.
+     */
+    payable;
+    constructor(guard, inputs, payable) {
+        super(guard, "fallback", inputs);
+        Object.defineProperty(this, internal, { value: FallbackFragmentInternal });
+        defineProperties(this, { payable });
+    }
+    format(format) {
+        const type = ((this.inputs.length === 0) ? "receive" : "fallback");
+        if (format === "json") {
+            const stateMutability = (this.payable ? "payable" : "nonpayable");
+            return JSON.stringify({ type, stateMutability });
+        }
+        return `${type}()${this.payable ? " payable" : ""}`;
+    }
+    static from(obj) {
+        if (FallbackFragment.isFragment(obj)) {
+            return obj;
+        }
+        if (typeof (obj) === "string") {
+            return FallbackFragment.from(lex(obj));
+        }
+        else if (obj instanceof TokenString) {
+            const errorObj = obj.toString();
+            const topIsValid = obj.peekKeyword(setify(["fallback", "receive"]));
+            assertArgument(topIsValid, "type must be fallback or receive", "obj", errorObj);
+            const type = obj.popKeyword(setify(["fallback", "receive"]));
+            // receive()
+            if (type === "receive") {
+                const inputs = consumeParams(obj);
+                assertArgument(inputs.length === 0, `receive cannot have arguments`, "obj.inputs", inputs);
+                consumeKeywords(obj, setify(["payable"]));
+                consumeEoi(obj);
+                return new FallbackFragment(_guard, [], true);
+            }
+            // fallback() [payable]
+            // fallback(bytes) [payable] returns (bytes)
+            let inputs = consumeParams(obj);
+            if (inputs.length) {
+                assertArgument(inputs.length === 1 && inputs[0].type === "bytes", "invalid fallback inputs", "obj.inputs", inputs.map((i) => i.format("minimal")).join(", "));
+            }
+            else {
+                inputs = [ParamType.from("bytes")];
+            }
+            const mutability = consumeMutability(obj);
+            assertArgument(mutability === "nonpayable" || mutability === "payable", "fallback cannot be constants", "obj.stateMutability", mutability);
+            if (consumeKeywords(obj, setify(["returns"])).has("returns")) {
+                const outputs = consumeParams(obj);
+                assertArgument(outputs.length === 1 && outputs[0].type === "bytes", "invalid fallback outputs", "obj.outputs", outputs.map((i) => i.format("minimal")).join(", "));
+            }
+            consumeEoi(obj);
+            return new FallbackFragment(_guard, inputs, mutability === "payable");
+        }
+        if (obj.type === "receive") {
+            return new FallbackFragment(_guard, [], true);
+        }
+        if (obj.type === "fallback") {
+            const inputs = [ParamType.from("bytes")];
+            const payable = (obj.stateMutability === "payable");
+            return new FallbackFragment(_guard, inputs, payable);
+        }
+        assertArgument(false, "invalid fallback description", "obj", obj);
+    }
+    static isFragment(value) {
+        return (value && value[internal] === FallbackFragmentInternal);
+    }
+}
+/**
+ *  A Fragment which represents a method.
+ */
 export class FunctionFragment extends NamedFragment {
     /**
      *  If the function is constant (e.g. ``pure`` or ``view`` functions).
@@ -976,7 +1061,7 @@ export class FunctionFragment extends NamedFragment {
      */
     stateMutability;
     /**
-     *  If the function can be send a value during invocation.
+     *  If the function can be sent value during invocation.
      */
     payable;
     /**

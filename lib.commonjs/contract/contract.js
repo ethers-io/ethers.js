@@ -8,6 +8,7 @@ const index_js_2 = require("../address/index.js");
 const provider_js_1 = require("../providers/provider.js");
 const index_js_3 = require("../utils/index.js");
 const wrappers_js_1 = require("./wrappers.js");
+const BN_0 = BigInt(0);
 function canCall(value) {
     return (value && typeof (value.call) === "function");
 }
@@ -81,17 +82,11 @@ function getProvider(value) {
 /**
  *  @_ignore:
  */
-async function copyOverrides(arg) {
+async function copyOverrides(arg, allowed) {
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
     const overrides = (0, provider_js_1.copyRequest)(index_js_1.Typed.dereference(arg, "overrides"));
-    // Some sanity checking; these are what these methods adds
-    //if ((<any>overrides).to) {
-    if (overrides.to) {
-        (0, index_js_3.assertArgument)(false, "cannot override to", "overrides.to", overrides.to);
-    }
-    else if (overrides.data) {
-        (0, index_js_3.assertArgument)(false, "cannot override data", "overrides.data", overrides.data);
-    }
+    (0, index_js_3.assertArgument)(overrides.to == null || (allowed || []).indexOf("to") >= 0, "cannot override to", "overrides.to", overrides.to);
+    (0, index_js_3.assertArgument)(overrides.data == null || (allowed || []).indexOf("data") >= 0, "cannot override data", "overrides.data", overrides.data);
     // Resolve any from
     if (overrides.from) {
         overrides.from = await (0, index_js_2.resolveAddress)(overrides.from);
@@ -117,6 +112,59 @@ async function resolveArgs(_runner, inputs, args) {
     }));
 }
 exports.resolveArgs = resolveArgs;
+class WrappedFallback {
+    _contract;
+    constructor(contract) {
+        (0, index_js_3.defineProperties)(this, { _contract: contract });
+        const proxy = new Proxy(this, {
+            // Perform send when called
+            apply: async (target, thisArg, args) => {
+                return await target.send(...args);
+            },
+        });
+        return proxy;
+    }
+    async populateTransaction(overrides) {
+        // If an overrides was passed in, copy it and normalize the values
+        const tx = (await copyOverrides(overrides, ["data"]));
+        tx.to = await this._contract.getAddress();
+        const iface = this._contract.interface;
+        // Only allow payable contracts to set non-zero value
+        const payable = iface.receive || (iface.fallback && iface.fallback.payable);
+        (0, index_js_3.assertArgument)(payable || (tx.value || BN_0) === BN_0, "cannot send value to non-payable contract", "overrides.value", tx.value);
+        // Only allow fallback contracts to set non-empty data
+        (0, index_js_3.assertArgument)(iface.fallback || (tx.data || "0x") === "0x", "cannot send data to receive-only contract", "overrides.data", tx.data);
+        return tx;
+    }
+    async staticCall(overrides) {
+        const runner = getRunner(this._contract.runner, "call");
+        (0, index_js_3.assert)(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
+        const tx = await this.populateTransaction(overrides);
+        try {
+            return await runner.call(tx);
+        }
+        catch (error) {
+            if ((0, index_js_3.isCallException)(error) && error.data) {
+                throw this._contract.interface.makeError(error.data, tx);
+            }
+            throw error;
+        }
+    }
+    async send(overrides) {
+        const runner = this._contract.runner;
+        (0, index_js_3.assert)(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
+        const tx = await runner.sendTransaction(await this.populateTransaction(overrides));
+        const provider = getProvider(this._contract.runner);
+        // @TODO: the provider can be null; make a custom dummy provider that will throw a
+        // meaningful error
+        return new wrappers_js_1.ContractTransactionResponse(this._contract.interface, provider, tx);
+    }
+    async estimateGas(overrides) {
+        const runner = getRunner(this._contract.runner, "estimateGas");
+        (0, index_js_3.assert)(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
+        return await runner.estimateGas(await this.populateTransaction(overrides));
+    }
+}
 class WrappedMethod extends _WrappedMethodBase() {
     name = ""; // Investigate!
     _contract;
@@ -437,6 +485,7 @@ class BaseContract {
     runner;
     filters;
     [internal];
+    fallback;
     constructor(target, abi, runner, _deployTx) {
         if (runner == null) {
             runner = null;
@@ -503,6 +552,9 @@ class BaseContract {
             }
         });
         (0, index_js_3.defineProperties)(this, { filters });
+        (0, index_js_3.defineProperties)(this, {
+            fallback: ((iface.receive || iface.fallback) ? (new WrappedFallback(this)) : null)
+        });
         // Return a Proxy that will respond to functions
         return new Proxy(this, {
             get: (target, _prop, receiver) => {
