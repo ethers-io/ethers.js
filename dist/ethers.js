@@ -14980,16 +14980,20 @@ class PollingBlockSubscriber {
             this.#blockNumber = blockNumber;
             return;
         }
-        // We have been stopped
-        if (this.#poller == null) {
-            return;
-        }
         // @TODO: Put a cap on the maximum number of events per loop?
         if (blockNumber !== this.#blockNumber) {
             for (let b = this.#blockNumber + 1; b <= blockNumber; b++) {
-                this.#provider.emit("block", b);
+                // We have been stopped
+                if (this.#poller == null) {
+                    return;
+                }
+                await this.#provider.emit("block", b);
             }
             this.#blockNumber = blockNumber;
+        }
+        // We have been stopped
+        if (this.#poller == null) {
+            return;
         }
         this.#poller = this.#provider._setTimeout(this.#poll.bind(this), this.#interval);
     }
@@ -17766,6 +17770,25 @@ class CloudflareProvider extends JsonRpcProvider {
     }
 }
 
+/**
+ *  [[link-etherscan]] provides a third-party service for connecting to
+ *  various blockchains over a combination of JSON-RPC and custom API
+ *  endpoints.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``maticmum``)
+ *
+ *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
+ */
 const THROTTLE = 2000;
 function isPromise(value) {
     return (value && typeof (value.then) === "function");
