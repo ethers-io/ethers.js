@@ -12,7 +12,10 @@
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 
-import { resolveAddress } from "../address/index.js";
+import { getAddress, resolveAddress } from "../address/index.js";
+import { ZeroHash } from "../constants/index.js";
+import { Contract } from "../contract/index.js";
+import { namehash } from "../hash/index.js";
 import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
@@ -710,7 +713,7 @@ export class AbstractProvider implements Provider {
             // We may want to compute this more accurately in the future,
             // using the formula "check if the base fee is correct".
             // See: https://eips.ethereum.org/EIPS/eip-1559
-            maxPriorityFeePerGas = BigInt("1500000000");
+            maxPriorityFeePerGas = BigInt("1000000000");
 
             // Allow a network to override their maximum priority fee per gas
             //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
@@ -959,25 +962,41 @@ export class AbstractProvider implements Provider {
     }
 
     async resolveName(name: string): Promise<null | string>{
-        if (isHexString(name, 20)) { return name; }
-        //if (typeof(name) === "string") {
-            const resolver = await this.getResolver(name);
-            if (resolver) { return await resolver.getAddress(); }
-            /*
-        } else {
-            const address = await name.getAddress();
-            if (address == null) {
-                return logger.throwArgumentError("Addressable returned no address", "name", name);
-            }
-            return address;
-        }
-        */
+        const resolver = await this.getResolver(name);
+        if (resolver) { return await resolver.getAddress(); }
         return null;
     }
 
     async lookupAddress(address: string): Promise<null | string> {
-        throw new Error();
-        //return "TODO";
+        address = getAddress(address);
+        const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
+
+        try {
+
+            const ensAddr = await EnsResolver.getEnsAddress(this);
+            const ensContract = new Contract(ensAddr, [
+                "function resolver(bytes32) view returns (address)"
+            ], this);
+
+            const resolver = await ensContract.resolver(node);
+            if (resolver == null || resolver === ZeroHash) { return null; }
+
+            const resolverContract = new Contract(resolver, [
+                "function name(bytes32) view returns (string)"
+            ], this);
+            const name = await resolverContract.name(node);
+
+            const check = await this.resolveName(name);
+            if (check !== address) {
+                console.log("FAIL", address, check);
+            }
+
+            return name;
+        } catch (error) {
+            console.log("TEMP", error);
+        }
+
+        return null;
     }
 
     async waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt> {
@@ -1021,8 +1040,9 @@ export class AbstractProvider implements Provider {
     }
 
     async waitForBlock(blockTag?: BlockTag): Promise<Block> {
-        throw new Error();
-        //return new Block(<any><unknown>{ }, this);
+        assert(false, "not implemented yet", "NOT_IMPLEMENTED", {
+            operation: "waitForBlock"
+        });
     }
 
     _clearTimeout(timerId: number): void {
