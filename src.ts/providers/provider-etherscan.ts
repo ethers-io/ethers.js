@@ -1,4 +1,5 @@
 import { AbiCoder } from "../abi/index.js";
+import { Contract } from "../contract/index.js";
 import { accessListify, Transaction } from "../transaction/index.js";
 import {
     defineProperties,
@@ -19,6 +20,11 @@ import type { Networkish } from "./network.js";
 import type { TransactionRequest } from "./provider.js";
 
 const THROTTLE = 2000;
+
+function isPromise<T = any>(value: any): value is Promise<T> {
+    return (value && typeof(value.then) === "function");
+}
+
 
 /**
  *  When subscribing to the ``"debug"`` event on an Etherscan-based
@@ -82,7 +88,7 @@ let nextId = 1;
  *
  *  @_docloc: api/providers/thirdparty:Etherscan
  */
-export class BaseEtherscanProvider extends AbstractProvider {
+export class EtherscanProvider extends AbstractProvider {
 
     /**
      *  The connected network.
@@ -108,7 +114,7 @@ export class BaseEtherscanProvider extends AbstractProvider {
 
         this.#plugin = network.getPlugin<EtherscanPlugin>(EtherscanPluginId);
 
-        defineProperties<BaseEtherscanProvider>(this, { apiKey, network });
+        defineProperties<EtherscanProvider>(this, { apiKey, network });
 
         // Test that the network is supported by Etherscan
         this.getBaseUrl();
@@ -546,6 +552,24 @@ export class BaseEtherscanProvider extends AbstractProvider {
     async getEtherPrice(): Promise<number> {
         if (this.network.name !== "mainnet") { return 0.0; }
         return parseFloat((await this.fetch("stats", { action: "ethprice" })).ethusd);
+    }
+
+    /**
+     *  Resolves to a [Contract]] for %%address%%, using the
+     *  Etherscan API to retreive the Contract ABI.
+     */
+    async getContract(_address: string): Promise<null | Contract> {
+        let address = this._getAddress(_address);
+        if (isPromise(address)) { address = await address; }
+
+        try {
+            const resp = await this.fetch("contract", {
+            action: "getabi", address });
+            const abi = JSON.parse(resp);
+            return new Contract(address, abi, this);
+        } catch (error) {
+            return null;
+        }
     }
 
     isCommunityResource(): boolean {
