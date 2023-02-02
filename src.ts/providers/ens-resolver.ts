@@ -4,93 +4,23 @@
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
  */
 
-import { getAddress } from "../address/index.js";
-import { ZeroAddress, ZeroHash } from "../constants/index.js";
+import { ZeroAddress } from "../constants/index.js";
+import { Contract } from "../contract/index.js";
 import { dnsEncode, namehash } from "../hash/index.js";
 import {
-    concat, dataSlice, getBytes, hexlify, zeroPadValue,
-    defineProperties, encodeBase58, getBigInt, toBeArray,
-    toNumber, toUtf8Bytes, toUtf8String,
-    assert, assertArgument,
+    hexlify, toBeHex,
+    defineProperties, encodeBase58,
+    assert, assertArgument, isError,
     FetchRequest
 } from "../utils/index.js";
 
-import type { BigNumberish, BytesLike, EthersError } from "../utils/index.js";
+import type { FunctionFragment } from "../abi/index.js";
+
+import type { BytesLike } from "../utils/index.js";
 
 import type { AbstractProvider, AbstractProviderPlugin } from "./abstract-provider.js";
 import type { EnsPlugin } from "./plugins-network.js";
-import type { TransactionRequest, Provider } from "./provider.js";
-
-const BN_1 = BigInt(1);
-
-const Empty = new Uint8Array([ ]);
-
-function parseBytes(result: string, start: number): null | string {
-    if (result === "0x") { return null; }
-
-    const offset = toNumber(dataSlice(result, start, start + 32));
-    const length = toNumber(dataSlice(result, offset, offset + 32));
-
-    return dataSlice(result, offset + 32, offset + 32 + length);
-}
-
-function parseString(result: string, start: number): null | string {
-    try {
-        const bytes = parseBytes(result, start);
-        if (bytes != null) { return toUtf8String(bytes); }
-    } catch(error) { }
-    return null;
-}
-
-function numPad(value: BigNumberish): Uint8Array {
-    const result = toBeArray(value);
-    if (result.length > 32) { throw new Error("internal; should not happen"); }
-
-    const padded = new Uint8Array(32);
-    padded.set(result, 32 - result.length);
-    return padded;
-}
-
-function bytesPad(value: Uint8Array): Uint8Array {
-    if ((value.length % 32) === 0) { return value; }
-
-    const result = new Uint8Array(Math.ceil(value.length / 32) * 32);
-    result.set(value);
-    return result;
-}
-
-// ABI Encodes a series of (bytes, bytes, ...)
-function encodeBytes(datas: Array<BytesLike>) {
-    const result: Array<Uint8Array> = [ ];
-
-    let byteCount = 0;
-
-    // Add place-holders for pointers as we add items
-    for (let i = 0; i < datas.length; i++) {
-        result.push(Empty);
-        byteCount += 32;
-    }
-
-    for (let i = 0; i < datas.length; i++) {
-        const data = getBytes(datas[i]);
-
-        // Update the bytes offset
-        result[i] = numPad(byteCount);
-
-        // The length and padded value of data
-        result.push(numPad(data.length));
-        result.push(bytesPad(data));
-        byteCount += 32 + Math.ceil(data.length / 32) * 32;
-    }
-
-    return concat(result);
-}
-
-function callAddress(value: string): string {
-    assertArgument(value.length === 66 && dataSlice(value, 0, 12) === "0x000000000000000000000000",
-        "invalid call address", "value", value);
-    return getAddress("0x" + value.substring(26));
-}
+import type { Provider } from "./provider.js";
 
 // @TODO: This should use the fetch-data:ipfs gateway
 // Trim off the ipfs:// prefix and return the default gateway URL
@@ -164,7 +94,7 @@ export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin 
     }
 }
 
-const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoinProviderPlugin";
+const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoin";
 
 /**
  *  A basic multicoin provider plugin.
@@ -206,69 +136,83 @@ export class EnsResolver {
     // For EIP-2544 names, the ancestor that provided the resolver
     #supports2544: null | Promise<boolean>;
 
+    #resolver: Contract;
+
     constructor(provider: AbstractProvider, address: string, name: string) {
         defineProperties<EnsResolver>(this, { provider, address, name });
         this.#supports2544 = null;
+
+        this.#resolver = new Contract(address, [
+            "function supportsInterface(bytes4) view returns (bool)",
+            "function resolve(bytes, bytes) view returns (bytes)",
+            "function addr(bytes32) view returns (address)",
+            "function addr(bytes32, uint) view returns (address)",
+            "function text(bytes32, string) view returns (string)",
+            "function contenthash() view returns (bytes)",
+        ], provider);
+
     }
 
     /**
      *  Resolves to true if the resolver supports wildcard resolution.
      */
     async supportsWildcard(): Promise<boolean> {
-        if (!this.#supports2544) {
-            // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
-            this.#supports2544 = this.provider.call({
-                to: this.address,
-                data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
-            }).then((result) => {
-                return (getBigInt(result) === BN_1);
-            }).catch((error) => {
-                if (error.code === "CALL_EXCEPTION") { return false; }
-                // Rethrow the error: link is down, etc. Let future attempts retry.
-                this.#supports2544 = null;
-                throw error;
-            });
+        if (this.#supports2544 == null) {
+            this.#supports2544 = (async () => {
+                try {
+                    return await this.#resolver.supportsInterface("0x9061b923");
+                } catch (error) {
+                    // Wildcard resolvers must understand supportsInterface
+                    // and return true.
+                    if (isError(error, "CALL_EXCEPTION")) { return false; }
+
+                    // Let future attempts try again...
+                    this.#supports2544 = null;
+
+                    throw error;
+                }
+            })();
         }
 
         return await this.#supports2544;
     }
 
-    /**
-     *  Fetch the %%selector%% with %%parameters%% using call, resolving
-     *  recursively if the resolver supports it.
-     */
-    async _fetch(selector: string, parameters?: BytesLike): Promise<null | string> {
-        if (parameters == null) { parameters = "0x"; }
+    async #fetch(funcName: string, params?: Array<any>): Promise<null | any> {
+        params = (params || []).slice();
+        const iface = this.#resolver.interface;
 
-        // e.g. keccak256("addr(bytes32,uint256)")
-        const addrData = concat([ selector, namehash(this.name), parameters ]);
-        const tx: TransactionRequest = {
-            to: this.address,
-            from: ZeroAddress,
-            enableCcipRead: true,
-            data: addrData
-        };
+        // The first parameters is always the nodehash
+        params.unshift(namehash(this.name))
 
-        // Wildcard support; use EIP-2544 to resolve the request
-        let wrapped = false;
+        let fragment: null | FunctionFragment = null;
         if (await this.supportsWildcard()) {
-            wrapped = true;
-
-            // selector("resolve(bytes,bytes)")
-            tx.data = concat([ "0x9061b923", encodeBytes([ dnsEncode(this.name), addrData ]) ]);
-        }
-
-        try {
-            let data = await this.provider.call(tx);
-            assert((getBytes(data).length % 32) !== 4, "execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
-                action: "call", data, reason: null, transaction: <any>tx,
-                invocation: null, revert: null
+            fragment = iface.getFunction(funcName);
+            assert(fragment, "missing fragment", "UNKNOWN_ERROR", {
+                info: { funcName }
             });
 
-            if (wrapped) { return parseBytes(data, 0); }
-            return data;
+            params = [
+                dnsEncode(this.name),
+                iface.encodeFunctionData(fragment, params)
+            ];
+
+            funcName = "resolve(bytes,bytes)";
+        }
+
+        params.push({
+            ccipReadEnable: true
+        });
+
+        try {
+            const result = await this.#resolver[funcName](...params);
+
+            if (fragment) {
+                return iface.decodeFunctionResult(fragment, result)[0];
+            }
+
+            return result;
         } catch (error: any) {
-            if ((error as EthersError).code !== "CALL_EXCEPTION") { throw error; }
+            if (!isError(error, "CALL_EXCEPTION")) { throw error; }
         }
 
         return null;
@@ -282,15 +226,14 @@ export class EnsResolver {
         if (coinType == null) { coinType = 60; }
         if (coinType === 60) {
             try {
-                // keccak256("addr(bytes32)")
-                const result = await this._fetch("0x3b3b57de");
+                const result = await this.#fetch("addr(bytes32)");
 
                 // No address
-                if (result == null || result === "0x" || result === ZeroHash) { return null; }
+                if (result == null || result === ZeroAddress) { return null; }
 
-                return callAddress(result);
+                return result;
             } catch (error: any) {
-                if ((error as EthersError).code === "CALL_EXCEPTION") { return null; }
+                if (isError(error, "CALL_EXCEPTION")) { return null; }
                 throw error;
             }
         }
@@ -307,7 +250,7 @@ export class EnsResolver {
         if (coinPlugin == null) { return null; }
 
         // keccak256("addr(bytes32,uint256")
-        const data = parseBytes((await this._fetch("0xf1cb7e06", numPad(coinType))) || "0x", 0);
+        const data = await this.#fetch("addr(bytes32,uint)", [ coinType ]);
 
         // No address
         if (data == null || data === "0x") { return null; }
@@ -328,17 +271,9 @@ export class EnsResolver {
      *  if unconfigured.
      */
     async getText(key: string): Promise<null | string> {
-        // The key encoded as parameter to fetchBytes
-        let keyBytes = toUtf8Bytes(key);
-
-        // The nodehash consumes the first slot, so the string pointer targets
-        // offset 64, with the length at offset 64 and data starting at offset 96
-        const calldata = getBytes(concat([ numPad(64), numPad(keyBytes.length), keyBytes ]));
-
-        const hexBytes = parseBytes((await this._fetch("0x59d1d43c", bytesPad(calldata))) || "0x", 0);
-        if (hexBytes == null || hexBytes === "0x") { return null; }
-
-        return toUtf8String(hexBytes);
+        const data = await this.#fetch("text(bytes32,string)", [ key ]);
+        if (data == null || data === "0x") { return null; }
+        return data;
     }
 
     /**
@@ -346,13 +281,13 @@ export class EnsResolver {
      */
     async getContentHash(): Promise<null | string> {
         // keccak256("contenthash()")
-        const hexBytes = parseBytes((await this._fetch("0xbc1c58d1")) || "0x", 0);
+        const data = await this.#fetch("contenthash()");
 
         // No contenthash
-        if (hexBytes == null || hexBytes === "0x") { return null; }
+        if (data == null || data === "0x") { return null; }
 
         // IPFS (CID: 1, Type: 70=DAG-PB, 72=libp2p-key)
-        const ipfs = hexBytes.match(/^0x(e3010170|e5010172)(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+        const ipfs = data.match(/^0x(e3010170|e5010172)(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
         if (ipfs) {
             const scheme = (ipfs[1] === "e3010170") ? "ipfs": "ipns";
             const length = parseInt(ipfs[4], 16);
@@ -362,14 +297,14 @@ export class EnsResolver {
         }
 
         // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
-        const swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/)
+        const swarm = data.match(/^0xe40101fa011b20([0-9a-f]*)$/)
         if (swarm && swarm[1].length === 64) {
             return `bzz:/\/${ swarm[1] }`;
         }
 
         assert(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
-            info: { data: hexBytes }
+            info: { data }
         });
     }
 
@@ -382,7 +317,8 @@ export class EnsResolver {
      *  method may be useful.
      */
     async getAvatar(): Promise<null | string> {
-        return (await this._getAvatar()).url;
+        const avatar = await this._getAvatar();
+        return avatar.url;
     }
 
     /**
@@ -401,7 +337,7 @@ export class EnsResolver {
             const avatar = await this.getText("avatar");
             if (avatar == null) {
                 linkage.push({ type: "!avatar", value: "" });
-                throw new Error("!avatar");
+                return { url: null, linkage };
             }
             linkage.push({ type: "avatar", value: avatar });
 
@@ -425,67 +361,66 @@ export class EnsResolver {
 
                     case "erc721":
                     case "erc1155": {
-                       // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
-                        const selector = (scheme === "erc721") ? "0xc87b56dd": "0x0e89341c";
+                        // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
+                        const selector = (scheme === "erc721") ? "tokenURI(uint256)": "uri(uint256)";
                         linkage.push({ type: scheme, value: avatar });
 
                         // The owner of this name
                         const owner = await this.getAddress();
                         if (owner == null) {
                             linkage.push({ type: "!owner", value: "" });
-                            throw new Error("!owner");
+                            return { url: null, linkage };
                         }
 
                         const comps = (match[2] || "").split("/");
                         if (comps.length !== 2) {
                             linkage.push({ type: <any>`!${ scheme }caip`, value: (match[2] || "") });
-                            throw new Error("!caip");
+                            return { url: null, linkage };
                         }
 
-                        const addr = getAddress(comps[0]);
-                        const tokenId = numPad(comps[1]);
+                        const tokenId = comps[1];
+
+                        const contract = new Contract(comps[0], [
+                            // ERC-721
+                            "function tokenURI(uint) view returns (string)",
+                            "function ownerOf(uint) view returns (address)",
+
+                            // ERC-1155
+                            "function uri(uint) view returns (string)",
+                            "function balanceOf(address, uint256) view returns (uint)"
+                        ], this.provider);
 
                         // Check that this account owns the token
                         if (scheme === "erc721") {
-                            // ownerOf(uint256 tokenId)
-                            const tokenOwner = callAddress(await this.provider.call({
-                                to: addr, data: concat([ "0x6352211e", tokenId ])
-                            }));
+                            const tokenOwner = await contract.ownerOf(tokenId);
+
                             if (owner !== tokenOwner) {
                                 linkage.push({ type: "!owner", value: tokenOwner });
-                                throw new Error("!owner");
+                                return { url: null, linkage };
                             }
                             linkage.push({ type: "owner", value: tokenOwner });
 
                         } else if (scheme === "erc1155") {
-                            // balanceOf(address owner, uint256 tokenId)
-                            const balance = getBigInt(await this.provider.call({
-                                to: addr, data: concat([ "0x00fdd58e", zeroPadValue(owner, 32), tokenId ])
-                            }));
+                            const balance = await contract.balanceOf(owner, tokenId);
                             if (!balance) {
                                 linkage.push({ type: "!balance", value: "0" });
-                                throw new Error("!balance");
+                                return { url: null, linkage };
                             }
                             linkage.push({ type: "balance", value: balance.toString() });
                         }
 
                         // Call the token contract for the metadata URL
-                        const tx = {
-                            to: comps[0],
-                            data: concat([ selector, tokenId ])
-                        };
-
-                        let metadataUrl = parseString(await this.provider.call(tx), 0);
-                        if (metadataUrl == null) {
+                        let metadataUrl = await contract[selector](tokenId);
+                        if (metadataUrl == null || metadataUrl === "0x") {
                             linkage.push({ type: "!metadata-url", value: "" });
-                            throw new Error("!metadata-url");
+                            return { url: null, linkage };
                         }
 
                         linkage.push({ type: "metadata-url-base", value: metadataUrl });
 
                         // ERC-1155 allows a generic {id} in the URL
                         if (scheme === "erc1155") {
-                            metadataUrl = metadataUrl.replace("{id}", hexlify(tokenId).substring(2));
+                            metadataUrl = metadataUrl.replace("{id}", toBeHex(tokenId, 32).substring(2));
                             linkage.push({ type: "metadata-url-expanded", value: metadataUrl });
                         }
 
@@ -510,14 +445,14 @@ export class EnsResolver {
                                 if (bytes) {
                                     linkage.push({ type: "!metadata", value: hexlify(bytes) });
                                 }
-                                throw error;
+                                return { url: null, linkage };
                             }
-                            throw error;
+                            return { url: null, linkage };
                         }
 
                         if (!metadata) {
                             linkage.push({ type: "!metadata", value: "" });
-                            throw new Error("!metadata");
+                            return { url: null, linkage };
                         }
 
                         linkage.push({ type: "metadata", value: JSON.stringify(metadata) });
@@ -526,7 +461,7 @@ export class EnsResolver {
                         let imageUrl = metadata.image;
                         if (typeof(imageUrl) !== "string") {
                             linkage.push({ type: "!imageUrl", value: "" });
-                            throw new Error("!imageUrl");
+                            return { url: null, linkage };
                         }
 
                         if (imageUrl.match(/^(https:\/\/|data:)/i)) {
@@ -536,7 +471,7 @@ export class EnsResolver {
                             const ipfs = imageUrl.match(matcherIpfs);
                             if (ipfs == null) {
                                 linkage.push({ type: "!imageUrl-ipfs", value: imageUrl });
-                                throw new Error("!imageUrl-ipfs");
+                                return { url: null, linkage };
                             }
 
                             linkage.push({ type: "imageUrl-ipfs", value: imageUrl });
@@ -549,9 +484,21 @@ export class EnsResolver {
                     }
                 }
             }
-        } catch (error) { console.log("EE", error); }
+        } catch (error) { }
 
         return { linkage, url: null };
+    }
+
+    static async getEnsAddress(provider: Provider): Promise<string> {
+        const network = await provider.getNetwork();
+
+        const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.network-plugins.ens");
+
+        // No ENS...
+        assert(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
+            operation: "getEnsAddress", info: { network } });
+
+        return ensPlugin.address;
     }
 
     static async #getResolver(provider: Provider, name: string): Promise<null | string> {
@@ -564,15 +511,15 @@ export class EnsResolver {
             operation: "getResolver", info: { network: network.name } });
 
         try {
-            // keccak256("resolver(bytes32)")
-            const addrData = await provider.call({
-                to: ensPlugin.address,
-                data: concat([ "0x0178b8bf", namehash(name) ]),
+            const contract = new Contract(ensPlugin.address, [
+                "function resolver(bytes32) view returns (address)"
+            ], provider);
+
+            const addr = await contract.resolver(namehash(name), {
                 enableCcipRead: true
             });
 
-            const addr = callAddress(addrData);
-            if (addr === dataSlice(ZeroHash, 0, 20)) { return null; }
+            if (addr === ZeroAddress) { return null; }
             return addr;
 
         } catch (error) {
@@ -586,7 +533,7 @@ export class EnsResolver {
 
     /**
      *  Resolve to the ENS resolver for %%name%% using %%provider%% or
-     *  ``null`` if uncinfigured.
+     *  ``null`` if unconfigured.
      */
     static async fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver> {
 
