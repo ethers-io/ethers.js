@@ -1,3 +1,23 @@
+/**
+ *  [[link-etherscan]] provides a third-party service for connecting to
+ *  various blockchains over a combination of JSON-RPC and custom API
+ *  endpoints.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``maticmum``)
+ *
+ *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
+ */
+
 import { AbiCoder } from "../abi/index.js";
 import { Contract } from "../contract/index.js";
 import { accessListify, Transaction } from "../transaction/index.js";
