@@ -4,7 +4,7 @@ import type { Signature } from "../crypto/index.js";
 import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
-export declare type BlockTag = number | string;
+export type BlockTag = number | string;
 import { BlockParams, LogParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
 /**
  *  A **FeeData** wraps all the fee-related values associated with
@@ -318,7 +318,7 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
      */
     replaceableTransaction(startBlock: number): TransactionResponse;
 }
-export declare type OrphanFilter = {
+export type OrphanFilter = {
     orphan: "drop-block";
     hash: string;
     number: number;
@@ -358,7 +358,7 @@ export declare type OrphanFilter = {
         index: number;
     };
 };
-export declare type TopicFilter = Array<null | string | Array<string>>;
+export type TopicFilter = Array<null | string | Array<string>>;
 export interface EventFilter {
     address?: AddressLike | Array<AddressLike>;
     topics?: TopicFilter;
@@ -370,7 +370,7 @@ export interface Filter extends EventFilter {
 export interface FilterByBlockHash extends EventFilter {
     blockHash?: string;
 }
-export declare type ProviderEvent = string | Array<string | Array<string>> | EventFilter | OrphanFilter;
+export type ProviderEvent = string | Array<string | Array<string>> | EventFilter | OrphanFilter;
 /**
  *  A **Provider** is the primary method to interact with the read-only
  *  content on Ethereum.

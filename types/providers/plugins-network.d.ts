@@ -4,7 +4,7 @@ export declare class NetworkPlugin {
     constructor(name: string);
     clone(): NetworkPlugin;
 }
-export declare type GasCostParameters = {
+export type GasCostParameters = {
     txBase?: number;
     txCreate?: number;
     txDataZero?: number;

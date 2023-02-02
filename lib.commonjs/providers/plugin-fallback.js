@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PossiblyPrunedTransactionPlugin = exports.CheckQualifiedPlugin = exports.PluginIdFallbackProvider = void 0;
 const index_js_1 = require("../utils/index.js");
-exports.PluginIdFallbackProvider = "org.ethers.plugins.QualifiedPlugin";
+exports.PluginIdFallbackProvider = "org.ethers.plugins.provider.QualifiedPlugin";
 class CheckQualifiedPlugin {
     constructor() {
         (0, index_js_1.defineProperties)(this, { name: exports.PluginIdFallbackProvider });

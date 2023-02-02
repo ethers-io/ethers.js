@@ -9,7 +9,7 @@ import type { Provider } from "./provider.js";
 /**
  *  The type of data found during a steip during avatar resolution.
  */
-export declare type AvatarLinkageType = "name" | "avatar" | "!avatar" | "url" | "data" | "ipfs" | "erc721" | "erc1155" | "!erc721-caip" | "!erc1155-caip" | "!owner" | "owner" | "!balance" | "balance" | "metadata-url-base" | "metadata-url-expanded" | "metadata-url" | "!metadata-url" | "!metadata" | "metadata" | "!imageUrl" | "imageUrl-ipfs" | "imageUrl" | "!imageUrl-ipfs";
+export type AvatarLinkageType = "name" | "avatar" | "!avatar" | "url" | "data" | "ipfs" | "erc721" | "erc1155" | "!erc721-caip" | "!erc1155-caip" | "!owner" | "owner" | "!balance" | "balance" | "metadata-url-base" | "metadata-url-expanded" | "metadata-url" | "!metadata-url" | "!metadata" | "metadata" | "!imageUrl" | "imageUrl-ipfs" | "imageUrl" | "!imageUrl-ipfs";
 /**
  *  An individual record for each step during avatar resolution.
  */
@@ -70,11 +70,6 @@ export declare class EnsResolver {
      */
     supportsWildcard(): Promise<boolean>;
     /**
-     *  Fetch the %%selector%% with %%parameters%% using call, resolving
-     *  recursively if the resolver supports it.
-     */
-    _fetch(selector: string, parameters?: BytesLike): Promise<null | string>;
-    /**
      *  Resolves to the address for %%coinType%% or null if the
      *  provided %%coinType%% has not been configured.
      */
@@ -106,9 +101,10 @@ export declare class EnsResolver {
      *  was working from.
      */
     _getAvatar(): Promise<AvatarResult>;
+    static getEnsAddress(provider: Provider): Promise<string>;
     /**
      *  Resolve to the ENS resolver for %%name%% using %%provider%% or
-     *  ``null`` if uncinfigured.
+     *  ``null`` if unconfigured.
      */
     static fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver>;
 }

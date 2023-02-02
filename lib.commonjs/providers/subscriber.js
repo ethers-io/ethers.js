@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /*
 import { defineProperties } from "@ethersproject/properties";
 export type EventCommon = "block" | "debug" | "blockObject";

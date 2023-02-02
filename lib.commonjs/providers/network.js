@@ -102,7 +102,7 @@ class Network {
         return clone;
     }
     computeIntrinsicGas(tx) {
-        const costs = this.getPlugin("org.ethers.gas-cost") || (new plugins_network_js_1.GasCostPlugin());
+        const costs = this.getPlugin("org.ethers.plugins.network.GasCost") || (new plugins_network_js_1.GasCostPlugin());
         let gas = costs.txBase;
         if (tx.to == null) {
             gas += costs.txCreate;

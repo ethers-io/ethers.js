@@ -7,47 +7,47 @@ import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
 import { defineProperties, getBigInt, resolveProperties, assert, assertArgument } from "../utils/index.js";
 import { copyRequest } from "./provider.js";
+function checkProvider(signer, operation) {
+    if (signer.provider) {
+        return signer.provider;
+    }
+    assert(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
+}
+async function populate(signer, tx) {
+    let pop = copyRequest(tx);
+    if (pop.to != null) {
+        pop.to = resolveAddress(pop.to, signer);
+    }
+    if (pop.from != null) {
+        const from = pop.from;
+        pop.from = Promise.all([
+            signer.getAddress(),
+            resolveAddress(from, signer)
+        ]).then(([address, from]) => {
+            assertArgument(address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
+            return address;
+        });
+    }
+    else {
+        pop.from = signer.getAddress();
+    }
+    return await resolveProperties(pop);
+}
 export class AbstractSigner {
     provider;
     constructor(provider) {
         defineProperties(this, { provider: (provider || null) });
     }
-    #checkProvider(operation) {
-        if (this.provider) {
-            return this.provider;
-        }
-        assert(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
-    }
     async getNonce(blockTag) {
-        return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
-    }
-    async #populate(tx) {
-        let pop = copyRequest(tx);
-        if (pop.to != null) {
-            pop.to = resolveAddress(pop.to, this);
-        }
-        if (pop.from != null) {
-            const from = pop.from;
-            pop.from = Promise.all([
-                this.getAddress(),
-                resolveAddress(from, this)
-            ]).then(([address, from]) => {
-                assertArgument(address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
-                return address;
-            });
-        }
-        else {
-            pop.from = this.getAddress();
-        }
-        return await resolveProperties(pop);
+        return checkProvider(this, "getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
     async populateCall(tx) {
-        const pop = await this.#populate(tx);
+        const pop = await populate(this, tx);
         return pop;
     }
     async populateTransaction(tx) {
-        const provider = this.#checkProvider("populateTransaction");
-        const pop = await this.#populate(tx);
+        const provider = checkProvider(this, "populateTransaction");
+        const pop = await populate(this, tx);
         if (pop.nonce == null) {
             pop.nonce = await this.getNonce("pending");
         }
@@ -151,17 +151,17 @@ export class AbstractSigner {
         return await resolveProperties(pop);
     }
     async estimateGas(tx) {
-        return this.#checkProvider("estimateGas").estimateGas(await this.populateCall(tx));
+        return checkProvider(this, "estimateGas").estimateGas(await this.populateCall(tx));
     }
     async call(tx) {
-        return this.#checkProvider("call").call(await this.populateCall(tx));
+        return checkProvider(this, "call").call(await this.populateCall(tx));
     }
     async resolveName(name) {
-        const provider = this.#checkProvider("resolveName");
+        const provider = checkProvider(this, "resolveName");
         return await provider.resolveName(name);
     }
     async sendTransaction(tx) {
-        const provider = this.#checkProvider("sendTransaction");
+        const provider = checkProvider(this, "sendTransaction");
         const pop = await this.populateTransaction(tx);
         delete pop.from;
         const txObj = Transaction.from(pop);
@@ -189,49 +189,6 @@ export class VoidSigner extends AbstractSigner {
     }
     async signTypedData(domain, types, value) {
         this.#throwUnsupported("typed-data", "signTypedData");
-    }
-}
-export class WrappedSigner extends AbstractSigner {
-    #signer;
-    constructor(signer) {
-        super(signer.provider);
-        this.#signer = signer;
-    }
-    async getAddress() {
-        return await this.#signer.getAddress();
-    }
-    connect(provider) {
-        return new WrappedSigner(this.#signer.connect(provider));
-    }
-    async getNonce(blockTag) {
-        return await this.#signer.getNonce(blockTag);
-    }
-    async populateCall(tx) {
-        return await this.#signer.populateCall(tx);
-    }
-    async populateTransaction(tx) {
-        return await this.#signer.populateTransaction(tx);
-    }
-    async estimateGas(tx) {
-        return await this.#signer.estimateGas(tx);
-    }
-    async call(tx) {
-        return await this.#signer.call(tx);
-    }
-    async resolveName(name) {
-        return this.#signer.resolveName(name);
-    }
-    async signTransaction(tx) {
-        return await this.#signer.signTransaction(tx);
-    }
-    async sendTransaction(tx) {
-        return await this.#signer.sendTransaction(tx);
-    }
-    async signMessage(message) {
-        return await this.#signer.signMessage(message);
-    }
-    async signTypedData(domain, types, value) {
-        return await this.#signer.signTypedData(domain, types, value);
     }
 }
 //# sourceMappingURL=abstract-signer.js.map

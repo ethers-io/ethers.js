@@ -13,7 +13,7 @@ import type { NetworkPlugin } from "./plugins-network.js";
  *  - a well-known (or registered) chain ID
  *  - an object with sufficient details to describe a network
  */
-export declare type Networkish = Network | number | bigint | string | {
+export type Networkish = Network | number | bigint | string | {
     name?: string;
     chainId?: number;
     ensAddress?: string;

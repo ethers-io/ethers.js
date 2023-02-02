@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert_1 = __importDefault(require("assert"));
 const index_js_1 = require("../index.js");
 const create_provider_js_1 = require("./create-provider.js");
+(0, create_provider_js_1.setupProviders)();
 describe("Test CCIP execution", function () {
     // This matches the verify method in the Solidity contract against the
     // processed data from the endpoint

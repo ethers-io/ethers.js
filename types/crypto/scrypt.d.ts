@@ -5,7 +5,7 @@ import type { BytesLike } from "../utils/index.js";
  *
  *  The %%percent%% is a value between ``0`` and ``1``.
  */
-export declare type ProgressCallback = (percent: number) => void;
+export type ProgressCallback = (percent: number) => void;
 /**
  *  The [[link-wiki-scrypt]] uses a memory and cpu hard method of
  *  derivation to increase the resource cost to brute-force a password

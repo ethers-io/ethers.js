@@ -45,6 +45,10 @@ export class PollingBlockSubscriber {
             this.#blockNumber = blockNumber;
             return;
         }
+        // We have been stopped
+        if (this.#poller == null) {
+            return;
+        }
         // @TODO: Put a cap on the maximum number of events per loop?
         if (blockNumber !== this.#blockNumber) {
             for (let b = this.#blockNumber + 1; b <= blockNumber; b++) {
@@ -58,8 +62,8 @@ export class PollingBlockSubscriber {
         if (this.#poller) {
             throw new Error("subscriber already running");
         }
-        this.#poll();
         this.#poller = this.#provider._setTimeout(this.#poll.bind(this), this.#interval);
+        this.#poll();
     }
     stop() {
         if (!this.#poller) {

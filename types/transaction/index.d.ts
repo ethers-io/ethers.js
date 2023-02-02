@@ -6,18 +6,18 @@
 /**
  *  A single [[AccessList]] entry of storage keys (slots) for an address.
  */
-export declare type AccessListEntry = {
+export type AccessListEntry = {
     address: string;
     storageKeys: Array<string>;
 };
 /**
  *  An ordered collection of [[AccessList]] entries.
  */
-export declare type AccessList = Array<AccessListEntry>;
+export type AccessList = Array<AccessListEntry>;
 /**
  *  Any ethers-supported access list structure.
  */
-export declare type AccessListish = AccessList | Array<[string, Array<string>]> | Record<string, Array<string>>;
+export type AccessListish = AccessList | Array<[string, Array<string>]> | Record<string, Array<string>>;
 export { accessListify } from "./accesslist.js";
 export { computeAddress, recoverAddress } from "./address.js";
 export { Transaction } from "./transaction.js";

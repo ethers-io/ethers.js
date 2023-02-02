@@ -9,10 +9,10 @@
     "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js"
   },
   "comment": {
-    "@adraffy/ens-normalize": "1.8.8"
+    "@adraffy/ens-normalize": "git@github.com:ricmoo/ens-normalize.js.git"
   },
   "dependencies": {
-    "@adraffy/ens-normalize": "git@github.com:ricmoo/ens-normalize.js.git",
+    "@adraffy/ens-normalize": "1.8.9",
     "@noble/hashes": "1.1.2",
     "@noble/secp256k1": "1.6.3",
     "aes-js": "4.0.0-beta.3",
@@ -28,7 +28,7 @@
     "mocha": "10.0.0",
     "rollup": "2.78.1",
     "semver": "7.3.7",
-    "typescript": "4.7.4",
+    "typescript": "4.9.5",
     "uglify-js": "3.17.0"
   },
   "engines": {
@@ -96,7 +96,7 @@
       "types": "./types/wordlistsindex.d.ts"
     }
   },
-  "gitHead": "c3f8e8ac0753cecbca64e602c73139b38fd7f58a",
+  "gitHead": "7c37182d03e407175eefab4509dfde43f247c699",
   "keywords": [
     "ethereum",
     "ethers",
@@ -136,5 +136,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.0-beta-exports.15"
+  "version": "6.0.0-beta-exports.16"
 }

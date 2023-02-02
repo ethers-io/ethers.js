@@ -904,6 +904,11 @@ class EventFragment extends NamedFragment {
         }
         return result.join(" ");
     }
+    static getTopicHash(name, params) {
+        params = (params || []).map((p) => ParamType.from(p));
+        const fragment = new EventFragment(_guard, name, params, false);
+        return fragment.topicHash;
+    }
     static from(obj) {
         if (EventFragment.isFragment(obj)) {
             return obj;
@@ -1129,6 +1134,11 @@ class FunctionFragment extends NamedFragment {
             }
         }
         return result.join(" ");
+    }
+    static getSelector(name, params) {
+        params = (params || []).map((p) => ParamType.from(p));
+        const fragment = new FunctionFragment(_guard, name, "view", params, [], null);
+        return fragment.selector;
     }
     static from(obj) {
         if (FunctionFragment.isFragment(obj)) {

@@ -13,7 +13,7 @@ import type { BytesLike } from "../utils/index.js";
 /**
  *  The contents of a JSON Keystore Wallet.
  */
-export declare type KeystoreAccount = {
+export type KeystoreAccount = {
     address: string;
     privateKey: string;
     mnemonic?: {
@@ -25,7 +25,7 @@ export declare type KeystoreAccount = {
 /**
  *  The parameters to use when encrypting a JSON Keystore Wallet.
  */
-export declare type EncryptOptions = {
+export type EncryptOptions = {
     progressCallback?: ProgressCallback;
     iv?: BytesLike;
     entropy?: BytesLike;

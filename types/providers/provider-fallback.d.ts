@@ -27,7 +27,7 @@ export interface FallbackProviderState extends Required<FallbackProviderConfig> 
 /**
  *  Additional options to configure a [[FallbackProvider]].
  */
-export declare type FallbackProviderOptions = {
+export type FallbackProviderOptions = {
     quorum: number;
     eventQuorum: number;
     eventWorkers: number;

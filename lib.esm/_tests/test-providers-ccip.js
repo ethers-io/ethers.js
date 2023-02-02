@@ -1,6 +1,7 @@
 import assert from "assert";
 import { concat, dataLength, keccak256, toBeArray, isCallException, isError } from "../index.js";
-import { connect } from "./create-provider.js";
+import { connect, setupProviders } from "./create-provider.js";
+setupProviders();
 describe("Test CCIP execution", function () {
     // This matches the verify method in the Solidity contract against the
     // processed data from the endpoint

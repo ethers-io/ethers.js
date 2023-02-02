@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.15";
+const version = "6.0.0-beta-exports.16";
 
 /**
  *  Property helper functions.
@@ -440,7 +440,7 @@ function zeroPadBytes(data, length) {
  *  @_subsection: api/utils:Math Helpers  [about-maths]
  */
 const BN_0$a = BigInt(0);
-const BN_1$6 = BigInt(1);
+const BN_1$5 = BigInt(1);
 //const BN_Max256 = (BN_1 << BigInt(256)) - BN_1;
 // IEEE 754 support 53-bits of mantissa
 const maxValue = 0x1fffffffffffff;
@@ -457,9 +457,9 @@ function fromTwos(_value, _width) {
         operation: "fromTwos", fault: "overflow", value: _value
     });
     // Top bit set; treat as a negative value
-    if (value >> (width - BN_1$6)) {
-        const mask = (BN_1$6 << width) - BN_1$6;
-        return -(((~value) & mask) + BN_1$6);
+    if (value >> (width - BN_1$5)) {
+        const mask = (BN_1$5 << width) - BN_1$5;
+        return -(((~value) & mask) + BN_1$5);
     }
     return value;
 }
@@ -472,14 +472,14 @@ function fromTwos(_value, _width) {
 function toTwos(_value, _width) {
     let value = getBigInt(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
-    const limit = (BN_1$6 << (width - BN_1$6));
+    const limit = (BN_1$5 << (width - BN_1$5));
     if (value < BN_0$a) {
         value = -value;
         assert$1(value <= limit, "too low", "NUMERIC_FAULT", {
             operation: "toTwos", fault: "overflow", value: _value
         });
-        const mask = (BN_1$6 << width) - BN_1$6;
-        return ((~value) & mask) + BN_1$6;
+        const mask = (BN_1$5 << width) - BN_1$5;
+        return ((~value) & mask) + BN_1$5;
     }
     else {
         assert$1(value < limit, "too high", "NUMERIC_FAULT", {
@@ -494,7 +494,7 @@ function toTwos(_value, _width) {
 function mask(_value, _bits) {
     const value = getUint(_value, "value");
     const bits = BigInt(getNumber(_bits, "bits"));
-    return value & ((BN_1$6 << bits) - BN_1$6);
+    return value & ((BN_1$5 << bits) - BN_1$5);
 }
 /**
  *  Gets a [[BigInt]] from %%value%%. If it is an invalid value for
@@ -1780,7 +1780,7 @@ function wait(delay) {
  */
 const BN_N1 = BigInt(-1);
 const BN_0$8 = BigInt(0);
-const BN_1$5 = BigInt(1);
+const BN_1$4 = BigInt(1);
 const BN_5 = BigInt(5);
 const _guard$5 = {};
 // Constant to pull zeros from for multipliers
@@ -1799,7 +1799,7 @@ function getTens(decimals) {
 function checkValue(val, format, safeOp) {
     const width = BigInt(format.width);
     if (format.signed) {
-        const limit = (BN_1$5 << (width - BN_1$5));
+        const limit = (BN_1$4 << (width - BN_1$4));
         assert$1(safeOp == null || (val >= -limit && val < limit), "overflow", "NUMERIC_FAULT", {
             operation: safeOp, fault: "overflow", value: val
         });
@@ -1811,11 +1811,11 @@ function checkValue(val, format, safeOp) {
         }
     }
     else {
-        const limit = (BN_1$5 << width);
+        const limit = (BN_1$4 << width);
         assert$1(safeOp == null || (val >= 0 && val < limit), "overflow", "NUMERIC_FAULT", {
             operation: safeOp, fault: "overflow", value: val
         });
-        val = (((val % limit) + limit) % limit) & (limit - BN_1$5);
+        val = (((val % limit) + limit) % limit) & (limit - BN_1$4);
     }
     return val;
 }
@@ -2149,7 +2149,7 @@ class FixedNumber {
     floor() {
         let val = this.#val;
         if (this.#val < BN_0$8) {
-            val -= this.#tens - BN_1$5;
+            val -= this.#tens - BN_1$4;
         }
         val = (this.#val / this.#tens) * this.#tens;
         return this.#checkValue(val, "floor");
@@ -2163,7 +2163,7 @@ class FixedNumber {
     ceiling() {
         let val = this.#val;
         if (this.#val > BN_0$8) {
-            val += this.#tens - BN_1$5;
+            val += this.#tens - BN_1$4;
         }
         val = (this.#val / this.#tens) * this.#tens;
         return this.#checkValue(val, "ceiling");
@@ -5872,7 +5872,7 @@ const MessagePrefix = "\x19Ethereum Signed Message:\n";
 
 // Constants
 const BN_0$7 = BigInt(0);
-const BN_1$4 = BigInt(1);
+const BN_1$3 = BigInt(1);
 const BN_2$3 = BigInt(2);
 const BN_27$1 = BigInt(27);
 const BN_28$1 = BigInt(28);
@@ -6071,12 +6071,12 @@ class Signature {
         if (bv === BN_0$7 || bv === BN_27$1) {
             return 27;
         }
-        if (bv === BN_1$4 || bv === BN_28$1) {
+        if (bv === BN_1$3 || bv === BN_28$1) {
             return 28;
         }
         assertArgument(bv >= BN_35$1, "invalid v", "v", v);
         // Otherwise, EIP-155 v means odd is 27 and even is 28
-        return (bv & BN_1$4) ? 27 : 28;
+        return (bv & BN_1$3) ? 27 : 28;
     }
     /**
      *  Creates a new [[Signature]].
@@ -7206,7 +7206,7 @@ class FixedBytesCoder extends Coder {
     }
 }
 
-const Empty$1 = new Uint8Array([]);
+const Empty = new Uint8Array([]);
 /**
  *  @_ignore
  */
@@ -7221,7 +7221,7 @@ class NullCoder extends Coder {
         if (value != null) {
             this._throwError("not null", value);
         }
-        return writer.writeBytes(Empty$1);
+        return writer.writeBytes(Empty);
     }
     decode(reader) {
         reader.readBytes(0);
@@ -7230,7 +7230,7 @@ class NullCoder extends Coder {
 }
 
 const BN_0$5 = BigInt(0);
-const BN_1$3 = BigInt(1);
+const BN_1$2 = BigInt(1);
 const BN_MAX_UINT256$1 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 /**
  *  @_ignore
@@ -7252,7 +7252,7 @@ class NumberCoder extends Coder {
         let maxUintValue = mask(BN_MAX_UINT256$1, WordSize * 8);
         if (this.signed) {
             let bounds = mask(maxUintValue, (this.size * 8) - 1);
-            if (value > bounds || value < -(bounds + BN_1$3)) {
+            if (value > bounds || value < -(bounds + BN_1$2)) {
                 this._throwError("value out-of-bounds", _value);
             }
             value = toTwos(value, 8 * WordSize);
@@ -9305,7 +9305,7 @@ const padding = new Uint8Array(32);
 padding.fill(0);
 const BN__1 = BigInt(-1);
 const BN_0$3 = BigInt(0);
-const BN_1$2 = BigInt(1);
+const BN_1$1 = BigInt(1);
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 ;
 ;
@@ -9317,7 +9317,7 @@ function hexPadRight(value) {
     }
     return hexlify(bytes);
 }
-const hexTrue = toBeHex(BN_1$2, 32);
+const hexTrue = toBeHex(BN_1$1, 32);
 const hexFalse = toBeHex(BN_0$3, 32);
 const domainFieldTypes = {
     name: "string",
@@ -9363,7 +9363,7 @@ function getBaseEncoder(type) {
             const width = parseInt(match[2] || "256");
             assertArgument(width % 8 === 0 && width !== 0 && width <= 256 && (match[2] == null || match[2] === String(width)), "invalid numeric width", "type", type);
             const boundsUpper = mask(BN_MAX_UINT256, signed ? (width - 1) : width);
-            const boundsLower = signed ? ((boundsUpper + BN_1$2) * BN__1) : BN_0$3;
+            const boundsLower = signed ? ((boundsUpper + BN_1$1) * BN__1) : BN_0$3;
             return function (_value) {
                 const value = getBigInt(_value, "value");
                 assertArgument(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${type}`, "value", value);
@@ -10586,6 +10586,11 @@ class EventFragment extends NamedFragment {
         }
         return result.join(" ");
     }
+    static getTopicHash(name, params) {
+        params = (params || []).map((p) => ParamType.from(p));
+        const fragment = new EventFragment(_guard$2, name, params, false);
+        return fragment.topicHash;
+    }
     static from(obj) {
         if (EventFragment.isFragment(obj)) {
             return obj;
@@ -10808,6 +10813,11 @@ class FunctionFragment extends NamedFragment {
             }
         }
         return result.join(" ");
+    }
+    static getSelector(name, params) {
+        params = (params || []).map((p) => ParamType.from(p));
+        const fragment = new FunctionFragment(_guard$2, name, "view", params, [], null);
+        return fragment.selector;
     }
     static from(obj) {
         if (FunctionFragment.isFragment(obj)) {
@@ -13855,67 +13865,6 @@ class ContractFactory {
  *
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
  */
-const BN_1$1 = BigInt(1);
-const Empty = new Uint8Array([]);
-function parseBytes(result, start) {
-    if (result === "0x") {
-        return null;
-    }
-    const offset = toNumber(dataSlice(result, start, start + 32));
-    const length = toNumber(dataSlice(result, offset, offset + 32));
-    return dataSlice(result, offset + 32, offset + 32 + length);
-}
-function parseString(result, start) {
-    try {
-        const bytes = parseBytes(result, start);
-        if (bytes != null) {
-            return toUtf8String(bytes);
-        }
-    }
-    catch (error) { }
-    return null;
-}
-function numPad$1(value) {
-    const result = toBeArray(value);
-    if (result.length > 32) {
-        throw new Error("internal; should not happen");
-    }
-    const padded = new Uint8Array(32);
-    padded.set(result, 32 - result.length);
-    return padded;
-}
-function bytesPad$1(value) {
-    if ((value.length % 32) === 0) {
-        return value;
-    }
-    const result = new Uint8Array(Math.ceil(value.length / 32) * 32);
-    result.set(value);
-    return result;
-}
-// ABI Encodes a series of (bytes, bytes, ...)
-function encodeBytes$1(datas) {
-    const result = [];
-    let byteCount = 0;
-    // Add place-holders for pointers as we add items
-    for (let i = 0; i < datas.length; i++) {
-        result.push(Empty);
-        byteCount += 32;
-    }
-    for (let i = 0; i < datas.length; i++) {
-        const data = getBytes(datas[i]);
-        // Update the bytes offset
-        result[i] = numPad$1(byteCount);
-        // The length and padded value of data
-        result.push(numPad$1(data.length));
-        result.push(bytesPad$1(data));
-        byteCount += 32 + Math.ceil(data.length / 32) * 32;
-    }
-    return concat(result);
-}
-function callAddress(value) {
-    assertArgument(value.length === 66 && dataSlice(value, 0, 12) === "0x000000000000000000000000", "invalid call address", "value", value);
-    return getAddress("0x" + value.substring(26));
-}
 // @TODO: This should use the fetch-data:ipfs gateway
 // Trim off the ipfs:// prefix and return the default gateway URL
 function getIpfsLink(link) {
@@ -13953,7 +13902,7 @@ class MulticoinProviderPlugin {
         throw new Error("unsupported coin");
     }
 }
-const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoinProviderPlugin";
+const BasicMulticoinPluginId = "org.ethers.plugins.provider.BasicMulticoin";
 /**
  *  A basic multicoin provider plugin.
  */
@@ -13988,68 +13937,71 @@ class EnsResolver {
     name;
     // For EIP-2544 names, the ancestor that provided the resolver
     #supports2544;
+    #resolver;
     constructor(provider, address, name) {
         defineProperties(this, { provider, address, name });
         this.#supports2544 = null;
+        this.#resolver = new Contract(address, [
+            "function supportsInterface(bytes4) view returns (bool)",
+            "function resolve(bytes, bytes) view returns (bytes)",
+            "function addr(bytes32) view returns (address)",
+            "function addr(bytes32, uint) view returns (address)",
+            "function text(bytes32, string) view returns (string)",
+            "function contenthash() view returns (bytes)",
+        ], provider);
     }
     /**
      *  Resolves to true if the resolver supports wildcard resolution.
      */
     async supportsWildcard() {
-        if (!this.#supports2544) {
-            // supportsInterface(bytes4 = selector("resolve(bytes,bytes)"))
-            this.#supports2544 = this.provider.call({
-                to: this.address,
-                data: "0x01ffc9a79061b92300000000000000000000000000000000000000000000000000000000"
-            }).then((result) => {
-                return (getBigInt(result) === BN_1$1);
-            }).catch((error) => {
-                if (error.code === "CALL_EXCEPTION") {
-                    return false;
+        if (this.#supports2544 == null) {
+            this.#supports2544 = (async () => {
+                try {
+                    return await this.#resolver.supportsInterface("0x9061b923");
                 }
-                // Rethrow the error: link is down, etc. Let future attempts retry.
-                this.#supports2544 = null;
-                throw error;
-            });
+                catch (error) {
+                    // Wildcard resolvers must understand supportsInterface
+                    // and return true.
+                    if (isError(error, "CALL_EXCEPTION")) {
+                        return false;
+                    }
+                    // Let future attempts try again...
+                    this.#supports2544 = null;
+                    throw error;
+                }
+            })();
         }
         return await this.#supports2544;
     }
-    /**
-     *  Fetch the %%selector%% with %%parameters%% using call, resolving
-     *  recursively if the resolver supports it.
-     */
-    async _fetch(selector, parameters) {
-        if (parameters == null) {
-            parameters = "0x";
-        }
-        // e.g. keccak256("addr(bytes32,uint256)")
-        const addrData = concat([selector, namehash(this.name), parameters]);
-        const tx = {
-            to: this.address,
-            from: ZeroAddress,
-            enableCcipRead: true,
-            data: addrData
-        };
-        // Wildcard support; use EIP-2544 to resolve the request
-        let wrapped = false;
+    async #fetch(funcName, params) {
+        params = (params || []).slice();
+        const iface = this.#resolver.interface;
+        // The first parameters is always the nodehash
+        params.unshift(namehash(this.name));
+        let fragment = null;
         if (await this.supportsWildcard()) {
-            wrapped = true;
-            // selector("resolve(bytes,bytes)")
-            tx.data = concat(["0x9061b923", encodeBytes$1([dnsEncode(this.name), addrData])]);
-        }
-        try {
-            let data = await this.provider.call(tx);
-            assert$1((getBytes(data).length % 32) !== 4, "execution reverted during JSON-RPC call (could not parse reason; invalid data length)", "CALL_EXCEPTION", {
-                action: "call", data, reason: null, transaction: tx,
-                invocation: null, revert: null
+            fragment = iface.getFunction(funcName);
+            assert$1(fragment, "missing fragment", "UNKNOWN_ERROR", {
+                info: { funcName }
             });
-            if (wrapped) {
-                return parseBytes(data, 0);
+            params = [
+                dnsEncode(this.name),
+                iface.encodeFunctionData(fragment, params)
+            ];
+            funcName = "resolve(bytes,bytes)";
+        }
+        params.push({
+            ccipReadEnable: true
+        });
+        try {
+            const result = await this.#resolver[funcName](...params);
+            if (fragment) {
+                return iface.decodeFunctionResult(fragment, result)[0];
             }
-            return data;
+            return result;
         }
         catch (error) {
-            if (error.code !== "CALL_EXCEPTION") {
+            if (!isError(error, "CALL_EXCEPTION")) {
                 throw error;
             }
         }
@@ -14065,16 +14017,15 @@ class EnsResolver {
         }
         if (coinType === 60) {
             try {
-                // keccak256("addr(bytes32)")
-                const result = await this._fetch("0x3b3b57de");
+                const result = await this.#fetch("addr(bytes32)");
                 // No address
-                if (result == null || result === "0x" || result === ZeroHash) {
+                if (result == null || result === ZeroAddress) {
                     return null;
                 }
-                return callAddress(result);
+                return result;
             }
             catch (error) {
-                if (error.code === "CALL_EXCEPTION") {
+                if (isError(error, "CALL_EXCEPTION")) {
                     return null;
                 }
                 throw error;
@@ -14094,7 +14045,7 @@ class EnsResolver {
             return null;
         }
         // keccak256("addr(bytes32,uint256")
-        const data = parseBytes((await this._fetch("0xf1cb7e06", numPad$1(coinType))) || "0x", 0);
+        const data = await this.#fetch("addr(bytes32,uint)", [coinType]);
         // No address
         if (data == null || data === "0x") {
             return null;
@@ -14114,29 +14065,24 @@ class EnsResolver {
      *  if unconfigured.
      */
     async getText(key) {
-        // The key encoded as parameter to fetchBytes
-        let keyBytes = toUtf8Bytes(key);
-        // The nodehash consumes the first slot, so the string pointer targets
-        // offset 64, with the length at offset 64 and data starting at offset 96
-        const calldata = getBytes(concat([numPad$1(64), numPad$1(keyBytes.length), keyBytes]));
-        const hexBytes = parseBytes((await this._fetch("0x59d1d43c", bytesPad$1(calldata))) || "0x", 0);
-        if (hexBytes == null || hexBytes === "0x") {
+        const data = await this.#fetch("text(bytes32,string)", [key]);
+        if (data == null || data === "0x") {
             return null;
         }
-        return toUtf8String(hexBytes);
+        return data;
     }
     /**
      *  Rsolves to the content-hash or ``null`` if unconfigured.
      */
     async getContentHash() {
         // keccak256("contenthash()")
-        const hexBytes = parseBytes((await this._fetch("0xbc1c58d1")) || "0x", 0);
+        const data = await this.#fetch("contenthash()");
         // No contenthash
-        if (hexBytes == null || hexBytes === "0x") {
+        if (data == null || data === "0x") {
             return null;
         }
         // IPFS (CID: 1, Type: 70=DAG-PB, 72=libp2p-key)
-        const ipfs = hexBytes.match(/^0x(e3010170|e5010172)(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
+        const ipfs = data.match(/^0x(e3010170|e5010172)(([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f]*))$/);
         if (ipfs) {
             const scheme = (ipfs[1] === "e3010170") ? "ipfs" : "ipns";
             const length = parseInt(ipfs[4], 16);
@@ -14145,13 +14091,13 @@ class EnsResolver {
             }
         }
         // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
-        const swarm = hexBytes.match(/^0xe40101fa011b20([0-9a-f]*)$/);
+        const swarm = data.match(/^0xe40101fa011b20([0-9a-f]*)$/);
         if (swarm && swarm[1].length === 64) {
             return `bzz:/\/${swarm[1]}`;
         }
         assert$1(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
-            info: { data: hexBytes }
+            info: { data }
         });
     }
     /**
@@ -14163,7 +14109,8 @@ class EnsResolver {
      *  method may be useful.
      */
     async getAvatar() {
-        return (await this._getAvatar()).url;
+        const avatar = await this._getAvatar();
+        return avatar.url;
     }
     /**
      *  When resolving an avatar, there are many steps involved, such
@@ -14181,7 +14128,7 @@ class EnsResolver {
             const avatar = await this.getText("avatar");
             if (avatar == null) {
                 linkage.push({ type: "!avatar", value: "" });
-                throw new Error("!avatar");
+                return { url: null, linkage };
             }
             linkage.push({ type: "avatar", value: avatar });
             for (let i = 0; i < matchers.length; i++) {
@@ -14204,58 +14151,55 @@ class EnsResolver {
                     case "erc721":
                     case "erc1155": {
                         // Depending on the ERC type, use tokenURI(uint256) or url(uint256)
-                        const selector = (scheme === "erc721") ? "0xc87b56dd" : "0x0e89341c";
+                        const selector = (scheme === "erc721") ? "tokenURI(uint256)" : "uri(uint256)";
                         linkage.push({ type: scheme, value: avatar });
                         // The owner of this name
                         const owner = await this.getAddress();
                         if (owner == null) {
                             linkage.push({ type: "!owner", value: "" });
-                            throw new Error("!owner");
+                            return { url: null, linkage };
                         }
                         const comps = (match[2] || "").split("/");
                         if (comps.length !== 2) {
                             linkage.push({ type: `!${scheme}caip`, value: (match[2] || "") });
-                            throw new Error("!caip");
+                            return { url: null, linkage };
                         }
-                        const addr = getAddress(comps[0]);
-                        const tokenId = numPad$1(comps[1]);
+                        const tokenId = comps[1];
+                        const contract = new Contract(comps[0], [
+                            // ERC-721
+                            "function tokenURI(uint) view returns (string)",
+                            "function ownerOf(uint) view returns (address)",
+                            // ERC-1155
+                            "function uri(uint) view returns (string)",
+                            "function balanceOf(address, uint256) view returns (uint)"
+                        ], this.provider);
                         // Check that this account owns the token
                         if (scheme === "erc721") {
-                            // ownerOf(uint256 tokenId)
-                            const tokenOwner = callAddress(await this.provider.call({
-                                to: addr, data: concat(["0x6352211e", tokenId])
-                            }));
+                            const tokenOwner = await contract.ownerOf(tokenId);
                             if (owner !== tokenOwner) {
                                 linkage.push({ type: "!owner", value: tokenOwner });
-                                throw new Error("!owner");
+                                return { url: null, linkage };
                             }
                             linkage.push({ type: "owner", value: tokenOwner });
                         }
                         else if (scheme === "erc1155") {
-                            // balanceOf(address owner, uint256 tokenId)
-                            const balance = getBigInt(await this.provider.call({
-                                to: addr, data: concat(["0x00fdd58e", zeroPadValue(owner, 32), tokenId])
-                            }));
+                            const balance = await contract.balanceOf(owner, tokenId);
                             if (!balance) {
                                 linkage.push({ type: "!balance", value: "0" });
-                                throw new Error("!balance");
+                                return { url: null, linkage };
                             }
                             linkage.push({ type: "balance", value: balance.toString() });
                         }
                         // Call the token contract for the metadata URL
-                        const tx = {
-                            to: comps[0],
-                            data: concat([selector, tokenId])
-                        };
-                        let metadataUrl = parseString(await this.provider.call(tx), 0);
-                        if (metadataUrl == null) {
+                        let metadataUrl = await contract[selector](tokenId);
+                        if (metadataUrl == null || metadataUrl === "0x") {
                             linkage.push({ type: "!metadata-url", value: "" });
-                            throw new Error("!metadata-url");
+                            return { url: null, linkage };
                         }
                         linkage.push({ type: "metadata-url-base", value: metadataUrl });
                         // ERC-1155 allows a generic {id} in the URL
                         if (scheme === "erc1155") {
-                            metadataUrl = metadataUrl.replace("{id}", hexlify(tokenId).substring(2));
+                            metadataUrl = metadataUrl.replace("{id}", toBeHex(tokenId, 32).substring(2));
                             linkage.push({ type: "metadata-url-expanded", value: metadataUrl });
                         }
                         // Transform IPFS metadata links
@@ -14279,20 +14223,20 @@ class EnsResolver {
                                 if (bytes) {
                                     linkage.push({ type: "!metadata", value: hexlify(bytes) });
                                 }
-                                throw error;
+                                return { url: null, linkage };
                             }
-                            throw error;
+                            return { url: null, linkage };
                         }
                         if (!metadata) {
                             linkage.push({ type: "!metadata", value: "" });
-                            throw new Error("!metadata");
+                            return { url: null, linkage };
                         }
                         linkage.push({ type: "metadata", value: JSON.stringify(metadata) });
                         // Pull the image URL out
                         let imageUrl = metadata.image;
                         if (typeof (imageUrl) !== "string") {
                             linkage.push({ type: "!imageUrl", value: "" });
-                            throw new Error("!imageUrl");
+                            return { url: null, linkage };
                         }
                         if (imageUrl.match(/^(https:\/\/|data:)/i)) {
                             // Allow
@@ -14302,7 +14246,7 @@ class EnsResolver {
                             const ipfs = imageUrl.match(matcherIpfs);
                             if (ipfs == null) {
                                 linkage.push({ type: "!imageUrl-ipfs", value: imageUrl });
-                                throw new Error("!imageUrl-ipfs");
+                                return { url: null, linkage };
                             }
                             linkage.push({ type: "imageUrl-ipfs", value: imageUrl });
                             imageUrl = getIpfsLink(imageUrl);
@@ -14313,27 +14257,28 @@ class EnsResolver {
                 }
             }
         }
-        catch (error) {
-            console.log("EE", error);
-        }
+        catch (error) { }
         return { linkage, url: null };
     }
-    static async #getResolver(provider, name) {
+    static async getEnsAddress(provider) {
         const network = await provider.getNetwork();
-        const ensPlugin = network.getPlugin("org.ethers.network-plugins.ens");
+        const ensPlugin = network.getPlugin("org.ethers.plugins.network.Ens");
         // No ENS...
         assert$1(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
-            operation: "getResolver", info: { network: network.name }
+            operation: "getEnsAddress", info: { network }
         });
+        return ensPlugin.address;
+    }
+    static async #getResolver(provider, name) {
+        const ensAddr = await EnsResolver.getEnsAddress(provider);
         try {
-            // keccak256("resolver(bytes32)")
-            const addrData = await provider.call({
-                to: ensPlugin.address,
-                data: concat(["0x0178b8bf", namehash(name)]),
+            const contract = new Contract(ensAddr, [
+                "function resolver(bytes32) view returns (address)"
+            ], provider);
+            const addr = await contract.resolver(namehash(name), {
                 enableCcipRead: true
             });
-            const addr = callAddress(addrData);
-            if (addr === dataSlice(ZeroHash, 0, 20)) {
+            if (addr === ZeroAddress) {
                 return null;
             }
             return addr;
@@ -14347,7 +14292,7 @@ class EnsResolver {
     }
     /**
      *  Resolve to the ENS resolver for %%name%% using %%provider%% or
-     *  ``null`` if uncinfigured.
+     *  ``null`` if unconfigured.
      */
     static async fromName(provider, name) {
         let currentName = name;
@@ -14653,7 +14598,7 @@ class GasCostPlugin extends NetworkPlugin {
         if (effectiveBlock == null) {
             effectiveBlock = 0;
         }
-        super(`org.ethers.network-plugins.gas-cost#${(effectiveBlock || 0)}`);
+        super(`org.ethers.network.plugins.GasCost#${(effectiveBlock || 0)}`);
         const props = { effectiveBlock };
         function set(name, nullish) {
             let value = (costs || {})[name];
@@ -14683,7 +14628,7 @@ class EnsPlugin extends NetworkPlugin {
     // The network ID that the ENS contract lives on
     targetNetwork;
     constructor(address, targetNetwork) {
-        super("org.ethers.network-plugins.ens");
+        super("org.ethers.plugins.network.Ens");
         defineProperties(this, {
             address: (address || EnsAddress),
             targetNetwork: ((targetNetwork == null) ? 1 : targetNetwork)
@@ -14693,31 +14638,13 @@ class EnsPlugin extends NetworkPlugin {
         return new EnsPlugin(this.address, this.targetNetwork);
     }
 }
-/*
-export class MaxPriorityFeePlugin extends NetworkPlugin {
-    readonly priorityFee!: bigint;
-
-    constructor(priorityFee: BigNumberish) {
-        super("org.ethers.plugins.max-priority-fee");
-        defineProperties<MaxPriorityFeePlugin>(this, {
-            priorityFee: logger.getBigInt(priorityFee)
-        });
-    }
-
-    async getPriorityFee(provider: Provider): Promise<bigint> {
-        return this.priorityFee;
-    }
-
-    clone(): MaxPriorityFeePlugin {
-        return new MaxPriorityFeePlugin(this.priorityFee);
-    }
-}
-*/
 class FeeDataNetworkPlugin extends NetworkPlugin {
     #feeDataFunc;
-    get feeDataFunc() { return this.#feeDataFunc; }
+    get feeDataFunc() {
+        return this.#feeDataFunc;
+    }
     constructor(feeDataFunc) {
-        super("org.ethers.network-plugins.fee-data");
+        super("org.ethers.plugins.network.FeeData");
         this.#feeDataFunc = feeDataFunc;
     }
     async getFeeData(provider) {
@@ -14850,7 +14777,7 @@ class Network {
         return clone;
     }
     computeIntrinsicGas(tx) {
-        const costs = this.getPlugin("org.ethers.gas-cost") || (new GasCostPlugin());
+        const costs = this.getPlugin("org.ethers.plugins.network.GasCost") || (new GasCostPlugin());
         let gas = costs.txBase;
         if (tx.to == null) {
             gas += costs.txCreate;
@@ -15053,6 +14980,10 @@ class PollingBlockSubscriber {
             this.#blockNumber = blockNumber;
             return;
         }
+        // We have been stopped
+        if (this.#poller == null) {
+            return;
+        }
         // @TODO: Put a cap on the maximum number of events per loop?
         if (blockNumber !== this.#blockNumber) {
             for (let b = this.#blockNumber + 1; b <= blockNumber; b++) {
@@ -15066,8 +14997,8 @@ class PollingBlockSubscriber {
         if (this.#poller) {
             throw new Error("subscriber already running");
         }
-        this.#poll();
         this.#poller = this.#provider._setTimeout(this.#poll.bind(this), this.#interval);
+        this.#poll();
     }
     stop() {
         if (!this.#poller) {
@@ -15363,7 +15294,7 @@ class AbstractProvider {
         this.#subs = new Map();
         this.#plugins = new Map();
         this.#pausedState = null;
-        this.#nextTimer = 0;
+        this.#nextTimer = 1;
         this.#timers = new Map();
         this.#disableCcipRead = false;
     }
@@ -15675,7 +15606,7 @@ class AbstractProvider {
             // We may want to compute this more accurately in the future,
             // using the formula "check if the base fee is correct".
             // See: https://eips.ethereum.org/EIPS/eip-1559
-            maxPriorityFeePerGas = BigInt("1500000000");
+            maxPriorityFeePerGas = BigInt("1000000000");
             // Allow a network to override their maximum priority fee per gas
             //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
             //if (priorityFeePlugin) {
@@ -15900,28 +15831,38 @@ class AbstractProvider {
         return null;
     }
     async resolveName(name) {
-        if (isHexString(name, 20)) {
-            return name;
-        }
-        //if (typeof(name) === "string") {
         const resolver = await this.getResolver(name);
         if (resolver) {
             return await resolver.getAddress();
         }
-        /*
-    } else {
-        const address = await name.getAddress();
-        if (address == null) {
-            return logger.throwArgumentError("Addressable returned no address", "name", name);
-        }
-        return address;
-    }
-    */
         return null;
     }
     async lookupAddress(address) {
-        throw new Error();
-        //return "TODO";
+        address = getAddress(address);
+        const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
+        try {
+            const ensAddr = await EnsResolver.getEnsAddress(this);
+            const ensContract = new Contract(ensAddr, [
+                "function resolver(bytes32) view returns (address)"
+            ], this);
+            const resolver = await ensContract.resolver(node);
+            if (resolver == null || resolver === ZeroHash) {
+                return null;
+            }
+            const resolverContract = new Contract(resolver, [
+                "function name(bytes32) view returns (string)"
+            ], this);
+            const name = await resolverContract.name(node);
+            const check = await this.resolveName(name);
+            if (check !== address) {
+                console.log("FAIL", address, check);
+            }
+            return name;
+        }
+        catch (error) {
+            console.log("TEMP", error);
+        }
+        return null;
     }
     async waitForTransaction(hash, _confirms, timeout) {
         const confirms = (_confirms != null) ? _confirms : 1;
@@ -15964,8 +15905,9 @@ class AbstractProvider {
         });
     }
     async waitForBlock(blockTag) {
-        throw new Error();
-        //return new Block(<any><unknown>{ }, this);
+        assert$1(false, "not implemented yet", "NOT_IMPLEMENTED", {
+            operation: "waitForBlock"
+        });
     }
     _clearTimeout(timerId) {
         const timer = this.#timers.get(timerId);
@@ -16084,7 +16026,9 @@ class AbstractProvider {
     }
     async emit(event, ...args) {
         const sub = await this.#hasSub(event, args);
-        if (!sub) {
+        // If there is not subscription or if a recent emit removed
+        // the last of them (which also deleted the sub) do nothing
+        if (!sub || sub.listeners.length === 0) {
             return false;
         }
         ;
@@ -16373,47 +16317,47 @@ function parseOffchainLookup(data) {
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
  */
+function checkProvider(signer, operation) {
+    if (signer.provider) {
+        return signer.provider;
+    }
+    assert$1(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
+}
+async function populate(signer, tx) {
+    let pop = copyRequest(tx);
+    if (pop.to != null) {
+        pop.to = resolveAddress(pop.to, signer);
+    }
+    if (pop.from != null) {
+        const from = pop.from;
+        pop.from = Promise.all([
+            signer.getAddress(),
+            resolveAddress(from, signer)
+        ]).then(([address, from]) => {
+            assertArgument(address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
+            return address;
+        });
+    }
+    else {
+        pop.from = signer.getAddress();
+    }
+    return await resolveProperties(pop);
+}
 class AbstractSigner {
     provider;
     constructor(provider) {
         defineProperties(this, { provider: (provider || null) });
     }
-    #checkProvider(operation) {
-        if (this.provider) {
-            return this.provider;
-        }
-        assert$1(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
-    }
     async getNonce(blockTag) {
-        return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
-    }
-    async #populate(tx) {
-        let pop = copyRequest(tx);
-        if (pop.to != null) {
-            pop.to = resolveAddress(pop.to, this);
-        }
-        if (pop.from != null) {
-            const from = pop.from;
-            pop.from = Promise.all([
-                this.getAddress(),
-                resolveAddress(from, this)
-            ]).then(([address, from]) => {
-                assertArgument(address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
-                return address;
-            });
-        }
-        else {
-            pop.from = this.getAddress();
-        }
-        return await resolveProperties(pop);
+        return checkProvider(this, "getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
     async populateCall(tx) {
-        const pop = await this.#populate(tx);
+        const pop = await populate(this, tx);
         return pop;
     }
     async populateTransaction(tx) {
-        const provider = this.#checkProvider("populateTransaction");
-        const pop = await this.#populate(tx);
+        const provider = checkProvider(this, "populateTransaction");
+        const pop = await populate(this, tx);
         if (pop.nonce == null) {
             pop.nonce = await this.getNonce("pending");
         }
@@ -16517,17 +16461,17 @@ class AbstractSigner {
         return await resolveProperties(pop);
     }
     async estimateGas(tx) {
-        return this.#checkProvider("estimateGas").estimateGas(await this.populateCall(tx));
+        return checkProvider(this, "estimateGas").estimateGas(await this.populateCall(tx));
     }
     async call(tx) {
-        return this.#checkProvider("call").call(await this.populateCall(tx));
+        return checkProvider(this, "call").call(await this.populateCall(tx));
     }
     async resolveName(name) {
-        const provider = this.#checkProvider("resolveName");
+        const provider = checkProvider(this, "resolveName");
         return await provider.resolveName(name);
     }
     async sendTransaction(tx) {
-        const provider = this.#checkProvider("sendTransaction");
+        const provider = checkProvider(this, "sendTransaction");
         const pop = await this.populateTransaction(tx);
         delete pop.from;
         const txObj = Transaction.from(pop);
@@ -16555,49 +16499,6 @@ class VoidSigner extends AbstractSigner {
     }
     async signTypedData(domain, types, value) {
         this.#throwUnsupported("typed-data", "signTypedData");
-    }
-}
-class WrappedSigner extends AbstractSigner {
-    #signer;
-    constructor(signer) {
-        super(signer.provider);
-        this.#signer = signer;
-    }
-    async getAddress() {
-        return await this.#signer.getAddress();
-    }
-    connect(provider) {
-        return new WrappedSigner(this.#signer.connect(provider));
-    }
-    async getNonce(blockTag) {
-        return await this.#signer.getNonce(blockTag);
-    }
-    async populateCall(tx) {
-        return await this.#signer.populateCall(tx);
-    }
-    async populateTransaction(tx) {
-        return await this.#signer.populateTransaction(tx);
-    }
-    async estimateGas(tx) {
-        return await this.#signer.estimateGas(tx);
-    }
-    async call(tx) {
-        return await this.#signer.call(tx);
-    }
-    async resolveName(name) {
-        return this.#signer.resolveName(name);
-    }
-    async signTransaction(tx) {
-        return await this.#signer.signTransaction(tx);
-    }
-    async sendTransaction(tx) {
-        return await this.#signer.sendTransaction(tx);
-    }
-    async signMessage(message) {
-        return await this.#signer.signMessage(message);
-    }
-    async signTypedData(domain, types, value) {
-        return await this.#signer.signTypedData(domain, types, value);
     }
 }
 
@@ -17651,7 +17552,7 @@ function spelunkMessage(value) {
  *  @_subsection: api/providers/thirdparty:Ankr  [providers-ankr]
  */
 const defaultApiKey$1 = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
-function getHost$3(name) {
+function getHost$4(name) {
     switch (name) {
         case "mainnet":
             return "rpc.ankr.com/eth";
@@ -17713,7 +17614,7 @@ class AnkrProvider extends JsonRpcProvider {
         if (apiKey == null) {
             apiKey = defaultApiKey$1;
         }
-        const request = new FetchRequest(`https:/\/${getHost$3(network.name)}/${apiKey}`);
+        const request = new FetchRequest(`https:/\/${getHost$4(network.name)}/${apiKey}`);
         request.allowGzip = true;
         if (apiKey === defaultApiKey$1) {
             request.retryFunc = async (request, response, attempt) => {
@@ -17742,7 +17643,7 @@ class AnkrProvider extends JsonRpcProvider {
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
-function getHost$2(name) {
+function getHost$3(name) {
     switch (name) {
         case "mainnet":
             return "eth-mainnet.alchemyapi.io";
@@ -17834,7 +17735,7 @@ class AlchemyProvider extends JsonRpcProvider {
         if (apiKey == null) {
             apiKey = defaultApiKey;
         }
-        const request = new FetchRequest(`https:/\/${getHost$2(network.name)}/v2/${apiKey}`);
+        const request = new FetchRequest(`https:/\/${getHost$3(network.name)}/v2/${apiKey}`);
         request.allowGzip = true;
         if (apiKey === defaultApiKey) {
             request.retryFunc = async (request, response, attempt) => {
@@ -17866,7 +17767,10 @@ class CloudflareProvider extends JsonRpcProvider {
 }
 
 const THROTTLE = 2000;
-const EtherscanPluginId = "org.ethers.plugins.Etherscan";
+function isPromise(value) {
+    return (value && typeof (value.then) === "function");
+}
+const EtherscanPluginId = "org.ethers.plugins.provider.Etherscan";
 /**
  *  A Network can include an **EtherscanPlugin** to provide
  *  a custom base URL.
@@ -17901,7 +17805,7 @@ let nextId = 1;
  *
  *  @_docloc: api/providers/thirdparty:Etherscan
  */
-class BaseEtherscanProvider extends AbstractProvider {
+class EtherscanProvider extends AbstractProvider {
     /**
      *  The connected network.
      */
@@ -18319,43 +18223,6 @@ class BaseEtherscanProvider extends AbstractProvider {
         }
         return parseFloat((await this.fetch("stats", { action: "ethprice" })).ethusd);
     }
-    isCommunityResource() {
-        return (this.apiKey == null);
-    }
-}
-
-/**
- *  [[link-etherscan]] provides a third-party service for connecting to
- *  various blockchains over a combination of JSON-RPC and custom API
- *  endpoints.
- *
- *  **Supported Networks**
- *
- *  - Ethereum Mainnet (``mainnet``)
- *  - Goerli Testnet (``goerli``)
- *  - Sepolia Testnet (``sepolia``)
- *  - Arbitrum (``arbitrum``)
- *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
- *  - Optimism (``optimism``)
- *  - Optimism Goerli Testnet (``optimism-goerli``)
- *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
- *
- *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
- */
-function isPromise(value) {
-    return (value && typeof (value.then) === "function");
-}
-/**
- *  The **EtherscanProvider** connects to the [[link-etherscan]]
- *  JSON-RPC end-points.
- *
- *  By default, requests are highly-throttled, which is
- *  appropriate for quick prototypes and simple scripts. To
- *  gain access to an increased rate-limit, it is highly
- *  recommended to [sign up here](link-etherscan-signup).
- */
-class EtherscanProvider extends BaseEtherscanProvider {
     /**
      *  Resolves to a [Contract]] for %%address%%, using the
      *  Etherscan API to retreive the Contract ABI.
@@ -18366,13 +18233,18 @@ class EtherscanProvider extends BaseEtherscanProvider {
             address = await address;
         }
         try {
-            const resp = await this.fetch("contract", { action: "getabi", address });
+            const resp = await this.fetch("contract", {
+                action: "getabi", address
+            });
             const abi = JSON.parse(resp);
             return new Contract(address, abi, this);
         }
         catch (error) {
             return null;
         }
+    }
+    isCommunityResource() {
+        return (this.apiKey == null);
     }
 }
 
@@ -18700,7 +18572,7 @@ class WebSocketProvider extends SocketProvider {
  *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
  */
 const defaultProjectId = "84842078b09946638c03157f83405213";
-function getHost$1(name) {
+function getHost$2(name) {
     switch (name) {
         case "mainnet":
             return "mainnet.infura.io";
@@ -18828,7 +18700,7 @@ class InfuraProvider extends JsonRpcProvider {
         if (projectSecret == null) {
             projectSecret = null;
         }
-        const request = new FetchRequest(`https:/\/${getHost$1(network.name)}/v3/${projectId}`);
+        const request = new FetchRequest(`https:/\/${getHost$2(network.name)}/v3/${projectId}`);
         request.allowGzip = true;
         if (projectSecret) {
             request.setCredentials("", projectSecret);
@@ -18861,7 +18733,7 @@ class InfuraProvider extends JsonRpcProvider {
  *  @_subsection: api/providers/thirdparty:QuickNode  [providers-quicknode]
  */
 const defaultToken = "919b412a057b5e9c9b6dce193c5a60242d6efadb";
-function getHost(name) {
+function getHost$1(name) {
     switch (name) {
         case "mainnet":
             return "ethers.quiknode.pro";
@@ -18931,7 +18803,7 @@ class QuickNodeProvider extends JsonRpcProvider {
         if (token == null) {
             token = defaultToken;
         }
-        const request = new FetchRequest(`https:/\/${getHost(network.name)}/${token}`);
+        const request = new FetchRequest(`https:/\/${getHost$1(network.name)}/${token}`);
         request.allowGzip = true;
         //if (projectSecret) { request.setCredentials("", projectSecret); }
         if (token === defaultToken) {
@@ -19553,6 +19425,58 @@ function getDefaultProvider(network, options) {
     return new FallbackProvider(providers);
 }
 
+class NonceManager extends AbstractSigner {
+    signer;
+    #noncePromise;
+    #delta;
+    constructor(signer) {
+        super(signer.provider);
+        defineProperties(this, { signer });
+        this.#noncePromise = null;
+        this.#delta = 0;
+    }
+    async getAddress() {
+        return this.signer.getAddress();
+    }
+    connect(provider) {
+        return new NonceManager(this.signer.connect(provider));
+    }
+    async getNonce(blockTag) {
+        if (blockTag === "pending") {
+            if (this.#noncePromise == null) {
+                this.#noncePromise = super.getNonce("pending");
+            }
+            return (await this.#noncePromise) + this.#delta;
+        }
+        return super.getNonce(blockTag);
+    }
+    increment() {
+        this.#delta++;
+    }
+    reset() {
+        this.#delta = 0;
+        this.#noncePromise = null;
+    }
+    async sendTransaction(tx) {
+        const noncePromise = this.getNonce("pending");
+        this.increment();
+        tx = await this.signer.populateTransaction(tx);
+        tx.nonce = await noncePromise;
+        // @TODO: Maybe handle interesting/recoverable errors?
+        // Like don't increment if the tx was certainly not sent
+        return await this.signer.sendTransaction(tx);
+    }
+    signTransaction(tx) {
+        return this.signer.signTransaction(tx);
+    }
+    signMessage(message) {
+        return this.signer.signMessage(message);
+    }
+    signTypedData(domain, types, value) {
+        return this.signer.signTypedData(domain, types, value);
+    }
+}
+
 ;
 class BrowserProvider extends JsonRpcApiPollingProvider {
     #request;
@@ -19634,6 +19558,107 @@ class BrowserProvider extends JsonRpcApiPollingProvider {
             }
         }
         return await super.getSigner(address);
+    }
+}
+
+/**
+ *  [[link-pocket]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Polygon (``matic``)
+ *  - Arbitrum (``arbitrum``)
+ *
+ *  @_subsection: api/providers/thirdparty:Pocket  [providers-pocket]
+ */
+const defaultApplicationId = "62e1ad51b37b8e00394bda3b";
+function getHost(name) {
+    switch (name) {
+        case "mainnet":
+            return "eth-mainnet.gateway.pokt.network";
+        case "goerli":
+            return "eth-goerli.gateway.pokt.network";
+        case "matic":
+            return "poly-mainnet.gateway.pokt.network";
+        case "maticmum":
+            return "polygon-mumbai-rpc.gateway.pokt.network";
+    }
+    assertArgument(false, "unsupported network", "network", name);
+}
+/**
+ *  The **PocketProvider** connects to the [[link-pocket]]
+ *  JSON-RPC end-points.
+ *
+ *  By default, a highly-throttled API key is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-pocket-signup).
+ */
+class PocketProvider extends JsonRpcProvider {
+    /**
+     *  The Application ID for the Pocket connection.
+     */
+    applicationId;
+    /**
+     *  The Application Secret for making authenticated requests
+     *  to the Pocket connection.
+     */
+    applicationSecret;
+    /**
+     *  Create a new **PocketProvider**.
+     *
+     *  By default connecting to ``mainnet`` with a highly throttled
+     *  API key.
+     */
+    constructor(_network, applicationId, applicationSecret) {
+        if (_network == null) {
+            _network = "mainnet";
+        }
+        const network = Network.from(_network);
+        if (applicationId == null) {
+            applicationId = defaultApplicationId;
+        }
+        if (applicationSecret == null) {
+            applicationSecret = null;
+        }
+        const options = { staticNetwork: network };
+        const request = PocketProvider.getRequest(network, applicationId, applicationSecret);
+        super(request, network, options);
+        defineProperties(this, { applicationId, applicationSecret });
+    }
+    _getProvider(chainId) {
+        try {
+            return new PocketProvider(chainId, this.applicationId, this.applicationSecret);
+        }
+        catch (error) { }
+        return super._getProvider(chainId);
+    }
+    /**
+     *  Returns a prepared request for connecting to %%network%% with
+     *  %%applicationId%%.
+     */
+    static getRequest(network, applicationId, applicationSecret) {
+        if (applicationId == null) {
+            applicationId = defaultApplicationId;
+        }
+        const request = new FetchRequest(`https:/\/${getHost(network.name)}/v1/lb/${applicationId}`);
+        request.allowGzip = true;
+        if (applicationSecret) {
+            request.setCredentials("", applicationSecret);
+        }
+        if (applicationId === defaultApplicationId) {
+            request.retryFunc = async (request, response, attempt) => {
+                showThrottleMessage("PocketProvider");
+                return true;
+            };
+        }
+        return request;
+    }
+    isCommunityResource() {
+        return (this.applicationId === defaultApplicationId);
     }
 }
 
@@ -21912,6 +21937,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     TransactionReceipt: TransactionReceipt,
     TransactionResponse: TransactionResponse,
     AbstractSigner: AbstractSigner,
+    NonceManager: NonceManager,
     VoidSigner: VoidSigner,
     AbstractProvider: AbstractProvider,
     FallbackProvider: FallbackProvider,
@@ -21924,6 +21950,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     CloudflareProvider: CloudflareProvider,
     EtherscanProvider: EtherscanProvider,
     InfuraProvider: InfuraProvider,
+    PocketProvider: PocketProvider,
     QuickNodeProvider: QuickNodeProvider,
     IpcSocketProvider: IpcSocketProvider,
     SocketProvider: SocketProvider,
@@ -22011,5 +22038,5 @@ var ethers = /*#__PURE__*/Object.freeze({
  *  @_navTitle: API
  */
 
-export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, EnsResolver, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FeeData, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, Network, ParamType, QuickNodeProvider, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, verifyMessage, version, zeroPadBytes, zeroPadValue };
+export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, EnsResolver, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FeeData, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, Network, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, verifyMessage, version, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map

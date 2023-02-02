@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert_1 = __importDefault(require("assert"));
 const create_provider_js_1 = require("./create-provider.js");
+(0, create_provider_js_1.setupProviders)();
 describe("Test EIP-2544 ENS wildcards", function () {
     const provider = (0, create_provider_js_1.connect)("goerli");
     it("Resolves recursively", async function () {

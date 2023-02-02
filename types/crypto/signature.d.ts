@@ -1,5 +1,5 @@
 import type { BigNumberish, BytesLike } from "../utils/index.js";
-export declare type SignatureLike = Signature | string | {
+export type SignatureLike = Signature | string | {
     r: string;
     s: string;
     v: BigNumberish;

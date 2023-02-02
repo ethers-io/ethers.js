@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WrappedSigner = exports.VoidSigner = exports.AbstractSigner = void 0;
+exports.VoidSigner = exports.AbstractSigner = void 0;
 /**
  *  About Abstract Signer and subclassing
  *
@@ -10,47 +10,47 @@ const index_js_1 = require("../address/index.js");
 const index_js_2 = require("../transaction/index.js");
 const index_js_3 = require("../utils/index.js");
 const provider_js_1 = require("./provider.js");
+function checkProvider(signer, operation) {
+    if (signer.provider) {
+        return signer.provider;
+    }
+    (0, index_js_3.assert)(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
+}
+async function populate(signer, tx) {
+    let pop = (0, provider_js_1.copyRequest)(tx);
+    if (pop.to != null) {
+        pop.to = (0, index_js_1.resolveAddress)(pop.to, signer);
+    }
+    if (pop.from != null) {
+        const from = pop.from;
+        pop.from = Promise.all([
+            signer.getAddress(),
+            (0, index_js_1.resolveAddress)(from, signer)
+        ]).then(([address, from]) => {
+            (0, index_js_3.assertArgument)(address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
+            return address;
+        });
+    }
+    else {
+        pop.from = signer.getAddress();
+    }
+    return await (0, index_js_3.resolveProperties)(pop);
+}
 class AbstractSigner {
     provider;
     constructor(provider) {
         (0, index_js_3.defineProperties)(this, { provider: (provider || null) });
     }
-    #checkProvider(operation) {
-        if (this.provider) {
-            return this.provider;
-        }
-        (0, index_js_3.assert)(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
-    }
     async getNonce(blockTag) {
-        return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
-    }
-    async #populate(tx) {
-        let pop = (0, provider_js_1.copyRequest)(tx);
-        if (pop.to != null) {
-            pop.to = (0, index_js_1.resolveAddress)(pop.to, this);
-        }
-        if (pop.from != null) {
-            const from = pop.from;
-            pop.from = Promise.all([
-                this.getAddress(),
-                (0, index_js_1.resolveAddress)(from, this)
-            ]).then(([address, from]) => {
-                (0, index_js_3.assertArgument)(address.toLowerCase() === from.toLowerCase(), "transaction from mismatch", "tx.from", from);
-                return address;
-            });
-        }
-        else {
-            pop.from = this.getAddress();
-        }
-        return await (0, index_js_3.resolveProperties)(pop);
+        return checkProvider(this, "getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
     async populateCall(tx) {
-        const pop = await this.#populate(tx);
+        const pop = await populate(this, tx);
         return pop;
     }
     async populateTransaction(tx) {
-        const provider = this.#checkProvider("populateTransaction");
-        const pop = await this.#populate(tx);
+        const provider = checkProvider(this, "populateTransaction");
+        const pop = await populate(this, tx);
         if (pop.nonce == null) {
             pop.nonce = await this.getNonce("pending");
         }
@@ -154,17 +154,17 @@ class AbstractSigner {
         return await (0, index_js_3.resolveProperties)(pop);
     }
     async estimateGas(tx) {
-        return this.#checkProvider("estimateGas").estimateGas(await this.populateCall(tx));
+        return checkProvider(this, "estimateGas").estimateGas(await this.populateCall(tx));
     }
     async call(tx) {
-        return this.#checkProvider("call").call(await this.populateCall(tx));
+        return checkProvider(this, "call").call(await this.populateCall(tx));
     }
     async resolveName(name) {
-        const provider = this.#checkProvider("resolveName");
+        const provider = checkProvider(this, "resolveName");
         return await provider.resolveName(name);
     }
     async sendTransaction(tx) {
-        const provider = this.#checkProvider("sendTransaction");
+        const provider = checkProvider(this, "sendTransaction");
         const pop = await this.populateTransaction(tx);
         delete pop.from;
         const txObj = index_js_2.Transaction.from(pop);
@@ -196,48 +196,4 @@ class VoidSigner extends AbstractSigner {
     }
 }
 exports.VoidSigner = VoidSigner;
-class WrappedSigner extends AbstractSigner {
-    #signer;
-    constructor(signer) {
-        super(signer.provider);
-        this.#signer = signer;
-    }
-    async getAddress() {
-        return await this.#signer.getAddress();
-    }
-    connect(provider) {
-        return new WrappedSigner(this.#signer.connect(provider));
-    }
-    async getNonce(blockTag) {
-        return await this.#signer.getNonce(blockTag);
-    }
-    async populateCall(tx) {
-        return await this.#signer.populateCall(tx);
-    }
-    async populateTransaction(tx) {
-        return await this.#signer.populateTransaction(tx);
-    }
-    async estimateGas(tx) {
-        return await this.#signer.estimateGas(tx);
-    }
-    async call(tx) {
-        return await this.#signer.call(tx);
-    }
-    async resolveName(name) {
-        return this.#signer.resolveName(name);
-    }
-    async signTransaction(tx) {
-        return await this.#signer.signTransaction(tx);
-    }
-    async sendTransaction(tx) {
-        return await this.#signer.sendTransaction(tx);
-    }
-    async signMessage(message) {
-        return await this.#signer.signMessage(message);
-    }
-    async signTypedData(domain, types, value) {
-        return await this.#signer.signTypedData(domain, types, value);
-    }
-}
-exports.WrappedSigner = WrappedSigner;
 //# sourceMappingURL=abstract-signer.js.map

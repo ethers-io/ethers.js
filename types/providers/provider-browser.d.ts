@@ -7,7 +7,7 @@ export interface Eip1193Provider {
         params?: Array<any> | Record<string, any>;
     }): Promise<any>;
 }
-export declare type DebugEventBrowserProvider = {
+export type DebugEventBrowserProvider = {
     action: "sendEip1193Payload";
     payload: {
         method: string;

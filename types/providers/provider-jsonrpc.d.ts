@@ -16,7 +16,7 @@ import type { Signer } from "./signer.js";
 /**
  *  A JSON-RPC payload, which are sent to a JSON-RPC server.
  */
-export declare type JsonRpcPayload = {
+export type JsonRpcPayload = {
     id: number;
     method: string;
     params: Array<any> | Record<string, any>;
@@ -25,14 +25,14 @@ export declare type JsonRpcPayload = {
 /**
  *  A JSON-RPC result, which are returned on success from a JSON-RPC server.
  */
-export declare type JsonRpcResult = {
+export type JsonRpcResult = {
     id: number;
     result: any;
 };
 /**
  *  A JSON-RPC error, which are returned on failure from a JSON-RPC server.
  */
-export declare type JsonRpcError = {
+export type JsonRpcError = {
     id: number;
     error: {
         code: number;
@@ -44,7 +44,7 @@ export declare type JsonRpcError = {
  *  When subscribing to the ``"debug"`` event, the [[Listener]] will
  *  receive this object as the first parameter.
  */
-export declare type DebugEventJsonRpcApiProvider = {
+export type DebugEventJsonRpcApiProvider = {
     action: "sendRpcPayload";
     payload: JsonRpcPayload | Array<JsonRpcPayload>;
 } | {
@@ -83,7 +83,7 @@ export declare type DebugEventJsonRpcApiProvider = {
  *  **``batchMaxCount``** - maximum number of requests to allow in a batch.
  *  If ``batchMaxCount = 1``, then batching is disabled. (default: ``100``)
  */
-export declare type JsonRpcApiProviderOptions = {
+export type JsonRpcApiProviderOptions = {
     polling?: boolean;
     staticNetwork?: null | Network;
     batchStallTime?: number;

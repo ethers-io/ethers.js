@@ -1,5 +1,5 @@
 import { defineProperties } from "../utils/index.js";
-export const PluginIdFallbackProvider = "org.ethers.plugins.QualifiedPlugin";
+export const PluginIdFallbackProvider = "org.ethers.plugins.provider.QualifiedPlugin";
 export class CheckQualifiedPlugin {
     constructor() {
         defineProperties(this, { name: PluginIdFallbackProvider });

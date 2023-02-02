@@ -1,7 +1,7 @@
 import type { EventFragment, FunctionFragment, Result, Typed } from "../abi/index.js";
 import type { TransactionRequest, PreparedTransactionRequest, TopicFilter } from "../providers/index.js";
 import type { ContractTransactionResponse } from "./wrappers.js";
-export declare type ContractEventName = string | ContractEvent | TopicFilter | DeferredTopicFilter;
+export type ContractEventName = string | ContractEvent | TopicFilter | DeferredTopicFilter;
 export interface ContractInterface {
     [name: string]: BaseContractMethod;
 }
@@ -18,8 +18,8 @@ export interface ContractDeployTransaction extends Omit<ContractTransaction, "to
 }
 export interface Overrides extends Omit<TransactionRequest, "to" | "data"> {
 }
-export declare type PostfixOverrides<A extends Array<any>> = A | [...A, Overrides];
-export declare type ContractMethodArgs<A extends Array<any>> = PostfixOverrides<{
+export type PostfixOverrides<A extends Array<any>> = A | [...A, Overrides];
+export type ContractMethodArgs<A extends Array<any>> = PostfixOverrides<{
     [I in keyof A]-?: A[I] | Typed;
 }>;
 export interface BaseContractMethod<A extends Array<any> = Array<any>, R = any, D extends R | ContractTransactionResponse = R | ContractTransactionResponse> {
@@ -37,7 +37,7 @@ export interface ContractMethod<A extends Array<any> = Array<any>, R = any, D ex
 }
 export interface ConstantContractMethod<A extends Array<any>, R = any> extends ContractMethod<A, R, R> {
 }
-export declare type ContractEventArgs<A extends Array<any>> = {
+export type ContractEventArgs<A extends Array<any>> = {
     [I in keyof A]?: A[I] | Typed | null;
 };
 export interface ContractEvent<A extends Array<any> = Array<any>> {

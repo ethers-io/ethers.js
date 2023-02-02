@@ -8,7 +8,7 @@ export interface WebSocketLike {
     send(payload: any): void;
     close(code?: number, reason?: string): void;
 }
-export declare type WebSocketCreator = () => WebSocketLike;
+export type WebSocketCreator = () => WebSocketLike;
 export declare class WebSocketProvider extends SocketProvider {
     #private;
     get websocket(): WebSocketLike;

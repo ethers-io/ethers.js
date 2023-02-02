@@ -1,4 +1,4 @@
-"use strict";
+export {};
 /*
 import { defineProperties } from "@ethersproject/properties";
 export type EventCommon = "block" | "debug" | "blockObject";

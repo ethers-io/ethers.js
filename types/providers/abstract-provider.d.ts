@@ -13,7 +13,7 @@ import type { Listener } from "../utils/index.js";
 import type { Networkish } from "./network.js";
 import type { BlockParams, LogParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
 import type { BlockTag, EventFilter, Filter, FilterByBlockHash, OrphanFilter, PreparedTransactionRequest, Provider, ProviderEvent, TransactionRequest } from "./provider.js";
-export declare type DebugEventAbstractProvider = {
+export type DebugEventAbstractProvider = {
     action: "sendCcipReadFetchRequest";
     request: FetchRequest;
     index: number;
@@ -47,7 +47,7 @@ export declare type DebugEventAbstractProvider = {
     };
     error: Error;
 };
-export declare type Subscription = {
+export type Subscription = {
     type: "block" | "close" | "debug" | "network" | "pending";
     tag: string;
 } | {
@@ -82,7 +82,7 @@ export interface AbstractProviderPlugin {
     readonly name: string;
     connect(provider: AbstractProvider): AbstractProviderPlugin;
 }
-export declare type PerformActionFilter = {
+export type PerformActionFilter = {
     address?: string | Array<string>;
     topics?: Array<null | string | Array<string>>;
     fromBlock?: BlockTag;
@@ -96,7 +96,7 @@ export interface PerformActionTransaction extends PreparedTransactionRequest {
     to?: string;
     from?: string;
 }
-export declare type PerformActionRequest = {
+export type PerformActionRequest = {
     method: "broadcastTransaction";
     signedTransaction: string;
 } | {

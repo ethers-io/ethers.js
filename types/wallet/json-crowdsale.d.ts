@@ -5,7 +5,7 @@
  *  The data stored within a JSON Crowdsale wallet is fairly
  *  minimal.
  */
-export declare type CrowdsaleAccount = {
+export type CrowdsaleAccount = {
     privateKey: string;
     address: string;
 };

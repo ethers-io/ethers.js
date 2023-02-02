@@ -1,36 +1,36 @@
-export declare type GetUrlResponse = {
+export type GetUrlResponse = {
     statusCode: number;
     statusMessage: string;
     headers: Record<string, string>;
     body: null | Uint8Array;
 };
-export declare type FetchThrottleParams = {
+export type FetchThrottleParams = {
     maxAttempts?: number;
     slotInterval?: number;
 };
 /**
  *  Called before any network request, allowing updated headers (e.g. Bearer tokens), etc.
  */
-export declare type FetchPreflightFunc = (req: FetchRequest) => Promise<FetchRequest>;
+export type FetchPreflightFunc = (req: FetchRequest) => Promise<FetchRequest>;
 /**
  *  Called on the response, allowing client-based throttling logic or post-processing.
  */
-export declare type FetchProcessFunc = (req: FetchRequest, resp: FetchResponse) => Promise<FetchResponse>;
+export type FetchProcessFunc = (req: FetchRequest, resp: FetchResponse) => Promise<FetchResponse>;
 /**
  *  Called prior to each retry; return true to retry, false to abort.
  */
-export declare type FetchRetryFunc = (req: FetchRequest, resp: FetchResponse, attempt: number) => Promise<boolean>;
+export type FetchRetryFunc = (req: FetchRequest, resp: FetchResponse, attempt: number) => Promise<boolean>;
 /**
  *  Called on Gateway URLs.
  */
-export declare type FetchGatewayFunc = (url: string, signal?: FetchCancelSignal) => Promise<FetchRequest | FetchResponse>;
+export type FetchGatewayFunc = (url: string, signal?: FetchCancelSignal) => Promise<FetchRequest | FetchResponse>;
 /**
  *  Used to perform a fetch; use this to override the underlying network
  *  fetch layer. In NodeJS, the default uses the "http" and "https" libraries
  *  and in the browser ``fetch`` is used. If you wish to use Axios, this is
  *  how you would register it.
  */
-export declare type FetchGetUrlFunc = (req: FetchRequest, signal?: FetchCancelSignal) => Promise<GetUrlResponse>;
+export type FetchGetUrlFunc = (req: FetchRequest, signal?: FetchCancelSignal) => Promise<GetUrlResponse>;
 /**
  *  @_ignore
  */
