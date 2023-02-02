@@ -69,8 +69,7 @@ export {
     BrowserProvider,
 
     AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider,
-    InfuraProvider, QuickNodeProvider,
-    //PocketProvider } from "./provider-pocket.js";
+    InfuraProvider, PocketProvider, QuickNodeProvider,
 
     IpcSocketProvider, SocketProvider, WebSocketProvider,
 

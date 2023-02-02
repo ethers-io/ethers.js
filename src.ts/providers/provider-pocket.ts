@@ -1,99 +1,121 @@
-/*
-import { defineProperties } from "../utils/properties.js";
-import { FetchRequest } from "../web/index.js";
+/**
+ *  [[link-pocket]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Polygon (``matic``)
+ *  - Arbitrum (``arbitrum``)
+ *
+ *  @_subsection: api/providers/thirdparty:Pocket  [providers-pocket]
+ */
+import {
+    defineProperties, FetchRequest, assertArgument
+} from "../utils/index.js";
 
+import { AbstractProvider } from "./abstract-provider.js";
 import { showThrottleMessage } from "./community.js";
-import { logger } from "../utils/logger.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
-
-import type { ConnectionInfo, ThrottleRetryFunc } from "../web/index.js";
 
 import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
 
-
-
-// These are load-balancer-based application IDs
-const defaultAppIds: Record<string, string> = {
-    homestead: "6004bcd10040261633ade990",
-    ropsten: "6004bd4d0040261633ade991",
-    rinkeby: "6004bda20040261633ade994",
-    goerli: "6004bd860040261633ade992",
-};
+const defaultApplicationId = "62e1ad51b37b8e00394bda3b";
 
 function getHost(name: string): string {
-    switch(name) {
-        case "homestead":
-            return "eth-mainnet.gateway.pokt.network";
-        case "ropsten":
-            return "eth-ropsten.gateway.pokt.network";
-        case "rinkeby":
-            return "eth-rinkeby.gateway.pokt.network";
+    switch (name) {
+        case "mainnet":
+            return  "eth-mainnet.gateway.pokt.network";
         case "goerli":
             return "eth-goerli.gateway.pokt.network";
+
+        case "matic":
+            return "poly-mainnet.gateway.pokt.network";
+        case "maticmum":
+            return "polygon-mumbai-rpc.gateway.pokt.network";
     }
 
-    return logger.throwArgumentError("unsupported network", "network", name);
+    assertArgument(false, "unsupported network", "network", name);
 }
 
-function normalizeApiKey(network: Network, _appId?: null | string, applicationSecretKey?: null | string, loadBalancer?: boolean): { applicationId: string, applicationSecretKey: null | string, loadBalancer: boolean, community: boolean } {
-    loadBalancer = !!loadBalancer;
 
-    let community = false;
-    let applicationId = _appId;
-    if (applicationId == null) {
-        applicationId = defaultAppIds[network.name];
-        if (applicationId == null) {
-            logger.throwArgumentError("network does not support default applicationId", "applicationId", _appId);
-        }
-        loadBalancer = true;
-        community = true;
-    } else if (applicationId === defaultAppIds[network.name]) {
-        loadBalancer = true;
-        community = true;
-    }
-    if (applicationSecretKey == null) { applicationSecretKey = null; }
-
-    return { applicationId, applicationSecretKey, community, loadBalancer };
-}
-
+/**
+ *  The **PocketProvider** connects to the [[link-pocket]]
+ *  JSON-RPC end-points.
+ *
+ *  By default, a highly-throttled API key is used, which is
+ *  appropriate for quick prototypes and simple scripts. To
+ *  gain access to an increased rate-limit, it is highly
+ *  recommended to [sign up here](link-pocket-signup).
+ */
 export class PocketProvider extends JsonRpcProvider implements CommunityResourcable {
+
+    /**
+     *  The Application ID for the Pocket connection.
+     */
     readonly applicationId!: string;
-    readonly applicationSecretKey!: null | string;
-    readonly loadBalancer!: boolean;
 
-    constructor(_network: Networkish = "homestead", _appId?: null | string, _secretKey?: null | string, _loadBalancer?: boolean) {
+    /**
+     *  The Application Secret for making authenticated requests
+     *  to the Pocket connection.
+     */
+    readonly applicationSecret!: null | string;
+
+    /**
+     *  Create a new **PocketProvider**.
+     *
+     *  By default connecting to ``mainnet`` with a highly throttled
+     *  API key.
+     */
+    constructor(_network?: Networkish, applicationId?: null | string, applicationSecret?: null | string) {
+        if (_network == null) { _network = "mainnet"; }
         const network = Network.from(_network);
-        const { applicationId, applicationSecretKey, loadBalancer } = normalizeApiKey(network, _appId, _secretKey, _loadBalancer);
+        if (applicationId == null) { applicationId = defaultApplicationId; }
+        if (applicationSecret == null) { applicationSecret = null; }
 
-        const connection = PocketProvider.getConnection(network, applicationId, applicationSecretKey, loadBalancer);
-        super(connection, network, { staticNetwork: network });
+        const options = { staticNetwork: network };
 
-        defineProperties<PocketProvider>(this, { applicationId, applicationSecretKey, loadBalancer });
+        const request = PocketProvider.getRequest(network, applicationId, applicationSecret);
+        super(request, network, options);
+
+        defineProperties<PocketProvider>(this, { applicationId, applicationSecret });
     }
 
-    static getConnection(network: Network, _appId?: null | string, _secretKey?: null | string, _loadBalancer?: boolean): ConnectionInfo {
-        const { applicationId, applicationSecretKey, community, loadBalancer } = normalizeApiKey(network, _appId, _secretKey, _loadBalancer);
+    _getProvider(chainId: number): AbstractProvider {
+        try {
+            return new PocketProvider(chainId, this.applicationId, this.applicationSecret);
+        } catch (error) { }
+        return super._getProvider(chainId);
+    }
 
-        let url = `https:/\/${ getHost(network.name) }/v1/`;
-        if (loadBalancer) { url += "lb/"; }
-        url += applicationId;
+    /**
+     *  Returns a prepared request for connecting to %%network%% with
+     *  %%applicationId%%.
+     */
+    static getRequest(network: Network, applicationId?: null | string, applicationSecret?: null | string): FetchRequest {
+        if (applicationId == null) { applicationId = defaultApplicationId; }
 
-        const request = new FetchRequest(url);
+        const request = new FetchRequest(`https:/\/${ getHost(network.name) }/v1/lb/${ applicationId }`);
         request.allowGzip = true;
-        if (applicationSecretKey) { request.setCredentials("", applicationSecretKey); }
 
-        const throttleRetry: ThrottleRetryFunc = async (request, response, attempt) => {
-            if (community) { showThrottleMessage("PocketProvider"); }
-            return true;
-        };
+        if (applicationSecret) {
+            request.setCredentials("", applicationSecret);
+        }
 
-        return { request, throttleRetry };
+        if (applicationId === defaultApplicationId) {
+            request.retryFunc = async (request, response, attempt) => {
+                showThrottleMessage("PocketProvider");
+                return true;
+            };
+        }
+
+        return request;
     }
 
     isCommunityResource(): boolean {
-        return (this.applicationId === defaultAppIds[this.network.name]);
+        return (this.applicationId === defaultApplicationId);
     }
 }
-*/
