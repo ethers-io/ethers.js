@@ -21,6 +21,34 @@ import type {
 import type { Signer } from "./signer.js";
 
 
+function checkProvider(signer: AbstractSigner, operation: string): Provider {
+    if (signer.provider) { return signer.provider; }
+    assert(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
+}
+
+async function populate(signer: AbstractSigner, tx: TransactionRequest): Promise<TransactionLike<string>> {
+    let pop: any = copyRequest(tx);
+
+    if (pop.to != null) { pop.to = resolveAddress(pop.to, signer); }
+
+    if (pop.from != null) {
+        const from = pop.from;
+        pop.from = Promise.all([
+            signer.getAddress(),
+            resolveAddress(from, signer)
+        ]).then(([ address, from ]) => {
+            assertArgument(address.toLowerCase() === from.toLowerCase(),
+                "transaction from mismatch", "tx.from", from);
+            return address;
+        });
+    } else {
+        pop.from = signer.getAddress();
+    }
+
+    return await resolveProperties(pop);
+}
+
+
 export abstract class AbstractSigner<P extends null | Provider = null | Provider> implements Signer {
     readonly provider!: P;
 
@@ -31,46 +59,19 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
     abstract getAddress(): Promise<string>;
     abstract connect(provider: null | Provider): Signer;
 
-    #checkProvider(operation: string): Provider {
-        if (this.provider) { return this.provider; }
-        assert(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
-    }
-
     async getNonce(blockTag?: BlockTag): Promise<number> {
-        return this.#checkProvider("getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
-    }
-
-    async #populate(tx: TransactionRequest): Promise<TransactionLike<string>> {
-        let pop: any = copyRequest(tx);
-
-        if (pop.to != null) { pop.to = resolveAddress(pop.to, this); }
-
-        if (pop.from != null) {
-            const from = pop.from;
-            pop.from = Promise.all([
-                this.getAddress(),
-                resolveAddress(from, this)
-            ]).then(([ address, from ]) => {
-                assertArgument(address.toLowerCase() === from.toLowerCase(),
-                    "transaction from mismatch", "tx.from", from);
-                return address;
-            });
-        } else {
-            pop.from = this.getAddress();
-        }
-
-        return await resolveProperties(pop);
+        return checkProvider(this, "getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
 
     async populateCall(tx: TransactionRequest): Promise<TransactionLike<string>> {
-        const pop = await this.#populate(tx);
+        const pop = await populate(this, tx);
         return pop;
     }
 
     async populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>> {
-        const provider = this.#checkProvider("populateTransaction");
+        const provider = checkProvider(this, "populateTransaction");
 
-        const pop = await this.#populate(tx);
+        const pop = await populate(this, tx);
 
         if (pop.nonce == null) {
             pop.nonce = await this.getNonce("pending");
@@ -189,20 +190,20 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
     }
 
     async estimateGas(tx: TransactionRequest): Promise<bigint> {
-        return this.#checkProvider("estimateGas").estimateGas(await this.populateCall(tx));
+        return checkProvider(this, "estimateGas").estimateGas(await this.populateCall(tx));
     }
 
     async call(tx: TransactionRequest): Promise<string> {
-        return this.#checkProvider("call").call(await this.populateCall(tx));
+        return checkProvider(this, "call").call(await this.populateCall(tx));
     }
 
     async resolveName(name: string): Promise<null | string> {
-        const provider = this.#checkProvider("resolveName");
+        const provider = checkProvider(this, "resolveName");
         return await provider.resolveName(name);
     }
 
     async sendTransaction(tx: TransactionRequest): Promise<TransactionResponse> {
-        const provider = this.#checkProvider("sendTransaction");
+        const provider = checkProvider(this, "sendTransaction");
 
         const pop = await this.populateTransaction(tx);
         delete pop.from;
@@ -246,59 +247,3 @@ export class VoidSigner extends AbstractSigner {
     }
 }
 
-export class WrappedSigner extends AbstractSigner {
-    #signer: Signer;
-
-    constructor(signer: Signer) {
-        super(signer.provider);
-        this.#signer = signer;
-    }
-
-    async getAddress(): Promise<string> {
-        return await this.#signer.getAddress();
-    }
-
-    connect(provider: null | Provider): WrappedSigner {
-        return new WrappedSigner(this.#signer.connect(provider));
-    }
-
-    async getNonce(blockTag?: BlockTag): Promise<number> {
-        return await this.#signer.getNonce(blockTag);
-    }
-
-    async populateCall(tx: TransactionRequest): Promise<TransactionLike<string>> {
-        return await this.#signer.populateCall(tx);
-    }
-
-    async populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>> {
-        return await this.#signer.populateTransaction(tx);
-    }
-
-    async estimateGas(tx: TransactionRequest): Promise<bigint> {
-        return await this.#signer.estimateGas(tx);
-    }
-
-    async call(tx: TransactionRequest): Promise<string> {
-        return await this.#signer.call(tx);
-    }
-
-    async resolveName(name: string): Promise<null | string> {
-        return this.#signer.resolveName(name);
-    }
-
-    async signTransaction(tx: TransactionRequest): Promise<string> {
-        return await this.#signer.signTransaction(tx);
-    }
-
-    async sendTransaction(tx: TransactionRequest): Promise<TransactionResponse> {
-        return await this.#signer.sendTransaction(tx);
-    }
-
-    async signMessage(message: string | Uint8Array): Promise<string> {
-        return await this.#signer.signMessage(message);
-    }
-
-    async signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string> {
-        return await this.#signer.signTypedData(domain, types, value);
-    }
-}
