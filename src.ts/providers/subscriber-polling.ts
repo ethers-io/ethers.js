@@ -28,7 +28,7 @@ export function getPollingSubscriber(provider: AbstractProvider, event: Provider
  *
  *  @_docloc: api/providers/abstract-provider
  */
-export class PollingBlockSubscriber implements Subscriber{
+export class PollingBlockSubscriber implements Subscriber {
     #provider: AbstractProvider;
     #poller: null | number;
 
@@ -56,6 +56,9 @@ export class PollingBlockSubscriber implements Subscriber{
             return;
         }
 
+        // We have been stopped
+        if (this.#poller == null) { return; }
+
         // @TODO: Put a cap on the maximum number of events per loop?
 
         if (blockNumber !== this.#blockNumber) {
@@ -71,8 +74,8 @@ export class PollingBlockSubscriber implements Subscriber{
 
     start(): void {
         if (this.#poller) { throw new Error("subscriber already running"); }
-        this.#poll();
         this.#poller = this.#provider._setTimeout(this.#poll.bind(this), this.#interval);
+        this.#poll();
     }
 
     stop(): void {

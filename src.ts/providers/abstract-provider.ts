@@ -375,7 +375,7 @@ export class AbstractProvider implements Provider {
         this.#plugins = new Map();
         this.#pausedState = null;
 
-        this.#nextTimer = 0;
+        this.#nextTimer = 1;
         this.#timers = new Map();
 
         this.#disableCcipRead = false;
@@ -1161,7 +1161,9 @@ export class AbstractProvider implements Provider {
 
     async emit(event: ProviderEvent, ...args: Array<any>): Promise<boolean> {
         const sub = await this.#hasSub(event, args);
-        if (!sub) { return false; };
+        // If there is not subscription or if a recent emit removed
+        // the last of them (which also deleted the sub) do nothing
+        if (!sub || sub.listeners.length === 0) { return false; };
 
         const count = sub.listeners.length;
         sub.listeners = sub.listeners.filter(({ listener, once }) => {
