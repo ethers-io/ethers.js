@@ -48,7 +48,7 @@ export type DebugEventEtherscanProvider = {
     error: any
 };
 
-const EtherscanPluginId = "org.ethers.plugins.Etherscan";
+const EtherscanPluginId = "org.ethers.plugins.provider.Etherscan";
 
 /**
  *  A Network can include an **EtherscanPlugin** to provide

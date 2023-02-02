@@ -143,7 +143,7 @@ export class Network {
     }
 
     computeIntrinsicGas(tx: TransactionLike): number {
-        const costs = this.getPlugin<GasCostPlugin>("org.ethers.gas-cost") || (new GasCostPlugin());
+        const costs = this.getPlugin<GasCostPlugin>("org.ethers.plugins.network.GasCost") || (new GasCostPlugin());
 
         let gas = costs.txBase;
         if (tx.to == null) { gas += costs.txCreate; }

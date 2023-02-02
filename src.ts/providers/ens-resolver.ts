@@ -94,7 +94,7 @@ export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin 
     }
 }
 
-const BasicMulticoinPluginId = "org.ethers.plugins.BasicMulticoin";
+const BasicMulticoinPluginId = "org.ethers.plugins.provider.BasicMulticoin";
 
 /**
  *  A basic multicoin provider plugin.
@@ -492,7 +492,7 @@ export class EnsResolver {
     static async getEnsAddress(provider: Provider): Promise<string> {
         const network = await provider.getNetwork();
 
-        const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.network-plugins.ens");
+        const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.plugins.network.Ens");
 
         // No ENS...
         assert(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
@@ -502,16 +502,10 @@ export class EnsResolver {
     }
 
     static async #getResolver(provider: Provider, name: string): Promise<null | string> {
-        const network = await provider.getNetwork();
-
-        const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.network-plugins.ens");
-
-        // No ENS...
-        assert(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
-            operation: "getResolver", info: { network: network.name } });
+        const ensAddr = await EnsResolver.getEnsAddress(provider);
 
         try {
-            const contract = new Contract(ensPlugin.address, [
+            const contract = new Contract(ensAddr, [
                 "function resolver(bytes32) view returns (address)"
             ], provider);
 

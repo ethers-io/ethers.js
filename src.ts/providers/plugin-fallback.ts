@@ -5,7 +5,7 @@ import { defineProperties } from "../utils/index.js";
 import type { AbstractProvider, PerformActionRequest } from "./abstract-provider.js";
 
 
-export const PluginIdFallbackProvider = "org.ethers.plugins.QualifiedPlugin";
+export const PluginIdFallbackProvider = "org.ethers.plugins.provider.QualifiedPlugin";
 
 export class CheckQualifiedPlugin implements AbstractProviderPlugin {
     declare name: string;

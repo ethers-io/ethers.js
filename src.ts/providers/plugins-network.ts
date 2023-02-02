@@ -50,7 +50,7 @@ export class GasCostPlugin extends NetworkPlugin implements GasCostParameters {
 
     constructor(effectiveBlock?: number, costs?: GasCostParameters) {
         if (effectiveBlock == null) { effectiveBlock = 0; }
-        super(`org.ethers.network-plugins.gas-cost#${ (effectiveBlock || 0) }`);
+        super(`org.ethers.network.plugins.GasCost#${ (effectiveBlock || 0) }`);
 
         const props: Record<string, number> = { effectiveBlock };
         function set(name: keyof GasCostParameters, nullish: number): void {
@@ -86,7 +86,7 @@ export class EnsPlugin extends NetworkPlugin {
     readonly targetNetwork!: number;
 
     constructor(address?: null | string, targetNetwork?: null | number) {
-        super("org.ethers.network-plugins.ens");
+        super("org.ethers.plugins.network.Ens");
         defineProperties<EnsPlugin>(this, {
             address: (address || EnsAddress),
             targetNetwork: ((targetNetwork == null) ? 1: targetNetwork)
@@ -96,39 +96,17 @@ export class EnsPlugin extends NetworkPlugin {
     clone(): EnsPlugin {
         return new EnsPlugin(this.address, this.targetNetwork);
     }
-
-//    validate(network: Network): this {
-//        network.formatter.address(this.address);
-//        return this;
-//    }
 }
-/*
-export class MaxPriorityFeePlugin extends NetworkPlugin {
-    readonly priorityFee!: bigint;
 
-    constructor(priorityFee: BigNumberish) {
-        super("org.ethers.plugins.max-priority-fee");
-        defineProperties<MaxPriorityFeePlugin>(this, {
-            priorityFee: logger.getBigInt(priorityFee)
-        });
-    }
-
-    async getPriorityFee(provider: Provider): Promise<bigint> {
-        return this.priorityFee;
-    }
-
-    clone(): MaxPriorityFeePlugin {
-        return new MaxPriorityFeePlugin(this.priorityFee);
-    }
-}
-*/
 export class FeeDataNetworkPlugin extends NetworkPlugin {
     readonly #feeDataFunc: (provider: Provider) => Promise<FeeData>;
 
-    get feeDataFunc(): (provider: Provider) => Promise<FeeData> { return this.#feeDataFunc; }
+    get feeDataFunc(): (provider: Provider) => Promise<FeeData> {
+        return this.#feeDataFunc;
+    }
 
     constructor(feeDataFunc: (provider: Provider) => Promise<FeeData>) {
-        super("org.ethers.network-plugins.fee-data");
+        super("org.ethers.plugins.network.FeeData");
         this.#feeDataFunc = feeDataFunc;
     }
 
@@ -140,6 +118,7 @@ export class FeeDataNetworkPlugin extends NetworkPlugin {
         return new FeeDataNetworkPlugin(this.#feeDataFunc);
     }
 }
+
 /*
 export class CustomBlockNetworkPlugin extends NetworkPlugin {
     readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;
