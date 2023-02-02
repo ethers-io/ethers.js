@@ -1,6 +1,8 @@
 import assert from "assert";
 
-import { connect } from "./create-provider.js";
+import { connect, setupProviders } from "./create-provider.js";
+
+setupProviders();
 
 describe("Resolve ENS avatar", function() {
     [

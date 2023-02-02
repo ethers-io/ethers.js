@@ -1,6 +1,8 @@
 import assert from "assert";
 
-import { connect } from "./create-provider.js";
+import { connect, setupProviders } from "./create-provider.js";
+
+setupProviders();
 
 describe("Test EIP-2544 ENS wildcards", function() {
     const provider = connect("goerli");

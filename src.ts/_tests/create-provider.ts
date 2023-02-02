@@ -4,7 +4,7 @@ import {
 //    CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
-//    PocketProvider,
+    PocketProvider,
     QuickNodeProvider,
 
     FallbackProvider,
@@ -67,21 +67,13 @@ const ProviderCreators: Array<ProviderCreator> = [
             return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
-    /*
     {
         name: "PocketProvider",
         networks: ethNetworks,
         create: function(network: string) {
-            const apiKeys: Record<string, string> = {
-                mainnet: "6004bcd10040261633ade990",
-                ropsten: "6004bd4d0040261633ade991",
-                rinkeby: "6004bda20040261633ade994",
-                goerli: "6004bd860040261633ade992",
-            };
-            return new PocketProvider(network, apiKeys[network]);
+            return new PocketProvider(network);
         }
     },
-    */
     {
         name: "QuickNodeProvider",
         networks: ethNetworks,

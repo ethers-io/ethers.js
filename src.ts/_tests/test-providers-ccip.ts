@@ -7,7 +7,9 @@ import {
     isCallException, isError
 } from "../index.js";
 
-import { connect } from "./create-provider.js";
+import { connect, setupProviders } from "./create-provider.js";
+
+setupProviders();
 
 describe("Test CCIP execution", function() {
 
