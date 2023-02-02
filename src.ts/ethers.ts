@@ -59,7 +59,7 @@ export {
 
     Block, FeeData, Log, TransactionReceipt, TransactionResponse,
 
-    AbstractSigner, VoidSigner,
+    AbstractSigner, NonceManager, VoidSigner,
 
     AbstractProvider,
 

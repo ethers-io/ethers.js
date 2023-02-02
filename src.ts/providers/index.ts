@@ -25,13 +25,13 @@ export { EnsResolver } from "./ens-resolver.js";
 
 export { Network } from "./network.js";
 
+export { NonceManager } from "./signer-noncemanager.js";
+
 export {
     NetworkPlugin,
     GasCostPlugin,
     EnsPlugin,
-    //MaxPriorityFeePlugin,
     FeeDataNetworkPlugin,
-    //CustomBlockNetworkPlugin
 } from "./plugins-network.js";
 
 export {
