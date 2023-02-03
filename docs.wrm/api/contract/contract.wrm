@@ -134,6 +134,30 @@ The //overrides// object for a read-only method may include any of:
   execution of the code
 - ``overrides.value`` - the ``msg.value`` (or ``CALLVALUE``) to use during the
   execution of the code
+- ``overrides.blockTag`` - a block tag to simulate the execution at, which
+  can be used for hypothetical historic analysis; note that many backends
+  do not support this, or may require paid plans to access as the node database
+  storage and processing requirements are much higher
+- ``overrides.type`` - the EIP-2718 type of this transaction. ``null`` defaults
+  to the network default.
+
+For EIP-1559 (type 2, default) transactions, the ``overrides`` object for a read-only 
+method may include any of:
+
+- ``overrides.maxFeePerGas`` - the theoretical maximum price (in wei) per unit of gas 
+  this transaction will pay for the combined EIP-1559 block's base fee and this
+  transaction's priority fee. Most developers should leave this unspecified and use the 
+  default value that ethers determines from the network.
+- ``overrides.maxPriorityFeePerGas`` - the theoretical price (in wei) per unit of gas this
+  transaction will allow in addition to the EIP-1559 block's base fee to bribe miners
+  into giving this transaction priority. This is **included in** the ``maxFeePerGas``, 
+  so this will **not affect** the total maximum cost set with ``maxFeePerGas``. Most 
+  developers should leave this unspecified and use the default value that ethers
+  determines from the network.
+
+For legacy (type 0) transactions, the ``overrides`` object for a read-only
+method may include any of:
+
 - ``overrides.gasPrice`` - the price to pay per gas (theoretically); since there
   is no transaction, there is not going to be any fee charged, but the EVM still
   requires a value to report to ``tx.gasprice`` (or ``GASPRICE``);
@@ -142,10 +166,6 @@ The //overrides// object for a read-only method may include any of:
   to use during the execution of the code; since there is no transaction, there
   is not going to be any fee charged, but the EVM still processes gas metering
   so calls like ``gasleft`` (or ``GAS``) report meaningful values
-- ``overrides.blockTag`` - a block tag to simulate the execution at, which
-  can be used for hypothetical historic analysis; note that many backends
-  do not support this, or may require paid plans to access as the node database
-  storage and processing requirements are much higher
 
 _property: contract.functions.METHOD_NAME(...args [, overrides ]) => Promise<[[Result]]>
 
@@ -185,11 +205,32 @@ signer.
 
 The //overrides// object for write methods may include any of:
 
-- ``overrides.gasPrice`` - the price to pay per gas
-- ``overrides.gasLimit`` - the limit on the amount of gas to allow the transaction
-  to consume; any unused gas is returned at the gasPrice
-- ``overrides.value`` - the amount of ether (in wei) to forward with the call
 - ``overrides.nonce`` - the nonce to use for the [[Signer]]
+- ``overrides.type`` - the EIP-2718 type of this transaction. ``null`` defaults
+  to the network default.
+
+For EIP-1559 (type 2, default) transactions, the ``overrides`` object for a read-only 
+method may include any of:
+
+- ``overrides.maxFeePerGas`` - the maximum price (in wei) per unit of gas 
+  this transaction will pay for the combined EIP-1559 block's base fee and this
+  transaction's priority fee. Most developers should leave this unspecified and use the 
+  default value that ethers determines from the network.
+- ``overrides.maxPriorityFeePerGas`` - the price (in wei) per unit of gas this
+  transaction will allow in addition to the EIP-1559 block's base fee to bribe miners
+  into giving this transaction priority. This is **included in** the ``maxFeePerGas``, 
+  so this will **not affect** the total maximum cost set with ``maxFeePerGas``. Most 
+  developers should leave this unspecified and use the default value that ethers
+  determines from the network.
+
+For legacy (type 0) transactions, the ``overrides`` object for a read-only
+method may include any of:
+
+- ``overrides.gasPrice`` - the price to pay per gas. Most developers should leave 
+  this unspecified and use the default value that ethers determines from the network.
+- ``overrides.gasLimit`` - the limit on the amount of gas to allow the transaction
+  to consume; any unused gas is returned at the gasPrice. Most developers should leave 
+  this unspecified and use the default value that ethers determines from the network.
 
 If the ``wait()`` method on the returned [[providers-TransactionResponse]]
 is called, there will be additional properties on the receipt:
