@@ -195,52 +195,8 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
     return result;
 }
 
-//Omit<TransactionLike<string | Addressable>, "hash" | "signature">;
-/*
-export async function resolveTransactionRequest(tx: TransactionRequest, provider?: Provider): Promise<TransactionRequest> {
-    // A pending transaction with items that may require resolving
-    const ptx: any = Object.assign({ }, tx); //await resolveProperties(await tx));
-    //if (tx.hash != null || tx.signature != null) {
-    //    throw new Error();
-    // @TODO: Check for bad keys?
-    //}
-    // @TODO: Why does TS not think that to and from are reoslved and require the cast to string
-    if (ptx.to != null) { ptx.to = resolveAddress(<string | Addressable>(ptx.to), provider); }
-    if (ptx.from != null) { ptx.from = resolveAddress(<string | Addressable>(ptx.from), provider); }
-    return await resolveProperties(ptx);
-}
-*/
-
-//function canConnect<T>(value: any): value is T {
-//    return (value && typeof(value.connect) === "function");
-//}
-
-
 //////////////////////
 // Block
-/*
-export interface BlockParams<T extends string | TransactionResponseParams> {
-    hash?: null | string;
-
-    number: number;
-    timestamp: number;
-
-    parentHash: string;
-
-    nonce: string;
-    difficulty: bigint;
-
-    gasLimit: bigint;
-    gasUsed: bigint;
-
-    miner: string;
-    extraData: string;
-
-    baseFeePerGas: null | bigint;
-
-    transactions: ReadonlyArray<T>;
-};
-*/
 
 export interface MinedBlock extends Block {
     readonly number: number;
@@ -387,7 +343,7 @@ export class Block implements BlockParams, Iterable<string> {
      *  prefetched them, by passing ``true`` to %%prefetchTxs%%
      *  into [[provider_getBlock]].
      */
-    get transactionResponses(): Array<TransactionResponse> {
+    get prefetchedTransactions(): Array<TransactionResponse> {
         const txs = this.#transactions.slice();
 
         // Doesn't matter...
@@ -458,6 +414,7 @@ export class Block implements BlockParams, Iterable<string> {
         let tx: string | TransactionResponse | undefined = undefined;
         if (typeof(indexOrHash) === "number") {
             tx = this.#transactions[indexOrHash];
+
         } else {
             const hash = indexOrHash.toLowerCase();
             for (const v of this.#transactions) {
@@ -481,7 +438,7 @@ export class Block implements BlockParams, Iterable<string> {
         }
     }
 
-    getTransactionResponse(indexOrHash: number | string): TransactionResponse {
+    getPrefetchedTransaction(indexOrHash: number | string): TransactionResponse {
         const txs = this.transactionResponses;
         if (typeof(indexOrHash) === "number") {
             return txs[indexOrHash];
@@ -492,7 +449,7 @@ export class Block implements BlockParams, Iterable<string> {
             if (tx.hash === indexOrHash) { return tx; }
         }
 
-        throw new Error("no such tx");
+        assertArgument(false, "no matching transaction", "indexOrHash", indexOrHash);
     }
 
     /**
@@ -519,23 +476,6 @@ export class Block implements BlockParams, Iterable<string> {
 //////////////////////
 // Log
 
-/*
-export interface LogParams {
-    transactionHash: string;
-    blockHash: string;
-    blockNumber: number;
-
-    removed: boolean;
-
-    address: string;
-    data: string;
-
-    topics: ReadonlyArray<string>;
-
-    index: number;
-    transactionIndex: number;
-}
-*/
 export class Log implements LogParams {
     readonly provider: Provider;
 
@@ -575,10 +515,6 @@ export class Log implements LogParams {
         });
     }
 
-    //connect(provider: Provider): Log {
-    //    return new Log(this, provider);
-    //}
-
     toJSON(): any {
         const {
             address, blockHash, blockNumber, data, index,
@@ -615,35 +551,9 @@ export class Log implements LogParams {
     }
 }
 
-
 //////////////////////
 // Transaction Receipt
-/*
-export interface TransactionReceiptParams {
-    to: null | string;
-    from: string;
-    contractAddress: null | string;
 
-    hash: string;
-    index: number;
-
-    blockHash: string;
-    blockNumber: number;
-
-    logsBloom: string;
-    logs: ReadonlyArray<LogParams>;
-
-    gasUsed: bigint;
-    cumulativeGasUsed: bigint;
-    gasPrice?: null | bigint;
-    effectiveGasPrice?: null | bigint;
-
-    type: number;
-    //byzantium: boolean;
-    status: null | number;
-    root: null | string;
-}
-*/
 /*
 export interface LegacyTransactionReceipt {
     byzantium: false;
@@ -717,10 +627,6 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
     get logs(): ReadonlyArray<Log> { return this.#logs; }
 
-    //connect(provider: Provider): TransactionReceipt {
-    //    return new TransactionReceipt(this, provider);
-    //}
-
     toJSON(): any {
         const {
             to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom,
@@ -793,37 +699,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
 //////////////////////
 // Transaction Response
-/*
-export interface TransactionResponseParams {
-    blockNumber: null | number;
-    blockHash: null | string;
 
-    hash: string;
-    index: number;
-
-    type: number;
-
-    to: null | string;
-    from: string;
-
-    nonce: number;
-
-    gasLimit: bigint;
-
-    gasPrice: bigint;
-
-    maxPriorityFeePerGas: null | bigint;
-    maxFeePerGas: null | bigint;
-
-    data: string;
-    value: bigint;
-    chainId: bigint;
-
-    signature: Signature;
-
-    accessList: null | AccessList;
-};
-*/
 export interface MinedTransactionResponse extends TransactionResponse {
     blockNumber: number;
     blockHash: string;
