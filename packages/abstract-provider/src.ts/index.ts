@@ -249,7 +249,7 @@ export abstract class Provider implements OnceBlockable {
             // using the formula "check if the base fee is correct".
             // See: https://eips.ethereum.org/EIPS/eip-1559
             lastBaseFeePerGas = block.baseFeePerGas;
-            maxPriorityFeePerGas = BigNumber.from("1500000000");
+            maxPriorityFeePerGas = BigNumber.from("1000000000");
             maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
         }
 
