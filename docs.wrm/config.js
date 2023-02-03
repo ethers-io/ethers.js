@@ -16,7 +16,7 @@ const subtitle = (function(version) {
 export default {
   title, subtitle,
 
-  prefix: "v6-beta",
+  prefix: "v6",
 
   contextify: function(context) {
     Object.assign(context, ethers);
@@ -42,7 +42,7 @@ export default {
     };
   },
 
-  srcBaseUrl: "https:/\/github.com/ethers-io/ethers.js/blob/v6-beta-exports/src.ts/{FILENAME}#L{LINENO}",
+  srcBaseUrl: "https:/\/github.com/ethers-io/ethers.js/blob/main/src.ts/{FILENAME}#L{LINENO}",
   getTimestamp: function(path) {
       return getModifiedTime(path);
   },

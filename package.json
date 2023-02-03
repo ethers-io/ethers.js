@@ -108,7 +108,7 @@
   "name": "ethers",
   "publishConfig": {
     "access": "public",
-    "tag": "beta-exports"
+    "tag": "latest"
   },
   "repository": {
     "type": "git",
@@ -136,5 +136,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.0-beta-exports.16"
+  "version": "6.0.0"
 }

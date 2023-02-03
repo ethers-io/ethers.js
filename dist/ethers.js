@@ -1,4 +1,4 @@
-const version = "6.0.0-beta-exports.16";
+const version = "6.0.0";
 
 /**
  *  Property helper functions.
