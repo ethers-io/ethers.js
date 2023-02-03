@@ -11,7 +11,7 @@
   "dependencies": {
     "@adraffy/ens-normalize": "1.8.9",
     "@noble/hashes": "1.1.2",
-    "@noble/secp256k1": "1.6.3",
+    "@noble/secp256k1": "1.7.1",
     "aes-js": "4.0.0-beta.3",
     "tslib": "2.4.0",
     "ws": "8.5.0"
