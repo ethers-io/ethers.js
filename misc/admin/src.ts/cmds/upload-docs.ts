@@ -132,7 +132,7 @@ function getFiles(basedir: string): Record<string, string> {
 }
 
 (async function() {
-    const bucket = "docs.ethers.io";
+    const bucket = "ethers.org";
 
     const awsAccessId = await config.get("aws-upload-docs-accesskey");
     const awsSecretKey = await config.get("aws-upload-docs-secretkey");
@@ -148,7 +148,9 @@ function getFiles(basedir: string): Record<string, string> {
     const basedir = resolve("docs");
 
     const local = await getFiles(basedir);
+    console.log("LOCAL", local);
     const remote = await getKeys(s3, bucket);
+    console.log("REMOTE", remote);
 
     Object.keys(local).forEach((filename) => {
         if (!remote[filename]) {
@@ -174,8 +176,9 @@ function getFiles(basedir: string): Record<string, string> {
     console.log('Changed:  ', changed.length);
 
     for (let i = 0; i < upload.length; i++) {
-        const filename = upload[i];
-        const content = fs.readFileSync(join(basedir, filename));
+        const _filename = upload[i];
+        const content = fs.readFileSync(join(basedir, _filename));
+        const filename = join("docs", _filename);
         console.log(`Uploading: ${ filename } (${ content.length } bytes)`);
         await putObject(s3, bucket, filename, content);
     }
