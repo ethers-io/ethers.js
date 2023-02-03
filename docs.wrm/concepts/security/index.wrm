@@ -50,7 +50,7 @@ to execute.
 
 In JavaScript, //Garbage Collection// occurs periodically when the
 system determines it is required. Each JavaScript implementation
-is different, with a variety of strategies and and abilities.
+is different, with a variety of strategies and abilities.
 
 Most Garbage Collection requires "stopping the world", or pausing
 all code being executed while it runs. This adds a large delay
