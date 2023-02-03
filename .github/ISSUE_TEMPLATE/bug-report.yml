@@ -1,0 +1,81 @@
+name: Bug Report
+description: Open an issue for a bug in Ethers
+title: "Bug Report Title"
+labels: ["investigate"]
+assignees:
+  - ricmoo
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **READ THIS FIRST** and follow all instructions, please. `:)`
+
+        Thank you for taking the time to report an issue. This form is for reporting **bugs within ethers**.
+
+        If you are **new to ethers** or *uncertain* whether this is a bug in ethers, a bug in another framework or a bug in your own code, please [start a discussion](https://github.com/ethers-io/ethers.js/discussions) first.
+  - type: input
+    id: version
+    attributes:
+      label: Ethers Version
+      description: What version of ethers are you using? Before opening an issue, please make sure you are up to date.
+      placeholder: x.y.z
+    validations:
+      required: true
+  - type: input
+    id: search-terms
+    attributes:
+      label: Search Terms
+      description: Have you searched for answers [in the documentation](https://docs.ethers.org), through [the issues](https://github.com/ethers-io/ethers.js/issues) and [on the discusions](https://github.com/ethers-io/ethers.js/discussions)? Please include the search terms you have tried. This helps us add more keywords where needed.
+      placeholder: e.g. abi, network, utf8
+  - type: textarea
+    id: about-the-bug
+    attributes:
+      label: Describe the Problem
+      description: Please describe what you expected to happen vs what did happen?
+      placeholder: What happened?
+    validations:
+      required: true    
+  - type: textarea
+    id: code-snippet
+    attributes:
+      label: Code Snippet
+      description: If possible, please include a **short and concise** code snippets that can reproduce this issue. Ideally code that can be pasted into the [Ethers Playground](https://playground.ethers.org).
+      placeholder: e.g. provider.getBlockNumber()
+      render: shell
+  - type: textarea
+    id: contract-abi
+    attributes:
+      label: Contract ABI
+      description: If this involves a contract, please include any **concise and relevant** ABI fragments.
+      placeholder: e.g. [ 'function balanceOf(address owner) view returns (uint)' ]
+      render: shell
+  - type: textarea
+    id: errors
+    attributes:
+      label: Errors
+      description: If there is an error, please include the **entire error** (redacting any sensitive information).
+      placeholder: "e.g. Error: invalid name (code='INVALID_ARGUMENT, ...)"
+      render: shell
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: What environment, platforms or frameworks are you using? Select all that apply.
+      multiple: true
+      options:
+        - Ethereum (mainnet/ropsten/rinkeby/goerli)
+        - Altcoin - Please specify (e.g. Polygon)
+        - node.js (v12 or newer)
+        - node.js (older than v12)
+        - Browser (Chrome, Safari, etc)
+        - React Native/Expo/JavaScriptCore
+        - Hardhat
+        - Geth
+        - Parity
+        - Ganache
+        - Other (please specify)
+  - type: input
+    id: other-envrionment
+    attributes:
+      label: Environment (Other)
+      placeholder: anything else?
