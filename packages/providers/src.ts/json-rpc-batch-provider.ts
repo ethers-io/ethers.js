@@ -62,6 +62,18 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
                         provider: this
                     });
 
+                    if (!Array.isArray(result)) {
+                        if (result.error) {
+                            const error = new Error(result.error.message);
+                            (<any>error).code = result.error.code;
+                            (<any>error).data = result.error.data;
+                            throw error;
+                        }
+                        else {
+                            throw new Error("Batch result is not an array");
+                        }
+                    }
+
                     // For each result, feed it to the correct Promise, depending
                     // on whether it was a success or error
                     batch.forEach((inflightRequest, index) => {
@@ -76,7 +88,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
                         }
                     });
 
-                }, (error) => {
+                }).catch(error => {
                     this.emit("debug", {
                         action: "response",
                         error: error,
