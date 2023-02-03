@@ -266,7 +266,7 @@ on recent versions of Geth and require configuration to enable.
 _property: transactionRequest.type => null | number
 
 The [[link-eip-2718]] type of this transaction envelope, or ``null``
-for to use the network default. To force using a lagacy transaction
+for to use the network default. To force using a legacy transaction
 without an envelope, use type ``0``.
 
 _property: transactionRequest.accessList => [[providers-AccessListish]]
