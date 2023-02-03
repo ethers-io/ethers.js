@@ -101,7 +101,7 @@ _subsection: Connecting to Ethereum: RPC @<getting-started--connecting-rpc>
 The [JSON-RPC API](link-jsonrpc) is another popular method for interacting
 with Ethereum and is available in all major Ethereum node implementations
 (e.g. [[link-geth]] and [[link-parity]]) as well as many
-third-party web services (e.g. [[link-infura]]). It typically provides:
+third-party web services (such as [[link-infura]], [Moralis](moralis.io), and [Alchemy](alchemy.com). These blockchain platforms are popular with developers are they provide:
 
 - A connection to the Ethereum network (a [[Provider]])
 - Holds your private key and can sign things (a [[Signer]])
@@ -147,6 +147,7 @@ ethers.utils.formatEther(balance)
 ethers.utils.parseEther("1.0")
 //_log:
 
+Note: 3rd party blockchain platforms like Alchemy also have ethers.js SDKs that are supersets of various ethers.js libraries. These types of SDKs often make reading and writing to the blockchain easier: https://docs.alchemy.com/reference/alchemy-sdk-quickstart.  
 
 _heading: Writing to the Blockchain @<getting-started--sending>
 
