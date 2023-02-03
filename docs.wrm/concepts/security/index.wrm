@@ -50,7 +50,7 @@ to execute.
 
 In JavaScript, //Garbage Collection// occurs periodically when the
 system determines it is required. Each JavaScript implementation
-is different, with a variety of strategies and and abilities.
+is different, with a variety of strategies and abilities.
 
 Most Garbage Collection requires "stopping the world", or pausing
 all code being executed while it runs. This adds a large delay
@@ -62,7 +62,7 @@ needing to garbage collect, and call your code with two paths,
 a simple path and complex path. The simple path won't stir things
 up enough to cause a garbage collection, while the complex one
 will. By timing how long the code took to execute, they now know
-whether garbage collection occured and therefore whether the simple
+whether garbage collection occurred and therefore whether the simple
 or complex path was taken.
 
 Advanced timing attacks are very difficult to mitigate in any
@@ -131,7 +131,7 @@ is remaining. Additionally, using language like //"decrypting..."// in
 a progress bar makes a user feel like their time is not being //needlessly//
 wasted.
 
-_heading: Work-Arounds (not recommended)
+_heading: Workarounds (not recommended)
 
 There are ways to reduce the time required to decrypt an Ethereum JSON
 Wallet, but please keep in mind that doing so **discards nearly all security**
