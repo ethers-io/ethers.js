@@ -30,12 +30,12 @@ have a public discussion and figure out the best way to address the problem/feat
 
 _subsection: Building @<contributing--building>
 
-The build process for ethers is unfortunatly not super trivial, but
+The build process for ethers is unfortunately not super trivial, but
 I have attempted to make it as straightforward as possible.
 
 It is a mono-repo which attempts to be compatibile with a large
 number of environments, build tools and platforms, which is why
-there are a some weird things it must do.
+there are some weird things it must do.
 
 There are several custom scripts in the ``misc/admin`` folder
 to help manage the monorepo. Developers working on contributing
@@ -114,7 +114,7 @@ _code: Preparing the Distribution @lang<shell>
 # Prepare all the distribution files
 # - Remove all generated files (i.e. npm run clean)
 # - Re-install all dependencies, hoisting, etc. (npm install)
-# - Spell check all strings in every TypeScript files
+# - Spell check all strings in every TypeScript file
 # - Build everything from scratch with this clean install
 # - Compare local with npm, bumping the version if changed
 # - Build everything again (with the updated versions)
