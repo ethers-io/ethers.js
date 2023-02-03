@@ -1,20 +1,4 @@
-_section: Documentation (BETA)  @<about-home> @nav<Documentation>
-
-**NOTE:** This documentation is for the **beta branch** (i.e. ``v6-beta-exports``), which
-is still undergoing minor changes.
-
-To try it out:
-
-_code:
-/home/ricmoo> npm install ethers@beta-exports
-
-_null:
-
-Please [report any v6 issues](link-issue) and I will get to them right away.
-
-If you are looking v5 docs, please see the [v5 documentation here](link-docs-v5).
-
-_subsection: What is Ethers?
+_section: Documentation  @<about-home> @nav<Documentation>
 
 The ethers.js library aims to be a complete and compact library
 for interacting with the Ethereum Blockchain and its ecosystem.
@@ -24,6 +8,7 @@ wallets (such as [[link-metamask]] and [[link-tally]]) and
 other tools and simple scripts that require reading and writing
 to the blockchain.
 
+
 _subsection: About this documentation?
 
 These docs are still under construction, and are being expanded
@@ -32,4 +17,12 @@ every day.
 Developers new to Ethers shoud be sure to read through the
 [[getting-started]] section.
 
-And the [[about-api]] is available for drilling down into more details.
+And the [[about-api]] is available for drilling down into more details
+about the entire Application Programming Interface.
+
+
+_subsection: Older Documentation
+
+- [v5 documentation here](link-docs-v5)
+- [v4 documentation here](link-docs-v4)
+- [v3 documentation here](link-docs-v3)

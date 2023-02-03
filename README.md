@@ -1,30 +1,11 @@
 The Ethers Project
 ==================
 
-```
-This branch (i.e. v6-beta-exports) is still experimental and a
-playground for new ideas for the upcoming v6 release. Please
-don't use it in production yet.
-
-To install:
-   npm install ethers@beta-exports
-
-Please try it out and report any bugs you find using the v6-beta
-template in the GitHub issues.
-
-Documentation is coming, but will still take a bit of time.
-
-In general, please be a patient as there is lots to do.
-
-
-Thanks! :)
-```
-
 [![npm (tag)](https://img.shields.io/npm/v/ethers)](https://www.npmjs.com/package/ethers)
-[![CI Tests](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml/badge.svg?branch=v6-beta-exports)](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml)
-[![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/ethers-io/ethers.js/badge)](https://www.gitpoap.io/gh/ethers-io/ethers.js)
-![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/ethers/beta-exports)
+[![CI Tests](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml/badge.svg?branch=main)](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml)
+![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/ethers/main)
 ![npm (downloads)](https://img.shields.io/npm/dm/ethers)
+[![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/ethers-io/ethers.js/badge)](https://www.gitpoap.io/gh/ethers-io/ethers.js)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ricmoo?style=social)](https://twitter.com/ricmoo)
 
 -----
@@ -57,10 +38,11 @@ For the latest news and advisories, please follow the
 non-marketing, important information only) as well as watch this GitHub project.
 
 For the latest changes, see the
-[CHANGELOG](https://github.com/ethers-io/ethers.js/blob/master/CHANGELOG.md).
+[CHANGELOG](https://github.com/ethers-io/ethers.js/blob/main/CHANGELOG.md).
 
 **Summaries**
 
+- [September 2022](https://blog.ricmoo.com/highlights-ethers-js-september-2022-d7bda0fc37ed)
 - [June 2022](https://blog.ricmoo.com/highlights-ethers-js-june-2022-f5328932e35d)
 - [March 2022](https://blog.ricmoo.com/highlights-ethers-js-march-2022-f511fe1e88a1)
 - [December 2021](https://blog.ricmoo.com/highlights-ethers-js-december-2021-dc1adb779d1a)
@@ -77,7 +59,7 @@ Installing
 **NodeJS**
 
 ```
-/home/ricmoo/some_project> npm install ethers@beta-exports
+/home/ricmoo/some_project> npm install ethers
 ```
 
 **Browser (ESM)**
@@ -98,8 +80,8 @@ Documentation
 
 Browse the [documentation](https://docs.ethers.io) online:
 
-- [Getting Started](https://docs.ethers.io/v5/getting-started/)
-- [Full API Documentation](https://docs.ethers.io/v5/api/)
+- [Getting Started](https://docs.ethers.io/v6/getting-started/)
+- [Full API Documentation](https://docs.ethers.io/v6/api/)
 - [Various Ethereum Articles](https://blog.ricmoo.com/)
 
 
@@ -127,6 +109,7 @@ the documentation.
 A special thanks to these services for providing community resources:
 
 - [Ankr](https://www.ankr.com/)
+- [QuickNode](https://www.quicknode.com/)
 - [Etherscan](https://etherscan.io/)
 - [INFURA](https://infura.io/)
 - [Alchemy](https://dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d)
