@@ -140,7 +140,7 @@ const SimpleTokens: Record<string, string> = {
 const regexWhitespace = new RegExp("^(\\s*)");
 const regexNumber = new RegExp("^([0-9]+)");
 const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
-const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
+const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))$");
 
 /**
  *  @ignore:
@@ -1026,7 +1026,7 @@ export abstract class NamedFragment extends Fragment {
     }
 }
 
-function joinParams(format: FormatType, params: ReadonlyArray<ParamType>): string { 
+function joinParams(format: FormatType, params: ReadonlyArray<ParamType>): string {
     return "(" + params.map((p) => p.format(format)).join((format === "full") ? ", ": ",") + ")";
 }
 
