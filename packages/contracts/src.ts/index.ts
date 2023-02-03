@@ -999,7 +999,7 @@ export class BaseContract {
 
         runningEvent.addListener(listener, once);
 
-        // Track this running event and its listeners (may already be there; but no hard in updating)
+        // Track this running event and its listeners (may already be there; but no harm in updating)
         this._runningEvents[runningEvent.tag] = runningEvent;
 
         // If we are not polling the provider, start polling
