@@ -2,7 +2,7 @@ _section: Best Practices @<best-practices>
 
 _subsection: Network Changes
 
-Handling a change in the network (e.g. Ropsten vs Mainnet) is
+Handling a change in the network (e.g. G&ouml;rli vs Mainnet) is
 incredibly complex and a slight failure can at best make your
 application seem confusing and at worst cause the loss of funds,
 leak private data or misrepresent what an action performed.

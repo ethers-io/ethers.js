@@ -173,9 +173,6 @@ to indicate the Log entry has been removed; it will likely be emitted
 again in the near future when another block is mined with the transaction
 that triggered this log, but keep in mind the values may change.
 
-_property: log.transactionLogIndex => number
-The index of this log in the transaction.
-
 _property: log.address => string<[[address]]>
 The address of the contract that generated this log.
 

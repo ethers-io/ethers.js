@@ -529,7 +529,7 @@ topicSets = [
         hexZeroPad(myOtherAddress, 32)
     ]
 ]
-provider.on(topicSets, (log, event) => {
+provider.on(topicSets, (log) => {
     // Emitted any token is sent TO either address
 })
 

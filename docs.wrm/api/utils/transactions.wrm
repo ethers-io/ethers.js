@@ -89,9 +89,9 @@ The chain ID for //transaction//. This is used as part of
 [[link-eip-155]] to prevent replay attacks on different
 networks.
 
-For example, if a transaction was made on ropsten with an account
+For example, if a transaction was made on goerli with an account
 also used on homestead, it would be possible for a transaction
-signed on ropsten to be executed on homestead, which is likely
+signed on goerli to be executed on homestead, which is likely
 unintended.
 
 There are situations where replay may be desired, however these

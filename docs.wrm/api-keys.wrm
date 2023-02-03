@@ -41,7 +41,8 @@ operations required to interact with the Ethereum Blockchain.
 - customer usage metrics
 
 _definition: **Networks:**
-``homestead``, ``ropsten``, ``rinkeby``, ``goerli`` and ``kovan``.
+``homestead``, ``goerli``, ``sepolia``, ``matic``. ``maticmum``, ``arbitrum``,
+``arbitrum-goerli``, ``optimism`` and ``optimism-goerli``.
 
 
 _subsection: INFURA @NOTE<(see the [[InfuraProvider]])> @<api-keys--infura>
@@ -61,9 +62,8 @@ interaction with standard tools versatile, simple and straightforward.
 - access to archive data (requires paid upgrade)
 
 _definition: **Networks:**
-``homestead``, ``ropsten``, ``rinkeby``, ``goerli``, ``kovan``, ``matic``,
-``maticmum``, ``optimism``, ``optimism-kovan``, ``arbitrum`` and
-``arbitrum-rinkeby``.
+``homestead``, ``goerli``, ``sepolia``, ``matic``. ``maticmum``, ``arbitrum``,
+``arbitrum-goerli``, ``optimism`` and ``optimism-goerli``.
 
 
 _subsection: Alchemy @NOTE<(see the [[AlchemyProvider]])> @<api-keys--alchemy>
@@ -85,9 +85,8 @@ with debugging.
 - access to advanced debugging trace and revert reason APIs
 
 _definition: **Networks:**
-``homestead``, ``ropsten``, ``rinkeby``, ``goerli``, ``kovan``, ``matic``,
-``maticmum``, ``optimism``, ``optimism-kovan``, ``arbitrum`` and
-``arbitrum-rinkeby``.
+``homestead``, ``goerli``, ``matic``. ``maticmum``, ``arbitrum``,
+``arbitrum-goerli``, ``optimism`` and ``optimism-goerli``.
 
 
 _subsection: Pocket Gateway @NOTE<(see the [[PocketProvider]])> @<api-keys--pocket-gateway>

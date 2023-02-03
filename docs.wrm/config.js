@@ -202,7 +202,7 @@ function codeContextify(context) {
 
 module.exports = {
   title: "ethers",
-  subtitle: "v5.4",
+  subtitle: "v5.7",
   description: "Documentation for ethers, a complete, tiny and simple Ethereum library.",
   logo: "logo.svg",
 
@@ -210,11 +210,11 @@ module.exports = {
 
   prefix: "/v5",
 
-  link: "https:/\/docs.ethers.io",
+  link: "https:/\/docs.ethers.org",
   copyright: "The content of this site is licensed under the [Creative Commons License](https:/\/choosealicense.com/licenses/cc-by-4.0/). Generated on &$now;.",
 
   markdown: {
-      "banner": "-----\n\nDocumentation: [html](https://docs.ethers.io/)\n\n-----\n\n"
+      "banner": "-----\n\nDocumentation: [html](https://docs.ethers.org/)\n\n-----\n\n"
   },
 
   codeContextify: codeContextify,
@@ -225,7 +225,7 @@ module.exports = {
 
   externalLinks: {
       "link-mail": "mailto:me@ricmoo.com",
-      "link-alchemy": { name: "Alchemy", url: "https:/\/alchemyapi.io" },
+      "link-alchemy": { name: "Alchemy", url: "https:/\/alchemy.com/?a=ethers" },
       "link-ankr": { name: "Ankr", url: "https:/\/www.ankr.com" },
       "link-cloudflare": { name: "Cloudflare", url: "https:/\/developers.cloudflare.com/distributed-web/ethereum-gateway/" },
       "link-ens": { name: "ENS", url: "https:/\/ens.domains/" },
@@ -265,8 +265,9 @@ module.exports = {
       "link-geth-debug": "https:/\/github.com/ethereum/go-ethereum/wiki/Management-APIs#debug",
       "link-geth-rpc": "https:/\/github.com/ethereum/go-ethereum/wiki/Management-APIs",
 
-      "link-legacy-docs3": "https:/\/docs.ethers.io/v3/",
-      "link-legacy-docs4": "https:/\/docs.ethers.io/v4/",
+      "link-legacy-docs3": "https:/\/docs.ethers.org/v3/",
+      "link-legacy-docs4": "https:/\/docs.ethers.org/v4/",
+      "link-beta-docs6": "https:/\/docs.ethers.org/v6-beta/",
 
       "link-github-ci": "https:/\/github.com/ethers-io/ethers.js/actions/runs/158006903",
       "link-github-issues": "https:/\/github.com/ethers-io/ethers.js/issues",
@@ -290,7 +291,7 @@ module.exports = {
       "link-rlp": { name: "Recursive Length Prefix", url: "https:/\/github.com/ethereum/wiki/wiki/RLP" },
 
       "link-ethersio": "https:/\/ethers.io/",
-      "link-ethers-docs": "https:/\/docs.ethers.io/",
+      "link-ethers-docs": "https:/\/docs.ethers.org/",
       "link-ethers-js": "https:/\/cdn.ethers.io/lib/ethers-5.1.esm.min.js",
       "link-ethers-npm": "https:/\/www.npmjs.com/search?q=%40ethersproject%2F",
       "link-ethers-asm-grammar": "https:/\/github.com/ethers-io/ethers.js/blob/master/packages/asm/grammar.jison",
