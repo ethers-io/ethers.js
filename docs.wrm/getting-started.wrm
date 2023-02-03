@@ -109,7 +109,7 @@ third-party web services (e.g. [[link-infura]]). It typically provides:
 _code: Connecting to an RPC client @lang<script>
 
 // If you don't specify a //url//, Ethers connects to the default 
-// (i.e. ``http:/\/localhost:8545``)
+// (i.e. ``http://localhost:8545``)
 const provider = new ethers.providers.JsonRpcProvider();
 
 // The provider also allows signing transactions to
