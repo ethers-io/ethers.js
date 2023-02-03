@@ -28,6 +28,7 @@
     "typescript": "4.9.5",
     "uglify-js": "3.17.0"
   },
+  "ethereum": "donations.ethers.eth",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -93,6 +94,16 @@
       "types": "./types/wordlists/index.d.ts"
     }
   },
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://github.com/sponsors/ethers-io/"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
   "gitHead": "90afd9bd81ed1408421a0247fa0845a74c9eb319",
   "keywords": [
     "ethereum",
