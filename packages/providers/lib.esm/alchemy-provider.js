@@ -14,8 +14,7 @@ const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
 export class AlchemyWebSocketProvider extends WebSocketProvider {
     constructor(network, apiKey) {
         const provider = new AlchemyProvider(network, apiKey);
-        const url = provider.connection.url.replace(/^http/i, "ws")
-            .replace(".alchemyapi.", ".ws.alchemyapi.");
+        const url = provider.connection.url.replace(/^http/i, "ws");
         super(url, provider.network);
         defineReadOnly(this, "apiKey", provider.apiKey);
     }
@@ -40,7 +39,7 @@ export class AlchemyProvider extends UrlJsonRpcProvider {
         let host = null;
         switch (network.name) {
             case "homestead":
-                host = "eth-mainnet.alchemyapi.io/v2/";
+                host = "eth-mainnet.g.alchemy.com/v2/";
                 break;
             case "goerli":
                 host = "eth-goerli.g.alchemy.com/v2/";
