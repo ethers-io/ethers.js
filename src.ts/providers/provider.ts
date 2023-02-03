@@ -439,7 +439,7 @@ export class Block implements BlockParams, Iterable<string> {
     }
 
     getPrefetchedTransaction(indexOrHash: number | string): TransactionResponse {
-        const txs = this.transactionResponses;
+        const txs = this.prefetchedTransactions;
         if (typeof(indexOrHash) === "number") {
             return txs[indexOrHash];
         }
