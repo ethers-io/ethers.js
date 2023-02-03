@@ -12305,7 +12305,7 @@ class Block {
      *  prefetched them, by passing ``true`` to %%prefetchTxs%%
      *  into [[provider_getBlock]].
      */
-    get transactionResponses() {
+    get prefetchedTransactions() {
         const txs = this.#transactions.slice();
         // Doesn't matter...
         if (txs.length === 0) {
@@ -12398,8 +12398,8 @@ class Block {
             return tx;
         }
     }
-    getTransactionResponse(indexOrHash) {
-        const txs = this.transactionResponses;
+    getPrefetchedTransaction(indexOrHash) {
+        const txs = this.prefetchedTransactions;
         if (typeof (indexOrHash) === "number") {
             return txs[indexOrHash];
         }
@@ -12409,7 +12409,7 @@ class Block {
                 return tx;
             }
         }
-        throw new Error("no such tx");
+        assertArgument(false, "no matching transaction", "indexOrHash", indexOrHash);
     }
     /**
      *  Has this block been mined.
@@ -12433,23 +12433,6 @@ class Block {
 }
 //////////////////////
 // Log
-/*
-export interface LogParams {
-    transactionHash: string;
-    blockHash: string;
-    blockNumber: number;
-
-    removed: boolean;
-
-    address: string;
-    data: string;
-
-    topics: ReadonlyArray<string>;
-
-    index: number;
-    transactionIndex: number;
-}
-*/
 class Log {
     provider;
     transactionHash;
@@ -12476,9 +12459,6 @@ class Log {
             transactionIndex: log.transactionIndex,
         });
     }
-    //connect(provider: Provider): Log {
-    //    return new Log(this, provider);
-    //}
     toJSON() {
         const { address, blockHash, blockNumber, data, index, removed, topics, transactionHash, transactionIndex } = this;
         return {
@@ -12508,32 +12488,6 @@ class Log {
 }
 //////////////////////
 // Transaction Receipt
-/*
-export interface TransactionReceiptParams {
-    to: null | string;
-    from: string;
-    contractAddress: null | string;
-
-    hash: string;
-    index: number;
-
-    blockHash: string;
-    blockNumber: number;
-
-    logsBloom: string;
-    logs: ReadonlyArray<LogParams>;
-
-    gasUsed: bigint;
-    cumulativeGasUsed: bigint;
-    gasPrice?: null | bigint;
-    effectiveGasPrice?: null | bigint;
-
-    type: number;
-    //byzantium: boolean;
-    status: null | number;
-    root: null | string;
-}
-*/
 /*
 export interface LegacyTransactionReceipt {
     byzantium: false;
@@ -12589,9 +12543,6 @@ class TransactionReceipt {
         });
     }
     get logs() { return this.#logs; }
-    //connect(provider: Provider): TransactionReceipt {
-    //    return new TransactionReceipt(this, provider);
-    //}
     toJSON() {
         const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
         status, root } = this;

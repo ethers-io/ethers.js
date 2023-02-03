@@ -177,7 +177,7 @@ export declare class Block implements BlockParams, Iterable<string> {
      *  prefetched them, by passing ``true`` to %%prefetchTxs%%
      *  into [[provider_getBlock]].
      */
-    get transactionResponses(): Array<TransactionResponse>;
+    get prefetchedTransactions(): Array<TransactionResponse>;
     /**
      *  Returns a JSON-friendly value.
      */
@@ -195,7 +195,7 @@ export declare class Block implements BlockParams, Iterable<string> {
      *  Get the transaction at %%indexe%% within this block.
      */
     getTransaction(indexOrHash: number | string): Promise<TransactionResponse>;
-    getTransactionResponse(indexOrHash: number | string): TransactionResponse;
+    getPrefetchedTransaction(indexOrHash: number | string): TransactionResponse;
     /**
      *  Has this block been mined.
      *
