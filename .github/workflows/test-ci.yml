@@ -32,8 +32,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          ref: "v6"
 
       - name: Install dependencies
         run: npm ci
@@ -65,8 +63,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          ref: "v6"
 
       - name: Install dependencies
         run: npm ci
@@ -122,7 +118,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          ref: "v6"
           fetch-depth: "0"
 
       - name: Install dependencies
