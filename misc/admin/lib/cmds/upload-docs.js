@@ -141,7 +141,7 @@ function getFiles(basedir) {
 }
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const bucket = "docs.ethers.io";
+        const bucket = "ethers.org";
         const awsAccessId = yield config_1.config.get("aws-upload-docs-accesskey");
         const awsSecretKey = yield config_1.config.get("aws-upload-docs-secretkey");
         const s3 = new aws_sdk_1.default.S3({
@@ -152,7 +152,9 @@ function getFiles(basedir) {
         const added = [], removed = [], changed = [], upload = [];
         const basedir = (0, path_2.resolve)("docs");
         const local = yield getFiles(basedir);
+        console.log("LOCAL", local);
         const remote = yield getKeys(s3, bucket);
+        console.log("REMOTE", remote);
         Object.keys(local).forEach((filename) => {
             if (!remote[filename]) {
                 added.push(filename);
@@ -176,8 +178,9 @@ function getFiles(basedir) {
         console.log('Removed:  ', removed.length);
         console.log('Changed:  ', changed.length);
         for (let i = 0; i < upload.length; i++) {
-            const filename = upload[i];
-            const content = fs_1.default.readFileSync((0, path_1.join)(basedir, filename));
+            const _filename = upload[i];
+            const content = fs_1.default.readFileSync((0, path_1.join)(basedir, _filename));
+            const filename = (0, path_1.join)("docs", _filename);
             console.log(`Uploading: ${filename} (${content.length} bytes)`);
             yield putObject(s3, bucket, filename, content);
         }
