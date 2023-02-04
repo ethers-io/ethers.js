@@ -19,12 +19,14 @@ class FilterIdSubscriber {
     #provider;
     #filterIdPromise;
     #poller;
+    #running;
     #network;
     #hault;
     constructor(provider) {
         this.#provider = provider;
         this.#filterIdPromise = null;
         this.#poller = this.#poll.bind(this);
+        this.#running = false;
         this.#network = null;
         this.#hault = false;
     }
@@ -74,8 +76,18 @@ class FilterIdSubscriber {
             });
         }
     }
-    start() { this.#poll(-2); }
+    start() {
+        if (this.#running) {
+            return;
+        }
+        this.#running = true;
+        this.#poll(-2);
+    }
     stop() {
+        if (!this.#running) {
+            return;
+        }
+        this.#running = false;
         this.#hault = true;
         this.#teardown();
         this.#provider.off("block", this.#poller);

@@ -65,7 +65,7 @@ export function isError(error, code) {
     return (error && error.code === code);
 }
 /**
- *  Returns true if %%error%% is a [CALL_EXCEPTION](api:CallExceptionError).
+ *  Returns true if %%error%% is a [[CallExceptionError].
  */
 export function isCallException(error) {
     return isError(error, "CALL_EXCEPTION");

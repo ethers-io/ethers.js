@@ -10,11 +10,62 @@ export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
  *  All errors emitted by ethers have an **ErrorCode** to help
  *  identify and coalesce errors to simplfy programatic analysis.
  *
- *  _property: ``"UNKNOWN_ERROR"``
- *  This is a general puspose fallback when no other error makes sense
- *  or the error wasn't expected
+ *  Each **ErrorCode** is the %%code%% proerty of a coresponding
+ *  [[EthersError]].
  *
- *  _property: ``"NOT_IMPLEMENTED"``
+ *  **Generic Errors**
+ *
+ *  **``"UNKNOWN_ERROR"``** - see [[UnknownError]]
+ *
+ *  **``"NOT_IMPLEMENTED"``** - see [[NotImplementedError]]
+ *
+ *  **``"UNSUPPORTED_OPERATION"``** - see [[UnsupportedOperationError]]
+ *
+ *  **``"NETWORK_ERROR"``** - see [[NetworkError]]
+ *
+ *  **``"SERVER_ERROR"``** - see [[ServerError]]
+ *
+ *  **``"TIMEOUT"``** - see [[TimeoutError]]
+ *
+ *  **``"BAD_DATA"``** - see [[BadDataError]]
+ *
+ *  **``"CANCELLED"``** - see [[CancelledError]]
+ *
+ *  **Operational Errors**
+ *
+ *  **``"BUFFER_OVERRUN"``** - see [[BufferOverrunError]]
+ *
+ *  **``"NUMERIC_FAULT"``** - see [[NumericFaultError]]
+ *
+ *  **Argument Errors**
+ *
+ *  **``"INVALID_ARGUMENT"``** - see [[InvalidArgumentError]]
+ *
+ *  **``"MISSING_ARGUMENT"``** - see [[MissingArgumentError]]
+ *
+ *  **``"UNEXPECTED_ARGUMENT"``** - see [[UnexpectedArgumentError]]
+ *
+ *  **``"VALUE_MISMATCH"``** - //unused//
+ *
+ *  **Blockchain Errors**
+ *
+ *  **``"CALL_EXCEPTION"``** - see [[CallExceptionError]]
+ *
+ *  **``"INSUFFICIENT_FUNDS"``** - see [[InsufficientFundsError]]
+ *
+ *  **``"NONCE_EXPIRED"``** - see [[NonceExpiredError]]
+ *
+ *  **``"REPLACEMENT_UNDERPRICED"``** - see [[ReplacementUnderpricedError]]
+ *
+ *  **``"TRANSACTION_REPLACED"``** - see [[TransactionReplacedError]]
+ *
+ *  **``"UNCONFIGURED_NAME"``** - see [[UnconfiguredNameError]]
+ *
+ *  **``"OFFCHAIN_FAULT"``** - see [[OffchainFaultError]]
+ *
+ *  **User Interaction Errors**
+ *
+ *  **``"ACTION_REJECTED"``** - see [[ActionRejectedError]]
  */
 export type ErrorCode = "UNKNOWN_ERROR" | "NOT_IMPLEMENTED" | "UNSUPPORTED_OPERATION" | "NETWORK_ERROR" | "SERVER_ERROR" | "TIMEOUT" | "BAD_DATA" | "CANCELLED" | "BUFFER_OVERRUN" | "NUMERIC_FAULT" | "INVALID_ARGUMENT" | "MISSING_ARGUMENT" | "UNEXPECTED_ARGUMENT" | "VALUE_MISMATCH" | "CALL_EXCEPTION" | "INSUFFICIENT_FUNDS" | "NONCE_EXPIRED" | "REPLACEMENT_UNDERPRICED" | "TRANSACTION_REPLACED" | "UNCONFIGURED_NAME" | "OFFCHAIN_FAULT" | "ACTION_REJECTED";
 /**
@@ -333,7 +384,7 @@ export interface TransactionReplacedError extends EthersError<"TRANSACTION_REPLA
  *  been configured.
  *
  *  This could indicate an ENS name is unowned or that the current
- *  address being pointed to is the [[Zero]].
+ *  address being pointed to is the [[ZeroAddress]].
  */
 export interface UnconfiguredNameError extends EthersError<"UNCONFIGURED_NAME"> {
     /**
@@ -391,7 +442,7 @@ export type CodedEthersError<T> = T extends "UNKNOWN_ERROR" ? UnknownError : T e
  */
 export declare function isError<K extends ErrorCode, T extends CodedEthersError<K>>(error: any, code: K): error is T;
 /**
- *  Returns true if %%error%% is a [CALL_EXCEPTION](api:CallExceptionError).
+ *  Returns true if %%error%% is a [[CallExceptionError].
  */
 export declare function isCallException(error: any): error is CallExceptionError;
 /**

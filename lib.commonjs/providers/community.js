@@ -33,7 +33,7 @@ function showThrottleMessage(service) {
     console.log("signing up for your own API keys to improve performance, increase your");
     console.log("request rate/limit and enable other perks, such as metrics and advanced APIs.");
     console.log("");
-    console.log("For more details: https:/\/docs.ethers.io/api-keys/");
+    console.log("For more details: https:/\/docs.ethers.org/api-keys/");
     console.log("==========================");
 }
 exports.showThrottleMessage = showThrottleMessage;

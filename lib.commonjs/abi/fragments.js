@@ -33,10 +33,12 @@ const SimpleTokens = {
     ",": "COMMA", "@": "AT"
 };
 // Parser regexes to consume the next token
-const regexWhitespace = new RegExp("^(\\s*)");
-const regexNumber = new RegExp("^([0-9]+)");
-const regexIdentifier = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
-const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))");
+const regexWhitespacePrefix = new RegExp("^(\\s*)");
+const regexNumberPrefix = new RegExp("^([0-9]+)");
+const regexIdPrefix = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)");
+// Parser regexs to check validity
+const regexId = new RegExp("^([a-zA-Z$_][a-zA-Z0-9$_]*)$");
+const regexType = new RegExp("^(address|bool|bytes([0-9]*)|string|u?int([0-9]*))$");
 class TokenString {
     #offset;
     #tokens;
@@ -145,7 +147,7 @@ function lex(text) {
     while (offset < text.length) {
         // Strip off any leading whitespace
         let cur = text.substring(offset);
-        let match = cur.match(regexWhitespace);
+        let match = cur.match(regexWhitespacePrefix);
         if (match) {
             offset += match[1].length;
             cur = text.substring(offset);
@@ -194,7 +196,7 @@ function lex(text) {
             }
             continue;
         }
-        match = cur.match(regexIdentifier);
+        match = cur.match(regexIdPrefix);
         if (match) {
             token.text = match[1];
             offset += token.text.length;
@@ -209,7 +211,7 @@ function lex(text) {
             token.type = "ID";
             continue;
         }
-        match = cur.match(regexNumber);
+        match = cur.match(regexNumberPrefix);
         if (match) {
             token.text = match[1];
             token.type = "NUMBER";
@@ -654,7 +656,7 @@ class ParamType {
             return new ParamType(_guard, name, type, baseType, indexed, comps, arrayLength, arrayChildren);
         }
         const name = obj.name;
-        (0, index_js_1.assertArgument)(!name || (typeof (name) === "string" && name.match(regexIdentifier)), "invalid name", "obj.name", name);
+        (0, index_js_1.assertArgument)(!name || (typeof (name) === "string" && name.match(regexId)), "invalid name", "obj.name", name);
         let indexed = obj.indexed;
         if (indexed != null) {
             (0, index_js_1.assertArgument)(allowIndexed, "parameter cannot be indexed", "obj.indexed", obj.indexed);
@@ -799,7 +801,7 @@ class NamedFragment extends Fragment {
      */
     constructor(guard, type, name, inputs) {
         super(guard, type, inputs);
-        (0, index_js_1.assertArgument)(typeof (name) === "string" && name.match(regexIdentifier), "invalid identifier", "name", name);
+        (0, index_js_1.assertArgument)(typeof (name) === "string" && name.match(regexId), "invalid identifier", "name", name);
         inputs = Object.freeze(inputs.slice());
         (0, index_js_1.defineProperties)(this, { name });
     }
