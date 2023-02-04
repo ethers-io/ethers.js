@@ -125,7 +125,7 @@
   },
   "scripts": {
     "_build-clean": "npm run clean && node lib.esm/_admin/update-version-const && npm run build-all && npm run _build-dist",
-    "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js",
+    "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js && cp ./output/post-build/dist/* ./dist/",
     "_dist-stats": "gzip -k9f -S '.gz' ./dist/ethers.min.js && gzip -k9f -S '.gz' ./dist/wordlists-extra.min.js && du -hs ./dist/*.gz && echo '' && du -hs ./dist/*.js",
     "auto-build": "npm run build -- -w",
     "build": "tsc --project tsconfig.esm.json",
@@ -134,7 +134,7 @@
     "build-commonjs": "tsc --project tsconfig.commonjs.json && cp ./output/post-build/lib.commonjs/* ./lib.commonjs/",
     "build-dist": "npm run build && npm run _build-dist && npm run _dist-stats",
     "build-docs": "echo 'foo'",
-    "build-types": "tsc --project tsconfig.types.json",
+    "build-types": "tsc --project tsconfig.types.json && cp ./output/post-build/types/* ./types/",
     "clean": "rm -rf dist lib.esm lib.commonjs types",
     "stats": "echo 'Dependencies' && npm ls --all --omit=dev",
     "test": "npm run test-esm",
