@@ -22,12 +22,19 @@ import { BaseProvider, Event } from "./base-provider";
 
 const errorGas = [ "call", "estimateGas" ];
 
+const revertReasonStringRe = /^[^:]*: reverted with reason string '(.*)'$/;
+
 function spelunk(value: any, requireData: boolean): null | { message: string, data: null | string } {
     if (value == null) { return null; }
 
+    const message = value.message;
     // These *are* the droids we're looking for.
-    if (typeof(value.message) === "string" && value.message.match("reverted")) {
-        const data = isHexString(value.data) ? value.data: null;
+    if (typeof(message) === "string" && message.match("reverted")) {
+        let data = isHexString(value.data) ? value.data: null;
+        let m;
+        if (data === null && (m = message.match(revertReasonStringRe))) {
+            data = toUtf8Bytes(m[1]);
+        }
         if (!requireData || data) {
             return { message: value.message, data };
         }
@@ -36,6 +43,21 @@ function spelunk(value: any, requireData: boolean): null | { message: string, da
     // Spelunk further...
     if (typeof(value) === "object") {
         for (const key in value) {
+            if (value instanceof Error && key === "stackTrace") {
+                /*
+                 * When an Error object is precessed, `stackTrace` property will
+                 * contain references to objects that represent files and
+                 * functions and is an internally cyclical data structure.
+                 * `spelunk` will loop though it until it will exceed all the
+                 * stack space.
+                 *
+                 * In any case, `stackTrace` does not contain an explanation as
+                 * to why the transaction was reverted, so it does not make
+                 * sense to look in there regardless of if it is cyclical or
+                 * not.
+                 */
+                continue;
+            }
             const result = spelunk(value[key], requireData);
             if (result) { return result; }
         }
