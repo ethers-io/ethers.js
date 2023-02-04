@@ -206,3 +206,23 @@ _code: default AbiCoder  @lang<script>
   // instance is returned.
   coder = AbiCoder.defaultAbiCoder()
 
+_code: getting a JSON-RPC quantity  @lang<script>
+  // In v5:
+  hex = ethers.util.hexValue(value)
+
+  // In v6:
+  hex = ethers.toQuantity(value)
+
+_code: using Bytes32 strings  @lang<script>
+  // In v5:
+  bytes32 = formatBytes32String(text)
+  text = parseBytes32String(bytes32)
+
+  // In v6:
+  bytes32 = encodeBytes32String(text)
+  text = decodeBytes32String(bytes32)
+
+_subsection: Removed Classes and functions
+
+The **Logger** class has been replaced by
+[several Error utility functions](about-errors).
