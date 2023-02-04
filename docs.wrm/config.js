@@ -13,11 +13,26 @@ const subtitle = (function(version) {
     return version.substring(dash + 1);
 })(version);
 
+const extraLinks = function() {
+    return [
+      `link-cdnjs [ethers.min.js](https:/\/cdnjs.cloudflare.com/ajax/libs/ethers/${ version }/ethers.min.js)`,
+      `link-cdnjs-wordlists [wordlists-extra.min.js](https:/\/cdnjs.cloudflare.com/ajax/libs/ethers/${ version }/wordlists-extra.min.js)`,
+    ];
+}
+
 export default {
   title, subtitle,
 
+  // Where all the basic documentation is
+  docRoot: ".",
+
+  // Where all the code is for the jsdocs API crawler
+  codeRoot: "../src.ts/index.ts",
+
+  // Place all files in the /v6/ folder
   prefix: "v6",
 
+  // Prepare the context for running the examples
   contextify: function(context) {
     Object.assign(context, ethers);
     context.provider = new ethers.InfuraProvider();
@@ -42,22 +57,28 @@ export default {
     };
   },
 
+  // The base URL to use for the <src> links
   srcBaseUrl: "https:/\/github.com/ethers-io/ethers.js/blob/main/src.ts/{FILENAME}#L{LINENO}",
+
+  // Used at the bottom of each page to indicate the last-modified-time.
+  // This uses the most recent time in the repo that the file was
+  // updated.
   getTimestamp: function(path) {
       return getModifiedTime(path);
   },
 
-  docRoot: ".",
-
-  codeRoot: "../src.ts/index.ts",
+  // All the links to pull in
   links: [
     "./links/javascript.txt",
     "./links/npm.txt",
     "./links/projects.txt",
     "./links/ricmoo.txt",
     "./links/specs.txt",
-    "./links/wiki.txt"
+    "./links/wiki.txt",
+    extraLinks
   ],
+
+  // Extra files to copy over to the /static folder
   staticFiles: [
     "logo.svg",
     "social.jpg"
