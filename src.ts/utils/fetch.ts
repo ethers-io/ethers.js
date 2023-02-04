@@ -125,7 +125,7 @@ export class FetchCancelSignal {
     }
 
     addListener(listener: () => void): void {
-        assert(this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+        assert(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
             operation: "fetchCancelSignal.addCancelListener"
         });
         this.#listeners.push(listener);
@@ -134,8 +134,7 @@ export class FetchCancelSignal {
     get cancelled(): boolean { return this.#cancelled; }
 
     checkSignal(): void {
-        if (!this.cancelled) { return; }
-        assert(false, "cancelled", "CANCELLED", { });
+        assert(!this.cancelled, "cancelled", "CANCELLED", { });
     }
 }
 
