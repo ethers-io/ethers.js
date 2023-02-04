@@ -161,6 +161,8 @@ type Sub = {
     nameMap: Map<string, string>
     addressableMap: WeakMap<Addressable, string>;
     listeners: Array<{ listener: Listener, once: boolean }>;
+    // @TODO: get rid of this, as it is (and has to be)
+    // tracked in subscriber
     started: boolean;
     subscriber: Subscriber;
 };

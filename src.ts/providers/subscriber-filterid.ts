@@ -26,6 +26,8 @@ export class FilterIdSubscriber implements Subscriber {
     #filterIdPromise: null | Promise<string>;
     #poller: (b: number) => Promise<void>;
 
+    #running: boolean;
+
     #network: null | Network;
 
     #hault: boolean;
@@ -35,6 +37,8 @@ export class FilterIdSubscriber implements Subscriber {
 
         this.#filterIdPromise = null;
         this.#poller = this.#poll.bind(this);
+
+        this.#running = false;
 
         this.#network = null;
 
@@ -91,9 +95,17 @@ export class FilterIdSubscriber implements Subscriber {
         }
     }
 
-    start(): void { this.#poll(-2); }
+    start(): void {
+        if (this.#running) { return; }
+        this.#running = true;
+
+        this.#poll(-2);
+    }
 
     stop(): void {
+        if (!this.#running) { return; }
+        this.#running = false;
+
         this.#hault = true;
         this.#teardown();
         this.#provider.off("block", this.#poller);

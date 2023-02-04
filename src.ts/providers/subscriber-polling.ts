@@ -76,13 +76,13 @@ export class PollingBlockSubscriber implements Subscriber {
     }
 
     start(): void {
-        if (this.#poller) { throw new Error("subscriber already running"); }
+        if (this.#poller) { return; }
         this.#poller = this.#provider._setTimeout(this.#poll.bind(this), this.#interval);
         this.#poll();
     }
 
     stop(): void {
-        if (!this.#poller) { throw new Error("subscriber not running"); }
+        if (!this.#poller) { return; }
         this.#provider._clearTimeout(this.#poller);
         this.#poller = null;
     }
@@ -105,9 +105,11 @@ export class PollingBlockSubscriber implements Subscriber {
 export class OnBlockSubscriber implements Subscriber {
     #provider: AbstractProvider;
     #poll: (b: number) => void;
+    #running: boolean;
 
     constructor(provider: AbstractProvider) {
         this.#provider = provider;
+        this.#running = false;
         this.#poll = (blockNumber: number) => {
             this._poll(blockNumber, this.#provider);
         }
@@ -118,11 +120,17 @@ export class OnBlockSubscriber implements Subscriber {
     }
 
     start(): void {
+        if (this.#running) { return; }
+        this.#running = true;
+
         this.#poll(-2);
         this.#provider.on("block", this.#poll);
     }
 
     stop(): void {
+        if (!this.#running) { return; }
+        this.#running = false;
+
         this.#provider.off("block", this.#poll);
     }
 
@@ -178,6 +186,8 @@ export class PollingEventSubscriber implements Subscriber {
     #filter: EventFilter;
     #poller: (b: number) => void;
 
+    #running: boolean;
+
     // The most recent block we have scanned for events. The value -2
     // indicates we still need to fetch an initial block number
     #blockNumber: number;
@@ -186,6 +196,7 @@ export class PollingEventSubscriber implements Subscriber {
         this.#provider = provider;
         this.#filter = copy(filter);
         this.#poller = this.#poll.bind(this);
+        this.#running = false;
         this.#blockNumber = -2;
     }
 
@@ -215,6 +226,9 @@ export class PollingEventSubscriber implements Subscriber {
     }
 
     start(): void {
+        if (this.#running) { return; }
+        this.#running = true;
+
         if (this.#blockNumber === -2) {
             this.#provider.getBlockNumber().then((blockNumber) => {
                 this.#blockNumber = blockNumber;
@@ -224,6 +238,9 @@ export class PollingEventSubscriber implements Subscriber {
     }
 
     stop(): void {
+        if (!this.#running) { return; }
+        this.#running = false;
+
         this.#provider.off("block", this.#poller);
     }
 
