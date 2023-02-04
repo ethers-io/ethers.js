@@ -3,7 +3,7 @@ The Ethers Project
 
 [![npm (tag)](https://img.shields.io/npm/v/ethers)](https://www.npmjs.com/package/ethers)
 [![CI Tests](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml/badge.svg?branch=main)](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml)
-![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/ethers/main)
+![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/ethers)
 ![npm (downloads)](https://img.shields.io/npm/dm/ethers)
 [![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/ethers-io/ethers.js/badge)](https://www.gitpoap.io/gh/ethers-io/ethers.js)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ricmoo?style=social)](https://twitter.com/ricmoo)
@@ -24,7 +24,7 @@ in [TypeScript](https://www.typescriptlang.org).
 - **Tiny** (~120kb compressed; 400kb uncompressed)
 - **Tree-shaking** focused; include only what you need during bundling
 - **Complete** functionality for all your Ethereum desires
-- Extensive [documentation](https://docs.ethers.io/v5/)
+- Extensive [documentation](https://docs.ethers.org/v6/)
 - Large collection of **test cases** which are maintained and added to
 - Fully written in **TypeScript**, with strict types for security
 - **MIT License** (including ALL dependencies); completely open source to do with as you please
@@ -76,12 +76,10 @@ The bundled library is available in the `./dist/` folder in this repo.
 Documentation
 -------------
 
-**Note: The v6 docs are not available yet**
+Browse the [documentation](https://docs.ethers.org) online:
 
-Browse the [documentation](https://docs.ethers.io) online:
-
-- [Getting Started](https://docs.ethers.io/v6/getting-started/)
-- [Full API Documentation](https://docs.ethers.io/v6/api/)
+- [Getting Started](https://docs.ethers.org/v6/getting-started/)
+- [Full API Documentation](https://docs.ethers.org/v6/api/)
 - [Various Ethereum Articles](https://blog.ricmoo.com/)
 
 
@@ -103,7 +101,7 @@ responses, more capacity, analytics and other features like archival
 data.
 
 When you are ready to sign up and start using for your own keys, please
-check out the [Provider API Keys](https://docs.ethers.io/v5/api-keys/) in
+check out the [Provider API Keys](https://docs.ethers.org/v5/api-keys/) in
 the documentation.
 
 A special thanks to these services for providing community resources:

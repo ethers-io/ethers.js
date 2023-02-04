@@ -6,9 +6,9 @@ link-ci [Ethers CI](https://github.com/ethers-io/ethers.js/actions/runs/15800690
 link-discussion [Ethers Discussion](https://github.com/ethers-io/ethers.js/discussions)
 link-issue [Open Ethers Issue](https://github.com/ethers-io/ethers.js/issues/new/choose)
 link-issues [Ethers Issues](https://github.com/ethers-io/ethers.js/issues)
-link-docs-v3 [V3 Documentation](https://docs.ethers.io/v3/)
-link-docs-v4 [V4 Documentation](https://docs.ethers.io/v4/)
-link-docs-v5 [V5 Documentation](https://docs.ethers.io/v5/)
+link-docs-v3 [V3 Documentation](https://docs.ethers.org/v3/)
+link-docs-v4 [V4 Documentation](https://docs.ethers.org/v4/)
+link-docs-v5 [V5 Documentation](https://docs.ethers.org/v5/)
 
 # Social profiles
 link-repo [GitHub Repo](https://github.com/ethers-io/ethers.js)
