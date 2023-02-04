@@ -119,3 +119,4 @@ export type {
 
 export type { Signer } from "./signer.js";
 
+export type { GetDefaultProviderOptions } from './default-provider'
