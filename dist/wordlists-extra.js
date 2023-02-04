@@ -145,7 +145,7 @@ const u64 = {
     add, add3L, add3H, add4L, add4H, add5H, add5L,
 };
 
-const version = "6.0.1";
+const version = "6.0.2";
 
 /**
  *  Property helper functions.

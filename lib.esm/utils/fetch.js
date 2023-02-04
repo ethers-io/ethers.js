@@ -77,17 +77,14 @@ export class FetchCancelSignal {
         });
     }
     addListener(listener) {
-        assert(this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+        assert(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
             operation: "fetchCancelSignal.addCancelListener"
         });
         this.#listeners.push(listener);
     }
     get cancelled() { return this.#cancelled; }
     checkSignal() {
-        if (!this.cancelled) {
-            return;
-        }
-        assert(false, "cancelled", "CANCELLED", {});
+        assert(!this.cancelled, "cancelled", "CANCELLED", {});
     }
 }
 // Check the signal, throwing if it is cancelled

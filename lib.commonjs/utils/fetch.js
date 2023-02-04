@@ -80,17 +80,14 @@ class FetchCancelSignal {
         });
     }
     addListener(listener) {
-        (0, errors_js_1.assert)(this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+        (0, errors_js_1.assert)(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
             operation: "fetchCancelSignal.addCancelListener"
         });
         this.#listeners.push(listener);
     }
     get cancelled() { return this.#cancelled; }
     checkSignal() {
-        if (!this.cancelled) {
-            return;
-        }
-        (0, errors_js_1.assert)(false, "cancelled", "CANCELLED", {});
+        (0, errors_js_1.assert)(!this.cancelled, "cancelled", "CANCELLED", {});
     }
 }
 exports.FetchCancelSignal = FetchCancelSignal;

@@ -1,4 +1,4 @@
-const version = "6.0.1";
+const version = "6.0.2";
 
 /**
  *  Property helper functions.
@@ -1065,17 +1065,14 @@ class FetchCancelSignal {
         });
     }
     addListener(listener) {
-        assert$1(this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+        assert$1(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
             operation: "fetchCancelSignal.addCancelListener"
         });
         this.#listeners.push(listener);
     }
     get cancelled() { return this.#cancelled; }
     checkSignal() {
-        if (!this.cancelled) {
-            return;
-        }
-        assert$1(false, "cancelled", "CANCELLED", {});
+        assert$1(!this.cancelled, "cancelled", "CANCELLED", {});
     }
 }
 // Check the signal, throwing if it is cancelled
