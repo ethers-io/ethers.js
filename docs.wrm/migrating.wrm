@@ -32,7 +32,7 @@ _code: creating large numbers  @lang<script>
   // Using BigNumber in v5
   value = BigNumber.from("1000")
 
-  // Using BigInt in v6 (ysing literal notation).
+  // Using BigInt in v6 (using literal notation).
   // Notice the suffix n
   value = 1000n
 
