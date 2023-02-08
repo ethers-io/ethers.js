@@ -386,6 +386,8 @@ export class Transaction implements TransactionLike<string> {
      *  explicit properties.
      */
     get type(): null | number { return this.#type; }
+
+    // RESEARCH -- will need to allow for other type numbers
     set type(value: null | number | string) {
         switch (value) {
             case null:
@@ -408,6 +410,7 @@ export class Transaction implements TransactionLike<string> {
     /**
      *  The name of the transaction type.
      */
+    // REASEARCH --- probably not necessary but also a place where tx type is limited
     get typeName(): null | string {
         switch (this.type) {
             case 0: return "legacy";
@@ -549,6 +552,7 @@ export class Transaction implements TransactionLike<string> {
         this.#chainId = BigInt(0);
         this.#sig = null;
         this.#accessList = null;
+        // RESEARCH -- add parameter
     }
 
     /**
@@ -613,7 +617,7 @@ export class Transaction implements TransactionLike<string> {
             case 2:
                 return _serializeEip1559(this, this.signature);
         }
-
+        // RESEARCH -- allow other types
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
     }
 
@@ -632,7 +636,7 @@ export class Transaction implements TransactionLike<string> {
             case 2:
                 return _serializeEip1559(this);
         }
-
+        // RESEARCH -- allow other types
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
     }
 
@@ -760,6 +764,7 @@ export class Transaction implements TransactionLike<string> {
             chainId: s(this.chainId),
             sig: this.signature ? this.signature.toJSON(): null,
             accessList: this.accessList
+            // RESEARCH -- include other params
         };
     }
 
@@ -781,6 +786,7 @@ export class Transaction implements TransactionLike<string> {
                 case 1: return Transaction.from(_parseEip2930(payload));
                 case 2: return Transaction.from(_parseEip1559(payload));
             }
+            // RESEARCH -- allow other types
             assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
         }
 

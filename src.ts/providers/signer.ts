@@ -55,7 +55,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *
      *  @param tx - The call to prepare
      */
-    populateCall(tx: TransactionRequest): Promise<TransactionLike<string>>;
+    populateCall<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<TransactionLike<string>>;
 
     /**
      *  Prepares a {@link TransactionRequest} for sending to the network by
@@ -74,7 +74,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *
      *  @param tx - The call to prepare
      */
-    populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>>;
+    populateTransaction<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<TransactionLike<string>>;
 
 
     ////////////////////
@@ -95,7 +95,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *          node to take into account. In these cases, a manually determined ``gasLimit``
      *          will need to be made.
      */
-    estimateGas(tx: TransactionRequest): Promise<bigint>;
+    estimateGas<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<bigint>;
 
     /**
      *  Evaluates the //tx// by running it against the current Blockchain state. This
@@ -106,7 +106,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *  (e.g. running a Contract's getters) or to simulate the effect of a transaction
      *  before actually performing an operation.
      */
-    call(tx: TransactionRequest): Promise<string>;
+    call<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<string>;
 
     /**
      *  Resolves an [[Address]] or ENS Name to an [[Address]].
@@ -121,14 +121,14 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *  Signs %%tx%%, returning the fully signed transaction. This does not
      *  populate any additional properties within the transaction.
      */
-    signTransaction(tx: TransactionRequest): Promise<string>;
+    signTransaction<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<string>;
 
     /**
      *  Sends %%tx%% to the Network. The ``signer.populateTransaction(tx)``
      *  is called first to ensure all necessary properties for the
      *  transaction to be valid have been popualted first.
      */
-    sendTransaction(tx: TransactionRequest): Promise<TransactionResponse>;
+    sendTransaction<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<TransactionResponse>;
 
     /**
      *  Signers an [[EIP-191]] prefixed personal message.

@@ -207,6 +207,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
 
         const pop = await this.populateTransaction(tx);
         delete pop.from;
+        // RESEARCH -- if Transaction is subclassed then this will need to use that class.
         const txObj = Transaction.from(pop);
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
     }

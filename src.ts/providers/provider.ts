@@ -100,7 +100,7 @@ export class FeeData {
     }
 }
 
-
+// RESEARCH allow additional properties
 export interface TransactionRequest {
     type?: null | number;
 
@@ -157,7 +157,8 @@ export interface PreparedTransactionRequest {
     enableCcipRead?: boolean;
 }
 
-export function copyRequest(req: TransactionRequest): PreparedTransactionRequest {
+// RESEARCH will need to allow for additional keys in req to be in result
+export function copyRequest<T extends TransactionRequest = TransactionRequest>(req: T): PreparedTransactionRequest {
     const result: any = { };
 
     // These could be addresses, ENS names or Addressables
@@ -567,7 +568,7 @@ export interface ByzantiumTransactionReceipt {
     root: null;
 }
 */
-
+// RESEARCH -- probably should include additional tx properties
 export class TransactionReceipt implements TransactionReceiptParams, Iterable<Log> {
     readonly provider!: Provider;
 
@@ -627,6 +628,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
     get logs(): ReadonlyArray<Log> { return this.#logs; }
 
+    // RESEARCH -- probably should return additional tx properties
     toJSON(): any {
         const {
             to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom,

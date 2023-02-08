@@ -615,6 +615,7 @@ export class AbstractProvider implements Provider {
         return resolve(<Array<string>>address, fromBlock, toBlock);
     }
 
+    // RESEARCH apart from TS types this looks like it would work without modification (assuming copyRequest stops dropping properties)
     _getTransactionRequest(_request: TransactionRequest): PerformActionTransaction | Promise<PerformActionTransaction> {
         const request = <PerformActionTransaction>copyRequest(_request);
 
@@ -859,7 +860,7 @@ export class AbstractProvider implements Provider {
              }),
              network: this.getNetwork()
         });
-
+        // RESEARCH -- if Transaction is subclassed then this will need to use that class.
         const tx = Transaction.from(signedTx);
         if (tx.hash !== hash) {
             throw new Error("@TODO: the returned hash did not match");

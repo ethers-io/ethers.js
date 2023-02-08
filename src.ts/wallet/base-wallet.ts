@@ -86,6 +86,7 @@ export class BaseWallet extends AbstractSigner {
         }
 
         // Build the transaction
+        // RESEARCH -- if Transaction is subclassed then this will need to use that class. 
         const btx = Transaction.from(<TransactionLike<string>>tx);
         btx.signature = this.signingKey.sign(btx.unsignedHash);
 
