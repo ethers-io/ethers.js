@@ -26,8 +26,8 @@ function checkProvider(signer: AbstractSigner, operation: string): Provider {
     assert(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
 }
 
-async function populate(signer: AbstractSigner, tx: TransactionRequest): Promise<TransactionLike<string>> {
-    let pop: any = copyRequest(tx);
+async function populate<T extends TransactionRequest = TransactionRequest>(signer: AbstractSigner,tx: T): Promise<TransactionLike<string>> {
+    let pop: any = copyRequest<T>(tx);
 
     if (pop.to != null) { pop.to = resolveAddress(pop.to, signer); }
 
@@ -63,15 +63,18 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         return checkProvider(this, "getTransactionCount").getTransactionCount(await this.getAddress(), blockTag);
     }
 
-    async populateCall(tx: TransactionRequest): Promise<TransactionLike<string>> {
-        const pop = await populate(this, tx);
+    async populateCall<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<TransactionLike<string>> {
+        const pop = await populate<T>(this, tx);
         return pop;
     }
 
-    async populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>> {
+    // Research --- I think even though this does not account for other values for pop.type
+    // it wont need any modifications since it keeps the properties returned from populate
+
+    async populateTransaction<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<TransactionLike<string>> {
         const provider = checkProvider(this, "populateTransaction");
 
-        const pop = await populate(this, tx);
+        const pop = await populate<T>(this, tx);
 
         if (pop.nonce == null) {
             pop.nonce = await this.getNonce("pending");
@@ -184,16 +187,18 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
             }
         }
 
+
 //@TOOD: Don't await all over the place; save them up for
 // the end for better batching
         return await resolveProperties(pop);
     }
 
-    async estimateGas(tx: TransactionRequest): Promise<bigint> {
+    // RESEARCH -- must be able to estimate gas for tx type as it could differ from by type
+    async estimateGas<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<bigint> {
         return checkProvider(this, "estimateGas").estimateGas(await this.populateCall(tx));
     }
 
-    async call(tx: TransactionRequest): Promise<string> {
+    async call<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<string> {
         return checkProvider(this, "call").call(await this.populateCall(tx));
     }
 
@@ -202,7 +207,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         return await provider.resolveName(name);
     }
 
-    async sendTransaction(tx: TransactionRequest): Promise<TransactionResponse> {
+    async sendTransaction<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<TransactionResponse> {
         const provider = checkProvider(this, "sendTransaction");
 
         const pop = await this.populateTransaction(tx);
@@ -212,7 +217,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
     }
 
-    abstract signTransaction(tx: TransactionRequest): Promise<string>;
+    abstract signTransaction<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<string>;
     abstract signMessage(message: string | Uint8Array): Promise<string>;
     abstract signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
@@ -235,7 +240,7 @@ export class VoidSigner extends AbstractSigner {
         assert(false, `VoidSigner cannot sign ${ suffix }`, "UNSUPPORTED_OPERATION", { operation });
     }
 
-    async signTransaction(tx: TransactionRequest): Promise<string> {
+    async signTransaction<T extends TransactionRequest = TransactionRequest>(tx: T): Promise<string> {
         this.#throwUnsupported("transactions", "signTransaction");
     }
 
