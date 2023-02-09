@@ -6,6 +6,17 @@ import { JsonRpcProvider } from "./json-rpc-provider";
 
 // Experimental
 
+interface RpcResult {
+    jsonrpc: "2.0";
+    id: number;
+    result?: string;
+    error?: {
+        code: number;
+        message: string;
+        data?: any;
+    }
+}
+
 export class JsonRpcBatchProvider extends JsonRpcProvider {
     _pendingBatchAggregator: NodeJS.Timer;
     _pendingBatch: Array<{
@@ -54,7 +65,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
                     provider: this
                 });
 
-                return fetchJson(this.connection, JSON.stringify(request)).then((result) => {
+                return fetchJson(this.connection, JSON.stringify(request)).then((result: RpcResult[]) => {
                     this.emit("debug", {
                         action: "response",
                         request: request,
@@ -62,10 +73,15 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
                         provider: this
                     });
 
+                    const resultMap = result.reduce((resultMap, payload) => {
+                        resultMap[payload.id] = payload;
+                        return resultMap;
+                    }, {} as Record<number, RpcResult>);
+
                     // For each result, feed it to the correct Promise, depending
                     // on whether it was a success or error
-                    batch.forEach((inflightRequest, index) => {
-                        const payload = result[index];
+                    batch.forEach((inflightRequest) => {
+                        const payload = resultMap[inflightRequest.request.id];
                         if (payload.error) {
                             const error = new Error(payload.error.message);
                             (<any>error).code = payload.error.code;
