@@ -125,7 +125,9 @@ export class Formatter {
             cumulativeGasUsed: bigNumber,
             effectiveGasPrice: Formatter.allowNull(bigNumber),
             status: Formatter.allowNull(number),
-            type: type
+            type: type,
+            l1BlockNumber: Formatter.allowNull(number),
+            gasUsedForL1: Formatter.allowNull(bigNumber),
         };
 
         formats.block = {
