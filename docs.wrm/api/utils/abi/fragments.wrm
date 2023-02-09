@@ -212,8 +212,8 @@ The local parameter name. This may be null for unnamed parameters. For example,
 the parameter definition ``string foobar`` would be ``foobar``.
 
 _property: paramType.type => string @<ParamType-type>
-The full type of the parameter, including tuple and array symbols. This may be null
-for unnamed parameters. For the above example, this would be ``foobar``.
+The full type of the parameter, including tuple and array symbols. For the above example,
+this would be ``string``. For a string array, this would be ``string[]``.
 
 _property: paramType.baseType => string @<ParamType-baseType>
 The base type of the parameter. For primitive types (e.g. ``address``, ``uint256``, etc)
