@@ -22,6 +22,7 @@ import { BaseProvider, EnsProvider, EnsResolver, Resolver } from "./base-provide
 import { AlchemyProvider, AlchemyWebSocketProvider } from "./alchemy-provider";
 import { AnkrProvider } from "./ankr-provider";
 import { CloudflareProvider } from "./cloudflare-provider";
+import { CoinbaseCloudProvider } from "./coinbase-cloud-provider";
 import { EtherscanProvider } from "./etherscan-provider";
 import { FallbackProvider, FallbackProviderConfig } from "./fallback-provider";
 import { IpcProvider } from "./ipc-provider";
@@ -79,6 +80,7 @@ function getDefaultProvider(network?: Networkish, options?: any): BaseProvider {
         AlchemyProvider,
         AnkrProvider,
         CloudflareProvider,
+        CoinbaseCloudProvider,
         EtherscanProvider,
         InfuraProvider,
         JsonRpcProvider,
@@ -112,6 +114,7 @@ export {
     AlchemyWebSocketProvider,
     AnkrProvider,
     CloudflareProvider,
+    CoinbaseCloudProvider,
     EtherscanProvider,
     InfuraProvider,
     InfuraWebSocketProvider,

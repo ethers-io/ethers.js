@@ -124,6 +124,23 @@ _definition: **Networks:**
 ``homestead``, ``matic`` and ``arbitrum``
 
 
+_subsection: CoinbaseCloud @NOTE<(see the [[CoinbaseCloudProvider]])> @<api-keys--ankr>
+
+They offer a standard JSON-RPC interface and have fairly high capacity without
+the need for an API key early on in the development cycle.
+
+[Sign up for a free API key on CoinbaseCloud](link-coinbase-cloud-signup)
+
+**Benefits:**
+
+- higher rate limit
+- customer usage metrics
+- access to advanced APIs such as token balances, contract metadata etc.
+
+_definition: **Networks:**
+``homestead`` and ``goerli``
+
+
 _subsection: Creating a Default Provider @<api-keys--getDefaultProvider>
 
 The [default provider](providers-getDefaultProvider) connects to multiple

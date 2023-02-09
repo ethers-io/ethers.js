@@ -286,15 +286,31 @@ const allNetworks = [ "default", "homestead", "goerli" ];
 
 // We use separate API keys because otherwise the testcases sometimes
 // fail during CI because our default keys are pretty heavily used
-const _ApiKeys: Record<string, string> = {
+const _ApiKeys: Record<string, any> = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
+    coinbaseCloud: {
+        homestead: {
+            apiUsername: 'RE6TJCAA3KAXYIZUKROS',
+            apiPassword: 'OOIQYRHLK332GYRIDEA7NBQUV245XBNEPX7RUFQT'
+        },
+        goerli: {
+            apiUsername: 'IMRGCPQL3GZRXT2D3ZVS',
+            apiPassword: 'LUZT3NAFE3CV7HCVSAYBQHGCL4AG6VE56HAFWVDM'
+        }
+    },
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
     pocket: "62fd9de24b068e0039c16996"
 };
 
+type CoinbaseCloudApiKeySet = {
+    apiUsername: string;
+    apiPassword: string;
+}
+
 type ApiKeySet = {
     alchemy: string;
+    coinbaseCloud: Record<string, CoinbaseCloudApiKeySet>;
     etherscan: string;
     infura: string;
     pocket: string;
@@ -347,6 +363,16 @@ const providerFunctions: Array<ProviderDescription> = [
         }
     },
     */
+    {
+        name: "CoinbaseCloudProvider",
+        networks: allNetworks,
+        create: (network: string) => {
+            if (network == "default") {
+                return new ethers.providers.CoinbaseCloudProvider(null, getApiKeys(network).coinbaseCloud.homestead);
+            }
+            return new ethers.providers.CoinbaseCloudProvider(network, getApiKeys(network).coinbaseCloud[network]);
+        }
+    },
     {
         name: "InfuraProvider",
         networks: allNetworks,
@@ -453,9 +479,12 @@ Object.keys(blockchainData).forEach((network) => {
 
         if (test.storage) {
             Object.keys(test.storage).forEach((position) => {
-                addSimpleTest(`fetches storage: ${ test.address }:${ position }`, (provider: ethers.providers.Provider) => {
+                addObjectTest(`fetches storage: ${ test.address }:${ position }`, (provider: ethers.providers.Provider) => {
                     return provider.getStorageAt(test.address, bnify(position));
-                }, test.storage[position]);
+                }, test.storage[position], (provider: string, network: string, test: TestDescription) => {
+                    // CoinbaseCloudProvider does not support getStorageAt
+                    return provider === "CoinbaseCloudProvider";
+                });
             });
         }
 

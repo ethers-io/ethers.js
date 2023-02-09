@@ -23,7 +23,7 @@ _subsection: Features @<features>
 - Connect to Ethereum nodes over
   [JSON-RPC](link-jsonrpc), [INFURA](link-infura),
   [Etherscan](link-etherscan), [Alchemy](link-alchemy),
-  [Cloudflare](link-cloudflare) or [MetaMask](link-metamask).
+  [Cloudflare](link-cloudflare), [CoinbaseCloud](link-coinbase-cloud) or [MetaMask](link-metamask).
 - **ENS names** are first-class citizens; they can be used
   anywhere an Ethereum addresses can be used
 - **Tiny** (~88kb compressed; 284kb uncompressed)
