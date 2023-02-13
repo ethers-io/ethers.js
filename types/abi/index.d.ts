@@ -1,7 +1,7 @@
 /**
  *  Explain about ABI here...
  *
- *  @_section api/abi:Application Binary Interface  [abi]
+ *  @_section api/abi:Application Binary Interface  [about-abi]
  *  @_navTitle: ABI
  */
 export { AbiCoder } from "./abi-coder.js";

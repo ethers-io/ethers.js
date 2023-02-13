@@ -15,7 +15,7 @@
  *  low-level details of how an HD wallets are derived, exported
  *  or imported.
  *
- *  @_section: api/wallet:Wallets  [wallets]
+ *  @_section: api/wallet:Wallets  [about-wallets]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Wallet = exports.Mnemonic = exports.encryptKeystoreJsonSync = exports.encryptKeystoreJson = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.isKeystoreJson = exports.decryptCrowdsaleJson = exports.isCrowdsaleJson = exports.HDNodeVoidWallet = exports.HDNodeWallet = exports.getAccountPath = exports.defaultPath = exports.BaseWallet = void 0;

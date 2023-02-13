@@ -2,7 +2,7 @@
 /**
  *  About hashing here...
  *
- *  @_section: api/hashing:Hashing Utilities  [hashing]
+ *  @_section: api/hashing:Hashing Utilities  [about-hashing]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.verifyMessage = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = exports.id = void 0;

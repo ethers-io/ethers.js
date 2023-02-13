@@ -2,7 +2,7 @@
 /**
  *  About providers.
  *
- *  @_section: api/providers:Providers  [providers]
+ *  @_section: api/providers:Providers  [about-providers]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = exports.WebSocketProvider = exports.SocketProvider = exports.IpcSocketProvider = exports.QuickNodeProvider = exports.PocketProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanPlugin = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.BrowserProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.copyRequest = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = exports.NonceManager = exports.Network = exports.EnsResolver = exports.getDefaultProvider = exports.showThrottleMessage = exports.VoidSigner = exports.AbstractSigner = exports.UnmanagedSubscriber = exports.AbstractProvider = void 0;

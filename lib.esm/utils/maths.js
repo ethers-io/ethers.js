@@ -63,7 +63,7 @@ export function mask(_value, _bits) {
     return value & ((BN_1 << bits) - BN_1);
 }
 /**
- *  Gets a [[BigInt]] from %%value%%. If it is an invalid value for
+ *  Gets a BigInt from %%value%%. If it is an invalid value for
  *  a BigInt, then an ArgumentError will be thrown for %%name%%.
  */
 export function getBigInt(value, name) {

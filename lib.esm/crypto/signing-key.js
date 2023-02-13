@@ -1,3 +1,8 @@
+/**
+ *  Add details about signing here.
+ *
+ *  @_subsection: api/crypto:Signing  [about-signing]
+ */
 import * as secp256k1 from "@noble/secp256k1";
 import { concat, dataLength, getBytes, getBytesCopy, hexlify, toBeHex, assertArgument } from "../utils/index.js";
 import { computeHmac } from "./hmac.js";

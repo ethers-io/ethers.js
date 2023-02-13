@@ -2,7 +2,7 @@
 /**
  *  Transactions..
  *
- *  @_section api/transaction:Transactions  [transactions]
+ *  @_section api/transaction:Transactions  [about-transactions]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transaction = exports.recoverAddress = exports.computeAddress = exports.accessListify = void 0;

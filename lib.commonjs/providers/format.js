@@ -161,7 +161,7 @@ const _formatTransactionReceipt = object({
     cumulativeGasUsed: index_js_4.getBigInt,
     effectiveGasPrice: allowNull(index_js_4.getBigInt),
     status: allowNull(index_js_4.getNumber),
-    type: index_js_4.getNumber
+    type: allowNull(index_js_4.getNumber, 0)
 }, {
     effectiveGasPrice: ["gasPrice"],
     hash: ["transactionHash"],

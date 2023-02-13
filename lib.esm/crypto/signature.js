@@ -13,6 +13,9 @@ function toUint256(value) {
 }
 /**
  *  A Signature  @TODO
+ *
+ *
+ *  @_docloc: api/crypto:Signing
  */
 export class Signature {
     #r;

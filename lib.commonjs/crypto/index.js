@@ -3,7 +3,7 @@
  *  A fundamental building block of Ethereum is the underlying
  *  cryptographic primitives.
  *
- *  @_section: api/crypto:Cryptographic Functions   [crypto]
+ *  @_section: api/crypto:Cryptographic Functions   [about-crypto]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lock = exports.Signature = exports.SigningKey = exports.scryptSync = exports.scrypt = exports.pbkdf2 = exports.sha512 = exports.sha256 = exports.ripemd160 = exports.keccak256 = exports.randomBytes = exports.computeHmac = void 0;

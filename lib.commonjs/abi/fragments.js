@@ -2,7 +2,7 @@
 /**
  *  About frgaments...
  *
- *  @_subsection api/abi/abi-coder:Fragments
+ *  @_subsection api/abi/abi-coder:Fragments  [about-fragments]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StructFragment = exports.FunctionFragment = exports.FallbackFragment = exports.ConstructorFragment = exports.EventFragment = exports.ErrorFragment = exports.NamedFragment = exports.Fragment = exports.ParamType = void 0;
@@ -358,26 +358,25 @@ class ParamType {
     /**
      *  True if the parameters is indexed.
      *
-     *  For non-indexable types (see [[ParamType_isIndexable]]) this
-     *  is ``null``.
+     *  For non-indexable types this is ``null``.
      */
     indexed;
     /**
      *  The components for the tuple.
      *
-     *  For non-tuple types (see [[ParamType_isTuple]]) this is ``null``.
+     *  For non-tuple types this is ``null``.
      */
     components;
     /**
      *  The array length, or ``-1`` for dynamic-lengthed arrays.
      *
-     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     *  For non-array types this is ``null``.
      */
     arrayLength;
     /**
      *  The type of each child in the array.
      *
-     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     *  For non-array types this is ``null``.
      */
     arrayChildren;
     /**

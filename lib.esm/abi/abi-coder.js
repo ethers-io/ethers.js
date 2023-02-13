@@ -187,7 +187,7 @@ export class AbiCoder {
         return defaultCoder;
     }
     /**
-     *  Returns an ethers-compatible [[CALL_EXCEPTION]] Error for the given
+     *  Returns an ethers-compatible [[CallExceptionError]] Error for the given
      *  result %%data%% for the [[CallExceptionAction]] %%action%% against
      *  the Transaction %%tx%%.
      */

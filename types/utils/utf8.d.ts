@@ -57,6 +57,21 @@ export type Utf8ErrorReason = "UNEXPECTED_CONTINUE" | "BAD_PREFIX" | "OVERRUN" |
  *  when control resumes to the FSM.
  */
 export type Utf8ErrorFunc = (reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, output: Array<number>, badCodepoint?: number) => number;
+/**
+ *  A handful of popular, built-in UTF-8 error handling strategies.
+ *
+ *  **``"error"``** - throws on ANY illegal UTF-8 sequence or
+ *  non-canonical (overlong) codepoints (this is the default)
+ *
+ *  **``"ignore"``** - silently drops any illegal UTF-8 sequence
+ *  and accepts non-canonical (overlong) codepoints
+ *
+ *  **``"replace"``** - replace any illegal UTF-8 sequence with the
+ *  UTF-8 replacement character (i.e. `\ufffd`) and accepts
+ *  non-canonical (overlong) codepoints
+ *
+ *  @returns: Record<"error" | "ignore" | "replace", Utf8ErrorFunc>
+ */
 export declare const Utf8ErrorFuncs: Readonly<Record<"error" | "ignore" | "replace", Utf8ErrorFunc>>;
 /**
  *  Returns the UTF-8 byte representation of %%str%%.
@@ -69,7 +84,7 @@ export declare function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm
  *
  *  When %%onError%% function is specified, it is called on UTF-8
  *  errors allowing recovery using the [[Utf8ErrorFunc]] API.
- *  (default: [error](Utf8ErrorFuncs-error))
+ *  (default: [error](Utf8ErrorFuncs))
  */
 export declare function toUtf8String(bytes: BytesLike, onError?: Utf8ErrorFunc): string;
 /**

@@ -26,7 +26,7 @@ export declare function toTwos(_value: BigNumberish, _width: Numeric): bigint;
  */
 export declare function mask(_value: BigNumberish, _bits: Numeric): bigint;
 /**
- *  Gets a [[BigInt]] from %%value%%. If it is an invalid value for
+ *  Gets a BigInt from %%value%%. If it is an invalid value for
  *  a BigInt, then an ArgumentError will be thrown for %%name%%.
  */
 export declare function getBigInt(value: BigNumberish, name?: string): bigint;

@@ -145,7 +145,7 @@ function zeroPad(data, length, left) {
  *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
  *
- *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrunError]] is
  *  thrown.
  *
  *  This pads data the same as **values** are in Solidity
@@ -158,7 +158,7 @@ export function zeroPadValue(data, length) {
  *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
  *
- *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrunError]] is
  *  thrown.
  *
  *  This pads data the same as **bytes** are in Solidity

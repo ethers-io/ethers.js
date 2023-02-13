@@ -69,7 +69,7 @@ function mask(_value, _bits) {
 }
 exports.mask = mask;
 /**
- *  Gets a [[BigInt]] from %%value%%. If it is an invalid value for
+ *  Gets a BigInt from %%value%%. If it is an invalid value for
  *  a BigInt, then an ArgumentError will be thrown for %%name%%.
  */
 function getBigInt(value, name) {

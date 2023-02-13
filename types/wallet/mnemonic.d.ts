@@ -1,7 +1,7 @@
 import type { BytesLike } from "../utils/index.js";
 import type { Wordlist } from "../wordlists/index.js";
 /**
- *  A **Mnemonic** wraps all properties required to compute [[link-bip39]]
+ *  A **Mnemonic** wraps all properties required to compute [[link-bip-39]]
  *  seeds and convert between phrases and entropy.
  */
 export declare class Mnemonic {
@@ -55,7 +55,7 @@ export declare class Mnemonic {
      */
     static phraseToEntropy(phrase: string, wordlist?: null | Wordlist): string;
     /**
-     *  Returns true if %%phrase%% is a valid [[link-bip39]] phrase.
+     *  Returns true if %%phrase%% is a valid [[link-bip-39]] phrase.
      *
      *  This checks all the provided words belong to the %%wordlist%%,
      *  that the length is valid and the checksum is correct.

@@ -1,7 +1,7 @@
 /**
  *  Transactions..
  *
- *  @_section api/transaction:Transactions  [transactions]
+ *  @_section api/transaction:Transactions  [about-transactions]
  */
 /**
  *  A single [[AccessList]] entry of storage keys (slots) for an address.

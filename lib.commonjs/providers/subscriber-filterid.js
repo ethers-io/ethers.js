@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FilterIdPendingSubscriber = exports.FilterIdEventSubscriber = exports.FilterIdSubscriber = void 0;
+const index_js_1 = require("../utils/index.js");
 const subscriber_polling_js_1 = require("./subscriber-polling.js");
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
@@ -41,11 +42,24 @@ class FilterIdSubscriber {
     }
     async #poll(blockNumber) {
         try {
+            // Subscribe if necessary
             if (this.#filterIdPromise == null) {
                 this.#filterIdPromise = this._subscribe(this.#provider);
             }
-            const filterId = await this.#filterIdPromise;
+            // Get the Filter ID
+            let filterId = null;
+            try {
+                filterId = await this.#filterIdPromise;
+            }
+            catch (error) {
+                if (!(0, index_js_1.isError)(error, "UNSUPPORTED_OPERATION") || error.operation !== "eth_newFilter") {
+                    throw error;
+                }
+            }
+            // The backend does not support Filter ID; downgrade to
+            // polling
             if (filterId == null) {
+                this.#filterIdPromise = null;
                 this.#provider._recoverSubscriber(this, this._recover(this.#provider));
                 return;
             }

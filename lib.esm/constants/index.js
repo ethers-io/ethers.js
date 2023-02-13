@@ -1,7 +1,7 @@
 /**
  *  Some common constants useful for Ethereum.
  *
- *  @_section: api/constants: Constants  [constants]
+ *  @_section: api/constants: Constants  [about-constants]
  */
 export { ZeroAddress } from "./addresses.js";
 export { ZeroHash } from "./hashes.js";

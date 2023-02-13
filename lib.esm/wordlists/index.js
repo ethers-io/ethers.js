@@ -15,7 +15,7 @@
  *  languages, but for maximal compatibility, the
  *  [English Wordlist](LangEn) is recommended.
  *
- *  @_section: api/wordlists:Wordlists [wordlists]
+ *  @_section: api/wordlists:Wordlists [about-wordlists]
  */
 export { Wordlist } from "./wordlist.js";
 export { LangEn } from "./lang-en.js";

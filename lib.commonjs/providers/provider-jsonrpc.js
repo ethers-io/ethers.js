@@ -18,6 +18,7 @@ const abstract_provider_js_1 = require("./abstract-provider.js");
 const abstract_signer_js_1 = require("./abstract-signer.js");
 const network_js_1 = require("./network.js");
 const subscriber_filterid_js_1 = require("./subscriber-filterid.js");
+const subscriber_polling_js_1 = require("./subscriber-polling.js");
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
 function deepCopy(value) {
@@ -423,6 +424,9 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             return new subscriber_filterid_js_1.FilterIdPendingSubscriber(this);
         }
         if (sub.type === "event") {
+            if (this._getOption("polling")) {
+                return new subscriber_polling_js_1.PollingEventSubscriber(this, sub.filter);
+            }
             return new subscriber_filterid_js_1.FilterIdEventSubscriber(this, sub.filter);
         }
         // Orphaned Logs are handled automatically, by the filter, since
@@ -578,74 +582,6 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             const e = index_js_1.AbiCoder.getBuiltinCallException((method === "eth_call") ? "call" : "estimateGas", (payload.params[0]), (result ? result.data : null));
             e.info = { error, payload };
             return e;
-            /*
-                        let message = "missing revert data during JSON-RPC call";
-            
-                        const action = <"call" | "estimateGas" | "unknown">(({ eth_call: "call", eth_estimateGas: "estimateGas" })[method] || "unknown");
-                        let data: null | string = null;
-                        let reason: null | string = null;
-                        const transaction = <{ from: string, to: string, data: string }>((<any>payload).params[0]);
-                        const invocation = null;
-                        let revert: null | { signature: string, name: string, args: Array<any> } = null;
-            
-                        if (result) {
-                            // @TODO: Extract errorSignature, errorName, errorArgs, reason if
-                            //        it is Error(string) or Panic(uint25)
-                            message = "execution reverted during JSON-RPC call";
-                            data = result.data;
-            
-                            let bytes = getBytes(data);
-                            if (bytes.length % 32 !== 4) {
-                                message += " (could not parse reason; invalid data length)";
-            
-                            } else if (data.substring(0, 10) === "0x08c379a0") {
-                                // Error(string)
-                                try {
-                                    if (bytes.length < 68) { throw new Error("bad length"); }
-                                    bytes = bytes.slice(4);
-                                    const pointer = getNumber(hexlify(bytes.slice(0, 32)));
-                                    bytes = bytes.slice(pointer);
-                                    if (bytes.length < 32) { throw new Error("overrun"); }
-                                    const length = getNumber(hexlify(bytes.slice(0, 32)));
-                                    bytes = bytes.slice(32);
-                                    if (bytes.length < length) { throw new Error("overrun"); }
-                                    reason = toUtf8String(bytes.slice(0, length));
-                                    revert = {
-                                        signature: "Error(string)",
-                                        name: "Error",
-                                        args: [ reason ]
-                                    };
-                                    message += `: ${ JSON.stringify(reason) }`;
-            
-                                } catch (error) {
-                                    console.log(error);
-                                    message += " (could not parse reason; invalid data length)";
-                                }
-            
-                            } else if (data.substring(0, 10) === "0x4e487b71") {
-                                // Panic(uint256)
-                                try {
-                                    if (bytes.length !== 36) { throw new Error("bad length"); }
-                                    const arg = getNumber(hexlify(bytes.slice(4)));
-                                    revert = {
-                                        signature: "Panic(uint256)",
-                                        name: "Panic",
-                                        args: [ arg ]
-                                    };
-                                    reason = `Panic due to ${ PanicReasons.get(Number(arg)) || "UNKNOWN" }(${ arg })`;
-                                    message += `: ${ reason }`;
-                                } catch (error) {
-                                    console.log(error);
-                                    message += " (could not parse panic reason)";
-                                }
-                            }
-                        }
-            
-                        return makeError(message, "CALL_EXCEPTION", {
-                            action, data, reason, transaction, invocation, revert,
-                            info: { payload, error }
-                        });
-                        */
         }
         // Only estimateGas and call can return arbitrary contract-defined text, so now we
         // we can process text safely.
@@ -670,7 +606,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             const transaction = (payload.params[0]);
             if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
                 return (0, index_js_5.makeError)("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
-                    transaction
+                    transaction, info: { error }
                 });
             }
             if (message.match(/nonce/i) && message.match(/too low/i)) {
@@ -688,7 +624,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         }
         if (message.match(/the method .* does not exist/i)) {
             return (0, index_js_5.makeError)("unsupported operation", "UNSUPPORTED_OPERATION", {
-                operation: payload.method
+                operation: payload.method, info: { error }
             });
         }
         return (0, index_js_5.makeError)("could not coalesce error", "UNKNOWN_ERROR", { error });

@@ -4,7 +4,7 @@ exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransac
 /**
  *  About contracts...
  *
- *  @_section: api/contract:Contracts  [contracts]
+ *  @_section: api/contract:Contracts  [about-contracts]
  */
 var contract_js_1 = require("./contract.js");
 Object.defineProperty(exports, "BaseContract", { enumerable: true, get: function () { return contract_js_1.BaseContract; } });

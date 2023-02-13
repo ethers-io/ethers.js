@@ -72,7 +72,7 @@ export declare function stripZerosLeft(data: BytesLike): string;
  *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
  *
- *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrunError]] is
  *  thrown.
  *
  *  This pads data the same as **values** are in Solidity
@@ -83,7 +83,7 @@ export declare function zeroPadValue(data: BytesLike, length: number): string;
  *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
  *
- *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrunError]] is
  *  thrown.
  *
  *  This pads data the same as **bytes** are in Solidity

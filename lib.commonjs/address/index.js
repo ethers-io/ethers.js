@@ -11,7 +11,7 @@
  *  These functions help convert between various formats, validate
  *  addresses and safely resolve ENS names.
  *
- *  @_section: api/address:Addresses  [addresses]
+ *  @_section: api/address:Addresses  [about-addresses]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveAddress = exports.isAddress = exports.isAddressable = exports.getCreate2Address = exports.getCreateAddress = exports.getIcapAddress = exports.getAddress = void 0;

@@ -1,4 +1,4 @@
-const version = "6.0.2";
+const version = "6.0.3";
 
 /**
  *  Property helper functions.
@@ -411,7 +411,7 @@ function zeroPad(data, length, left) {
  *  Return the [[DataHexString]] of %%data%% padded on the **left**
  *  to %%length%% bytes.
  *
- *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrunError]] is
  *  thrown.
  *
  *  This pads data the same as **values** are in Solidity
@@ -424,7 +424,7 @@ function zeroPadValue(data, length) {
  *  Return the [[DataHexString]] of %%data%% padded on the **right**
  *  to %%length%% bytes.
  *
- *  If %%data%% already exceeds %%length%%, a [[BufferOverrun]] is
+ *  If %%data%% already exceeds %%length%%, a [[BufferOverrunError]] is
  *  thrown.
  *
  *  This pads data the same as **bytes** are in Solidity
@@ -497,7 +497,7 @@ function mask(_value, _bits) {
     return value & ((BN_1$5 << bits) - BN_1$5);
 }
 /**
- *  Gets a [[BigInt]] from %%value%%. If it is an invalid value for
+ *  Gets a BigInt from %%value%%. If it is an invalid value for
  *  a BigInt, then an ArgumentError will be thrown for %%name%%.
  */
 function getBigInt(value, name) {
@@ -795,7 +795,21 @@ function replaceFunc(reason, offset, bytes, output, badCodepoint) {
     // Otherwise, process as if ignoring errors
     return ignoreFunc(reason, offset, bytes, output, badCodepoint);
 }
-// Common error handing strategies
+/**
+ *  A handful of popular, built-in UTF-8 error handling strategies.
+ *
+ *  **``"error"``** - throws on ANY illegal UTF-8 sequence or
+ *  non-canonical (overlong) codepoints (this is the default)
+ *
+ *  **``"ignore"``** - silently drops any illegal UTF-8 sequence
+ *  and accepts non-canonical (overlong) codepoints
+ *
+ *  **``"replace"``** - replace any illegal UTF-8 sequence with the
+ *  UTF-8 replacement character (i.e. `\ufffd`) and accepts
+ *  non-canonical (overlong) codepoints
+ *
+ *  @returns: Record<"error" | "ignore" | "replace", Utf8ErrorFunc>
+ */
 const Utf8ErrorFuncs = Object.freeze({
     error: errorFunc,
     ignore: ignoreFunc,
@@ -942,7 +956,7 @@ function _toUtf8String(codePoints) {
  *
  *  When %%onError%% function is specified, it is called on UTF-8
  *  errors allowing recovery using the [[Utf8ErrorFunc]] API.
- *  (default: [error](Utf8ErrorFuncs-error))
+ *  (default: [error](Utf8ErrorFuncs))
  */
 function toUtf8String(bytes, onError) {
     return _toUtf8String(getUtf8CodePoints(bytes, onError));
@@ -2462,7 +2476,7 @@ function formatUnits(value, unit) {
     return FixedNumber.fromValue(value, decimals, { decimals }).toString();
 }
 /**
- *  Converts the //decimal string// %%value%% to a [[BigInt]], assuming
+ *  Converts the //decimal string// %%value%% to a BigInt, assuming
  *  %%unit%% decimal places. The %%unit%% may the number of decimal places
  *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
  */
@@ -2486,7 +2500,7 @@ function formatEther(wei) {
     return formatUnits(wei, 18);
 }
 /**
- *  Converts the //decimal string// %%ether%% to a [[BigInt]], using 18
+ *  Converts the //decimal string// %%ether%% to a BigInt, using 18
  *  decimal places.
  */
 function parseEther(ether) {
@@ -2527,7 +2541,7 @@ function uuidV4(randomBytes) {
  *  Ethereum and to simplify the library, without increasing
  *  the library dependencies for simple functions.
  *
- *  @_section api/utils:Utilities  [utils]
+ *  @_section api/utils:Utilities  [about-utils]
  */
 
 /**
@@ -5932,7 +5946,7 @@ const MessagePrefix = "\x19Ethereum Signed Message:\n";
 /**
  *  Some common constants useful for Ethereum.
  *
- *  @_section: api/constants: Constants  [constants]
+ *  @_section: api/constants: Constants  [about-constants]
  */
 
 // Constants
@@ -5948,6 +5962,9 @@ function toUint256(value) {
 }
 /**
  *  A Signature  @TODO
+ *
+ *
+ *  @_docloc: api/crypto:Signing
  */
 class Signature {
     #r;
@@ -6231,6 +6248,11 @@ class Signature {
     }
 }
 
+/**
+ *  Add details about signing here.
+ *
+ *  @_subsection: api/crypto:Signing  [about-signing]
+ */
 //const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
 // Make noble-secp256k1 sync
 utils.hmacSha256Sync = function (key, ...messages) {
@@ -6402,7 +6424,7 @@ class SigningKey {
  *  A fundamental building block of Ethereum is the underlying
  *  cryptographic primitives.
  *
- *  @_section: api/crypto:Cryptographic Functions   [crypto]
+ *  @_section: api/crypto:Cryptographic Functions   [about-crypto]
  */
 null;
 function lock() {
@@ -6762,7 +6784,7 @@ function resolveAddress(target, resolver) {
  *  These functions help convert between various formats, validate
  *  addresses and safely resolve ENS names.
  *
- *  @_section: api/address:Addresses  [addresses]
+ *  @_section: api/address:Addresses  [about-addresses]
  */
 null;
 
@@ -9218,7 +9240,7 @@ class Transaction {
 /**
  *  Transactions..
  *
- *  @_section api/transaction:Transactions  [transactions]
+ *  @_section api/transaction:Transactions  [about-transactions]
  */
 null;
 
@@ -9751,13 +9773,13 @@ class TypedDataEncoder {
 /**
  *  About hashing here...
  *
- *  @_section: api/hashing:Hashing Utilities  [hashing]
+ *  @_section: api/hashing:Hashing Utilities  [about-hashing]
  */
 
 /**
  *  About frgaments...
  *
- *  @_subsection api/abi/abi-coder:Fragments
+ *  @_subsection api/abi/abi-coder:Fragments  [about-fragments]
  */
 ;
 // [ "a", "b" ] => { "a": 1, "b": 1 }
@@ -10109,26 +10131,25 @@ class ParamType {
     /**
      *  True if the parameters is indexed.
      *
-     *  For non-indexable types (see [[ParamType_isIndexable]]) this
-     *  is ``null``.
+     *  For non-indexable types this is ``null``.
      */
     indexed;
     /**
      *  The components for the tuple.
      *
-     *  For non-tuple types (see [[ParamType_isTuple]]) this is ``null``.
+     *  For non-tuple types this is ``null``.
      */
     components;
     /**
      *  The array length, or ``-1`` for dynamic-lengthed arrays.
      *
-     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     *  For non-array types this is ``null``.
      */
     arrayLength;
     /**
      *  The type of each child in the array.
      *
-     *  For non-array types (see [[ParamType_isArray]]) this is ``null``.
+     *  For non-array types this is ``null``.
      */
     arrayChildren;
     /**
@@ -11117,7 +11138,7 @@ class AbiCoder {
         return defaultCoder;
     }
     /**
-     *  Returns an ethers-compatible [[CALL_EXCEPTION]] Error for the given
+     *  Returns an ethers-compatible [[CallExceptionError]] Error for the given
      *  result %%data%% for the [[CallExceptionAction]] %%action%% against
      *  the Transaction %%tx%%.
      */
@@ -11721,7 +11742,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
      *  specified error (see [[getError]] for valid values for
      *  %%key%%).
      *
-     *  Most developers should prefer the [[parseResult]] method instead,
+     *  Most developers should prefer the [[parseCallResult]] method instead,
      *  which will automatically detect a ``CALL_EXCEPTION`` and throw the
      *  corresponding error.
      */
@@ -11791,7 +11812,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
      *  specified function (see [[getFunction]] for valid values for
      *  %%key%%).
      *
-     *  Most developers should prefer the [[parseResult]] method instead,
+     *  Most developers should prefer the [[parseCallResult]] method instead,
      *  which will automatically detect a ``CALL_EXCEPTION`` and throw the
      *  corresponding error.
      */
@@ -12140,7 +12161,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
 /**
  *  Explain about ABI here...
  *
- *  @_section api/abi:Application Binary Interface  [abi]
+ *  @_section api/abi:Application Binary Interface  [about-abi]
  *  @_navTitle: ABI
  */
 
@@ -13489,7 +13510,7 @@ async function _emit(contract, event, args, payloadFunc) {
     }
     const count = sub.listeners.length;
     sub.listeners = sub.listeners.filter(({ listener, once }) => {
-        const passArgs = args.slice();
+        const passArgs = Array.from(args);
         if (payloadFunc) {
             passArgs.push(payloadFunc(once ? null : listener));
         }
@@ -13875,7 +13896,7 @@ class ContractFactory {
 /**
  *  About contracts...
  *
- *  @_section: api/contract:Contracts  [contracts]
+ *  @_section: api/contract:Contracts  [about-contracts]
  */
 
 /**
@@ -14486,7 +14507,7 @@ const _formatTransactionReceipt = object({
     cumulativeGasUsed: getBigInt,
     effectiveGasPrice: allowNull(getBigInt),
     status: allowNull(getNumber),
-    type: getNumber
+    type: allowNull(getNumber, 0)
 }, {
     effectiveGasPrice: ["gasPrice"],
     hash: ["transactionHash"],
@@ -16619,11 +16640,24 @@ class FilterIdSubscriber {
     }
     async #poll(blockNumber) {
         try {
+            // Subscribe if necessary
             if (this.#filterIdPromise == null) {
                 this.#filterIdPromise = this._subscribe(this.#provider);
             }
-            const filterId = await this.#filterIdPromise;
+            // Get the Filter ID
+            let filterId = null;
+            try {
+                filterId = await this.#filterIdPromise;
+            }
+            catch (error) {
+                if (!isError(error, "UNSUPPORTED_OPERATION") || error.operation !== "eth_newFilter") {
+                    throw error;
+                }
+            }
+            // The backend does not support Filter ID; downgrade to
+            // polling
             if (filterId == null) {
+                this.#filterIdPromise = null;
                 this.#provider._recoverSubscriber(this, this._recover(this.#provider));
                 return;
             }
@@ -17127,6 +17161,9 @@ class JsonRpcApiProvider extends AbstractProvider {
             return new FilterIdPendingSubscriber(this);
         }
         if (sub.type === "event") {
+            if (this._getOption("polling")) {
+                return new PollingEventSubscriber(this, sub.filter);
+            }
             return new FilterIdEventSubscriber(this, sub.filter);
         }
         // Orphaned Logs are handled automatically, by the filter, since
@@ -17282,74 +17319,6 @@ class JsonRpcApiProvider extends AbstractProvider {
             const e = AbiCoder.getBuiltinCallException((method === "eth_call") ? "call" : "estimateGas", (payload.params[0]), (result ? result.data : null));
             e.info = { error, payload };
             return e;
-            /*
-                        let message = "missing revert data during JSON-RPC call";
-            
-                        const action = <"call" | "estimateGas" | "unknown">(({ eth_call: "call", eth_estimateGas: "estimateGas" })[method] || "unknown");
-                        let data: null | string = null;
-                        let reason: null | string = null;
-                        const transaction = <{ from: string, to: string, data: string }>((<any>payload).params[0]);
-                        const invocation = null;
-                        let revert: null | { signature: string, name: string, args: Array<any> } = null;
-            
-                        if (result) {
-                            // @TODO: Extract errorSignature, errorName, errorArgs, reason if
-                            //        it is Error(string) or Panic(uint25)
-                            message = "execution reverted during JSON-RPC call";
-                            data = result.data;
-            
-                            let bytes = getBytes(data);
-                            if (bytes.length % 32 !== 4) {
-                                message += " (could not parse reason; invalid data length)";
-            
-                            } else if (data.substring(0, 10) === "0x08c379a0") {
-                                // Error(string)
-                                try {
-                                    if (bytes.length < 68) { throw new Error("bad length"); }
-                                    bytes = bytes.slice(4);
-                                    const pointer = getNumber(hexlify(bytes.slice(0, 32)));
-                                    bytes = bytes.slice(pointer);
-                                    if (bytes.length < 32) { throw new Error("overrun"); }
-                                    const length = getNumber(hexlify(bytes.slice(0, 32)));
-                                    bytes = bytes.slice(32);
-                                    if (bytes.length < length) { throw new Error("overrun"); }
-                                    reason = toUtf8String(bytes.slice(0, length));
-                                    revert = {
-                                        signature: "Error(string)",
-                                        name: "Error",
-                                        args: [ reason ]
-                                    };
-                                    message += `: ${ JSON.stringify(reason) }`;
-            
-                                } catch (error) {
-                                    console.log(error);
-                                    message += " (could not parse reason; invalid data length)";
-                                }
-            
-                            } else if (data.substring(0, 10) === "0x4e487b71") {
-                                // Panic(uint256)
-                                try {
-                                    if (bytes.length !== 36) { throw new Error("bad length"); }
-                                    const arg = getNumber(hexlify(bytes.slice(4)));
-                                    revert = {
-                                        signature: "Panic(uint256)",
-                                        name: "Panic",
-                                        args: [ arg ]
-                                    };
-                                    reason = `Panic due to ${ PanicReasons.get(Number(arg)) || "UNKNOWN" }(${ arg })`;
-                                    message += `: ${ reason }`;
-                                } catch (error) {
-                                    console.log(error);
-                                    message += " (could not parse panic reason)";
-                                }
-                            }
-                        }
-            
-                        return makeError(message, "CALL_EXCEPTION", {
-                            action, data, reason, transaction, invocation, revert,
-                            info: { payload, error }
-                        });
-                        */
         }
         // Only estimateGas and call can return arbitrary contract-defined text, so now we
         // we can process text safely.
@@ -17374,7 +17343,7 @@ class JsonRpcApiProvider extends AbstractProvider {
             const transaction = (payload.params[0]);
             if (message.match(/insufficient funds|base fee exceeds gas limit/i)) {
                 return makeError("insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
-                    transaction
+                    transaction, info: { error }
                 });
             }
             if (message.match(/nonce/i) && message.match(/too low/i)) {
@@ -17392,7 +17361,7 @@ class JsonRpcApiProvider extends AbstractProvider {
         }
         if (message.match(/the method .* does not exist/i)) {
             return makeError("unsupported operation", "UNSUPPORTED_OPERATION", {
-                operation: payload.method
+                operation: payload.method, info: { error }
             });
         }
         return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
@@ -19740,7 +19709,7 @@ const IpcSocketProvider = undefined;
 /**
  *  About providers.
  *
- *  @_section: api/providers:Providers  [providers]
+ *  @_section: api/providers:Providers  [about-providers]
  */
 
 /**
@@ -19895,7 +19864,7 @@ function decodeOwl(data) {
 
 /**
  *  A Wordlist represents a collection of language-specific
- *  words used to encode and devoce [[BIP-39]] encoded data
+ *  words used to encode and devoce [[link-bip-39]] encoded data
  *  by mapping words to 11-bit values and vice versa.
  */
 class Wordlist {
@@ -20086,7 +20055,7 @@ function entropyToMnemonic(entropy, wordlist) {
 }
 const _guard$1 = {};
 /**
- *  A **Mnemonic** wraps all properties required to compute [[link-bip39]]
+ *  A **Mnemonic** wraps all properties required to compute [[link-bip-39]]
  *  seeds and convert between phrases and entropy.
  */
 class Mnemonic {
@@ -20166,7 +20135,7 @@ class Mnemonic {
         return mnemonicToEntropy(phrase, wordlist);
     }
     /**
-     *  Returns true if %%phrase%% is a valid [[link-bip39]] phrase.
+     *  Returns true if %%phrase%% is a valid [[link-bip-39]] phrase.
      *
      *  This checks all the provided words belong to the %%wordlist%%,
      *  that the length is valid and the checksum is correct.
@@ -21828,7 +21797,7 @@ class Wallet extends BaseWallet {
  *  low-level details of how an HD wallets are derived, exported
  *  or imported.
  *
- *  @_section: api/wallet:Wallets  [wallets]
+ *  @_section: api/wallet:Wallets  [about-wallets]
  */
 
 const Base64 = ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
@@ -21933,7 +21902,7 @@ const wordlists = {
  *  languages, but for maximal compatibility, the
  *  [English Wordlist](LangEn) is recommended.
  *
- *  @_section: api/wordlists:Wordlists [wordlists]
+ *  @_section: api/wordlists:Wordlists [about-wordlists]
  */
 
 /////////////////////////////

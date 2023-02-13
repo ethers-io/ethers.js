@@ -1,4 +1,9 @@
 import type { BigNumberish, BytesLike } from "../utils/index.js";
+/**
+ *  A SignatureLike
+ *
+ *  @_docloc: api/crypto:Signing
+ */
 export type SignatureLike = Signature | string | {
     r: string;
     s: string;
@@ -20,6 +25,9 @@ export type SignatureLike = Signature | string | {
 };
 /**
  *  A Signature  @TODO
+ *
+ *
+ *  @_docloc: api/crypto:Signing
  */
 export declare class Signature {
     #private;

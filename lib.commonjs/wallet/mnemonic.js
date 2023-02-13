@@ -71,7 +71,7 @@ function entropyToMnemonic(entropy, wordlist) {
 }
 const _guard = {};
 /**
- *  A **Mnemonic** wraps all properties required to compute [[link-bip39]]
+ *  A **Mnemonic** wraps all properties required to compute [[link-bip-39]]
  *  seeds and convert between phrases and entropy.
  */
 class Mnemonic {
@@ -151,7 +151,7 @@ class Mnemonic {
         return mnemonicToEntropy(phrase, wordlist);
     }
     /**
-     *  Returns true if %%phrase%% is a valid [[link-bip39]] phrase.
+     *  Returns true if %%phrase%% is a valid [[link-bip-39]] phrase.
      *
      *  This checks all the provided words belong to the %%wordlist%%,
      *  that the length is valid and the checksum is correct.

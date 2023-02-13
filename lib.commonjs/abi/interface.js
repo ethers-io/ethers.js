@@ -570,7 +570,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
      *  specified error (see [[getError]] for valid values for
      *  %%key%%).
      *
-     *  Most developers should prefer the [[parseResult]] method instead,
+     *  Most developers should prefer the [[parseCallResult]] method instead,
      *  which will automatically detect a ``CALL_EXCEPTION`` and throw the
      *  corresponding error.
      */
@@ -640,7 +640,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
      *  specified function (see [[getFunction]] for valid values for
      *  %%key%%).
      *
-     *  Most developers should prefer the [[parseResult]] method instead,
+     *  Most developers should prefer the [[parseCallResult]] method instead,
      *  which will automatically detect a ``CALL_EXCEPTION`` and throw the
      *  corresponding error.
      */

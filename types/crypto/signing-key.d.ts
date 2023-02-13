@@ -1,3 +1,8 @@
+/**
+ *  Add details about signing here.
+ *
+ *  @_subsection: api/crypto:Signing  [about-signing]
+ */
 import { Signature } from "./signature.js";
 import type { BytesLike } from "../utils/index.js";
 import type { SignatureLike } from "./index.js";

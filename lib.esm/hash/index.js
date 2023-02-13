@@ -1,7 +1,7 @@
 /**
  *  About hashing here...
  *
- *  @_section: api/hashing:Hashing Utilities  [hashing]
+ *  @_section: api/hashing:Hashing Utilities  [about-hashing]
  */
 export { id } from "./id.js";
 export { ensNormalize, isValidName, namehash, dnsEncode } from "./namehash.js";

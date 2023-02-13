@@ -3,7 +3,7 @@
  *  Ethereum and to simplify the library, without increasing
  *  the library dependencies for simple functions.
  *
- *  @_section api/utils:Utilities  [utils]
+ *  @_section api/utils:Utilities  [about-utils]
  */
 export { decodeBase58, encodeBase58 } from "./base58.js";
 export { decodeBase64, encodeBase64 } from "./base64.js";

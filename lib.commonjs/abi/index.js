@@ -2,7 +2,7 @@
 /**
  *  Explain about ABI here...
  *
- *  @_section api/abi:Application Binary Interface  [abi]
+ *  @_section api/abi:Application Binary Interface  [about-abi]
  *  @_navTitle: ABI
  */
 Object.defineProperty(exports, "__esModule", { value: true });

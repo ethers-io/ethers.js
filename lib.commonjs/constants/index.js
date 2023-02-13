@@ -2,7 +2,7 @@
 /**
  *  Some common constants useful for Ethereum.
  *
- *  @_section: api/constants: Constants  [constants]
+ *  @_section: api/constants: Constants  [about-constants]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessagePrefix = exports.EtherSymbol = exports.MaxInt256 = exports.MinInt256 = exports.MaxUint256 = exports.WeiPerEther = exports.N = exports.ZeroHash = exports.ZeroAddress = void 0;

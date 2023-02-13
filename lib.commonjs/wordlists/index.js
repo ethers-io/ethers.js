@@ -18,7 +18,7 @@ exports.wordlists = exports.WordlistOwlA = exports.WordlistOwl = exports.LangEn 
  *  languages, but for maximal compatibility, the
  *  [English Wordlist](LangEn) is recommended.
  *
- *  @_section: api/wordlists:Wordlists [wordlists]
+ *  @_section: api/wordlists:Wordlists [about-wordlists]
  */
 var wordlist_js_1 = require("./wordlist.js");
 Object.defineProperty(exports, "Wordlist", { enumerable: true, get: function () { return wordlist_js_1.Wordlist; } });

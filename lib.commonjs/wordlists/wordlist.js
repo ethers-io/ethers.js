@@ -4,7 +4,7 @@ exports.Wordlist = void 0;
 const index_js_1 = require("../utils/index.js");
 /**
  *  A Wordlist represents a collection of language-specific
- *  words used to encode and devoce [[BIP-39]] encoded data
+ *  words used to encode and devoce [[link-bip-39]] encoded data
  *  by mapping words to 11-bit values and vice versa.
  */
 class Wordlist {

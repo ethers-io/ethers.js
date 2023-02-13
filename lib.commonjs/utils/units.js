@@ -54,7 +54,7 @@ function formatUnits(value, unit) {
 }
 exports.formatUnits = formatUnits;
 /**
- *  Converts the //decimal string// %%value%% to a [[BigInt]], assuming
+ *  Converts the //decimal string// %%value%% to a BigInt, assuming
  *  %%unit%% decimal places. The %%unit%% may the number of decimal places
  *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
  */
@@ -80,7 +80,7 @@ function formatEther(wei) {
 }
 exports.formatEther = formatEther;
 /**
- *  Converts the //decimal string// %%ether%% to a [[BigInt]], using 18
+ *  Converts the //decimal string// %%ether%% to a BigInt, using 18
  *  decimal places.
  */
 function parseEther(ether) {
