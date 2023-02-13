@@ -1,10 +1,11 @@
+import { isError } from "../utils/index.js";
+
 import { PollingEventSubscriber } from "./subscriber-polling.js";
 
 import type { AbstractProvider, Subscriber } from "./abstract-provider.js";
 import type { Network } from "./network.js";
 import type { EventFilter } from "./provider.js";
 import type { JsonRpcApiProvider } from "./provider-jsonrpc.js";
-
 
 function copy(obj: any): any {
     return JSON.parse(JSON.stringify(obj));
@@ -59,12 +60,25 @@ export class FilterIdSubscriber implements Subscriber {
 
     async #poll(blockNumber: number): Promise<void> {
         try {
+            // Subscribe if necessary
             if (this.#filterIdPromise == null) {
                 this.#filterIdPromise = this._subscribe(this.#provider);
             }
 
-            const filterId = await this.#filterIdPromise;
+            // Get the Filter ID
+            let filterId: null | string = null;
+            try {
+                filterId = await this.#filterIdPromise;
+            } catch (error) {
+                if (!isError(error, "UNSUPPORTED_OPERATION") || error.operation !== "eth_newFilter") {
+                    throw error;
+                }
+            }
+
+            // The backend does not support Filter ID; downgrade to
+            // polling
             if (filterId == null) {
+                this.#filterIdPromise = null;
                 this.#provider._recoverSubscriber(this, this._recover(this.#provider));
                 return;
             }
