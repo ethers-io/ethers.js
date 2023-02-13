@@ -6,7 +6,8 @@
     "./lib.esm/providers/ws.js": "./lib.esm/providers/ws-browser.js",
     "./lib.esm/utils/base64.js": "./lib.esm/utils/base64-browser.js",
     "./lib.esm/utils/geturl.js": "./lib.esm/utils/geturl-browser.js",
-    "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js"
+    "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js",
+    "@adraffy/ens-normalize": "@adraffy/ens-normalize/xnf"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "1.8.9",
@@ -104,7 +105,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "6372a46b1b273db3e4c1189daebb4b888bd588bc",
+  "gitHead": "2a30facb2bda5c79aefd82efa4c439ffc9fa6b5a",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -145,5 +146,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.3"
+  "version": "6.0.4"
 }

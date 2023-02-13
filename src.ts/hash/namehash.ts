@@ -5,7 +5,7 @@ import {
 } from "../utils/index.js";
 
 
-import { ens_normalize } from "@adraffy/ens-normalize/xnf";
+import { ens_normalize } from "@adraffy/ens-normalize";
 
 const Zeros = new Uint8Array(32);
 Zeros.fill(0);
