@@ -2,7 +2,7 @@ import { defineProperties } from "../utils/index.js";
 
 /**
  *  A Wordlist represents a collection of language-specific
- *  words used to encode and devoce [[BIP-39]] encoded data
+ *  words used to encode and devoce [[link-bip-39]] encoded data
  *  by mapping words to 11-bit values and vice versa.
  */
 export abstract class Wordlist {

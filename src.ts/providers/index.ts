@@ -1,7 +1,7 @@
 /**
  *  About providers.
  *
- *  @_section: api/providers:Providers  [providers]
+ *  @_section: api/providers:Providers  [about-providers]
  */
 
 

@@ -1,7 +1,7 @@
 /**
  *  About contracts...
  *
- *  @_section: api/contract:Contracts  [contracts]
+ *  @_section: api/contract:Contracts  [about-contracts]
  */
 export {
     BaseContract, Contract

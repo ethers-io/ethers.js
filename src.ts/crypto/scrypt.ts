@@ -9,6 +9,8 @@ import type { BytesLike } from "../utils/index.js";
  *  UI or provide programatic access to the progress.
  *
  *  The %%percent%% is a value between ``0`` and ``1``.
+ *
+ *  @_docloc: api/crypto:Passwords
  */
 export type ProgressCallback = (percent: number) => void;
 

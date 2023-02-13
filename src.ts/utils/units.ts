@@ -56,7 +56,7 @@ export function formatUnits(value: BigNumberish, unit?: string | Numeric): strin
 }
 
 /**
- *  Converts the //decimal string// %%value%% to a [[BigInt]], assuming
+ *  Converts the //decimal string// %%value%% to a BigInt, assuming
  *  %%unit%% decimal places. The %%unit%% may the number of decimal places
  *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
  */
@@ -83,7 +83,7 @@ export function formatEther(wei: BigNumberish): string {
 }
 
 /**
- *  Converts the //decimal string// %%ether%% to a [[BigInt]], using 18
+ *  Converts the //decimal string// %%ether%% to a BigInt, using 18
  *  decimal places.
  */
 export function parseEther(ether: string): bigint {

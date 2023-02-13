@@ -10,7 +10,7 @@
  *  These functions help convert between various formats, validate
  *  addresses and safely resolve ENS names.
  *
- *  @_section: api/address:Addresses  [addresses]
+ *  @_section: api/address:Addresses  [about-addresses]
  */
 
 null;

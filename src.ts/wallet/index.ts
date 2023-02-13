@@ -14,7 +14,7 @@
  *  low-level details of how an HD wallets are derived, exported
  *  or imported.
  *
- *  @_section: api/wallet:Wallets  [wallets]
+ *  @_section: api/wallet:Wallets  [about-wallets]
  */
 
 export { BaseWallet } from "./base-wallet.js";

@@ -1,3 +1,4 @@
+
 import { ZeroHash } from "../constants/index.js";
 import {
     concat, dataLength, getBigInt, getBytes, getNumber, hexlify,
@@ -22,6 +23,12 @@ const BN_35 = BigInt(35);
 const _guard = { };
 
 // @TODO: Allow Uint8Array
+
+/**
+ *  A SignatureLike
+ *
+ *  @_docloc: api/crypto:Signing
+ */
 export type SignatureLike = Signature | string | {
     r: string;
     s: string;
@@ -48,6 +55,9 @@ function toUint256(value: BigNumberish): string {
 
 /**
  *  A Signature  @TODO
+ *
+ *
+ *  @_docloc: api/crypto:Signing
  */
 export class Signature {
     #r: string;
