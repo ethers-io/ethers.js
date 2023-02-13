@@ -586,7 +586,7 @@ async function _emit(contract: BaseContract, event: ContractEventName, args: Arr
 
     const count = sub.listeners.length;
     sub.listeners = sub.listeners.filter(({ listener, once }) => {
-        const passArgs = args.slice();
+        const passArgs = Array.from(args);
         if (payloadFunc) {
             passArgs.push(payloadFunc(once ? null: listener));
         }
