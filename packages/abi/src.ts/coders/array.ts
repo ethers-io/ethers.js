@@ -54,21 +54,24 @@ export function pack(writer: Writer, coders: ReadonlyArray<Coder>, values: Array
     coders.forEach((coder, index) => {
         let value = arrayValues[index];
 
-        if (coder.dynamic) {
-            // Get current dynamic offset (for the future pointer)
-            let dynamicOffset = dynamicWriter.length;
+        try {
+            if (coder.dynamic) {
+                // Get current dynamic offset (for the future pointer)
+                let dynamicOffset = dynamicWriter.length;
 
-            // Encode the dynamic value into the dynamicWriter
-            coder.encode(dynamicWriter, value);
+                // Encode the dynamic value into the dynamicWriter
+                coder.encode(dynamicWriter, value);
 
-            // Prepare to populate the correct offset once we are done
-            let updateFunc = staticWriter.writeUpdatableValue();
-            updateFuncs.push((baseOffset: number) => {
-                updateFunc(baseOffset + dynamicOffset);
-            });
-
-        } else {
-            coder.encode(staticWriter, value);
+                // Prepare to populate the correct offset once we are done
+                let updateFunc = staticWriter.writeUpdatableValue();
+                updateFuncs.push((baseOffset: number) => {
+                    updateFunc(baseOffset + dynamicOffset);
+                });
+            } else {
+                coder.encode(staticWriter, value);
+            }
+        } catch (error) {
+            throw Error(`Failed to encode ${coder.localName} as ${coder.type}: value=${value}\n` + error.message);
         }
     });
 
