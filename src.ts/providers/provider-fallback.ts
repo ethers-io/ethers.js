@@ -250,7 +250,7 @@ function getMedian(quorum: number, results: Array<TallyResult>): undefined | big
     // Get the sorted values
     values.sort((a, b) => ((a < b) ? -1: (b > a) ? 1: 0));
 
-    const mid = values.length / 2;
+    const mid = Math.floor(values.length / 2);
 
     // Odd-length; take the middle value
     if (values.length % 2) { return values[mid]; }
