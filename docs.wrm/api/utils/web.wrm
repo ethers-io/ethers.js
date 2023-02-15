@@ -47,13 +47,13 @@ the processFunc is called with response including the error status intact. (defa
 _property: connection.allowGzip => boolean
 Allow Gzip responses. (default: ``false``)
 
-_property: connection.throttleLimit => boolean
+_property: connection.throttleLimit => number
 How many times to retry in the event of a 429 status code.
 
-_property: connection.throttleSlotInterval => boolean
+_property: connection.throttleSlotInterval => number
 The exponential back-off slot delay (i.e. omega), creating a staggered, increasing random delay on retries.
 
-_property: connection.throttleCallback => boolean
+_property: connection.throttleCallback => Promise<boolean>
 Callback that allows application level hints to retry (within the throttleLimit) or quick fail.
 
 
