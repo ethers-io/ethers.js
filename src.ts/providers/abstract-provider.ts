@@ -20,7 +20,7 @@ import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
     getBigInt, getBytes, getNumber,
-    isCallException, makeError, assert, assertArgument,
+    isCallException, isError, makeError, assert, assertArgument,
     FetchRequest,
     toBeArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
@@ -988,14 +988,21 @@ export class AbstractProvider implements Provider {
             ], this);
             const name = await resolverContract.name(node);
 
+            // Failed forward resolution
             const check = await this.resolveName(name);
-            if (check !== address) {
-                console.log("FAIL", address, check);
-            }
+            if (check !== address) { return null; }
 
             return name;
         } catch (error) {
-            console.log("TEMP", error);
+            // No data was returned from the resolver
+            if (isError(error, "BAD_DATA") && error.value === "0x") {
+                return null;
+            }
+
+            // Something reerted
+            if (isError(error, "CALL_EXCEPTION")) { return null; }
+
+            throw error;
         }
 
         return null;
