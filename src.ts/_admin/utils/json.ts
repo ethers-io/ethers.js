@@ -9,7 +9,9 @@ export function loadJson(path: string): any {
 
 type Replacer = (key: string, value: any) => any;
 
-export function saveJson(filename: string, data: any, sort?: boolean): any {
+export type SortFunc = (parent: string, a: string, b: string) => number;
+
+export function saveJson(filename: string, data: any, sort?: boolean | SortFunc): any {
 
     let replacer: (Replacer | undefined) = undefined;
     if (sort) {
@@ -18,7 +20,13 @@ export function saveJson(filename: string, data: any, sort?: boolean): any {
                 // pass
             } else if (value && typeof(value) === "object") {
                 const keys = Object.keys(value);
-                keys.sort();
+                let sortFunc: undefined | ((a: string, b: string) => number);
+                if (typeof(sort) === "function") {
+                    sortFunc = function(a: string, b: string) {
+                        return sort(key, a, b);
+                    }
+                }
+                keys.sort(sortFunc);
                 return keys.reduce((accum, key) => {
                     accum[key] = value[key];
                     return accum;
