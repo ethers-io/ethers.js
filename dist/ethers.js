@@ -1,4 +1,8 @@
-const version = "6.0.3";
+/* Do NOT modify this file; see /src.ts/_admin/update-version.ts */
+/**
+ *  The current version of Ethers.
+ */
+const version = "6.0.4";
 
 /**
  *  Property helper functions.
@@ -171,7 +175,7 @@ function makeError(message, code, info) {
     }
     defineProperties(error, { code });
     if (info) {
-        defineProperties(error, info);
+        Object.assign(error, info);
     }
     return error;
 }
@@ -11000,7 +11004,11 @@ function getBuiltinCallException(action, tx, data, abiCoder) {
         message = "execution reverted";
         const bytes = getBytes(data);
         data = hexlify(data);
-        if (bytes.length % 32 !== 4) {
+        if (bytes.length === 0) {
+            message += " (no data present; likely require(false) occurred";
+            reason = "require(false)";
+        }
+        else if (bytes.length % 32 !== 4) {
             message += " (could not decode reason; invalid data length)";
         }
         else if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
@@ -11015,8 +11023,7 @@ function getBuiltinCallException(action, tx, data, abiCoder) {
                 message += `: ${JSON.stringify(reason)}`;
             }
             catch (error) {
-                console.log(error);
-                message += " (could not decode reason; invalid data)";
+                message += " (could not decode reason; invalid string data)";
             }
         }
         else if (hexlify(bytes.slice(0, 4)) === "0x4e487b71") {
@@ -11032,8 +11039,7 @@ function getBuiltinCallException(action, tx, data, abiCoder) {
                 message += `: ${reason}`;
             }
             catch (error) {
-                console.log(error);
-                message += " (could not decode panic reason)";
+                message += " (could not decode panic code)";
             }
         }
         else {
@@ -11842,16 +11848,15 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         const data = getBytes(_data, "data");
         const error = AbiCoder.getBuiltinCallException("call", tx, data);
         // Not a built-in error; try finding a custom error
-        if (!error.message.match(/could not decode/)) {
+        const customPrefix = "execution reverted (unknown custom error)";
+        if (error.message.startsWith(customPrefix)) {
             const selector = hexlify(data.slice(0, 4));
-            error.message = "execution reverted (unknown custom error)";
             const ef = this.getError(selector);
             if (ef) {
                 try {
+                    const args = this.#abiCoder.decode(ef.inputs, data.slice(4));
                     error.revert = {
-                        name: ef.name,
-                        signature: ef.format(),
-                        args: this.#abiCoder.decode(ef.inputs, data.slice(4))
+                        name: ef.name, signature: ef.format(), args
                     };
                     error.reason = error.revert.signature;
                     error.message = `execution reverted: ${error.reason}`;
@@ -15916,14 +15921,23 @@ class AbstractProvider {
                 "function name(bytes32) view returns (string)"
             ], this);
             const name = await resolverContract.name(node);
+            // Failed forward resolution
             const check = await this.resolveName(name);
             if (check !== address) {
-                console.log("FAIL", address, check);
+                return null;
             }
             return name;
         }
         catch (error) {
-            console.log("TEMP", error);
+            // No data was returned from the resolver
+            if (isError(error, "BAD_DATA") && error.value === "0x") {
+                return null;
+            }
+            // Something reerted
+            if (isError(error, "CALL_EXCEPTION")) {
+                return null;
+            }
+            throw error;
         }
         return null;
     }
@@ -18992,7 +19006,7 @@ function getMedian(quorum, results) {
     }
     // Get the sorted values
     values.sort((a, b) => ((a < b) ? -1 : (b > a) ? 1 : 0));
-    const mid = values.length / 2;
+    const mid = Math.floor(values.length / 2);
     // Odd-length; take the middle value
     if (values.length % 2) {
         return values[mid];

@@ -733,14 +733,23 @@ class AbstractProvider {
                 "function name(bytes32) view returns (string)"
             ], this);
             const name = await resolverContract.name(node);
+            // Failed forward resolution
             const check = await this.resolveName(name);
             if (check !== address) {
-                console.log("FAIL", address, check);
+                return null;
             }
             return name;
         }
         catch (error) {
-            console.log("TEMP", error);
+            // No data was returned from the resolver
+            if ((0, index_js_6.isError)(error, "BAD_DATA") && error.value === "0x") {
+                return null;
+            }
+            // Something reerted
+            if ((0, index_js_6.isError)(error, "CALL_EXCEPTION")) {
+                return null;
+            }
+            throw error;
         }
         return null;
     }

@@ -49,7 +49,11 @@ function getBuiltinCallException(action, tx, data, abiCoder) {
         message = "execution reverted";
         const bytes = getBytes(data);
         data = hexlify(data);
-        if (bytes.length % 32 !== 4) {
+        if (bytes.length === 0) {
+            message += " (no data present; likely require(false) occurred";
+            reason = "require(false)";
+        }
+        else if (bytes.length % 32 !== 4) {
             message += " (could not decode reason; invalid data length)";
         }
         else if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
@@ -64,8 +68,7 @@ function getBuiltinCallException(action, tx, data, abiCoder) {
                 message += `: ${JSON.stringify(reason)}`;
             }
             catch (error) {
-                console.log(error);
-                message += " (could not decode reason; invalid data)";
+                message += " (could not decode reason; invalid string data)";
             }
         }
         else if (hexlify(bytes.slice(0, 4)) === "0x4e487b71") {
@@ -81,8 +84,7 @@ function getBuiltinCallException(action, tx, data, abiCoder) {
                 message += `: ${reason}`;
             }
             catch (error) {
-                console.log(error);
-                message += " (could not decode panic reason)";
+                message += " (could not decode panic code)";
             }
         }
         else {

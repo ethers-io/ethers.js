@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = void 0;
 const index_js_1 = require("../crypto/index.js");
 const index_js_2 = require("../utils/index.js");
-const xnf_1 = require("@adraffy/ens-normalize/xnf");
+const ens_normalize_1 = require("@adraffy/ens-normalize");
 const Zeros = new Uint8Array(32);
 Zeros.fill(0);
 function checkComponent(comp) {
@@ -35,7 +35,7 @@ function ensNameSplit(name) {
  */
 function ensNormalize(name) {
     try {
-        return (0, xnf_1.ens_normalize)(name);
+        return (0, ens_normalize_1.ens_normalize)(name);
     }
     catch (error) {
         (0, index_js_2.assertArgument)(false, `invalid ENS name (${error.message})`, "name", name);

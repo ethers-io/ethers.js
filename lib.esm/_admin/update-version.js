@@ -14,7 +14,7 @@ async function getNpmPackage(name) {
     return cache[name] || null;
 }
 function writeVersion(version) {
-    const content = `export const version: string = "${version}";\n`;
+    const content = `/* Do NOT modify this file; see /src.ts/_admin/update-version.ts */\n\n/**\n *  The current version of Ethers.\n */\nexport const version: string = "${version}";\n`;
     atomicWrite(resolve("src.ts/_version.ts"), content);
 }
 (async function () {

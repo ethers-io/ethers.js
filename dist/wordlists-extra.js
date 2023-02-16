@@ -145,7 +145,11 @@ const u64 = {
     add, add3L, add3H, add4L, add4H, add5H, add5L,
 };
 
-const version = "6.0.3";
+/* Do NOT modify this file; see /src.ts/_admin/update-version.ts */
+/**
+ *  The current version of Ethers.
+ */
+const version = "6.0.4";
 
 /**
  *  Property helper functions.
@@ -278,7 +282,7 @@ function makeError(message, code, info) {
     }
     defineProperties(error, { code });
     if (info) {
-        defineProperties(error, info);
+        Object.assign(error, info);
     }
     return error;
 }

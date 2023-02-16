@@ -15,7 +15,7 @@ import { ZeroHash } from "../constants/index.js";
 import { Contract } from "../contract/index.js";
 import { namehash } from "../hash/index.js";
 import { Transaction } from "../transaction/index.js";
-import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, makeError, assert, assertArgument, FetchRequest, toBeArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
+import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, isError, makeError, assert, assertArgument, FetchRequest, toBeArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { formatBlock, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
 import { Network } from "./network.js";
@@ -729,14 +729,23 @@ export class AbstractProvider {
                 "function name(bytes32) view returns (string)"
             ], this);
             const name = await resolverContract.name(node);
+            // Failed forward resolution
             const check = await this.resolveName(name);
             if (check !== address) {
-                console.log("FAIL", address, check);
+                return null;
             }
             return name;
         }
         catch (error) {
-            console.log("TEMP", error);
+            // No data was returned from the resolver
+            if (isError(error, "BAD_DATA") && error.value === "0x") {
+                return null;
+            }
+            // Something reerted
+            if (isError(error, "CALL_EXCEPTION")) {
+                return null;
+            }
+            throw error;
         }
         return null;
     }

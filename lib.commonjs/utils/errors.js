@@ -122,7 +122,7 @@ function makeError(message, code, info) {
     }
     (0, properties_js_1.defineProperties)(error, { code });
     if (info) {
-        (0, properties_js_1.defineProperties)(error, info);
+        Object.assign(error, info);
     }
     return error;
 }

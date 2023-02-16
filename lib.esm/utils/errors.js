@@ -117,7 +117,7 @@ export function makeError(message, code, info) {
     }
     defineProperties(error, { code });
     if (info) {
-        defineProperties(error, info);
+        Object.assign(error, info);
     }
     return error;
 }

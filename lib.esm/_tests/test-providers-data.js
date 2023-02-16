@@ -184,10 +184,18 @@ describe("Test Provider Transaction operations", function () {
             assert.ok(receipt != null, "receipt != null");
             // Cloudflare doesn't return the root in legacy receipts; but it isn't
             // *actually* that important, so we'll give it a pass...
-            if (providerName === "CloudflareProvider") {
+            if (providerName === "CloudflareProvider" || providerName === "AnkrProvider" || providerName === "PocketProvider") {
                 test = Object.assign({}, test, { root: undefined });
             }
+            //if (providerName === "PocketProvider") {
+            //}
             assertReceipt(receipt, test);
+        };
+    });
+    forEach("test lookupAddress(addr) == null", testReceipt, (providerName, test) => {
+        return async (provider) => {
+            const name = await provider.lookupAddress("0x0123456789012345678901234567890123456789");
+            assert.ok(name == null, "name == null");
         };
     });
 });

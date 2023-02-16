@@ -670,16 +670,15 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         const data = (0, index_js_3.getBytes)(_data, "data");
         const error = abi_coder_js_1.AbiCoder.getBuiltinCallException("call", tx, data);
         // Not a built-in error; try finding a custom error
-        if (!error.message.match(/could not decode/)) {
+        const customPrefix = "execution reverted (unknown custom error)";
+        if (error.message.startsWith(customPrefix)) {
             const selector = (0, index_js_3.hexlify)(data.slice(0, 4));
-            error.message = "execution reverted (unknown custom error)";
             const ef = this.getError(selector);
             if (ef) {
                 try {
+                    const args = this.#abiCoder.decode(ef.inputs, data.slice(4));
                     error.revert = {
-                        name: ef.name,
-                        signature: ef.format(),
-                        args: this.#abiCoder.decode(ef.inputs, data.slice(4))
+                        name: ef.name, signature: ef.format(), args
                     };
                     error.reason = error.revert.signature;
                     error.message = `execution reverted: ${error.reason}`;

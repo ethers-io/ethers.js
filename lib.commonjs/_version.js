@@ -1,5 +1,9 @@
 "use strict";
+/* Do NOT modify this file; see /src.ts/_admin/update-version.ts */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.version = void 0;
-exports.version = "6.0.3";
+/**
+ *  The current version of Ethers.
+ */
+exports.version = "6.0.4";
 //# sourceMappingURL=_version.js.map
