@@ -665,7 +665,7 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
 
     defineProperties<EthersError>(<EthersError>error, { code });
 
-    if (info) { defineProperties<any>(error, info); }
+    if (info) { Object.assign(error, info); }
 
     return <T>error;
 }

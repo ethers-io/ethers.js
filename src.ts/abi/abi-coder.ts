@@ -68,7 +68,11 @@ function getBuiltinCallException(action: CallExceptionAction, tx: { to?: null | 
         const bytes = getBytes(data);
         data = hexlify(data);
 
-        if (bytes.length % 32 !== 4) {
+        if (bytes.length === 0) {
+            message += " (no data present; likely require(false) occurred";
+            reason = "require(false)";
+
+        } else if (bytes.length % 32 !== 4) {
             message += " (could not decode reason; invalid data length)";
 
         } else if (hexlify(bytes.slice(0, 4)) === "0x08c379a0") {
@@ -83,7 +87,7 @@ function getBuiltinCallException(action: CallExceptionAction, tx: { to?: null | 
                 message += `: ${ JSON.stringify(reason) }`;
 
             } catch (error) {
-                message += " (could not decode reason; invalid data)";
+                message += " (could not decode reason; invalid string data)";
             }
 
         } else if (hexlify(bytes.slice(0, 4)) === "0x4e487b71") {
@@ -98,7 +102,7 @@ function getBuiltinCallException(action: CallExceptionAction, tx: { to?: null | 
                 reason = `Panic due to ${ PanicReasons.get(code) || "UNKNOWN" }(${ code })`;
                 message += `: ${ reason }`;
             } catch (error) {
-                message += " (could not decode panic reason)";
+                message += " (could not decode panic code)";
             }
         } else {
             message += " (unknown custom error)";
