@@ -83,7 +83,6 @@ function getBuiltinCallException(action: CallExceptionAction, tx: { to?: null | 
                 message += `: ${ JSON.stringify(reason) }`;
 
             } catch (error) {
-                console.log(error);
                 message += " (could not decode reason; invalid data)";
             }
 
@@ -99,7 +98,6 @@ function getBuiltinCallException(action: CallExceptionAction, tx: { to?: null | 
                 reason = `Panic due to ${ PanicReasons.get(code) || "UNKNOWN" }(${ code })`;
                 message += `: ${ reason }`;
             } catch (error) {
-                console.log(error);
                 message += " (could not decode panic reason)";
             }
         } else {
