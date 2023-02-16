@@ -4,6 +4,8 @@ tsconfig.*.json
 tsconfig.tsbuildinfo
 rollup.config.js
 output/**
+docs.wrm/**
+.github/**
 
 # Ignore admin scripts and files
 src.ts/_admin/**
