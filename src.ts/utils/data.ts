@@ -147,7 +147,7 @@ export function dataSlice(data: BytesLike, start?: number, end?: number): string
  */
 export function stripZerosLeft(data: BytesLike): string {
     let bytes = hexlify(data).substring(2);
-    while (bytes.substring(0, 2) == "00") { bytes = bytes.substring(2); }
+    while (bytes.startsWith("00")) { bytes = bytes.substring(2); }
     return "0x" + bytes;
 }
 

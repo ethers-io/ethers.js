@@ -230,7 +230,7 @@ export function toBeArray(_value: BigNumberish): Uint8Array {
  */
 export function toQuantity(value: BytesLike | BigNumberish): string {
     let result = hexlify(isBytesLike(value) ? value: toBeArray(value)).substring(2);
-    while (result.substring(0, 1) === "0") { result = result.substring(1); }
+    while (result.startsWith("0")) { result = result.substring(1); }
     if (result === "") { result = "0"; }
     return "0x" + result;
 }
