@@ -39,6 +39,10 @@ export class Wallet extends BaseWallet {
      *  to %%provider%%.
      */
     constructor(key: string | SigningKey, provider?: null | Provider) {
+        if (typeof(key) === "string" && !key.startsWith("0x")) {
+            key = "0x" + key;
+        }
+
         let signingKey = (typeof(key) === "string") ? new SigningKey(key): key;
         super(signingKey, provider);
     }
