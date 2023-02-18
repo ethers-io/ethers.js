@@ -26,7 +26,7 @@ export function pack(writer: Writer, coders: ReadonlyArray<Coder>, values: Array
             assert(name, "cannot encode object for signature with missing names",
                 "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
 
-            assert(unique[name], "cannot encode object for signature with duplicate names",
+            assert(!unique[name], "cannot encode object for signature with duplicate names",
                 "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
 
             unique[name] = true;
