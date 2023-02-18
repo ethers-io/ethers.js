@@ -166,7 +166,7 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 
     if (req.data) { result.data = hexlify(req.data); }
 
-    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas, maxPriorityFeePerGas,value".split(/,/);
+    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
     for (const key of bigIntKeys) {
         if (!(key in req) || (<any>req)[key] == null) { continue; }
         result[key] = getBigInt((<any>req)[key], `request.${ key }`);
