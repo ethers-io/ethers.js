@@ -18,7 +18,7 @@ export class ContractFactory {
             if (typeof (bytecode) === "object") {
                 bytecode = bytecode.object;
             }
-            if (bytecode.substring(0, 2) !== "0x") {
+            if (!bytecode.startsWith("0x")) {
                 bytecode = "0x" + bytecode;
             }
             bytecode = hexlify(getBytes(bytecode));

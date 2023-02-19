@@ -62,7 +62,7 @@ class Typed {
         return !!(this.type.match(/^u?int[0-9]+$/));
     }
     isData() {
-        return (this.type.substring(0, 5) === "bytes");
+        return this.type.startsWith("bytes");
     }
     isString() {
         return (this.type === "string");

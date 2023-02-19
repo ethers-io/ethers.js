@@ -54,7 +54,7 @@ function getAccount(data, _key) {
     const address = (0, index_js_3.computeAddress)(privateKey);
     if (data.address) {
         let check = data.address.toLowerCase();
-        if (check.substring(0, 2) !== "0x") {
+        if (!check.startsWith("0x")) {
             check = "0x" + check;
         }
         (0, index_js_4.assertArgument)((0, index_js_1.getAddress)(check) === address, "keystore address/privateKey mismatch", "address", data.address);

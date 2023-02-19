@@ -3,8 +3,8 @@
  */
 import { getBytesCopy, assertArgument, toUtf8Bytes } from "../utils/index.js";
 export function looseArrayify(hexString) {
-    if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
-        hexString = '0x' + hexString;
+    if (typeof (hexString) === "string" && !hexString.startsWith("0x")) {
+        hexString = "0x" + hexString;
     }
     return getBytesCopy(hexString);
 }

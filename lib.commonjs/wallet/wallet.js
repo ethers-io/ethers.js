@@ -27,6 +27,9 @@ class Wallet extends base_wallet_js_1.BaseWallet {
      *  to %%provider%%.
      */
     constructor(key, provider) {
+        if (typeof (key) === "string" && !key.startsWith("0x")) {
+            key = "0x" + key;
+        }
         let signingKey = (typeof (key) === "string") ? new index_js_1.SigningKey(key) : key;
         super(signingKey, provider);
     }

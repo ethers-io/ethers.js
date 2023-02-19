@@ -90,7 +90,7 @@ function getDefaultProvider(network, options) {
     */
     if (options.quicknode !== "-") {
         try {
-            let token = options.qquicknode;
+            let token = options.quicknode;
             providers.push(new provider_quicknode_js_1.QuickNodeProvider(network, token));
         }
         catch (error) {

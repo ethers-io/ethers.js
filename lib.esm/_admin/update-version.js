@@ -60,7 +60,18 @@ function writeVersion(version) {
         }
         pkgInfo.gitHead = gitHead;
         // Save the package.json
-        saveJson(pkgPath, pkgInfo, true);
+        const check = { "require": 1, "import": 1, "types": 1 };
+        saveJson(pkgPath, pkgInfo, (path, a, b) => {
+            if (path.startsWith("./") && check[a] && check[b]) {
+                if (a === "types") {
+                    return -1;
+                }
+                if (b === "types") {
+                    return 1;
+                }
+            }
+            return a.localeCompare(b);
+        });
         // Save the src.ts/_version.ts
         writeVersion(pkgInfo.version);
     }

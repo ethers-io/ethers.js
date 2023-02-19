@@ -213,7 +213,7 @@ exports.toBeArray = toBeArray;
  */
 function toQuantity(value) {
     let result = (0, data_js_1.hexlify)((0, data_js_1.isBytesLike)(value) ? value : toBeArray(value)).substring(2);
-    while (result.substring(0, 1) === "0") {
+    while (result.startsWith("0")) {
         result = result.substring(1);
     }
     if (result === "") {

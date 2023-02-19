@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.spelunk = exports.getPassword = exports.zpad = exports.looseArrayify = void 0;
 const index_js_1 = require("../utils/index.js");
 function looseArrayify(hexString) {
-    if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
-        hexString = '0x' + hexString;
+    if (typeof (hexString) === "string" && !hexString.startsWith("0x")) {
+        hexString = "0x" + hexString;
     }
     return (0, index_js_1.getBytesCopy)(hexString);
 }

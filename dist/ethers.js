@@ -2,7 +2,7 @@
 /**
  *  The current version of Ethers.
  */
-const version = "6.0.4";
+const version = "6.0.5";
 
 /**
  *  Property helper functions.
@@ -389,7 +389,7 @@ function dataSlice(data, start, end) {
  */
 function stripZerosLeft(data) {
     let bytes = hexlify(data).substring(2);
-    while (bytes.substring(0, 2) == "00") {
+    while (bytes.startsWith("00")) {
         bytes = bytes.substring(2);
     }
     return "0x" + bytes;
@@ -638,7 +638,7 @@ function toBeArray(_value) {
  */
 function toQuantity(value) {
     let result = hexlify(isBytesLike(value) ? value : toBeArray(value)).substring(2);
-    while (result.substring(0, 1) === "0") {
+    while (result.startsWith("0")) {
         result = result.substring(1);
     }
     if (result === "") {
@@ -2658,12 +2658,14 @@ class Result extends Array {
      *  errors.
      */
     toArray() {
+        const result = [];
         this.forEach((item, index) => {
             if (item instanceof Error) {
                 throwError(`index ${index}`, item);
             }
+            result.push(item);
         });
-        return Array.of(this);
+        return result;
     }
     /**
      *  Returns the Result as an Object with each name-value pair.
@@ -2690,7 +2692,22 @@ class Result extends Array {
         if (start == null) {
             start = 0;
         }
+        if (start < 0) {
+            start += this.length;
+            if (start < 0) {
+                start = 0;
+            }
+        }
         if (end == null) {
+            end = this.length;
+        }
+        if (end < 0) {
+            end += this.length;
+            if (end < 0) {
+                end = 0;
+            }
+        }
+        if (end > this.length) {
             end = this.length;
         }
         const result = [], names = [];
@@ -6551,7 +6568,7 @@ function getAddress(address) {
     assertArgument(typeof (address) === "string", "invalid address", "address", address);
     if (address.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
         // Missing the 0x prefix
-        if (address.substring(0, 2) !== "0x") {
+        if (!address.startsWith("0x")) {
             address = "0x" + address;
         }
         const result = getChecksumAddress(address);
@@ -6852,7 +6869,7 @@ class Typed {
         return !!(this.type.match(/^u?int[0-9]+$/));
     }
     isData() {
-        return (this.type.substring(0, 5) === "bytes");
+        return this.type.startsWith("bytes");
     }
     isString() {
         return (this.type === "string");
@@ -7079,7 +7096,7 @@ function pack(writer, coders, values) {
         arrayValues = coders.map((coder) => {
             const name = coder.localName;
             assert$1(name, "cannot encode object for signature with missing names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
-            assert$1(unique[name], "cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
+            assert$1(!unique[name], "cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
             unique[name] = true;
             return values[name];
         });
@@ -10448,7 +10465,7 @@ class ParamType {
             });
             return new ParamType(_guard$2, name || "", type, "array", indexed, null, arrayLength, arrayChildren);
         }
-        if (type === "tuple" || type.substring(0, 5) === "tuple(" || type[0] === "(") {
+        if (type === "tuple" || type.startsWith("tuple(" /* fix: ) */) || type.startsWith("(" /* fix: ) */)) {
             const comps = (obj.components != null) ? obj.components.map((c) => ParamType.from(c)) : null;
             const tuple = new ParamType(_guard$2, name || "", type, "tuple", indexed, comps, null, null);
             // @TODO: use lexer to validate and normalize type
@@ -12255,7 +12272,7 @@ function copyRequest(req) {
     if (req.data) {
         result.data = hexlify(req.data);
     }
-    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas, maxPriorityFeePerGas,value".split(/,/);
+    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
     for (const key of bigIntKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
@@ -13847,7 +13864,7 @@ class ContractFactory {
             if (typeof (bytecode) === "object") {
                 bytecode = bytecode.object;
             }
-            if (bytecode.substring(0, 2) !== "0x") {
+            if (!bytecode.startsWith("0x")) {
                 bytecode = "0x" + bytecode;
             }
             bytecode = hexlify(getBytes(bytecode));
@@ -19465,7 +19482,7 @@ function getDefaultProvider(network, options) {
     */
     if (options.quicknode !== "-") {
         try {
-            let token = options.qquicknode;
+            let token = options.quicknode;
             providers.push(new QuickNodeProvider(network, token));
         }
         catch (error) {
@@ -20705,8 +20722,8 @@ function pkcs7Strip(data) {
  *  @_ignore
  */
 function looseArrayify(hexString) {
-    if (typeof (hexString) === 'string' && hexString.substring(0, 2) !== '0x') {
-        hexString = '0x' + hexString;
+    if (typeof (hexString) === "string" && !hexString.startsWith("0x")) {
+        hexString = "0x" + hexString;
     }
     return getBytesCopy(hexString);
 }
@@ -20887,7 +20904,7 @@ function getAccount(data, _key) {
     const address = computeAddress(privateKey);
     if (data.address) {
         let check = data.address.toLowerCase();
-        if (check.substring(0, 2) !== "0x") {
+        if (!check.startsWith("0x")) {
             check = "0x" + check;
         }
         assertArgument(getAddress(check) === address, "keystore address/privateKey mismatch", "address", data.address);
@@ -21680,6 +21697,9 @@ class Wallet extends BaseWallet {
      *  to %%provider%%.
      */
     constructor(key, provider) {
+        if (typeof (key) === "string" && !key.startsWith("0x")) {
+            key = "0x" + key;
+        }
         let signingKey = (typeof (key) === "string") ? new SigningKey(key) : key;
         super(signingKey, provider);
     }

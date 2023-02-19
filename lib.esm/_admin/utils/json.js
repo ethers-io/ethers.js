@@ -12,7 +12,13 @@ export function saveJson(filename, data, sort) {
             }
             else if (value && typeof (value) === "object") {
                 const keys = Object.keys(value);
-                keys.sort();
+                let sortFunc;
+                if (typeof (sort) === "function") {
+                    sortFunc = function (a, b) {
+                        return sort(key, a, b);
+                    };
+                }
+                keys.sort(sortFunc);
                 return keys.reduce((accum, key) => {
                     accum[key] = value[key];
                     return accum;
