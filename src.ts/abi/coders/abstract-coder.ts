@@ -136,12 +136,12 @@ export class Result extends Array<any> {
      *  errors.
      */
     toArray(): Array<any> {
+        const result: Array<any> = [ ];
         this.forEach((item, index) => {
-            if (item instanceof Error) {
-                throwError(`index ${ index }`, item);
-            }
+            if (item instanceof Error) { throwError(`index ${ index }`, item); }
+            result.push(item);
         });
-        return Array.of(this);
+        return result;
     }
 
     /**
@@ -170,7 +170,17 @@ export class Result extends Array<any> {
      */
     slice(start?: number | undefined, end?: number | undefined): Result {
         if (start == null) { start = 0; }
+        if (start < 0) {
+            start += this.length;
+            if (start < 0) { start = 0; }
+        }
+
         if (end == null) { end = this.length; }
+        if (end < 0) {
+            end += this.length;
+            if (end < 0) { end = 0; }
+        }
+        if (end > this.length) { end = this.length; }
 
         const result = [ ], names = [ ];
         for (let i = start; i < end; i++) {
