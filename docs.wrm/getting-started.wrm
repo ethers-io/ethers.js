@@ -48,7 +48,7 @@ objects available and what they are responsible for, at a high level.
 _heading: Provider
 
 A [[Provider]] is a read-only connection to the blockchain, which allows
-querying the blockchain state, such as accout, block or transaction details,
+querying the blockchain state, such as account, block or transaction details,
 querying event logs or evaluating read-only code using call.
 
 If you are coming from Web3.js, you are used to a **Provider** offering
@@ -118,7 +118,7 @@ extension that injects objects into the ``window``, providing:
 - authenticated write access backed by a private key (a [[Signer]])
 
 When requesting access to the authenticated methods, such as
-sending a transaction or even requesting the private key addess,
+sending a transaction or even requesting the private key address,
 MetaMask will show a pop-up to the user asking for permission.
 
 _code:  @lang<script>
@@ -172,7 +172,7 @@ _code: connecting to a JSON-RPC URL  @lang<script>
 _subsection: User Interaction  @<starting-display>
 
 All units in Ethereum tend to be integer values, since dealing with
-decimals and floating points can lead to inprecise and non-obvious
+decimals and floating points can lead to imprecise and non-obvious
 results when performing mathematic operations.
 
 As a result, the internal units used (e.g. wei) which are suited for
@@ -272,7 +272,7 @@ _subsection: Contracts  @<starting-contracts>
 
 A **Contract** is a meta-class, which means that its definition
 its derived at run-time, based on the ABI it is passed, which then
-determined what mehods and properties are available on it.
+determined what methods and properties are available on it.
 
 _heading: Application Binary Interface (ABI)
 
@@ -291,7 +291,7 @@ Any methods or events that are not needed can be safely excluded.
 There are several common formats available to describe an ABI. The
 Solidity compiler usually dumps a JSON representation but when typing
 an ABI by hand it is often easier (and more readable) to use the
-human-readable ABI, which is just the Solidity signautre.
+human-readable ABI, which is just the Solidity signature.
 
 _code: simplified ERC-20 ABI @lang<script>
   abi = [
@@ -478,7 +478,7 @@ it. It can also be used to sign other forms of data, which are then able
 to be validated for other purposes.
 
 For example, signing **a message** can be used to prove ownership of an
-account which a website could use to authenicate a user and log them in.
+account which a website could use to authenticate a user and log them in.
 
 _code:  @lang<javascript>
 

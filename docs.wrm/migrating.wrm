@@ -10,7 +10,11 @@ so a lot of changes are largely internal.
 - [BigNumbers](migrate-bigint)
 - [Contracts](migrate-contracts)
 - [Importing](migrate-importing)
-- [Odds and Ends](migrate-other)
+- [Providers](migrate-providers)
+- [Signatures](migrate-signatures)
+- [Transactions](migrate-transactions)
+- [Utilities](migrate-utils)
+- [Removed Items](migrate-missing)
 
 
 _subsection: Big Numbers  @<migrate-bigint>
@@ -32,7 +36,7 @@ _code: creating large numbers  @lang<script>
   // Using BigNumber in v5
   value = BigNumber.from("1000")
 
-  // Using BigInt in v6 (ysing literal notation).
+  // Using BigInt in v6 (using literal notation).
   // Notice the suffix n
   value = 1000n
 
@@ -193,10 +197,95 @@ _code: importing in v6  @lang<script>
   import { InfuraProvider } from "ethers/providers"
 
 
-_subsection: Odds and Ends @<migrate-other>
+_subsection: Providers  @<migrate-providers>
+
+In addition to all the ``ethers.providers.*`` being moved to
+``ethers.*``, the biggest change developers need to keep in
+mind is that ``Web3Provider`` (which historically was used
+to wrap [[link-web3js]] providers) is now called
+[[BrowserProvider]] which is designed to wrap EIP-1193
+providers, which is the standard that both modern Web3.js and
+injected providers offer.
+
+_code: wrapping EIP-1193 providers  @lang<script>
+  // v5
+  provider = new ethers.providers.Web3Provider(window.ethereum)
+
+  // v6:
+  provider = new ethers.BrowserProvider(window.ethereum)
 
 
-_code: default AbiCoder  @lang<script>
+_subsection: Signatures  @<migrate-signatures>
+
+The Signature is now a class which facilitates all the parsing
+and serializing.
+
+_code: signature manipulation
+  // v5
+  splitSig = splitSignature(sigBytes)
+  sigBytes = joinSignature(splitSig)
+
+  // v6
+  splitSig = ethers.Signature.from(sigBytes)
+  sigBytes = ethers.Signature.from(splitSig).serialized
+
+
+_subsection: Transactions  @<migrate-transactions>
+
+The transaction helpers present in v5 were all wrapped into a
+[[Transaction]] class, which can handle any supported transaction
+format to be further processed
+
+_code: parasing transactions  @lang<script>
+
+  // v5
+  tx = parseTransaction(txBytes)
+  txBytes = serializeTransaction(tx)
+  txBytes = serializeTransaction(tx, sig)
+
+  // v6
+  tx = Transaction.from(txBytes)
+
+  // v6 (the tx can optionally include the signature)
+  txBytes = Transaction.from(tx).serialized
+
+
+_subsection: Utilities  @<migrate-utils>
+
+_code: Bytes32 string helpers  @lang<script>
+  // In v5:
+  bytes32 = ethers.utils.formatBytes32String(text)
+  text = ethers.utils.parseBytes32String(bytes32)
+
+  // In v6:
+  bytes32 = ethers.encodeBytes32String(text)
+  text = ethers.decodeBytes32String(bytes32)
+
+_code: constants  @lang<script>
+  // v5:
+  ethers.constants.AddressZero
+  ethers.constants.HashZero
+
+  // v6:
+  ethers.ZeroAddress
+  ethers.ZeroHash
+
+_code: data manipulation  @lang<script>
+  // v5
+  slice = ethers.utils.hexDataSlice(value, start, end)
+  padded = ethers.utils.hexZeroPad(value, length)
+
+  // v5; converting numbers to hexstrings
+  hex = hexlify(35)
+
+  // v6
+  slice = ethers.dataSlice(value, start, end)
+  padded = ethers.zeroPadValue(value, length)
+
+  // v6; converting numbers to hexstrings
+  hex = toBeHex(35)
+
+_code: defaultAbiCoder  @lang<script>
   // In v5, it is a property of AbiCoder
   coder = AbiCoder.defaultAbiCoder
 
@@ -206,23 +295,27 @@ _code: default AbiCoder  @lang<script>
   // instance is returned.
   coder = AbiCoder.defaultAbiCoder()
 
-_code: getting a JSON-RPC quantity  @lang<script>
-  // In v5:
-  hex = ethers.util.hexValue(value)
+_code: hex conversion  @lang<script>
+  // v5
+  hex = ethers.utils.hexValue(value)
+  array = ethers.utils.arrayify(value)
 
-  // In v6:
+  // v6
   hex = ethers.toQuantity(value)
+  array = ethers.getBytes(value)
 
-_code: using Bytes32 strings  @lang<script>
-  // In v5:
-  bytes32 = formatBytes32String(text)
-  text = parseBytes32String(bytes32)
+_code: solidity non-standard packed  @lang<script>
+  // v5
+  ethers.utils.solidityPack(types, values)
 
-  // In v6:
-  bytes32 = encodeBytes32String(text)
-  text = decodeBytes32String(bytes32)
+  // v6
+  ethers.solidityPacked(types, values)
 
-_subsection: Removed Classes and functions
+
+_subsection: Removed Classes and functions  @<migrate-missing>
 
 The **Logger** class has been replaced by
 [several Error utility functions](about-errors).
+
+The ``checkProperties`` and ``shallowCopy`` have been
+removed in favor of using ``.map`` and ``Object.assign``.

@@ -1,4 +1,4 @@
-_section: Contributings and Hacking @<about-contrib> @priority<-90>
+_section: Contributions and Hacking @<about-contrib> @priority<-90>
 
 Pull requests are welcome, but please keep the following in mind:
 
@@ -93,7 +93,7 @@ _subsection: Adding Features  @<about-contrib-feature>
 
 Contributing new features usually require a deeper understanding
 of the internal interactions with Ethers and its components, and
-generally requires a minor version bumpincludes anything w
+generally requires a minor version bump.
 
 When making any of the following changes, you must first open a
 [[link-discussion]] as the minor version will need to be bumped.

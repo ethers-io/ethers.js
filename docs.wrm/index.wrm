@@ -3,7 +3,7 @@ _section: Documentation  @<about-home> @nav<Documentation>
 The ethers.js library aims to be a complete and compact library
 for interacting with the Ethereum Blockchain and its ecosystem.
 
-It is ofen used to create decentralized applications (dapps),
+It is often used to create decentralized applications (dapps),
 wallets (such as [[link-metamask]] and [[link-tally]]) and
 other tools and simple scripts that require reading and writing
 to the blockchain.
@@ -14,7 +14,7 @@ _subsection: About this documentation?
 These docs are still under construction, and are being expanded
 every day.
 
-Developers new to Ethers shoud be sure to read through the
+Developers new to Ethers should be sure to read through the
 [[getting-started]] section.
 
 And the [[about-api]] is available for drilling down into more details
