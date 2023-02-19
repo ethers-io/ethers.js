@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import {fetch} from 'node-fetch'
 import { arrayify } from "@ethersproject/bytes";
 export function getUrl(href, options) {
     return __awaiter(this, void 0, void 0, function* () {
