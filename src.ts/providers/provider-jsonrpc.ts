@@ -11,13 +11,15 @@
 
 import { AbiCoder } from "../abi/index.js";
 import { getAddress, resolveAddress } from "../address/index.js";
-import { TypedDataEncoder } from "../hash/index.js";
-import { accessListify } from "../transaction/index.js";
+import { TypedDataEncoder, hashMessage } from "../hash/index.js";
+import { accessListify, recoverAddress } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes,
     makeError, assert, assertArgument,
     FetchRequest, resolveProperties
 } from "../utils/index.js";
+
+import { Contract } from "../contract/index.js";
 
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 import { AbstractSigner } from "./abstract-signer.js";
@@ -31,6 +33,9 @@ import type { PerformActionRequest, Subscriber, Subscription } from "./abstract-
 import type { Networkish } from "./network.js";
 import type { Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
+
+import type { SignatureLike } from "../crypto/index.js";
+import type { BytesLike } from "../utils/index.js";
 
 type Timer = ReturnType<typeof setTimeout>;
 
@@ -1075,6 +1080,38 @@ export class JsonRpcProvider extends JsonRpcApiPollingProvider {
         if (!Array.isArray(resp)) { resp = [ resp ]; }
 
         return resp;
+    }
+
+    async verifyMessage (signerAddress: string, message: BytesLike, signature: SignatureLike) {
+        const finalDigest = hashMessage(message);
+        return this.verifyFinalDigest(signerAddress, finalDigest, signature);
+    }
+
+    async verifyTypedData (signer: string, domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, typedDataMessage: Record<string, any>, signature: SignatureLike): Promise<boolean> {
+        const finalDigest = TypedDataEncoder.hash(domain, types, typedDataMessage);
+        return this.verifyFinalDigest(signer, finalDigest, signature);
+    }
+
+    async verifyFinalDigest (signerAddress: string, finalDigest: BytesLike, signature: SignatureLike): Promise<boolean> {
+        // First try: Getting code from deployed smart contract to call 1271 isValidSignature
+        if (await this._verifyTypedDataFinalDigest(signerAddress, finalDigest, signature)) { return true; }
+        
+        // 2nd try: elliptic curve signature (EOA)
+        try {
+            const recoveredAddr = recoverAddress(finalDigest, signature);
+            if (recoveredAddr && (recoveredAddr.toLowerCase() === signerAddress.toLowerCase())) { return true; }
+        } catch(e){}
+        
+        return false;
+    }
+
+    async _verifyTypedDataFinalDigest (signer: string, finalDigest: BytesLike, signature: SignatureLike): Promise<boolean> {
+        const code = await this.provider.getCode(signer);
+        if (code && code !== '0x') {
+            const contract = new Contract(signer, ["function isValidSignature(bytes32 hash, bytes signature) view returns (bytes4)"], this.provider);
+            return (await contract.isValidSignature(finalDigest, signature)) === "0x1626ba7e";
+        }
+        return false;
     }
 }
 

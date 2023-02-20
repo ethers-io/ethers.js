@@ -13,6 +13,8 @@ import type { PerformActionRequest, Subscriber, Subscription } from "./abstract-
 import type { Networkish } from "./network.js";
 import type { Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
+import type { SignatureLike } from "../crypto/index.js";
+import type { BytesLike } from "../utils/index.js";
 /**
  *  A JSON-RPC payload, which are sent to a JSON-RPC server.
  */
@@ -264,5 +266,9 @@ export declare class JsonRpcProvider extends JsonRpcApiPollingProvider {
     _getConnection(): FetchRequest;
     send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult>>;
+    verifyMessage(signerAddress: string, message: BytesLike, signature: SignatureLike): Promise<boolean>;
+    verifyTypedData(signer: string, domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, typedDataMessage: Record<string, any>, signature: SignatureLike): Promise<boolean>;
+    verifyFinalDigest(signerAddress: string, finalDigest: BytesLike, signature: SignatureLike): Promise<boolean>;
+    _verifyTypedDataFinalDigest(signer: string, finalDigest: BytesLike, signature: SignatureLike): Promise<boolean>;
 }
 //# sourceMappingURL=provider-jsonrpc.d.ts.map
