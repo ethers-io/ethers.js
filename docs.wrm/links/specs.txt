@@ -39,7 +39,7 @@ link-icap [ICAP Address](https://github.com/ethereum/wiki/wiki/Inter-exchange-Cl
 link-jsonrpc [link-jsonrpc](https://github.com/ethereum/wiki/wiki/JSON-RPC)
 link-mit [MIT License](https://en.m.wikipedia.org/wiki/MIT_License)
 link-namehash [namehash](https://docs.ens.domains/contract-api-reference/name-processing#hashing-names)
-link-rlp [Recursive-Length Prefix](https://github.com/ethereum/wiki/wiki/RLP)
+link-rlp [Recursive-Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/)
 link-pbkdf2 [PBKDF2](https://en.wikipedia.org/wiki/PBKDF2)
 link-solc-errors [Solidity Custom Errors](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#errors)
 link-solc-events [Solidity Events](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#events)
