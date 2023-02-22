@@ -1,7 +1,7 @@
 name: Bug Report
-description: Open an issue for a bug in Ethers v5 (legacy)
+description: "Open an issue for a bug in Ethers v5 (legacy)"
 title: "Add Bug Title Here"
-labels: ["investigate", "v5"]
+labels: [ "investigate", "v5" ]
 assignees:
   - ricmoo
 body:
