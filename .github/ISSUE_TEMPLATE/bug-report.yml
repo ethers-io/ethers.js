@@ -1,4 +1,4 @@
-name: Bug Report
+name: "Bug Report v6 (latest)"
 description: "Open an issue for a bug in Ethers v6 (latest)"
 title: "Add Bug Title Here"
 labels: [ "investigate", "v6" ]
