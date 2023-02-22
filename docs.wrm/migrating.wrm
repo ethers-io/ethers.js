@@ -311,6 +311,13 @@ _code: solidity non-standard packed  @lang<script>
   // v6
   ethers.solidityPacked(types, values)
 
+_code: property manipulation  @lang<script>
+  // v5
+  ethers.utils.defineReadOnly(obj, "name", value)
+
+  // v6
+  ethers.defineProperties(obj, { name: value });
+
 
 _subsection: Removed Classes and functions  @<migrate-missing>
 
