@@ -130,7 +130,7 @@ function replaceFunc(reason: Utf8ErrorReason, offset: number, bytes: Uint8Array,
  *  and accepts non-canonical (overlong) codepoints
  *
  *  **``"replace"``** - replace any illegal UTF-8 sequence with the
- *  UTF-8 replacement character (i.e. `\ufffd`) and accepts
+ *  UTF-8 replacement character (i.e. ``"\\ufffd"``) and accepts
  *  non-canonical (overlong) codepoints
  *
  *  @returns: Record<"error" | "ignore" | "replace", Utf8ErrorFunc>
