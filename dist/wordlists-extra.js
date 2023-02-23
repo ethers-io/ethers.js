@@ -149,7 +149,7 @@ const u64 = {
 /**
  *  The current version of Ethers.
  */
-const version = "6.0.7";
+const version = "6.0.8";
 
 /**
  *  Property helper functions.

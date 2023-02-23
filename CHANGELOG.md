@@ -3,6 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.0.8 (2023-02-23 06:30)
+--------------------------------
+
+  - Fix matic-mumbai network and include aliases to legacy names ([#3811](https://github.com/ethers-io/ethers.js/issues/3811); [20bbd12](https://github.com/ethers-io/ethers.js/commit/20bbd1281911d31b360f6f5032251c9257943541)).
+  - Fixed getSigner bug ([#3821](https://github.com/ethers-io/ethers.js/issues/3821); [388edf6](https://github.com/ethers-io/ethers.js/commit/388edf6abc168f89f1ca609e9e5b025dc9205add)).
+
 ethers/v6.0.7 (2023-02-23 01:41)
 --------------------------------
 

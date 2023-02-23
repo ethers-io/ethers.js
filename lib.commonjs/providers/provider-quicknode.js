@@ -12,7 +12,7 @@
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:QuickNode  [providers-quicknode]
  */
@@ -37,7 +37,7 @@ function getHost(name) {
             return "ethers.arbitrum-goerli.quiknode.pro";
         case "matic":
             return "ethers.matic.quiknode.pro";
-        case "maticmum":
+        case "matic-mumbai":
             return "ethers.matic-testnet.quiknode.pro";
         case "optimism":
             return "ethers.optimism.quiknode.pro";

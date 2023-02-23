@@ -2,7 +2,7 @@
 /**
  *  The current version of Ethers.
  */
-const version = "6.0.7";
+const version = "6.0.8";
 
 /**
  *  Property helper functions.
@@ -14987,7 +14987,8 @@ function injectCommonNetworks() {
             url: "https:/\/api.polygonscan.com/"
         }
     });
-    registerEth("maticMumbai", 80001, {
+    registerEth("matic-mumbai", 80001, {
+        altNames: ["maticMumbai", "maticmum"],
         //        priorityFee: 35000000000,
         etherscan: {
             //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
@@ -16847,6 +16848,7 @@ class JsonRpcSigner extends AbstractSigner {
     address;
     constructor(provider, address) {
         super(provider);
+        address = getAddress(address);
         defineProperties(this, { address });
     }
     connect(provider) {
@@ -17469,8 +17471,8 @@ class JsonRpcApiProvider extends AbstractProvider {
         // Account address
         address = getAddress(address);
         for (const account of accounts) {
-            if (getAddress(account) === account) {
-                return new JsonRpcSigner(this, account);
+            if (getAddress(account) === address) {
+                return new JsonRpcSigner(this, address);
             }
         }
         throw new Error("invalid account");
@@ -17723,7 +17725,7 @@ function getHost$3(name) {
             return "arb-goerli.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai.g.alchemy.com";
         case "optimism":
             return "opt-mainnet.g.alchemy.com";
@@ -17849,7 +17851,7 @@ class CloudflareProvider extends JsonRpcProvider {
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
@@ -17938,7 +17940,7 @@ class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-goerli.arbiscan.io";
             case "matic":
                 return "https:/\/api.polygonscan.com";
-            case "maticmum":
+            case "matic-mumbai":
                 return "https:/\/api-testnet.polygonscan.com";
             case "optimism":
                 return "https:/\/api-optimistic.etherscan.io";
@@ -18654,7 +18656,7 @@ class WebSocketProvider extends SocketProvider {
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
  */
@@ -18673,7 +18675,7 @@ function getHost$2(name) {
             return "arbitrum-goerli.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai.infura.io";
         case "optimism":
             return "optimism-mainnet.infura.io";
@@ -18815,7 +18817,7 @@ class InfuraProvider extends JsonRpcProvider {
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:QuickNode  [providers-quicknode]
  */
@@ -18834,7 +18836,7 @@ function getHost$1(name) {
             return "ethers.arbitrum-goerli.quiknode.pro";
         case "matic":
             return "ethers.matic.quiknode.pro";
-        case "maticmum":
+        case "matic-mumbai":
             return "ethers.matic-testnet.quiknode.pro";
         case "optimism":
             return "ethers.optimism.quiknode.pro";
@@ -19671,7 +19673,7 @@ function getHost(name) {
             return "eth-goerli.gateway.pokt.network";
         case "matic":
             return "poly-mainnet.gateway.pokt.network";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai-rpc.gateway.pokt.network";
     }
     assertArgument(false, "unsupported network", "network", name);

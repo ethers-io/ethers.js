@@ -64,6 +64,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
     address;
     constructor(provider, address) {
         super(provider);
+        address = (0, index_js_2.getAddress)(address);
         (0, index_js_5.defineProperties)(this, { address });
     }
     connect(provider) {
@@ -687,8 +688,8 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         // Account address
         address = (0, index_js_2.getAddress)(address);
         for (const account of accounts) {
-            if ((0, index_js_2.getAddress)(account) === account) {
-                return new JsonRpcSigner(this, account);
+            if ((0, index_js_2.getAddress)(account) === address) {
+                return new JsonRpcSigner(this, address);
             }
         }
         throw new Error("invalid account");
