@@ -44,8 +44,8 @@ _definition: **Supported Networks**
 - ``sepolia`` - Sepolia (proof-of-authority testnet)
 - ``arbitrum`` - Arbitrum Optimistic L2
 - ``arbitrum-goerli`` - Arbitrum Optimistic L2 testnet
-- ``matic`` - Polgon mainnet
-- ``maticmum`` - Polgon testnet
+- ``matic`` - Polygon mainnet
+- ``maticmum`` - Polygon testnet
 - ``optimism`` - Optimism Optimistic L2
 - ``optimism-goerli`` - Optimism Optimistic L2 testnet
 
@@ -115,8 +115,8 @@ _definition: **Supported Networks**
 - ``sepolia`` - Sepolia (proof-of-authority testnet)
 - ``arbitrum`` - Arbitrum Optimistic L2
 - ``arbitrum-goerli`` - Arbitrum Optimistic L2 testnet
-- ``matic`` - Polgon mainnet
-- ``maticmum`` - Polgon testnet
+- ``matic`` - Polygon mainnet
+- ``maticmum`` - Polygon testnet
 - ``optimism`` - Optimism Optimistic L2
 - ``optimism-goerli`` - Optimism Optimistic L2 testnet
 
@@ -173,8 +173,8 @@ _definition: **Supported Networks**
 - ``goerli`` - G&ouml;rli (clique testnet)
 - ``arbitrum`` - Arbitrum Optimistic L2
 - ``arbitrum-goerli`` - Arbitrum Optimistic L2 testnet
-- ``matic`` - Polgon mainnet
-- ``maticmum`` - Polgon testnet
+- ``matic`` - Polygon mainnet
+- ``maticmum`` - Polygon testnet
 - ``optimism`` - Optimism Optimistic L2
 - ``optimism-goerli`` - Optimism Optimistic L2 testnet
 
@@ -241,8 +241,8 @@ _definition: **Supported Networks**
 
 - ``homestead`` - Homestead (Mainnet)
 - ``goerli`` - G&ouml;rli (clique testnet)
-- ``matic`` - Polgon mainnet
-- ``maticmum`` - Polgon testnet
+- ``matic`` - Polygon mainnet
+- ``maticmum`` - Polygon testnet
 
 _code: Pocket Examples @lang<javascript>
 
@@ -304,7 +304,7 @@ _code: Ankr Examples @lang<javascript>
 // Connect to mainnet (homestead)
 provider = new AnkrProvider();
 
-// Connect to polygont
+// Connect to polygon
 // (see EtherscanProvider above for other network examples)
 provider = new AnkrProvider("matic");
 
