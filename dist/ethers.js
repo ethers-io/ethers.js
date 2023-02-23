@@ -2,7 +2,7 @@
 /**
  *  The current version of Ethers.
  */
-const version = "6.0.5";
+const version = "6.0.6";
 
 /**
  *  Property helper functions.
@@ -809,7 +809,7 @@ function replaceFunc(reason, offset, bytes, output, badCodepoint) {
  *  and accepts non-canonical (overlong) codepoints
  *
  *  **``"replace"``** - replace any illegal UTF-8 sequence with the
- *  UTF-8 replacement character (i.e. `\ufffd`) and accepts
+ *  UTF-8 replacement character (i.e. ``"\\ufffd"``) and accepts
  *  non-canonical (overlong) codepoints
  *
  *  @returns: Record<"error" | "ignore" | "replace", Utf8ErrorFunc>
@@ -14964,32 +14964,46 @@ function injectCommonNetworks() {
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
     registerEth("xdai", 100, { ensNetwork: 1 });
+    registerEth("optimism", 10, {
+        ensNetwork: 1,
+        etherscan: { url: "https:/\/api-optimistic.etherscan.io/" }
+    });
+    registerEth("optimism-goerli", 420, {
+        etherscan: { url: "https:/\/api-goerli-optimistic.etherscan.io/" }
+    });
+    registerEth("arbitrum", 42161, {
+        ensNetwork: 1,
+        etherscan: { url: "https:/\/api.arbiscan.io/" }
+    });
+    registerEth("arbitrum-goerli", 421613, {
+        etherscan: { url: "https:/\/api-goerli.arbiscan.io/" }
+    });
     // Polygon has a 35 gwei maxPriorityFee requirement
     registerEth("matic", 137, {
         ensNetwork: 1,
         //        priorityFee: 35000000000,
         etherscan: {
-            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
+            //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
             url: "https:/\/api.polygonscan.com/"
         }
     });
     registerEth("maticMumbai", 80001, {
         //        priorityFee: 35000000000,
         etherscan: {
-            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
+            //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
             url: "https:/\/api-testnet.polygonscan.com/"
         }
     });
     registerEth("bnb", 56, {
         ensNetwork: 1,
         etherscan: {
-            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
+            //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
             url: "http:/\/api.bscscan.com"
         }
     });
     registerEth("bnbt", 97, {
         etherscan: {
-            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
+            //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
             url: "http:/\/api-testnet.bscscan.com"
         }
     });
@@ -19519,7 +19533,8 @@ class NonceManager extends AbstractSigner {
             if (this.#noncePromise == null) {
                 this.#noncePromise = super.getNonce("pending");
             }
-            return (await this.#noncePromise) + this.#delta;
+            const delta = this.#delta;
+            return (await this.#noncePromise) + delta;
         }
         return super.getNonce(blockTag);
     }

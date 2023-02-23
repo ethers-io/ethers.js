@@ -149,7 +149,7 @@ const u64 = {
 /**
  *  The current version of Ethers.
  */
-const version = "6.0.5";
+const version = "6.0.6";
 
 /**
  *  Property helper functions.
@@ -440,7 +440,7 @@ function replaceFunc(reason, offset, bytes, output, badCodepoint) {
  *  and accepts non-canonical (overlong) codepoints
  *
  *  **``"replace"``** - replace any illegal UTF-8 sequence with the
- *  UTF-8 replacement character (i.e. `\ufffd`) and accepts
+ *  UTF-8 replacement character (i.e. ``"\\ufffd"``) and accepts
  *  non-canonical (overlong) codepoints
  *
  *  @returns: Record<"error" | "ignore" | "replace", Utf8ErrorFunc>

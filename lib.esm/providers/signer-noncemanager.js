@@ -21,7 +21,8 @@ export class NonceManager extends AbstractSigner {
             if (this.#noncePromise == null) {
                 this.#noncePromise = super.getNonce("pending");
             }
-            return (await this.#noncePromise) + this.#delta;
+            const delta = this.#delta;
+            return (await this.#noncePromise) + delta;
         }
         return super.getNonce(blockTag);
     }

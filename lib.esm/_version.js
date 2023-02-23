@@ -2,5 +2,5 @@
 /**
  *  The current version of Ethers.
  */
-export const version = "6.0.5";
+export const version = "6.0.6";
 //# sourceMappingURL=_version.js.map

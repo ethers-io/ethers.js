@@ -41,38 +41,50 @@ export async function getModifiedTime(filename) {
     }
     return null;
 }
-export async function getGitLog(filename, limit) {
-    if (limit == null) {
-        limit = 100;
+export async function getLogs(files, range, limit) {
+    const args = ["log", "-n", String((limit != null) ? limit : 100)];
+    if (range) {
+        args.push(`${range.tag0}..${range.tag1}`);
     }
-    const result = await run("git", ["log", "-n", String(limit), "--", filename]);
-    if (!result.ok) {
+    if (files) {
+        args.push("--");
+        files.forEach((f) => args.push(f));
+    }
+    const exec = await run("git", args);
+    if (!exec.ok) {
         throw new Error(`git log error`);
     }
-    let log = result.stdout.trim();
+    const log = exec.stdout.trim();
     if (!log) {
         return [];
     }
-    const logs = [{ commit: "", author: "", date: "", body: "" }];
+    const results = [{ commit: "", author: "", date: "", body: "" }];
     for (const line of log.split("\n")) {
         const hashMatch = line.match(/^commit\s+([0-9a-f]{40})/i);
         if (hashMatch) {
-            logs.push({ commit: hashMatch[1], author: "", date: "", body: "" });
+            results.push({ commit: hashMatch[1], author: "", date: "", body: "" });
         }
         else {
             if (line.startsWith("Author:")) {
-                logs[logs.length - 1].author = line.substring(7).trim();
+                results[results.length - 1].author = line.substring(7).trim();
             }
             else if (line.startsWith("Date:")) {
-                logs[logs.length - 1].date = line.substring(5).trim();
+                results[results.length - 1].date = line.substring(5).trim();
             }
             else {
-                logs[logs.length - 1].body = (logs[logs.length - 1].body + " " + line).trim();
+                results[results.length - 1].body = (results[results.length - 1].body + " " + line).trim();
             }
         }
     }
     // Nix the bootstrap entry
-    logs.shift();
-    return logs;
+    results.shift();
+    return results;
+}
+export async function getDiff(filename, tag0, tag1) {
+    const result = await run("git", ["diff", `${tag0}..${tag1}`, "--", filename]);
+    if (!result.ok) {
+        throw new Error(`git log error`);
+    }
+    return result.stdout.trim();
 }
 //# sourceMappingURL=git.js.map
