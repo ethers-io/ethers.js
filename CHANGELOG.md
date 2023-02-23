@@ -1,7 +1,14 @@
 Change Log
 ==========
 
-This change log is maintained by `src.ts/_admin/update-changelog.ts but may also be manually updated.`
+This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
+
+ethers/v6.0.6 (2023-02-22 21:51)
+--------------------------------
+
+  - Added chain parameters for Arbitrum and Optimism ([#3811](https://github.com/ethers-io/ethers.js/issues/3811); [77a7323](https://github.com/ethers-io/ethers.js/commit/77a7323119923e596f4def4f1bc90beae5447320)).
+  - Fix NonceManager race condition ([#3812](https://github.com/ethers-io/ethers.js/issues/3812), [#3813](https://github.com/ethers-io/ethers.js/issues/3813); [5a3c10a](https://github.com/ethers-io/ethers.js/commit/5a3c10a29c047609a50828adb620d88aa8cf0014)).
+  - Add UMD output to dist builds ([#3814](https://github.com/ethers-io/ethers.js/issues/3814); [f9eed4c](https://github.com/ethers-io/ethers.js/commit/f9eed4cdb190b06dd4ddaa2382c1de42e8e98de6)).
 
 ethers/v6.0.5 (2023-02-18 22:36)
 --------------------------------

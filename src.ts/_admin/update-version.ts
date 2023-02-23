@@ -3,7 +3,7 @@ import semver from "semver";
 import { FetchRequest } from "../utils/index.js";
 
 import { atomicWrite } from "./utils/fs.js";
-import { getGitLog } from "./utils/git.js";
+import { getLogs } from "./utils/git.js";
 import { loadJson, saveJson } from "./utils/json.js";
 import { resolve } from "./utils/path.js";
 
@@ -19,6 +19,7 @@ async function getNpmPackage(name: string): Promise<any> {
 
     return cache[name] || null;
 }
+
 function writeVersion(version: string): void {
     const content = `/* Do NOT modify this file; see /src.ts/_admin/update-version.ts */\n\n/**\n *  The current version of Ethers.\n */\nexport const version: string = "${ version }";\n`;
     atomicWrite(resolve("src.ts/_version.ts"), content);
@@ -39,7 +40,7 @@ function writeVersion(version: string): void {
     const remoteGitHead = remotePkgInfo.gitHead;
 
     let gitHead = "";
-    for (const log of await getGitLog(".")) {
+    for (const log of await getLogs([ "." ])) {
         if (log.body.startsWith("admin:")) { continue; }
         if (log.body.startsWith("tests:")) { continue; }
         gitHead = log.commit;
