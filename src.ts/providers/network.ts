@@ -316,7 +316,8 @@ function injectCommonNetworks(): void {
             url: "https:/\/api.polygonscan.com/"
         }
     });
-    registerEth("maticMumbai", 80001, {
+    registerEth("matic-mumbai", 80001, {
+        altNames: [ "maticMumbai", "maticmum" ],  // @TODO: Future remove these alts
 //        priorityFee: 35000000000,
         etherscan: {
 //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
