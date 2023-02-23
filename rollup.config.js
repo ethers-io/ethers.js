@@ -13,7 +13,8 @@ function getConfig(opts) {
     input: "./lib.esm/index.js",
     output: {
       file,
-      format: "esm",
+      name: (opts.name || undefined),
+      format: (opts.format || "esm"),
       sourcemap: true
     },
     context: "window",
@@ -29,6 +30,7 @@ function getConfig(opts) {
 
 export default [
   getConfig({ browser: true }),
+  getConfig({ browser: true, suffix: ".umd", format: "umd", name: "ethers" }),
   {
     input: "./lib.esm/wordlists/wordlists-extra.js",
     output: {

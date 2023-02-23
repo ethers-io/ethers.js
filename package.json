@@ -105,7 +105,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "b39e955eb6bd6cbea0c1382e600d6981b4ea14f4",
+  "gitHead": "981a962543809345c9d38e196a1edc454fdce983",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -126,8 +126,8 @@
   },
   "scripts": {
     "_build-clean": "npm run clean && node lib.esm/_admin/update-version-const && npm run build-all && npm run _build-dist",
-    "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js && cp ./output/post-build/dist/* ./dist/",
-    "_dist-stats": "gzip -k9f -S '.gz' ./dist/ethers.min.js && gzip -k9f -S '.gz' ./dist/wordlists-extra.min.js && du -hs ./dist/*.gz && echo '' && du -hs ./dist/*.js",
+    "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/ethers.umd.js -o ./dist/ethers.umd.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js && cp ./output/post-build/dist/* ./dist/",
+    "_dist-stats": "gzip -k9f -S '.gz' ./dist/ethers.min.js && gzip -k9f -S '.gz' ./dist/ethers.umd.min.js && gzip -k9f -S '.gz' ./dist/wordlists-extra.min.js && du -hs ./dist/*.gz && echo '' && du -hs ./dist/*.js",
     "auto-build": "npm run build -- -w",
     "build": "tsc --project tsconfig.esm.json",
     "build-all": "npm run build && cp ./output/post-build/lib.esm/* ./lib.esm/ && npm run build-commonjs && npm run build-types",
@@ -146,5 +146,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.0.5"
+  "version": "6.0.6"
 }
