@@ -289,7 +289,7 @@ export class Signature {
                 return new Signature(_guard, r, hexlify(s), v);
             }
 
-            assertError(false, "invlaid raw signature length");
+            assertError(false, "invalid raw signature length");
         }
 
         if (sig instanceof Signature) { return sig.clone(); }
