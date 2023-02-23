@@ -2,7 +2,7 @@
 /**
  *  The current version of Ethers.
  */
-const version = "6.0.6";
+const version = "6.0.7";
 
 /**
  *  Property helper functions.
@@ -14008,7 +14008,7 @@ class EnsResolver {
             "function addr(bytes32) view returns (address)",
             "function addr(bytes32, uint) view returns (address)",
             "function text(bytes32, string) view returns (string)",
-            "function contenthash() view returns (bytes)",
+            "function contenthash(bytes32) view returns (bytes)",
         ], provider);
     }
     /**
@@ -14137,7 +14137,7 @@ class EnsResolver {
      */
     async getContentHash() {
         // keccak256("contenthash()")
-        const data = await this.#fetch("contenthash()");
+        const data = await this.#fetch("contenthash(bytes32)");
         // No contenthash
         if (data == null || data === "0x") {
             return null;
