@@ -932,7 +932,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         // Account address
         address = getAddress(address);
         for (const account of accounts) {
-            if (getAddress(account) === account) {
+            if (getAddress(account) === address) {
                 return new JsonRpcSigner(this, account);
             }
         }
