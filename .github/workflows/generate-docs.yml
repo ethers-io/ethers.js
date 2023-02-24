@@ -32,7 +32,7 @@ jobs:
         run: npm install --no-save 'https://github.com/ricmoo/flatworm.git#tsdocs'
 
       - name: Build Documentation
-        run: node node_modules/flatworm/lib/test-api-index ./docs.wrm/config.js
+        run: node node_modules/flatworm/lib/cli-test ./docs.wrm/config.js
 
       - name: Upload documentation to to docs.ethers.org
         uses: ethers-io/sync-s3-action@main
