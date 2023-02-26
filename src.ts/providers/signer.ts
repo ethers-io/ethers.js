@@ -32,7 +32,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
     // State
 
     /**
-     *  Get the [[Address]] of the Signer.
+     *  Get the address of the Signer.
      */
     getAddress(): Promise<string>;
 
@@ -109,7 +109,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
     call(tx: TransactionRequest): Promise<string>;
 
     /**
-     *  Resolves an [[Address]] or ENS Name to an [[Address]].
+     *  Resolves an ENS Name to an address.
      */
     resolveName(name: string): Promise<null | string>;
 
@@ -131,7 +131,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
     sendTransaction(tx: TransactionRequest): Promise<TransactionResponse>;
 
     /**
-     *  Signers an [[EIP-191]] prefixed personal message.
+     *  Signers an [[link-eip-191]] prefixed personal message.
      *
      *  If the %%message%% is a string, it is signed as UTF-8 encoded bytes. It is **not**
      *  interpretted as a [[BytesLike]]; so the string ``"0x1234"`` is signed as six
@@ -143,7 +143,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
     signMessage(message: string | Uint8Array): Promise<string>;
 
     /**
-     *  Signs the [[EIP-712]] typed data.
+     *  Signs the [[link-eip-712]] typed data.
      */
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
