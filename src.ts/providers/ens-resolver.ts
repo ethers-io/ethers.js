@@ -148,7 +148,7 @@ export class EnsResolver {
             "function addr(bytes32) view returns (address)",
             "function addr(bytes32, uint) view returns (address)",
             "function text(bytes32, string) view returns (string)",
-            "function contenthash() view returns (bytes)",
+            "function contenthash(bytes32) view returns (bytes)",
         ], provider);
 
     }
@@ -281,7 +281,7 @@ export class EnsResolver {
      */
     async getContentHash(): Promise<null | string> {
         // keccak256("contenthash()")
-        const data = await this.#fetch("contenthash()");
+        const data = await this.#fetch("contenthash(bytes32)");
 
         // No contenthash
         if (data == null || data === "0x") { return null; }

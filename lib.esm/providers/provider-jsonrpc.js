@@ -61,6 +61,7 @@ export class JsonRpcSigner extends AbstractSigner {
     address;
     constructor(provider, address) {
         super(provider);
+        address = getAddress(address);
         defineProperties(this, { address });
     }
     connect(provider) {
@@ -683,8 +684,8 @@ export class JsonRpcApiProvider extends AbstractProvider {
         // Account address
         address = getAddress(address);
         for (const account of accounts) {
-            if (getAddress(account) === account) {
-                return new JsonRpcSigner(this, account);
+            if (getAddress(account) === address) {
+                return new JsonRpcSigner(this, address);
             }
         }
         throw new Error("invalid account");

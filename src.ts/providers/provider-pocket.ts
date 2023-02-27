@@ -34,7 +34,7 @@ function getHost(name: string): string {
 
         case "matic":
             return "poly-mainnet.gateway.pokt.network";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai-rpc.gateway.pokt.network";
     }
 

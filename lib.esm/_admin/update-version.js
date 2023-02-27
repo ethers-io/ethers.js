@@ -1,7 +1,7 @@
 import semver from "semver";
 import { FetchRequest } from "../utils/index.js";
 import { atomicWrite } from "./utils/fs.js";
-import { getGitLog } from "./utils/git.js";
+import { getLogs } from "./utils/git.js";
 import { loadJson, saveJson } from "./utils/json.js";
 import { resolve } from "./utils/path.js";
 const cache = {};
@@ -29,7 +29,7 @@ function writeVersion(version) {
     const remotePkgInfo = remoteInfo.versions[remoteVersion];
     const remoteGitHead = remotePkgInfo.gitHead;
     let gitHead = "";
-    for (const log of await getGitLog(".")) {
+    for (const log of await getLogs(["."])) {
         if (log.body.startsWith("admin:")) {
             continue;
         }

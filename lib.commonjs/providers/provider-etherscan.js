@@ -14,7 +14,7 @@
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
@@ -114,7 +114,7 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 return "https:/\/api-goerli.arbiscan.io";
             case "matic":
                 return "https:/\/api.polygonscan.com";
-            case "maticmum":
+            case "matic-mumbai":
                 return "https:/\/api-testnet.polygonscan.com";
             case "optimism":
                 return "https:/\/api-optimistic.etherscan.io";

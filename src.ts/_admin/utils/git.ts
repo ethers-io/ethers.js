@@ -44,32 +44,48 @@ export interface GitLog {
     body: string;
 }
 
-export async function getGitLog(filename: string, limit?: number): Promise<Array<GitLog>> {
-    if (limit == null) { limit = 100; }
-    const result = await run("git", [ "log", "-n", String(limit), "--", filename ]);
-    if (!result.ok) { throw new Error(`git log error`); }
+export async function getLogs(files?: null | Array<string>, range?: null | { tag0: string, tag1: string }, limit?: null | number): Promise<Array<GitLog>> {
+    const args = [ "log", "-n", String((limit != null) ? limit: 100) ];
 
-    let log = result.stdout.trim();
+    if (range) {
+        args.push(`${ range.tag0 }..${ range.tag1 }`);
+    }
+
+    if (files) {
+        args.push("--");
+        files.forEach((f) => args.push(f));
+    }
+
+    const exec = await run("git", args);
+    if (!exec.ok) { throw new Error(`git log error`); }
+
+    const log = exec.stdout.trim();
     if (!log) { return [ ]; }
 
-    const logs: Array<GitLog> = [ { commit: "", author: "", date: "", body: "" } ];
+    const results: Array<GitLog> = [ { commit: "", author: "", date: "", body: "" } ];
     for (const line of log.split("\n")) {
         const hashMatch = line.match(/^commit\s+([0-9a-f]{40})/i);
          if (hashMatch) {
-             logs.push({ commit: hashMatch[1], author: "", date: "", body: "" });
+             results.push({ commit: hashMatch[1], author: "", date: "", body: "" });
          } else {
              if (line.startsWith("Author:")) {
-                 logs[logs.length - 1].author = line.substring(7).trim();
+                 results[results.length - 1].author = line.substring(7).trim();
              } else if (line.startsWith("Date:")) {
-                 logs[logs.length - 1].date = line.substring(5).trim();
+                 results[results.length - 1].date = line.substring(5).trim();
              } else {
-                 logs[logs.length - 1].body = (logs[logs.length - 1].body + " " + line).trim();
+                 results[results.length - 1].body = (results[results.length - 1].body + " " + line).trim();
              }
          }
     }
 
     // Nix the bootstrap entry
-    logs.shift();
+    results.shift();
 
-    return logs;
+    return results;
+}
+
+export async function getDiff(filename: string, tag0: string, tag1: string): Promise<string> {
+    const result = await run("git", [ "diff", `${ tag0 }..${ tag1 }`, "--", filename ]);
+    if (!result.ok) { throw new Error(`git log error`); }
+    return result.stdout.trim();
 }

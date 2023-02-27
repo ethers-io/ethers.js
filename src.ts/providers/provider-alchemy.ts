@@ -32,7 +32,7 @@ function getHost(name: string): string {
             return "arb-goerli.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai.g.alchemy.com";
         case "optimism":
             return "opt-mainnet.g.alchemy.com";

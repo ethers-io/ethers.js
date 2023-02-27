@@ -1,4 +1,32 @@
-export {};
+import { FetchRequest } from "../../utils/index.js";
+const cache = {};
+export async function _getNpmPackage(name) {
+    if (!cache[name]) {
+        const resp = await (new FetchRequest("https:/\/registry.npmjs.org/" + name)).send();
+        resp.assertOk();
+        cache[name] = resp.bodyJson;
+    }
+    return cache[name] || null;
+}
+export async function getVersions(name) {
+    const result = [];
+    const pkg = await _getNpmPackage(name);
+    for (const version in pkg.versions) {
+        const gitHead = pkg.versions[version].gitHead;
+        const date = pkg.time[version];
+        if (gitHead == null || date == null) {
+            continue;
+        }
+        result.push({ date, gitHead, version });
+    }
+    return result;
+}
+/*
+(async function() {
+    //console.log(await _getNpmPackage("ethers"));
+    console.log(await getGitHeads("ethers"));
+})();
+*/
 /*
 import semver from "semver";
 

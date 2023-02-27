@@ -24,7 +24,7 @@ function getHost(name) {
             return "eth-goerli.gateway.pokt.network";
         case "matic":
             return "poly-mainnet.gateway.pokt.network";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai-rpc.gateway.pokt.network";
     }
     assertArgument(false, "unsupported network", "network", name);

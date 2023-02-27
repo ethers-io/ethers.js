@@ -1,0 +1,45 @@
+name: Generate Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docs:
+    name: Generate Documentation
+
+    runs-on: ubuntu-latest
+
+    environment: ethers-tests
+    env:
+      FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 18.x
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Flatworm
+        run: npm install --no-save 'https://github.com/ricmoo/flatworm.git#tsdocs'
+
+      - name: Build Documentation
+        run: node node_modules/flatworm/lib/cli-test ./docs.wrm/config.js
+
+      - name: Upload documentation to to docs.ethers.org
+        uses: ethers-io/sync-s3-action@main
+        with:
+          aws_access_key_id: ${{ secrets.DOCS_AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.DOCS_AWS_SECRET_ACCESS_KEY}}
+          aws_s3_bucket: ethers.org
+          source_folder: 'output/docs/'
+          destination_prefix: 'docs/'
+          aws_cloudfront_id: ${{ secrets.DOCS_AWS_CLOUDFRONT_ID }}

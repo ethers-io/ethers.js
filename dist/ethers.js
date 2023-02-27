@@ -2,7 +2,7 @@
 /**
  *  The current version of Ethers.
  */
-const version = "6.0.5";
+const version = "6.0.8";
 
 /**
  *  Property helper functions.
@@ -809,7 +809,7 @@ function replaceFunc(reason, offset, bytes, output, badCodepoint) {
  *  and accepts non-canonical (overlong) codepoints
  *
  *  **``"replace"``** - replace any illegal UTF-8 sequence with the
- *  UTF-8 replacement character (i.e. `\ufffd`) and accepts
+ *  UTF-8 replacement character (i.e. ``"\\ufffd"``) and accepts
  *  non-canonical (overlong) codepoints
  *
  *  @returns: Record<"error" | "ignore" | "replace", Utf8ErrorFunc>
@@ -14008,7 +14008,7 @@ class EnsResolver {
             "function addr(bytes32) view returns (address)",
             "function addr(bytes32, uint) view returns (address)",
             "function text(bytes32, string) view returns (string)",
-            "function contenthash() view returns (bytes)",
+            "function contenthash(bytes32) view returns (bytes)",
         ], provider);
     }
     /**
@@ -14137,7 +14137,7 @@ class EnsResolver {
      */
     async getContentHash() {
         // keccak256("contenthash()")
-        const data = await this.#fetch("contenthash()");
+        const data = await this.#fetch("contenthash(bytes32)");
         // No contenthash
         if (data == null || data === "0x") {
             return null;
@@ -14964,32 +14964,47 @@ function injectCommonNetworks() {
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
     registerEth("xdai", 100, { ensNetwork: 1 });
+    registerEth("optimism", 10, {
+        ensNetwork: 1,
+        etherscan: { url: "https:/\/api-optimistic.etherscan.io/" }
+    });
+    registerEth("optimism-goerli", 420, {
+        etherscan: { url: "https:/\/api-goerli-optimistic.etherscan.io/" }
+    });
+    registerEth("arbitrum", 42161, {
+        ensNetwork: 1,
+        etherscan: { url: "https:/\/api.arbiscan.io/" }
+    });
+    registerEth("arbitrum-goerli", 421613, {
+        etherscan: { url: "https:/\/api-goerli.arbiscan.io/" }
+    });
     // Polygon has a 35 gwei maxPriorityFee requirement
     registerEth("matic", 137, {
         ensNetwork: 1,
         //        priorityFee: 35000000000,
         etherscan: {
-            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
+            //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
             url: "https:/\/api.polygonscan.com/"
         }
     });
-    registerEth("maticMumbai", 80001, {
+    registerEth("matic-mumbai", 80001, {
+        altNames: ["maticMumbai", "maticmum"],
         //        priorityFee: 35000000000,
         etherscan: {
-            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
+            //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
             url: "https:/\/api-testnet.polygonscan.com/"
         }
     });
     registerEth("bnb", 56, {
         ensNetwork: 1,
         etherscan: {
-            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
+            //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
             url: "http:/\/api.bscscan.com"
         }
     });
     registerEth("bnbt", 97, {
         etherscan: {
-            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
+            //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
             url: "http:/\/api-testnet.bscscan.com"
         }
     });
@@ -16833,6 +16848,7 @@ class JsonRpcSigner extends AbstractSigner {
     address;
     constructor(provider, address) {
         super(provider);
+        address = getAddress(address);
         defineProperties(this, { address });
     }
     connect(provider) {
@@ -17455,8 +17471,8 @@ class JsonRpcApiProvider extends AbstractProvider {
         // Account address
         address = getAddress(address);
         for (const account of accounts) {
-            if (getAddress(account) === account) {
-                return new JsonRpcSigner(this, account);
+            if (getAddress(account) === address) {
+                return new JsonRpcSigner(this, address);
             }
         }
         throw new Error("invalid account");
@@ -17709,7 +17725,7 @@ function getHost$3(name) {
             return "arb-goerli.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai.g.alchemy.com";
         case "optimism":
             return "opt-mainnet.g.alchemy.com";
@@ -17835,7 +17851,7 @@ class CloudflareProvider extends JsonRpcProvider {
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
@@ -17924,7 +17940,7 @@ class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-goerli.arbiscan.io";
             case "matic":
                 return "https:/\/api.polygonscan.com";
-            case "maticmum":
+            case "matic-mumbai":
                 return "https:/\/api-testnet.polygonscan.com";
             case "optimism":
                 return "https:/\/api-optimistic.etherscan.io";
@@ -18640,7 +18656,7 @@ class WebSocketProvider extends SocketProvider {
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
  */
@@ -18659,7 +18675,7 @@ function getHost$2(name) {
             return "arbitrum-goerli.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai.infura.io";
         case "optimism":
             return "optimism-mainnet.infura.io";
@@ -18801,7 +18817,7 @@ class InfuraProvider extends JsonRpcProvider {
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``maticmum``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:QuickNode  [providers-quicknode]
  */
@@ -18820,7 +18836,7 @@ function getHost$1(name) {
             return "ethers.arbitrum-goerli.quiknode.pro";
         case "matic":
             return "ethers.matic.quiknode.pro";
-        case "maticmum":
+        case "matic-mumbai":
             return "ethers.matic-testnet.quiknode.pro";
         case "optimism":
             return "ethers.optimism.quiknode.pro";
@@ -19519,7 +19535,8 @@ class NonceManager extends AbstractSigner {
             if (this.#noncePromise == null) {
                 this.#noncePromise = super.getNonce("pending");
             }
-            return (await this.#noncePromise) + this.#delta;
+            const delta = this.#delta;
+            return (await this.#noncePromise) + delta;
         }
         return super.getNonce(blockTag);
     }
@@ -19656,7 +19673,7 @@ function getHost(name) {
             return "eth-goerli.gateway.pokt.network";
         case "matic":
             return "poly-mainnet.gateway.pokt.network";
-        case "maticmum":
+        case "matic-mumbai":
             return "polygon-mumbai-rpc.gateway.pokt.network";
     }
     assertArgument(false, "unsupported network", "network", name);
