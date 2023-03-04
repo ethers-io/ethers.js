@@ -16,7 +16,7 @@ import type { Network } from "./network.js";
 
 const BN_0 = BigInt(0);
 
-export type BlockTag = number | string;
+export type BlockTag = BigNumberish | string;
 
 import {
     BlockParams, LogParams, TransactionReceiptParams,
