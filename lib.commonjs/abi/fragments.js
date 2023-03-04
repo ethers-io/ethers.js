@@ -506,7 +506,7 @@ class ParamType {
     walk(value, process) {
         if (this.isArray()) {
             if (!Array.isArray(value)) {
-                throw new Error("invlaid array value");
+                throw new Error("invalid array value");
             }
             if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
                 throw new Error("array is wrong length");
@@ -516,7 +516,7 @@ class ParamType {
         }
         if (this.isTuple()) {
             if (!Array.isArray(value)) {
-                throw new Error("invlaid tuple value");
+                throw new Error("invalid tuple value");
             }
             if (value.length !== this.components.length) {
                 throw new Error("array is wrong length");
@@ -529,7 +529,7 @@ class ParamType {
     #walkAsync(promises, value, process, setValue) {
         if (this.isArray()) {
             if (!Array.isArray(value)) {
-                throw new Error("invlaid array value");
+                throw new Error("invalid array value");
             }
             if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
                 throw new Error("array is wrong length");
@@ -553,7 +553,7 @@ class ParamType {
             }
             else {
                 if (value == null || typeof (value) !== "object") {
-                    throw new Error("invlaid tuple value");
+                    throw new Error("invalid tuple value");
                 }
                 result = components.map((param) => {
                     if (!param.name) {

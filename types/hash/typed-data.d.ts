@@ -1,10 +1,10 @@
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 export interface TypedDataDomain {
-    name?: string;
-    version?: string;
-    chainId?: BigNumberish;
-    verifyingContract?: string;
-    salt?: BytesLike;
+    name?: null | string;
+    version?: null | string;
+    chainId?: null | BigNumberish;
+    verifyingContract?: null | string;
+    salt?: null | BytesLike;
 }
 export interface TypedDataField {
     name: string;

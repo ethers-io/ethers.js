@@ -8,7 +8,7 @@
     /**
      *  The current version of Ethers.
      */
-    const version = "6.0.8";
+    const version = "6.1.0";
 
     /**
      *  Property helper functions.
@@ -6219,7 +6219,7 @@
                     const v = Signature.getNormalizedV(bytes[64]);
                     return new Signature(_guard$3, r, hexlify(s), v);
                 }
-                assertError(false, "invlaid raw signature length");
+                assertError(false, "invalid raw signature length");
             }
             if (sig instanceof Signature) {
                 return sig.clone();
@@ -6597,7 +6597,7 @@
     /**
      *  The [ICAP Address format](link-icap) format is an early checksum
      *  format which attempts to be compatible with the banking
-     *  industry [IBAN format](link-wiki-iban] for bank accounts.
+     *  industry [IBAN format](link-wiki-iban) for bank accounts.
      *
      *  It is no longer common or a recommended format.
      *
@@ -9694,6 +9694,9 @@
         static hashDomain(domain) {
             const domainFields = [];
             for (const name in domain) {
+                if (domain[name] == null) {
+                    continue;
+                }
                 const type = domainFieldTypes[name];
                 assertArgument(type, `invalid typed-data domain key: ${JSON.stringify(name)}`, "domain", domain);
                 domainFields.push({ name, type });
@@ -9717,6 +9720,12 @@
         static async resolveNames(domain, types, value, resolveName) {
             // Make a copy to isolate it from the object passed in
             domain = Object.assign({}, domain);
+            // Allow passing null to ignore value
+            for (const key in domain) {
+                if (domain[key] == null) {
+                    delete domain[key];
+                }
+            }
             // Look up all ENS names
             const ensCache = {};
             // Do we need to look up the domain's verifyingContract?
@@ -10306,7 +10315,7 @@
         walk(value, process) {
             if (this.isArray()) {
                 if (!Array.isArray(value)) {
-                    throw new Error("invlaid array value");
+                    throw new Error("invalid array value");
                 }
                 if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
                     throw new Error("array is wrong length");
@@ -10316,7 +10325,7 @@
             }
             if (this.isTuple()) {
                 if (!Array.isArray(value)) {
-                    throw new Error("invlaid tuple value");
+                    throw new Error("invalid tuple value");
                 }
                 if (value.length !== this.components.length) {
                     throw new Error("array is wrong length");
@@ -10329,7 +10338,7 @@
         #walkAsync(promises, value, process, setValue) {
             if (this.isArray()) {
                 if (!Array.isArray(value)) {
-                    throw new Error("invlaid array value");
+                    throw new Error("invalid array value");
                 }
                 if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
                     throw new Error("array is wrong length");
@@ -10353,7 +10362,7 @@
                 }
                 else {
                     if (value == null || typeof (value) !== "object") {
-                        throw new Error("invlaid tuple value");
+                        throw new Error("invalid tuple value");
                     }
                     result = components.map((param) => {
                         if (!param.name) {
@@ -10993,7 +11002,7 @@
 
     /**
      *  When sending values to or receiving values from a [[Contract]], the
-     *  data is generally encoded using the [ABI standard](solc-abi-standard).
+     *  data is generally encoded using the [ABI standard](link-solc-abi).
      *
      *  The AbiCoder provides a utility to encode values to ABI data and
      *  decode values from ABI data.
@@ -15537,6 +15546,9 @@
                 }
                 return toQuantity(blockTag);
             }
+            if (typeof (blockTag) === "bigint") {
+                blockTag = getNumber(blockTag, "blockTag");
+            }
             if (typeof (blockTag) === "number") {
                 if (blockTag >= 0) {
                     return toQuantity(blockTag);
@@ -17482,6 +17494,10 @@
                 }
             }
             throw new Error("invalid account");
+        }
+        async listAccounts() {
+            const accounts = await this.send("eth_accounts", []);
+            return accounts.map((a) => new JsonRpcSigner(this, a));
         }
     }
     class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
@@ -21974,9 +21990,13 @@
         ErrorFragment: ErrorFragment,
         EventFragment: EventFragment,
         Fragment: Fragment,
+        FallbackFragment: FallbackFragment,
         FunctionFragment: FunctionFragment,
+        NamedFragment: NamedFragment,
         ParamType: ParamType,
+        StructFragment: StructFragment,
         checkResultErrors: checkResultErrors,
+        ErrorDescription: ErrorDescription,
         Indexed: Indexed,
         Interface: Interface,
         LogDescription: LogDescription,
@@ -22005,6 +22025,7 @@
         ContractEventPayload: ContractEventPayload,
         ContractTransactionReceipt: ContractTransactionReceipt,
         ContractTransactionResponse: ContractTransactionResponse,
+        ContractUnknownEventPayload: ContractUnknownEventPayload,
         EventLog: EventLog,
         computeHmac: computeHmac,
         randomBytes: randomBytes,
@@ -22049,6 +22070,7 @@
         CloudflareProvider: CloudflareProvider,
         EtherscanProvider: EtherscanProvider,
         InfuraProvider: InfuraProvider,
+        InfuraWebSocketProvider: InfuraWebSocketProvider,
         PocketProvider: PocketProvider,
         QuickNodeProvider: QuickNodeProvider,
         IpcSocketProvider: IpcSocketProvider,
@@ -22056,6 +22078,18 @@
         WebSocketProvider: WebSocketProvider,
         EnsResolver: EnsResolver,
         Network: Network,
+        EnsPlugin: EnsPlugin,
+        EtherscanPlugin: EtherscanPlugin,
+        FeeDataNetworkPlugin: FeeDataNetworkPlugin,
+        GasCostPlugin: GasCostPlugin,
+        NetworkPlugin: NetworkPlugin,
+        SocketBlockSubscriber: SocketBlockSubscriber,
+        SocketEventSubscriber: SocketEventSubscriber,
+        SocketPendingSubscriber: SocketPendingSubscriber,
+        SocketSubscriber: SocketSubscriber,
+        UnmanagedSubscriber: UnmanagedSubscriber,
+        copyRequest: copyRequest,
+        showThrottleMessage: showThrottleMessage,
         accessListify: accessListify,
         computeAddress: computeAddress,
         recoverAddress: recoverAddress,
@@ -22076,6 +22110,7 @@
         zeroPadBytes: zeroPadBytes,
         zeroPadValue: zeroPadValue,
         defineProperties: defineProperties,
+        resolveProperties: resolveProperties,
         assert: assert$1,
         assertArgument: assertArgument,
         assertArgumentCount: assertArgumentCount,
@@ -22084,6 +22119,7 @@
         makeError: makeError,
         isCallException: isCallException,
         isError: isError,
+        EventPayload: EventPayload,
         FetchRequest: FetchRequest,
         FetchResponse: FetchResponse,
         FetchCancelSignal: FetchCancelSignal,
@@ -22109,6 +22145,7 @@
         Utf8ErrorFuncs: Utf8ErrorFuncs,
         decodeRlp: decodeRlp,
         encodeRlp: encodeRlp,
+        uuidV4: uuidV4,
         Mnemonic: Mnemonic,
         BaseWallet: BaseWallet,
         HDNodeWallet: HDNodeWallet,
@@ -22126,7 +22163,8 @@
         Wordlist: Wordlist,
         LangEn: LangEn,
         WordlistOwl: WordlistOwl,
-        WordlistOwlA: WordlistOwlA
+        WordlistOwlA: WordlistOwlA,
+        wordlists: wordlists
     });
 
     /**
@@ -22153,24 +22191,33 @@
     exports.ContractFactory = ContractFactory;
     exports.ContractTransactionReceipt = ContractTransactionReceipt;
     exports.ContractTransactionResponse = ContractTransactionResponse;
+    exports.ContractUnknownEventPayload = ContractUnknownEventPayload;
+    exports.EnsPlugin = EnsPlugin;
     exports.EnsResolver = EnsResolver;
+    exports.ErrorDescription = ErrorDescription;
     exports.ErrorFragment = ErrorFragment;
     exports.EtherSymbol = EtherSymbol;
+    exports.EtherscanPlugin = EtherscanPlugin;
     exports.EtherscanProvider = EtherscanProvider;
     exports.EventFragment = EventFragment;
     exports.EventLog = EventLog;
+    exports.EventPayload = EventPayload;
+    exports.FallbackFragment = FallbackFragment;
     exports.FallbackProvider = FallbackProvider;
     exports.FeeData = FeeData;
+    exports.FeeDataNetworkPlugin = FeeDataNetworkPlugin;
     exports.FetchCancelSignal = FetchCancelSignal;
     exports.FetchRequest = FetchRequest;
     exports.FetchResponse = FetchResponse;
     exports.FixedNumber = FixedNumber;
     exports.Fragment = Fragment;
     exports.FunctionFragment = FunctionFragment;
+    exports.GasCostPlugin = GasCostPlugin;
     exports.HDNodeVoidWallet = HDNodeVoidWallet;
     exports.HDNodeWallet = HDNodeWallet;
     exports.Indexed = Indexed;
     exports.InfuraProvider = InfuraProvider;
+    exports.InfuraWebSocketProvider = InfuraWebSocketProvider;
     exports.Interface = Interface;
     exports.IpcSocketProvider = IpcSocketProvider;
     exports.JsonRpcApiProvider = JsonRpcApiProvider;
@@ -22185,7 +22232,9 @@
     exports.MinInt256 = MinInt256;
     exports.Mnemonic = Mnemonic;
     exports.N = N$1;
+    exports.NamedFragment = NamedFragment;
     exports.Network = Network;
+    exports.NetworkPlugin = NetworkPlugin;
     exports.NonceManager = NonceManager;
     exports.ParamType = ParamType;
     exports.PocketProvider = PocketProvider;
@@ -22193,13 +22242,19 @@
     exports.Result = Result;
     exports.Signature = Signature;
     exports.SigningKey = SigningKey;
+    exports.SocketBlockSubscriber = SocketBlockSubscriber;
+    exports.SocketEventSubscriber = SocketEventSubscriber;
+    exports.SocketPendingSubscriber = SocketPendingSubscriber;
     exports.SocketProvider = SocketProvider;
+    exports.SocketSubscriber = SocketSubscriber;
+    exports.StructFragment = StructFragment;
     exports.Transaction = Transaction;
     exports.TransactionDescription = TransactionDescription;
     exports.TransactionReceipt = TransactionReceipt;
     exports.TransactionResponse = TransactionResponse;
     exports.Typed = Typed;
     exports.TypedDataEncoder = TypedDataEncoder;
+    exports.UnmanagedSubscriber = UnmanagedSubscriber;
     exports.Utf8ErrorFuncs = Utf8ErrorFuncs;
     exports.VoidSigner = VoidSigner;
     exports.Wallet = Wallet;
@@ -22220,6 +22275,7 @@
     exports.computeAddress = computeAddress;
     exports.computeHmac = computeHmac;
     exports.concat = concat;
+    exports.copyRequest = copyRequest;
     exports.dataLength = dataLength;
     exports.dataSlice = dataSlice;
     exports.decodeBase58 = decodeBase58;
@@ -22277,11 +22333,13 @@
     exports.randomBytes = randomBytes;
     exports.recoverAddress = recoverAddress;
     exports.resolveAddress = resolveAddress;
+    exports.resolveProperties = resolveProperties;
     exports.ripemd160 = ripemd160;
     exports.scrypt = scrypt;
     exports.scryptSync = scryptSync;
     exports.sha256 = sha256;
     exports.sha512 = sha512;
+    exports.showThrottleMessage = showThrottleMessage;
     exports.solidityPacked = solidityPacked;
     exports.solidityPackedKeccak256 = solidityPackedKeccak256;
     exports.solidityPackedSha256 = solidityPackedSha256;
@@ -22295,8 +22353,10 @@
     exports.toUtf8Bytes = toUtf8Bytes;
     exports.toUtf8CodePoints = toUtf8CodePoints;
     exports.toUtf8String = toUtf8String;
+    exports.uuidV4 = uuidV4;
     exports.verifyMessage = verifyMessage;
     exports.version = version;
+    exports.wordlists = wordlists;
     exports.zeroPadBytes = zeroPadBytes;
     exports.zeroPadValue = zeroPadValue;
 

@@ -134,7 +134,7 @@ exports.getAddress = getAddress;
 /**
  *  The [ICAP Address format](link-icap) format is an early checksum
  *  format which attempts to be compatible with the banking
- *  industry [IBAN format](link-wiki-iban] for bank accounts.
+ *  industry [IBAN format](link-wiki-iban) for bank accounts.
  *
  *  It is no longer common or a recommended format.
  *

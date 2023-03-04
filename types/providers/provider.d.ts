@@ -4,7 +4,7 @@ import type { Signature } from "../crypto/index.js";
 import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
-export type BlockTag = number | string;
+export type BlockTag = BigNumberish | string;
 import { BlockParams, LogParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
 /**
  *  A **FeeData** wraps all the fee-related values associated with

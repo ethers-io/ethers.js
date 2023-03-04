@@ -239,6 +239,7 @@ export declare abstract class JsonRpcApiProvider extends AbstractProvider {
      *  Throws if the account doesn't exist.
      */
     getSigner(address?: number | string): Promise<JsonRpcSigner>;
+    listAccounts(): Promise<Array<JsonRpcSigner>>;
 }
 export declare abstract class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     #private;

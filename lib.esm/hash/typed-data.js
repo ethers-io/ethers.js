@@ -282,6 +282,9 @@ export class TypedDataEncoder {
     static hashDomain(domain) {
         const domainFields = [];
         for (const name in domain) {
+            if (domain[name] == null) {
+                continue;
+            }
             const type = domainFieldTypes[name];
             assertArgument(type, `invalid typed-data domain key: ${JSON.stringify(name)}`, "domain", domain);
             domainFields.push({ name, type });
@@ -305,6 +308,12 @@ export class TypedDataEncoder {
     static async resolveNames(domain, types, value, resolveName) {
         // Make a copy to isolate it from the object passed in
         domain = Object.assign({}, domain);
+        // Allow passing null to ignore value
+        for (const key in domain) {
+            if (domain[key] == null) {
+                delete domain[key];
+            }
+        }
         // Look up all ENS names
         const ensCache = {};
         // Do we need to look up the domain's verifyingContract?

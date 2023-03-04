@@ -1,7 +1,7 @@
 "use strict";
 /**
  *  When sending values to or receiving values from a [[Contract]], the
- *  data is generally encoded using the [ABI standard](solc-abi-standard).
+ *  data is generally encoded using the [ABI standard](link-solc-abi).
  *
  *  The AbiCoder provides a utility to encode values to ABI data and
  *  decode values from ABI data.

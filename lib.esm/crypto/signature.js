@@ -243,7 +243,7 @@ export class Signature {
                 const v = Signature.getNormalizedV(bytes[64]);
                 return new Signature(_guard, r, hexlify(s), v);
             }
-            assertError(false, "invlaid raw signature length");
+            assertError(false, "invalid raw signature length");
         }
         if (sig instanceof Signature) {
             return sig.clone();

@@ -311,6 +311,9 @@ class AbstractProvider {
             }
             return (0, index_js_6.toQuantity)(blockTag);
         }
+        if (typeof (blockTag) === "bigint") {
+            blockTag = (0, index_js_6.getNumber)(blockTag, "blockTag");
+        }
         if (typeof (blockTag) === "number") {
             if (blockTag >= 0) {
                 return (0, index_js_6.toQuantity)(blockTag);

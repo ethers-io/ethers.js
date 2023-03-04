@@ -3,6 +3,16 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.1.0 (2023-03-03 18:23)
+--------------------------------
+
+  - Added missing exports ([#3734](https://github.com/ethers-io/ethers.js/issues/3734); [06aa303](https://github.com/ethers-io/ethers.js/commit/06aa30363f88144db672376d39012d7fe3f86c33)).
+  - Allow null values for TypedData domain ([#3623](https://github.com/ethers-io/ethers.js/issues/3623); [a32af3a](https://github.com/ethers-io/ethers.js/commit/a32af3adc104c4b07a45097a4a3725a4ce9e0be6)).
+  - Added listAccounts to JsonRpcProvider ([#3778](https://github.com/ethers-io/ethers.js/issues/3778); [287d94f](https://github.com/ethers-io/ethers.js/commit/287d94fc454d03f1b3086ea98745131cdf40129a)).
+  - Allow BigInt for blockTag ([#3780](https://github.com/ethers-io/ethers.js/issues/3780); [fe1f04c](https://github.com/ethers-io/ethers.js/commit/fe1f04c6e5fb4254a100f492d7dcbdc3cf19a446)).
+  - Fixed typo in error messages ([#3822](https://github.com/ethers-io/ethers.js/issues/3822), [#3824](https://github.com/ethers-io/ethers.js/issues/3824); [f1a810d](https://github.com/ethers-io/ethers.js/commit/f1a810dcb56df54b1e1567f2a59c73500619472f)).
+  - Re-adding definition files to require exports ([#3703](https://github.com/ethers-io/ethers.js/issues/3703); [76fab92](https://github.com/ethers-io/ethers.js/commit/76fab923da33e71e6bb751bb0b5e3ba3faa27ab2)).
+
 ethers/v6.0.8 (2023-02-23 06:30)
 --------------------------------
 

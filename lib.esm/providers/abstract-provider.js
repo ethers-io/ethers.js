@@ -307,6 +307,9 @@ export class AbstractProvider {
             }
             return toQuantity(blockTag);
         }
+        if (typeof (blockTag) === "bigint") {
+            blockTag = getNumber(blockTag, "blockTag");
+        }
         if (typeof (blockTag) === "number") {
             if (blockTag >= 0) {
                 return toQuantity(blockTag);

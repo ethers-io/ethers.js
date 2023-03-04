@@ -694,6 +694,10 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         }
         throw new Error("invalid account");
     }
+    async listAccounts() {
+        const accounts = await this.send("eth_accounts", []);
+        return accounts.map((a) => new JsonRpcSigner(this, a));
+    }
 }
 exports.JsonRpcApiProvider = JsonRpcApiProvider;
 class JsonRpcApiPollingProvider extends JsonRpcApiProvider {

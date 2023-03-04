@@ -2,7 +2,7 @@
 /**
  *  The current version of Ethers.
  */
-const version = "6.0.8";
+const version = "6.1.0";
 
 /**
  *  Property helper functions.
@@ -6213,7 +6213,7 @@ class Signature {
                 const v = Signature.getNormalizedV(bytes[64]);
                 return new Signature(_guard$3, r, hexlify(s), v);
             }
-            assertError(false, "invlaid raw signature length");
+            assertError(false, "invalid raw signature length");
         }
         if (sig instanceof Signature) {
             return sig.clone();
@@ -6591,7 +6591,7 @@ function getAddress(address) {
 /**
  *  The [ICAP Address format](link-icap) format is an early checksum
  *  format which attempts to be compatible with the banking
- *  industry [IBAN format](link-wiki-iban] for bank accounts.
+ *  industry [IBAN format](link-wiki-iban) for bank accounts.
  *
  *  It is no longer common or a recommended format.
  *
@@ -9688,6 +9688,9 @@ class TypedDataEncoder {
     static hashDomain(domain) {
         const domainFields = [];
         for (const name in domain) {
+            if (domain[name] == null) {
+                continue;
+            }
             const type = domainFieldTypes[name];
             assertArgument(type, `invalid typed-data domain key: ${JSON.stringify(name)}`, "domain", domain);
             domainFields.push({ name, type });
@@ -9711,6 +9714,12 @@ class TypedDataEncoder {
     static async resolveNames(domain, types, value, resolveName) {
         // Make a copy to isolate it from the object passed in
         domain = Object.assign({}, domain);
+        // Allow passing null to ignore value
+        for (const key in domain) {
+            if (domain[key] == null) {
+                delete domain[key];
+            }
+        }
         // Look up all ENS names
         const ensCache = {};
         // Do we need to look up the domain's verifyingContract?
@@ -10300,7 +10309,7 @@ class ParamType {
     walk(value, process) {
         if (this.isArray()) {
             if (!Array.isArray(value)) {
-                throw new Error("invlaid array value");
+                throw new Error("invalid array value");
             }
             if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
                 throw new Error("array is wrong length");
@@ -10310,7 +10319,7 @@ class ParamType {
         }
         if (this.isTuple()) {
             if (!Array.isArray(value)) {
-                throw new Error("invlaid tuple value");
+                throw new Error("invalid tuple value");
             }
             if (value.length !== this.components.length) {
                 throw new Error("array is wrong length");
@@ -10323,7 +10332,7 @@ class ParamType {
     #walkAsync(promises, value, process, setValue) {
         if (this.isArray()) {
             if (!Array.isArray(value)) {
-                throw new Error("invlaid array value");
+                throw new Error("invalid array value");
             }
             if (this.arrayLength !== -1 && value.length !== this.arrayLength) {
                 throw new Error("array is wrong length");
@@ -10347,7 +10356,7 @@ class ParamType {
             }
             else {
                 if (value == null || typeof (value) !== "object") {
-                    throw new Error("invlaid tuple value");
+                    throw new Error("invalid tuple value");
                 }
                 result = components.map((param) => {
                     if (!param.name) {
@@ -10987,7 +10996,7 @@ class StructFragment extends NamedFragment {
 
 /**
  *  When sending values to or receiving values from a [[Contract]], the
- *  data is generally encoded using the [ABI standard](solc-abi-standard).
+ *  data is generally encoded using the [ABI standard](link-solc-abi).
  *
  *  The AbiCoder provides a utility to encode values to ABI data and
  *  decode values from ABI data.
@@ -15531,6 +15540,9 @@ class AbstractProvider {
             }
             return toQuantity(blockTag);
         }
+        if (typeof (blockTag) === "bigint") {
+            blockTag = getNumber(blockTag, "blockTag");
+        }
         if (typeof (blockTag) === "number") {
             if (blockTag >= 0) {
                 return toQuantity(blockTag);
@@ -17476,6 +17488,10 @@ class JsonRpcApiProvider extends AbstractProvider {
             }
         }
         throw new Error("invalid account");
+    }
+    async listAccounts() {
+        const accounts = await this.send("eth_accounts", []);
+        return accounts.map((a) => new JsonRpcSigner(this, a));
     }
 }
 class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
@@ -21968,9 +21984,13 @@ var ethers = /*#__PURE__*/Object.freeze({
     ErrorFragment: ErrorFragment,
     EventFragment: EventFragment,
     Fragment: Fragment,
+    FallbackFragment: FallbackFragment,
     FunctionFragment: FunctionFragment,
+    NamedFragment: NamedFragment,
     ParamType: ParamType,
+    StructFragment: StructFragment,
     checkResultErrors: checkResultErrors,
+    ErrorDescription: ErrorDescription,
     Indexed: Indexed,
     Interface: Interface,
     LogDescription: LogDescription,
@@ -21999,6 +22019,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     ContractEventPayload: ContractEventPayload,
     ContractTransactionReceipt: ContractTransactionReceipt,
     ContractTransactionResponse: ContractTransactionResponse,
+    ContractUnknownEventPayload: ContractUnknownEventPayload,
     EventLog: EventLog,
     computeHmac: computeHmac,
     randomBytes: randomBytes,
@@ -22043,6 +22064,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     CloudflareProvider: CloudflareProvider,
     EtherscanProvider: EtherscanProvider,
     InfuraProvider: InfuraProvider,
+    InfuraWebSocketProvider: InfuraWebSocketProvider,
     PocketProvider: PocketProvider,
     QuickNodeProvider: QuickNodeProvider,
     IpcSocketProvider: IpcSocketProvider,
@@ -22050,6 +22072,18 @@ var ethers = /*#__PURE__*/Object.freeze({
     WebSocketProvider: WebSocketProvider,
     EnsResolver: EnsResolver,
     Network: Network,
+    EnsPlugin: EnsPlugin,
+    EtherscanPlugin: EtherscanPlugin,
+    FeeDataNetworkPlugin: FeeDataNetworkPlugin,
+    GasCostPlugin: GasCostPlugin,
+    NetworkPlugin: NetworkPlugin,
+    SocketBlockSubscriber: SocketBlockSubscriber,
+    SocketEventSubscriber: SocketEventSubscriber,
+    SocketPendingSubscriber: SocketPendingSubscriber,
+    SocketSubscriber: SocketSubscriber,
+    UnmanagedSubscriber: UnmanagedSubscriber,
+    copyRequest: copyRequest,
+    showThrottleMessage: showThrottleMessage,
     accessListify: accessListify,
     computeAddress: computeAddress,
     recoverAddress: recoverAddress,
@@ -22070,6 +22104,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     zeroPadBytes: zeroPadBytes,
     zeroPadValue: zeroPadValue,
     defineProperties: defineProperties,
+    resolveProperties: resolveProperties,
     assert: assert$1,
     assertArgument: assertArgument,
     assertArgumentCount: assertArgumentCount,
@@ -22078,6 +22113,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     makeError: makeError,
     isCallException: isCallException,
     isError: isError,
+    EventPayload: EventPayload,
     FetchRequest: FetchRequest,
     FetchResponse: FetchResponse,
     FetchCancelSignal: FetchCancelSignal,
@@ -22103,6 +22139,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     Utf8ErrorFuncs: Utf8ErrorFuncs,
     decodeRlp: decodeRlp,
     encodeRlp: encodeRlp,
+    uuidV4: uuidV4,
     Mnemonic: Mnemonic,
     BaseWallet: BaseWallet,
     HDNodeWallet: HDNodeWallet,
@@ -22120,7 +22157,8 @@ var ethers = /*#__PURE__*/Object.freeze({
     Wordlist: Wordlist,
     LangEn: LangEn,
     WordlistOwl: WordlistOwl,
-    WordlistOwlA: WordlistOwlA
+    WordlistOwlA: WordlistOwlA,
+    wordlists: wordlists
 });
 
 /**
@@ -22131,5 +22169,5 @@ var ethers = /*#__PURE__*/Object.freeze({
  *  @_navTitle: API
  */
 
-export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, EnsResolver, ErrorFragment, EtherSymbol, EtherscanProvider, EventFragment, EventLog, FallbackProvider, FeeData, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, Network, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketProvider, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, ripemd160, scrypt, scryptSync, sha256, sha512, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, verifyMessage, version, zeroPadBytes, zeroPadValue };
+export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EnsPlugin, EnsResolver, ErrorDescription, ErrorFragment, EtherSymbol, EtherscanPlugin, EtherscanProvider, EventFragment, EventLog, EventPayload, FallbackFragment, FallbackProvider, FeeData, FeeDataNetworkPlugin, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, InfuraWebSocketProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, NamedFragment, Network, NetworkPlugin, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber, SocketProvider, SocketSubscriber, StructFragment, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, UnmanagedSubscriber, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, copyRequest, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, uuidV4, verifyMessage, version, wordlists, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map
