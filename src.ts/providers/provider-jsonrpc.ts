@@ -940,6 +940,11 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
 
         throw new Error("invalid account");
     }
+
+    async listAccounts(): Promise<Array<JsonRpcSigner>> {
+        const accounts: Array<string> = await this.send("eth_accounts", [ ]);
+        return accounts.map((a) => new JsonRpcSigner(this, a));
+    }
 }
 
 export abstract class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
