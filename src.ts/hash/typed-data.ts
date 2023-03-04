@@ -20,11 +20,11 @@ const BN_1 = BigInt(1);
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
 export interface TypedDataDomain {
-    name?: string;
-    version?: string;
-    chainId?: BigNumberish;
-    verifyingContract?: string;
-    salt?: BytesLike;
+    name?: null | string;
+    version?: null | string;
+    chainId?: null | BigNumberish;
+    verifyingContract?: null | string;
+    salt?: null | BytesLike;
 };
 
 export interface TypedDataField {
@@ -355,6 +355,7 @@ export class TypedDataEncoder {
     static hashDomain(domain: TypedDataDomain): string {
         const domainFields: Array<TypedDataField> = [ ];
         for (const name in domain) {
+            if ((<Record<string, any>>domain)[name] == null) { continue; }
             const type = domainFieldTypes[name];
             assertArgument(type, `invalid typed-data domain key: ${ JSON.stringify(name) }`, "domain", domain);
             domainFields.push({ name, type });
@@ -383,6 +384,13 @@ export class TypedDataEncoder {
     static async resolveNames(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, resolveName: (name: string) => Promise<string>): Promise<{ domain: TypedDataDomain, value: any }> {
         // Make a copy to isolate it from the object passed in
         domain = Object.assign({ }, domain);
+
+        // Allow passing null to ignore value
+        for (const key in domain) {
+            if ((<Record<string, any>>domain)[key] == null) {
+                delete (<Record<string, any>>domain)[key];
+            }
+        }
 
         // Look up all ENS names
         const ensCache: Record<string, string> = { };
