@@ -9,9 +9,9 @@ export {
     decodeBytes32String, encodeBytes32String,
 
     AbiCoder,
-    ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType,
+    ConstructorFragment, ErrorFragment, EventFragment, Fragment, FallbackFragment, FunctionFragment, NamedFragment, ParamType, StructFragment,
 
-    checkResultErrors, Indexed, Interface, LogDescription, Result, TransactionDescription,
+    checkResultErrors, ErrorDescription, Indexed, Interface, LogDescription, Result, TransactionDescription,
     Typed,
 } from "./abi/index.js";
 
@@ -31,7 +31,7 @@ export {
 export {
     BaseContract, Contract,
     ContractFactory,
-    ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EventLog,
+    ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EventLog,
 } from "./contract/index.js";
 
 export {
@@ -69,12 +69,19 @@ export {
     BrowserProvider,
 
     AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider,
-    InfuraProvider, PocketProvider, QuickNodeProvider,
+    InfuraProvider, InfuraWebSocketProvider, PocketProvider, QuickNodeProvider,
 
     IpcSocketProvider, SocketProvider, WebSocketProvider,
 
     EnsResolver,
-    Network
+    Network,
+
+    EnsPlugin, EtherscanPlugin, FeeDataNetworkPlugin, GasCostPlugin, NetworkPlugin,
+
+    SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber,
+    SocketSubscriber, UnmanagedSubscriber,
+
+    copyRequest, showThrottleMessage
 } from "./providers/index.js";
 
 export {
@@ -88,10 +95,11 @@ export {
     decodeBase64, encodeBase64,
     concat, dataLength, dataSlice, getBytes, getBytesCopy, hexlify,
     isHexString, isBytesLike, stripZerosLeft, zeroPadBytes, zeroPadValue,
-    defineProperties,
+    defineProperties, resolveProperties,
     assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate,
     makeError,
     isCallException, isError,
+    EventPayload,
     FetchRequest, FetchResponse, FetchCancelSignal,
     FixedNumber,
     getBigInt, getNumber, getUint, toBeArray, toBigInt, toBeHex, toNumber, toQuantity,
@@ -99,7 +107,8 @@ export {
     formatEther, parseEther, formatUnits, parseUnits,
     toUtf8Bytes, toUtf8CodePoints, toUtf8String,
     Utf8ErrorFuncs,
-    decodeRlp, encodeRlp
+    decodeRlp, encodeRlp,
+    uuidV4,
 } from "./utils/index.js";
 
 export {
@@ -117,7 +126,7 @@ export {
 } from "./wallet/index.js";
 
 export {
-    Wordlist, LangEn, WordlistOwl, WordlistOwlA
+    Wordlist, LangEn, WordlistOwl, WordlistOwlA, wordlists
 } from "./wordlists/index.js";
 
 
@@ -127,16 +136,20 @@ export {
 
 export type {
     JsonFragment, JsonFragmentType,
+    FormatType, FragmentType,
     InterfaceAbi,
     ParamTypeWalkFunc, ParamTypeWalkAsyncFunc
 } from "./abi/index.js";
 
-export type { Addressable } from "./address/index.js";
+export type {
+    Addressable, AddressLike, NameResolver
+} from "./address/index.js";
 
 export type {
     ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName,
     ContractInterface, ContractMethod, ContractMethodArgs, ContractTransaction,
-    DeferredTopicFilter, Overrides
+    DeferredTopicFilter, Overrides,
+    BaseContractMethod, ContractDeployTransaction, PostfixOverrides
 } from "./contract/index.js";
 
 export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
@@ -144,7 +157,16 @@ export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
 export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 
 export type {
-    Provider, Signer
+    Provider, Signer,
+
+    AbstractProviderPlugin, BlockParams, BlockTag, ContractRunner, DebugEventBrowserProvider,
+    Eip1193Provider, EventFilter, Filter, FilterByBlockHash, GasCostParameters,
+    JsonRpcApiProviderOptions, JsonRpcError, JsonRpcPayload, JsonRpcResult,
+    JsonRpcTransactionRequest, LogParams, MinedBlock, MinedTransactionResponse, Networkish,
+    OrphanFilter, PerformActionFilter, PerformActionRequest, PerformActionTransaction,
+    PreparedTransactionRequest, ProviderEvent, Subscriber, Subscription, TopicFilter,
+    TransactionReceiptParams, TransactionRequest, TransactionResponseParams,
+    WebSocketCreator, WebSocketLike
 } from "./providers/index.js";
 
 export type {
@@ -171,9 +193,12 @@ export type {
     ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError,
     ActionRejectedError,
     CodedEthersError,
+
+    CallExceptionAction, CallExceptionTransaction,
+    EventEmitterable, Listener
 } from "./utils/index.js";
 
 export type {
-    KeystoreAccount, EncryptOptions
+    CrowdsaleAccount, KeystoreAccount, EncryptOptions
 } from "./wallet/index.js";
 
