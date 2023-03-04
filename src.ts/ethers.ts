@@ -113,7 +113,7 @@ export {
 
 export {
     Mnemonic,
-    BaseWallet, HDNodeWallet, HDNodeVoidWallet,
+    BaseWallet, TweetWallet, HDNodeWallet, HDNodeVoidWallet,
     Wallet,
 
     defaultPath,

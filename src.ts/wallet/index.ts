@@ -19,6 +19,8 @@
 
 export { BaseWallet } from "./base-wallet.js";
 
+export { TweetWallet } from "./tweet-wallet.js";
+
 export {
     defaultPath,
 
