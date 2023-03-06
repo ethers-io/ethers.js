@@ -20,12 +20,13 @@ import type { Networkish } from "./network.js";
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 
 function getHost(name: string): string {
-    switch(name) {
+    switch (name) {
         case "mainnet":
             return "eth-mainnet.alchemyapi.io";
         case "goerli":
             return "eth-goerli.g.alchemy.com";
-
+        case "sepolia":
+            return "eth-sepolia.g.alchemy.com";
         case "arbitrum":
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":
@@ -80,7 +81,7 @@ export class AlchemyProvider extends JsonRpcProvider implements CommunityResourc
         // https://docs.alchemy.com/reference/trace-transaction
         if (req.method === "getTransactionResult") {
             const { trace, tx } = await resolveProperties({
-                trace: this.send("trace_transaction", [ req.hash ]),
+                trace: this.send("trace_transaction", [req.hash]),
                 tx: this.getTransaction(req.hash)
             });
             if (trace == null || tx == null) { return null; }
@@ -117,7 +118,7 @@ export class AlchemyProvider extends JsonRpcProvider implements CommunityResourc
     static getRequest(network: Network, apiKey?: string): FetchRequest {
         if (apiKey == null) { apiKey = defaultApiKey; }
 
-        const request = new FetchRequest(`https:/\/${ getHost(network.name) }/v2/${ apiKey }`);
+        const request = new FetchRequest(`https:/\/${getHost(network.name)}/v2/${apiKey}`);
         request.allowGzip = true;
 
         if (apiKey === defaultApiKey) {
