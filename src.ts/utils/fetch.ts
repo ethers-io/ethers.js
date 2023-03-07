@@ -412,7 +412,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
      *  Create a new FetchRequest instance with default values.
      *
      *  Once created, each property may be set before issuing a
-     *  ``.send()`` to make teh request.
+     *  ``.send()`` to make the request.
      */
     constructor(url: string) {
         this.#url = String(url);
