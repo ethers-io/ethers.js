@@ -214,6 +214,24 @@ _code: wrapping EIP-1193 providers  @lang<script>
   // v6:
   provider = new ethers.BrowserProvider(window.ethereum)
 
+Additionally, when constructing a new ``JsonRpcProvider``,
+the ``ConnectionInfo`` object has been replaced with ``FetchRequest``.
+
+_code: passing connection parameters  @lang<script>
+  // v5
+  provider = new ethers.providers.JsonRpcProvider({
+    url: 'https://provider.api.example.com',
+    user: process.env.MY_PROVIDER_USERNAME,
+    password: process.env.MY_PROVIDER_PASSWORD,
+  })
+
+  // v6:
+  let fetchRequest = new ethers.FetchRequest('https://provider.api.example.com')
+  fetchRequest.setCredentials(
+    process.env.MY_PROVIDER_USERNAME,
+    process.env.MY_PROVIDER_PASSWORD
+  );
+  provider = new ethers.JsonRpcProvider(fetchRequest)
 
 _subsection: Signatures  @<migrate-signatures>
 
