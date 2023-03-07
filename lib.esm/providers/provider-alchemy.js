@@ -14,6 +14,8 @@ function getHost(name) {
             return "eth-mainnet.alchemyapi.io";
         case "goerli":
             return "eth-goerli.g.alchemy.com";
+        case "sepolia":
+            return "eth-sepolia.g.alchemy.com";
         case "arbitrum":
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":

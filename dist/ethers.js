@@ -1,3 +1,4 @@
+const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 'undefined' ? window: typeof global !== 'undefined' ? global: typeof self !== 'undefined' ? self: {});
 /* Do NOT modify this file; see /src.ts/_admin/update-version.ts */
 /**
  *  The current version of Ethers.
@@ -14970,6 +14971,7 @@ function injectCommonNetworks() {
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });
     registerEth("kovan", 42, { ensNetwork: 42 });
+    registerEth("sepolia", 11155111, {});
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
     registerEth("xdai", 100, { ensNetwork: 1 });
@@ -17735,6 +17737,8 @@ function getHost$3(name) {
             return "eth-mainnet.alchemyapi.io";
         case "goerli":
             return "eth-goerli.g.alchemy.com";
+        case "sepolia":
+            return "eth-sepolia.g.alchemy.com";
         case "arbitrum":
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":
@@ -20215,13 +20219,13 @@ class Mnemonic {
 }
 
 /*! MIT License. Copyright 2015-2022 Richard Moore <me@ricmoo.com>. See LICENSE.txt. */
-var __classPrivateFieldSet$4 = (window && window.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet$4 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet$4 = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet$4 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -20425,13 +20429,13 @@ class ModeOfOperation {
 }
 
 // Cipher Block Chaining
-var __classPrivateFieldSet$3 = (window && window.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet$3 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet$3 = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet$3 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -20486,13 +20490,13 @@ class CBC extends ModeOfOperation {
 _CBC_iv = new WeakMap(), _CBC_lastBlock = new WeakMap();
 
 // Cipher Feedback
-var __classPrivateFieldSet$2 = (window && window.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet$2 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet$2 = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet$2 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -20562,13 +20566,13 @@ _CFB_iv = new WeakMap(), _CFB_shiftRegister = new WeakMap(), _CFB_instances = ne
 };
 
 // Counter Mode
-var __classPrivateFieldSet$1 = (window && window.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet$1 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet$1 = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet$1 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -20670,13 +20674,13 @@ class ECB extends ModeOfOperation {
 }
 
 // Output Feedback
-var __classPrivateFieldSet = (window && window.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet = (window && window.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);

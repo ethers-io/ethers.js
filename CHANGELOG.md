@@ -3,9 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.1.0 (2023-03-03 18:23)
+ethers/v6.1.0 (2023-03-07 02:10)
 --------------------------------
 
+  - Fixed ethers imported in web workers ([#3856](https://github.com/ethers-io/ethers.js/issues/3856); [5f2678f](https://github.com/ethers-io/ethers.js/commit/5f2678fb059d643638b9cc1dc59cbfc61ce7a7b8)).
+  - Added Sepolia support ([#3863](https://github.com/ethers-io/ethers.js/issues/3863); [abeaa74](https://github.com/ethers-io/ethers.js/commit/abeaa74da04fbe25e837a2ffa7d1e9c1257a5da5)).
   - Added missing exports ([#3734](https://github.com/ethers-io/ethers.js/issues/3734); [06aa303](https://github.com/ethers-io/ethers.js/commit/06aa30363f88144db672376d39012d7fe3f86c33)).
   - Allow null values for TypedData domain ([#3623](https://github.com/ethers-io/ethers.js/issues/3623); [a32af3a](https://github.com/ethers-io/ethers.js/commit/a32af3adc104c4b07a45097a4a3725a4ce9e0be6)).
   - Added listAccounts to JsonRpcProvider ([#3778](https://github.com/ethers-io/ethers.js/issues/3778); [287d94f](https://github.com/ethers-io/ethers.js/commit/287d94fc454d03f1b3086ea98745131cdf40129a)).
