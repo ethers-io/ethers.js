@@ -13,11 +13,12 @@ function getConfig(opts) {
     input: "./lib.esm/index.js",
     output: {
       file,
+      banner: "const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 'undefined' ? window: typeof global !== 'undefined' ? global: typeof self !== 'undefined' ? self: {});",
       name: (opts.name || undefined),
       format: (opts.format || "esm"),
       sourcemap: true
     },
-    context: "window",
+    context: "__$G",
     treeshake: false,
     plugins: [ nodeResolve({
         exportConditions,
