@@ -492,7 +492,7 @@ export class AbstractProvider implements Provider {
     }
 
     _wrapTransactionResponse(tx: TransactionResponseParams, network: Network): TransactionResponse {
-        return new TransactionResponse(tx, this);
+        return new TransactionResponse(formatTransactionResponse(tx), this);
     }
 
     _detectNetwork(): Promise<Network> {
@@ -897,7 +897,7 @@ export class AbstractProvider implements Provider {
         });
         if (params == null) { return null; }
 
-        return this._wrapBlock(formatBlock(params), network);
+        return this._wrapBlock(params, network);
     }
 
     async getTransaction(hash: string): Promise<null | TransactionResponse> {
@@ -907,7 +907,7 @@ export class AbstractProvider implements Provider {
         });
         if (params == null) { return null; }
 
-        return this._wrapTransactionResponse(formatTransactionResponse(params), network);
+        return this._wrapTransactionResponse(params, network);
     }
 
     async getTransactionReceipt(hash: string): Promise<null | TransactionReceipt> {
@@ -925,7 +925,7 @@ export class AbstractProvider implements Provider {
             params.effectiveGasPrice = tx.gasPrice;
         }
 
-        return this._wrapTransactionReceipt(formatTransactionReceipt(params), network);
+        return this._wrapTransactionReceipt(params, network);
     }
 
     async getTransactionResult(hash: string): Promise<null | string> {
@@ -947,7 +947,7 @@ export class AbstractProvider implements Provider {
             params: this.#perform<Array<LogParams>>({ method: "getLogs", filter })
         });
 
-        return params.map((p) => this._wrapLog(formatLog(p), network));
+        return params.map((p) => this._wrapLog(p, network));
     }
 
     // ENS
