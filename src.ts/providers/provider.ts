@@ -198,6 +198,13 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 //////////////////////
 // Block
 
+/**
+ *  An Interface to indicate a [[Block]] has been included in the
+ *  blockchain. This asserts a Type Guard that necessary properties
+ *  are non-null.
+ *
+ *  Before a block is included, it is a //pending// block.
+ */
 export interface MinedBlock extends Block {
     readonly number: number;
     readonly hash: string;
@@ -717,39 +724,136 @@ export type ReplacementDetectionSetup = {
 };
 */
 export class TransactionResponse implements TransactionLike<string>, TransactionResponseParams {
+    /**
+     *  The provider this is connected to, which will influence how its
+     *  methods will resolve its async inspection methods.
+     */
     readonly provider: Provider;
 
+    /**
+     *  The block number of the block that this transaction was included in.
+     *
+     *  This is ``null`` for pending transactions.
+     */
     readonly blockNumber: null | number;
+
+    /**
+     *  The blockHash of the block that this transaction was included in.
+     *
+     *  This is ``null`` for pending transactions.
+     */
     readonly blockHash: null | string;
 
+    /**
+     *  The index within the block that this transaction resides at.
+     */
     readonly index!: number;
 
+    /**
+     *  The transaction hash.
+     */
     readonly hash!: string;
 
+    /**
+     *  The [[link-eip-2718]] transaction envelope type. This is
+     *  ``0`` for legacy transactions types.
+     */
     readonly type!: number;
 
+    /**
+     *  The receiver of this transaction.
+     *
+     *  If ``null``, then the transaction is an initcode transaction.
+     *  This means the result of executing the [[data]] will be deployed
+     *  as a new contract on chain (assuming it does not revert) and the
+     *  address may be computed using [[getCreateAddress]].
+     */
     readonly to!: null | string;
+
+    /**
+     *  The sender of this transaction. It is implicitly computed
+     *  from the transaction pre-image hash (as the digest) and the
+     *  [[signature]] using ecrecover.
+     */
     readonly from!: string;
 
+    /**
+     *  The nonce, which is used to prevent replay attacks and offer
+     *  a method to ensure transactions from a given sender are explicitly
+     *  ordered.
+     *
+     *  When sending a transaction, this must be equal to the number of
+     *  transactions ever sent by [[from]].
+     */
     readonly nonce!: number;
 
+    /**
+     *  The maximum units of gas this transaction can consume. If execution
+     *  exceeds this, the entries transaction is reverted and the sender
+     *  is charged for the full amount, despite not state changes being made.
+     */
     readonly gasLimit!: bigint;
 
+    /**
+     *  The gas price can have various values, depending on the network.
+     *
+     *  In modern networks, for transactions that are included this is
+     *  the //effective gas price// (the fee per gas that was actually
+     *  charged), while for transactions that have not been included yet
+     *  is the [[maxFeePerGas]].
+     *
+     *  For legacy transactions, or transactions on legacy networks, this
+     *  is the fee that will be charged per unit of gas the transaction
+     *  consumes.
+     */
     readonly gasPrice!: bigint;
 
+    /**
+     *  The maximum priority fee (per unit of gas) to allow a
+     *  validator to charge the sender. This is inclusive of the
+     *  [[maxFeeFeePerGas]].
+     */
     readonly maxPriorityFeePerGas!: null | bigint;
+
+    /**
+     *  The maximum fee (per unit of gas) to allow this transaction
+     *  to charge the sender.
+     */
     readonly maxFeePerGas!: null | bigint;
 
+    /**
+     *  The data.
+     */
     readonly data!: string;
+
+    /**
+     *  The value, in wei. Use [[formatEther]] to format this value
+     *  as ether.
+     */
     readonly value!: bigint;
+
+    /**
+     *  The chain ID.
+     */
     readonly chainId!: bigint;
 
+    /**
+     *  The signature.
+     */
     readonly signature!: Signature;
 
+    /**
+     *  The [[link-eip-2930]] access list for transaction types that
+     *  support it, otherwise ``null``.
+     */
     readonly accessList!: null | AccessList;
 
     #startBlock: number;
 
+    /**
+     *  Create a new TransactionResponse with %%tx%% parameters
+     *  connected to %%provider%%.
+     */
     constructor(tx: TransactionResponseParams, provider: Provider) {
         this.provider = provider;
 
@@ -781,6 +885,9 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         this.#startBlock = -1;
     }
 
+    /**
+     *  Returns a JSON representation of this transaction.
+     */
     toJSON(): any {
         const {
             blockNumber, blockHash, index, hash, type, to, from, nonce,
@@ -802,6 +909,11 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         };
     }
 
+    /**
+     *  Resolves to the Block that this transaction was included in.
+     *
+     *  This will return null if the transaction has not been included yet.
+     */
     async getBlock(): Promise<null | Block> {
         let blockNumber = this.blockNumber;
         if (blockNumber == null) {
@@ -814,10 +926,24 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         return block;
     }
 
+    /**
+     *  Resolves to this transaction being re-requested from the
+     *  provider. This can be used if you have an unmined transaction
+     *  and wish to get an up-to-date populated instance.
+     */
     async getTransaction(): Promise<null | TransactionResponse> {
         return this.provider.getTransaction(this.hash);
     }
 
+    /**
+     *  Resolves once this transaction has been mined and has
+     *  %%confirms%% blocks including it (default: ``1``) with an
+     *  optional %%timeout%%.
+     *
+     *  This can resolve to ``null`` only if %%confirms%% is ``0``
+     *  and the transaction has not been mined, otherwise this will
+     *  wait until enough confirmations have completed.
+     */
     async wait(_confirms?: number, _timeout?: number): Promise<null | TransactionReceipt> {
         const confirms = (_confirms == null) ? 1: _confirms;
         const timeout = (_timeout == null) ? 0: _timeout;
@@ -973,28 +1099,68 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         return await <Promise<TransactionReceipt>>waiter;
     }
 
+    /**
+     *  Returns ``true`` if this transaction has been included.
+     *
+     *  This is effective only as of the time the TransactionResponse
+     *  was instantiated. To get up-to-date information, use
+     *  [[getTransaction]].
+     *
+     *  This provides a Type Guard that this transaction will have
+     *  non-null property values for properties that are null for
+     *  unmined transactions.
+     */
     isMined(): this is MinedTransactionResponse {
         return (this.blockHash != null);
     }
 
+    /**
+     *  Returns true if the transaction is a legacy (i.e. ``type == 0``)
+     *  transaction.
+     *
+     *  This provides a Type Guard that this transaction will have
+     *  the ``null``-ness for hardfork-specific properties set correctly.
+     */
     isLegacy(): this is (TransactionResponse & { accessList: null, maxFeePerGas: null, maxPriorityFeePerGas: null }) {
         return (this.type === 0)
     }
 
+    /**
+     *  Returns true if the transaction is a Berlin (i.e. ``type == 1``)
+     *  transaction. See [[link-eip-2070]].
+     *
+     *  This provides a Type Guard that this transaction will have
+     *  the ``null``-ness for hardfork-specific properties set correctly.
+     */
     isBerlin(): this is (TransactionResponse & { accessList: AccessList, maxFeePerGas: null, maxPriorityFeePerGas: null }) {
         return (this.type === 1);
     }
 
+    /**
+     *  Returns true if the transaction is a London (i.e. ``type == 2``)
+     *  transaction. See [[link-eip-1559]].
+     *
+     *  This provides a Type Guard that this transaction will have
+     *  the ``null``-ness for hardfork-specific properties set correctly.
+     */
     isLondon(): this is (TransactionResponse & { accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint }){
         return (this.type === 2);
     }
 
+    /**
+     *  Returns a filter which can be used to listen for orphan events
+     *  that evict this transaction.
+     */
     removedEvent(): OrphanFilter {
         assert(this.isMined(), "unmined transaction canot be orphaned",
             "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
         return createRemovedTransactionFilter(this);
     }
 
+    /**
+     *  Returns a filter which can be used to listen for orphan events
+     *  that re-order this event against %%other%%.
+     */
     reorderedEvent(other?: TransactionResponse): OrphanFilter {
         assert(this.isMined(), "unmined transaction canot be orphaned",
             "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
@@ -1026,6 +1192,13 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 //////////////////////
 // OrphanFilter
 
+/**
+ *  An Orphan Filter allows detecting when an orphan block has
+ *  resulted in dropping a block or transaction or has resulted
+ *  in transactions changing order.
+ *
+ *  Not currently fully supported.
+ */
 export type OrphanFilter = {
     orphan: "drop-block",
     hash: string,
@@ -1078,6 +1251,15 @@ function createRemovedLogFilter(log: { blockHash: string, transactionHash: strin
 //////////////////////
 // EventFilter
 
+/**
+ *  A **TopicFilter** provides a struture to define bloom-filter
+ *  queries.
+ *
+ *  Each field that is ``null`` matches **any** value, a field that is
+ *  a ``string`` must match exactly that value and and ``array`` is
+ *  effectively an ``OR``-ed set, where any one of those values must
+ *  match.
+ */
 export type TopicFilter = Array<null | string | Array<string>>;
 
 // @TODO:
