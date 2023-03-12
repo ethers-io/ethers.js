@@ -73,7 +73,7 @@ export class Signature {
      */
     get r(): string { return this.#r; }
     set r(value: BytesLike) {
-        assertArgument(dataLength(value) === 32, "invalid r", "value", value);
+        assertArgument(dataLength(value) === 32, "invalid s", "value", value);
         this.#r = hexlify(value);
     }
 
