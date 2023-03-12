@@ -195,7 +195,6 @@ class TokenString {
                 linkBack: (t.linkBack - from),
                 linkNext: (t.linkNext - from),
             }));
-            return t;
         }));
     }
 
