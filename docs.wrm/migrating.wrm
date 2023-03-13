@@ -214,6 +214,16 @@ _code: wrapping EIP-1193 providers  @lang<script>
   // v6:
   provider = new ethers.BrowserProvider(window.ethereum)
 
+Also, the method for braodcasting transactions to the network has
+changed:
+
+_code: broadcasting transactions  @lang<script>
+  // v5
+  provider.sendTransaction(signedTx)
+
+  // v6
+  provider.broadcastTransaction(signedTx)
+
 
 _subsection: Signatures  @<migrate-signatures>
 
@@ -236,7 +246,7 @@ The transaction helpers present in v5 were all wrapped into a
 [[Transaction]] class, which can handle any supported transaction
 format to be further processed
 
-_code: parasing transactions  @lang<script>
+_code: parsing transactions  @lang<script>
 
   // v5
   tx = parseTransaction(txBytes)
