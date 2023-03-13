@@ -129,7 +129,7 @@ export class EnsResolver {
     address!: string;
 
     /**
-     *  The name this resovler was resolved against.
+     *  The name this resolver was resolved against.
      */
     name!: string;
 
@@ -267,7 +267,7 @@ export class EnsResolver {
     }
 
     /**
-     *  Resovles to the EIP-643 text record for %%key%%, or ``null``
+     *  Resolves to the EIP-643 text record for %%key%%, or ``null``
      *  if unconfigured.
      */
     async getText(key: string): Promise<null | string> {
