@@ -6,8 +6,7 @@
     "./lib.esm/providers/ws.js": "./lib.esm/providers/ws-browser.js",
     "./lib.esm/utils/base64.js": "./lib.esm/utils/base64-browser.js",
     "./lib.esm/utils/geturl.js": "./lib.esm/utils/geturl-browser.js",
-    "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js",
-    "@adraffy/ens-normalize": "@adraffy/ens-normalize/xnf"
+    "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "1.8.9",
