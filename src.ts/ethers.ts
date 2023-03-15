@@ -99,7 +99,8 @@ export {
     formatEther, parseEther, formatUnits, parseUnits,
     toUtf8Bytes, toUtf8CodePoints, toUtf8String,
     Utf8ErrorFuncs,
-    decodeRlp, encodeRlp
+    decodeRlp, encodeRlp,
+    isMessageSignatureCorrect, isTypedDataSignatureCorrect, isFinalDigestSignatureCorrect
 } from "./utils/index.js";
 
 export {
