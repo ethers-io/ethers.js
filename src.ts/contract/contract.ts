@@ -685,7 +685,11 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
                 if (result) { return result; }
 
                 throw new Error(`unknown contract event: ${ prop }`);
-            }
+            },
+            has: (target, _prop) => (
+              Reflect.has(target, _prop) ||
+              this.hasEvent(String(_prop))
+            ),
         });
         defineProperties<BaseContract>(this, { filters });
 
@@ -706,7 +710,11 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
                 if (result) { return result; }
 
                 throw new Error(`unknown contract method: ${ prop }`);
-            }
+            },
+            has: (target, _prop) => (
+              Reflect.has(target, _prop) ||
+              this.hasFunction(String(_prop))
+            ),
         });
 
     }
@@ -762,9 +770,19 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         return getInternal(this).deployTx;
     }
 
+    hasFunction(key: string | FunctionFragment): boolean {
+        if (typeof(key) !== "string") { key = key.format(); }
+        return this.interface.hasFunction(key);
+    }
+
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T {
         if (typeof(key) !== "string") { key = key.format(); }
         return <T><unknown>(new WrappedMethod(this, key));
+    }
+
+    hasEvent(key: string | EventFragment): boolean {
+        if (typeof(key) !== "string") { key = key.format(); }
+        return this.interface.hasEvent(key);
     }
 
     getEvent(key: string | EventFragment): ContractEvent {

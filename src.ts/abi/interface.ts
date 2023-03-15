@@ -408,6 +408,14 @@ export class Interface {
     }
 
     /**
+     *  Check if interface has function %%key%%, which may be a function
+     *  selector, function name or function signature that belongs to the ABI.
+     */
+    hasFunction(key: string): boolean {
+        return !!this.#getFunction(key, null, false);
+    }
+
+    /**
      *  Get the function name for %%key%%, which may be a function selector,
      *  function name or function signature that belongs to the ABI.
      */
@@ -502,6 +510,14 @@ export class Interface {
         if (result) { return result; }
 
         return null;
+    }
+
+    /**
+     *  Check if interface has event %%key%%, which may be a topic hash,
+     *  event name or event signature that belongs to the ABI.
+     */
+    hasEvent(key: string): boolean {
+        return !!this.#getEvent(key, null, false);
     }
 
     /**

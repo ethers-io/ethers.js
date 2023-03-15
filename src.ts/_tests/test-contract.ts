@@ -177,6 +177,32 @@ describe("Test Contract", function() {
         await specificEvent;
         await allEvents;
     });
+
+    it("tests hasFunction", async function() {
+        const contract = new Contract(addr, abi);
+
+        assert.equal(contract.hasFunction('testCallAdd'), true);
+        assert.equal(contract.hasFunction('notExistFn'), false);
+        assert.equal(contract.hasFunction('function testCallAdd(uint256 a, uint256 b) pure returns (uint256 result)'), true);
+        assert.equal(contract.hasFunction('function testCallAdd(uint256 a) pure returns (uint256 result)'), false);
+        assert('testCallAdd' in contract);
+        assert(!('notExistFn' in contract));
+        assert('function testCallAdd(uint256 a, uint256 b) pure returns (uint256 result)' in contract);
+        assert(!('function testCallAdd(uint256 a) pure returns (uint256 result)' in contract));
+    });
+
+    it("tests hasEvent", async function() {
+        const contract = new Contract(addr, abi);
+
+        assert.equal(contract.hasEvent('EventUint256'), true);
+        assert.equal(contract.hasEvent('NotExistEvent'), false);
+        assert.equal(contract.hasEvent('event EventUint256(uint256 indexed value)'), true);
+        assert.equal(contract.hasEvent('event EventUint256()'), false);
+        assert('EventUint256' in contract.filters);
+        assert(!('NotExistEvent' in contract.filters));
+        assert('event EventUint256(uint256 indexed value)' in contract.filters);
+        assert(!('event EventUint256()' in contract.filters));
+    });
 });
 
 describe("Test Typed Contract Interaction", function() {
