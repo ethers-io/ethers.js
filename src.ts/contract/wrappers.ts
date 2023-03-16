@@ -31,18 +31,18 @@ export class EventLog extends Log {
 }
 
 export class ContractTransactionReceipt extends TransactionReceipt {
-    readonly #interface: Interface;
+    readonly #iface: Interface;
 
     constructor(iface: Interface, provider: Provider, tx: TransactionReceipt) {
         super(tx, provider);
-        this.#interface = iface;
+        this.#iface = iface;
     }
 
     get logs(): Array<EventLog | Log> {
         return super.logs.map((log) => {
-            const fragment = log.topics.length ? this.#interface.getEvent(log.topics[0]): null;
+            const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]): null;
             if (fragment) {
-                return new EventLog(log, this.#interface, fragment)
+                return new EventLog(log, this.#iface, fragment)
             } else {
                 return log;
             }
@@ -52,17 +52,17 @@ export class ContractTransactionReceipt extends TransactionReceipt {
 }
 
 export class ContractTransactionResponse extends TransactionResponse {
-    readonly #interface: Interface;
+    readonly #iface: Interface;
 
     constructor(iface: Interface, provider: Provider, tx: TransactionResponse) {
         super(tx, provider);
-        this.#interface = iface;
+        this.#iface = iface;
     }
 
     async wait(confirms?: number): Promise<null | ContractTransactionReceipt> {
         const receipt = await super.wait();
         if (receipt == null) { return null; }
-        return new ContractTransactionReceipt(this.#interface, this.provider, receipt);
+        return new ContractTransactionReceipt(this.#iface, this.provider, receipt);
     }
 }
 
