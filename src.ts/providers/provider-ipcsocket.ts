@@ -64,7 +64,7 @@ export class IpcSocketProvider extends SocketProvider {
     }
 
     async _write(message: string): Promise<void> {
-        console.log(">>>", message);
+        // console.log(">>>", message);
         this.socket.write(message);
     }
 }
