@@ -181,9 +181,9 @@ export class SigningKey {
         const der = secp256k1.Signature.fromCompact(getBytesCopy(concat([ sig.r, sig.s ]))).toDERRawBytes();
 
         const pubKey = secp256k1.recoverPublicKey(getBytesCopy(digest), der, sig.yParity);
-        if (pubKey != null) { return hexlify(pubKey); }
+        assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
 
-        assertArgument(false, "invalid signautre for digest", "signature", signature);
+        return hexlify(pubKey);
     }
 
     /**
