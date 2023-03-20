@@ -74,7 +74,7 @@ export class EnsResolver {
      */
     address;
     /**
-     *  The name this resovler was resolved against.
+     *  The name this resolver was resolved against.
      */
     name;
     // For EIP-2544 names, the ancestor that provided the resolver
@@ -203,7 +203,7 @@ export class EnsResolver {
         });
     }
     /**
-     *  Resovles to the EIP-643 text record for %%key%%, or ``null``
+     *  Resolves to the EIP-643 text record for %%key%%, or ``null``
      *  if unconfigured.
      */
     async getText(key) {

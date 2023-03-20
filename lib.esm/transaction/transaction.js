@@ -98,16 +98,16 @@ function _serializeLegacy(tx, sig) {
         (tx.data || "0x"),
     ];
     let chainId = BN_0;
-    if (tx.chainId != null) {
+    if (tx.chainId != BN_0) {
         // A chainId was provided; if non-zero we'll use EIP-155
         chainId = getBigInt(tx.chainId, "tx.chainId");
         // We have a chainId in the tx and an EIP-155 v in the signature,
         // make sure they agree with each other
         assertArgument(!sig || sig.networkV == null || sig.legacyChainId === chainId, "tx.chainId/sig.v mismatch", "sig", sig);
     }
-    else if (sig) {
-        // No chainId provided, but the signature is signing with EIP-155; derive chainId
-        const legacy = sig.legacyChainId;
+    else if (tx.signature) {
+        // No explicit chainId, but EIP-155 have a derived implicit chainId
+        const legacy = tx.signature.legacyChainId;
         if (legacy != null) {
             chainId = legacy;
         }
@@ -122,7 +122,10 @@ function _serializeLegacy(tx, sig) {
         }
         return encodeRlp(fields);
     }
-    // We pushed a chainId and null r, s on for hashing only; remove those
+    // @TODO: We should probably check that tx.signature, chainId, and sig
+    //        match but that logic could break existing code, so schedule
+    //        this for the next major bump.
+    // Compute the EIP-155 v
     let v = BigInt(27 + sig.yParity);
     if (chainId !== BN_0) {
         v = Signature.getChainIdV(chainId, sig.v);
@@ -130,6 +133,7 @@ function _serializeLegacy(tx, sig) {
     else if (BigInt(sig.v) !== v) {
         assertArgument(false, "tx.chainId/sig.v mismatch", "sig", sig);
     }
+    // Add the signature
     fields.push(toBeArray(v));
     fields.push(toBeArray(sig.r));
     fields.push(toBeArray(sig.s));

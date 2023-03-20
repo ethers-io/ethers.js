@@ -543,25 +543,117 @@ export type ReplacementDetectionSetup = {
 };
 */
 class TransactionResponse {
+    /**
+     *  The provider this is connected to, which will influence how its
+     *  methods will resolve its async inspection methods.
+     */
     provider;
+    /**
+     *  The block number of the block that this transaction was included in.
+     *
+     *  This is ``null`` for pending transactions.
+     */
     blockNumber;
+    /**
+     *  The blockHash of the block that this transaction was included in.
+     *
+     *  This is ``null`` for pending transactions.
+     */
     blockHash;
+    /**
+     *  The index within the block that this transaction resides at.
+     */
     index;
+    /**
+     *  The transaction hash.
+     */
     hash;
+    /**
+     *  The [[link-eip-2718]] transaction envelope type. This is
+     *  ``0`` for legacy transactions types.
+     */
     type;
+    /**
+     *  The receiver of this transaction.
+     *
+     *  If ``null``, then the transaction is an initcode transaction.
+     *  This means the result of executing the [[data]] will be deployed
+     *  as a new contract on chain (assuming it does not revert) and the
+     *  address may be computed using [[getCreateAddress]].
+     */
     to;
+    /**
+     *  The sender of this transaction. It is implicitly computed
+     *  from the transaction pre-image hash (as the digest) and the
+     *  [[signature]] using ecrecover.
+     */
     from;
+    /**
+     *  The nonce, which is used to prevent replay attacks and offer
+     *  a method to ensure transactions from a given sender are explicitly
+     *  ordered.
+     *
+     *  When sending a transaction, this must be equal to the number of
+     *  transactions ever sent by [[from]].
+     */
     nonce;
+    /**
+     *  The maximum units of gas this transaction can consume. If execution
+     *  exceeds this, the entries transaction is reverted and the sender
+     *  is charged for the full amount, despite not state changes being made.
+     */
     gasLimit;
+    /**
+     *  The gas price can have various values, depending on the network.
+     *
+     *  In modern networks, for transactions that are included this is
+     *  the //effective gas price// (the fee per gas that was actually
+     *  charged), while for transactions that have not been included yet
+     *  is the [[maxFeePerGas]].
+     *
+     *  For legacy transactions, or transactions on legacy networks, this
+     *  is the fee that will be charged per unit of gas the transaction
+     *  consumes.
+     */
     gasPrice;
+    /**
+     *  The maximum priority fee (per unit of gas) to allow a
+     *  validator to charge the sender. This is inclusive of the
+     *  [[maxFeeFeePerGas]].
+     */
     maxPriorityFeePerGas;
+    /**
+     *  The maximum fee (per unit of gas) to allow this transaction
+     *  to charge the sender.
+     */
     maxFeePerGas;
+    /**
+     *  The data.
+     */
     data;
+    /**
+     *  The value, in wei. Use [[formatEther]] to format this value
+     *  as ether.
+     */
     value;
+    /**
+     *  The chain ID.
+     */
     chainId;
+    /**
+     *  The signature.
+     */
     signature;
+    /**
+     *  The [[link-eip-2930]] access list for transaction types that
+     *  support it, otherwise ``null``.
+     */
     accessList;
     #startBlock;
+    /**
+     *  Create a new TransactionResponse with %%tx%% parameters
+     *  connected to %%provider%%.
+     */
     constructor(tx, provider) {
         this.provider = provider;
         this.blockNumber = (tx.blockNumber != null) ? tx.blockNumber : null;
@@ -583,6 +675,9 @@ class TransactionResponse {
         this.accessList = (tx.accessList != null) ? tx.accessList : null;
         this.#startBlock = -1;
     }
+    /**
+     *  Returns a JSON representation of this transaction.
+     */
     toJSON() {
         const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;
         return {
@@ -599,6 +694,11 @@ class TransactionResponse {
             value: toJson(this.value),
         };
     }
+    /**
+     *  Resolves to the Block that this transaction was included in.
+     *
+     *  This will return null if the transaction has not been included yet.
+     */
     async getBlock() {
         let blockNumber = this.blockNumber;
         if (blockNumber == null) {
@@ -616,9 +716,23 @@ class TransactionResponse {
         }
         return block;
     }
+    /**
+     *  Resolves to this transaction being re-requested from the
+     *  provider. This can be used if you have an unmined transaction
+     *  and wish to get an up-to-date populated instance.
+     */
     async getTransaction() {
         return this.provider.getTransaction(this.hash);
     }
+    /**
+     *  Resolves once this transaction has been mined and has
+     *  %%confirms%% blocks including it (default: ``1``) with an
+     *  optional %%timeout%%.
+     *
+     *  This can resolve to ``null`` only if %%confirms%% is ``0``
+     *  and the transaction has not been mined, otherwise this will
+     *  wait until enough confirmations have completed.
+     */
     async wait(_confirms, _timeout) {
         const confirms = (_confirms == null) ? 1 : _confirms;
         const timeout = (_timeout == null) ? 0 : _timeout;
@@ -773,22 +887,62 @@ class TransactionResponse {
         });
         return await waiter;
     }
+    /**
+     *  Returns ``true`` if this transaction has been included.
+     *
+     *  This is effective only as of the time the TransactionResponse
+     *  was instantiated. To get up-to-date information, use
+     *  [[getTransaction]].
+     *
+     *  This provides a Type Guard that this transaction will have
+     *  non-null property values for properties that are null for
+     *  unmined transactions.
+     */
     isMined() {
         return (this.blockHash != null);
     }
+    /**
+     *  Returns true if the transaction is a legacy (i.e. ``type == 0``)
+     *  transaction.
+     *
+     *  This provides a Type Guard that this transaction will have
+     *  the ``null``-ness for hardfork-specific properties set correctly.
+     */
     isLegacy() {
         return (this.type === 0);
     }
+    /**
+     *  Returns true if the transaction is a Berlin (i.e. ``type == 1``)
+     *  transaction. See [[link-eip-2070]].
+     *
+     *  This provides a Type Guard that this transaction will have
+     *  the ``null``-ness for hardfork-specific properties set correctly.
+     */
     isBerlin() {
         return (this.type === 1);
     }
+    /**
+     *  Returns true if the transaction is a London (i.e. ``type == 2``)
+     *  transaction. See [[link-eip-1559]].
+     *
+     *  This provides a Type Guard that this transaction will have
+     *  the ``null``-ness for hardfork-specific properties set correctly.
+     */
     isLondon() {
         return (this.type === 2);
     }
+    /**
+     *  Returns a filter which can be used to listen for orphan events
+     *  that evict this transaction.
+     */
     removedEvent() {
         (0, index_js_1.assert)(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
         return createRemovedTransactionFilter(this);
     }
+    /**
+     *  Returns a filter which can be used to listen for orphan events
+     *  that re-order this event against %%other%%.
+     */
     reorderedEvent(other) {
         (0, index_js_1.assert)(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
         (0, index_js_1.assert)(!other || other.isMined(), "unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });

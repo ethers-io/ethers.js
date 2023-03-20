@@ -178,10 +178,8 @@ class SigningKey {
         const sig = signature_js_1.Signature.from(signature);
         const der = secp256k1.Signature.fromCompact((0, index_js_1.getBytesCopy)((0, index_js_1.concat)([sig.r, sig.s]))).toDERRawBytes();
         const pubKey = secp256k1.recoverPublicKey((0, index_js_1.getBytesCopy)(digest), der, sig.yParity);
-        if (pubKey != null) {
-            return (0, index_js_1.hexlify)(pubKey);
-        }
-        (0, index_js_1.assertArgument)(false, "invalid signautre for digest", "signature", signature);
+        (0, index_js_1.assertArgument)(pubKey != null, "invalid signautre for digest", "signature", signature);
+        return (0, index_js_1.hexlify)(pubKey);
     }
     /**
      *  Returns the point resulting from adding the ellipic curve points

@@ -1,3 +1,4 @@
+import type { SignatureLike } from "../crypto/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 export interface TypedDataDomain {
     name?: null | string;
@@ -35,4 +36,8 @@ export declare class TypedDataEncoder {
     }>;
     static getPayload(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): any;
 }
+/**
+ *  Compute the address used to sign the typed data for the %%signature%%.
+ */
+export declare function verifyTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, signature: SignatureLike): string;
 //# sourceMappingURL=typed-data.d.ts.map

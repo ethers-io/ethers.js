@@ -51,7 +51,6 @@ export class IpcSocketProvider extends SocketProvider {
         super.destroy();
     }
     async _write(message) {
-        console.log(">>>", message);
         this.socket.write(message);
     }
 }

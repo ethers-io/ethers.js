@@ -266,7 +266,7 @@ class AbstractProvider {
         return new provider_js_1.TransactionReceipt((0, format_js_1.formatTransactionReceipt)(value), this);
     }
     _wrapTransactionResponse(tx, network) {
-        return new provider_js_1.TransactionResponse(tx, this);
+        return new provider_js_1.TransactionResponse((0, format_js_1.formatTransactionResponse)(tx), this);
     }
     _detectNetwork() {
         (0, index_js_6.assert)(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
@@ -644,7 +644,7 @@ class AbstractProvider {
         if (params == null) {
             return null;
         }
-        return this._wrapBlock((0, format_js_1.formatBlock)(params), network);
+        return this._wrapBlock(params, network);
     }
     async getTransaction(hash) {
         const { network, params } = await (0, index_js_6.resolveProperties)({
@@ -654,7 +654,7 @@ class AbstractProvider {
         if (params == null) {
             return null;
         }
-        return this._wrapTransactionResponse((0, format_js_1.formatTransactionResponse)(params), network);
+        return this._wrapTransactionResponse(params, network);
     }
     async getTransactionReceipt(hash) {
         const { network, params } = await (0, index_js_6.resolveProperties)({
@@ -673,7 +673,7 @@ class AbstractProvider {
             }
             params.effectiveGasPrice = tx.gasPrice;
         }
-        return this._wrapTransactionReceipt((0, format_js_1.formatTransactionReceipt)(params), network);
+        return this._wrapTransactionReceipt(params, network);
     }
     async getTransactionResult(hash) {
         const { result } = await (0, index_js_6.resolveProperties)({
@@ -695,7 +695,7 @@ class AbstractProvider {
             network: this.getNetwork(),
             params: this.#perform({ method: "getLogs", filter })
         });
-        return params.map((p) => this._wrapLog((0, format_js_1.formatLog)(p), network));
+        return params.map((p) => this._wrapLog(p, network));
     }
     // ENS
     _getProvider(chainId) {

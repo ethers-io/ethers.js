@@ -5,7 +5,7 @@
  *  @_section: api/hashing:Hashing Utilities  [about-hashing]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.verifyMessage = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = exports.id = void 0;
+exports.verifyTypedData = exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.verifyMessage = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = exports.id = void 0;
 var id_js_1 = require("./id.js");
 Object.defineProperty(exports, "id", { enumerable: true, get: function () { return id_js_1.id; } });
 var namehash_js_1 = require("./namehash.js");
@@ -22,4 +22,5 @@ Object.defineProperty(exports, "solidityPackedKeccak256", { enumerable: true, ge
 Object.defineProperty(exports, "solidityPackedSha256", { enumerable: true, get: function () { return solidity_js_1.solidityPackedSha256; } });
 var typed_data_js_1 = require("./typed-data.js");
 Object.defineProperty(exports, "TypedDataEncoder", { enumerable: true, get: function () { return typed_data_js_1.TypedDataEncoder; } });
+Object.defineProperty(exports, "verifyTypedData", { enumerable: true, get: function () { return typed_data_js_1.verifyTypedData; } });
 //# sourceMappingURL=index.js.map

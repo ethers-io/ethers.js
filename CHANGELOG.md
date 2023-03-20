@@ -3,6 +3,20 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.2.0 (2023-03-20 12:51)
+--------------------------------
+
+  - Remove use of Function sub-class to address unsafe-eval issues ([#3749](https://github.com/ethers-io/ethers.js/issues/3749), [#3763](https://github.com/ethers-io/ethers.js/issues/3763); [7d3af51](https://github.com/ethers-io/ethers.js/commit/7d3af512c75b4c24027ec2daef1e9f4c1064194a)).
+  - tests: added contract integration tests and llocal Geth ([5318b93](https://github.com/ethers-io/ethers.js/commit/5318b939fdfe8f58cdea4bdff7923f18afbea3a2)).
+  - Added verifyTypedData utility (reported on Farcaster) ([f06a445](https://github.com/ethers-io/ethers.js/commit/f06a445247f3b294f9fc805cc8fe0752accb8edc)).
+  - Removed stray logging in IpcProvider ([#3908](https://github.com/ethers-io/ethers.js/issues/3908), [#3909](https://github.com/ethers-io/ethers.js/issues/3909); [e11d4c1](https://github.com/ethers-io/ethers.js/commit/e11d4c1c20cc5b6fd5803cf9636c4f5bc082dab7)).
+  - Fixed legacy serialization for implicit chainId transactions ([#3898](https://github.com/ethers-io/ethers.js/issues/3898), [#3899](https://github.com/ethers-io/ethers.js/issues/3899); [fcf6c8f](https://github.com/ethers-io/ethers.js/commit/fcf6c8fcee95ec412aaafba8ec84d5049b077a4e)).
+  - Fix Webpack issue (reported on discord) ([3ad4273](https://github.com/ethers-io/ethers.js/commit/3ad4273b8b714bff344ccbfb1eb71ed8a8b7cfa4)).
+  - Fix some bundlers which cannot handle recursive pkg.exports ([#3848](https://github.com/ethers-io/ethers.js/issues/3848); [6315e78](https://github.com/ethers-io/ethers.js/commit/6315e78ea32147653b72ca06f6800f3e2df6ffbf)).
+  - Fixed typo in signature.s error ([#3891](https://github.com/ethers-io/ethers.js/issues/3891); [47ef3eb](https://github.com/ethers-io/ethers.js/commit/47ef3ebde37bfa0c015c258c3d8a6800d751e147)).
+  - Fixed stray unreachable code ([#3890](https://github.com/ethers-io/ethers.js/issues/3890); [c220fe2](https://github.com/ethers-io/ethers.js/commit/c220fe2ea747ccc80cd3c4020e0278e3daf3c4fc)).
+  - Move all wrapping to proper _wrap functions ([#3818](https://github.com/ethers-io/ethers.js/issues/3818); [02a0aad](https://github.com/ethers-io/ethers.js/commit/02a0aad61212c35e8d2723a8ae589989b97dae3e)).
+
 ethers/v6.1.0 (2023-03-07 02:10)
 --------------------------------
 

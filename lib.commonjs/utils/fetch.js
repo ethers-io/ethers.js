@@ -355,7 +355,7 @@ class FetchRequest {
      *  Create a new FetchRequest instance with default values.
      *
      *  Once created, each property may be set before issuing a
-     *  ``.send()`` to make teh request.
+     *  ``.send()`` to make the request.
      */
     constructor(url) {
         this.#url = String(url);

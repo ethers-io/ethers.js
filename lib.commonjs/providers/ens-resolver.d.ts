@@ -61,7 +61,7 @@ export declare class EnsResolver {
      */
     address: string;
     /**
-     *  The name this resovler was resolved against.
+     *  The name this resolver was resolved against.
      */
     name: string;
     constructor(provider: AbstractProvider, address: string, name: string);
@@ -75,7 +75,7 @@ export declare class EnsResolver {
      */
     getAddress(coinType?: number): Promise<null | string>;
     /**
-     *  Resovles to the EIP-643 text record for %%key%%, or ``null``
+     *  Resolves to the EIP-643 text record for %%key%%, or ``null``
      *  if unconfigured.
      */
     getText(key: string): Promise<null | string>;

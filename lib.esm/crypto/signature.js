@@ -38,7 +38,7 @@ export class Signature {
      */
     get s() { return this.#s; }
     set s(_value) {
-        assertArgument(dataLength(_value) === 32, "invalid r", "value", _value);
+        assertArgument(dataLength(_value) === 32, "invalid s", "value", _value);
         const value = hexlify(_value);
         assertArgument(parseInt(value.substring(0, 3)) < 8, "non-canonical s", "value", value);
         this.#s = value;

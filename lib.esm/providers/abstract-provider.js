@@ -262,7 +262,7 @@ export class AbstractProvider {
         return new TransactionReceipt(formatTransactionReceipt(value), this);
     }
     _wrapTransactionResponse(tx, network) {
-        return new TransactionResponse(tx, this);
+        return new TransactionResponse(formatTransactionResponse(tx), this);
     }
     _detectNetwork() {
         assert(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
@@ -640,7 +640,7 @@ export class AbstractProvider {
         if (params == null) {
             return null;
         }
-        return this._wrapBlock(formatBlock(params), network);
+        return this._wrapBlock(params, network);
     }
     async getTransaction(hash) {
         const { network, params } = await resolveProperties({
@@ -650,7 +650,7 @@ export class AbstractProvider {
         if (params == null) {
             return null;
         }
-        return this._wrapTransactionResponse(formatTransactionResponse(params), network);
+        return this._wrapTransactionResponse(params, network);
     }
     async getTransactionReceipt(hash) {
         const { network, params } = await resolveProperties({
@@ -669,7 +669,7 @@ export class AbstractProvider {
             }
             params.effectiveGasPrice = tx.gasPrice;
         }
-        return this._wrapTransactionReceipt(formatTransactionReceipt(params), network);
+        return this._wrapTransactionReceipt(params, network);
     }
     async getTransactionResult(hash) {
         const { result } = await resolveProperties({
@@ -691,7 +691,7 @@ export class AbstractProvider {
             network: this.getNetwork(),
             params: this.#perform({ method: "getLogs", filter })
         });
-        return params.map((p) => this._wrapLog(formatLog(p), network));
+        return params.map((p) => this._wrapLog(p, network));
     }
     // ENS
     _getProvider(chainId) {

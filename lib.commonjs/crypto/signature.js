@@ -41,7 +41,7 @@ class Signature {
      */
     get s() { return this.#s; }
     set s(_value) {
-        (0, index_js_2.assertArgument)((0, index_js_2.dataLength)(_value) === 32, "invalid r", "value", _value);
+        (0, index_js_2.assertArgument)((0, index_js_2.dataLength)(_value) === 32, "invalid s", "value", _value);
         const value = (0, index_js_2.hexlify)(_value);
         (0, index_js_2.assertArgument)(parseInt(value.substring(0, 3)) < 8, "non-canonical s", "value", value);
         this.#s = value;

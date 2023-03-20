@@ -57,7 +57,6 @@ class TokenString {
                 linkBack: (t.linkBack - from),
                 linkNext: (t.linkNext - from),
             }));
-            return t;
         }));
     }
     // Pops and returns the value of the next token, if it is a keyword in allowed; throws if out of tokens

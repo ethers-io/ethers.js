@@ -15,16 +15,16 @@ export class EventLog extends Log {
     get eventSignature() { return this.fragment.format(); }
 }
 export class ContractTransactionReceipt extends TransactionReceipt {
-    #interface;
+    #iface;
     constructor(iface, provider, tx) {
         super(tx, provider);
-        this.#interface = iface;
+        this.#iface = iface;
     }
     get logs() {
         return super.logs.map((log) => {
-            const fragment = log.topics.length ? this.#interface.getEvent(log.topics[0]) : null;
+            const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]) : null;
             if (fragment) {
-                return new EventLog(log, this.#interface, fragment);
+                return new EventLog(log, this.#iface, fragment);
             }
             else {
                 return log;
@@ -33,17 +33,17 @@ export class ContractTransactionReceipt extends TransactionReceipt {
     }
 }
 export class ContractTransactionResponse extends TransactionResponse {
-    #interface;
+    #iface;
     constructor(iface, provider, tx) {
         super(tx, provider);
-        this.#interface = iface;
+        this.#iface = iface;
     }
     async wait(confirms) {
         const receipt = await super.wait();
         if (receipt == null) {
             return null;
         }
-        return new ContractTransactionReceipt(this.#interface, this.provider, receipt);
+        return new ContractTransactionReceipt(this.#iface, this.provider, receipt);
     }
 }
 export class ContractUnknownEventPayload extends EventPayload {

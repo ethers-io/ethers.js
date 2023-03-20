@@ -1,6 +1,7 @@
 //import { TypedDataDomain, TypedDataField } from "@ethersproject/providerabstract-signer";
 import { getAddress } from "../address/index.js";
 import { keccak256 } from "../crypto/index.js";
+import { recoverAddress } from "../transaction/index.js";
 import { concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toBeHex, toTwos, zeroPadValue, assertArgument } from "../utils/index.js";
 import { id } from "./id.js";
 const padding = new Uint8Array(32);
@@ -392,5 +393,11 @@ export class TypedDataEncoder {
             })
         };
     }
+}
+/**
+ *  Compute the address used to sign the typed data for the %%signature%%.
+ */
+export function verifyTypedData(domain, types, value, signature) {
+    return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 //# sourceMappingURL=typed-data.js.map
