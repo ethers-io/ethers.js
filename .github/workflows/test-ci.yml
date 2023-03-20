@@ -32,6 +32,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Install and run Geth
+        uses: ethers-io/run-geth-action
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -63,6 +66,9 @@ jobs:
         with:
           node-version: 18.x
 
+      - name: Install and run Geth
+        uses: ethers-io/run-geth-action
+        
       - name: Checkout repository
         uses: actions/checkout@v2
 
