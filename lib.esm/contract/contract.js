@@ -310,7 +310,7 @@ function buildWrappedMethod(contract, key) {
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
     Object.defineProperty(method, "fragment", {
         configurable: false,
-        enumerable: false,
+        enumerable: true,
         get: () => {
             const fragment = contract.interface.getFunction(key);
             assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
@@ -329,7 +329,7 @@ function buildWrappedEvent(contract, key) {
         });
         return fragment;
     };
-    const method = async function (...args) {
+    const method = function (...args) {
         return new PreparedTopicFilter(contract, getFragment(...args), args);
     };
     defineProperties(method, {
@@ -340,7 +340,7 @@ function buildWrappedEvent(contract, key) {
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
     Object.defineProperty(method, "fragment", {
         configurable: false,
-        enumerable: false,
+        enumerable: true,
         get: () => {
             const fragment = contract.interface.getEvent(key);
             assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {

@@ -3,10 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.2.0 (2023-03-20 12:51)
+ethers/v6.2.0 (2023-03-20 13:33)
 --------------------------------
 
-  - Remove use of Function sub-class to address unsafe-eval issues ([#3749](https://github.com/ethers-io/ethers.js/issues/3749), [#3763](https://github.com/ethers-io/ethers.js/issues/3763); [7d3af51](https://github.com/ethers-io/ethers.js/commit/7d3af512c75b4c24027ec2daef1e9f4c1064194a)).
+  - tests: updated ENS normalization tests to latest standard ([0a9e4cd](https://github.com/ethers-io/ethers.js/commit/0a9e4cd67dd0187445930cdb9d75d548590af9b2)).
+  - Remove use of Function sub-class to address unsafe-eval issues ([#3749](https://github.com/ethers-io/ethers.js/issues/3749), [#3763](https://github.com/ethers-io/ethers.js/issues/3763); [7d3af51](https://github.com/ethers-io/ethers.js/commit/7d3af512c75b4c24027ec2daef1e9f4c1064194a), [2e3802a](https://github.com/ethers-io/ethers.js/commit/2e3802a83b8ad2f5a6269d79fbd1c83c9f2d1047)).
   - tests: added contract integration tests and llocal Geth ([5318b93](https://github.com/ethers-io/ethers.js/commit/5318b939fdfe8f58cdea4bdff7923f18afbea3a2)).
   - Added verifyTypedData utility (reported on Farcaster) ([f06a445](https://github.com/ethers-io/ethers.js/commit/f06a445247f3b294f9fc805cc8fe0752accb8edc)).
   - Removed stray logging in IpcProvider ([#3908](https://github.com/ethers-io/ethers.js/issues/3908), [#3909](https://github.com/ethers-io/ethers.js/issues/3909); [e11d4c1](https://github.com/ethers-io/ethers.js/commit/e11d4c1c20cc5b6fd5803cf9636c4f5bc082dab7)).

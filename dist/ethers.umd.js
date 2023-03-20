@@ -13787,7 +13787,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
         Object.defineProperty(method, "fragment", {
             configurable: false,
-            enumerable: false,
+            enumerable: true,
             get: () => {
                 const fragment = contract.interface.getFunction(key);
                 assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
@@ -13806,7 +13806,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
             return fragment;
         };
-        const method = async function (...args) {
+        const method = function (...args) {
             return new PreparedTopicFilter(contract, getFragment(...args), args);
         };
         defineProperties(method, {
@@ -13817,7 +13817,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
         Object.defineProperty(method, "fragment", {
             configurable: false,
-            enumerable: false,
+            enumerable: true,
             get: () => {
                 const fragment = contract.interface.getEvent(key);
                 assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
