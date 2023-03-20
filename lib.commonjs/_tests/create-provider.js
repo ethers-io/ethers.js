@@ -13,13 +13,15 @@ const ProviderCreators = [
             return new index_js_1.AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
         }
     },
+    /*
     {
         name: "AnkrProvider",
-        networks: ethNetworks.concat(["matic", "arbitrum"]),
-        create: function (network) {
-            return new index_js_1.AnkrProvider(network);
+        networks: ethNetworks.concat([ "matic", "arbitrum" ]),
+        create: function(network: string) {
+            return new AnkrProvider(network);
         }
     },
+    */
     /*
     {
         name: "CloudflareProvider",

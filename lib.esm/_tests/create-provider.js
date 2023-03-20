@@ -1,4 +1,5 @@
-import { AlchemyProvider, AnkrProvider, 
+import { AlchemyProvider, 
+//    AnkrProvider,
 //    CloudflareProvider,
 EtherscanProvider, InfuraProvider, PocketProvider, QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
 ;
@@ -12,13 +13,15 @@ const ProviderCreators = [
             return new AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
         }
     },
+    /*
     {
         name: "AnkrProvider",
-        networks: ethNetworks.concat(["matic", "arbitrum"]),
-        create: function (network) {
+        networks: ethNetworks.concat([ "matic", "arbitrum" ]),
+        create: function(network: string) {
             return new AnkrProvider(network);
         }
     },
+    */
     /*
     {
         name: "CloudflareProvider",

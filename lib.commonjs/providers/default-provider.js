@@ -35,7 +35,7 @@ function getDefaultProvider(network, options) {
             console.log(error);
         }
     }
-    if (options.ankr !== "-") {
+    if (options.ankr !== "-" && options.ankr != null) {
         try {
             providers.push(new provider_ankr_js_1.AnkrProvider(network, options.ankr));
         }

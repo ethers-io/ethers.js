@@ -32,7 +32,7 @@ export function getDefaultProvider(network, options) {
             console.log(error);
         }
     }
-    if (options.ankr !== "-") {
+    if (options.ankr !== "-" && options.ankr != null) {
         try {
             providers.push(new AnkrProvider(network, options.ankr));
         }

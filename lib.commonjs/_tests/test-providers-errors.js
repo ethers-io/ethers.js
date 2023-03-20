@@ -36,6 +36,7 @@ describe("Tests Provider Call Exception", function () {
                         (0, index_js_1.dataSlice)((0, index_js_1.id)("testPanic(uint256)"), 0, 4),
                         (0, index_js_1.zeroPadValue)((0, index_js_1.toBeArray)(code), 32)
                     ]);
+                    await (0, utils_js_1.stall)(1000);
                     const tx = { to: testAddr, data };
                     try {
                         const result = await (method === "call" ? provider.call(tx) : provider.estimateGas(tx));
