@@ -22,15 +22,16 @@ import type {
 } from "../providers/index.js";
 
 import type {
+    BaseContractMethod,
     ContractEventName,
     ContractInterface,
     ContractMethodArgs,
-    BaseContractMethod,
     ContractMethod,
     ContractEventArgs,
     ContractEvent,
     ContractTransaction,
-    DeferredTopicFilter
+    DeferredTopicFilter,
+    WrappedFallback
 } from "./types.js";
 
 const BN_0 = BigInt(0);
@@ -110,10 +111,6 @@ class PreparedTopicFilter implements DeferredTopicFilter {
 //     TransactionResponse otherwise)
 //export interface ContractMethod<A extends Array<any> = Array<any>, R = any, D extends R | ContractTransactionResponse = ContractTransactionResponse> {
 
-function _WrappedMethodBase(): new () => Function & BaseContractMethod {
-    return Function as any;
-}
-
 function getRunner<T extends ContractRunner>(value: any, feature: keyof ContractRunner): null | T {
     if (value == null) { return null; }
     if (typeof(value[feature]) === "function") { return value; }
@@ -165,8 +162,82 @@ export async function resolveArgs(_runner: null | ContractRunner, inputs: Readon
     }));
 }
 
+function buildWrappedFallback(contract: BaseContract): WrappedFallback {
+
+    const populateTransaction = async function(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransaction> {
+        // If an overrides was passed in, copy it and normalize the values
+
+        const tx: ContractTransaction = <any>(await copyOverrides<"data">(overrides, [ "data" ]));
+        tx.to = await contract.getAddress();
+
+        const iface = contract.interface;
+
+        // Only allow payable contracts to set non-zero value
+        const payable = iface.receive || (iface.fallback && iface.fallback.payable);
+        assertArgument(payable || (tx.value || BN_0) === BN_0,
+          "cannot send value to non-payable contract", "overrides.value", tx.value);
+
+        // Only allow fallback contracts to set non-empty data
+        assertArgument(iface.fallback || (tx.data || "0x") === "0x",
+          "cannot send data to receive-only contract", "overrides.data", tx.data);
+
+        return tx;
+    }
+
+    const staticCall = async function(overrides?: Omit<TransactionRequest, "to">): Promise<string> {
+        const runner = getRunner(contract.runner, "call");
+        assert(canCall(runner), "contract runner does not support calling",
+            "UNSUPPORTED_OPERATION", { operation: "call" });
+
+        const tx = await populateTransaction(overrides);
+
+        try {
+            return await runner.call(tx);
+        } catch (error: any) {
+            if (isCallException(error) && error.data) {
+                throw contract.interface.makeError(error.data, tx);
+            }
+            throw error;
+        }
+    }
+
+    const send = async function(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse> {
+        const runner = contract.runner;
+        assert(canSend(runner), "contract runner does not support sending transactions",
+            "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
+
+        const tx = await runner.sendTransaction(await populateTransaction(overrides));
+        const provider = getProvider(contract.runner);
+        // @TODO: the provider can be null; make a custom dummy provider that will throw a
+        // meaningful error
+        return new ContractTransactionResponse(contract.interface, <Provider>provider, tx);
+    }
+
+    const estimateGas = async function(overrides?: Omit<TransactionRequest, "to">): Promise<bigint> {
+        const runner = getRunner(contract.runner, "estimateGas");
+        assert(canEstimate(runner), "contract runner does not support gas estimation",
+            "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
+
+        return await runner.estimateGas(await populateTransaction(overrides));
+    }
+
+    const method = async (overrides?: Omit<TransactionRequest, "to">) => {
+        return await send(overrides);
+    };
+
+    defineProperties<any>(method, {
+        _contract: contract,
+
+        estimateGas,
+        populateTransaction,
+        send, staticCall
+    });
+
+    return <WrappedFallback>method;
+}
+
+/*
 class WrappedFallback {
-    readonly _contract!: BaseContract;
 
     constructor (contract: BaseContract) {
         defineProperties<WrappedFallback>(this, { _contract: contract });
@@ -238,53 +309,20 @@ class WrappedFallback {
         return await runner.estimateGas(await this.populateTransaction(overrides));
     }
 }
+*/
 
-class WrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | ContractTransactionResponse = ContractTransactionResponse>
-  extends _WrappedMethodBase() implements BaseContractMethod<A, R, D> {
+function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | ContractTransactionResponse = ContractTransactionResponse>(contract: BaseContract, key: string): BaseContractMethod<A, R, D> {
 
-    readonly name: string = "";   // Investigate!
-    readonly _contract!: BaseContract;
-    readonly _key!: string;
-
-    constructor (contract: BaseContract, key: string) {
-        super();
-
-        defineProperties<WrappedMethod>(this, {
-            name: contract.interface.getFunctionName(key),
-            _contract: contract, _key: key
-        });
-
-        const proxy = new Proxy(this, {
-            // Perform the default operation for this fragment type
-            apply: async (target, thisArg, args: ContractMethodArgs<A>) => {
-                const fragment = target.getFragment(...args);
-                if (fragment.constant) { return await target.staticCall(...args); }
-                return await target.send(...args);
-            },
-        });
-
-        return proxy;
-    }
-
-    // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
-    get fragment(): FunctionFragment {
-        const fragment = this._contract.interface.getFunction(this._key);
+    const getFragment = function(...args: ContractMethodArgs<A>): FunctionFragment {
+        const fragment = contract.interface.getFunction(key, args);
         assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
             operation: "fragment"
         });
         return fragment;
     }
 
-    getFragment(...args: ContractMethodArgs<A>): FunctionFragment {
-        const fragment = this._contract.interface.getFunction(this._key, args);
-        assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment"
-        });
-        return fragment;
-    }
-
-    async populateTransaction(...args: ContractMethodArgs<A>): Promise<ContractTransaction> {
-        const fragment = this.getFragment(...args);
+    const populateTransaction = async function(...args: ContractMethodArgs<A>): Promise<ContractTransaction> {
+        const fragment = getFragment(...args);
 
         // If an overrides was passed in, copy it and normalize the values
         let overrides: Omit<ContractTransaction, "data" | "to"> = { };
@@ -296,91 +334,98 @@ class WrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | Co
             throw new Error("internal error: fragment inputs doesn't match arguments; should not happen");
         }
 
-        const resolvedArgs = await resolveArgs(this._contract.runner, fragment.inputs, args);
+        const resolvedArgs = await resolveArgs(contract.runner, fragment.inputs, args);
 
         return Object.assign({ }, overrides, await resolveProperties({
-            to: this._contract.getAddress(),
-            data: this._contract.interface.encodeFunctionData(fragment, resolvedArgs)
+            to: contract.getAddress(),
+            data: contract.interface.encodeFunctionData(fragment, resolvedArgs)
         }));
     }
 
-    async staticCall(...args: ContractMethodArgs<A>): Promise<R> {
-        const result = await this.staticCallResult(...args);
+    const staticCall = async function(...args: ContractMethodArgs<A>): Promise<R> {
+        const result = await staticCallResult(...args);
         if (result.length === 1) { return result[0]; }
         return <R><unknown>result;
     }
 
-    async send(...args: ContractMethodArgs<A>): Promise<ContractTransactionResponse> {
-        const runner = this._contract.runner;
+    const send = async function(...args: ContractMethodArgs<A>): Promise<ContractTransactionResponse> {
+        const runner = contract.runner;
         assert(canSend(runner), "contract runner does not support sending transactions",
             "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
 
-        const tx = await runner.sendTransaction(await this.populateTransaction(...args));
-        const provider = getProvider(this._contract.runner);
+        const tx = await runner.sendTransaction(await populateTransaction(...args));
+        const provider = getProvider(contract.runner);
         // @TODO: the provider can be null; make a custom dummy provider that will throw a
         // meaningful error
-        return new ContractTransactionResponse(this._contract.interface, <Provider>provider, tx);
+        return new ContractTransactionResponse(contract.interface, <Provider>provider, tx);
     }
 
-    async estimateGas(...args: ContractMethodArgs<A>): Promise<bigint> {
-        const runner = getRunner(this._contract.runner, "estimateGas");
+    const estimateGas = async function(...args: ContractMethodArgs<A>): Promise<bigint> {
+        const runner = getRunner(contract.runner, "estimateGas");
         assert(canEstimate(runner), "contract runner does not support gas estimation",
             "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
 
-        return await runner.estimateGas(await this.populateTransaction(...args));
+        return await runner.estimateGas(await populateTransaction(...args));
     }
 
-    async staticCallResult(...args: ContractMethodArgs<A>): Promise<Result> {
-        const runner = getRunner(this._contract.runner, "call");
+    const staticCallResult = async function(...args: ContractMethodArgs<A>): Promise<Result> {
+        const runner = getRunner(contract.runner, "call");
         assert(canCall(runner), "contract runner does not support calling",
             "UNSUPPORTED_OPERATION", { operation: "call" });
 
-        const tx = await this.populateTransaction(...args);
+        const tx = await populateTransaction(...args);
 
         let result = "0x";
         try {
             result = await runner.call(tx);
         } catch (error: any) {
             if (isCallException(error) && error.data) {
-                throw this._contract.interface.makeError(error.data, tx);
+                throw contract.interface.makeError(error.data, tx);
             }
             throw error;
         }
 
-        const fragment = this.getFragment(...args);
-        return this._contract.interface.decodeFunctionResult(fragment, result);
-    }
+        const fragment = getFragment(...args);
+        return contract.interface.decodeFunctionResult(fragment, result);
+    };
+
+    const method = async (...args: ContractMethodArgs<A>) => {
+        const fragment = getFragment(...args);
+        if (fragment.constant) { return await staticCall(...args); }
+        return await send(...args);
+    };
+
+    defineProperties<any>(method, {
+        name: contract.interface.getFunctionName(key),
+        _contract: contract, _key: key,
+
+        getFragment,
+
+        estimateGas,
+        populateTransaction,
+        send, staticCall, staticCallResult,
+    });
+
+    // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
+    Object.defineProperty(method, "fragment", {
+        configurable: false,
+        enumerable: false,
+        get: () => {
+            const fragment = contract.interface.getFunction(key);
+            assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+                operation: "fragment"
+            });
+            return fragment;
+        }
+    });
+
+    return <BaseContractMethod<A, R, D>>method;
 }
 
-function _WrappedEventBase(): new () => Function & ContractEvent {
-    return Function as any;
-}
+function buildWrappedEvent<A extends Array<any> = Array<any>>(contract: BaseContract, key: string): ContractEvent<A> {
 
-class WrappedEvent<A extends Array<any> = Array<any>> extends _WrappedEventBase() implements ContractEvent<A> {
-    readonly name: string = "";  // @TODO: investigate 
-
-    readonly _contract!: BaseContract;
-    readonly _key!: string;
-
-    constructor (contract: BaseContract, key: string) {
-        super();
-
-        defineProperties<WrappedEvent>(this, {
-            name: contract.interface.getEventName(key),
-            _contract: contract, _key: key
-        });
-
-        return new Proxy(this, {
-            // Perform the default operation for this fragment type
-            apply: (target, thisArg, args: ContractEventArgs<A>) => {
-                return new PreparedTopicFilter(contract, target.getFragment(...args), args);
-            },
-        });
-    }
-
-    // Only works on non-ambiguous keys
-    get fragment(): EventFragment {
-        const fragment = this._contract.interface.getEvent(this._key);
+    const getFragment = function(...args: ContractEventArgs<A>): EventFragment {
+        const fragment = contract.interface.getEvent(key, args);
 
         assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
             operation: "fragment"
@@ -389,16 +434,34 @@ class WrappedEvent<A extends Array<any> = Array<any>> extends _WrappedEventBase(
         return fragment;
     }
 
-    getFragment(...args: ContractEventArgs<A>): EventFragment {
-        const fragment = this._contract.interface.getEvent(this._key, args);
+    const method = async function(...args: ContractMethodArgs<A>): Promise<PreparedTopicFilter> {
+        return new PreparedTopicFilter(contract, getFragment(...args), args);
+    };
 
-        assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment"
-        });
+    defineProperties<any>(method, {
+        name: contract.interface.getEventName(key),
+        _contract: contract, _key: key,
 
-        return fragment;
-    }
-};
+        getFragment
+    });
+
+    // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
+    Object.defineProperty(method, "fragment", {
+        configurable: false,
+        enumerable: false,
+        get: () => {
+            const fragment = contract.interface.getEvent(key);
+
+            assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+                operation: "fragment"
+            });
+
+            return fragment;
+        }
+    });
+
+    return <ContractEvent<A>><unknown>method;
+}
 
 type Sub = {
     tag: string;
@@ -690,7 +753,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         defineProperties<BaseContract>(this, { filters });
 
         defineProperties<BaseContract>(this, {
-            fallback: ((iface.receive || iface.fallback) ? (new WrappedFallback(this)): null)
+            fallback: ((iface.receive || iface.fallback) ? (buildWrappedFallback(this)): null)
         });
 
         // Return a Proxy that will respond to functions
@@ -764,12 +827,13 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
 
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T {
         if (typeof(key) !== "string") { key = key.format(); }
-        return <T><unknown>(new WrappedMethod(this, key));
+        const func = buildWrappedMethod(this, key);
+        return <T>func;
     }
 
     getEvent(key: string | EventFragment): ContractEvent {
         if (typeof(key) !== "string") { key = key.format(); }
-        return <ContractEvent><unknown>(new WrappedEvent(this, key));
+        return buildWrappedEvent(this, key);
     }
 
     async queryTransaction(hash: string): Promise<Array<EventLog>> {

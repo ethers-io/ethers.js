@@ -84,3 +84,12 @@ export interface ContractEvent<A extends Array<any> = Array<any>> {
     fragment: EventFragment;
     getFragment(...args: ContractEventArgs<A>): EventFragment;
 };
+
+export interface WrappedFallback {
+    (overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse>;
+
+    populateTransaction(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransaction>;
+    staticCall(overrides?: Omit<TransactionRequest, "to">): Promise<string>;
+    send(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse>;
+    estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint>;
+}

@@ -23,5 +23,6 @@ export type {
     ContractEvent, ContractEventArgs, ContractEventName,
     ContractDeployTransaction,
     ContractInterface, ContractMethod, ContractMethodArgs, ContractTransaction,
-    DeferredTopicFilter, Overrides
+    DeferredTopicFilter, Overrides,
+    WrappedFallback
 } from "./types.js";
