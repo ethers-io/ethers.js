@@ -415,7 +415,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
 
                             // No result; the node failed us in unexpected ways
                             if (resp == null) {
-                                return reject(new Error("@TODO: no result"));
+                                return reject(makeError("no response from server", "BAD_DATA", { value: result, info: { payload } }));
                             }
 
                             // The response is an error
@@ -797,6 +797,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             if (!msg.match(/revert/i) && msg.match(/insufficient funds/i)) {
                 return makeError("insufficient funds", "INSUFFICIENT_FUNDS", {
                     transaction: ((<any>payload).params[0]),
+                    info: { payload, error }
                 });
             }
         }
@@ -846,17 +847,17 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             }
 
             if (message.match(/nonce/i) && message.match(/too low/i)) {
-                return makeError("nonce has already been used", "NONCE_EXPIRED", { transaction });
+                return makeError("nonce has already been used", "NONCE_EXPIRED", { transaction, info: { error } });
             }
 
             // "replacement transaction underpriced"
             if (message.match(/replacement transaction/i) && message.match(/underpriced/i)) {
-                return makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", { transaction });
+                return makeError("replacement fee too low", "REPLACEMENT_UNDERPRICED", { transaction, info: { error } });
             }
 
             if (message.match(/only replay-protected/i)) {
                 return makeError("legacy pre-eip-155 transactions not supported", "UNSUPPORTED_OPERATION", {
-                    operation: method, info: { transaction }
+                    operation: method, info: { transaction, info: { error } }
                 });
             }
         }
