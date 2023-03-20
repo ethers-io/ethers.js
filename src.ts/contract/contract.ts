@@ -409,7 +409,7 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
     Object.defineProperty(method, "fragment", {
         configurable: false,
-        enumerable: false,
+        enumerable: true,
         get: () => {
             const fragment = contract.interface.getFunction(key);
             assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
@@ -434,7 +434,7 @@ function buildWrappedEvent<A extends Array<any> = Array<any>>(contract: BaseCont
         return fragment;
     }
 
-    const method = async function(...args: ContractMethodArgs<A>): Promise<PreparedTopicFilter> {
+    const method = function(...args: ContractMethodArgs<A>): PreparedTopicFilter {
         return new PreparedTopicFilter(contract, getFragment(...args), args);
     };
 
@@ -448,7 +448,7 @@ function buildWrappedEvent<A extends Array<any> = Array<any>>(contract: BaseCont
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
     Object.defineProperty(method, "fragment", {
         configurable: false,
-        enumerable: false,
+        enumerable: true,
         get: () => {
             const fragment = contract.interface.getEvent(key);
 
