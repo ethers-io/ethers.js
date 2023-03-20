@@ -305,6 +305,37 @@ _code: defaultAbiCoder  @lang<script>
   // instance is returned.
   coder = AbiCoder.defaultAbiCoder()
 
+_code: fetching content  @lang<script>
+  // v5, with a body and no weird things
+  data = await ethers.utils.fetchJson(url, json, processFunc)
+
+  // v5 with Connection overrides
+  req = {
+      url, user: "username", password: "password"
+      // etc. properties have FetchRequest equivalents
+  };
+  data = await ethers.utils.detchJson(req, json, processFunc)
+
+  // v6
+  req = new ethers.FetchRequest(url)
+
+  // set a body; optional
+  req.body = json
+
+  // set credentials; optional
+  req.setCredentials("username", "password")
+
+  // set a processFunc; optional
+  req.processFunc = processFunc
+
+  // send the request!
+  resp = await req.send()
+
+  // Get the response body; depending on desired format
+  data = resp.body        // Uint8Array
+  data = resp.bodyText    // Utf8String; throws if invalid
+  data = resp.bodyJson    // Object; throws if invalid
+
 _code: hex conversion  @lang<script>
   // v5
   hex = ethers.utils.hexValue(value)
