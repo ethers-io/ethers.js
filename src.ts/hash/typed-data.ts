@@ -1,6 +1,7 @@
 //import { TypedDataDomain, TypedDataField } from "@ethersproject/providerabstract-signer";
 import { getAddress } from "../address/index.js";
 import { keccak256 } from "../crypto/index.js";
+import { recoverAddress } from "../transaction/index.js";
 import {
     concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toBeHex, toTwos, zeroPadValue,
     assertArgument
@@ -8,6 +9,7 @@ import {
 
 import { id } from "./id.js";
 
+import type { SignatureLike } from "../crypto/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 
 
@@ -487,3 +489,9 @@ export class TypedDataEncoder {
     }
 }
 
+/**
+ *  Compute the address used to sign the typed data for the %%signature%%.
+ */
+export function verifyTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, signature: SignatureLike): string {
+    return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
+}

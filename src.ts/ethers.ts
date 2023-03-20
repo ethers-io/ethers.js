@@ -51,7 +51,8 @@ export {
     ensNormalize, isValidName, namehash, dnsEncode,
     hashMessage, verifyMessage,
     solidityPacked, solidityPackedKeccak256, solidityPackedSha256,
-    TypedDataEncoder
+    TypedDataEncoder,
+    verifyTypedData
 } from "./hash/index.js";
 
 export {
@@ -149,7 +150,8 @@ export type {
     ConstantContractMethod, ContractEvent, ContractEventArgs, ContractEventName,
     ContractInterface, ContractMethod, ContractMethodArgs, ContractTransaction,
     DeferredTopicFilter, Overrides,
-    BaseContractMethod, ContractDeployTransaction, PostfixOverrides
+    BaseContractMethod, ContractDeployTransaction, PostfixOverrides,
+    WrappedFallback
 } from "./contract/index.js";
 
 export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
