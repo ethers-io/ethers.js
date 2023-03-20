@@ -41,7 +41,7 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
         } catch (error) { console.log(error); }
     }
 
-    if (options.ankr !== "-") {
+    if (options.ankr !== "-" && options.ankr != null) {
         try {
             providers.push(new AnkrProvider(network, options.ankr));
         } catch (error) { console.log(error); }
