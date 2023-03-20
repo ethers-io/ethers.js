@@ -1,6 +1,6 @@
 import {
     AlchemyProvider,
-    AnkrProvider,
+//    AnkrProvider,
 //    CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
@@ -30,6 +30,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
         }
     },
+    /*
     {
         name: "AnkrProvider",
         networks: ethNetworks.concat([ "matic", "arbitrum" ]),
@@ -37,6 +38,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new AnkrProvider(network);
         }
     },
+    */
     /*
     {
         name: "CloudflareProvider",
