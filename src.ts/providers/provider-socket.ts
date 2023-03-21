@@ -10,10 +10,12 @@
  */
 
 import { UnmanagedSubscriber } from "./abstract-provider.js";
-import { assert, assertArgument } from "../utils/index.js";
+import { assert, assertArgument } from '../utils/index.js';
+import { formatTransactionResponse } from './format.js';
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 
 import type { Subscriber, Subscription } from "./abstract-provider.js";
+import { TransactionResponse } from './provider.js';
 import type { EventFilter } from "./provider.js";
 import type { JsonRpcError, JsonRpcPayload, JsonRpcResult } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
@@ -116,6 +118,16 @@ export class SocketPendingSubscriber extends SocketSubscriber {
     }
 }
 
+export class SocketPendingFullSubscriber extends SocketSubscriber {
+    constructor(provider: SocketProvider) {
+        super(provider, [ "newPendingTransactions", true ]);
+    }
+
+    async _emit(provider: SocketProvider, message: any): Promise<void> {
+        provider.emit("pending_full", new TransactionResponse(formatTransactionResponse(message), provider));
+    }
+}
+
 export class SocketEventSubscriber extends SocketSubscriber {
     #logFilter: string;
     get logFilter(): EventFilter { return JSON.parse(this.#logFilter); }
@@ -169,6 +181,8 @@ export class SocketProvider extends JsonRpcApiProvider {
                 return new SocketBlockSubscriber(this);
             case "pending":
                 return new SocketPendingSubscriber(this);
+            case "pending_full":
+                return new SocketPendingFullSubscriber(this);
             case "event":
                 return new SocketEventSubscriber(this, sub.filter);
             case "orphan":

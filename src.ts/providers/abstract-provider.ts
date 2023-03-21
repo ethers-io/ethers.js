@@ -115,7 +115,7 @@ export type DebugEventAbstractProvider = {
 
 // Only sub-classes overriding the _getSubscription method will care about this
 export type Subscription = {
-    type: "block" | "close" | "debug" | "network" | "pending",
+    type: "block" | "close" | "debug" | "network" | "pending" | "pending_full",
     tag: string
 } | {
     type: "transaction",
@@ -186,7 +186,7 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
 
     if (typeof(_event) === "string") {
         switch (_event) {
-            case "block": case "pending": case "debug": case "network": {
+            case "block": case "pending": case "pending_full": case "debug": case "network": {
                 return { type: _event, tag: _event };
             }
         }
@@ -527,7 +527,7 @@ export class AbstractProvider implements Provider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
-            case "latest": case "pending": case "safe": case "finalized":
+            case "latest": case "pending": case "pending_full": case "safe": case "finalized":
                 return blockTag;
         }
 
