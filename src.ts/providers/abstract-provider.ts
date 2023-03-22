@@ -203,6 +203,16 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
         return { type: "orphan", tag: getTag("orphan", event), filter: copy(event) };
     }
 
+    if (typeof _event === 'string') {
+        try {
+            // `_event` could be an unparsed json string somehow?
+            // fixes https://github.com/ethers-io/ethers.js/issues/3767
+            _event = JSON.parse(_event);
+        } catch (e) {
+            //
+        }
+    }
+
     if (((<any>_event).address || (<any>_event).topics)) {
         const event = <EventFilter>_event;
 
