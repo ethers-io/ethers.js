@@ -5,6 +5,7 @@
   ],
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,
     "declarationDir": "./types",
