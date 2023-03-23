@@ -50,23 +50,32 @@ export class PollingBlockSubscriber implements Subscriber {
     set pollingInterval(value: number) { this.#interval = value; }
 
     async #poll(): Promise<void> {
-        const blockNumber = await this.#provider.getBlockNumber();
-        if (this.#blockNumber === -2) {
-            this.#blockNumber = blockNumber;
-            return;
-        }
+        try {
+            const blockNumber = await this.#provider.getBlockNumber();
 
-        // @TODO: Put a cap on the maximum number of events per loop?
-
-        if (blockNumber !== this.#blockNumber) {
-            for (let b = this.#blockNumber + 1; b <= blockNumber; b++) {
-                // We have been stopped
-                if (this.#poller == null) { return; }
-
-                await this.#provider.emit("block", b);
+            // Bootstrap poll to setup our initial block number
+            if (this.#blockNumber === -2) {
+                this.#blockNumber = blockNumber;
+                return;
             }
 
-            this.#blockNumber = blockNumber;
+            // @TODO: Put a cap on the maximum number of events per loop?
+
+            if (blockNumber !== this.#blockNumber) {
+                for (let b = this.#blockNumber + 1; b <= blockNumber; b++) {
+                    // We have been stopped
+                    if (this.#poller == null) { return; }
+
+                    await this.#provider.emit("block", b);
+                }
+
+                this.#blockNumber = blockNumber;
+            }
+
+        } catch (error) {
+            // @TODO: Minor bump, add an "error" event to let subscribers
+            //        know things went awry.
+            //console.log(error);
         }
 
         // We have been stopped
