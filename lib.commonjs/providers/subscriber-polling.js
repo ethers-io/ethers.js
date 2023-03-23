@@ -44,21 +44,29 @@ class PollingBlockSubscriber {
     get pollingInterval() { return this.#interval; }
     set pollingInterval(value) { this.#interval = value; }
     async #poll() {
-        const blockNumber = await this.#provider.getBlockNumber();
-        if (this.#blockNumber === -2) {
-            this.#blockNumber = blockNumber;
-            return;
-        }
-        // @TODO: Put a cap on the maximum number of events per loop?
-        if (blockNumber !== this.#blockNumber) {
-            for (let b = this.#blockNumber + 1; b <= blockNumber; b++) {
-                // We have been stopped
-                if (this.#poller == null) {
-                    return;
-                }
-                await this.#provider.emit("block", b);
+        try {
+            const blockNumber = await this.#provider.getBlockNumber();
+            // Bootstrap poll to setup our initial block number
+            if (this.#blockNumber === -2) {
+                this.#blockNumber = blockNumber;
+                return;
             }
-            this.#blockNumber = blockNumber;
+            // @TODO: Put a cap on the maximum number of events per loop?
+            if (blockNumber !== this.#blockNumber) {
+                for (let b = this.#blockNumber + 1; b <= blockNumber; b++) {
+                    // We have been stopped
+                    if (this.#poller == null) {
+                        return;
+                    }
+                    await this.#provider.emit("block", b);
+                }
+                this.#blockNumber = blockNumber;
+            }
+        }
+        catch (error) {
+            // @TODO: Minor bump, add an "error" event to let subscribers
+            //        know things went awry.
+            //console.log(error);
         }
         // We have been stopped
         if (this.#poller == null) {
