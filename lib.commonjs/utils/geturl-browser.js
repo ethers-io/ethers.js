@@ -9,7 +9,7 @@ async function getUrl(req, _signal) {
         info: { protocol },
         operation: "request"
     });
-    (0, errors_js_1.assert)(!req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+    (0, errors_js_1.assert)(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
         operation: "request"
     });
     let signal = undefined;

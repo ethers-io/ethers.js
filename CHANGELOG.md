@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.2.2 (2023-03-24 00:49)
+--------------------------------
+
+  - Fixed FetchRequest when using credentials ([#3897](https://github.com/ethers-io/ethers.js/issues/3897); [88e8124](https://github.com/ethers-io/ethers.js/commit/88e8124c37d377628f9b8abdf140fc07ad06259f)).
+
 ethers/v6.2.1 (2023-03-23 17:33)
 --------------------------------
 

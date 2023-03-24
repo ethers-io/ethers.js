@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.2.1";
+    const version = "6.2.2";
 
     /**
      *  Property helper functions.
@@ -988,7 +988,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             info: { protocol },
             operation: "request"
         });
-        assert$1(!req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        assert$1(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
             operation: "request"
         });
         let signal = undefined;
