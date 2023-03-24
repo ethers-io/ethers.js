@@ -32,6 +32,10 @@ export declare class SocketPendingSubscriber extends SocketSubscriber {
     constructor(provider: SocketProvider);
     _emit(provider: SocketProvider, message: any): Promise<void>;
 }
+export declare class SocketPendingFullSubscriber extends SocketSubscriber {
+    constructor(provider: SocketProvider);
+    _emit(provider: SocketProvider, message: any): Promise<void>;
+}
 export declare class SocketEventSubscriber extends SocketSubscriber {
     #private;
     get logFilter(): EventFilter;

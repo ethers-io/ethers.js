@@ -78,6 +78,7 @@ async function getSubscription(_event, provider) {
         switch (_event) {
             case "block":
             case "pending":
+            case "pending_full":
             case "debug":
             case "network": {
                 return { type: _event, tag: _event };
@@ -297,6 +298,7 @@ export class AbstractProvider {
                 return "0x0";
             case "latest":
             case "pending":
+            case "pending_full":
             case "safe":
             case "finalized":
                 return blockTag;
