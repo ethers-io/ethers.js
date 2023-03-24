@@ -19,7 +19,7 @@ export async function getUrl(req: FetchRequest, signal?: FetchCancelSignal): Pro
         operation: "request"
     });
 
-    assert(!req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+    assert(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
         operation: "request"
     });
 
