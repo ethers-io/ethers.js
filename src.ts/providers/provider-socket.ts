@@ -126,7 +126,7 @@ export class SocketEventSubscriber extends SocketSubscriber {
     }
 
     async _emit(provider: SocketProvider, message: any): Promise<void> {
-        provider.emit(this.#logFilter, provider._wrapLog(message, provider._network));
+        provider.emit(this.logFilter, provider._wrapLog(message, provider._network));
     }
 }
 
