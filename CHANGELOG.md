@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.2.3 (2023-03-27 21:22)
+--------------------------------
+
+  - Fixed events when emitted in WebSocketProvider ([#3767](https://github.com/ethers-io/ethers.js/issues/3767), [#3922](https://github.com/ethers-io/ethers.js/issues/3922); [ffaafc0](https://github.com/ethers-io/ethers.js/commit/ffaafc0ce1cf40d1d76d8d814c9c445057bf6989)).
+
 ethers/v6.2.2 (2023-03-24 00:49)
 --------------------------------
 

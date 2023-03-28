@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.2.2";
+    const version = "6.2.3";
 
     /**
      *  Property helper functions.
@@ -18926,7 +18926,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#logFilter = JSON.stringify(filter);
         }
         async _emit(provider, message) {
-            provider.emit(this.#logFilter, provider._wrapLog(message, provider._network));
+            provider.emit(this.logFilter, provider._wrapLog(message, provider._network));
         }
     }
     /**

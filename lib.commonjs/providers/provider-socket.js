@@ -102,7 +102,7 @@ class SocketEventSubscriber extends SocketSubscriber {
         this.#logFilter = JSON.stringify(filter);
     }
     async _emit(provider, message) {
-        provider.emit(this.#logFilter, provider._wrapLog(message, provider._network));
+        provider.emit(this.logFilter, provider._wrapLog(message, provider._network));
     }
 }
 exports.SocketEventSubscriber = SocketEventSubscriber;

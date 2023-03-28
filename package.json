@@ -104,7 +104,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "88e8124c37d377628f9b8abdf140fc07ad06259f",
+  "gitHead": "ffaafc0ce1cf40d1d76d8d814c9c445057bf6989",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -135,6 +135,7 @@
     "build-docs": "echo 'foo'",
     "build-types": "tsc --project tsconfig.types.json && cp ./output/post-build/types/* ./types/",
     "clean": "rm -rf dist lib.esm lib.commonjs types",
+    "postpublish": "node lib.esm/_admin/create-release.js",
     "stats": "echo 'Dependencies' && npm ls --all --omit=dev",
     "test": "npm run test-esm",
     "test-commonjs": "mocha --reporter ./reporter.cjs ./lib.commonjs/_tests/test-*.js",
@@ -144,5 +145,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.2.2"
+  "version": "6.2.3"
 }
