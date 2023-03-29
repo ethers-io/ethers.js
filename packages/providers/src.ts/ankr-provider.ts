@@ -26,7 +26,9 @@ function getHost(name: string): string {
 
         case "matic":
             return "rpc.ankr.com/polygon/";
-
+        case "maticmum":
+            return "rpc.ankr.com/polygon_mumbai/";
+            
         case "arbitrum":
             return "rpc.ankr.com/arbitrum/";
     }
