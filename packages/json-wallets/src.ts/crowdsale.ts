@@ -37,8 +37,8 @@ export class CrowdsaleAccount extends Description<_CrowdsaleAccount> implements 
 }
 
 // See: https://github.com/ethereum/pyethsaletool
-export function decrypt(json: string, password: Bytes | string): ExternallyOwnedAccount {
-    const data = JSON.parse(json);
+export function decrypt(json: string | object, password: Bytes | string): ExternallyOwnedAccount {
+    const data = typeof json === 'object' ? json : JSON.parse(json);
 
     password = getPassword(password);
 
