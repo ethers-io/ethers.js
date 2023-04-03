@@ -48,7 +48,7 @@ objects available and what they are responsible for, at a high level.
 _heading: Provider
 
 A [[Provider]] is a read-only connection to the blockchain, which allows
-querying the blockchain state, such as accout, block or transaction details,
+querying the blockchain state, such as account, block or transaction details,
 querying event logs or evaluating read-only code using call.
 
 If you are coming from Web3.js, you are used to a **Provider** offering
