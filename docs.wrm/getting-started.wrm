@@ -291,7 +291,7 @@ Any methods or events that are not needed can be safely excluded.
 There are several common formats available to describe an ABI. The
 Solidity compiler usually dumps a JSON representation but when typing
 an ABI by hand it is often easier (and more readable) to use the
-human-readable ABI, which is just the Solidity signautre.
+human-readable ABI, which is just the Solidity signature.
 
 _code: simplified ERC-20 ABI @lang<script>
   abi = [
