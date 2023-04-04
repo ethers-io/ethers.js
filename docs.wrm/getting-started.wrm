@@ -172,7 +172,7 @@ _code: connecting to a JSON-RPC URL  @lang<script>
 _subsection: User Interaction  @<starting-display>
 
 All units in Ethereum tend to be integer values, since dealing with
-decimals and floating points can lead to inprecise and non-obvious
+decimals and floating points can lead to imprecise and non-obvious
 results when performing mathematic operations.
 
 As a result, the internal units used (e.g. wei) which are suited for
