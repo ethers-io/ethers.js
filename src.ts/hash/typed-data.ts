@@ -3,7 +3,7 @@ import { getAddress } from "../address/index.js";
 import { keccak256 } from "../crypto/index.js";
 import { recoverAddress } from "../transaction/index.js";
 import {
-    concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toBeHex, toTwos, zeroPadValue,
+    concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toBeHex, toQuantity, toTwos, zeroPadValue,
     assertArgument
 } from "../utils/index.js";
 
@@ -68,8 +68,11 @@ function checkString(key: string): (value: any) => string {
 const domainChecks: Record<string, (value: any) => any> = {
     name: checkString("name"),
     version: checkString("version"),
-    chainId: function(value: any) {
-        return getBigInt(value, "domain.chainId");
+    chainId: function(_value: any) {
+        const value = getBigInt(_value, "domain.chainId");
+        assertArgument(value >= 0, "invalid chain ID", "domain.chainId", _value);
+        if (Number.isSafeInteger(value)) { return Number(value); }
+        return toQuantity(value);
     },
     verifyingContract: function(value: any) {
         try {
