@@ -2,6 +2,7 @@ import assert from "assert";
 
 import {
     isError,
+    fromTwos, toTwos,
     getBigInt, getNumber, toBeArray, toBeHex, toQuantity,
 } from "../index.js";
 
@@ -178,3 +179,28 @@ describe("Tests Bad Math Values", function() {
         });
     });
 });
+
+describe("Tests Twos Compliemnts Functions", function() {
+    const tests = [
+        { width: 8, value: 0, twos: 0 },
+        { width: 8, value: 1, twos: 1 },
+        { width: 8, value: -1, twos: 0xff },
+        { width: 8, value: 127, twos: 127 },
+        { width: 8, value: -128, twos: 0x80 },
+    ];
+
+    for (const { twos, width, value } of tests) {
+        it(`computes twos compliment values: ${ value }[${ width } bits]`, function() {
+            const result = toTwos(value, width);
+            assert.equal(result, twos);
+        });
+    }
+
+    for (const { twos, width, value } of tests) {
+        it(`computes values from twos compliment: ${ value }[${ width } bits]`, function() {
+            const result = fromTwos(twos, width);
+            assert.equal(result, value);
+        });
+    }
+});
+
