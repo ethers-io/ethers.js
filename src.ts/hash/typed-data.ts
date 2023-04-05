@@ -105,7 +105,7 @@ function getBaseEncoder(type: string): null | ((value: any) => string) {
 
                 assertArgument(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${ type }`, "value", value);
 
-                return toBeHex(toTwos(value, 256), 32);
+                return toBeHex(signed ? toTwos(value, 256): value, 32);
             };
         }
     }
