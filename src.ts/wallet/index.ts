@@ -22,7 +22,7 @@ export { BaseWallet } from "./base-wallet.js";
 export {
     defaultPath,
 
-    getAccountPath,
+    getAccountPath, getIndexedAccountPath,
 
     HDNodeWallet,
     HDNodeVoidWallet,

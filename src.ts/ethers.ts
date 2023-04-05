@@ -119,7 +119,7 @@ export {
 
     defaultPath,
 
-    getAccountPath,
+    getAccountPath, getIndexedAccountPath,
     isCrowdsaleJson, isKeystoreJson,
 
     decryptCrowdsaleJson, decryptKeystoreJsonSync, decryptKeystoreJson,
