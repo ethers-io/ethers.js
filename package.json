@@ -34,64 +34,76 @@
   "ethereum": "donations.ethers.eth",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "import": "./lib.esm/index.js",
       "require": "./lib.commonjs/index.js",
-      "types": "./types/index.d.ts"
+      "default": "./lib.commonjs/index.js"
     },
     "./abi": {
       "types": "./types/abi/index.d.ts",
       "import": "./lib.esm/abi/index.js",
-      "require": "./lib.commonjs/abi/index.js"
+      "require": "./lib.commonjs/abi/index.js",
+      "default": "./lib.commonjs/abi/index.js"
     },
     "./address": {
       "types": "./types/address/index.d.ts",
       "import": "./lib.esm/address/index.js",
-      "require": "./lib.commonjs/address/index.js"
+      "require": "./lib.commonjs/address/index.js",
+      "default": "./lib.commonjs/address/index.js"
     },
     "./constants": {
       "types": "./types/constants/index.d.ts",
       "import": "./lib.esm/constants/index.js",
-      "require": "./lib.commonjs/constants/index.js"
+      "require": "./lib.commonjs/constants/index.js",
+      "default": "./lib.commonjs/constants/index.js"
     },
     "./contract": {
       "types": "./types/contract/index.d.ts",
       "import": "./lib.esm/contract/index.js",
-      "require": "./lib.commonjs/contract/index.js"
+      "require": "./lib.commonjs/contract/index.js",
+      "default": "./lib.commonjs/contract/index.js"
     },
     "./crypto": {
       "types": "./types/crypto/index.d.ts",
       "import": "./lib.esm/crypto/index.js",
-      "require": "./lib.commonjs/crypto/index.js"
+      "require": "./lib.commonjs/crypto/index.js",
+      "default": "./lib.commonjs/crypto/index.js"
     },
     "./hash": {
       "types": "./types/hash/index.d.ts",
       "import": "./lib.esm/hash/index.js",
-      "require": "./lib.commonjs/hash/index.js"
+      "require": "./lib.commonjs/hash/index.js",
+      "default": "./lib.commonjs/hash/index.js"
     },
     "./providers": {
       "types": "./types/providers/index.d.ts",
       "import": "./lib.esm/providers/index.js",
-      "require": "./lib.commonjs/providers/index.js"
+      "require": "./lib.commonjs/providers/index.js",
+      "default": "./lib.commonjs/providers/index.js"
     },
     "./transaction": {
       "types": "./types/transaction/index.d.ts",
       "import": "./lib.esm/transaction/index.js",
-      "require": "./lib.commonjs/transaction/index.js"
+      "require": "./lib.commonjs/transaction/index.js",
+      "default": "./lib.commonjs/transaction/index.js"
     },
     "./utils": {
       "types": "./types/utils/index.d.ts",
       "import": "./lib.esm/utils/index.js",
-      "require": "./lib.commonjs/utils/index.js"
+      "require": "./lib.commonjs/utils/index.js",
+      "default": "./lib.commonjs/utils/index.js"
     },
     "./wallet": {
       "types": "./types/wallet/index.d.ts",
       "import": "./lib.esm/wallet/index.js",
-      "require": "./lib.commonjs/wallet/index.js"
+      "require": "./lib.commonjs/wallet/index.js",
+      "default": "./lib.commonjs/wallet/index.js"
     },
     "./wordlists": {
       "types": "./types/wordlists/index.d.ts",
       "import": "./lib.esm/wordlists/index.js",
-      "require": "./lib.commonjs/wordlists/index.js"
+      "require": "./lib.commonjs/wordlists/index.js",
+      "default": "./lib.commonjs/wordlists/index.js"
     }
   },
   "funding": [
@@ -104,7 +116,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "ffaafc0ce1cf40d1d76d8d814c9c445057bf6989",
+  "gitHead": "c58ab3a97687e15a3ffe30b038089c5f4b570bb9",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -145,5 +157,5 @@
   "sideEffects": false,
   "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.2.3"
+  "version": "6.3.0"
 }

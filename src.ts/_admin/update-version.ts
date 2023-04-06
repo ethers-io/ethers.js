@@ -68,11 +68,14 @@ function writeVersion(version: string): void {
         pkgInfo.gitHead = gitHead;
 
         // Save the package.json
-        const check: Record<string, number> = { "require": 1, "import": 1, "types": 1 };
+        const check: Record<string, number> = { "default": 1, "require": 1, "import": 1, "types": 1 };
         saveJson(pkgPath, pkgInfo, (path: string, a: string, b: string) => {
-            if (path.startsWith("./") && check[a] && check[b]) {
-                if (a === "types") { return -1; }
-                if (b === "types") { return 1; }
+            if ((path.startsWith("./") || path === ".") && check[a] && check[b]) {
+                const cmp = a.localeCompare(b);
+                if (cmp === 0) { return cmp; }
+                if (a === "types" || b === "default") { return -1; }
+                if (b === "types" || a === "default") { return 1; }
+                return cmp;
             }
             return a.localeCompare(b);
         });
