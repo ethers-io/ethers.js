@@ -236,81 +236,6 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
     return <WrappedFallback>method;
 }
 
-/*
-class WrappedFallback {
-
-    constructor (contract: BaseContract) {
-        defineProperties<WrappedFallback>(this, { _contract: contract });
-
-        const proxy = new Proxy(this, {
-            // Perform send when called
-            apply: async (target, thisArg, args: Array<any>) => {
-                return await target.send(...args);
-            },
-        });
-
-        return proxy;
-    }
-
-    async populateTransaction(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransaction> {
-        // If an overrides was passed in, copy it and normalize the values
-
-        const tx: ContractTransaction = <any>(await copyOverrides<"data">(overrides, [ "data" ]));
-        tx.to = await this._contract.getAddress();
-
-        const iface = this._contract.interface;
-
-        // Only allow payable contracts to set non-zero value
-        const payable = iface.receive || (iface.fallback && iface.fallback.payable);
-        assertArgument(payable || (tx.value || BN_0) === BN_0,
-          "cannot send value to non-payable contract", "overrides.value", tx.value);
-
-        // Only allow fallback contracts to set non-empty data
-        assertArgument(iface.fallback || (tx.data || "0x") === "0x",
-          "cannot send data to receive-only contract", "overrides.data", tx.data);
-
-        return tx;
-    }
-
-    async staticCall(overrides?: Omit<TransactionRequest, "to">): Promise<string> {
-        const runner = getRunner(this._contract.runner, "call");
-        assert(canCall(runner), "contract runner does not support calling",
-            "UNSUPPORTED_OPERATION", { operation: "call" });
-
-        const tx = await this.populateTransaction(overrides);
-
-        try {
-            return await runner.call(tx);
-        } catch (error: any) {
-            if (isCallException(error) && error.data) {
-                throw this._contract.interface.makeError(error.data, tx);
-            }
-            throw error;
-        }
-    }
-
-    async send(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse> {
-        const runner = this._contract.runner;
-        assert(canSend(runner), "contract runner does not support sending transactions",
-            "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
-
-        const tx = await runner.sendTransaction(await this.populateTransaction(overrides));
-        const provider = getProvider(this._contract.runner);
-        // @TODO: the provider can be null; make a custom dummy provider that will throw a
-        // meaningful error
-        return new ContractTransactionResponse(this._contract.interface, <Provider>provider, tx);
-    }
-
-    async estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint> {
-        const runner = getRunner(this._contract.runner, "estimateGas");
-        assert(canEstimate(runner), "contract runner does not support gas estimation",
-            "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
-
-        return await runner.estimateGas(await this.populateTransaction(overrides));
-    }
-}
-*/
-
 function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | ContractTransactionResponse = ContractTransactionResponse>(contract: BaseContract, key: string): BaseContractMethod<A, R, D> {
 
     const getFragment = function(...args: ContractMethodArgs<A>): FunctionFragment {
@@ -748,6 +673,14 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
                 if (result) { return result; }
 
                 throw new Error(`unknown contract event: ${ prop }`);
+            },
+            has: (target, prop) => {
+                // Pass important checks (like `then` for Promise) through
+                if (passProperties.indexOf(<string>prop) >= 0) {
+                    return Reflect.has(target, prop);
+                }
+
+                return Reflect.has(target, prop) || this.interface.hasEvent(String(prop));
             }
         });
         defineProperties<BaseContract>(this, { filters });
@@ -769,6 +702,13 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
                 if (result) { return result; }
 
                 throw new Error(`unknown contract method: ${ prop }`);
+            },
+            has: (target, prop) => {
+                if (prop in target || passProperties.indexOf(<string>prop) >= 0) {
+                    return Reflect.has(target, prop);
+                }
+
+                return target.interface.hasFunction(String(prop));
             }
         });
 

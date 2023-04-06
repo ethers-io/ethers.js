@@ -418,6 +418,17 @@ export class Interface {
     }
 
     /**
+     *  Returns true if %%key%% (a function selector, function name or
+     *  function signature) is present in the ABI.
+     *
+     *  In the case of a function name, the name may be ambiguous, so
+     *  accessing the [[FunctionFragment]] may require refinement.
+     */
+    hasFunction(key: string): boolean {
+        return !!this.#getFunction(key, null, false);
+    }
+
+    /**
      *  Get the [[FunctionFragment]] for %%key%%, which may be a function
      *  selector, function name or function signature that belongs to the ABI.
      *
@@ -513,6 +524,17 @@ export class Interface {
         assertArgument(fragment, "no matching event", "key", key);
 
         return fragment.name;
+    }
+
+    /**
+     *  Returns true if %%key%% (an event topic hash, event name or
+     *  event signature) is present in the ABI.
+     *
+     *  In the case of an event name, the name may be ambiguous, so
+     *  accessing the [[EventFragment]] may require refinement.
+     */
+    hasEvent(key: string): boolean {
+        return !!this.#getEvent(key, null, false);
     }
 
     /**
