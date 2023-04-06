@@ -1430,9 +1430,29 @@ export class FunctionFragment extends NamedFragment {
             return new FunctionFragment(_guard, name, mutability, inputs, outputs, gas);
         }
 
-        // @TODO: verifyState for stateMutability
+        let stateMutability = obj.stateMutability;
 
-        return new FunctionFragment(_guard, obj.name, obj.stateMutability,
+        // Use legacy Solidity ABI logic if stateMutability is missing
+        if (stateMutability == null) {
+            stateMutability = "payable";
+
+            if (typeof(obj.constant) === "boolean") {
+                stateMutability = "view";
+                if (!obj.constant) {
+                    stateMutability = "payable"
+                    if (typeof(obj.payable) === "boolean" && !obj.payable) {
+                        stateMutability = "nonpayable";
+                    }
+                }
+            } else if (typeof(obj.payable) === "boolean" && !obj.payable) {
+                stateMutability = "nonpayable";
+            }
+        }
+
+        // @TODO: verifyState for stateMutability (e.g. throw if
+        //        payable: false but stateMutability is "nonpayable")
+
+        return new FunctionFragment(_guard, obj.name, stateMutability,
              obj.inputs ? obj.inputs.map(ParamType.from): [ ],
              obj.outputs ? obj.outputs.map(ParamType.from): [ ],
              (obj.gas != null) ? obj.gas: null);
