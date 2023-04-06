@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.2.3";
+    const version = "6.3.0";
 
     /**
      *  Property helper functions.
@@ -6815,7 +6815,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     null;
 
     /**
-     *  About typed...
+     *  A Typed object allows a value to have its type explicitly
+     *  specified.
+     *
+     *  For example, in Solidity, the value ``45`` could represent a
+     *  ``uint8`` or a ``uint256``. The value ``0x1234`` could represent
+     *  a ``bytes2`` or ``bytes``.
+     *
+     *  Since JavaScript has no meaningful way to explicitly inform any
+     *  APIs which what the type is, this allows transparent interoperation
+     *  with Soldity.
      *
      *  @_subsection: api/abi:Typed Values
      */
@@ -9675,8 +9684,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const domainChecks = {
         name: checkString("name"),
         version: checkString("version"),
-        chainId: function (value) {
-            return getBigInt(value, "domain.chainId");
+        chainId: function (_value) {
+            const value = getBigInt(_value, "domain.chainId");
+            assertArgument(value >= 0, "invalid chain ID", "domain.chainId", _value);
+            if (Number.isSafeInteger(value)) {
+                return Number(value);
+            }
+            return toQuantity(value);
         },
         verifyingContract: function (value) {
             try {
@@ -9704,7 +9718,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return function (_value) {
                     const value = getBigInt(_value, "value");
                     assertArgument(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${type}`, "value", value);
-                    return toBeHex(toTwos(value, 256), 32);
+                    return toBeHex(signed ? toTwos(value, 256) : value, 32);
                 };
             }
         }
@@ -11190,8 +11204,26 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 consumeEoi(obj);
                 return new FunctionFragment(_guard$2, name, mutability, inputs, outputs, gas);
             }
-            // @TODO: verifyState for stateMutability
-            return new FunctionFragment(_guard$2, obj.name, obj.stateMutability, obj.inputs ? obj.inputs.map(ParamType.from) : [], obj.outputs ? obj.outputs.map(ParamType.from) : [], (obj.gas != null) ? obj.gas : null);
+            let stateMutability = obj.stateMutability;
+            // Use legacy Solidity ABI logic if stateMutability is missing
+            if (stateMutability == null) {
+                stateMutability = "payable";
+                if (typeof (obj.constant) === "boolean") {
+                    stateMutability = "view";
+                    if (!obj.constant) {
+                        stateMutability = "payable";
+                        if (typeof (obj.payable) === "boolean" && !obj.payable) {
+                            stateMutability = "nonpayable";
+                        }
+                    }
+                }
+                else if (typeof (obj.payable) === "boolean" && !obj.payable) {
+                    stateMutability = "nonpayable";
+                }
+            }
+            // @TODO: verifyState for stateMutability (e.g. throw if
+            //        payable: false but stateMutability is "nonpayable")
+            return new FunctionFragment(_guard$2, obj.name, stateMutability, obj.inputs ? obj.inputs.map(ParamType.from) : [], obj.outputs ? obj.outputs.map(ParamType.from) : [], (obj.gas != null) ? obj.gas : null);
         }
         static isFragment(value) {
             return (value && value[internal$1] === FunctionFragmentInternal);
@@ -11776,6 +11808,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return fragment.name;
         }
         /**
+         *  Returns true if %%key%% (a function selector, function name or
+         *  function signature) is present in the ABI.
+         *
+         *  In the case of a function name, the name may be ambiguous, so
+         *  accessing the [[FunctionFragment]] may require refinement.
+         */
+        hasFunction(key) {
+            return !!this.#getFunction(key, null, false);
+        }
+        /**
          *  Get the [[FunctionFragment]] for %%key%%, which may be a function
          *  selector, function name or function signature that belongs to the ABI.
          *
@@ -11866,6 +11908,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const fragment = this.#getEvent(key, null, false);
             assertArgument(fragment, "no matching event", "key", key);
             return fragment.name;
+        }
+        /**
+         *  Returns true if %%key%% (an event topic hash, event name or
+         *  event signature) is present in the ABI.
+         *
+         *  In the case of an event name, the name may be ambiguous, so
+         *  accessing the [[EventFragment]] may require refinement.
+         */
+        hasEvent(key) {
+            return !!this.#getEvent(key, null, false);
         }
         /**
          *  Get the [[EventFragment]] for %%key%%, which may be a topic hash,
@@ -13633,80 +13685,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         });
         return method;
     }
-    /*
-    class WrappedFallback {
-
-        constructor (contract: BaseContract) {
-            defineProperties<WrappedFallback>(this, { _contract: contract });
-
-            const proxy = new Proxy(this, {
-                // Perform send when called
-                apply: async (target, thisArg, args: Array<any>) => {
-                    return await target.send(...args);
-                },
-            });
-
-            return proxy;
-        }
-
-        async populateTransaction(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransaction> {
-            // If an overrides was passed in, copy it and normalize the values
-
-            const tx: ContractTransaction = <any>(await copyOverrides<"data">(overrides, [ "data" ]));
-            tx.to = await this._contract.getAddress();
-
-            const iface = this._contract.interface;
-
-            // Only allow payable contracts to set non-zero value
-            const payable = iface.receive || (iface.fallback && iface.fallback.payable);
-            assertArgument(payable || (tx.value || BN_0) === BN_0,
-              "cannot send value to non-payable contract", "overrides.value", tx.value);
-
-            // Only allow fallback contracts to set non-empty data
-            assertArgument(iface.fallback || (tx.data || "0x") === "0x",
-              "cannot send data to receive-only contract", "overrides.data", tx.data);
-
-            return tx;
-        }
-
-        async staticCall(overrides?: Omit<TransactionRequest, "to">): Promise<string> {
-            const runner = getRunner(this._contract.runner, "call");
-            assert(canCall(runner), "contract runner does not support calling",
-                "UNSUPPORTED_OPERATION", { operation: "call" });
-
-            const tx = await this.populateTransaction(overrides);
-
-            try {
-                return await runner.call(tx);
-            } catch (error: any) {
-                if (isCallException(error) && error.data) {
-                    throw this._contract.interface.makeError(error.data, tx);
-                }
-                throw error;
-            }
-        }
-
-        async send(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse> {
-            const runner = this._contract.runner;
-            assert(canSend(runner), "contract runner does not support sending transactions",
-                "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
-
-            const tx = await runner.sendTransaction(await this.populateTransaction(overrides));
-            const provider = getProvider(this._contract.runner);
-            // @TODO: the provider can be null; make a custom dummy provider that will throw a
-            // meaningful error
-            return new ContractTransactionResponse(this._contract.interface, <Provider>provider, tx);
-        }
-
-        async estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint> {
-            const runner = getRunner(this._contract.runner, "estimateGas");
-            assert(canEstimate(runner), "contract runner does not support gas estimation",
-                "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
-
-            return await runner.estimateGas(await this.populateTransaction(overrides));
-        }
-    }
-    */
     function buildWrappedMethod(contract, key) {
         const getFragment = function (...args) {
             const fragment = contract.interface.getFunction(key, args);
@@ -14083,6 +14061,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         return result;
                     }
                     throw new Error(`unknown contract event: ${prop}`);
+                },
+                has: (target, prop) => {
+                    // Pass important checks (like `then` for Promise) through
+                    if (passProperties.indexOf(prop) >= 0) {
+                        return Reflect.has(target, prop);
+                    }
+                    return Reflect.has(target, prop) || this.interface.hasEvent(String(prop));
                 }
             });
             defineProperties(this, { filters });
@@ -14101,6 +14086,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         return result;
                     }
                     throw new Error(`unknown contract method: ${prop}`);
+                },
+                has: (target, prop) => {
+                    if (prop in target || passProperties.indexOf(prop) >= 0) {
+                        return Reflect.has(target, prop);
+                    }
+                    return target.interface.hasFunction(String(prop));
                 }
             });
         }
@@ -22611,6 +22602,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         Wallet: Wallet,
         defaultPath: defaultPath,
         getAccountPath: getAccountPath,
+        getIndexedAccountPath: getIndexedAccountPath,
         isCrowdsaleJson: isCrowdsaleJson,
         isKeystoreJson: isKeystoreJson,
         decryptCrowdsaleJson: decryptCrowdsaleJson,
@@ -22766,6 +22758,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     exports.getCreateAddress = getCreateAddress;
     exports.getDefaultProvider = getDefaultProvider;
     exports.getIcapAddress = getIcapAddress;
+    exports.getIndexedAccountPath = getIndexedAccountPath;
     exports.getNumber = getNumber;
     exports.getUint = getUint;
     exports.hashMessage = hashMessage;

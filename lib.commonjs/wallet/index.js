@@ -18,12 +18,13 @@
  *  @_section: api/wallet:Wallets  [about-wallets]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Wallet = exports.Mnemonic = exports.encryptKeystoreJsonSync = exports.encryptKeystoreJson = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.isKeystoreJson = exports.decryptCrowdsaleJson = exports.isCrowdsaleJson = exports.HDNodeVoidWallet = exports.HDNodeWallet = exports.getAccountPath = exports.defaultPath = exports.BaseWallet = void 0;
+exports.Wallet = exports.Mnemonic = exports.encryptKeystoreJsonSync = exports.encryptKeystoreJson = exports.decryptKeystoreJson = exports.decryptKeystoreJsonSync = exports.isKeystoreJson = exports.decryptCrowdsaleJson = exports.isCrowdsaleJson = exports.HDNodeVoidWallet = exports.HDNodeWallet = exports.getIndexedAccountPath = exports.getAccountPath = exports.defaultPath = exports.BaseWallet = void 0;
 var base_wallet_js_1 = require("./base-wallet.js");
 Object.defineProperty(exports, "BaseWallet", { enumerable: true, get: function () { return base_wallet_js_1.BaseWallet; } });
 var hdwallet_js_1 = require("./hdwallet.js");
 Object.defineProperty(exports, "defaultPath", { enumerable: true, get: function () { return hdwallet_js_1.defaultPath; } });
 Object.defineProperty(exports, "getAccountPath", { enumerable: true, get: function () { return hdwallet_js_1.getAccountPath; } });
+Object.defineProperty(exports, "getIndexedAccountPath", { enumerable: true, get: function () { return hdwallet_js_1.getIndexedAccountPath; } });
 Object.defineProperty(exports, "HDNodeWallet", { enumerable: true, get: function () { return hdwallet_js_1.HDNodeWallet; } });
 Object.defineProperty(exports, "HDNodeVoidWallet", { enumerable: true, get: function () { return hdwallet_js_1.HDNodeVoidWallet; } });
 var json_crowdsale_js_1 = require("./json-crowdsale.js");

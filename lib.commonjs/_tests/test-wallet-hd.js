@@ -7,6 +7,13 @@ const assert_1 = __importDefault(require("assert"));
 const wordlists_js_1 = require("../wordlists/wordlists.js");
 const utils_js_1 = require("./utils.js");
 const index_js_1 = require("../index.js");
+/*
+declare global {
+    class TextDecoder {
+        decode(data: Uint8Array): string;
+    }
+}
+*/
 const decoder = new TextDecoder();
 function fromHex(hex) {
     const data = Buffer.from(hex.substring(2), "hex");

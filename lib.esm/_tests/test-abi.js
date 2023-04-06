@@ -115,4 +115,138 @@ describe("Test Interface", function () {
         assert.equal(log.args[2], BigInt(234));
     });
 });
+describe("Tests Legacy ABI formats", function () {
+    // See: #3932
+    const iface = new Interface([
+        {
+            name: "implicitView",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "constant": true,
+            "payable": false,
+            "type": "function"
+        },
+        {
+            name: "implicitSendNonpay",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "constant": false,
+            "payable": false,
+            "type": "function"
+        },
+        {
+            name: "implicitSendPay",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "constant": false,
+            "payable": true,
+            "type": "function"
+        },
+        {
+            name: "implicitSendImplicitPay",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "constant": false,
+            "type": "function"
+        },
+        {
+            name: "implicitSendExplicitPay",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            payable: true,
+            type: "function"
+        },
+        {
+            name: "implicitSendExplicitNonpay",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            payable: false,
+            type: "function"
+        },
+        {
+            name: "implicitAll",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "type": "function"
+        },
+        {
+            name: "explicitView",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "stateMutability": "view",
+            "constant": true,
+            "payable": false,
+            "type": "function"
+        },
+        {
+            name: "explicitPure",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "stateMutability": "pure",
+            "constant": true,
+            "payable": false,
+            "type": "function"
+        },
+        {
+            name: "explicitPay",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "stateMutability": "payable",
+            "constant": true,
+            "payable": true,
+            "type": "function"
+        },
+        {
+            name: "explicitNonpay",
+            outputs: [],
+            inputs: [
+                { type: "int128", name: "arg0" }
+            ],
+            "stateMutability": "nonpayable",
+            "constant": true,
+            "payable": false,
+            "type": "function"
+        },
+    ]);
+    function test(name, isConst, payable, stateMutability) {
+        it(`tests ABI configuration: ${name}`, function () {
+            const f = iface.getFunction(name);
+            assert.ok(!!f, `missing ${name}`);
+            assert.equal(f.constant, isConst, `${name}.constant`);
+            assert.equal(f.stateMutability, stateMutability, `${name}.stateMutability`);
+            assert.equal(f.payable, payable, `${name}.payable`);
+        });
+    }
+    test("explicitView", true, false, "view");
+    test("explicitPure", true, false, "pure");
+    test("explicitPay", false, true, "payable");
+    test("explicitNonpay", false, false, "nonpayable");
+    test("implicitView", true, false, "view");
+    test("implicitSendNonpay", false, false, "nonpayable");
+    test("implicitSendPay", false, true, "payable");
+    test("implicitSendImplicitPay", false, true, "payable");
+    test("implicitSendExplicitPay", false, true, "payable");
+    test("implicitSendExplicitNonpay", false, false, "nonpayable");
+    test("implicitAll", false, true, "payable");
+});
 //# sourceMappingURL=test-abi.js.map

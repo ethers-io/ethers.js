@@ -99,6 +99,14 @@ export declare class Interface {
      */
     getFunctionName(key: string): string;
     /**
+     *  Returns true if %%key%% (a function selector, function name or
+     *  function signature) is present in the ABI.
+     *
+     *  In the case of a function name, the name may be ambiguous, so
+     *  accessing the [[FunctionFragment]] may require refinement.
+     */
+    hasFunction(key: string): boolean;
+    /**
      *  Get the [[FunctionFragment]] for %%key%%, which may be a function
      *  selector, function name or function signature that belongs to the ABI.
      *
@@ -118,6 +126,14 @@ export declare class Interface {
      *  event name or event signature that belongs to the ABI.
      */
     getEventName(key: string): string;
+    /**
+     *  Returns true if %%key%% (an event topic hash, event name or
+     *  event signature) is present in the ABI.
+     *
+     *  In the case of an event name, the name may be ambiguous, so
+     *  accessing the [[EventFragment]] may require refinement.
+     */
+    hasEvent(key: string): boolean;
     /**
      *  Get the [[EventFragment]] for %%key%%, which may be a topic hash,
      *  event name or event signature that belongs to the ABI.

@@ -142,6 +142,34 @@ describe("Test Contract", function () {
         await specificEvent;
         await allEvents;
     });
+    it("tests the _in_ operator for functions", function () {
+        const contract = new Contract(addr, abi);
+        assert.equal("testCallAdd" in contract, true, "has(testCallAdd)");
+        assert.equal("nonExist" in contract, false, "has(nonExist)");
+        {
+            const sig = "function testCallAdd(uint256 a, uint256 b) pure returns (uint256 result)";
+            assert.equal(sig in contract, true, `has(${sig})`);
+            assert.equal("function nonExist()" in contract, false, "has(function nonExist())");
+        }
+        assert.equal("0xf24684e5" in contract, true, "has(0xf24684e5)");
+        assert.equal("0xbad01234" in contract, false, "has(0xbad01234)");
+    });
+    it("tests the _in_ operator for events", function () {
+        const contract = new Contract(addr, abi);
+        assert.equal("EventUint256" in contract.filters, true, "has(EventUint256)");
+        assert.equal("NonExist" in contract.filters, false, "has(NonExist)");
+        {
+            const sig = "event EventUint256(uint256 indexed value)";
+            assert.equal(sig in contract.filters, true, `has(${sig})`);
+            assert.equal("event NonExist()" in contract.filters, false, "has(event NonExist())");
+        }
+        {
+            const hash = "0x85c55bbb820e6d71c71f4894e57751de334b38c421f9c170b0e66d32eafea337";
+            const badHash = "0xbad01234567890ffbad01234567890ffbad01234567890ffbad01234567890ff";
+            assert.equal(hash in contract.filters, true, `has(${hash})`);
+            assert.equal(badHash in contract.filters, false, `has(${badHash})`);
+        }
+    });
 });
 describe("Test Typed Contract Interaction", function () {
     const tests = [

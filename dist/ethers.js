@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.2.3";
+const version = "6.3.0";
 
 /**
  *  Property helper functions.
@@ -6809,7 +6809,16 @@ function resolveAddress(target, resolver) {
 null;
 
 /**
- *  About typed...
+ *  A Typed object allows a value to have its type explicitly
+ *  specified.
+ *
+ *  For example, in Solidity, the value ``45`` could represent a
+ *  ``uint8`` or a ``uint256``. The value ``0x1234`` could represent
+ *  a ``bytes2`` or ``bytes``.
+ *
+ *  Since JavaScript has no meaningful way to explicitly inform any
+ *  APIs which what the type is, this allows transparent interoperation
+ *  with Soldity.
  *
  *  @_subsection: api/abi:Typed Values
  */
@@ -9669,8 +9678,13 @@ function checkString(key) {
 const domainChecks = {
     name: checkString("name"),
     version: checkString("version"),
-    chainId: function (value) {
-        return getBigInt(value, "domain.chainId");
+    chainId: function (_value) {
+        const value = getBigInt(_value, "domain.chainId");
+        assertArgument(value >= 0, "invalid chain ID", "domain.chainId", _value);
+        if (Number.isSafeInteger(value)) {
+            return Number(value);
+        }
+        return toQuantity(value);
     },
     verifyingContract: function (value) {
         try {
@@ -9698,7 +9712,7 @@ function getBaseEncoder(type) {
             return function (_value) {
                 const value = getBigInt(_value, "value");
                 assertArgument(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${type}`, "value", value);
-                return toBeHex(toTwos(value, 256), 32);
+                return toBeHex(signed ? toTwos(value, 256) : value, 32);
             };
         }
     }
@@ -11184,8 +11198,26 @@ class FunctionFragment extends NamedFragment {
             consumeEoi(obj);
             return new FunctionFragment(_guard$2, name, mutability, inputs, outputs, gas);
         }
-        // @TODO: verifyState for stateMutability
-        return new FunctionFragment(_guard$2, obj.name, obj.stateMutability, obj.inputs ? obj.inputs.map(ParamType.from) : [], obj.outputs ? obj.outputs.map(ParamType.from) : [], (obj.gas != null) ? obj.gas : null);
+        let stateMutability = obj.stateMutability;
+        // Use legacy Solidity ABI logic if stateMutability is missing
+        if (stateMutability == null) {
+            stateMutability = "payable";
+            if (typeof (obj.constant) === "boolean") {
+                stateMutability = "view";
+                if (!obj.constant) {
+                    stateMutability = "payable";
+                    if (typeof (obj.payable) === "boolean" && !obj.payable) {
+                        stateMutability = "nonpayable";
+                    }
+                }
+            }
+            else if (typeof (obj.payable) === "boolean" && !obj.payable) {
+                stateMutability = "nonpayable";
+            }
+        }
+        // @TODO: verifyState for stateMutability (e.g. throw if
+        //        payable: false but stateMutability is "nonpayable")
+        return new FunctionFragment(_guard$2, obj.name, stateMutability, obj.inputs ? obj.inputs.map(ParamType.from) : [], obj.outputs ? obj.outputs.map(ParamType.from) : [], (obj.gas != null) ? obj.gas : null);
     }
     static isFragment(value) {
         return (value && value[internal$1] === FunctionFragmentInternal);
@@ -11770,6 +11802,16 @@ class Interface {
         return fragment.name;
     }
     /**
+     *  Returns true if %%key%% (a function selector, function name or
+     *  function signature) is present in the ABI.
+     *
+     *  In the case of a function name, the name may be ambiguous, so
+     *  accessing the [[FunctionFragment]] may require refinement.
+     */
+    hasFunction(key) {
+        return !!this.#getFunction(key, null, false);
+    }
+    /**
      *  Get the [[FunctionFragment]] for %%key%%, which may be a function
      *  selector, function name or function signature that belongs to the ABI.
      *
@@ -11860,6 +11902,16 @@ class Interface {
         const fragment = this.#getEvent(key, null, false);
         assertArgument(fragment, "no matching event", "key", key);
         return fragment.name;
+    }
+    /**
+     *  Returns true if %%key%% (an event topic hash, event name or
+     *  event signature) is present in the ABI.
+     *
+     *  In the case of an event name, the name may be ambiguous, so
+     *  accessing the [[EventFragment]] may require refinement.
+     */
+    hasEvent(key) {
+        return !!this.#getEvent(key, null, false);
     }
     /**
      *  Get the [[EventFragment]] for %%key%%, which may be a topic hash,
@@ -13627,80 +13679,6 @@ function buildWrappedFallback(contract) {
     });
     return method;
 }
-/*
-class WrappedFallback {
-
-    constructor (contract: BaseContract) {
-        defineProperties<WrappedFallback>(this, { _contract: contract });
-
-        const proxy = new Proxy(this, {
-            // Perform send when called
-            apply: async (target, thisArg, args: Array<any>) => {
-                return await target.send(...args);
-            },
-        });
-
-        return proxy;
-    }
-
-    async populateTransaction(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransaction> {
-        // If an overrides was passed in, copy it and normalize the values
-
-        const tx: ContractTransaction = <any>(await copyOverrides<"data">(overrides, [ "data" ]));
-        tx.to = await this._contract.getAddress();
-
-        const iface = this._contract.interface;
-
-        // Only allow payable contracts to set non-zero value
-        const payable = iface.receive || (iface.fallback && iface.fallback.payable);
-        assertArgument(payable || (tx.value || BN_0) === BN_0,
-          "cannot send value to non-payable contract", "overrides.value", tx.value);
-
-        // Only allow fallback contracts to set non-empty data
-        assertArgument(iface.fallback || (tx.data || "0x") === "0x",
-          "cannot send data to receive-only contract", "overrides.data", tx.data);
-
-        return tx;
-    }
-
-    async staticCall(overrides?: Omit<TransactionRequest, "to">): Promise<string> {
-        const runner = getRunner(this._contract.runner, "call");
-        assert(canCall(runner), "contract runner does not support calling",
-            "UNSUPPORTED_OPERATION", { operation: "call" });
-
-        const tx = await this.populateTransaction(overrides);
-
-        try {
-            return await runner.call(tx);
-        } catch (error: any) {
-            if (isCallException(error) && error.data) {
-                throw this._contract.interface.makeError(error.data, tx);
-            }
-            throw error;
-        }
-    }
-
-    async send(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse> {
-        const runner = this._contract.runner;
-        assert(canSend(runner), "contract runner does not support sending transactions",
-            "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
-
-        const tx = await runner.sendTransaction(await this.populateTransaction(overrides));
-        const provider = getProvider(this._contract.runner);
-        // @TODO: the provider can be null; make a custom dummy provider that will throw a
-        // meaningful error
-        return new ContractTransactionResponse(this._contract.interface, <Provider>provider, tx);
-    }
-
-    async estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint> {
-        const runner = getRunner(this._contract.runner, "estimateGas");
-        assert(canEstimate(runner), "contract runner does not support gas estimation",
-            "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
-
-        return await runner.estimateGas(await this.populateTransaction(overrides));
-    }
-}
-*/
 function buildWrappedMethod(contract, key) {
     const getFragment = function (...args) {
         const fragment = contract.interface.getFunction(key, args);
@@ -14077,6 +14055,13 @@ class BaseContract {
                     return result;
                 }
                 throw new Error(`unknown contract event: ${prop}`);
+            },
+            has: (target, prop) => {
+                // Pass important checks (like `then` for Promise) through
+                if (passProperties.indexOf(prop) >= 0) {
+                    return Reflect.has(target, prop);
+                }
+                return Reflect.has(target, prop) || this.interface.hasEvent(String(prop));
             }
         });
         defineProperties(this, { filters });
@@ -14095,6 +14080,12 @@ class BaseContract {
                     return result;
                 }
                 throw new Error(`unknown contract method: ${prop}`);
+            },
+            has: (target, prop) => {
+                if (prop in target || passProperties.indexOf(prop) >= 0) {
+                    return Reflect.has(target, prop);
+                }
+                return target.interface.hasFunction(String(prop));
             }
         });
     }
@@ -22605,6 +22596,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     Wallet: Wallet,
     defaultPath: defaultPath,
     getAccountPath: getAccountPath,
+    getIndexedAccountPath: getIndexedAccountPath,
     isCrowdsaleJson: isCrowdsaleJson,
     isKeystoreJson: isKeystoreJson,
     decryptCrowdsaleJson: decryptCrowdsaleJson,
@@ -22627,5 +22619,5 @@ var ethers = /*#__PURE__*/Object.freeze({
  *  @_navTitle: API
  */
 
-export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EnsPlugin, EnsResolver, ErrorDescription, ErrorFragment, EtherSymbol, EtherscanPlugin, EtherscanProvider, EventFragment, EventLog, EventPayload, FallbackFragment, FallbackProvider, FeeData, FeeDataNetworkPlugin, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, InfuraWebSocketProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, NamedFragment, Network, NetworkPlugin, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber, SocketProvider, SocketSubscriber, StructFragment, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, UnmanagedSubscriber, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, copyRequest, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, uuidV4, verifyMessage, verifyTypedData, version, wordlists, zeroPadBytes, zeroPadValue };
+export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EnsPlugin, EnsResolver, ErrorDescription, ErrorFragment, EtherSymbol, EtherscanPlugin, EtherscanProvider, EventFragment, EventLog, EventPayload, FallbackFragment, FallbackProvider, FeeData, FeeDataNetworkPlugin, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, InfuraWebSocketProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, NamedFragment, Network, NetworkPlugin, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber, SocketProvider, SocketSubscriber, StructFragment, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, UnmanagedSubscriber, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, copyRequest, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getIndexedAccountPath, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, uuidV4, verifyMessage, verifyTypedData, version, wordlists, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map

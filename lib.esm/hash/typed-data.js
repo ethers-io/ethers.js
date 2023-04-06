@@ -2,7 +2,7 @@
 import { getAddress } from "../address/index.js";
 import { keccak256 } from "../crypto/index.js";
 import { recoverAddress } from "../transaction/index.js";
-import { concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toBeHex, toTwos, zeroPadValue, assertArgument } from "../utils/index.js";
+import { concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toBeHex, toQuantity, toTwos, zeroPadValue, assertArgument } from "../utils/index.js";
 import { id } from "./id.js";
 const padding = new Uint8Array(32);
 padding.fill(0);
@@ -41,8 +41,13 @@ function checkString(key) {
 const domainChecks = {
     name: checkString("name"),
     version: checkString("version"),
-    chainId: function (value) {
-        return getBigInt(value, "domain.chainId");
+    chainId: function (_value) {
+        const value = getBigInt(_value, "domain.chainId");
+        assertArgument(value >= 0, "invalid chain ID", "domain.chainId", _value);
+        if (Number.isSafeInteger(value)) {
+            return Number(value);
+        }
+        return toQuantity(value);
     },
     verifyingContract: function (value) {
         try {
@@ -70,7 +75,7 @@ function getBaseEncoder(type) {
             return function (_value) {
                 const value = getBigInt(_value, "value");
                 assertArgument(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${type}`, "value", value);
-                return toBeHex(toTwos(value, 256), 32);
+                return toBeHex(signed ? toTwos(value, 256) : value, 32);
             };
         }
     }

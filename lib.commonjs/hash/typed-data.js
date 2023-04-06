@@ -44,8 +44,13 @@ function checkString(key) {
 const domainChecks = {
     name: checkString("name"),
     version: checkString("version"),
-    chainId: function (value) {
-        return (0, index_js_4.getBigInt)(value, "domain.chainId");
+    chainId: function (_value) {
+        const value = (0, index_js_4.getBigInt)(_value, "domain.chainId");
+        (0, index_js_4.assertArgument)(value >= 0, "invalid chain ID", "domain.chainId", _value);
+        if (Number.isSafeInteger(value)) {
+            return Number(value);
+        }
+        return (0, index_js_4.toQuantity)(value);
     },
     verifyingContract: function (value) {
         try {
@@ -73,7 +78,7 @@ function getBaseEncoder(type) {
             return function (_value) {
                 const value = (0, index_js_4.getBigInt)(_value, "value");
                 (0, index_js_4.assertArgument)(value >= boundsLower && value <= boundsUpper, `value out-of-bounds for ${type}`, "value", value);
-                return (0, index_js_4.toBeHex)((0, index_js_4.toTwos)(value, 256), 32);
+                return (0, index_js_4.toBeHex)(signed ? (0, index_js_4.toTwos)(value, 256) : value, 32);
             };
         }
     }
