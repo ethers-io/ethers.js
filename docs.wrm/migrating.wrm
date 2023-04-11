@@ -214,7 +214,7 @@ _code: wrapping EIP-1193 providers  @lang<script>
   // v6:
   provider = new ethers.BrowserProvider(window.ethereum)
 
-Also, the method for braodcasting transactions to the network has
+Also, the method for broadcasting transactions to the network has
 changed:
 
 _code: broadcasting transactions  @lang<script>
