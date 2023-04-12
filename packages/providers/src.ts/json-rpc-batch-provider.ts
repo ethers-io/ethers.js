@@ -1,4 +1,3 @@
-
 import { deepCopy } from "@ethersproject/properties";
 import { fetchJson } from "@ethersproject/web";
 
@@ -9,7 +8,7 @@ import { JsonRpcProvider } from "./json-rpc-provider";
 export class JsonRpcBatchProvider extends JsonRpcProvider {
     _pendingBatchAggregator: NodeJS.Timer;
     _pendingBatch: Array<{
-        request: { method: string, params: Array<any>, id: number, jsonrpc: "2.0" },
+        request: JsonRpcRequest,
         resolve: (result: any) => void,
         reject: (error: Error) => void
     }>;
@@ -23,7 +22,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
         };
 
         if (this._pendingBatch == null) {
-            this._pendingBatch = [ ];
+            this._pendingBatch = [];
         }
 
         const inflightRequest: any = { request, resolve: null, reject: null };
@@ -55,27 +54,41 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
                 });
 
                 return fetchJson(this.connection, JSON.stringify(request)).then((result) => {
-                    this.emit("debug", {
-                        action: "response",
-                        request: request,
-                        response: result,
-                        provider: this
-                    });
-
-                    // For each result, feed it to the correct Promise, depending
-                    // on whether it was a success or error
-                    batch.forEach((inflightRequest, index) => {
-                        const payload = result[index];
-                        if (payload.error) {
-                            const error = new Error(payload.error.message);
-                            (<any>error).code = payload.error.code;
-                            (<any>error).data = payload.error.data;
+                    // Check if response has correct structure
+                    if (isValidResponse(result, batch.length)) {
+                        this.emit("debug", {
+                            action: "response",
+                            request: request,
+                            response: result,
+                            provider: this,
+                        });
+                        // For each result, feed it to the correct Promise, depending
+                        // on whether it was a success or error
+                        batch.forEach((inflightRequest, index) => {
+                            const payload = result[index];
+                            if (payload.error) {
+                                const error = new Error(payload.error.message);
+                                (<any>error).code = payload.error.code;
+                                (<any>error).data = payload.error.data;
+                                inflightRequest.reject(error);
+                            } else {
+                                inflightRequest.resolve(payload.result);
+                            }
+                        });
+                    } else {
+                        const error = new Error("Invalid response");
+                        (<any>error).data = result;
+                        this.emit("debug", {
+                            action: "response",
+                            error: error,
+                            request: request,
+                            provider: this,
+                        });
+                        batch.forEach((inflightRequest) => {
                             inflightRequest.reject(error);
-                        } else {
-                            inflightRequest.resolve(payload.result);
-                        }
-                    });
-
+                        });
+                        return;
+                    }
                 }, (error) => {
                     this.emit("debug", {
                         action: "response",
@@ -94,4 +107,27 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
 
         return promise;
     }
+}
+
+type JsonRpcRequest = {
+    method: string;
+    params: Array<any>;
+    id: number;
+    jsonrpc: "2.0";
+};
+type JsonRpcResponse = {
+    error?: { code: any; data: any; message: string };
+    result?: any;
+};
+
+function isValidResponse(
+    response: unknown,
+    batchSize: number
+): response is JsonRpcResponse[] {
+    if (!response) return false;
+    if (!Array.isArray(response)) return false;
+    for (let index = 0; index < batchSize; index++) {
+        if (!response[index]) return false;
+    }
+    return response.length === batchSize;
 }
