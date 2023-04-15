@@ -21,7 +21,7 @@ more fine-grained importing.
 
 Generally this documentation will presume all exports from ethers
 have been imported in the code examples, but you may import the
-necessary objects any way you wish.
+necessary objects in any way you wish.
 
 _code: importing in Node.js  @lang<script>
   // Import everything
@@ -70,7 +70,7 @@ permission from the user and receiving authorization.
 _heading: Transaction
 
 To make any state changes to the blockchain, a transaction is required,
-which requires a fee be paid, where the fee covers the associated costs
+which requires a fee to be paid, where the fee covers the associated costs
 with executing the transaction (such as reading the disk and performing
 maths) and storing the updated information.
 
@@ -180,7 +180,7 @@ machine-readable purposes and maths are often very large and not
 terribly human-readable.
 
 For example, imagine dealing with dollars and cents; you would show
-values like ``"$2.56"``. In the blockchain world we would keep all
+values like ``"$2.56"``. In the blockchain world, we would keep all
 values as cents, so that would be ``256`` cents, internally.
 
 So, when accepting data that a user types, it must be converted from
@@ -410,7 +410,7 @@ _code: listen for ERC-20 events  @lang<script>
 
     // The `event.log` has the entire EventLog
 
-    // Optionally, convenience method to stop listening
+    // Optionally, convenient  method to stop listening
     event.removeListener();
   });
 
