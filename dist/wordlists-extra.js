@@ -149,7 +149,7 @@ const u64 = {
 /**
  *  The current version of Ethers.
  */
-const version = "6.3.0";
+const version = "6.3.1";
 
 /**
  *  Property helper functions.
@@ -846,7 +846,7 @@ Object.freeze(keccak256);
 
 /**
  *  A simple hashing function which operates on UTF-8 strings to
- *  compute an 32-byte irentifier.
+ *  compute an 32-byte identifier.
  *
  *  This simply computes the [UTF-8 bytes](toUtf8Bytes) and computes
  *  the [[keccak256]].

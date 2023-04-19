@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.3.1 (2023-04-19 17:30)
+--------------------------------
+
+  - Populate any missing log.removed with false ([#3959](https://github.com/ethers-io/ethers.js/issues/3959); [4e478e6](https://github.com/ethers-io/ethers.js/commit/4e478e625d5648f2172631eef5fda5776ee776b0)).
+
 ethers/v6.3.0 (2023-04-06 04:35)
 --------------------------------
 
@@ -10,7 +15,7 @@ ethers/v6.3.0 (2023-04-06 04:35)
   - Add _in_ operator support for contract and contract.filters ([#3901](https://github.com/ethers-io/ethers.js/issues/3901); [c58ab3a](https://github.com/ethers-io/ethers.js/commit/c58ab3a97687e15a3ffe30b038089c5f4b570bb9)).
   - Fixed TypedData unsigned value range ([#3873](https://github.com/ethers-io/ethers.js/issues/3873); [a851b24](https://github.com/ethers-io/ethers.js/commit/a851b24d0af009ecf277766d2a5f81f9b3e7f9f8)).
   - Added missing export for getIndexedAccountPath ([#3875](https://github.com/ethers-io/ethers.js/issues/3875); [356ff2b](https://github.com/ethers-io/ethers.js/commit/356ff2becb4f4d3622b281d3825770af5caf71ca)).
-  - Fixed TypedData payloads for JSON-restricted chainId field ([#3868](https://github.com/ethers-io/ethers.js/issues/3868); [50b74b8](https://github.com/ethers-io/ethers.js/commit/50b74b8806ef2064f2764b09f89c7ac75fda3a3c)).
+  - Fixed TypedData payloads for JSON-restricted chainId field ([#3836](https://github.com/ethers-io/ethers.js/issues/3836); [50b74b8](https://github.com/ethers-io/ethers.js/commit/50b74b8806ef2064f2764b09f89c7ac75fda3a3c)).
 
 ethers/v6.2.3 (2023-03-27 21:22)
 --------------------------------

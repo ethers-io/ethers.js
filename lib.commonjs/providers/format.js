@@ -93,7 +93,7 @@ const _formatLog = object({
     blockNumber: index_js_4.getNumber,
     data: formatData,
     index: index_js_4.getNumber,
-    removed: formatBoolean,
+    removed: allowNull(formatBoolean, false),
     topics: arrayOf(formatHash),
     transactionHash: formatHash,
     transactionIndex: index_js_4.getNumber,

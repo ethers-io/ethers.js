@@ -5,7 +5,7 @@ const index_js_1 = require("../crypto/index.js");
 const index_js_2 = require("../utils/index.js");
 /**
  *  A simple hashing function which operates on UTF-8 strings to
- *  compute an 32-byte irentifier.
+ *  compute an 32-byte identifier.
  *
  *  This simply computes the [UTF-8 bytes](toUtf8Bytes) and computes
  *  the [[keccak256]].
