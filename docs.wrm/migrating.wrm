@@ -136,7 +136,7 @@ _code: other operations in v5  @lang<script>
   contract.functions.foo(addr)
 
   // Forces using call
-  contract.staticCall.foo(addr)
+  contract.callStatic.foo(addr)
 
   // Estimate the gas
   contract.estimateGas.foo(addr)
