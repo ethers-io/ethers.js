@@ -16,6 +16,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf node_modules package-lock.json *.js *.d.ts",
     "test": "npm run build && node index.js"
   },
   "keywords": [
