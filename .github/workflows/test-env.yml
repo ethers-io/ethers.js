@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ "ts-import-cjs-node16", "ts-import-esm-node16", "ts-import-cjs", "ts-import-esm" ]
+        test: [ "ts-import-cjs-node16", "ts-import-esm-node16", "ts-import-cjs", "ts-import-esm" ]
 
     steps:
       - name: Use Node.js
