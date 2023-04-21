@@ -32,7 +32,7 @@ jobs:
           path: "faux_modules/ethers"
 
       - name: Install and run Faux Registry
-        uses: ethers-io/hijack-npm-action
+        uses: ethers-io/hijack-npm-action@main
 
       - name: Copy tests to working directory
         run: cp faux-npm/ethers/testcases/test-env/${{ matrix.test }}/* .
