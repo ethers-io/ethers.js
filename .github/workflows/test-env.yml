@@ -40,5 +40,9 @@ jobs:
       - name: Install packages
         run: npm install
 
+      - name: Dump Faux Logs
+        run: cat .fauxNpm.log
+
       - name: Run tests
         run: npm test
+
