@@ -35,7 +35,7 @@ jobs:
         uses: ethers-io/hijack-npm-action@main
 
       - name: Copy tests to working directory
-        run: cp faux-npm/ethers/testcases/test-env/${{ matrix.test }}/* .
+        run: cp faux_modules/ethers/testcases/test-env/${{ matrix.test }}/* .
 
       - name: Install packages
         run: npm install
