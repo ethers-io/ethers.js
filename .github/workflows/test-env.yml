@@ -1,0 +1,44 @@
+name: Environment Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  test-env:
+    name: Test Environments
+
+    runs-on: ubuntu-latest
+
+    env:
+      npm_config_registry: http://localhost:8043
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ "ts-import-cjs-node16", "ts-import-esm-node16", "ts-import-cjs", "ts-import-esm" ]
+
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.x
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          path: "faux_modules/ethers"
+
+      - name: Install and run Faux Registry
+        uses: ethers-io/hijack-npm-action
+
+      - name: Copy tests to working directory
+        run: cp faux-npm/ethers/testcases/test-env/${{ matrix.test }}/* .
+
+      - name: Install packages
+        run: npm install
+
+      - name: Run tests
+        run: npm test
