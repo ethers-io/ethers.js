@@ -42,9 +42,9 @@ const assert$1 = {
 
 /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
+// big-endian hardware is rare. Just in case someone still decides to run hashes:
+// early-throw an error because we don't support BE yet.
 const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
-// There is almost no big endian hardware, but js typed arrays uses platform specific endianness.
-// So, just to be sure not to corrupt anything.
 if (!isLE)
     throw new Error('Non little-endian hardware is not supported');
 Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
