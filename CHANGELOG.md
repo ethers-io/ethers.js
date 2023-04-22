@@ -3,9 +3,10 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.3.1 (2023-04-19 17:30)
+ethers/v6.3.1 (2023-04-22 18:55)
 --------------------------------
 
+  - Support transitive dependants that use non-node16 moduleResolution ([#3920](https://github.com/ethers-io/ethers.js/issues/3920); [df685b1](https://github.com/ethers-io/ethers.js/commit/df685b1bd9ad346ee7863beb6c3ca3f4e94932a2)).
   - Populate any missing log.removed with false ([#3959](https://github.com/ethers-io/ethers.js/issues/3959); [4e478e6](https://github.com/ethers-io/ethers.js/commit/4e478e625d5648f2172631eef5fda5776ee776b0)).
 
 ethers/v6.3.0 (2023-04-06 04:35)
