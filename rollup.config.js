@@ -19,7 +19,7 @@ function getConfig(opts) {
       sourcemap: true
     },
     context: "__$G",
-    treeshake: false,
+    treeshake: true,
     plugins: [ nodeResolve({
         exportConditions,
         mainFields,
