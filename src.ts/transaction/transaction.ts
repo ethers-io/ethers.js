@@ -499,7 +499,7 @@ export class Transaction implements TransactionLike<string> {
     set data(value: BytesLike) { this.#data = hexlify(value); }
 
     /**
-     *  The amount of ether to send in this transactions.
+     *  The amount of ether (in wei) to send in this transactions.
      */
     get value(): bigint { return this.#value; }
     set value(value: BigNumberish) {
