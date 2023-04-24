@@ -238,7 +238,7 @@ function _serializeLegacy(tx: Transaction, sig?: Signature): string {
     return encodeRlp(fields);
 }
 
-function _parseEipSignature(tx: TransactionLike, fields: Array<string>, serialize: (tx: TransactionLike) => string): void {
+function _parseEipSignature(tx: TransactionLike, fields: Array<string>): void {
     let yParity: number;
     try {
         yParity = handleNumber(fields[0], "yParity");
@@ -281,7 +281,7 @@ function _parseEip1559(data: Uint8Array): TransactionLike {
 
     tx.hash = keccak256(data);
 
-    _parseEipSignature(tx, fields.slice(9), _serializeEip1559);
+    _parseEipSignature(tx, fields.slice(9));
 
     return tx;
 }
@@ -331,7 +331,7 @@ function _parseEip2930(data: Uint8Array): TransactionLike {
 
     tx.hash = keccak256(data);
 
-    _parseEipSignature(tx, fields.slice(8), _serializeEip2930);
+    _parseEipSignature(tx, fields.slice(8));
 
     return tx;
 }
