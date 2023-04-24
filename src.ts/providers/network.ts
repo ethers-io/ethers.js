@@ -104,19 +104,75 @@ export class Network {
     }
 
     toJSON(): any {
-        return { name: this.name, chainId: this.chainId };
+        return { name: this.name, chainId: String(this.chainId) };
     }
 
+    /**
+     *  The network common name.
+     *
+     *  This is the canonical name, as networks migh have multiple
+     *  names.
+     */
     get name(): string { return this.#name; }
     set name(value: string) { this.#name =  value; }
 
+    /**
+     *  The network chain ID.
+     */
     get chainId(): bigint { return this.#chainId; }
     set chainId(value: BigNumberish) { this.#chainId = getBigInt(value, "chainId"); }
 
+    /**
+     *  Returns true if %%other%% matches this network. Any chain ID
+     *  must match, and if no chain ID is present, the name must match.
+     *
+     *  This method does not currently check for additional properties,
+     *  such as ENS address or plug-in compatibility.
+     */
+    matches(other: Networkish): boolean {
+        if (other == null) { return false; }
+
+        if (typeof(other) === "string") {
+            try {
+                return (this.chainId === getBigInt(other));
+            } catch (error) { }
+            return (this.name === other);
+        }
+
+        if (typeof(other) === "number" || typeof(other) === "bigint") {
+            try {
+                return (this.chainId === getBigInt(other));
+            } catch (error) { }
+            return false;
+        }
+
+        if (typeof(other) === "object") {
+            if (other.chainId != null) {
+                try {
+                    return (this.chainId === getBigInt(other.chainId));
+                } catch (error) { }
+                return false;
+            }
+            if (other.name != null) {
+                return (this.name === other.name);
+            }
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
+     *  Returns the list of plugins currently attached to this Network.
+     */
     get plugins(): Array<NetworkPlugin> {
         return Array.from(this.#plugins.values());
     }
 
+    /**
+     *  Attach a new %%plugin%% to this Network. The network name
+     *  must be unique, excluding any fragment.
+     */
     attachPlugin(plugin: NetworkPlugin): this {
         if (this.#plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${ plugin.name } `);
@@ -125,15 +181,26 @@ export class Network {
         return this;
     }
 
+    /**
+     *  Return the plugin, if any, matching %%name%% exactly. Plugins
+     *  with fragments will not be returned unless %%name%% includes
+     *  a fragment.
+     */
     getPlugin<T extends NetworkPlugin = NetworkPlugin>(name: string): null | T {
         return <T>(this.#plugins.get(name)) || null;
     }
 
-    // Gets a list of Plugins which match basename, ignoring any fragment
+    /**
+     *  Gets a list of all plugins that match %%name%%, with otr without
+     *  a fragment.
+     */
     getPlugins<T extends NetworkPlugin = NetworkPlugin>(basename: string): Array<T> {
         return <Array<T>>(this.plugins.filter((p) => (p.name.split("#")[0] === basename)));
     }
 
+    /**
+     *  Create a copy of this Network.
+     */
     clone(): Network {
         const clone = new Network(this.name, this.chainId);
         this.plugins.forEach((plugin) => {
@@ -142,6 +209,12 @@ export class Network {
         return clone;
     }
 
+    /**
+     *  Compute the intrinsic gas required for a transaction.
+     *
+     *  A GasCostPlugin can be attached to override the default
+     *  values.
+     */
     computeIntrinsicGas(tx: TransactionLike): number {
         const costs = this.getPlugin<GasCostPlugin>("org.ethers.plugins.network.GasCost") || (new GasCostPlugin());
 

@@ -460,10 +460,10 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             this.#notReady = { promise, resolve };
         }
 
-        // This could be relaxed in the future to just check equivalent networks
+        // Make sure any static network is compatbile with the provided netwrok
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork) {
-            assertArgument(staticNetwork === network,
+            assertArgument(network == null || staticNetwork.matches(network),
                 "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
         }
