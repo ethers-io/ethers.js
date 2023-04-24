@@ -115,7 +115,7 @@ export type DebugEventAbstractProvider = {
 
 // Only sub-classes overriding the _getSubscription method will care about this
 export type Subscription = {
-    type: "block" | "close" | "debug" | "network" | "pending",
+    type: "block" | "close" | "debug" | "error" | "network" | "pending",
     tag: string
 } | {
     type: "transaction",
@@ -186,7 +186,7 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
 
     if (typeof(_event) === "string") {
         switch (_event) {
-            case "block": case "pending": case "debug": case "network": {
+            case "block": case "pending": case "debug": case "error": case "network": {
                 return { type: _event, tag: _event };
             }
         }
@@ -997,6 +997,7 @@ export class AbstractProvider implements Provider {
             if (check !== address) { return null; }
 
             return name;
+
         } catch (error) {
             // No data was returned from the resolver
             if (isError(error, "BAD_DATA") && error.value === "0x") {
@@ -1094,6 +1095,7 @@ export class AbstractProvider implements Provider {
     _getSubscriber(sub: Subscription): Subscriber {
         switch (sub.type) {
             case "debug":
+            case "error":
             case "network":
                 return new UnmanagedSubscriber(sub.type);
             case "block":
