@@ -40,7 +40,7 @@ export {
     keccak256,
     ripemd160,
     sha256, sha512,
-    pbkdf2,
+    pbkdf2, pbkdf2Async,
     scrypt, scryptSync,
     lock,
     Signature, SigningKey

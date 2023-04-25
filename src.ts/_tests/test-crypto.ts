@@ -7,7 +7,7 @@ import type { TestCaseHash, TestCaseHmac, TestCasePbkdf } from "./types.js";
 import {
     computeHmac,
     keccak256, ripemd160, sha256, sha512,
-    pbkdf2, scrypt, scryptSync,
+    pbkdf2, pbkdf2Async, scrypt, scryptSync,
     SigningKey
 } from "../index.js";
 
@@ -49,6 +49,16 @@ describe("test password-based key derivation", function() {
             const salt = Buffer.from(test.salt.substring(2), "hex");
             const { iterations, algorithm, key } = test.pbkdf2;
             const result = pbkdf2(password, salt, iterations, test.dkLen, algorithm);
+            assert.equal(result, key);
+        });
+    });
+
+    tests.forEach((test) => {
+        it(`computes pbkdf2Async: ${ test.name}`, async function() {
+            const password = Buffer.from(test.password.substring(2), "hex");
+            const salt = Buffer.from(test.salt.substring(2), "hex");
+            const { iterations, algorithm, key } = test.pbkdf2;
+            const result = await pbkdf2Async(password, salt, iterations, test.dkLen, algorithm);
             assert.equal(result, key);
         });
     });

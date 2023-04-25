@@ -11,7 +11,7 @@ null
 import { computeHmac } from "./hmac.js";
 import { keccak256 } from "./keccak.js";
 import { ripemd160 } from "./ripemd160.js";
-import { pbkdf2 } from "./pbkdf2.js";
+import { pbkdf2, pbkdf2Async } from "./pbkdf2.js";
 import { randomBytes } from "./random.js";
 import { scrypt, scryptSync } from "./scrypt.js";
 import { sha256, sha512 } from "./sha2.js";
@@ -25,7 +25,7 @@ export {
     ripemd160,
     sha256, sha512,
 
-    pbkdf2,
+    pbkdf2, pbkdf2Async,
     scrypt, scryptSync
 };
 
@@ -36,6 +36,7 @@ function lock(): void {
     computeHmac.lock();
     keccak256.lock();
     pbkdf2.lock();
+    pbkdf2Async.lock();
     randomBytes.lock();
     ripemd160.lock();
     scrypt.lock();

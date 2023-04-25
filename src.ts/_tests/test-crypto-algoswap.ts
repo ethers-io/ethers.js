@@ -4,7 +4,7 @@ import {
     lock,
     computeHmac,
     keccak256, ripemd160, sha256, sha512,
-    pbkdf2, scrypt, scryptSync,
+    pbkdf2, pbkdf2Async, scrypt, scryptSync,
     randomBytes
 } from "../index.js";
 
@@ -65,6 +65,12 @@ describe("test registration", function() {
             params: [ "0x", "0x", 1024, 32, "sha256" ],
             hijackTag: 'hijacked pbkdf2: [{},{},1024,32,"sha256"]',
             algorithm: pbkdf2
+        },
+        {
+            name: "pbkdf2Async",
+            params: [ "0x", "0x", 1024, 32, "sha256" ],
+            hijackTag: 'hijacked pbkdf2Async: [{},{},1024,32,"sha256"]',
+            algorithm: pbkdf2Async
         },
         {
             name: "scryptSync",

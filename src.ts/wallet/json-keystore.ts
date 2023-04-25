@@ -12,7 +12,7 @@
 import { CTR } from "aes-js";
 
 import { getAddress } from "../address/index.js";
-import { keccak256, pbkdf2, randomBytes, scrypt, scryptSync } from "../crypto/index.js";
+import { keccak256, pbkdf2, pbkdf2Async, randomBytes, scrypt, scryptSync } from "../crypto/index.js";
 import { computeAddress } from "../transaction/index.js";
 import {
     concat, getBytes, hexlify, uuidV4, assert, assertArgument
@@ -237,7 +237,7 @@ export async function decryptKeystoreJson(json: string, _password: string | Uint
             await stall(0);
         }
         const { salt, count, dkLen, algorithm } = params;
-        const key = pbkdf2(password, salt, count, dkLen, algorithm);
+        const key = await pbkdf2Async(password, salt, count, dkLen, algorithm);
         if (progress) {
             progress(1);
             await stall(0);
