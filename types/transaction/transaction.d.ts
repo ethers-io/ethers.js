@@ -130,7 +130,7 @@ export declare class Transaction implements TransactionLike<string> {
     get data(): string;
     set data(value: BytesLike);
     /**
-     *  The amount of ether to send in this transactions.
+     *  The amount of ether (in wei) to send in this transactions.
      */
     get value(): bigint;
     set value(value: BigNumberish);

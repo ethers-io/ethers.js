@@ -83,6 +83,7 @@ async function getSubscription(_event, provider) {
             case "block":
             case "pending":
             case "debug":
+            case "error":
             case "network": {
                 return { type: _event, tag: _event };
             }
@@ -839,6 +840,7 @@ class AbstractProvider {
     _getSubscriber(sub) {
         switch (sub.type) {
             case "debug":
+            case "error":
             case "network":
                 return new UnmanagedSubscriber(sub.type);
             case "block":

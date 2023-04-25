@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.3.1";
+const version = "6.4.0";
 
 /**
  *  Property helper functions.
@@ -798,7 +798,7 @@ function replaceFunc(reason, offset, bytes, output, badCodepoint) {
     // Put the replacement character into the output
     output.push(0xfffd);
     // Otherwise, process as if ignoring errors
-    return ignoreFunc(reason, offset, bytes, output, badCodepoint);
+    return ignoreFunc(reason, offset, bytes);
 }
 /**
  *  A handful of popular, built-in UTF-8 error handling strategies.
@@ -878,7 +878,6 @@ function getUtf8CodePoints(_bytes, onError) {
                 res = null;
                 break;
             }
-            ;
             res = (res << 6) | (nextChar & 0x3f);
             i++;
         }
@@ -945,7 +944,6 @@ function toUtf8Bytes(str, form) {
     }
     return new Uint8Array(result);
 }
-;
 //export 
 function _toUtf8String(codePoints) {
     return codePoints.map((codePoint) => {
@@ -1225,7 +1223,6 @@ class FetchRequest {
         if (this.#creds) {
             headers["authorization"] = `Basic ${encodeBase64(toUtf8Bytes(this.#creds))}`;
         }
-        ;
         if (this.allowGzip) {
             headers["accept-encoding"] = "gzip";
         }
@@ -1460,7 +1457,6 @@ class FetchRequest {
                 }
                 // Throttle
                 let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
-                ;
                 if (error.stall >= 0) {
                     delay = error.stall;
                 }
@@ -1616,7 +1612,6 @@ class FetchRequest {
         return getIpfsGatewayFunc(baseUrl);
     }
 }
-;
 /**
  *  The response for a FetchREquest.
  */
@@ -1844,9 +1839,7 @@ function getFormat(value) {
     let decimals = 18;
     if (typeof (value) === "string") {
         // Parse the format string
-        if (value === "fixed") {
-            // defaults...
-        }
+        if (value === "fixed") ;
         else if (value === "ufixed") {
             signed = false;
         }
@@ -2542,14 +2535,6 @@ function uuidV4(randomBytes) {
 }
 
 /**
- *  There are many simple utilities required to interact with
- *  Ethereum and to simplify the library, without increasing
- *  the library dependencies for simple functions.
- *
- *  @_section api/utils:Utilities  [about-utils]
- */
-
-/**
  * @_ignore:
  */
 const WordSize = 32;
@@ -2975,14 +2960,7 @@ const assert = {
     output,
 };
 
-const crypto$2 = {
-    node: undefined,
-    web: typeof self === 'object' && 'crypto' in self ? self.crypto : undefined,
-};
-
 /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-// Cast array to different type
-const u8 = (arr) => new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
 const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
 // Cast array to view
 const createView = (arr) => new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
@@ -2993,40 +2971,7 @@ const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
 // So, just to be sure not to corrupt anything.
 if (!isLE)
     throw new Error('Non little-endian hardware is not supported');
-const hexes$1 = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
-/**
- * @example bytesToHex(Uint8Array.from([0xde, 0xad, 0xbe, 0xef]))
- */
-function bytesToHex$1(uint8a) {
-    // pre-caching improves the speed 6x
-    if (!(uint8a instanceof Uint8Array))
-        throw new Error('Uint8Array expected');
-    let hex = '';
-    for (let i = 0; i < uint8a.length; i++) {
-        hex += hexes$1[uint8a[i]];
-    }
-    return hex;
-}
-/**
- * @example hexToBytes('deadbeef')
- */
-function hexToBytes$1(hex) {
-    if (typeof hex !== 'string') {
-        throw new TypeError('hexToBytes: expected string, got ' + typeof hex);
-    }
-    if (hex.length % 2)
-        throw new Error('hexToBytes: received invalid unpadded hex');
-    const array = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < array.length; i++) {
-        const j = i * 2;
-        const hexByte = hex.slice(j, j + 2);
-        const byte = Number.parseInt(hexByte, 16);
-        if (Number.isNaN(byte) || byte < 0)
-            throw new Error('Invalid byte sequence');
-        array[i] = byte;
-    }
-    return array;
-}
+Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
 // There is no setImmediate in browser and setTimeout is slow. However, call to async function will return Promise
 // which will be fullfiled only on next scheduler queue processing step and this is exactly what we need.
 const nextTick = async () => { };
@@ -3055,24 +3000,6 @@ function toBytes(data) {
     if (!(data instanceof Uint8Array))
         throw new TypeError(`Expected input type is Uint8Array (got ${typeof data})`);
     return data;
-}
-/**
- * Concats Uint8Array-s into one; like `Buffer.concat([buf1, buf2])`
- * @example concatBytes(buf1, buf2)
- */
-function concatBytes$1(...arrays) {
-    if (!arrays.every((a) => a instanceof Uint8Array))
-        throw new Error('Uint8Array list expected');
-    if (arrays.length === 1)
-        return arrays[0];
-    const length = arrays.reduce((a, arr) => a + arr.length, 0);
-    const result = new Uint8Array(length);
-    for (let i = 0, pad = 0; i < arrays.length; i++) {
-        const arr = arrays[i];
-        result.set(arr, pad);
-        pad += arr.length;
-    }
-    return result;
 }
 // For runtime check if class implements interface
 class Hash {
@@ -3104,20 +3031,6 @@ function wrapConstructorWithOpts(hashCons) {
     hashC.blockLen = tmp.blockLen;
     hashC.create = (opts) => hashCons(opts);
     return hashC;
-}
-/**
- * Secure PRNG
- */
-function randomBytes$2(bytesLength = 32) {
-    if (crypto$2.web) {
-        return crypto$2.web.getRandomValues(new Uint8Array(bytesLength));
-    }
-    else if (crypto$2.node) {
-        return new Uint8Array(crypto$2.node.randomBytes(bytesLength).buffer);
-    }
-    else {
-        throw new Error("The environment doesn't have randomBytes function");
-    }
 }
 
 // HMAC (RFC 2104)
@@ -3249,30 +3162,6 @@ function pbkdf2$1(hash, password, salt, opts) {
             for (let i = 0; i < Ti.length; i++)
                 Ti[i] ^= u[i];
         }
-    }
-    return pbkdf2Output(PRF, PRFSalt, DK, prfW, u);
-}
-async function pbkdf2Async(hash, password, salt, opts) {
-    const { c, dkLen, asyncTick, DK, PRF, PRFSalt } = pbkdf2Init(hash, password, salt, opts);
-    let prfW; // Working copy
-    const arr = new Uint8Array(4);
-    const view = createView(arr);
-    const u = new Uint8Array(PRF.outputLen);
-    // DK = T1 + T2 + ⋯ + Tdklen/hlen
-    for (let ti = 1, pos = 0; pos < dkLen; ti++, pos += PRF.outputLen) {
-        // Ti = F(Password, Salt, c, i)
-        const Ti = DK.subarray(pos, pos + PRF.outputLen);
-        view.setInt32(0, ti, false);
-        // F(Password, Salt, c, i) = U1 ^ U2 ^ ⋯ ^ Uc
-        // U1 = PRF(Password, Salt + INT_32_BE(i))
-        (prfW = PRFSalt._cloneInto(prfW)).update(arr).digestInto(u);
-        Ti.set(u.subarray(0, Ti.length));
-        await asyncLoop(c - 1, asyncTick, (i) => {
-            // Uc = PRF(Password, Uc−1)
-            PRF._cloneInto(prfW).update(u).digestInto(u);
-            for (let i = 0; i < Ti.length; i++)
-                Ti[i] ^= u[i];
-        });
     }
     return pbkdf2Output(PRF, PRFSalt, DK, prfW, u);
 }
@@ -3747,8 +3636,8 @@ class SHA384 extends SHA512 {
     }
 }
 const sha512$1 = wrapConstructor(() => new SHA512());
-const sha512_256 = wrapConstructor(() => new SHA512_256());
-const sha384 = wrapConstructor(() => new SHA384());
+wrapConstructor(() => new SHA512_256());
+wrapConstructor(() => new SHA384());
 
 /* Browser Crypto Shims */
 function getGlobal$1() {
@@ -3763,7 +3652,6 @@ function getGlobal$1() {
     }
     throw new Error('unable to locate global object');
 }
-;
 const anyGlobal = getGlobal$1();
 const crypto$1 = anyGlobal.crypto || anyGlobal.msCrypto;
 function createHash(algo) {
@@ -4021,25 +3909,25 @@ class Keccak extends Hash {
     }
 }
 const gen = (suffix, blockLen, outputLen) => wrapConstructor(() => new Keccak(blockLen, suffix, outputLen));
-const sha3_224 = gen(0x06, 144, 224 / 8);
+gen(0x06, 144, 224 / 8);
 /**
  * SHA3-256 hash function
  * @param message - that would be hashed
  */
-const sha3_256 = gen(0x06, 136, 256 / 8);
-const sha3_384 = gen(0x06, 104, 384 / 8);
-const sha3_512 = gen(0x06, 72, 512 / 8);
-const keccak_224 = gen(0x01, 144, 224 / 8);
+gen(0x06, 136, 256 / 8);
+gen(0x06, 104, 384 / 8);
+gen(0x06, 72, 512 / 8);
+gen(0x01, 144, 224 / 8);
 /**
  * keccak-256 hash function. Different from SHA3-256.
  * @param message - that would be hashed
  */
 const keccak_256 = gen(0x01, 136, 256 / 8);
-const keccak_384 = gen(0x01, 104, 384 / 8);
-const keccak_512 = gen(0x01, 72, 512 / 8);
+gen(0x01, 104, 384 / 8);
+gen(0x01, 72, 512 / 8);
 const genShake = (suffix, blockLen, outputLen) => wrapConstructorWithOpts((opts = {}) => new Keccak(blockLen, suffix, opts.dkLen === undefined ? outputLen : opts.dkLen, true));
-const shake128 = genShake(0x1f, 168, 128 / 8);
-const shake256 = genShake(0x1f, 136, 256 / 8);
+genShake(0x1f, 168, 128 / 8);
+genShake(0x1f, 136, 256 / 8);
 
 /**
  *  Cryptographic hashing functions
@@ -5331,13 +5219,12 @@ function invert(number, modulo = CURVE.P) {
     }
     let a = mod(number, modulo);
     let b = modulo;
-    let x = _0n, y = _1n, u = _1n, v = _0n;
+    let x = _0n, u = _1n;
     while (a !== _0n) {
         const q = b / a;
         const r = b % a;
         const m = x - u * q;
-        const n = y - v * q;
-        b = a, a = r, x = u, y = v, u = m, v = n;
+        b = a, a = r, x = u, u = m;
     }
     const gcd = b;
     if (gcd !== _1n)
@@ -5581,15 +5468,6 @@ function finalizeSig(recSig, opts) {
     const hashed = der ? sig.toDERRawBytes() : sig.toCompactRawBytes();
     return recovered ? [hashed, recovery] : hashed;
 }
-async function sign(msgHash, privKey, opts = {}) {
-    const { seed, m, d } = initSigArgs(msgHash, privKey, opts.extraEntropy);
-    const drbg = new HmacDrbg(hashLen, groupLen);
-    await drbg.reseed(seed);
-    let sig;
-    while (!(sig = kmdToSig(await drbg.generate(), m, d, opts.canonical)))
-        await drbg.reseed();
-    return finalizeSig(sig, opts);
-}
 function signSync(msgHash, privKey, opts = {}) {
     const { seed, m, d } = initSigArgs(msgHash, privKey, opts.extraEntropy);
     const drbg = new HmacDrbg(hashLen, groupLen);
@@ -5599,187 +5477,10 @@ function signSync(msgHash, privKey, opts = {}) {
         drbg.reseedSync();
     return finalizeSig(sig, opts);
 }
-const vopts = { strict: true };
-function verify(signature, msgHash, publicKey, opts = vopts) {
-    let sig;
-    try {
-        sig = normalizeSignature(signature);
-        msgHash = ensureBytes(msgHash);
-    }
-    catch (error) {
-        return false;
-    }
-    const { r, s } = sig;
-    if (opts.strict && sig.hasHighS())
-        return false;
-    const h = truncateHash(msgHash);
-    let P;
-    try {
-        P = normalizePublicKey(publicKey);
-    }
-    catch (error) {
-        return false;
-    }
-    const { n } = CURVE;
-    const sinv = invert(s, n);
-    const u1 = mod(h * sinv, n);
-    const u2 = mod(r * sinv, n);
-    const R = Point.BASE.multiplyAndAddUnsafe(P, u1, u2);
-    if (!R)
-        return false;
-    const v = mod(R.x, n);
-    return v === r;
-}
-function schnorrChallengeFinalize(ch) {
-    return mod(bytesToNumber(ch), CURVE.n);
-}
-class SchnorrSignature {
-    constructor(r, s) {
-        this.r = r;
-        this.s = s;
-        this.assertValidity();
-    }
-    static fromHex(hex) {
-        const bytes = ensureBytes(hex);
-        if (bytes.length !== 64)
-            throw new TypeError(`SchnorrSignature.fromHex: expected 64 bytes, not ${bytes.length}`);
-        const r = bytesToNumber(bytes.subarray(0, 32));
-        const s = bytesToNumber(bytes.subarray(32, 64));
-        return new SchnorrSignature(r, s);
-    }
-    assertValidity() {
-        const { r, s } = this;
-        if (!isValidFieldElement(r) || !isWithinCurveOrder(s))
-            throw new Error('Invalid signature');
-    }
-    toHex() {
-        return numTo32bStr(this.r) + numTo32bStr(this.s);
-    }
-    toRawBytes() {
-        return hexToBytes(this.toHex());
-    }
-}
-function schnorrGetPublicKey(privateKey) {
-    return Point.fromPrivateKey(privateKey).toRawX();
-}
-class InternalSchnorrSignature {
-    constructor(message, privateKey, auxRand = utils.randomBytes()) {
-        if (message == null)
-            throw new TypeError(`sign: Expected valid message, not "${message}"`);
-        this.m = ensureBytes(message);
-        const { x, scalar } = this.getScalar(normalizePrivateKey(privateKey));
-        this.px = x;
-        this.d = scalar;
-        this.rand = ensureBytes(auxRand);
-        if (this.rand.length !== 32)
-            throw new TypeError('sign: Expected 32 bytes of aux randomness');
-    }
-    getScalar(priv) {
-        const point = Point.fromPrivateKey(priv);
-        const scalar = point.hasEvenY() ? priv : CURVE.n - priv;
-        return { point, scalar, x: point.toRawX() };
-    }
-    initNonce(d, t0h) {
-        return numTo32b(d ^ bytesToNumber(t0h));
-    }
-    finalizeNonce(k0h) {
-        const k0 = mod(bytesToNumber(k0h), CURVE.n);
-        if (k0 === _0n)
-            throw new Error('sign: Creation of signature failed. k is zero');
-        const { point: R, x: rx, scalar: k } = this.getScalar(k0);
-        return { R, rx, k };
-    }
-    finalizeSig(R, k, e, d) {
-        return new SchnorrSignature(R.x, mod(k + e * d, CURVE.n)).toRawBytes();
-    }
-    error() {
-        throw new Error('sign: Invalid signature produced');
-    }
-    async calc() {
-        const { m, d, px, rand } = this;
-        const tag = utils.taggedHash;
-        const t = this.initNonce(d, await tag(TAGS.aux, rand));
-        const { R, rx, k } = this.finalizeNonce(await tag(TAGS.nonce, t, px, m));
-        const e = schnorrChallengeFinalize(await tag(TAGS.challenge, rx, px, m));
-        const sig = this.finalizeSig(R, k, e, d);
-        if (!(await schnorrVerify(sig, m, px)))
-            this.error();
-        return sig;
-    }
-    calcSync() {
-        const { m, d, px, rand } = this;
-        const tag = utils.taggedHashSync;
-        const t = this.initNonce(d, tag(TAGS.aux, rand));
-        const { R, rx, k } = this.finalizeNonce(tag(TAGS.nonce, t, px, m));
-        const e = schnorrChallengeFinalize(tag(TAGS.challenge, rx, px, m));
-        const sig = this.finalizeSig(R, k, e, d);
-        if (!schnorrVerifySync(sig, m, px))
-            this.error();
-        return sig;
-    }
-}
-async function schnorrSign(msg, privKey, auxRand) {
-    return new InternalSchnorrSignature(msg, privKey, auxRand).calc();
-}
-function schnorrSignSync(msg, privKey, auxRand) {
-    return new InternalSchnorrSignature(msg, privKey, auxRand).calcSync();
-}
-function initSchnorrVerify(signature, message, publicKey) {
-    const raw = signature instanceof SchnorrSignature;
-    const sig = raw ? signature : SchnorrSignature.fromHex(signature);
-    if (raw)
-        sig.assertValidity();
-    return {
-        ...sig,
-        m: ensureBytes(message),
-        P: normalizePublicKey(publicKey),
-    };
-}
-function finalizeSchnorrVerify(r, P, s, e) {
-    const R = Point.BASE.multiplyAndAddUnsafe(P, normalizePrivateKey(s), mod(-e, CURVE.n));
-    if (!R || !R.hasEvenY() || R.x !== r)
-        return false;
-    return true;
-}
-async function schnorrVerify(signature, message, publicKey) {
-    try {
-        const { r, s, m, P } = initSchnorrVerify(signature, message, publicKey);
-        const e = schnorrChallengeFinalize(await utils.taggedHash(TAGS.challenge, numTo32b(r), P.toRawX(), m));
-        return finalizeSchnorrVerify(r, P, s, e);
-    }
-    catch (error) {
-        return false;
-    }
-}
-function schnorrVerifySync(signature, message, publicKey) {
-    try {
-        const { r, s, m, P } = initSchnorrVerify(signature, message, publicKey);
-        const e = schnorrChallengeFinalize(utils.taggedHashSync(TAGS.challenge, numTo32b(r), P.toRawX(), m));
-        return finalizeSchnorrVerify(r, P, s, e);
-    }
-    catch (error) {
-        if (error instanceof ShaError)
-            throw error;
-        return false;
-    }
-}
-const schnorr = {
-    Signature: SchnorrSignature,
-    getPublicKey: schnorrGetPublicKey,
-    sign: schnorrSign,
-    verify: schnorrVerify,
-    signSync: schnorrSignSync,
-    verifySync: schnorrVerifySync,
-};
 Point.BASE._setWindowSize(8);
 const crypto = {
     node: nodeCrypto,
     web: typeof self === 'object' && 'crypto' in self ? self.crypto : undefined,
-};
-const TAGS = {
-    challenge: 'BIP0340/challenge',
-    aux: 'BIP0340/aux',
-    nonce: 'BIP0340/nonce',
 };
 const TAGGED_HASH_PREFIXES = {};
 const utils = {
@@ -5964,12 +5665,6 @@ const EtherSymbol = "\u039e"; // "\uD835\uDF63";
  *  (**i.e.** ``"\\x19Ethereum Signed Message:\\n"``)
  */
 const MessagePrefix = "\x19Ethereum Signed Message:\n";
-
-/**
- *  Some common constants useful for Ethereum.
- *
- *  @_section: api/constants: Constants  [about-constants]
- */
 
 // Constants
 const BN_0$7 = BigInt(0);
@@ -6194,7 +5889,6 @@ class Signature {
         function assertError(check, message) {
             assertArgument(check, message, "signature", sig);
         }
-        ;
         if (sig == null) {
             return new Signature(_guard$3, ZeroHash, ZeroHash, 27);
         }
@@ -6446,7 +6140,6 @@ class SigningKey {
  *
  *  @_section: api/crypto:Cryptographic Functions   [about-crypto]
  */
-null;
 function lock() {
     computeHmac.lock();
     keccak256.lock();
@@ -6510,9 +6203,7 @@ function ibanChecksum(address) {
     }
     return checksum;
 }
-;
 const Base36 = (function () {
-    ;
     const result = {};
     for (let i = 0; i < 36; i++) {
         const key = "0123456789abcdefghijklmnopqrstuvwxyz"[i];
@@ -6793,22 +6484,6 @@ function resolveAddress(target, resolver) {
 }
 
 /**
- *  Addresses are a fundamental part of interacting with Ethereum. They
- *  represent the gloabal identity of Externally Owned Accounts (accounts
- *  backed by a private key) and contracts.
- *
- *  The Ethereum Naming Service (ENS) provides an interconnected ecosystem
- *  of contracts, standards and libraries which enable looking up an
- *  address for an ENS name.
- *
- *  These functions help convert between various formats, validate
- *  addresses and safely resolve ENS names.
- *
- *  @_section: api/address:Addresses  [about-addresses]
- */
-null;
-
-/**
  *  A Typed object allows a value to have its type explicitly
  *  specified.
  *
@@ -7011,11 +6686,9 @@ class Typed {
     static string(v) { return new Typed(_gaurd, "string", v); }
     static array(v, dynamic) {
         throw new Error("not implemented yet");
-        return new Typed(_gaurd, "array", v, dynamic);
     }
     static tuple(v, name) {
         throw new Error("not implemented yet");
-        return new Typed(_gaurd, "tuple", v, name);
     }
     static overrides(v) {
         return new Typed(_gaurd, "overrides", Object.assign({}, v));
@@ -7722,13 +7395,6 @@ function str_from_cps(cps) {
 	return buf.join('');
 }
 
-function compare_arrays(a, b) {
-	let n = a.length;
-	let c = n - b.length;
-	for (let i = 0; c == 0 && i < n; i++) c = a[i] - b[i];
-	return c;
-}
-
 // created 2023-02-21T09:18:13.549Z
 var r = read_compressed_payload('AEUDTAHBCFQATQDRADAAcgAgADQAFAAsABQAHwAOACQADQARAAoAFwAHABIACAAPAAUACwAFAAwABAAQAAMABwAEAAoABQAIAAIACgABAAQAFAALAAIACwABAAIAAQAHAAMAAwAEAAsADAAMAAwACgANAA0AAwAKAAkABAAdAAYAZwDSAdsDJgC0CkMB8xhZAqfoC190UGcThgBurwf7PT09Pb09AjgJum8OjDllxHYUKXAPxzq6tABAxgK8ysUvWAgMPT09PT09PSs6LT2HcgWXWwFLoSMEEEl5RFVMKvO0XQ8ExDdJMnIgsj26PTQyy8FfEQ8AY8IPAGcEbwRwBHEEcgRzBHQEdQR2BHcEeAR6BHsEfAR+BIAEgfndBQoBYgULAWIFDAFiBNcE2ATZBRAFEQUvBdALFAsVDPcNBw13DYcOMA4xDjMB4BllHI0B2grbAMDpHLkQ7QHVAPRNQQFnGRUEg0yEB2uaJF8AJpIBpob5AERSMAKNoAXqaQLUBMCzEiACnwRZEkkVsS7tANAsBG0RuAQLEPABv9HICTUBXigPZwRBApMDOwAamhtaABqEAY8KvKx3LQ4ArAB8UhwEBAVSagD8AEFZADkBIadVj2UMUgx5Il4ANQC9AxIB1BlbEPMAs30CGxlXAhwZKQIECBc6EbsCoxngzv7UzRQA8M0BawL6ZwkN7wABAD33OQRcsgLJCjMCjqUChtw/km+NAsXPAoP2BT84PwURAK0RAvptb6cApQS/OMMey5HJS84UdxpxTPkCogVFITaTOwERAK5pAvkNBOVyA7q3BKlOJSALAgUIBRcEdASpBXqzABXFSWZOawLCOqw//AolCZdvv3dSBkEQGyelEPcMMwG1ATsN7UvYBPEGOwTJH30ZGQ/NlZwIpS3dDO0m4y6hgFoj9SqDBe1L9DzdC01RaA9ZC2UJ4zpjgU4DIQENIosK3Q05CG0Q8wrJaw3lEUUHOQPVSZoApQcBCxEdNRW1JhBirAsJOXcG+xr2C48mrxMpevwF0xohBk0BKRr/AM8u54WwWjFcHE9fBgMLJSPHFKhQIA0lQLd4SBobBxUlqQKRQ3BKh1E2HpMh9jw9DWYuE1F8B/U8BRlPC4E8nkarRQ4R0j6NPUgiSUwsBDV/LC8niwnPD4UMuXxyAVkJIQmxDHETMREXN8UIOQcZLZckJxUIIUaVYJoE958D8xPRAwsFPwlBBxMDtRwtEy4VKQUNgSTXAvM21S6zAo9WgAEXBcsPJR/fEFBH4A7pCJsCZQODJesALRUhABcimwhDYwBfj9hTBS7LCMdqbCN0A2cU52ERcweRDlcHpxwzFb8c4XDIXguGCCijrwlbAXUJmQFfBOMICTVbjKAgQWdTi1gYmyBhQT9d/AIxDGUVn0S9h3gCiw9rEhsBNQFzBzkNAQJ3Ee0RaxCVCOuGBDW1M/g6JQRPIYMgEQonA09szgsnJvkM+GkBoxJiAww0PXfuZ6tgtiQX/QcZMsVBYCHxC5JPzQycGsEYQlQuGeQHvwPzGvMn6kFXBf8DowMTOk0z7gS9C2kIiwk/AEkOoxcH1xhqCnGM0AExiwG3mQNXkYMCb48GNwcLAGcLhwV55QAdAqcIowAFAM8DVwA5Aq0HnQAZAIVBAT0DJy8BIeUCjwOTCDHLAZUvAfMpBBvDDBUA9zduSgLDsQKAamaiBd1YAo4CSTUBTSUEBU5HUQOvceEA2wBLBhPfRwEVq0rLGuNDAd9vKwDHAPsABTUHBUEBzQHzbQC3AV8LMQmis7UBTekpAIMAFWsB1wKJAN0ANQB/8QFTAE0FWfkF0wJPSQERMRgrV2EBuwMfATMBDQB5BsuNpckHHwRtB9MCEBsV4QLvLge1AQMi3xPNQsUCvd5VoWACZIECYkJbTa9bNyACofcCaJgCZgkCn4Q4GwsCZjsCZiYEbgR/A38TA36SOQY5dxc5gjojIwJsHQIyNjgKAm3HAm2u74ozZ0UrAWcA3gDhAEoFB5gMjQD+C8IADbUCdy8CdqI/AnlLQwJ4uh1c20WuRtcCfD8CesgCfQkCfPAFWQUgSABIfWMkAoFtAoAAAoAFAn+uSVhKWxUXSswC0QEC0MxLJwOITwOH5kTFkTIC8qFdAwMDrkvOTC0lA89NTE2vAos/AorYwRsHHUNnBbcCjjcCjlxAl4ECjtkCjlx4UbRTNQpS1FSFApP7ApMMAOkAHFUeVa9V0AYsGymVhjLheGZFOzkCl58C77JYIagAWSUClo8ClnycAKlZrFoJgU0AOwKWtQKWTlxEXNECmcsCmWRcyl0HGQKcmznCOp0CnBYCn5sCnriKAB0PMSoPAp3xAp6SALU9YTRh7wKe0wKgbgGpAp6fHwKeTqVjyGQnJSsCJ68CJn4CoPsCoEwCot0CocQCpi8Cpc4Cp/8AfQKn8mh8aLEAA0lqHGrRAqzjAqyuAq1nAq0CAlcdAlXcArHh1wMfTmyXArK9DQKy6Bds4G1jbUhfAyXNArZcOz9ukAMpRQK4XgK5RxUCuSp3cDZw4QK9GQK72nCWAzIRAr6IcgIDM3ECvhpzInNPAsPLAsMEc4J0SzVFdOADPKcDPJoDPb8CxXwCxkcCxhCJAshpUQLIRALJTwLJLgJknQLd0nh5YXiueSVL0AMYo2cCAmH0GfOVJHsLXpJeuxECz2sCz2wvS1PS8xOfAMatAs9zASnqA04SfksFAtwnAtuKAtJPA1JcA1NfAQEDVYyAiT8AyxbtYEWCHILTgs6DjQLaxwLZ3oQQhEmnPAOGpQAvA2QOhnFZ+QBVAt9lAt64c3cC4i/tFAHzMCcB9JsB8tKHAuvzAulweQLq+QLq5AD5RwG5Au6JAuuclqqXAwLuPwOF4Jh5cOBxoQLzAwBpA44WmZMC9xMDkW4DkocC95gC+dkC+GaaHJqruzebHgOdgwL++gEbADmfHJ+zAwWNA6ZqA6bZANHFAwZqoYiiBQkDDEkCwAA/AwDhQRdTARHzA2sHl2cFAJMtK7evvdsBiZkUfxEEOQH7KQUhDp0JnwCS/SlXxQL3AZ0AtwW5AG8LbUEuFCaNLgFDAYD8AbUmAHUDDgRtACwCFgyhAAAKAj0CagPdA34EkQEgRQUhfAoABQBEABMANhICdwEABdUDa+8KxQIA9wqfJ7+xt+UBkSFBQgHpFH8RNMCJAAQAGwBaAkUChIsABjpTOpSNbQC4Oo860ACNOME63AClAOgAywE6gTo7Ofw5+Tt2iTpbO56JOm85GAFWATMBbAUvNV01njWtNWY1dTW2NcU1gjWRNdI14TWeNa017jX9NbI1wTYCNhE1xjXVNhY2JzXeNe02LjY9Ni41LSE2OjY9Njw2yTcIBJA8VzY4Nt03IDcPNsogN4k3MAoEsDxnNiQ3GTdsOo03IULUQwdC4EMLHA8PCZsobShRVQYA6X8A6bABFCnXAukBowC9BbcAbwNzBL8MDAMMAQgDAAkKCwsLCQoGBAVVBI/DvwDz9b29kaUCb0QtsRTNLt4eGBcSHAMZFhYZEhYEARAEBUEcQRxBHEEcQRxBHEEaQRxBHEFCSTxBPElISUhBNkM2QTYbNklISVmBVIgBFLWZAu0BhQCjBcEAbykBvwGJAaQcEZ0ePCklMAAhMvAIMAL54gC7Bm8EescjzQMpARQpKgDUABavAj626xQAJP0A3etzuf4NNRA7efy2Z9NQrCnC0OSyANz5BBIbJ5IFDR6miIavYS6tprjjmuKebxm5C74Q225X1pkaYYPb6f1DK4k3xMEBb9S2WMjEibTNWhsRJIA+vwNVEiXTE5iXs/wezV66oFLfp9NZGYW+Gk19J2+bCT6Ye2w6LDYdgzKMUabk595eLBCXANz9HUpWbATq9vqXVx9XDg+Pc9Xp4+bsS005SVM/BJBM4687WUuf+Uj9dEi8aDNaPxtpbDxcG1THTImUMZq4UCaaNYpsVqraNyKLJXDYsFZ/5jl7bLRtO88t7P3xZaAxhb5OdPMXqsSkp1WCieG8jXm1U99+blvLlXzPCS+M93VnJCiK+09LfaSaBAVBomyDgJua8dfUzR7ga34IvR2Nvj+A9heJ6lsl1KG4NkI1032Cnff1m1wof2B9oHJK4bi6JkEdSqeNeiuo6QoZZincoc73/TH9SXF8sCE7XyuYyW8WSgbGFCjPV0ihLKhdPs08Tx82fYAkLLc4I2wdl4apY7GU5lHRFzRWJep7Ww3wbeA3qmd59/86P4xuNaqDpygXt6M85glSBHOCGgJDnt+pN9bK7HApMguX6+06RZNjzVmcZJ+wcUrJ9//bpRNxNuKpNl9uFds+S9tdx7LaM5ZkIrPj6nIU9mnbFtVbs9s/uLgl8MVczAwet+iOEzzBlYW7RCMgE6gyNLeq6+1tIx4dpgZnd0DksJS5f+JNDpwwcPNXaaVspq1fbQajOrJgK0ofKtJ1Ne90L6VO4MOl5S886p7u6xo7OLjG8TGL+HU1JXGJgppg4nNbNJ5nlzSpuPYy21JUEcUA94PoFiZfjZue+QnyQ80ekOuZVkxx4g+cvhJfHgNl4hy1/a6+RKcKlar/J29y//EztlbVPHVUeQ1zX86eQVAjR/M3dA9w4W8LfaXp4EgM85wOWasli837PzVMOnsLzR+k3o75/lRPAJSE1xAKQzEi5v10ke+VBvRt1cwQRMd+U5mLCTGVd6XiZtgBG5cDi0w22GKcVNvHiu5LQbZEDVtz0onn7k5+heuKXVsZtSzilkLRAUmjMXEMB3J9YC50XBxPiz53SC+EhnPl9WsKCv92SM/OFFIMJZYfl0WW8tIO3UxYcwdMAj7FSmgrsZ2aAZO03BOhP1bNNZItyXYQFTpC3SG1VuPDqH9GkiCDmE+JwxyIVSO5siDErAOpEXFgjy6PQtOVDj+s6e1r8heWVvmZnTciuf4EiNZzCAd7SOMhXERIOlsHIMG399i9aLTy3m2hRLZjJVDNLS53iGIK11dPqQt0zBDyg6qc7YqkDm2M5Ve6dCWCaCbTXX2rToaIgz6+zh4lYUi/+6nqcFMAkQJKHYLK0wYk5N9szV6xihDbDDFr45lN1K4aCXBq/FitPSud9gLt5ZVn+ZqGX7cwm2z5EGMgfFpIFyhGGuDPmso6TItTMwny+7uPnLCf4W6goFQFV0oQSsc9VfMmVLcLr6ZetDZbaSFTLqnSO/bIPjA3/zAUoqgGFAEQS4IhuMzEp2I3jJzbzkk/IEmyax+rhZTwd6f+CGtwPixu8IvzACquPWPREu9ZvGkUzpRwvRRuaNN6cr0W1wWits9ICdYJ7ltbgMiSL3sTPeufgNcVqMVWFkCPDH4jG2jA0XcVgQj62Cb29v9f/z/+2KbYvIv/zzjpQAPkliaVDzNrW57TZ/ZOyZD0nlfMmAIBIAGAI0D3k/mdN4xr9v85ZbZbbqfH2jGd5hUqNZWwl5SPfoGmfElmazUIeNL1j/mkF7VNAzTq4jNt8JoQ11NQOcmhprXoxSxfRGJ9LDEOAQ+dmxAQH90iti9e2u/MoeuaGcDTHoC+xsmEeWmxEKefQuIzHbpw5Tc5cEocboAD09oipWQhtTO1wivf/O+DRe2rpl/E9wlrzBorjJsOeG1B/XPW4EaJEFdNlECEZga5ZoGRHXgYouGRuVkm8tDESiEyFNo+3s5M5puSdTyUL2llnINVHEt91XUNW4ewdMgJ4boJfEyt/iY5WXqbA+A2Fkt5Z0lutiWhe9nZIyIUjyXDC3UsaG1t+eNx6z4W/OYoTB7A6x+dNSTOi9AInctbESqm5gvOLww7OWXPrmHwVZasrl4eD113pm+JtT7JVOvnCXqdzzdTRHgJ0PiGTFYW5Gvt9R9LD6Lzfs0v/TZZHSmyVNq7viIHE6DBK7Qp07Iz55EM8SYtQvZf/obBniTWi5C2/ovHfw4VndkE5XYdjOhCMRjDeOEfXeN/CwfGduiUIfsoFeUxXeQXba7c7972XNv8w+dTjjUM0QeNAReW+J014dKAD/McQYXT7c0GQPIkn3Ll6R7gGjuiQoZD0TEeEqQpKoZ15g/0OPQI17QiSv9AUROa/V/TQN3dvLArec3RrsYlvBm1b8LWzltdugsC50lNKYLEp2a+ZZYqPejULRlOJh5zj/LVMyTDvwKhMxxwuDkxJ1QpoNI0OTWLom4Z71SNzI9TV1iXJrIu9Wcnd+MCaAw8o1jSXd94YU/1gnkrC9BUEOtQvEIQ7g0i6h+KL2JKk8Ydl7HruvgWMSAmNe+LshGhV4qnWHhO9/RIPQzY1tHRj2VqOyNsDpK0cww+56AdDC4gsWwY0XxoucIWIqs/GcwnWqlaT0KPr8mbK5U94/301i1WLt4YINTVvCFBrFZbIbY8eycOdeJ2teD5IfPLCRg7jjcFTwlMFNl9zdh/o3E/hHPwj7BWg0MU09pPrBLbrCgm54A6H+I6v27+jL5gkjWg/iYdks9jbfVP5y/n0dlgWEMlKasl7JvFZd56LfybW1eeaVO0gxTfXZwD8G4SI116yx7UKVRgui6Ya1YpixqXeNLc8IxtAwCU5IhwQgn+NqHnRaDv61CxKhOq4pOX7M6pkA+Pmpd4j1vn6ACUALoLLc4vpXci8VidLxzm7qFBe7s+quuJs6ETYmnpgS3LwSZxPIltgBDXz8M1k/W2ySNv2f9/NPhxLGK2D21dkHeSGmenRT3Yqcdl0m/h3OYr8V+lXNYGf8aCCpd4bWjE4QIPj7vUKN4Nrfs7ML6Y2OyS830JCnofg/k7lpFpt4SqZc5HGg1HCOrHvOdC8bP6FGDbE/VV0mX4IakzbdS/op+Kt3G24/8QbBV7y86sGSQ/vZzU8FXs7u6jIvwchsEP2BpIhW3G8uWNwa3HmjfH/ZjhhCWvluAcF+nMf14ClKg5hGgtPLJ98ueNAkc5Hs2WZlk2QHvfreCK1CCGO6nMZVSb99VM/ajr8WHTte9JSmkXq/i/U943HEbdzW6Re/S88dKgg8pGOLlAeNiqrcLkUR3/aClFpMXcOUP3rmETcWSfMXZE3TUOi8i+fqRnTYLflVx/Vb/6GJ7eIRZUA6k3RYR3iFSK9c4iDdNwJuZL2FKz/IK5VimcNWEqdXjSoxSgmF0UPlDoUlNrPcM7ftmA8Y9gKiqKEHuWN+AZRIwtVSxye2Kf8rM3lhJ5XcBXU9n4v0Oy1RU2M+4qM8AQPVwse8ErNSob5oFPWxuqZnVzo1qB/IBxkM3EVUKFUUlO3e51259GgNcJbCmlvrdjtoTW7rChm1wyCKzpCTwozUUEOIcWLneRLgMXh+SjGSFkAllzbGS5HK7LlfCMRNRDSvbQPjcXaenNYxCvu2Qyznz6StuxVj66SgI0T8B6/sfHAJYZaZ78thjOSIFumNWLQbeZixDCCC+v0YBtkxiBB3jefHqZ/dFHU+crbj6OvS1x/JDD7vlm7zOVPwpUC01nhxZuY/63E7g');
 
@@ -7903,10 +7569,6 @@ function nfd(cps) {
 function nfc(cps) {
 	return composed_from_decomposed(decomposed(cps));
 }
-
-//const t0 = performance.now();
-
-const STOP = 0x2E;
 const FE0F = 0xFE0F;
 const STOP_CH = '.';
 const UNIQUE_PH = 1;
@@ -7934,7 +7596,7 @@ const NSM = new Set(read_sorted(r).map(i => CM_SORTED[i]));
 const CM = new Set(CM_SORTED);
 */
 const ESCAPE = read_set(); // characters that should not be printed
-const NFC_CHECK = read_set();
+read_set();
 const CHUNKS = read_sorted_arrays(r$1);
 function read_chunked() {
 	// deduplicated sets + uniques
@@ -8121,53 +7783,8 @@ function should_escape(cp) {
 	return ESCAPE.has(cp);
 }
 
-function ens_normalize_fragment(frag, decompose) {
-	let nf = decompose ? nfd : nfc;
-	return frag.split(STOP_CH).map(label => str_from_cps(process(explode_cp(label), nf).flatMap(x => x.is_emoji ? filter_fe0f(x) : x))).join(STOP_CH);
-}
-
 function ens_normalize(name) {
 	return flatten(ens_split(name));
-}
-
-function ens_beautify(name) {
-	let split = ens_split(name, true);
-	// this is experimental
-	for (let {type, output, error} of split) {
-		if (error) continue;
-
-		// replace leading/trailing hyphen
-		// 20230121: consider beautifing all or leading/trailing hyphen to unicode variant
-		// not exactly the same in every font, but very similar: "-" vs "‐"
-		/*
-		const UNICODE_HYPHEN = 0x2010;
-		// maybe this should replace all for visual consistancy?
-		// `node tools/reg-count.js regex ^-\{2,\}` => 592
-		//for (let i = 0; i < output.length; i++) if (output[i] == 0x2D) output[i] = 0x2010;
-		if (output[0] == HYPHEN) output[0] = UNICODE_HYPHEN;
-		let end = output.length-1;
-		if (output[end] == HYPHEN) output[end] = UNICODE_HYPHEN;
-		*/
-		// 20230123: WHATWG URL uses "CheckHyphens" false
-		// https://url.spec.whatwg.org/#idna
-
-		// update ethereum symbol
-		// ξ => Ξ if not greek
-		if (type !== 'Greek') { 
-			let prev = 0;
-			while (true) {
-				let next = output.indexOf(0x3BE, prev);
-				if (next < 0) break;
-				output[next] = 0x39E; 
-				prev = next + 1;
-			}
-		}
-
-		// 20221213: fixes bidi subdomain issue, but breaks invariant (200E is disallowed)
-		// could be fixed with special case for: 2D (.) + 200E (LTR)
-		//output.splice(0, 0, 0x200E);
-	}
-	return flatten(split);
 }
 
 function ens_split(name, preserve_emoji) {
@@ -8530,131 +8147,6 @@ function conform_emoji_copy(cps, node) {
 	return copy;
 }
 
-// return all supported emoji as fully-qualified emoji 
-// ordered by length then lexicographic 
-function ens_emoji() {
-	// *** this code currently isn't needed ***
-	//let ret = [...EMOJI_SOLO].map(x => [x]);
-	let ret = [];
-	build(EMOJI_ROOT, []);
-	return ret.sort(compare_arrays);
-	function build(node, cps, saved) {
-		if (node.S) { 
-			saved = cps[cps.length-1];
-		} else if (node.C) { 
-			if (saved === cps[cps.length-1]) return;
-		}
-		if (node.F) cps.push(FE0F);
-		if (node.V) ret.push(conform_emoji_copy(cps, node));
-		for (let br of node.B) {
-			for (let cp of br.Q) {
-				build(br, [...cps, cp], saved);
-			}
-		}
-	}
-}
-
-// ************************************************************
-// tokenizer 
-
-const TY_VALID = 'valid';
-const TY_MAPPED = 'mapped';
-const TY_IGNORED = 'ignored';
-const TY_DISALLOWED = 'disallowed';
-const TY_EMOJI = 'emoji';
-const TY_NFC = 'nfc';
-const TY_STOP = 'stop';
-
-function ens_tokenize(name, {
-	nf = true, // collapse unnormalized runs into a single token
-} = {}) {
-	let input = explode_cp(name).reverse();
-	let eaten = [];
-	let tokens = [];
-	while (input.length) {		
-		let emoji = consume_emoji_reversed(input, eaten);
-		if (emoji) {
-			tokens.push({type: TY_EMOJI, emoji, input: eaten.slice(), cps: filter_fe0f(emoji)});
-		} else {
-			let cp = input.pop();
-			if (cp == STOP) {
-				tokens.push({type: TY_STOP, cp});
-			} else if (VALID.has(cp)) {
-				tokens.push({type: TY_VALID, cps: [cp]});
-			} else if (IGNORED.has(cp)) {
-				tokens.push({type: TY_IGNORED, cp});
-			} else {
-				let cps = MAPPED.get(cp);
-				if (cps) {
-					tokens.push({type: TY_MAPPED, cp, cps: cps.slice()});
-				} else {
-					tokens.push({type: TY_DISALLOWED, cp});
-				}
-			}
-		}
-	}
-	if (nf) {
-		for (let i = 0, start = -1; i < tokens.length; i++) {
-			let token = tokens[i];
-			if (is_valid_or_mapped(token.type)) {
-				if (requires_check(token.cps)) { // normalization might be needed
-					let end = i + 1;
-					for (let pos = end; pos < tokens.length; pos++) { // find adjacent text
-						let {type, cps} = tokens[pos];
-						if (is_valid_or_mapped(type)) {
-							if (!requires_check(cps)) break;
-							end = pos + 1;
-						} else if (type !== TY_IGNORED) { // || type !== TY_DISALLOWED) { 
-							break;
-						}
-					}
-					if (start < 0) start = i;
-					let slice = tokens.slice(start, end);
-					let cps0 = slice.flatMap(x => is_valid_or_mapped(x.type) ? x.cps : []); // strip junk tokens
-					let cps = nfc(cps0);
-					if (compare_arrays(cps, cps0)) { // bundle into an nfc token
-						tokens.splice(start, end - start, {
-							type: TY_NFC, 
-							input: cps0, // there are 3 states: tokens0 ==(process)=> input ==(nfc)=> tokens/cps
-							cps, 
-							tokens0: collapse_valid_tokens(slice),
-							tokens: ens_tokenize(str_from_cps(cps), {nf: false})
-						});
-						i = start;
-					} else { 
-						i = end - 1; // skip to end of slice
-					}
-					start = -1; // reset
-				} else {
-					start = i; // remember last
-				}
-			} else if (token.type !== TY_IGNORED) { // 20221024: is this correct?
-				start = -1; // reset
-			}
-		}
-	}
-	return collapse_valid_tokens(tokens);
-}
-
-function is_valid_or_mapped(type) {
-	return type == TY_VALID || type == TY_MAPPED;
-}
-
-function requires_check(cps) {
-	return cps.some(cp => NFC_CHECK.has(cp));
-}
-
-function collapse_valid_tokens(tokens) {
-	for (let i = 0; i < tokens.length; i++) {
-		if (tokens[i].type == TY_VALID) {
-			let j = i + 1;
-			while (j < tokens.length && tokens[j].type == TY_VALID) j++;
-			tokens.splice(i, j - i, {type: TY_VALID, cps: tokens.slice(i, j).flatMap(x => x.cps)});
-		}
-	}
-	return tokens;
-}
-
 const Zeros = new Uint8Array(32);
 Zeros.fill(0);
 function checkComponent(comp) {
@@ -8927,7 +8419,7 @@ function _serializeLegacy(tx, sig) {
     fields.push(toBeArray(sig.s));
     return encodeRlp(fields);
 }
-function _parseEipSignature(tx, fields, serialize) {
+function _parseEipSignature(tx, fields) {
     let yParity;
     try {
         yParity = handleNumber(fields[0], "yParity");
@@ -8966,7 +8458,7 @@ function _parseEip1559(data) {
         return tx;
     }
     tx.hash = keccak256(data);
-    _parseEipSignature(tx, fields.slice(9), _serializeEip1559);
+    _parseEipSignature(tx, fields.slice(9));
     return tx;
 }
 function _serializeEip1559(tx, sig) {
@@ -9007,7 +8499,7 @@ function _parseEip2930(data) {
         return tx;
     }
     tx.hash = keccak256(data);
-    _parseEipSignature(tx, fields.slice(8), _serializeEip2930);
+    _parseEipSignature(tx, fields.slice(8));
     return tx;
 }
 function _serializeEip2930(tx, sig) {
@@ -9170,7 +8662,7 @@ class Transaction {
     get data() { return this.#data; }
     set data(value) { this.#data = hexlify(value); }
     /**
-     *  The amount of ether to send in this transactions.
+     *  The amount of ether (in wei) to send in this transactions.
      */
     get value() { return this.#value; }
     set value(value) {
@@ -9491,13 +8983,6 @@ class Transaction {
 }
 
 /**
- *  Transactions..
- *
- *  @_section api/transaction:Transactions  [about-transactions]
- */
-null;
-
-/**
  *  Computes the [[link-eip-191]] personal-sign message digest to sign.
  *
  *  This prefixes the message with [[MessagePrefix]] and the decimal length
@@ -9647,8 +9132,6 @@ const BN__1 = BigInt(-1);
 const BN_0$3 = BigInt(0);
 const BN_1$1 = BigInt(1);
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-;
-;
 function hexPadRight(value) {
     const bytes = getBytes(value);
     const padOffset = bytes.length % 32;
@@ -10044,17 +9527,10 @@ function verifyTypedData(domain, types, value, signature) {
 }
 
 /**
- *  About hashing here...
- *
- *  @_section: api/hashing:Hashing Utilities  [about-hashing]
- */
-
-/**
  *  About frgaments...
  *
  *  @_subsection api/abi/abi-coder:Fragments  [about-fragments]
  */
-;
 // [ "a", "b" ] => { "a": 1, "b": 1 }
 function setify(items) {
     const result = new Set();
@@ -12469,13 +11945,6 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
     }
 }
 
-/**
- *  Explain about ABI here...
- *
- *  @_section api/abi:Application Binary Interface  [about-abi]
- *  @_navTitle: ABI
- */
-
 //import { resolveAddress } from "@ethersproject/address";
 const BN_0$2 = BigInt(0);
 // -----------------------
@@ -12548,7 +12017,6 @@ class FeeData {
         };
     }
 }
-;
 function copyRequest(req) {
     const result = {};
     // These could be addresses, ENS names or Addressables
@@ -14361,12 +13829,6 @@ class ContractFactory {
 }
 
 /**
- *  About contracts...
- *
- *  @_section: api/contract:Contracts  [about-contracts]
- */
-
-/**
  *  About ENS Resolver
  *
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
@@ -14385,8 +13847,6 @@ function getIpfsLink(link) {
     }
     return `https:/\/gateway.ipfs.io/ipfs/${link}`;
 }
-;
-;
 /**
  *  A provider plugin super-class for processing multicoin address types.
  */
@@ -14406,15 +13866,6 @@ class MulticoinProviderPlugin {
     }
     async decodeAddress(coinType, data) {
         throw new Error("unsupported coin");
-    }
-}
-const BasicMulticoinPluginId = "org.ethers.plugins.provider.BasicMulticoin";
-/**
- *  A basic multicoin provider plugin.
- */
-class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
-    constructor() {
-        super(BasicMulticoinPluginId);
     }
 }
 const matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
@@ -14897,12 +14348,6 @@ function formatHash(value) {
     assertArgument(isHexString(value, 32), "invalid hash", "value", value);
     return value;
 }
-function formatUint256(value) {
-    if (!isHexString(value)) {
-        throw new Error("invalid uint256");
-    }
-    return zeroPadValue(value, 32);
-}
 const _formatLog = object({
     address: getAddress,
     blockHash: formatHash,
@@ -15252,15 +14697,71 @@ class Network {
         this.#plugins = new Map();
     }
     toJSON() {
-        return { name: this.name, chainId: this.chainId };
+        return { name: this.name, chainId: String(this.chainId) };
     }
+    /**
+     *  The network common name.
+     *
+     *  This is the canonical name, as networks migh have multiple
+     *  names.
+     */
     get name() { return this.#name; }
     set name(value) { this.#name = value; }
+    /**
+     *  The network chain ID.
+     */
     get chainId() { return this.#chainId; }
     set chainId(value) { this.#chainId = getBigInt(value, "chainId"); }
+    /**
+     *  Returns true if %%other%% matches this network. Any chain ID
+     *  must match, and if no chain ID is present, the name must match.
+     *
+     *  This method does not currently check for additional properties,
+     *  such as ENS address or plug-in compatibility.
+     */
+    matches(other) {
+        if (other == null) {
+            return false;
+        }
+        if (typeof (other) === "string") {
+            try {
+                return (this.chainId === getBigInt(other));
+            }
+            catch (error) { }
+            return (this.name === other);
+        }
+        if (typeof (other) === "number" || typeof (other) === "bigint") {
+            try {
+                return (this.chainId === getBigInt(other));
+            }
+            catch (error) { }
+            return false;
+        }
+        if (typeof (other) === "object") {
+            if (other.chainId != null) {
+                try {
+                    return (this.chainId === getBigInt(other.chainId));
+                }
+                catch (error) { }
+                return false;
+            }
+            if (other.name != null) {
+                return (this.name === other.name);
+            }
+            return false;
+        }
+        return false;
+    }
+    /**
+     *  Returns the list of plugins currently attached to this Network.
+     */
     get plugins() {
         return Array.from(this.#plugins.values());
     }
+    /**
+     *  Attach a new %%plugin%% to this Network. The network name
+     *  must be unique, excluding any fragment.
+     */
     attachPlugin(plugin) {
         if (this.#plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${plugin.name} `);
@@ -15268,13 +14769,24 @@ class Network {
         this.#plugins.set(plugin.name, plugin.clone());
         return this;
     }
+    /**
+     *  Return the plugin, if any, matching %%name%% exactly. Plugins
+     *  with fragments will not be returned unless %%name%% includes
+     *  a fragment.
+     */
     getPlugin(name) {
         return (this.#plugins.get(name)) || null;
     }
-    // Gets a list of Plugins which match basename, ignoring any fragment
+    /**
+     *  Gets a list of all plugins that match %%name%%, with otr without
+     *  a fragment.
+     */
     getPlugins(basename) {
         return (this.plugins.filter((p) => (p.name.split("#")[0] === basename)));
     }
+    /**
+     *  Create a copy of this Network.
+     */
     clone() {
         const clone = new Network(this.name, this.chainId);
         this.plugins.forEach((plugin) => {
@@ -15282,6 +14794,12 @@ class Network {
         });
         return clone;
     }
+    /**
+     *  Compute the intrinsic gas required for a transaction.
+     *
+     *  A GasCostPlugin can be attached to override the default
+     *  values.
+     */
     computeIntrinsicGas(tx) {
         const costs = this.getPlugin("org.ethers.plugins.network.GasCost") || (new GasCostPlugin());
         let gas = costs.txBase;
@@ -15380,9 +14898,7 @@ function injectCommonNetworks() {
             if (options.ensNetwork != null) {
                 network.attachPlugin(new EnsPlugin(null, options.ensNetwork));
             }
-            if (options.priorityFee) {
-                //                network.attachPlugin(new MaxPriorityFeePlugin(options.priorityFee));
-            }
+            if (options.priorityFee) ;
             /*
                         if (options.etherscan) {
                             const { url, apiKey } = options.etherscan;
@@ -15458,22 +14974,6 @@ function injectCommonNetworks() {
 
 function copy$2(obj) {
     return JSON.parse(JSON.stringify(obj));
-}
-/**
- *  @TODO
- *
- *  @_docloc: api/providers/abstract-provider
- */
-function getPollingSubscriber(provider, event) {
-    if (event === "block") {
-        return new PollingBlockSubscriber(provider);
-    }
-    if (isHexString(event, 32)) {
-        return new PollingTransactionSubscriber(provider, event);
-    }
-    assert$1(false, "unsupported polling event", "UNSUPPORTED_OPERATION", {
-        operation: "getPollingSubscriber", info: { event }
-    });
 }
 // @TODO: refactor this
 /**
@@ -15601,7 +15101,6 @@ class PollingOrphanSubscriber extends OnBlockSubscriber {
     }
     async _poll(blockNumber, provider) {
         throw new Error("@TODO");
-        console.log(this.#filter);
     }
 }
 /**
@@ -15757,6 +15256,7 @@ async function getSubscription(_event, provider) {
             case "block":
             case "pending":
             case "debug":
+            case "error":
             case "network": {
                 return { type: _event, tag: _event };
             }
@@ -16513,6 +16013,7 @@ class AbstractProvider {
     _getSubscriber(sub) {
         switch (sub.type) {
             case "debug":
+            case "error":
             case "network":
                 return new UnmanagedSubscriber(sub.type);
             case "block":
@@ -16597,7 +16098,6 @@ class AbstractProvider {
         if (!sub || sub.listeners.length === 0) {
             return false;
         }
-        ;
         const count = sub.listeners.length;
         sub.listeners = sub.listeners.filter(({ listener, once }) => {
             const payload = new EventPayload(this, (once ? null : listener), event);
@@ -17519,10 +17019,10 @@ class JsonRpcApiProvider extends AbstractProvider {
             });
             this.#notReady = { promise, resolve };
         }
-        // This could be relaxed in the future to just check equivalent networks
+        // Make sure any static network is compatbile with the provided netwrok
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork) {
-            assertArgument(staticNetwork === network, "staticNetwork MUST match network object", "options", options);
+            assertArgument(network == null || staticNetwork.matches(network), "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
         }
     }
@@ -18410,7 +17910,6 @@ class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
                 return "https:/\/api-goerli-optimistic.etherscan.io";
-            default:
         }
         assertArgument(false, "unsupported network", "network", this.network);
     }
@@ -18704,61 +18203,6 @@ class EtherscanProvider extends AbstractProvider {
                     return this._checkError(req, error, req.transaction);
                 }
             }
-            /*
-                        case "getLogs": {
-                            // Needs to complain if more than one address is passed in
-                            const args: Record<string, any> = { action: "getLogs" }
-            
-                            if (params.filter.fromBlock) {
-                                args.fromBlock = checkLogTag(params.filter.fromBlock);
-                            }
-            
-                            if (params.filter.toBlock) {
-                                args.toBlock = checkLogTag(params.filter.toBlock);
-                            }
-            
-                            if (params.filter.address) {
-                                args.address = params.filter.address;
-                            }
-            
-                            // @TODO: We can handle slightly more complicated logs using the logs API
-                            if (params.filter.topics && params.filter.topics.length > 0) {
-                                if (params.filter.topics.length > 1) {
-                                    logger.throwError("unsupported topic count", Logger.Errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
-                                }
-                                if (params.filter.topics.length === 1) {
-                                    const topic0 = params.filter.topics[0];
-                                    if (typeof(topic0) !== "string" || topic0.length !== 66) {
-                                        logger.throwError("unsupported topic format", Logger.Errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
-                                    }
-                                    args.topic0 = topic0;
-                                }
-                            }
-            
-                            const logs: Array<any> = await this.fetch("logs", args);
-            
-                            // Cache txHash => blockHash
-                            let blocks: { [tag: string]: string } = {};
-            
-                            // Add any missing blockHash to the logs
-                            for (let i = 0; i < logs.length; i++) {
-                                const log = logs[i];
-                                if (log.blockHash != null) { continue; }
-                                if (blocks[log.blockNumber] == null) {
-                                    const block = await this.getBlock(log.blockNumber);
-                                    if (block) {
-                                        blocks[log.blockNumber] = block.hash;
-                                    }
-                                }
-            
-                                log.blockHash = blocks[log.blockNumber];
-                            }
-            
-                            return logs;
-                        }
-            */
-            default:
-                break;
         }
         return super._perform(req);
     }
@@ -18813,7 +18257,6 @@ function getGlobal() {
     }
     throw new Error('unable to locate global object');
 }
-;
 const _WebSocket = getGlobal().WebSocket;
 
 /**
@@ -18842,7 +18285,6 @@ class SocketSubscriber {
     }
     start() {
         this.#filterId = this.#provider.send("eth_subscribe", this.filter).then((filterId) => {
-            ;
             this.#provider._register(filterId, this);
             return filterId;
         });
@@ -19003,23 +18445,14 @@ class SocketProvider extends JsonRpcApiProvider {
         if ("id" in result) {
             const callback = this.#callbacks.get(result.id);
             if (callback == null) {
-                console.log("Weird... Response for not a thing we sent");
+                this.emit("error", makeError("received result for unknown id", "UNKNOWN_ERROR", {
+                    reasonCode: "UNKNOWN_ID",
+                    result
+                }));
                 return;
             }
             this.#callbacks.delete(result.id);
             callback.resolve(result);
-            /*
-                        if ("error" in result) {
-                            const { message, code, data } = result.error;
-                            const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
-                                request: `ws:${ JSON.stringify(callback.payload) }`,
-                                info: { code, data }
-                            });
-                            callback.reject(error);
-                        } else {
-                            callback.resolve(result.result);
-                        }
-            */
         }
         else if (result.method === "eth_subscription") {
             const filterId = result.params.subscription;
@@ -19396,7 +18829,6 @@ function stringify(value) {
         return value;
     });
 }
-;
 const defaultConfig = { stallTimeout: 400, priority: 1, weight: 1 };
 const defaultState = {
     blockNumber: -2, requests: 0, lateResponses: 0, errorResponses: 0,
@@ -20031,7 +19463,6 @@ class NonceManager extends AbstractSigner {
     }
 }
 
-;
 class BrowserProvider extends JsonRpcApiPollingProvider {
     #request;
     constructor(ethereum, network) {
@@ -20217,12 +19648,6 @@ class PocketProvider extends JsonRpcProvider {
 }
 
 const IpcSocketProvider = undefined;
-
-/**
- *  About providers.
- *
- *  @_section: api/providers:Providers  [about-providers]
- */
 
 /**
  *  The **BaseWallet** is a stream-lined implementation of a
@@ -20663,13 +20088,13 @@ class Mnemonic {
 }
 
 /*! MIT License. Copyright 2015-2022 Richard Moore <me@ricmoo.com>. See LICENSE.txt. */
-var __classPrivateFieldSet$4 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet$2 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet$4 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet$2 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -20712,18 +20137,18 @@ class AES {
         if (!(this instanceof AES)) {
             throw Error('AES must be instanitated with `new`');
         }
-        __classPrivateFieldSet$4(this, _AES_key, new Uint8Array(key), "f");
+        __classPrivateFieldSet$2(this, _AES_key, new Uint8Array(key), "f");
         const rounds = numberOfRounds[this.key.length];
         if (rounds == null) {
             throw new TypeError('invalid key size (must be 16, 24 or 32 bytes)');
         }
         // encryption round keys
-        __classPrivateFieldSet$4(this, _AES_Ke, [], "f");
+        __classPrivateFieldSet$2(this, _AES_Ke, [], "f");
         // decryption round keys
-        __classPrivateFieldSet$4(this, _AES_Kd, [], "f");
+        __classPrivateFieldSet$2(this, _AES_Kd, [], "f");
         for (let i = 0; i <= rounds; i++) {
-            __classPrivateFieldGet$4(this, _AES_Ke, "f").push([0, 0, 0, 0]);
-            __classPrivateFieldGet$4(this, _AES_Kd, "f").push([0, 0, 0, 0]);
+            __classPrivateFieldGet$2(this, _AES_Ke, "f").push([0, 0, 0, 0]);
+            __classPrivateFieldGet$2(this, _AES_Kd, "f").push([0, 0, 0, 0]);
         }
         const roundKeyCount = (rounds + 1) * 4;
         const KC = this.key.length / 4;
@@ -20733,8 +20158,8 @@ class AES {
         let index;
         for (let i = 0; i < KC; i++) {
             index = i >> 2;
-            __classPrivateFieldGet$4(this, _AES_Ke, "f")[index][i % 4] = tk[i];
-            __classPrivateFieldGet$4(this, _AES_Kd, "f")[rounds - index][i % 4] = tk[i];
+            __classPrivateFieldGet$2(this, _AES_Ke, "f")[index][i % 4] = tk[i];
+            __classPrivateFieldGet$2(this, _AES_Kd, "f")[rounds - index][i % 4] = tk[i];
         }
         // key expansion (fips-197 section 5.2)
         let rconpointer = 0;
@@ -20772,33 +20197,33 @@ class AES {
             while (i < KC && t < roundKeyCount) {
                 r = t >> 2;
                 c = t % 4;
-                __classPrivateFieldGet$4(this, _AES_Ke, "f")[r][c] = tk[i];
-                __classPrivateFieldGet$4(this, _AES_Kd, "f")[rounds - r][c] = tk[i++];
+                __classPrivateFieldGet$2(this, _AES_Ke, "f")[r][c] = tk[i];
+                __classPrivateFieldGet$2(this, _AES_Kd, "f")[rounds - r][c] = tk[i++];
                 t++;
             }
         }
         // inverse-cipher-ify the decryption round key (fips-197 section 5.3)
         for (let r = 1; r < rounds; r++) {
             for (let c = 0; c < 4; c++) {
-                tt = __classPrivateFieldGet$4(this, _AES_Kd, "f")[r][c];
-                __classPrivateFieldGet$4(this, _AES_Kd, "f")[r][c] = (U1[(tt >> 24) & 0xFF] ^
+                tt = __classPrivateFieldGet$2(this, _AES_Kd, "f")[r][c];
+                __classPrivateFieldGet$2(this, _AES_Kd, "f")[r][c] = (U1[(tt >> 24) & 0xFF] ^
                     U2[(tt >> 16) & 0xFF] ^
                     U3[(tt >> 8) & 0xFF] ^
                     U4[tt & 0xFF]);
             }
         }
     }
-    get key() { return __classPrivateFieldGet$4(this, _AES_key, "f").slice(); }
+    get key() { return __classPrivateFieldGet$2(this, _AES_key, "f").slice(); }
     encrypt(plaintext) {
         if (plaintext.length != 16) {
             throw new TypeError('invalid plaintext size (must be 16 bytes)');
         }
-        const rounds = __classPrivateFieldGet$4(this, _AES_Ke, "f").length - 1;
+        const rounds = __classPrivateFieldGet$2(this, _AES_Ke, "f").length - 1;
         const a = [0, 0, 0, 0];
         // convert plaintext to (ints ^ key)
         let t = convertToInt32(plaintext);
         for (let i = 0; i < 4; i++) {
-            t[i] ^= __classPrivateFieldGet$4(this, _AES_Ke, "f")[0][i];
+            t[i] ^= __classPrivateFieldGet$2(this, _AES_Ke, "f")[0][i];
         }
         // apply round transforms
         for (let r = 1; r < rounds; r++) {
@@ -20807,7 +20232,7 @@ class AES {
                     T2[(t[(i + 1) % 4] >> 16) & 0xff] ^
                     T3[(t[(i + 2) % 4] >> 8) & 0xff] ^
                     T4[t[(i + 3) % 4] & 0xff] ^
-                    __classPrivateFieldGet$4(this, _AES_Ke, "f")[r][i]);
+                    __classPrivateFieldGet$2(this, _AES_Ke, "f")[r][i]);
             }
             t = a.slice();
         }
@@ -20815,7 +20240,7 @@ class AES {
         const result = new Uint8Array(16);
         let tt = 0;
         for (let i = 0; i < 4; i++) {
-            tt = __classPrivateFieldGet$4(this, _AES_Ke, "f")[rounds][i];
+            tt = __classPrivateFieldGet$2(this, _AES_Ke, "f")[rounds][i];
             result[4 * i] = (S[(t[i] >> 24) & 0xff] ^ (tt >> 24)) & 0xff;
             result[4 * i + 1] = (S[(t[(i + 1) % 4] >> 16) & 0xff] ^ (tt >> 16)) & 0xff;
             result[4 * i + 2] = (S[(t[(i + 2) % 4] >> 8) & 0xff] ^ (tt >> 8)) & 0xff;
@@ -20827,12 +20252,12 @@ class AES {
         if (ciphertext.length != 16) {
             throw new TypeError('invalid ciphertext size (must be 16 bytes)');
         }
-        const rounds = __classPrivateFieldGet$4(this, _AES_Kd, "f").length - 1;
+        const rounds = __classPrivateFieldGet$2(this, _AES_Kd, "f").length - 1;
         const a = [0, 0, 0, 0];
         // convert plaintext to (ints ^ key)
         let t = convertToInt32(ciphertext);
         for (let i = 0; i < 4; i++) {
-            t[i] ^= __classPrivateFieldGet$4(this, _AES_Kd, "f")[0][i];
+            t[i] ^= __classPrivateFieldGet$2(this, _AES_Kd, "f")[0][i];
         }
         // apply round transforms
         for (let r = 1; r < rounds; r++) {
@@ -20841,7 +20266,7 @@ class AES {
                     T6[(t[(i + 3) % 4] >> 16) & 0xff] ^
                     T7[(t[(i + 2) % 4] >> 8) & 0xff] ^
                     T8[t[(i + 1) % 4] & 0xff] ^
-                    __classPrivateFieldGet$4(this, _AES_Kd, "f")[r][i]);
+                    __classPrivateFieldGet$2(this, _AES_Kd, "f")[r][i]);
             }
             t = a.slice();
         }
@@ -20849,7 +20274,7 @@ class AES {
         const result = new Uint8Array(16);
         let tt = 0;
         for (let i = 0; i < 4; i++) {
-            tt = __classPrivateFieldGet$4(this, _AES_Kd, "f")[rounds][i];
+            tt = __classPrivateFieldGet$2(this, _AES_Kd, "f")[rounds][i];
             result[4 * i] = (Si[(t[i] >> 24) & 0xff] ^ (tt >> 24)) & 0xff;
             result[4 * i + 1] = (Si[(t[(i + 3) % 4] >> 16) & 0xff] ^ (tt >> 16)) & 0xff;
             result[4 * i + 2] = (Si[(t[(i + 2) % 4] >> 8) & 0xff] ^ (tt >> 8)) & 0xff;
@@ -20873,13 +20298,13 @@ class ModeOfOperation {
 }
 
 // Cipher Block Chaining
-var __classPrivateFieldSet$3 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet$1 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet$3 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet$1 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -20894,14 +20319,14 @@ class CBC extends ModeOfOperation {
             if (iv.length % 16) {
                 throw new TypeError("invalid iv size (must be 16 bytes)");
             }
-            __classPrivateFieldSet$3(this, _CBC_iv, new Uint8Array(iv), "f");
+            __classPrivateFieldSet$1(this, _CBC_iv, new Uint8Array(iv), "f");
         }
         else {
-            __classPrivateFieldSet$3(this, _CBC_iv, new Uint8Array(16), "f");
+            __classPrivateFieldSet$1(this, _CBC_iv, new Uint8Array(16), "f");
         }
-        __classPrivateFieldSet$3(this, _CBC_lastBlock, this.iv, "f");
+        __classPrivateFieldSet$1(this, _CBC_lastBlock, this.iv, "f");
     }
-    get iv() { return new Uint8Array(__classPrivateFieldGet$3(this, _CBC_iv, "f")); }
+    get iv() { return new Uint8Array(__classPrivateFieldGet$1(this, _CBC_iv, "f")); }
     encrypt(plaintext) {
         if (plaintext.length % 16) {
             throw new TypeError("invalid plaintext size (must be multiple of 16 bytes)");
@@ -20909,10 +20334,10 @@ class CBC extends ModeOfOperation {
         const ciphertext = new Uint8Array(plaintext.length);
         for (let i = 0; i < plaintext.length; i += 16) {
             for (let j = 0; j < 16; j++) {
-                __classPrivateFieldGet$3(this, _CBC_lastBlock, "f")[j] ^= plaintext[i + j];
+                __classPrivateFieldGet$1(this, _CBC_lastBlock, "f")[j] ^= plaintext[i + j];
             }
-            __classPrivateFieldSet$3(this, _CBC_lastBlock, this.aes.encrypt(__classPrivateFieldGet$3(this, _CBC_lastBlock, "f")), "f");
-            ciphertext.set(__classPrivateFieldGet$3(this, _CBC_lastBlock, "f"), i);
+            __classPrivateFieldSet$1(this, _CBC_lastBlock, this.aes.encrypt(__classPrivateFieldGet$1(this, _CBC_lastBlock, "f")), "f");
+            ciphertext.set(__classPrivateFieldGet$1(this, _CBC_lastBlock, "f"), i);
         }
         return ciphertext;
     }
@@ -20924,8 +20349,8 @@ class CBC extends ModeOfOperation {
         for (let i = 0; i < ciphertext.length; i += 16) {
             const block = this.aes.decrypt(ciphertext.subarray(i, i + 16));
             for (let j = 0; j < 16; j++) {
-                plaintext[i + j] = block[j] ^ __classPrivateFieldGet$3(this, _CBC_lastBlock, "f")[j];
-                __classPrivateFieldGet$3(this, _CBC_lastBlock, "f")[j] = ciphertext[i + j];
+                plaintext[i + j] = block[j] ^ __classPrivateFieldGet$1(this, _CBC_lastBlock, "f")[j];
+                __classPrivateFieldGet$1(this, _CBC_lastBlock, "f")[j] = ciphertext[i + j];
             }
         }
         return plaintext;
@@ -20933,90 +20358,14 @@ class CBC extends ModeOfOperation {
 }
 _CBC_iv = new WeakMap(), _CBC_lastBlock = new WeakMap();
 
-// Cipher Feedback
-var __classPrivateFieldSet$2 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet$2 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _CFB_instances, _CFB_iv, _CFB_shiftRegister, _CFB_shift;
-class CFB extends ModeOfOperation {
-    constructor(key, iv, segmentSize = 8) {
-        super("CFB", key, CFB);
-        _CFB_instances.add(this);
-        _CFB_iv.set(this, void 0);
-        _CFB_shiftRegister.set(this, void 0);
-        // This library currently only handles byte-aligned segmentSize
-        if (!Number.isInteger(segmentSize) || (segmentSize % 8)) {
-            throw new TypeError("invalid segmentSize");
-        }
-        Object.defineProperties(this, {
-            segmentSize: { enumerable: true, value: segmentSize }
-        });
-        if (iv) {
-            if (iv.length % 16) {
-                throw new TypeError("invalid iv size (must be 16 bytes)");
-            }
-            __classPrivateFieldSet$2(this, _CFB_iv, new Uint8Array(iv), "f");
-        }
-        else {
-            __classPrivateFieldSet$2(this, _CFB_iv, new Uint8Array(16), "f");
-        }
-        __classPrivateFieldSet$2(this, _CFB_shiftRegister, this.iv, "f");
-    }
-    get iv() { return new Uint8Array(__classPrivateFieldGet$2(this, _CFB_iv, "f")); }
-    encrypt(plaintext) {
-        if (8 * plaintext.length % this.segmentSize) {
-            throw new TypeError("invalid plaintext size (must be multiple of segmentSize bytes)");
-        }
-        const segmentSize = this.segmentSize / 8;
-        const ciphertext = new Uint8Array(plaintext);
-        for (let i = 0; i < ciphertext.length; i += segmentSize) {
-            const xorSegment = this.aes.encrypt(__classPrivateFieldGet$2(this, _CFB_shiftRegister, "f"));
-            for (let j = 0; j < segmentSize; j++) {
-                ciphertext[i + j] ^= xorSegment[j];
-            }
-            __classPrivateFieldGet$2(this, _CFB_instances, "m", _CFB_shift).call(this, ciphertext.subarray(i));
-        }
-        return ciphertext;
-    }
-    decrypt(ciphertext) {
-        if (8 * ciphertext.length % this.segmentSize) {
-            throw new TypeError("invalid ciphertext size (must be multiple of segmentSize bytes)");
-        }
-        const segmentSize = this.segmentSize / 8;
-        const plaintext = new Uint8Array(ciphertext);
-        for (let i = 0; i < plaintext.length; i += segmentSize) {
-            const xorSegment = this.aes.encrypt(__classPrivateFieldGet$2(this, _CFB_shiftRegister, "f"));
-            for (let j = 0; j < segmentSize; j++) {
-                plaintext[i + j] ^= xorSegment[j];
-            }
-            __classPrivateFieldGet$2(this, _CFB_instances, "m", _CFB_shift).call(this, ciphertext.subarray(i));
-        }
-        return plaintext;
-    }
-}
-_CFB_iv = new WeakMap(), _CFB_shiftRegister = new WeakMap(), _CFB_instances = new WeakSet(), _CFB_shift = function _CFB_shift(data) {
-    const segmentSize = this.segmentSize / 8;
-    // Shift the register
-    __classPrivateFieldGet$2(this, _CFB_shiftRegister, "f").set(__classPrivateFieldGet$2(this, _CFB_shiftRegister, "f").subarray(segmentSize));
-    __classPrivateFieldGet$2(this, _CFB_shiftRegister, "f").set(data.subarray(0, segmentSize), 16 - segmentSize);
-};
-
 // Counter Mode
-var __classPrivateFieldSet$1 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet$1 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -21030,10 +20379,10 @@ class CTR extends ModeOfOperation {
         _CTR_remainingIndex.set(this, void 0);
         // The current counter
         _CTR_counter.set(this, void 0);
-        __classPrivateFieldSet$1(this, _CTR_counter, new Uint8Array(16), "f");
-        __classPrivateFieldGet$1(this, _CTR_counter, "f").fill(0);
-        __classPrivateFieldSet$1(this, _CTR_remaining, __classPrivateFieldGet$1(this, _CTR_counter, "f"), "f"); // This will be discarded immediately
-        __classPrivateFieldSet$1(this, _CTR_remainingIndex, 16, "f");
+        __classPrivateFieldSet(this, _CTR_counter, new Uint8Array(16), "f");
+        __classPrivateFieldGet(this, _CTR_counter, "f").fill(0);
+        __classPrivateFieldSet(this, _CTR_remaining, __classPrivateFieldGet(this, _CTR_counter, "f"), "f"); // This will be discarded immediately
+        __classPrivateFieldSet(this, _CTR_remainingIndex, 16, "f");
         if (initialValue == null) {
             initialValue = 1;
         }
@@ -21044,13 +20393,13 @@ class CTR extends ModeOfOperation {
             this.setCounterBytes(initialValue);
         }
     }
-    get counter() { return new Uint8Array(__classPrivateFieldGet$1(this, _CTR_counter, "f")); }
+    get counter() { return new Uint8Array(__classPrivateFieldGet(this, _CTR_counter, "f")); }
     setCounterValue(value) {
         if (!Number.isInteger(value) || value < 0 || value > Number.MAX_SAFE_INTEGER) {
             throw new TypeError("invalid counter initial integer value");
         }
         for (let index = 15; index >= 0; --index) {
-            __classPrivateFieldGet$1(this, _CTR_counter, "f")[index] = value % 256;
+            __classPrivateFieldGet(this, _CTR_counter, "f")[index] = value % 256;
             value = Math.floor(value / 256);
         }
     }
@@ -21058,15 +20407,15 @@ class CTR extends ModeOfOperation {
         if (value.length !== 16) {
             throw new TypeError("invalid counter initial Uint8Array value length");
         }
-        __classPrivateFieldGet$1(this, _CTR_counter, "f").set(value);
+        __classPrivateFieldGet(this, _CTR_counter, "f").set(value);
     }
     increment() {
         for (let i = 15; i >= 0; i--) {
-            if (__classPrivateFieldGet$1(this, _CTR_counter, "f")[i] === 255) {
-                __classPrivateFieldGet$1(this, _CTR_counter, "f")[i] = 0;
+            if (__classPrivateFieldGet(this, _CTR_counter, "f")[i] === 255) {
+                __classPrivateFieldGet(this, _CTR_counter, "f")[i] = 0;
             }
             else {
-                __classPrivateFieldGet$1(this, _CTR_counter, "f")[i]++;
+                __classPrivateFieldGet(this, _CTR_counter, "f")[i]++;
                 break;
             }
         }
@@ -21075,12 +20424,12 @@ class CTR extends ModeOfOperation {
         var _a, _b;
         const crypttext = new Uint8Array(plaintext);
         for (let i = 0; i < crypttext.length; i++) {
-            if (__classPrivateFieldGet$1(this, _CTR_remainingIndex, "f") === 16) {
-                __classPrivateFieldSet$1(this, _CTR_remaining, this.aes.encrypt(__classPrivateFieldGet$1(this, _CTR_counter, "f")), "f");
-                __classPrivateFieldSet$1(this, _CTR_remainingIndex, 0, "f");
+            if (__classPrivateFieldGet(this, _CTR_remainingIndex, "f") === 16) {
+                __classPrivateFieldSet(this, _CTR_remaining, this.aes.encrypt(__classPrivateFieldGet(this, _CTR_counter, "f")), "f");
+                __classPrivateFieldSet(this, _CTR_remainingIndex, 0, "f");
                 this.increment();
             }
-            crypttext[i] ^= __classPrivateFieldGet$1(this, _CTR_remaining, "f")[__classPrivateFieldSet$1(this, _CTR_remainingIndex, (_b = __classPrivateFieldGet$1(this, _CTR_remainingIndex, "f"), _a = _b++, _b), "f"), _a];
+            crypttext[i] ^= __classPrivateFieldGet(this, _CTR_remaining, "f")[__classPrivateFieldSet(this, _CTR_remainingIndex, (_b = __classPrivateFieldGet(this, _CTR_remainingIndex, "f"), _a = _b++, _b), "f"), _a];
         }
         return crypttext;
     }
@@ -21090,98 +20439,6 @@ class CTR extends ModeOfOperation {
 }
 _CTR_remaining = new WeakMap(), _CTR_remainingIndex = new WeakMap(), _CTR_counter = new WeakMap();
 
-// Electronic Code Book
-class ECB extends ModeOfOperation {
-    constructor(key) {
-        super("ECB", key, ECB);
-    }
-    encrypt(plaintext) {
-        if (plaintext.length % 16) {
-            throw new TypeError("invalid plaintext size (must be multiple of 16 bytes)");
-        }
-        const crypttext = new Uint8Array(plaintext.length);
-        for (let i = 0; i < plaintext.length; i += 16) {
-            crypttext.set(this.aes.encrypt(plaintext.subarray(i, i + 16)), i);
-        }
-        return crypttext;
-    }
-    decrypt(crypttext) {
-        if (crypttext.length % 16) {
-            throw new TypeError("invalid ciphertext size (must be multiple of 16 bytes)");
-        }
-        const plaintext = new Uint8Array(crypttext.length);
-        for (let i = 0; i < crypttext.length; i += 16) {
-            plaintext.set(this.aes.decrypt(crypttext.subarray(i, i + 16)), i);
-        }
-        return plaintext;
-    }
-}
-
-// Output Feedback
-var __classPrivateFieldSet = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _OFB_iv, _OFB_lastPrecipher, _OFB_lastPrecipherIndex;
-class OFB extends ModeOfOperation {
-    constructor(key, iv) {
-        super("OFB", key, OFB);
-        _OFB_iv.set(this, void 0);
-        _OFB_lastPrecipher.set(this, void 0);
-        _OFB_lastPrecipherIndex.set(this, void 0);
-        if (iv) {
-            if (iv.length % 16) {
-                throw new TypeError("invalid iv size (must be 16 bytes)");
-            }
-            __classPrivateFieldSet(this, _OFB_iv, new Uint8Array(iv), "f");
-        }
-        else {
-            __classPrivateFieldSet(this, _OFB_iv, new Uint8Array(16), "f");
-        }
-        __classPrivateFieldSet(this, _OFB_lastPrecipher, this.iv, "f");
-        __classPrivateFieldSet(this, _OFB_lastPrecipherIndex, 16, "f");
-    }
-    get iv() { return new Uint8Array(__classPrivateFieldGet(this, _OFB_iv, "f")); }
-    encrypt(plaintext) {
-        var _a, _b;
-        if (plaintext.length % 16) {
-            throw new TypeError("invalid plaintext size (must be multiple of 16 bytes)");
-        }
-        const ciphertext = new Uint8Array(plaintext);
-        for (let i = 0; i < ciphertext.length; i++) {
-            if (__classPrivateFieldGet(this, _OFB_lastPrecipherIndex, "f") === 16) {
-                __classPrivateFieldSet(this, _OFB_lastPrecipher, this.aes.encrypt(__classPrivateFieldGet(this, _OFB_lastPrecipher, "f")), "f");
-                __classPrivateFieldSet(this, _OFB_lastPrecipherIndex, 0, "f");
-            }
-            ciphertext[i] ^= __classPrivateFieldGet(this, _OFB_lastPrecipher, "f")[__classPrivateFieldSet(this, _OFB_lastPrecipherIndex, (_b = __classPrivateFieldGet(this, _OFB_lastPrecipherIndex, "f"), _a = _b++, _b), "f"), _a];
-        }
-        return ciphertext;
-    }
-    decrypt(ciphertext) {
-        if (ciphertext.length % 16) {
-            throw new TypeError("invalid ciphertext size (must be multiple of 16 bytes)");
-        }
-        return this.encrypt(ciphertext);
-    }
-}
-_OFB_iv = new WeakMap(), _OFB_lastPrecipher = new WeakMap(), _OFB_lastPrecipherIndex = new WeakMap();
-
-function pkcs7Pad(data) {
-    const padder = 16 - (data.length % 16);
-    const result = new Uint8Array(data.length + padder);
-    result.set(data);
-    for (let i = data.length; i < result.length; i++) {
-        result[i] = padder;
-    }
-    return result;
-}
 function pkcs7Strip(data) {
     if (data.length < 16) {
         throw new TypeError('PKCS#7 invalid length');
@@ -22296,25 +21553,6 @@ class Wallet extends BaseWallet {
     }
 }
 
-/**
- *  When interacting with Ethereum, it is necessary to use a private
- *  key authenticate actions by signing a payload.
- *
- *  Wallets are the simplest way to expose the concept of an
- *  //Externally Owner Account// (EOA) as it wraps a private key
- *  and supports high-level methods to sign common types of interaction
- *  and send transactions.
- *
- *  The class most developers will want to use is [[Wallet]], which
- *  can load a private key directly or from any common wallet format.
- *
- *  The [[HDNodeWallet]] can be used when it is necessary to access
- *  low-level details of how an HD wallets are derived, exported
- *  or imported.
- *
- *  @_section: api/wallet:Wallets  [about-wallets]
- */
-
 const Base64 = ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
 /**
  *  @_ignore
@@ -22399,26 +21637,6 @@ class WordlistOwlA extends WordlistOwl {
 const wordlists = {
     en: LangEn.wordlist(),
 };
-
-/**
- *  A Wordlist is a set of 2048 words used to encode private keys
- *  (or other binary data) that is easier for humans to write down,
- *  transcribe and dictate.
- *
- *  The [[link-bip-39]] standard includes several checksum bits,
- *  depending on the size of the mnemonic phrase.
- *
- *  A mnemonic phrase may be 12, 15, 18, 21 or 24 words long. For
- *  most purposes 12 word mnemonics should be used, as including
- *  additional words increases the difficulty and potential for
- *  mistakes and does not offer any effective improvement on security.
- *
- *  There are a variety of [[link-bip39-wordlists]] for different
- *  languages, but for maximal compatibility, the
- *  [English Wordlist](LangEn) is recommended.
- *
- *  @_section: api/wordlists:Wordlists [about-wordlists]
- */
 
 /////////////////////////////
 
@@ -22610,14 +21828,6 @@ var ethers = /*#__PURE__*/Object.freeze({
     WordlistOwlA: WordlistOwlA,
     wordlists: wordlists
 });
-
-/**
- *  The Application Programming Interface (API) is the collection of
- *  functions, classes and types offered by the Ethers library.
- *
- *  @_section: api:Application Programming Interface  [about-api]
- *  @_navTitle: API
- */
 
 export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EnsPlugin, EnsResolver, ErrorDescription, ErrorFragment, EtherSymbol, EtherscanPlugin, EtherscanProvider, EventFragment, EventLog, EventPayload, FallbackFragment, FallbackProvider, FeeData, FeeDataNetworkPlugin, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, InfuraWebSocketProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, NamedFragment, Network, NetworkPlugin, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber, SocketProvider, SocketSubscriber, StructFragment, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, UnmanagedSubscriber, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, copyRequest, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getIndexedAccountPath, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, uuidV4, verifyMessage, verifyTypedData, version, wordlists, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map

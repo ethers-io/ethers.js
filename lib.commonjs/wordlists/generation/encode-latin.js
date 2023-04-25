@@ -57,12 +57,10 @@
 // The base-64 set used has all number replaced with their
 // shifted-counterparts to prevent comflicting with the numbers used in
 // the fold operation to indicate the number of ";".
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.encodeOwl = exports.extractAccents = exports.BitWriter = void 0;
-const fs_1 = __importDefault(require("fs"));
+const tslib_1 = require("tslib");
+const fs_1 = tslib_1.__importDefault(require("fs"));
 const id_js_1 = require("../../hash/id.js");
 const decode_owl_js_1 = require("../decode-owl.js");
 const decode_owla_js_1 = require("../decode-owla.js");

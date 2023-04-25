@@ -3,9 +3,13 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.3.1 (2023-04-22 18:55)
+ethers/v6.4.0 (2023-04-25 19:59)
 --------------------------------
 
+  - Added error event to provider ([#3970](https://github.com/ethers-io/ethers.js/issues/3970), [#3982](https://github.com/ethers-io/ethers.js/issues/3982); [af0291c](https://github.com/ethers-io/ethers.js/commit/af0291c01639674658f5049343da88a84da763a1)).
+  - Removed superfluous parameters for internal transaction functions ([e848978](https://github.com/ethers-io/ethers.js/commit/e8489787585c2e69a23f6cdec6901f22b096aebe)).
+  - More aggresive tree-shaking ([076edad](https://github.com/ethers-io/ethers.js/commit/076edad81ef62474f48f2b4c8af0edc6e4fd64f2)).
+  - More flexible static network checking ([#3834](https://github.com/ethers-io/ethers.js/issues/3834); [7c0465c](https://github.com/ethers-io/ethers.js/commit/7c0465c5fb834eba18d4e5535072685bdc1029f0)).
   - Support transitive dependants that use non-node16 moduleResolution ([#3920](https://github.com/ethers-io/ethers.js/issues/3920); [df685b1](https://github.com/ethers-io/ethers.js/commit/df685b1bd9ad346ee7863beb6c3ca3f4e94932a2)).
   - Populate any missing log.removed with false ([#3959](https://github.com/ethers-io/ethers.js/issues/3959); [4e478e6](https://github.com/ethers-io/ethers.js/commit/4e478e625d5648f2172631eef5fda5776ee776b0)).
 

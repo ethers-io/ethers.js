@@ -23,15 +23,57 @@ export declare class Network {
     #private;
     constructor(name: string, chainId: BigNumberish);
     toJSON(): any;
+    /**
+     *  The network common name.
+     *
+     *  This is the canonical name, as networks migh have multiple
+     *  names.
+     */
     get name(): string;
     set name(value: string);
+    /**
+     *  The network chain ID.
+     */
     get chainId(): bigint;
     set chainId(value: BigNumberish);
+    /**
+     *  Returns true if %%other%% matches this network. Any chain ID
+     *  must match, and if no chain ID is present, the name must match.
+     *
+     *  This method does not currently check for additional properties,
+     *  such as ENS address or plug-in compatibility.
+     */
+    matches(other: Networkish): boolean;
+    /**
+     *  Returns the list of plugins currently attached to this Network.
+     */
     get plugins(): Array<NetworkPlugin>;
+    /**
+     *  Attach a new %%plugin%% to this Network. The network name
+     *  must be unique, excluding any fragment.
+     */
     attachPlugin(plugin: NetworkPlugin): this;
+    /**
+     *  Return the plugin, if any, matching %%name%% exactly. Plugins
+     *  with fragments will not be returned unless %%name%% includes
+     *  a fragment.
+     */
     getPlugin<T extends NetworkPlugin = NetworkPlugin>(name: string): null | T;
+    /**
+     *  Gets a list of all plugins that match %%name%%, with otr without
+     *  a fragment.
+     */
     getPlugins<T extends NetworkPlugin = NetworkPlugin>(basename: string): Array<T>;
+    /**
+     *  Create a copy of this Network.
+     */
     clone(): Network;
+    /**
+     *  Compute the intrinsic gas required for a transaction.
+     *
+     *  A GasCostPlugin can be attached to override the default
+     *  values.
+     */
     computeIntrinsicGas(tx: TransactionLike): number;
     /**
      *  Returns a new Network for the %%network%% name or chainId.

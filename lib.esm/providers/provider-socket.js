@@ -9,7 +9,7 @@
  *  @_subsection: api/providers/abstract-provider
  */
 import { UnmanagedSubscriber } from "./abstract-provider.js";
-import { assert, assertArgument } from "../utils/index.js";
+import { assert, assertArgument, makeError } from "../utils/index.js";
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 export class SocketSubscriber {
     #provider;
@@ -188,23 +188,14 @@ export class SocketProvider extends JsonRpcApiProvider {
         if ("id" in result) {
             const callback = this.#callbacks.get(result.id);
             if (callback == null) {
-                console.log("Weird... Response for not a thing we sent");
+                this.emit("error", makeError("received result for unknown id", "UNKNOWN_ERROR", {
+                    reasonCode: "UNKNOWN_ID",
+                    result
+                }));
                 return;
             }
             this.#callbacks.delete(result.id);
             callback.resolve(result);
-            /*
-                        if ("error" in result) {
-                            const { message, code, data } = result.error;
-                            const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
-                                request: `ws:${ JSON.stringify(callback.payload) }`,
-                                info: { code, data }
-                            });
-                            callback.reject(error);
-                        } else {
-                            callback.resolve(result.result);
-                        }
-            */
         }
         else if (result.method === "eth_subscription") {
             const filterId = result.params.subscription;

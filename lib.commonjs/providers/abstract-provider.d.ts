@@ -48,7 +48,7 @@ export type DebugEventAbstractProvider = {
     error: Error;
 };
 export type Subscription = {
-    type: "block" | "close" | "debug" | "network" | "pending";
+    type: "block" | "close" | "debug" | "error" | "network" | "pending";
     tag: string;
 } | {
     type: "transaction";

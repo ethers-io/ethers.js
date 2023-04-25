@@ -1,9 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const assert_1 = __importDefault(require("assert"));
+const tslib_1 = require("tslib");
+const assert_1 = tslib_1.__importDefault(require("assert"));
 const index_js_1 = require("../index.js");
 describe("Tests Quantity Functions", function () {
     const quantities = [

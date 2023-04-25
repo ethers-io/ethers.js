@@ -139,7 +139,7 @@ function _serializeLegacy(tx, sig) {
     fields.push(toBeArray(sig.s));
     return encodeRlp(fields);
 }
-function _parseEipSignature(tx, fields, serialize) {
+function _parseEipSignature(tx, fields) {
     let yParity;
     try {
         yParity = handleNumber(fields[0], "yParity");
@@ -178,7 +178,7 @@ function _parseEip1559(data) {
         return tx;
     }
     tx.hash = keccak256(data);
-    _parseEipSignature(tx, fields.slice(9), _serializeEip1559);
+    _parseEipSignature(tx, fields.slice(9));
     return tx;
 }
 function _serializeEip1559(tx, sig) {
@@ -219,7 +219,7 @@ function _parseEip2930(data) {
         return tx;
     }
     tx.hash = keccak256(data);
-    _parseEipSignature(tx, fields.slice(8), _serializeEip2930);
+    _parseEipSignature(tx, fields.slice(8));
     return tx;
 }
 function _serializeEip2930(tx, sig) {
@@ -382,7 +382,7 @@ export class Transaction {
     get data() { return this.#data; }
     set data(value) { this.#data = hexlify(value); }
     /**
-     *  The amount of ether to send in this transactions.
+     *  The amount of ether (in wei) to send in this transactions.
      */
     get value() { return this.#value; }
     set value(value) {
