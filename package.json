@@ -9,11 +9,11 @@
     "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js"
   },
   "dependencies": {
-    "@adraffy/ens-normalize": "1.9.0",
+    "@adraffy/ens-normalize": "https://github.com/ricmoo/ens-normalize.js",
     "@noble/hashes": "1.1.2",
     "@noble/secp256k1": "1.7.1",
     "@types/node": "18.15.13",
-    "aes-js": "4.0.0-beta.3",
+    "aes-js": "4.0.0-beta.4",
     "tslib": "2.4.0",
     "ws": "8.5.0"
   },
@@ -35,75 +35,75 @@
   "ethereum": "donations.ethers.eth",
   "exports": {
     ".": {
+      "require": "./lib.commonjs/index.js",
       "types": "./types/index.d.ts",
       "import": "./lib.esm/index.js",
-      "require": "./lib.commonjs/index.js",
       "default": "./lib.commonjs/index.js"
     },
     "./abi": {
+      "require": "./lib.commonjs/abi/index.js",
       "types": "./types/abi/index.d.ts",
       "import": "./lib.esm/abi/index.js",
-      "require": "./lib.commonjs/abi/index.js",
       "default": "./lib.commonjs/abi/index.js"
     },
     "./address": {
+      "require": "./lib.commonjs/address/index.js",
       "types": "./types/address/index.d.ts",
       "import": "./lib.esm/address/index.js",
-      "require": "./lib.commonjs/address/index.js",
       "default": "./lib.commonjs/address/index.js"
     },
     "./constants": {
+      "require": "./lib.commonjs/constants/index.js",
       "types": "./types/constants/index.d.ts",
       "import": "./lib.esm/constants/index.js",
-      "require": "./lib.commonjs/constants/index.js",
       "default": "./lib.commonjs/constants/index.js"
     },
     "./contract": {
+      "require": "./lib.commonjs/contract/index.js",
       "types": "./types/contract/index.d.ts",
       "import": "./lib.esm/contract/index.js",
-      "require": "./lib.commonjs/contract/index.js",
       "default": "./lib.commonjs/contract/index.js"
     },
     "./crypto": {
+      "require": "./lib.commonjs/crypto/index.js",
       "types": "./types/crypto/index.d.ts",
       "import": "./lib.esm/crypto/index.js",
-      "require": "./lib.commonjs/crypto/index.js",
       "default": "./lib.commonjs/crypto/index.js"
     },
     "./hash": {
+      "require": "./lib.commonjs/hash/index.js",
       "types": "./types/hash/index.d.ts",
       "import": "./lib.esm/hash/index.js",
-      "require": "./lib.commonjs/hash/index.js",
       "default": "./lib.commonjs/hash/index.js"
     },
     "./providers": {
+      "require": "./lib.commonjs/providers/index.js",
       "types": "./types/providers/index.d.ts",
       "import": "./lib.esm/providers/index.js",
-      "require": "./lib.commonjs/providers/index.js",
       "default": "./lib.commonjs/providers/index.js"
     },
     "./transaction": {
+      "require": "./lib.commonjs/transaction/index.js",
       "types": "./types/transaction/index.d.ts",
       "import": "./lib.esm/transaction/index.js",
-      "require": "./lib.commonjs/transaction/index.js",
       "default": "./lib.commonjs/transaction/index.js"
     },
     "./utils": {
+      "require": "./lib.commonjs/utils/index.js",
       "types": "./types/utils/index.d.ts",
       "import": "./lib.esm/utils/index.js",
-      "require": "./lib.commonjs/utils/index.js",
       "default": "./lib.commonjs/utils/index.js"
     },
     "./wallet": {
+      "require": "./lib.commonjs/wallet/index.js",
       "types": "./types/wallet/index.d.ts",
       "import": "./lib.esm/wallet/index.js",
-      "require": "./lib.commonjs/wallet/index.js",
       "default": "./lib.commonjs/wallet/index.js"
     },
     "./wordlists": {
+      "require": "./lib.commonjs/wordlists/index.js",
       "types": "./types/wordlists/index.d.ts",
       "import": "./lib.esm/wordlists/index.js",
-      "require": "./lib.commonjs/wordlists/index.js",
       "default": "./lib.commonjs/wordlists/index.js"
     }
   },
@@ -117,7 +117,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "df685b1bd9ad346ee7863beb6c3ca3f4e94932a2",
+  "gitHead": "af0291c01639674658f5049343da88a84da763a1",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -137,17 +137,16 @@
     "url": "git://github.com/ethers-io/ethers.js.git"
   },
   "scripts": {
-    "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/ethers.umd.js -o ./dist/ethers.umd.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js && cp ./output/post-build/dist/* ./dist/",
+    "_build-dist": "rollup -c && uglifyjs ./dist/ethers.js -o ./dist/ethers.min.js && uglifyjs ./dist/ethers.umd.js -o ./dist/ethers.umd.min.js && uglifyjs ./dist/wordlists-extra.js -o ./dist/wordlists-extra.min.js",
     "_dist-stats": "gzip -k9f -S '.gz' ./dist/ethers.min.js && gzip -k9f -S '.gz' ./dist/ethers.umd.min.js && gzip -k9f -S '.gz' ./dist/wordlists-extra.min.js && du -hs ./dist/*.gz && echo '' && du -hs ./dist/*.js",
     "auto-build": "npm run build -- -w",
     "build": "tsc --project tsconfig.esm.json",
-    "build-all": "npm run build && cp ./output/post-build/lib.esm/* ./lib.esm/ && npm run build-commonjs && npm run build-types",
+    "build-all": "npm run build && npm run build-commonjs && npm run build-types",
     "build-clean": "npm run clean && npm run build && node lib.esm/_admin/update-version.js && node lib.esm/_admin/update-changelog.js && npm run build-all && npm run _build-dist && npm run _dist-stats",
-    "build-commonjs": "tsc --project tsconfig.commonjs.json && cp ./output/post-build/lib.commonjs/* ./lib.commonjs/",
+    "build-commonjs": "tsc --project tsconfig.commonjs.json",
     "build-dist": "npm run build && npm run _build-dist && npm run _dist-stats",
-    "build-docs": "echo 'foo'",
-    "build-types": "tsc --project tsconfig.types.json && cp ./output/post-build/types/* ./types/",
-    "clean": "rm -rf dist lib.esm lib.commonjs types",
+    "build-types": "tsc --project tsconfig.types.json",
+    "clean": "rm -rf dist lib.esm lib.commonjs types && cp -r output/post-build/* .",
     "postpublish": "node lib.esm/_admin/create-release.js",
     "stats": "echo 'Dependencies' && npm ls --all --omit=dev",
     "test": "npm run test-esm",
@@ -156,7 +155,6 @@
     "test-esm": "mocha --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js"
   },
   "sideEffects": false,
-  "type": "module",
   "types": "./types/index.d.ts",
-  "version": "6.3.1"
+  "version": "6.4.0"
 }

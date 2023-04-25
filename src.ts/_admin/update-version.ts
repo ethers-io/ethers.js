@@ -7,7 +7,6 @@ import { getLogs } from "./utils/git.js";
 import { loadJson, saveJson } from "./utils/json.js";
 import { resolve } from "./utils/path.js";
 
-
 const cache: Record<string, any> = { };
 
 async function getNpmPackage(name: string): Promise<any> {
@@ -42,6 +41,7 @@ function writeVersion(version: string): void {
     let gitHead = "";
     for (const log of await getLogs([ "." ])) {
         if (log.body.startsWith("admin:")) { continue; }
+        if (log.body.startsWith("docs:")) { continue; }
         if (log.body.startsWith("tests:")) { continue; }
         gitHead = log.commit;
         break;
@@ -73,6 +73,13 @@ function writeVersion(version: string): void {
             if ((path.startsWith("./") || path === ".") && check[a] && check[b]) {
                 const cmp = a.localeCompare(b);
                 if (cmp === 0) { return cmp; }
+
+                // Make sure require comes first; it has the types built-in
+                // so its ok
+                if (a === "require") { return -1; }
+                if (b === "require") { return 1; }
+
+                // Favour types the next-first and default for last
                 if (a === "types" || b === "default") { return -1; }
                 if (b === "types" || a === "default") { return 1; }
                 return cmp;
