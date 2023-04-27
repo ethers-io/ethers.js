@@ -41,6 +41,10 @@ export function hashMessage(message: Uint8Array | string): string {
     ]));
 }
 
+/**
+ *  Return the address of the private key that produced
+ *  the signature %%sig%% during signing for %%message%%.
+ */
 export function verifyMessage(message: Uint8Array | string, sig: SignatureLike): string {
     const digest = hashMessage(message);
     return recoverAddress(digest, sig);
