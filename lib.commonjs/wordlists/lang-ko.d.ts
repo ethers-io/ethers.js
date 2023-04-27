@@ -22,3 +22,4 @@ export declare class LangKo extends Wordlist {
      */
     static wordlist(): LangKo;
 }
+//# sourceMappingURL=lang-ko.d.ts.map

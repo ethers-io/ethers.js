@@ -266,3 +266,4 @@ export declare class JsonRpcProvider extends JsonRpcApiPollingProvider {
     send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult>>;
 }
+//# sourceMappingURL=provider-jsonrpc.d.ts.map

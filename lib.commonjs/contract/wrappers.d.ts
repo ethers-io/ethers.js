@@ -38,3 +38,4 @@ export declare class ContractEventPayload extends ContractUnknownEventPayload {
     get eventName(): string;
     get eventSignature(): string;
 }
+//# sourceMappingURL=wrappers.d.ts.map

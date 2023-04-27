@@ -3,3 +3,4 @@ export interface PaginationResult<R> extends Array<R> {
     totalResults: null | number;
     done: boolean;
 }
+//# sourceMappingURL=pagination.d.ts.map

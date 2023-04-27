@@ -56,3 +56,4 @@ export declare class AbiCoder {
         data?: string;
     }, data: null | BytesLike): CallExceptionError;
 }
+//# sourceMappingURL=abi-coder.d.ts.map

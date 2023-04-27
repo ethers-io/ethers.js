@@ -29,3 +29,4 @@ import type { SignatureLike } from "../crypto/index.js";
  */
 export declare function hashMessage(message: Uint8Array | string): string;
 export declare function verifyMessage(message: Uint8Array | string, sig: SignatureLike): string;
+//# sourceMappingURL=message.d.ts.map

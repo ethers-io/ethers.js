@@ -261,3 +261,4 @@ export declare class Transaction implements TransactionLike<string> {
      */
     static from(tx?: string | TransactionLike<string>): Transaction;
 }
+//# sourceMappingURL=transaction.d.ts.map

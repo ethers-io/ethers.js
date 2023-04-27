@@ -11,3 +11,4 @@ export declare namespace randomBytes {
     var lock: () => void;
     var register: (func: (length: number) => Uint8Array) => void;
 }
+//# sourceMappingURL=random.d.ts.map

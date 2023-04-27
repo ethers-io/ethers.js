@@ -37,3 +37,4 @@ export type { DebugEventBrowserProvider, Eip1193Provider } from "./provider-brow
 export type { JsonRpcPayload, JsonRpcResult, JsonRpcError, JsonRpcApiProviderOptions, JsonRpcTransactionRequest, } from "./provider-jsonrpc.js";
 export type { WebSocketCreator, WebSocketLike } from "./provider-websocket.js";
 export type { Signer } from "./signer.js";
+//# sourceMappingURL=index.d.ts.map

@@ -324,3 +324,4 @@ export declare class FetchResponse implements Iterable<[key: string, value: stri
      */
     assertOk(): void;
 }
+//# sourceMappingURL=fetch.d.ts.map

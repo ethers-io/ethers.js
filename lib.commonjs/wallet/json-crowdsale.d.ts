@@ -24,3 +24,4 @@ export declare function isCrowdsaleJson(json: string): boolean;
  *  the library.
  */
 export declare function decryptCrowdsaleJson(json: string, _password: string | Uint8Array): CrowdsaleAccount;
+//# sourceMappingURL=json-crowdsale.d.ts.map

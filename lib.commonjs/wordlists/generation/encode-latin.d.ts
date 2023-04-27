@@ -22,3 +22,4 @@ export declare function encodeOwl(words: Array<string>): {
     subs: string;
     data: string;
 };
+//# sourceMappingURL=encode-latin.d.ts.map

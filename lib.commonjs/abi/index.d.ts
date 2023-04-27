@@ -11,3 +11,4 @@ export { checkResultErrors, Indexed, Interface, ErrorDescription, LogDescription
 export { Typed } from "./typed.js";
 export type { JsonFragment, JsonFragmentType, FormatType, FragmentType, ParamTypeWalkAsyncFunc, ParamTypeWalkFunc } from "./fragments.js";
 export type { InterfaceAbi, } from "./interface.js";
+//# sourceMappingURL=index.d.ts.map

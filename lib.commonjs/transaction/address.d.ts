@@ -12,3 +12,4 @@ export declare function computeAddress(key: string | SigningKey): string;
  *  used to sign %%digest%% that resulted in %%signature%%.
  */
 export declare function recoverAddress(digest: BytesLike, signature: SignatureLike): string;
+//# sourceMappingURL=address.d.ts.map

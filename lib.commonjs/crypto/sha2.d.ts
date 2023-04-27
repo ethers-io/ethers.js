@@ -44,3 +44,4 @@ export declare namespace sha512 {
     var lock: () => void;
     var register: (func: (data: Uint8Array) => BytesLike) => void;
 }
+//# sourceMappingURL=sha2.d.ts.map

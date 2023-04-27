@@ -45,3 +45,4 @@ export declare class BaseWallet extends AbstractSigner {
     signMessageSync(message: string | Uint8Array): string;
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
+//# sourceMappingURL=base-wallet.d.ts.map

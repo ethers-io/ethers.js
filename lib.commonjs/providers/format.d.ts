@@ -12,3 +12,4 @@ export declare function formatBlock(value: any): BlockParams;
 export declare function formatReceiptLog(value: any): LogParams;
 export declare function formatTransactionReceipt(value: any): TransactionReceiptParams;
 export declare function formatTransactionResponse(value: any): TransactionResponseParams;
+//# sourceMappingURL=format.d.ts.map

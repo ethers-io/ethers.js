@@ -44,3 +44,4 @@ export declare abstract class Wordlist {
      */
     abstract getWordIndex(word: string): number;
 }
+//# sourceMappingURL=wordlist.d.ts.map

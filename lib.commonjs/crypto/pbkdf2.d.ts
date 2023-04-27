@@ -32,3 +32,4 @@ export declare namespace pbkdf2 {
     var lock: () => void;
     var register: (func: (password: Uint8Array, salt: Uint8Array, iterations: number, keylen: number, algo: "sha256" | "sha512") => BytesLike) => void;
 }
+//# sourceMappingURL=pbkdf2.d.ts.map

@@ -115,3 +115,4 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      */
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
+//# sourceMappingURL=signer.d.ts.map

@@ -24,3 +24,4 @@ export declare class LangJa extends Wordlist {
      */
     static wordlist(): LangJa;
 }
+//# sourceMappingURL=lang-ja.d.ts.map

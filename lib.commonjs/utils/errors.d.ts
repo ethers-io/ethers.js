@@ -483,3 +483,4 @@ export declare function assertNormalize(form: string): void;
  *  throwing if not, indicating the %%className%% if provided.
  */
 export declare function assertPrivate(givenGuard: any, guard: any, className?: string): void;
+//# sourceMappingURL=errors.d.ts.map

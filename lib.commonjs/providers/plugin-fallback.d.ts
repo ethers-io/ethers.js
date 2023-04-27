@@ -10,3 +10,4 @@ export declare class CheckQualifiedPlugin implements AbstractProviderPlugin {
 export declare class PossiblyPrunedTransactionPlugin extends CheckQualifiedPlugin {
     isQualified(action: PerformActionRequest, result: any): boolean;
 }
+//# sourceMappingURL=plugin-fallback.d.ts.map

@@ -48,3 +48,4 @@ export declare class FallbackProvider extends AbstractProvider {
     _perform<T = any>(req: PerformActionRequest): Promise<T>;
     destroy(): Promise<void>;
 }
+//# sourceMappingURL=provider-fallback.d.ts.map

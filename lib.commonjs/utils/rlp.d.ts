@@ -10,3 +10,4 @@ export { encodeRlp } from "./rlp-encode.js";
  *  An RLP-encoded structure.
  */
 export type RlpStructuredData = string | Array<RlpStructuredData>;
+//# sourceMappingURL=rlp.d.ts.map

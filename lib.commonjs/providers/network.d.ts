@@ -85,3 +85,4 @@ export declare class Network {
      */
     static register(nameOrChainId: string | number | bigint, networkFunc: () => Network): void;
 }
+//# sourceMappingURL=network.d.ts.map

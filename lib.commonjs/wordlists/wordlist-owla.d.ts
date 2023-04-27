@@ -17,3 +17,4 @@ export declare class WordlistOwlA extends WordlistOwl {
     get _accent(): string;
     _decodeWords(): Array<string>;
 }
+//# sourceMappingURL=wordlist-owla.d.ts.map

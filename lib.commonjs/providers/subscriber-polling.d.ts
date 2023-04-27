@@ -68,3 +68,4 @@ export declare class PollingEventSubscriber implements Subscriber {
     pause(dropWhilePaused?: boolean): void;
     resume(): void;
 }
+//# sourceMappingURL=subscriber-polling.d.ts.map

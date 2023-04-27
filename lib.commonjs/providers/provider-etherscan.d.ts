@@ -138,3 +138,4 @@ export declare class EtherscanProvider extends AbstractProvider {
     getContract(_address: string): Promise<null | Contract>;
     isCommunityResource(): boolean;
 }
+//# sourceMappingURL=provider-etherscan.d.ts.map

@@ -20,3 +20,4 @@ export declare class LangPt extends WordlistOwl {
      */
     static wordlist(): LangPt;
 }
+//# sourceMappingURL=lang-pt.d.ts.map

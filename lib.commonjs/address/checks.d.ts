@@ -78,3 +78,4 @@ export declare function isAddress(value: any): value is string;
  *    //_error:
  */
 export declare function resolveAddress(target: AddressLike, resolver?: null | NameResolver): string | Promise<string>;
+//# sourceMappingURL=checks.d.ts.map

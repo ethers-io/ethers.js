@@ -9,3 +9,4 @@ export declare class IpcSocketProvider extends SocketProvider {
     destroy(): void;
     _write(message: string): Promise<void>;
 }
+//# sourceMappingURL=provider-ipcsocket.d.ts.map

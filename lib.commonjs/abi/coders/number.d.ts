@@ -13,3 +13,4 @@ export declare class NumberCoder extends Coder {
     encode(writer: Writer, _value: BigNumberish | Typed): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=number.d.ts.map

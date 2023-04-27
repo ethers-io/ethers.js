@@ -90,3 +90,4 @@ export declare function zeroPadValue(data: BytesLike, length: number): string;
  *  (e.g. ``bytes16``).
  */
 export declare function zeroPadBytes(data: BytesLike, length: number): string;
+//# sourceMappingURL=data.d.ts.map

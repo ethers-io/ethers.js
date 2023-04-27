@@ -53,3 +53,4 @@ export interface WrappedFallback {
     send(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse>;
     estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint>;
 }
+//# sourceMappingURL=types.d.ts.map

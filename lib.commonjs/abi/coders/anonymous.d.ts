@@ -12,3 +12,4 @@ export declare class AnonymousCoder extends Coder {
     encode(writer: Writer, value: any): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=anonymous.d.ts.map

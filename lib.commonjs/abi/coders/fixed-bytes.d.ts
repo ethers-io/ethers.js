@@ -12,3 +12,4 @@ export declare class FixedBytesCoder extends Coder {
     encode(writer: Writer, _value: BytesLike | Typed): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=fixed-bytes.d.ts.map

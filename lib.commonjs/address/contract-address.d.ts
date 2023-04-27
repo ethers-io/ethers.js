@@ -45,3 +45,4 @@ export declare function getCreateAddress(tx: {
  *    //_result:
  */
 export declare function getCreate2Address(_from: string, _salt: BytesLike, _initCodeHash: BytesLike): string;
+//# sourceMappingURL=contract-address.d.ts.map

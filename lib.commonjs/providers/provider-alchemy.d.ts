@@ -28,3 +28,4 @@ export declare class AlchemyProvider extends JsonRpcProvider implements Communit
     isCommunityResource(): boolean;
     static getRequest(network: Network, apiKey?: string): FetchRequest;
 }
+//# sourceMappingURL=provider-alchemy.d.ts.map

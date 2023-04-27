@@ -86,3 +86,4 @@ export declare function encryptKeystoreJsonSync(account: KeystoreAccount, passwo
  *  on the completion status..
  */
 export declare function encryptKeystoreJson(account: KeystoreAccount, password: string | Uint8Array, options?: EncryptOptions): Promise<string>;
+//# sourceMappingURL=json-keystore.d.ts.map

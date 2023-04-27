@@ -119,3 +119,4 @@ export declare class SigningKey {
      */
     static addPoints(p0: BytesLike, p1: BytesLike, compressed?: boolean): string;
 }
+//# sourceMappingURL=signing-key.d.ts.map

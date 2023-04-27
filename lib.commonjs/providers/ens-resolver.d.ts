@@ -108,3 +108,4 @@ export declare class EnsResolver {
      */
     static fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver>;
 }
+//# sourceMappingURL=ens-resolver.d.ts.map

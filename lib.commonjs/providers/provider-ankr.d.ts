@@ -48,3 +48,4 @@ export declare class AnkrProvider extends JsonRpcProvider implements CommunityRe
     getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error;
     isCommunityResource(): boolean;
 }
+//# sourceMappingURL=provider-ankr.d.ts.map

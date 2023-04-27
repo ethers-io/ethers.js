@@ -20,3 +20,4 @@ export declare function defineProperties<T>(target: T, values: {
 }, types?: {
     [K in keyof T]?: string;
 }): void;
+//# sourceMappingURL=properties.d.ts.map

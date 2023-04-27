@@ -12,3 +12,4 @@ export declare function encodeBytes32String(text: string): string;
  *  Encodes the Bytes32-encoded %%bytes%% into a string.
  */
 export declare function decodeBytes32String(_bytes: BytesLike): string;
+//# sourceMappingURL=bytes32.d.ts.map

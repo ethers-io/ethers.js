@@ -28,3 +28,4 @@ export declare function solidityPackedKeccak256(types: ReadonlyArray<string>, va
  *       //_result:
  */
 export declare function solidityPackedSha256(types: ReadonlyArray<string>, values: ReadonlyArray<any>): string;
+//# sourceMappingURL=solidity.d.ts.map

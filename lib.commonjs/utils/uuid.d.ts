@@ -5,3 +5,4 @@ import type { BytesLike } from "./index.js";
  *  @see: https://www.ietf.org/rfc/rfc4122.txt (Section 4.4)
  */
 export declare function uuidV4(randomBytes: BytesLike): string;
+//# sourceMappingURL=uuid.d.ts.map

@@ -37,3 +37,4 @@ export declare function decodeBase64(value: string): Uint8Array;
  *    //_result:
  */
 export declare function encodeBase64(data: BytesLike): string;
+//# sourceMappingURL=base64.d.ts.map

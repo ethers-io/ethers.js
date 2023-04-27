@@ -6,3 +6,4 @@ export { LangKo } from "./lang-ko.js";
 export { LangIt } from "./lang-it.js";
 export { LangPt } from "./lang-pt.js";
 export { LangZh } from "./lang-zh.js";
+//# sourceMappingURL=wordlists-extra.d.ts.map

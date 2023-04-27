@@ -26,3 +26,4 @@ export interface CommunityResourcable {
  *  The notification will only occur once per service.
  */
 export declare function showThrottleMessage(service: string): void;
+//# sourceMappingURL=community.d.ts.map

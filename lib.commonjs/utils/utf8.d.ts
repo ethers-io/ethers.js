@@ -93,3 +93,4 @@ export declare function toUtf8String(bytes: BytesLike, onError?: Utf8ErrorFunc):
  *  If %%form%% is specified, the string is normalized.
  */
 export declare function toUtf8CodePoints(str: string, form?: UnicodeNormalizationForm): Array<number>;
+//# sourceMappingURL=utf8.d.ts.map

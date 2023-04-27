@@ -47,3 +47,4 @@ export declare class QuickNodeProvider extends JsonRpcProvider implements Commun
      */
     static getRequest(network: Network, token?: null | string): FetchRequest;
 }
+//# sourceMappingURL=provider-quicknode.d.ts.map

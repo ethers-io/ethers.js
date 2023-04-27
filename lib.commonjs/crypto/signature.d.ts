@@ -155,3 +155,4 @@ export declare class Signature {
      */
     static from(sig?: SignatureLike): Signature;
 }
+//# sourceMappingURL=signature.d.ts.map

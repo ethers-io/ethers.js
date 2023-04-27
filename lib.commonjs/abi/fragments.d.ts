@@ -369,3 +369,4 @@ export declare class StructFragment extends NamedFragment {
     static from(obj: any): StructFragment;
     static isFragment(value: any): value is FunctionFragment;
 }
+//# sourceMappingURL=fragments.d.ts.map

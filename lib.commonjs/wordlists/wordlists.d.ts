@@ -13,3 +13,4 @@ import type { Wordlist } from "./wordlist.js";
  *  included ``wordlists-extra.min.js`` file.
  */
 export declare const wordlists: Record<string, Wordlist>;
+//# sourceMappingURL=wordlists.d.ts.map

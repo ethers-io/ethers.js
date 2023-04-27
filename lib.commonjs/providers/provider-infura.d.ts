@@ -87,3 +87,4 @@ export declare class InfuraProvider extends JsonRpcProvider implements Community
      */
     static getRequest(network: Network, projectId?: null | string, projectSecret?: null | string): FetchRequest;
 }
+//# sourceMappingURL=provider-infura.d.ts.map

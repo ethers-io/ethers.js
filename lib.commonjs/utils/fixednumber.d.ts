@@ -249,3 +249,4 @@ export declare class FixedNumber {
      */
     static fromBytes(_value: BytesLike, _format?: FixedFormat): FixedNumber;
 }
+//# sourceMappingURL=fixednumber.d.ts.map

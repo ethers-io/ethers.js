@@ -4,7 +4,6 @@
   ],
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
     "module": "commonjs",
     "outDir": "./lib.commonjs"
   }

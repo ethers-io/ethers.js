@@ -62,3 +62,4 @@ export declare class Mnemonic {
      */
     static isValidMnemonic(phrase: string, wordlist?: null | Wordlist): boolean;
 }
+//# sourceMappingURL=mnemonic.d.ts.map

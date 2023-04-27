@@ -245,3 +245,4 @@ export declare function getAccountPath(_index: Numeric): string;
  *  This is the pattern used by wallets like MetaMask.
  */
 export declare function getIndexedAccountPath(_index: Numeric): string;
+//# sourceMappingURL=hdwallet.d.ts.map

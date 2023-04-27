@@ -28,3 +28,4 @@ export declare class VoidSigner extends AbstractSigner {
     signMessage(message: string | Uint8Array): Promise<string>;
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
+//# sourceMappingURL=abstract-signer.d.ts.map

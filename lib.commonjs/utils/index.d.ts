@@ -27,3 +27,4 @@ export type { FixedFormat } from "./fixednumber.js";
 export type { BigNumberish, Numeric } from "./maths.js";
 export type { RlpStructuredData } from "./rlp.js";
 export type { Utf8ErrorFunc, UnicodeNormalizationForm, Utf8ErrorReason } from "./utf8.js";
+//# sourceMappingURL=index.d.ts.map

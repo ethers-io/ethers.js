@@ -10,3 +10,4 @@ export declare const EtherSymbol: string;
  *  (**i.e.** ``"\\x19Ethereum Signed Message:\\n"``)
  */
 export declare const MessagePrefix: string;
+//# sourceMappingURL=strings.d.ts.map

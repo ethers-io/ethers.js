@@ -23,3 +23,4 @@ export declare class WordlistOwl extends Wordlist {
     getWord(index: number): string;
     getWordIndex(word: string): number;
 }
+//# sourceMappingURL=wordlist-owl.d.ts.map

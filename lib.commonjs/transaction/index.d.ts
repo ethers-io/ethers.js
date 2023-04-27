@@ -22,3 +22,4 @@ export { accessListify } from "./accesslist.js";
 export { computeAddress, recoverAddress } from "./address.js";
 export { Transaction } from "./transaction.js";
 export type { TransactionLike } from "./transaction.js";
+//# sourceMappingURL=index.d.ts.map

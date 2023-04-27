@@ -51,3 +51,4 @@ export declare class PocketProvider extends JsonRpcProvider implements Community
     static getRequest(network: Network, applicationId?: null | string, applicationSecret?: null | string): FetchRequest;
     isCommunityResource(): boolean;
 }
+//# sourceMappingURL=provider-pocket.d.ts.map

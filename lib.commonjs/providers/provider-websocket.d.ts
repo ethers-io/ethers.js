@@ -16,3 +16,4 @@ export declare class WebSocketProvider extends SocketProvider {
     _write(message: string): Promise<void>;
     destroy(): Promise<void>;
 }
+//# sourceMappingURL=provider-websocket.d.ts.map

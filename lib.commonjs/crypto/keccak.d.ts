@@ -32,3 +32,4 @@ export declare namespace keccak256 {
     var lock: () => void;
     var register: (func: (data: Uint8Array) => BytesLike) => void;
 }
+//# sourceMappingURL=keccak.d.ts.map

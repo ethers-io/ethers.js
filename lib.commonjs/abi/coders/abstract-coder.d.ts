@@ -114,3 +114,4 @@ export declare class Reader {
     readValue(): bigint;
     readIndex(): number;
 }
+//# sourceMappingURL=abstract-coder.d.ts.map

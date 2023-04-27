@@ -29,3 +29,4 @@ export declare class BrowserProvider extends JsonRpcApiPollingProvider {
     hasSigner(address: number | string): Promise<boolean>;
     getSigner(address?: number | string): Promise<JsonRpcSigner>;
 }
+//# sourceMappingURL=provider-browser.d.ts.map

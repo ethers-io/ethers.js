@@ -16,3 +16,4 @@ export declare class NonceManager extends AbstractSigner {
     signMessage(message: string | Uint8Array): Promise<string>;
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
+//# sourceMappingURL=signer-noncemanager.d.ts.map

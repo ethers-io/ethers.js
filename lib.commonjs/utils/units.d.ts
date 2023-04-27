@@ -21,3 +21,4 @@ export declare function formatEther(wei: BigNumberish): string;
  *  decimal places.
  */
 export declare function parseEther(ether: string): bigint;
+//# sourceMappingURL=units.d.ts.map

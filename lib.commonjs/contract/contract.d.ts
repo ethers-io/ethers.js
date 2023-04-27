@@ -48,3 +48,4 @@ declare const Contract_base: new (target: string, abi: InterfaceAbi, runner?: Co
 export declare class Contract extends Contract_base {
 }
 export {};
+//# sourceMappingURL=contract.d.ts.map

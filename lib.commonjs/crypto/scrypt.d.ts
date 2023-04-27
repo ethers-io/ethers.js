@@ -79,3 +79,4 @@ export declare namespace scryptSync {
     var lock: () => void;
     var register: (func: (passwd: Uint8Array, salt: Uint8Array, N: number, r: number, p: number, dkLen: number) => BytesLike) => void;
 }
+//# sourceMappingURL=scrypt.d.ts.map

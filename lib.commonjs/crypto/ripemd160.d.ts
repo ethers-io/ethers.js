@@ -22,3 +22,4 @@ export declare namespace ripemd160 {
     var lock: () => void;
     var register: (func: (data: Uint8Array) => BytesLike) => void;
 }
+//# sourceMappingURL=ripemd160.d.ts.map

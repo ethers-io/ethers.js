@@ -10,3 +10,4 @@ export declare class AddressCoder extends Coder {
     encode(writer: Writer, _value: string | Typed): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=address.d.ts.map

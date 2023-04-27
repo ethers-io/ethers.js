@@ -6,3 +6,4 @@ export interface ContractRunner {
     resolveName?: (name: string) => Promise<null | string>;
     sendTransaction?: (tx: TransactionRequest) => Promise<TransactionResponse>;
 }
+//# sourceMappingURL=contracts.d.ts.map

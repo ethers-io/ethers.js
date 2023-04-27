@@ -22,3 +22,4 @@ export declare class BlockConnectionSubscriber implements Subscriber {
     pause(dropWhilePaused?: boolean): void;
     resume(): void;
 }
+//# sourceMappingURL=subscriber-connection.d.ts.map

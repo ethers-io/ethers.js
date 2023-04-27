@@ -51,3 +51,4 @@ export declare class SocketProvider extends JsonRpcApiProvider {
     _processMessage(message: string): Promise<void>;
     _write(message: string): Promise<void>;
 }
+//# sourceMappingURL=provider-socket.d.ts.map

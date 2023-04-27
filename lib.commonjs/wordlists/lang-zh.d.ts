@@ -29,3 +29,4 @@ export declare class LangZh extends Wordlist {
      */
     static wordlist(dialect: string): LangZh;
 }
+//# sourceMappingURL=lang-zh.d.ts.map

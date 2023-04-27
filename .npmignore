@@ -27,3 +27,4 @@ testcases/**
 .DS_Store
 node_modules/**
 misc/**
+**/*.tgz

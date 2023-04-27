@@ -22,3 +22,4 @@ export declare class ArrayCoder extends Coder {
     encode(writer: Writer, _value: Array<any> | Typed): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=array.d.ts.map

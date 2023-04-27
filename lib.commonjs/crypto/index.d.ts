@@ -18,3 +18,4 @@ declare function lock(): void;
 export { lock };
 export type { ProgressCallback } from "./scrypt.js";
 export type { SignatureLike } from "./signature.js";
+//# sourceMappingURL=index.d.ts.map

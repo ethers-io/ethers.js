@@ -24,3 +24,4 @@ export { Mnemonic } from "./mnemonic.js";
 export { Wallet } from "./wallet.js";
 export type { CrowdsaleAccount } from "./json-crowdsale.js";
 export type { KeystoreAccount, EncryptOptions } from "./json-keystore.js";
+//# sourceMappingURL=index.d.ts.map

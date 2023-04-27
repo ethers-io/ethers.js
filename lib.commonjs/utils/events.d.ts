@@ -74,3 +74,4 @@ export declare class EventPayload<T> {
      */
     removeListener(): Promise<void>;
 }
+//# sourceMappingURL=events.d.ts.map

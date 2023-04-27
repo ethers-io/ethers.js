@@ -10,3 +10,4 @@ export declare class StringCoder extends DynamicBytesCoder {
     encode(writer: Writer, _value: string | Typed): number;
     decode(reader: Reader): any;
 }
+//# sourceMappingURL=string.d.ts.map

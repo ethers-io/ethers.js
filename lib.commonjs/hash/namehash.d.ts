@@ -17,3 +17,4 @@ export declare function namehash(name: string): string;
  *  as the wildcard resolution.
  */
 export declare function dnsEncode(name: string): string;
+//# sourceMappingURL=namehash.d.ts.map

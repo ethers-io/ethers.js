@@ -267,3 +267,4 @@ export declare class Interface {
      */
     static from(value: InterfaceAbi | Interface): Interface;
 }
+//# sourceMappingURL=interface.d.ts.map

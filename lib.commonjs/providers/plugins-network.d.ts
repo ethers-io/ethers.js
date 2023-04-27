@@ -36,3 +36,4 @@ export declare class FeeDataNetworkPlugin extends NetworkPlugin {
     getFeeData(provider: Provider): Promise<FeeData>;
     clone(): FeeDataNetworkPlugin;
 }
+//# sourceMappingURL=plugins-network.d.ts.map

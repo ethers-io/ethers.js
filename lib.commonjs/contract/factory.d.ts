@@ -19,3 +19,4 @@ export declare class ContractFactory<A extends Array<any> = Array<any>, I = Base
     connect(runner: null | ContractRunner): ContractFactory<A, I>;
     static fromSolidity<A extends Array<any> = Array<any>, I = ContractInterface>(output: any, runner?: ContractRunner): ContractFactory<A, I>;
 }
+//# sourceMappingURL=factory.d.ts.map

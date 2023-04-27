@@ -40,3 +40,4 @@ export declare class TypedDataEncoder {
  *  Compute the address used to sign the typed data for the %%signature%%.
  */
 export declare function verifyTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, signature: SignatureLike): string;
+//# sourceMappingURL=typed-data.d.ts.map

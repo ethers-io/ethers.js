@@ -212,3 +212,4 @@ export declare class AbstractProvider implements Provider {
     pause(dropWhilePaused?: boolean): void;
     resume(): void;
 }
+//# sourceMappingURL=abstract-provider.d.ts.map

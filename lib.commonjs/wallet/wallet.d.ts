@@ -68,3 +68,4 @@ export declare class Wallet extends BaseWallet {
      */
     static fromPhrase(phrase: string, provider?: Provider): HDNodeWallet;
 }
+//# sourceMappingURL=wallet.d.ts.map

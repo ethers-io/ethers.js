@@ -20,3 +20,4 @@ export declare function encodeBase58(_value: BytesLike): string;
  *  Decode the Base58-encoded %%value%%.
  */
 export declare function decodeBase58(value: string): bigint;
+//# sourceMappingURL=base58.d.ts.map

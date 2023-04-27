@@ -59,3 +59,4 @@ export declare function toBeArray(_value: BigNumberish): Uint8Array;
  *  numeric values.
  */
 export declare function toQuantity(value: BytesLike | BigNumberish): string;
+//# sourceMappingURL=maths.d.ts.map

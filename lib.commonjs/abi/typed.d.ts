@@ -169,3 +169,4 @@ export declare class Typed {
      */
     static dereference<T>(value: Typed | T, type: string): T;
 }
+//# sourceMappingURL=typed.d.ts.map

@@ -3,4 +3,5 @@ output/**
 misc/**
 
 **/*.swp
+**/*.tgz
 dist/*.gz

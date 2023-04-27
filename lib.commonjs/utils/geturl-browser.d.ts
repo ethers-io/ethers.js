@@ -18,3 +18,4 @@ declare global {
     function fetch(url: string, init: FetchInit): Promise<Response>;
 }
 export declare function getUrl(req: FetchRequest, _signal?: FetchCancelSignal): Promise<GetUrlResponse>;
+//# sourceMappingURL=geturl-browser.d.ts.map

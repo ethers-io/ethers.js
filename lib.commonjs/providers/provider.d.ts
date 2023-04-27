@@ -704,3 +704,4 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     waitForBlock(blockTag?: BlockTag): Promise<Block>;
 }
+//# sourceMappingURL=provider.d.ts.map
