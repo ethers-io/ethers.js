@@ -28,5 +28,9 @@ import type { SignatureLike } from "../crypto/index.js";
  *
  */
 export declare function hashMessage(message: Uint8Array | string): string;
+/**
+ *  Return the address of the private key that produced
+ *  the signature %%sig%% during signing for %%message%%.
+ */
 export declare function verifyMessage(message: Uint8Array | string, sig: SignatureLike): string;
 //# sourceMappingURL=message.d.ts.map

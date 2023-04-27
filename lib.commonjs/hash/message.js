@@ -44,6 +44,10 @@ function hashMessage(message) {
     ]));
 }
 exports.hashMessage = hashMessage;
+/**
+ *  Return the address of the private key that produced
+ *  the signature %%sig%% during signing for %%message%%.
+ */
 function verifyMessage(message, sig) {
     const digest = hashMessage(message);
     return (0, index_js_3.recoverAddress)(digest, sig);
