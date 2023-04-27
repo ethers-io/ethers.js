@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - "src.ts/**"
+      - "lib.esm/**"
+      - "lib.commonjs/**"
 
 jobs:
 
