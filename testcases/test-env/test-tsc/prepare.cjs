@@ -16,4 +16,4 @@ replace("tsconfig.json", "${TS_MODULE}", process.argv[3]);
 replace("package.json", "${PKG_TYPE}", process.argv[4]);
 
 // JavaScript
-fs.writeFileSync("index.js", fs.readFileSync("js-" + process.argv[4] + ".js"));
+fs.writeFileSync("index.ts", fs.readFileSync("js-" + process.argv[4] + ".ts"));
