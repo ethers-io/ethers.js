@@ -1,7 +1,7 @@
 const fs = require("fs");
 
 function replace(filename, key, value) {
-    const data = fs.readFileSync(filename).toString();
+    let data = fs.readFileSync(filename).toString();
     data = data.replace(key, value);
     fs.writeFileSync(filename, data);
 }
