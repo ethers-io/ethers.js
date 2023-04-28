@@ -7,8 +7,8 @@ on:
 
 jobs:
 
-  test-env:
-    name: Test Environments
+  test-tsc-env:
+    name: Test TypeScript Environments
 
     runs-on: ubuntu-latest
 
@@ -52,4 +52,35 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  test-angular:
+    name: Test Angular Environments
+
+    runs-on: ubuntu-latest
+
+    env:
+      npm_config_registry: http://localhost:8043
+
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.x
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          path: "faux_modules/ethers"
+
+      - name: Copy tests to working directory
+        run: cp faux_modules/ethers/testcases/test-env/angular/* .
+
+      - name: Install and run Faux Registry
+        uses: ethers-io/hijack-npm-action@main
+
+      - name: Install packages
+        run: npm install
+
+      - name: Build project
+        run: npm run build
 
