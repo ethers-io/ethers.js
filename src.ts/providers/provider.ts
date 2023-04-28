@@ -606,6 +606,13 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             return new Log(log, provider);
         }));
 
+        let gasPrice = BN_0;
+        if (tx.effectiveGasPrice != null) {
+            gasPrice = tx.effectiveGasPrice;
+        } else if (tx.gasPrice != null) {
+            gasPrice = tx.gasPrice;
+        }
+
         defineProperties<TransactionReceipt>(this, {
             provider,
 
@@ -623,7 +630,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
             gasUsed: tx.gasUsed,
             cumulativeGasUsed: tx.cumulativeGasUsed,
-            gasPrice: ((tx.effectiveGasPrice || tx.gasPrice) as bigint),
+            gasPrice,
 
             type: tx.type,
             //byzantium: tx.byzantium,
