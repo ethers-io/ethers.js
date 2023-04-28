@@ -18,7 +18,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test: [ "ts-import-cjs-node16", "ts-import-esm-node16", "ts-import-cjs", "ts-import-esm", "test-3983" ]
+        tsModuleResolution: [ "node", "node16", "nodenext" ]
+        tsModule: [ "commonjs", "es2020" ]
+        pkgType: [ "module", "commonjs" ]
 
     steps:
       - name: Use Node.js
@@ -31,11 +33,17 @@ jobs:
         with:
           path: "faux_modules/ethers"
 
+      - name: Copy tests to working directory
+        run: cp faux_modules/ethers/testcases/test-env/test-tsc/* .
+
+      - name: Prepare setup moduleResolution=${{ matrix.tsModuleResolution }} module=${{ matrix.tsModule }} type=${{ matrix.pkgType }}
+        run: node preapre.cjs ${{ matrix.tsModuleResolution }} ${{ matrix.tsModule }} ${{ matrix.pkgType }}
+
+      - name: Dump Config
+        run: cat package.json tsconfig.json
+
       - name: Install and run Faux Registry
         uses: ethers-io/hijack-npm-action@main
-
-      - name: Copy tests to working directory
-        run: cp faux_modules/ethers/testcases/test-env/${{ matrix.test }}/* .
 
       - name: Install packages
         run: npm install

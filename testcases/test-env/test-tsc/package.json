@@ -1,0 +1,30 @@
+{
+  "name": "test",
+  "dependencies": {
+    "ethers": "^6.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "version": "0.0.1",
+  "description": "Test case for simple import for ethers.",
+  "main": "index.js",
+  "private": true,
+  "publishConfig": {
+    "access": "private"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf node_modules package-lock.json *.js *.d.ts",
+    "postinstall": "find node_modules | grep package.json",
+    "test": "npm run build && node index.js"
+  },
+  "keywords": [
+    "ethers",
+    "tests",
+    "typescipt"
+  ],
+  "type": "${PKG_TYPE}",
+  "author": "Richard Moore <me@ricmoo.com>",
+  "license": "MIT"
+}
