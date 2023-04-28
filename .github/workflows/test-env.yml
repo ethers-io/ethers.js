@@ -33,7 +33,7 @@ jobs:
           path: "faux_modules/ethers"
 
       - name: Copy tests to working directory
-        run: cp faux_modules/ethers/testcases/test-env/test-tsc/* .
+        run: cp -r faux_modules/ethers/testcases/test-env/test-tsc/* .
 
       - name: Prepare setup moduleResolution=${{ matrix.tsModuleResolution }} module=${{ matrix.tsModule }}
         run: node prepare.cjs ${{ matrix.tsModuleResolution }} ${{ matrix.tsModule }}
@@ -54,7 +54,7 @@ jobs:
         run: npm test
 
   test-angular:
-    name: Test Angular Environments
+    name: Test Angular Environment
 
     runs-on: ubuntu-latest
 
@@ -73,7 +73,7 @@ jobs:
           path: "faux_modules/ethers"
 
       - name: Copy tests to working directory
-        run: cp faux_modules/ethers/testcases/test-env/angular/* .
+        run: cp -r faux_modules/ethers/testcases/test-env/angular/* .
 
       - name: Install and run Faux Registry
         uses: ethers-io/hijack-npm-action@main
