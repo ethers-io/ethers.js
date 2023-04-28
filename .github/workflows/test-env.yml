@@ -37,7 +37,7 @@ jobs:
         run: cp faux_modules/ethers/testcases/test-env/test-tsc/* .
 
       - name: Prepare setup moduleResolution=${{ matrix.tsModuleResolution }} module=${{ matrix.tsModule }} type=${{ matrix.pkgType }}
-        run: node preapre.cjs ${{ matrix.tsModuleResolution }} ${{ matrix.tsModule }} ${{ matrix.pkgType }}
+        run: node prepare.cjs ${{ matrix.tsModuleResolution }} ${{ matrix.tsModule }} ${{ matrix.pkgType }}
 
       - name: Dump Config
         run: cat package.json tsconfig.json
