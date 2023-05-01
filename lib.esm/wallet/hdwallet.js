@@ -305,7 +305,7 @@ export class HDNodeWallet extends BaseWallet {
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
     }
     /**
-     *  Create am HD Node from %%mnemonic%%.
+     *  Create an HD Node from %%mnemonic%%.
      */
     static fromMnemonic(mnemonic, path) {
         if (!path) {
