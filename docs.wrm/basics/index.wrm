@@ -1,7 +1,38 @@
 _section: Ethereum Basics @priority<99>
 
-Prelude here...
+Ethereum is a decentralized blockchain platform that enables the creation of smart contracts and decentralized applications (dApps).
 
-_subsection: About stuff?
+_subsection: Ether
 
-Some info
+Ether is the native cryptocurrency of the Ethereum network used to pay for transaction fees, deploy smart contracts, and incentivize network participants.
+
+_subsection: Smart Contract
+
+It is the self-executing code written in Solidity Language and is stored in Ethereum Blockchain.
+
+_subsection: Gas
+
+It is a unit of measurement for the amount of computation effort required to execute an oparation or contract on the Ethereum Network. It is paid in ETH.
+
+_subsection: Node
+
+A conputer or device that participates in the Ethereum network by processing transactions, validating blocks, and maintaining a copy of the blockchain.
+
+_subsection: ERC
+
+ERC or Ethereun Request for Comments is referes to a set of technical standards used for Ethereum-based tokens. These standards are developed in order to ensure that Ethereun-based tokens and smart contracts are intereoperable and can work seemlessly with other applications on the Ethereum network.
+Example: ERC-20, ERC-721, ERC-1155
+
+_subsection: ERC-20
+
+ERC-20 is a technical standard used for smart contracts on the Ethereum network that defines a set of rules and guidelines for creating Ethereum-based tokens.
+
+ERC-20 tokens are fungible, meaning that each token is identical to every other token of the same type. It can be easily traded or exchanged on cryptocurrency exchanges, and their value is based on market demand.
+
+_subsection: ERC-721
+
+This is a standard for creating non-fungible tokens (NFTs), which are unique digital assets that cannot be exchanged for one another. NFTs are often used to represent collectibles, artwork, and other unique items.
+
+_subsection: ERC-1155
+
+This standard allows for the creation of both fungible and non-fungible tokens within a single smart contract. This makes it easier to manage multiple types of tokens within a single application.
