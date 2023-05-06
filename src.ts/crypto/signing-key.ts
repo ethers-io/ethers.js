@@ -106,7 +106,6 @@ export class SigningKey {
      */
     computeSharedSecret(other: BytesLike): string {
         const pubKey = SigningKey.computePublicKey(other);
-        console.log(pubKey);
         return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey)));
     }
 
