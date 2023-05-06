@@ -1,5 +1,6 @@
 import assert from "assert";
 import { loadTests } from "./utils.js";
+import { getBytes } from "../index.js";
 import { computeHmac, keccak256, ripemd160, sha256, sha512, pbkdf2, scrypt, scryptSync, SigningKey } from "../index.js";
 describe("test hashing", function () {
     const tests = loadTests("hashes");
@@ -28,8 +29,8 @@ describe("test password-based key derivation", function () {
     const tests = loadTests("pbkdf");
     tests.forEach((test) => {
         it(`computes pbkdf2: ${test.name}`, function () {
-            const password = Buffer.from(test.password.substring(2), "hex");
-            const salt = Buffer.from(test.salt.substring(2), "hex");
+            const password = getBytes(test.password);
+            const salt = getBytes(test.salt);
             const { iterations, algorithm, key } = test.pbkdf2;
             const result = pbkdf2(password, salt, iterations, test.dkLen, algorithm);
             assert.equal(result, key);
@@ -38,8 +39,8 @@ describe("test password-based key derivation", function () {
     tests.forEach((test) => {
         it(`computes scrypt (sync): ${test.name}`, function () {
             this.timeout(1000);
-            const password = Buffer.from(test.password.substring(2), "hex");
-            const salt = Buffer.from(test.salt.substring(2), "hex");
+            const password = getBytes(test.password);
+            const salt = getBytes(test.salt);
             const { N, r, p, key } = test.scrypt;
             const result = scryptSync(password, salt, N, r, p, test.dkLen);
             assert.equal(result, key);
@@ -48,8 +49,8 @@ describe("test password-based key derivation", function () {
     tests.forEach((test) => {
         it(`computes scrypt (async): ${test.name}`, async function () {
             this.timeout(1000);
-            const password = Buffer.from(test.password.substring(2), "hex");
-            const salt = Buffer.from(test.salt.substring(2), "hex");
+            const password = getBytes(test.password);
+            const salt = getBytes(test.salt);
             const { N, r, p, key } = test.scrypt;
             let progressCount = 0, progressOk = true, lastProgress = -1;
             const result = await scrypt(password, salt, N, r, p, test.dkLen, (progress) => {

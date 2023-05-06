@@ -11,7 +11,7 @@ describe("Tests JSON Wallet Formats", function () {
             return;
         }
         it(`tests decrypting Crowdsale JSON: ${test.name}`, async function () {
-            const password = Buffer.from(test.password.substring(2), "hex");
+            const password = (0, index_js_1.getBytes)(test.password);
             const account = (0, index_js_1.decryptCrowdsaleJson)(test.content, password);
             assert_1.default.equal(account.address, test.address, "address");
         });
@@ -22,7 +22,7 @@ describe("Tests JSON Wallet Formats", function () {
         }
         it(`tests decrypting Keystore JSON (sync): ${test.name}`, function () {
             this.timeout(20000);
-            const password = Buffer.from(test.password.substring(2), "hex");
+            const password = (0, index_js_1.getBytes)(test.password);
             const account = (0, index_js_1.decryptKeystoreJsonSync)(test.content, password);
             //console.log(account);
             assert_1.default.equal(account.address, test.address, "address");
@@ -34,7 +34,7 @@ describe("Tests JSON Wallet Formats", function () {
         }
         it(`tests decrypting Keystore JSON (async): ${test.name}`, async function () {
             this.timeout(20000);
-            const password = Buffer.from(test.password.substring(2), "hex");
+            const password = (0, index_js_1.getBytes)(test.password);
             const account = await (0, index_js_1.decryptKeystoreJson)(test.content, password);
             //console.log(account);
             assert_1.default.equal(account.address, test.address, "address");
@@ -43,7 +43,7 @@ describe("Tests JSON Wallet Formats", function () {
     tests.forEach((test) => {
         it(`tests decrypting JSON (sync): ${test.name}`, function () {
             this.timeout(20000);
-            const password = Buffer.from(test.password.substring(2), "hex");
+            const password = (0, index_js_1.getBytes)(test.password);
             const wallet = index_js_1.Wallet.fromEncryptedJsonSync(test.content, password);
             //console.log(wallet);
             assert_1.default.equal(wallet.address, test.address, "address");
@@ -52,7 +52,7 @@ describe("Tests JSON Wallet Formats", function () {
     tests.forEach((test) => {
         it(`tests decrypting JSON (async): ${test.name}`, async function () {
             this.timeout(20000);
-            const password = Buffer.from(test.password.substring(2), "hex");
+            const password = (0, index_js_1.getBytes)(test.password);
             const wallet = await index_js_1.Wallet.fromEncryptedJson(test.content, password);
             //console.log(wallet);
             assert_1.default.equal(wallet.address, test.address, "address");

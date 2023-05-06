@@ -1,6 +1,6 @@
 import assert from "assert";
 import { loadTests } from "./utils.js";
-import { decodeRlp, encodeRlp } from "../index.js";
+import { decodeRlp, encodeRlp, hexlify } from "../index.js";
 describe("Test RLP Coder", function () {
     const tests = loadTests("rlp");
     tests.forEach(({ name, encoded, decoded }) => {
@@ -10,7 +10,7 @@ describe("Test RLP Coder", function () {
     });
     tests.forEach(({ name, encoded, decoded }) => {
         it(`decodes RLP: ${name}`, function () {
-            assert.deepStrictEqual(decodeRlp(encoded), decoded);
+            assert.deepEqual(decodeRlp(encoded), decoded);
         });
     });
 });
@@ -41,7 +41,7 @@ describe("Test bad RLP Data", function () {
         }, (error) => {
             return (error.code === "BUFFER_OVERRUN" &&
                 error.message.match(/^data too short/) &&
-                Buffer.from(error.buffer).toString("hex") === "" &&
+                hexlify(error.buffer) === "0x" &&
                 error.offset === 1 &&
                 error.length === 0);
         });
@@ -52,7 +52,7 @@ describe("Test bad RLP Data", function () {
         }, (error) => {
             return (error.code === "BUFFER_OVERRUN" &&
                 error.message.match(/^child data too short/) &&
-                Buffer.from(error.buffer).toString("hex") === "c8880102030405060708" &&
+                hexlify(error.buffer) === "0xc8880102030405060708" &&
                 error.offset === 0 &&
                 error.length === 8);
         });
@@ -65,7 +65,7 @@ describe("Test bad RLP Data", function () {
         }, (error) => {
             return (error.code === "BUFFER_OVERRUN" &&
                 error.message.match(/^data short segment too short/) &&
-                Buffer.from(error.buffer).toString("hex") === "c8c382c3823145" &&
+                hexlify(error.buffer) === "0xc8c382c3823145" &&
                 error.offset === 9 &&
                 error.length === 7);
         });

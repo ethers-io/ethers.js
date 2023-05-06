@@ -2,19 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
-const wordlists_js_1 = require("../wordlists/wordlists.js");
 const utils_js_1 = require("./utils.js");
 const index_js_1 = require("../index.js");
-/*
-declare global {
-    class TextDecoder {
-        decode(data: Uint8Array): string;
-    }
-}
-*/
 const decoder = new TextDecoder();
 function fromHex(hex) {
-    const data = Buffer.from(hex.substring(2), "hex");
+    const data = (0, index_js_1.getBytes)(hex);
     return decoder.decode(data);
 }
 describe("Test HDWallets", function () {
@@ -41,7 +33,7 @@ describe("Test HDWallets", function () {
         // are safe as ascii7 values for viewing, printing, etc.
         const phrase = fromHex(test.phrase);
         const password = fromHex(test.password);
-        const wordlist = wordlists_js_1.wordlists[test.locale];
+        const wordlist = index_js_1.wordlists[test.locale];
         if (wordlist == null) {
             it(`tests ${test.name}`, function () {
                 this.skip();

@@ -4,26 +4,27 @@ const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
 const utils_js_1 = require("./utils.js");
 const index_js_1 = require("../index.js");
+const index_js_2 = require("../index.js");
 describe("test hashing", function () {
     const tests = (0, utils_js_1.loadTests)("hashes");
     tests.forEach((test) => {
         it(`computes sha2-256: ${test.name}`, function () {
-            assert_1.default.equal((0, index_js_1.sha256)(test.data), test.sha256);
+            assert_1.default.equal((0, index_js_2.sha256)(test.data), test.sha256);
         });
     });
     tests.forEach((test) => {
         it(`computes sha2-512: ${test.name}`, function () {
-            assert_1.default.equal((0, index_js_1.sha512)(test.data), test.sha512);
+            assert_1.default.equal((0, index_js_2.sha512)(test.data), test.sha512);
         });
     });
     tests.forEach((test) => {
         it(`computes ripemd160: ${test.name}`, function () {
-            assert_1.default.equal((0, index_js_1.ripemd160)(test.data), test.ripemd160);
+            assert_1.default.equal((0, index_js_2.ripemd160)(test.data), test.ripemd160);
         });
     });
     tests.forEach((test) => {
         it(`computes keccak256: ${test.name}`, function () {
-            assert_1.default.equal((0, index_js_1.keccak256)(test.data), test.keccak256);
+            assert_1.default.equal((0, index_js_2.keccak256)(test.data), test.keccak256);
         });
     });
 });
@@ -31,31 +32,31 @@ describe("test password-based key derivation", function () {
     const tests = (0, utils_js_1.loadTests)("pbkdf");
     tests.forEach((test) => {
         it(`computes pbkdf2: ${test.name}`, function () {
-            const password = Buffer.from(test.password.substring(2), "hex");
-            const salt = Buffer.from(test.salt.substring(2), "hex");
+            const password = (0, index_js_1.getBytes)(test.password);
+            const salt = (0, index_js_1.getBytes)(test.salt);
             const { iterations, algorithm, key } = test.pbkdf2;
-            const result = (0, index_js_1.pbkdf2)(password, salt, iterations, test.dkLen, algorithm);
+            const result = (0, index_js_2.pbkdf2)(password, salt, iterations, test.dkLen, algorithm);
             assert_1.default.equal(result, key);
         });
     });
     tests.forEach((test) => {
         it(`computes scrypt (sync): ${test.name}`, function () {
             this.timeout(1000);
-            const password = Buffer.from(test.password.substring(2), "hex");
-            const salt = Buffer.from(test.salt.substring(2), "hex");
+            const password = (0, index_js_1.getBytes)(test.password);
+            const salt = (0, index_js_1.getBytes)(test.salt);
             const { N, r, p, key } = test.scrypt;
-            const result = (0, index_js_1.scryptSync)(password, salt, N, r, p, test.dkLen);
+            const result = (0, index_js_2.scryptSync)(password, salt, N, r, p, test.dkLen);
             assert_1.default.equal(result, key);
         });
     });
     tests.forEach((test) => {
         it(`computes scrypt (async): ${test.name}`, async function () {
             this.timeout(1000);
-            const password = Buffer.from(test.password.substring(2), "hex");
-            const salt = Buffer.from(test.salt.substring(2), "hex");
+            const password = (0, index_js_1.getBytes)(test.password);
+            const salt = (0, index_js_1.getBytes)(test.salt);
             const { N, r, p, key } = test.scrypt;
             let progressCount = 0, progressOk = true, lastProgress = -1;
-            const result = await (0, index_js_1.scrypt)(password, salt, N, r, p, test.dkLen, (progress) => {
+            const result = await (0, index_js_2.scrypt)(password, salt, N, r, p, test.dkLen, (progress) => {
                 if (progress < lastProgress) {
                     progressOk = false;
                 }
@@ -73,7 +74,7 @@ describe("test hmac", function () {
     tests.forEach((test) => {
         it(`computes hmac: ${test.name}`, async function () {
             const { algorithm, key, data } = test;
-            assert_1.default.equal((0, index_js_1.computeHmac)(algorithm, key, data), test.hmac);
+            assert_1.default.equal((0, index_js_2.computeHmac)(algorithm, key, data), test.hmac);
         });
     });
 });
@@ -466,8 +467,8 @@ describe("tests ECDH shared secret", function () {
     ];
     for (const { name, keyA, keyB, shared } of tests) {
         it(`tests shared secrets match: ${name}`, function () {
-            const signA = new index_js_1.SigningKey(keyA);
-            const signB = new index_js_1.SigningKey(keyB);
+            const signA = new index_js_2.SigningKey(keyA);
+            const signB = new index_js_2.SigningKey(keyB);
             assert_1.default.equal(shared, signA.computeSharedSecret(signB.publicKey), "privA + pubB");
             assert_1.default.equal(shared, signB.computeSharedSecret(signA.publicKey), "pubA + privB");
             assert_1.default.equal(shared, signA.computeSharedSecret(signB.privateKey), "privA + privB");

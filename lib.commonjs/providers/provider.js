@@ -453,6 +453,13 @@ class TransactionReceipt {
         this.#logs = Object.freeze(tx.logs.map((log) => {
             return new Log(log, provider);
         }));
+        let gasPrice = BN_0;
+        if (tx.effectiveGasPrice != null) {
+            gasPrice = tx.effectiveGasPrice;
+        }
+        else if (tx.gasPrice != null) {
+            gasPrice = tx.gasPrice;
+        }
         (0, index_js_1.defineProperties)(this, {
             provider,
             to: tx.to,
@@ -465,7 +472,7 @@ class TransactionReceipt {
             logsBloom: tx.logsBloom,
             gasUsed: tx.gasUsed,
             cumulativeGasUsed: tx.cumulativeGasUsed,
-            gasPrice: (tx.effectiveGasPrice || tx.gasPrice),
+            gasPrice,
             type: tx.type,
             //byzantium: tx.byzantium,
             status: tx.status,

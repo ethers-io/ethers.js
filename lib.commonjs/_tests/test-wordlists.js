@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
-const wordlists_js_1 = require("../wordlists/wordlists.js");
+const index_js_1 = require("../index.js");
 const utils_js_1 = require("./utils.js");
 describe('Check Wordlists', function () {
     const tests = (0, utils_js_1.loadTests)("wordlists");
     tests.forEach((test) => {
-        let wordlist = wordlists_js_1.wordlists[test.locale];
+        let wordlist = index_js_1.wordlists[test.locale];
         if (wordlist == null) {
             return;
         }
@@ -24,7 +24,7 @@ describe('Check Wordlists', function () {
         });
     });
     tests.forEach((test) => {
-        let wordlist = wordlists_js_1.wordlists[test.locale];
+        let wordlist = index_js_1.wordlists[test.locale];
         if (wordlist == null) {
             return;
         }
@@ -36,12 +36,12 @@ describe('Check Wordlists', function () {
             const phrase = wordlist.join(words);
             const words2 = wordlist.split(phrase);
             const phrase2 = wordlist.join(words2);
-            assert_1.default.deepStrictEqual(words2, words, "split words");
-            assert_1.default.deepStrictEqual(phrase2, phrase, "re-joined words");
+            assert_1.default.deepEqual(words2, words, "split words");
+            assert_1.default.deepEqual(phrase2, phrase, "re-joined words");
         });
     });
     tests.forEach((test) => {
-        let wordlist = wordlists_js_1.wordlists[test.locale];
+        let wordlist = index_js_1.wordlists[test.locale];
         if (wordlist == null) {
             return;
         }

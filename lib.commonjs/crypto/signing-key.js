@@ -88,7 +88,6 @@ class SigningKey {
      */
     computeSharedSecret(other) {
         const pubKey = SigningKey.computePublicKey(other);
-        console.log(pubKey);
         return (0, index_js_1.hexlify)(secp256k1.getSharedSecret((0, index_js_1.getBytesCopy)(this.#privateKey), (0, index_js_1.getBytes)(pubKey)));
     }
     /**

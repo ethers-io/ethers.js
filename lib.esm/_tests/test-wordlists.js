@@ -1,5 +1,5 @@
-import assert from 'assert';
-import { wordlists } from "../wordlists/wordlists.js";
+import assert from "assert";
+import { wordlists } from "../index.js";
 import { loadTests } from "./utils.js";
 describe('Check Wordlists', function () {
     const tests = loadTests("wordlists");
@@ -33,8 +33,8 @@ describe('Check Wordlists', function () {
             const phrase = wordlist.join(words);
             const words2 = wordlist.split(phrase);
             const phrase2 = wordlist.join(words2);
-            assert.deepStrictEqual(words2, words, "split words");
-            assert.deepStrictEqual(phrase2, phrase, "re-joined words");
+            assert.deepEqual(words2, words, "split words");
+            assert.deepEqual(phrase2, phrase, "re-joined words");
         });
     });
     tests.forEach((test) => {

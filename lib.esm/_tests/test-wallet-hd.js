@@ -1,17 +1,9 @@
 import assert from "assert";
-import { wordlists } from "../wordlists/wordlists.js";
 import { loadTests } from "./utils.js";
-import { HDNodeWallet, HDNodeVoidWallet, Mnemonic } from "../index.js";
-/*
-declare global {
-    class TextDecoder {
-        decode(data: Uint8Array): string;
-    }
-}
-*/
+import { getBytes, wordlists, HDNodeWallet, HDNodeVoidWallet, Mnemonic } from "../index.js";
 const decoder = new TextDecoder();
 function fromHex(hex) {
-    const data = Buffer.from(hex.substring(2), "hex");
+    const data = getBytes(hex);
     return decoder.decode(data);
 }
 describe("Test HDWallets", function () {
