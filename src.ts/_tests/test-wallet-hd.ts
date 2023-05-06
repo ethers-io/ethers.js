@@ -1,27 +1,21 @@
 
 import assert from "assert";
 
-import { wordlists } from "../wordlists/wordlists.js";
-
 import { loadTests } from "./utils.js";
 
-import { HDNodeWallet, HDNodeVoidWallet, Mnemonic } from "../index.js";
+import {
+    getBytes, wordlists,
+    HDNodeWallet, HDNodeVoidWallet, Mnemonic
+} from "../index.js";
 
 import type { Wordlist } from "../wordlists/index.js";
 
 import type { TestCaseMnemonic, TestCaseMnemonicNode } from "./types.js";
 
-/*
-declare global {
-    class TextDecoder {
-        decode(data: Uint8Array): string;
-    }
-}
-*/
 
 const decoder = new TextDecoder();
 function fromHex(hex: string): string {
-    const data = Buffer.from(hex.substring(2), "hex");
+    const data = getBytes(hex);
     return decoder.decode(data);
 }
 

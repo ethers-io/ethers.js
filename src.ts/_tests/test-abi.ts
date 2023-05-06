@@ -1,7 +1,7 @@
 import assert from "assert";
 import { loadTests } from "./utils.js";
 
-import { TestCaseAbi, TestCaseAbiVerbose } from "./types.js";
+import type { TestCaseAbi, TestCaseAbiVerbose } from "./types.js";
 
 import {
     AbiCoder, Interface,

@@ -1,19 +1,19 @@
 
 import assert from "assert";
 
-import { sha256 } from "../crypto/index.js";
-import { toUtf8Bytes } from "../utils/utf8.js";
-
-import { wordlists } from "../wordlists/wordlists.js";
-
-import { Mnemonic } from "../index.js";
+import {
+    getBytes, sha256, toUtf8Bytes,
+    Mnemonic, wordlists,
+} from "../index.js";
 
 import { loadTests } from "./utils.js";
+
 import type { TestCaseMnemonic } from "./types.js";
+
 
 const decoder = new TextDecoder();
 function fromHex(hex: string): string {
-    const data = Buffer.from(hex.substring(2), "hex");
+    const data = getBytes(hex);
     return decoder.decode(data);
 }
 

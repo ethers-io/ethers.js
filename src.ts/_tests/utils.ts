@@ -1,7 +1,7 @@
 
 import fs from "fs"
 import path from "path";
-import zlib from 'zlib';
+import zlib from "zlib";
 
 // Find the package root (based on the nyc output/ folder)
 const root = (function() {
