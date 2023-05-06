@@ -1,0 +1,26 @@
+<html>
+  <body>
+    <h1>Hello World!!</h1>
+    <div>Please check the console for test output...</div>
+
+    <div id="mocha"></div>
+
+    <script type="module">
+      // Must import Mocha first; completely
+      await import("./static/mocha.js");
+
+      // Load our custom Reporter (after importing mocha)
+      import { MyReporter } from "/static/reporter.js";
+
+      // Setup the global environment and set out reporter
+      mocha.setup({ ui: 'bdd' });
+      mocha.reporter(MyReporter);
+
+      // Import the tests
+      await import("./tests/index.js");
+
+      // Run Mocha!
+      mocha.run();
+    </script>
+  </body>
+</html>

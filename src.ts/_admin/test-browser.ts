@@ -146,8 +146,6 @@ export class CDPSession {
         this.websocket.onerror = (error) => {
             console.log(`WARN: WebSocket error - ${ JSON.stringify(error) }`);
         };
-
-        //this.send("Target.setDiscoverTargets", { discover: true });
     }
 
     get target(): string {
@@ -196,9 +194,6 @@ export type Options = {
 };
 
 
-//function transform(source: string): string {
-//}
-
 const TestData = (function() {
   function load(tag: string): any {
     const filename = resolve("testcases", tag + ".json.gz");
@@ -229,8 +224,6 @@ const TestData = (function() {
 
 
 export function start(_root: string, options: Options): Promise<Server> {
-    //if (_root == null) { throw new Error("root required"); }
-    //const root = resolve(_root);
 
     if (options == null) { options = { }; }
     if (options.port == null) { options.port = 8000; }
@@ -242,14 +235,14 @@ export function start(_root: string, options: Options): Promise<Server> {
 
         let filename: string;
         if (url === "/") {
-            filename = "./output/index.html";
+            filename = "./misc/test-browser/index.html";
         } else if (url === "/ethers.js" || url === "/index.js") {
             filename = "./dist/ethers.js";
         } else if (url === "/ethers.js.map") {
             filename = "./dist/ethers.js.map";
 
         } else if (url.startsWith("/static/")) {
-            filename = "./output/" + url.substring(8);
+            filename = "./misc/test-browser/" + url.substring(8);
 
         } else if (url === "/tests/utils.js") {
             //console.log({ status: 200, content: `<<in-memory ${ TestData.length } bytes>>` });
@@ -341,7 +334,15 @@ export function start(_root: string, options: Options): Promise<Server> {
 (async function() {
     await start(resolve("."), { port: 8000 });
 
-    const cmd = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+    const cmds = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/usr/bin/chromium"
+    ].filter((f) => { try { fs.accessSync(f); return true; } catch (error) { return false; } });
+
+    if (cmds.length === 0) { throw new Error("no installed browser found"); }
+
+    const cmd = cmds[0];
+
     const args = [ "--headless", "--disable-gpu", "--remote-debugging-port=8022" ];
     const browser = child_process.spawn(cmd, args);
 
@@ -361,16 +362,15 @@ export function start(_root: string, options: Options): Promise<Server> {
             }
         });
     });
-console.log(url);
-//url = "ws://127.0.0.1:8022/devtools/browser/e02e20e9-3e5f-47f6-bc23-1c050acc6da6";
+    console.log("URL:", url);
+
     const session = new CDPSession(url);
-     // "ws://127.0.0.1:8022/devtools/browser/cab84776-4714-4a0f-aae3-acec84feddd9");
     await session.ready;
     await session.send("Console.enable", { });
     await session.navigate("http:/\/localhost:8000");
 
     const status = await session.done;
-    console.log(status);
+    console.log("STATUS:", status);
     process.exit(status);
 })();
 
