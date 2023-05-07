@@ -38,25 +38,25 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
     if (options.alchemy !== "-") {
         try {
             providers.push(new AlchemyProvider(network, options.alchemy));
-        } catch (error) { console.log(error); }
+        } catch (error) { }
     }
 
     if (options.ankr !== "-" && options.ankr != null) {
         try {
             providers.push(new AnkrProvider(network, options.ankr));
-        } catch (error) { console.log(error); }
+        } catch (error) { }
     }
 
     if (options.cloudflare !== "-") {
         try {
             providers.push(new CloudflareProvider(network));
-        } catch (error) { console.log(error); }
+        } catch (error) { }
     }
 
     if (options.etherscan !== "-") {
         try {
             providers.push(new EtherscanProvider(network, options.etherscan));
-        } catch (error) { console.log(error); }
+        } catch (error) { }
     }
 
     if (options.infura !== "-") {
@@ -68,7 +68,7 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
                 projectId = projectId.projectId;
             }
             providers.push(new InfuraProvider(network, projectId, projectSecret));
-        } catch (error) { console.log(error); }
+        } catch (error) { }
     }
 /*
     if (options.pocket !== "-") {
@@ -89,7 +89,7 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
         try {
             let token = options.quicknode;
             providers.push(new QuickNodeProvider(network, token));
-        } catch (error) { console.log(error); }
+        } catch (error) { }
     }
 
     assert(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
