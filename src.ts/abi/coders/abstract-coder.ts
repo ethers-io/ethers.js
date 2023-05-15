@@ -211,6 +211,23 @@ export class Result extends Array<any> {
         return new Result(_guard, result, names);
     }
 
+    /**
+     *  @_ignore
+     */
+    map<T extends any = any>(callback: (el: any, index: number, array: Result) => T, thisArg?: any): Array<T> {
+        const result: Array<T> = [ ];
+        for (let i = 0; i < this.length; i++) {
+            const item = this[i];
+            if (item instanceof Error) {
+                throwError(`index ${ i }`, item);
+            }
+
+            result.push(callback.call(thisArg, item, i, this));
+        }
+
+        return result;
+    }
+
 
     /**
      *  Returns the value for %%name%%.
