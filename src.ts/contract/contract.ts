@@ -172,13 +172,23 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
 
         const iface = contract.interface;
 
+        const noValue = ((tx.value || BN_0) === BN_0);
+        const noData = ((tx.data || "0x") === "0x");
+
+        if (iface.fallback && !iface.fallback.payable && iface.receive && !noData && !noValue) {
+            assertArgument(false, "cannot send data to receive or send value to non-payable fallback", "overrides", overrides);
+        }
+
+        assertArgument(iface.fallback || noData,
+          "cannot send data to receive-only contract", "overrides.data", tx.data);
+
         // Only allow payable contracts to set non-zero value
         const payable = iface.receive || (iface.fallback && iface.fallback.payable);
-        assertArgument(payable || (tx.value || BN_0) === BN_0,
-          "cannot send value to non-payable contract", "overrides.value", tx.value);
+        assertArgument(payable || noValue,
+          "cannot send value to non-payable fallback", "overrides.value", tx.value);
 
         // Only allow fallback contracts to set non-empty data
-        assertArgument(iface.fallback || (tx.data || "0x") === "0x",
+        assertArgument(iface.fallback || noData,
           "cannot send data to receive-only contract", "overrides.data", tx.data);
 
         return tx;
