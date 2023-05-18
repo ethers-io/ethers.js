@@ -3,9 +3,10 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.4.0 (2023-05-18 17:12)
+ethers/v6.4.0 (2023-05-18 17:28)
 --------------------------------
 
+  - Coerce value into BigInt when checking for value ([83d7f43](https://github.com/ethers-io/ethers.js/commit/83d7f43b9ca4b9868a3952510e56b41ea8610baa)).
   - Better errors when junk passed as Contract target ([#3947](https://github.com/ethers-io/ethers.js/issues/3947), [#4053](https://github.com/ethers-io/ethers.js/issues/4053); [219b16d](https://github.com/ethers-io/ethers.js/commit/219b16dc284b0c6a532c8c49e824d8234f94222b)).
   - More robust message checking in socket providers ([#4051](https://github.com/ethers-io/ethers.js/issues/4051); [f58990b](https://github.com/ethers-io/ethers.js/commit/f58990b80cfd83579014339315e58663c0aa6ae3)).
   - More robust defaultProvider start-up when a backend fails on bootstrap ([#3979](https://github.com/ethers-io/ethers.js/issues/3979); [984f6fa](https://github.com/ethers-io/ethers.js/commit/984f6fa155fca08ebec2353c75ee0a0b974e8568)).

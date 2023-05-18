@@ -13129,7 +13129,7 @@ function buildWrappedFallback(contract) {
         const tx = (await copyOverrides(overrides, ["data"]));
         tx.to = await contract.getAddress();
         const iface = contract.interface;
-        const noValue = ((tx.value || BN_0$1) === BN_0$1);
+        const noValue = (getBigInt((tx.value || BN_0$1), "overrides.value") === BN_0$1);
         const noData = ((tx.data || "0x") === "0x");
         if (iface.fallback && !iface.fallback.payable && iface.receive && !noData && !noValue) {
             assertArgument(false, "cannot send data to receive or send value to non-payable fallback", "overrides", overrides);
