@@ -189,6 +189,20 @@ class Result extends Array {
         return new Result(_guard, result, names);
     }
     /**
+     *  @_ignore
+     */
+    map(callback, thisArg) {
+        const result = [];
+        for (let i = 0; i < this.length; i++) {
+            const item = this[i];
+            if (item instanceof Error) {
+                throwError(`index ${i}`, item);
+            }
+            result.push(callback.call(thisArg, item, i, this));
+        }
+        return result;
+    }
+    /**
      *  Returns the value for %%name%%.
      *
      *  Since it is possible to have a key whose name conflicts with

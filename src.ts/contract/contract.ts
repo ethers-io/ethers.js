@@ -4,7 +4,7 @@ import { isAddressable, resolveAddress } from "../address/index.js";
 // from EtherscanProvider
 import { copyRequest, Log, TransactionResponse } from "../providers/provider.js";
 import {
-    defineProperties, isCallException, isHexString, resolveProperties,
+    defineProperties, getBigInt, isCallException, isHexString, resolveProperties,
     makeError, assert, assertArgument
 } from "../utils/index.js";
 
@@ -172,7 +172,7 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
 
         const iface = contract.interface;
 
-        const noValue = ((tx.value || BN_0) === BN_0);
+        const noValue = (getBigInt((tx.value || BN_0), "overrides.value") === BN_0);
         const noData = ((tx.data || "0x") === "0x");
 
         if (iface.fallback && !iface.fallback.payable && iface.receive && !noData && !noValue) {

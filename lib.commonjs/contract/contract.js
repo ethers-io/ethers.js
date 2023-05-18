@@ -115,11 +115,17 @@ function buildWrappedFallback(contract) {
         const tx = (await copyOverrides(overrides, ["data"]));
         tx.to = await contract.getAddress();
         const iface = contract.interface;
+        const noValue = ((tx.value || BN_0) === BN_0);
+        const noData = ((tx.data || "0x") === "0x");
+        if (iface.fallback && !iface.fallback.payable && iface.receive && !noData && !noValue) {
+            (0, index_js_3.assertArgument)(false, "cannot send data to receive or send value to non-payable fallback", "overrides", overrides);
+        }
+        (0, index_js_3.assertArgument)(iface.fallback || noData, "cannot send data to receive-only contract", "overrides.data", tx.data);
         // Only allow payable contracts to set non-zero value
         const payable = iface.receive || (iface.fallback && iface.fallback.payable);
-        (0, index_js_3.assertArgument)(payable || (tx.value || BN_0) === BN_0, "cannot send value to non-payable contract", "overrides.value", tx.value);
+        (0, index_js_3.assertArgument)(payable || noValue, "cannot send value to non-payable fallback", "overrides.value", tx.value);
         // Only allow fallback contracts to set non-empty data
-        (0, index_js_3.assertArgument)(iface.fallback || (tx.data || "0x") === "0x", "cannot send data to receive-only contract", "overrides.data", tx.data);
+        (0, index_js_3.assertArgument)(iface.fallback || noData, "cannot send data to receive-only contract", "overrides.data", tx.data);
         return tx;
     };
     const staticCall = async function (overrides) {
@@ -475,6 +481,7 @@ class BaseContract {
     [internal];
     fallback;
     constructor(target, abi, runner, _deployTx) {
+        (0, index_js_3.assertArgument)(typeof (target) === "string" || (0, index_js_2.isAddressable)(target), "invalid value for Contract target", "target", target);
         if (runner == null) {
             runner = null;
         }

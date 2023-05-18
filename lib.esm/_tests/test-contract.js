@@ -293,13 +293,13 @@ describe("Test Contract Fallback", function () {
             name: "receive and non-payable fallback",
             address: "0x5b59d934f0d22b15e73b5d6b9ae83486b70df67e",
             abi: [
-                "fallback() payable",
+                "fallback()",
                 "receive()"
             ],
             sendNone: { data: "0x" },
             sendData: { data: "0x" },
             sendValue: { data: "0x" },
-            sendDataAndValue: { error: "overrides.value" },
+            sendDataAndValue: { error: "overrides" },
         },
     ];
     const provider = getProvider("InfuraProvider", "goerli");
@@ -342,7 +342,7 @@ describe("Test Contract Fallback", function () {
                     assert.ok(true);
                 }
                 else {
-                    assert.rejects(func, function (error) {
+                    await assert.rejects(func, function (error) {
                         if (error.message === send.error) {
                             return true;
                         }

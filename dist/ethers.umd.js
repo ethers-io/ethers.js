@@ -2727,6 +2727,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new Result(_guard$4, result, names);
         }
         /**
+         *  @_ignore
+         */
+        map(callback, thisArg) {
+            const result = [];
+            for (let i = 0; i < this.length; i++) {
+                const item = this[i];
+                if (item instanceof Error) {
+                    throwError(`index ${i}`, item);
+                }
+                result.push(callback.call(thisArg, item, i, this));
+            }
+            return result;
+        }
+        /**
          *  Returns the value for %%name%%.
          *
          *  Since it is possible to have a key whose name conflicts with
@@ -2967,6 +2981,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     };
 
     /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    // The import here is via the package name. This is to ensure
+    // that exports mapping/resolution does fall into place.
     const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
     // Cast array to view
     const createView = (arr) => new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
@@ -4579,7 +4595,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     var nodeCrypto = /*#__PURE__*/Object.freeze({
         __proto__: null,
-        'default': _nodeResolve_empty
+        default: _nodeResolve_empty
     });
 
     /*! noble-secp256k1 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
@@ -5035,7 +5051,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         return { r, s };
     }
-    class Signature$1 {
+    let Signature$1 = class Signature {
         constructor(r, s) {
             this.r = r;
             this.s = s;
@@ -5049,14 +5065,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const str = arr ? bytesToHex(hex) : hex;
             if (str.length !== 128)
                 throw new Error(`${name}: Expected 64-byte hex`);
-            return new Signature$1(hexToNumber(str.slice(0, 64)), hexToNumber(str.slice(64, 128)));
+            return new Signature(hexToNumber(str.slice(0, 64)), hexToNumber(str.slice(64, 128)));
         }
         static fromDER(hex) {
             const arr = hex instanceof Uint8Array;
             if (typeof hex !== 'string' && !arr)
                 throw new TypeError(`Signature.fromDER: Expected string or Uint8Array`);
             const { r, s } = parseDERSignature(arr ? hex : hexToBytes(hex));
-            return new Signature$1(r, s);
+            return new Signature(r, s);
         }
         static fromHex(hex) {
             return this.fromDER(hex);
@@ -5073,7 +5089,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return this.s > HALF;
         }
         normalizeS() {
-            return this.hasHighS() ? new Signature$1(this.r, mod(-this.s, CURVE.n)) : this;
+            return this.hasHighS() ? new Signature(this.r, mod(-this.s, CURVE.n)) : this;
         }
         toDERRawBytes() {
             return hexToBytes(this.toDERHex());
@@ -5100,7 +5116,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         toCompactHex() {
             return numTo32bStr(this.r) + numTo32bStr(this.s);
         }
-    }
+    };
     function concatBytes(...arrays) {
         if (!arrays.every((b) => b instanceof Uint8Array))
             throw new Error('Uint8Array list expected');
@@ -10751,6 +10767,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *
      *  @_section api/abi/abi-coder:ABI Encoding
      */
+    // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
     // https://docs.soliditylang.org/en/v0.8.17/control-structures.html
     const PanicReasons$1 = new Map();
     PanicReasons$1.set(0x00, "GENERIC_PANIC");
@@ -12938,6 +12955,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     // import from provider.ts instead of index.ts to prevent circular dep
+    // from EtherscanProvider
     class EventLog extends Log {
         interface;
         fragment;
@@ -13117,11 +13135,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const tx = (await copyOverrides(overrides, ["data"]));
             tx.to = await contract.getAddress();
             const iface = contract.interface;
+            const noValue = ((tx.value || BN_0$1) === BN_0$1);
+            const noData = ((tx.data || "0x") === "0x");
+            if (iface.fallback && !iface.fallback.payable && iface.receive && !noData && !noValue) {
+                assertArgument(false, "cannot send data to receive or send value to non-payable fallback", "overrides", overrides);
+            }
+            assertArgument(iface.fallback || noData, "cannot send data to receive-only contract", "overrides.data", tx.data);
             // Only allow payable contracts to set non-zero value
             const payable = iface.receive || (iface.fallback && iface.fallback.payable);
-            assertArgument(payable || (tx.value || BN_0$1) === BN_0$1, "cannot send value to non-payable contract", "overrides.value", tx.value);
+            assertArgument(payable || noValue, "cannot send value to non-payable fallback", "overrides.value", tx.value);
             // Only allow fallback contracts to set non-empty data
-            assertArgument(iface.fallback || (tx.data || "0x") === "0x", "cannot send data to receive-only contract", "overrides.data", tx.data);
+            assertArgument(iface.fallback || noData, "cannot send data to receive-only contract", "overrides.data", tx.data);
             return tx;
         };
         const staticCall = async function (overrides) {
@@ -13477,6 +13501,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         [internal];
         fallback;
         constructor(target, abi, runner, _deployTx) {
+            assertArgument(typeof (target) === "string" || isAddressable(target), "invalid value for Contract target", "target", target);
             if (runner == null) {
                 runner = null;
             }
@@ -15214,6 +15239,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *
      *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
      */
+    // @TODO
+    // Event coalescence
+    //   When we register an event with an async value (e.g. address is a Signer
+    //   or ENS name), we need to add it immeidately for the Event API, but also
+    //   need time to resolve the address. Upon resolving the address, we need to
+    //   migrate the listener to the static event. We also need to maintain a map
+    //   of Signer/ENS name to address so we can sync respond to listenerCount.
     // Constants
     const BN_2$1 = BigInt(2);
     const MAX_CCIP_REDIRECTS = 10;
@@ -16776,6 +16808,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *
      * @_section: api/providers/jsonrpc:JSON-RPC Provider  [about-jsonrpcProvider]
      */
+    // @TODO:
+    // - Add the batching API
+    // https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
     const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
     //const Methods = "getAddress,then".split(/,/g);
     function deepCopy(value) {
@@ -18458,7 +18493,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // Sub-classes must call this for each message
         async _processMessage(message) {
             const result = (JSON.parse(message));
-            if ("id" in result) {
+            if (result && typeof (result) === "object" && "id" in result) {
                 const callback = this.#callbacks.get(result.id);
                 if (callback == null) {
                     this.emit("error", makeError("received result for unknown id", "UNKNOWN_ERROR", {
@@ -18470,7 +18505,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 this.#callbacks.delete(result.id);
                 callback.resolve(result);
             }
-            else if (result.method === "eth_subscription") {
+            else if (result && result.method === "eth_subscription") {
                 const filterId = result.params.subscription;
                 const subscriber = this.#subs.get(filterId);
                 if (subscriber) {
@@ -18484,6 +18519,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     }
                     pending.push(result.params.result);
                 }
+            }
+            else {
+                this.emit("error", makeError("received unexpected message", "UNKNOWN_ERROR", {
+                    reasonCode: "UNEXPECTED_MESSAGE",
+                    result
+                }));
+                return;
             }
         }
         async _write(message) {
@@ -18849,21 +18891,32 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const defaultState = {
         blockNumber: -2, requests: 0, lateResponses: 0, errorResponses: 0,
         outOfSync: -1, unsupportedEvents: 0, rollingDuration: 0, score: 0,
-        _network: null, _updateNumber: null, _totalTime: 0
+        _network: null, _updateNumber: null, _totalTime: 0,
+        _lastFatalError: null, _lastFatalErrorTimestamp: 0
     };
     async function waitForSync(config, blockNumber) {
         while (config.blockNumber < 0 || config.blockNumber < blockNumber) {
             if (!config._updateNumber) {
                 config._updateNumber = (async () => {
-                    const blockNumber = await config.provider.getBlockNumber();
-                    if (blockNumber > config.blockNumber) {
-                        config.blockNumber = blockNumber;
+                    try {
+                        const blockNumber = await config.provider.getBlockNumber();
+                        if (blockNumber > config.blockNumber) {
+                            config.blockNumber = blockNumber;
+                        }
+                    }
+                    catch (error) {
+                        config.blockNumber = -2;
+                        config._lastFatalError = error;
+                        config._lastFatalErrorTimestamp = getTime();
                     }
                     config._updateNumber = null;
                 })();
             }
             await config._updateNumber;
             config.outOfSync++;
+            if (config._lastFatalError) {
+                break;
+            }
         }
     }
     function _normalize(value) {
@@ -19097,6 +19150,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             shuffle(allConfigs);
             allConfigs.sort((a, b) => (b.priority - a.priority));
             for (const config of allConfigs) {
+                if (config._lastFatalError) {
+                    continue;
+                }
                 if (configs.indexOf(config) === -1) {
                     return config;
                 }
@@ -19148,9 +19204,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (!initialSync) {
                 const promises = [];
                 this.#configs.forEach((config) => {
-                    promises.push(waitForSync(config, 0));
                     promises.push((async () => {
-                        config._network = await config.provider.getNetwork();
+                        await waitForSync(config, 0);
+                        if (!config._lastFatalError) {
+                            config._network = await config.provider.getNetwork();
+                        }
                     })());
                 });
                 this.#initialSyncPromise = initialSync = (async () => {
@@ -19159,6 +19217,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     // Check all the networks match
                     let chainId = null;
                     for (const config of this.#configs) {
+                        if (config._lastFatalError) {
+                            continue;
+                        }
                         const network = (config._network);
                         if (chainId == null) {
                             chainId = network.chainId;
@@ -19190,7 +19251,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 case "getBlockNumber": {
                     // We need to get the bootstrap block height
                     if (this.#height === -2) {
-                        this.#height = Math.ceil(getNumber(getMedian(this.quorum, this.#configs.map((c) => ({
+                        this.#height = Math.ceil(getNumber(getMedian(this.quorum, this.#configs.filter((c) => (!c._lastFatalError)).map((c) => ({
                             value: c.blockNumber,
                             tag: getNumber(c.blockNumber).toString(),
                             weight: c.weight
@@ -19351,33 +19412,25 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             try {
                 providers.push(new AlchemyProvider(network, options.alchemy));
             }
-            catch (error) {
-                console.log(error);
-            }
+            catch (error) { }
         }
         if (options.ankr !== "-" && options.ankr != null) {
             try {
                 providers.push(new AnkrProvider(network, options.ankr));
             }
-            catch (error) {
-                console.log(error);
-            }
+            catch (error) { }
         }
         if (options.cloudflare !== "-") {
             try {
                 providers.push(new CloudflareProvider(network));
             }
-            catch (error) {
-                console.log(error);
-            }
+            catch (error) { }
         }
         if (options.etherscan !== "-") {
             try {
                 providers.push(new EtherscanProvider(network, options.etherscan));
             }
-            catch (error) {
-                console.log(error);
-            }
+            catch (error) { }
         }
         if (options.infura !== "-") {
             try {
@@ -19389,9 +19442,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 providers.push(new InfuraProvider(network, projectId, projectSecret));
             }
-            catch (error) {
-                console.log(error);
-            }
+            catch (error) { }
         }
         /*
             if (options.pocket !== "-") {
@@ -19413,9 +19464,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 let token = options.quicknode;
                 providers.push(new QuickNodeProvider(network, token));
             }
-            catch (error) {
-                console.log(error);
-            }
+            catch (error) { }
         }
         assert$1(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
             operation: "getDefaultProvider"
@@ -19857,6 +19906,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     // Use the encode-latin.js script to create the necessary
+    // data files to be consumed by this class
     /**
      *  An OWL format Wordlist is an encoding method that exploits
      *  the general locality of alphabetically sorted words to
@@ -21655,194 +21705,195 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     };
 
     /////////////////////////////
+    //
 
     var ethers = /*#__PURE__*/Object.freeze({
         __proto__: null,
-        version: version,
-        decodeBytes32String: decodeBytes32String,
-        encodeBytes32String: encodeBytes32String,
         AbiCoder: AbiCoder,
-        ConstructorFragment: ConstructorFragment,
-        ErrorFragment: ErrorFragment,
-        EventFragment: EventFragment,
-        Fragment: Fragment,
-        FallbackFragment: FallbackFragment,
-        FunctionFragment: FunctionFragment,
-        NamedFragment: NamedFragment,
-        ParamType: ParamType,
-        StructFragment: StructFragment,
-        checkResultErrors: checkResultErrors,
-        ErrorDescription: ErrorDescription,
-        Indexed: Indexed,
-        Interface: Interface,
-        LogDescription: LogDescription,
-        Result: Result,
-        TransactionDescription: TransactionDescription,
-        Typed: Typed,
-        getAddress: getAddress,
-        getIcapAddress: getIcapAddress,
-        getCreateAddress: getCreateAddress,
-        getCreate2Address: getCreate2Address,
-        isAddressable: isAddressable,
-        isAddress: isAddress,
-        resolveAddress: resolveAddress,
-        ZeroAddress: ZeroAddress,
-        WeiPerEther: WeiPerEther,
-        MaxUint256: MaxUint256,
-        MinInt256: MinInt256,
-        MaxInt256: MaxInt256,
-        N: N$1,
-        ZeroHash: ZeroHash,
-        EtherSymbol: EtherSymbol,
-        MessagePrefix: MessagePrefix,
+        AbstractProvider: AbstractProvider,
+        AbstractSigner: AbstractSigner,
+        AlchemyProvider: AlchemyProvider,
+        AnkrProvider: AnkrProvider,
         BaseContract: BaseContract,
+        BaseWallet: BaseWallet,
+        Block: Block,
+        BrowserProvider: BrowserProvider,
+        CloudflareProvider: CloudflareProvider,
+        ConstructorFragment: ConstructorFragment,
         Contract: Contract,
-        ContractFactory: ContractFactory,
         ContractEventPayload: ContractEventPayload,
+        ContractFactory: ContractFactory,
         ContractTransactionReceipt: ContractTransactionReceipt,
         ContractTransactionResponse: ContractTransactionResponse,
         ContractUnknownEventPayload: ContractUnknownEventPayload,
+        EnsPlugin: EnsPlugin,
+        EnsResolver: EnsResolver,
+        ErrorDescription: ErrorDescription,
+        ErrorFragment: ErrorFragment,
+        EtherSymbol: EtherSymbol,
+        EtherscanPlugin: EtherscanPlugin,
+        EtherscanProvider: EtherscanProvider,
+        EventFragment: EventFragment,
         EventLog: EventLog,
-        computeHmac: computeHmac,
-        randomBytes: randomBytes,
-        keccak256: keccak256,
-        ripemd160: ripemd160,
-        sha256: sha256,
-        sha512: sha512,
-        pbkdf2: pbkdf2,
-        scrypt: scrypt,
-        scryptSync: scryptSync,
-        lock: lock,
-        Signature: Signature,
-        SigningKey: SigningKey,
-        id: id,
-        ensNormalize: ensNormalize,
-        isValidName: isValidName,
-        namehash: namehash,
-        dnsEncode: dnsEncode,
-        hashMessage: hashMessage,
-        verifyMessage: verifyMessage,
-        solidityPacked: solidityPacked,
-        solidityPackedKeccak256: solidityPackedKeccak256,
-        solidityPackedSha256: solidityPackedSha256,
-        TypedDataEncoder: TypedDataEncoder,
-        verifyTypedData: verifyTypedData,
-        getDefaultProvider: getDefaultProvider,
-        Block: Block,
-        FeeData: FeeData,
-        Log: Log,
-        TransactionReceipt: TransactionReceipt,
-        TransactionResponse: TransactionResponse,
-        AbstractSigner: AbstractSigner,
-        NonceManager: NonceManager,
-        VoidSigner: VoidSigner,
-        AbstractProvider: AbstractProvider,
+        EventPayload: EventPayload,
+        FallbackFragment: FallbackFragment,
         FallbackProvider: FallbackProvider,
+        FeeData: FeeData,
+        FeeDataNetworkPlugin: FeeDataNetworkPlugin,
+        FetchCancelSignal: FetchCancelSignal,
+        FetchRequest: FetchRequest,
+        FetchResponse: FetchResponse,
+        FixedNumber: FixedNumber,
+        Fragment: Fragment,
+        FunctionFragment: FunctionFragment,
+        GasCostPlugin: GasCostPlugin,
+        HDNodeVoidWallet: HDNodeVoidWallet,
+        HDNodeWallet: HDNodeWallet,
+        Indexed: Indexed,
+        InfuraProvider: InfuraProvider,
+        InfuraWebSocketProvider: InfuraWebSocketProvider,
+        Interface: Interface,
+        IpcSocketProvider: IpcSocketProvider,
         JsonRpcApiProvider: JsonRpcApiProvider,
         JsonRpcProvider: JsonRpcProvider,
         JsonRpcSigner: JsonRpcSigner,
-        BrowserProvider: BrowserProvider,
-        AlchemyProvider: AlchemyProvider,
-        AnkrProvider: AnkrProvider,
-        CloudflareProvider: CloudflareProvider,
-        EtherscanProvider: EtherscanProvider,
-        InfuraProvider: InfuraProvider,
-        InfuraWebSocketProvider: InfuraWebSocketProvider,
+        LangEn: LangEn,
+        Log: Log,
+        LogDescription: LogDescription,
+        MaxInt256: MaxInt256,
+        MaxUint256: MaxUint256,
+        MessagePrefix: MessagePrefix,
+        MinInt256: MinInt256,
+        Mnemonic: Mnemonic,
+        N: N$1,
+        NamedFragment: NamedFragment,
+        Network: Network,
+        NetworkPlugin: NetworkPlugin,
+        NonceManager: NonceManager,
+        ParamType: ParamType,
         PocketProvider: PocketProvider,
         QuickNodeProvider: QuickNodeProvider,
-        IpcSocketProvider: IpcSocketProvider,
-        SocketProvider: SocketProvider,
-        WebSocketProvider: WebSocketProvider,
-        EnsResolver: EnsResolver,
-        Network: Network,
-        EnsPlugin: EnsPlugin,
-        EtherscanPlugin: EtherscanPlugin,
-        FeeDataNetworkPlugin: FeeDataNetworkPlugin,
-        GasCostPlugin: GasCostPlugin,
-        NetworkPlugin: NetworkPlugin,
+        Result: Result,
+        Signature: Signature,
+        SigningKey: SigningKey,
         SocketBlockSubscriber: SocketBlockSubscriber,
         SocketEventSubscriber: SocketEventSubscriber,
         SocketPendingSubscriber: SocketPendingSubscriber,
+        SocketProvider: SocketProvider,
         SocketSubscriber: SocketSubscriber,
-        UnmanagedSubscriber: UnmanagedSubscriber,
-        copyRequest: copyRequest,
-        showThrottleMessage: showThrottleMessage,
-        accessListify: accessListify,
-        computeAddress: computeAddress,
-        recoverAddress: recoverAddress,
+        StructFragment: StructFragment,
         Transaction: Transaction,
-        decodeBase58: decodeBase58,
-        encodeBase58: encodeBase58,
-        decodeBase64: decodeBase64,
-        encodeBase64: encodeBase64,
-        concat: concat,
-        dataLength: dataLength,
-        dataSlice: dataSlice,
-        getBytes: getBytes,
-        getBytesCopy: getBytesCopy,
-        hexlify: hexlify,
-        isHexString: isHexString,
-        isBytesLike: isBytesLike,
-        stripZerosLeft: stripZerosLeft,
-        zeroPadBytes: zeroPadBytes,
-        zeroPadValue: zeroPadValue,
-        defineProperties: defineProperties,
-        resolveProperties: resolveProperties,
+        TransactionDescription: TransactionDescription,
+        TransactionReceipt: TransactionReceipt,
+        TransactionResponse: TransactionResponse,
+        Typed: Typed,
+        TypedDataEncoder: TypedDataEncoder,
+        UnmanagedSubscriber: UnmanagedSubscriber,
+        Utf8ErrorFuncs: Utf8ErrorFuncs,
+        VoidSigner: VoidSigner,
+        Wallet: Wallet,
+        WebSocketProvider: WebSocketProvider,
+        WeiPerEther: WeiPerEther,
+        Wordlist: Wordlist,
+        WordlistOwl: WordlistOwl,
+        WordlistOwlA: WordlistOwlA,
+        ZeroAddress: ZeroAddress,
+        ZeroHash: ZeroHash,
+        accessListify: accessListify,
         assert: assert$1,
         assertArgument: assertArgument,
         assertArgumentCount: assertArgumentCount,
         assertNormalize: assertNormalize,
         assertPrivate: assertPrivate,
-        makeError: makeError,
-        isCallException: isCallException,
-        isError: isError,
-        EventPayload: EventPayload,
-        FetchRequest: FetchRequest,
-        FetchResponse: FetchResponse,
-        FetchCancelSignal: FetchCancelSignal,
-        FixedNumber: FixedNumber,
+        checkResultErrors: checkResultErrors,
+        computeAddress: computeAddress,
+        computeHmac: computeHmac,
+        concat: concat,
+        copyRequest: copyRequest,
+        dataLength: dataLength,
+        dataSlice: dataSlice,
+        decodeBase58: decodeBase58,
+        decodeBase64: decodeBase64,
+        decodeBytes32String: decodeBytes32String,
+        decodeRlp: decodeRlp,
+        decryptCrowdsaleJson: decryptCrowdsaleJson,
+        decryptKeystoreJson: decryptKeystoreJson,
+        decryptKeystoreJsonSync: decryptKeystoreJsonSync,
+        defaultPath: defaultPath,
+        defineProperties: defineProperties,
+        dnsEncode: dnsEncode,
+        encodeBase58: encodeBase58,
+        encodeBase64: encodeBase64,
+        encodeBytes32String: encodeBytes32String,
+        encodeRlp: encodeRlp,
+        encryptKeystoreJson: encryptKeystoreJson,
+        encryptKeystoreJsonSync: encryptKeystoreJsonSync,
+        ensNormalize: ensNormalize,
+        formatEther: formatEther,
+        formatUnits: formatUnits,
+        fromTwos: fromTwos,
+        getAccountPath: getAccountPath,
+        getAddress: getAddress,
         getBigInt: getBigInt,
+        getBytes: getBytes,
+        getBytesCopy: getBytesCopy,
+        getCreate2Address: getCreate2Address,
+        getCreateAddress: getCreateAddress,
+        getDefaultProvider: getDefaultProvider,
+        getIcapAddress: getIcapAddress,
+        getIndexedAccountPath: getIndexedAccountPath,
         getNumber: getNumber,
         getUint: getUint,
+        hashMessage: hashMessage,
+        hexlify: hexlify,
+        id: id,
+        isAddress: isAddress,
+        isAddressable: isAddressable,
+        isBytesLike: isBytesLike,
+        isCallException: isCallException,
+        isCrowdsaleJson: isCrowdsaleJson,
+        isError: isError,
+        isHexString: isHexString,
+        isKeystoreJson: isKeystoreJson,
+        isValidName: isValidName,
+        keccak256: keccak256,
+        lock: lock,
+        makeError: makeError,
+        mask: mask,
+        namehash: namehash,
+        parseEther: parseEther,
+        parseUnits: parseUnits,
+        pbkdf2: pbkdf2,
+        randomBytes: randomBytes,
+        recoverAddress: recoverAddress,
+        resolveAddress: resolveAddress,
+        resolveProperties: resolveProperties,
+        ripemd160: ripemd160,
+        scrypt: scrypt,
+        scryptSync: scryptSync,
+        sha256: sha256,
+        sha512: sha512,
+        showThrottleMessage: showThrottleMessage,
+        solidityPacked: solidityPacked,
+        solidityPackedKeccak256: solidityPackedKeccak256,
+        solidityPackedSha256: solidityPackedSha256,
+        stripZerosLeft: stripZerosLeft,
         toBeArray: toBeArray,
-        toBigInt: toBigInt,
         toBeHex: toBeHex,
+        toBigInt: toBigInt,
         toNumber: toNumber,
         toQuantity: toQuantity,
-        fromTwos: fromTwos,
         toTwos: toTwos,
-        mask: mask,
-        formatEther: formatEther,
-        parseEther: parseEther,
-        formatUnits: formatUnits,
-        parseUnits: parseUnits,
         toUtf8Bytes: toUtf8Bytes,
         toUtf8CodePoints: toUtf8CodePoints,
         toUtf8String: toUtf8String,
-        Utf8ErrorFuncs: Utf8ErrorFuncs,
-        decodeRlp: decodeRlp,
-        encodeRlp: encodeRlp,
         uuidV4: uuidV4,
-        Mnemonic: Mnemonic,
-        BaseWallet: BaseWallet,
-        HDNodeWallet: HDNodeWallet,
-        HDNodeVoidWallet: HDNodeVoidWallet,
-        Wallet: Wallet,
-        defaultPath: defaultPath,
-        getAccountPath: getAccountPath,
-        getIndexedAccountPath: getIndexedAccountPath,
-        isCrowdsaleJson: isCrowdsaleJson,
-        isKeystoreJson: isKeystoreJson,
-        decryptCrowdsaleJson: decryptCrowdsaleJson,
-        decryptKeystoreJsonSync: decryptKeystoreJsonSync,
-        decryptKeystoreJson: decryptKeystoreJson,
-        encryptKeystoreJson: encryptKeystoreJson,
-        encryptKeystoreJsonSync: encryptKeystoreJsonSync,
-        Wordlist: Wordlist,
-        LangEn: LangEn,
-        WordlistOwl: WordlistOwl,
-        WordlistOwlA: WordlistOwlA,
-        wordlists: wordlists
+        verifyMessage: verifyMessage,
+        verifyTypedData: verifyTypedData,
+        version: version,
+        wordlists: wordlists,
+        zeroPadBytes: zeroPadBytes,
+        zeroPadValue: zeroPadValue
     });
 
     exports.AbiCoder = AbiCoder;
@@ -22031,8 +22082,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     exports.wordlists = wordlists;
     exports.zeroPadBytes = zeroPadBytes;
     exports.zeroPadValue = zeroPadValue;
-
-    Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
 //# sourceMappingURL=ethers.umd.js.map

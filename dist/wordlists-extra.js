@@ -41,6 +41,8 @@ const assert$1 = {
 };
 
 /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+// The import here is via the package name. This is to ensure
+// that exports mapping/resolution does fall into place.
 const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
 const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
 // There is almost no big endian hardware, but js typed arrays uses platform specific endianness.
@@ -955,6 +957,7 @@ class Wordlist {
 }
 
 // Use the encode-latin.js script to create the necessary
+// data files to be consumed by this class
 /**
  *  An OWL format Wordlist is an encoding method that exploits
  *  the general locality of alphabetically sorted words to

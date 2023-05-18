@@ -185,7 +185,7 @@ export class SocketProvider extends JsonRpcApiProvider {
     // Sub-classes must call this for each message
     async _processMessage(message) {
         const result = (JSON.parse(message));
-        if ("id" in result) {
+        if (result && typeof (result) === "object" && "id" in result) {
             const callback = this.#callbacks.get(result.id);
             if (callback == null) {
                 this.emit("error", makeError("received result for unknown id", "UNKNOWN_ERROR", {
@@ -197,7 +197,7 @@ export class SocketProvider extends JsonRpcApiProvider {
             this.#callbacks.delete(result.id);
             callback.resolve(result);
         }
-        else if (result.method === "eth_subscription") {
+        else if (result && result.method === "eth_subscription") {
             const filterId = result.params.subscription;
             const subscriber = this.#subs.get(filterId);
             if (subscriber) {
@@ -211,6 +211,13 @@ export class SocketProvider extends JsonRpcApiProvider {
                 }
                 pending.push(result.params.result);
             }
+        }
+        else {
+            this.emit("error", makeError("received unexpected message", "UNKNOWN_ERROR", {
+                reasonCode: "UNEXPECTED_MESSAGE",
+                result
+            }));
+            return;
         }
     }
     async _write(message) {

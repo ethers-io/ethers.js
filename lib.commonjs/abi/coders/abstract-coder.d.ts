@@ -40,6 +40,10 @@ export declare class Result extends Array<any> {
      */
     filter(callback: (el: any, index: number, array: Result) => boolean, thisArg?: any): Result;
     /**
+     *  @_ignore
+     */
+    map<T extends any = any>(callback: (el: any, index: number, array: Result) => T, thisArg?: any): Array<T>;
+    /**
      *  Returns the value for %%name%%.
      *
      *  Since it is possible to have a key whose name conflicts with
