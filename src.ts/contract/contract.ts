@@ -1,5 +1,5 @@
 import { Interface, Typed } from "../abi/index.js";
-import { resolveAddress } from "../address/index.js";
+import { isAddressable, resolveAddress } from "../address/index.js";
 // import from provider.ts instead of index.ts to prevent circular dep
 // from EtherscanProvider
 import { copyRequest, Log, TransactionResponse } from "../providers/provider.js";
@@ -619,6 +619,9 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     readonly fallback!: null | WrappedFallback;
 
     constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _deployTx?: null | TransactionResponse) {
+        assertArgument(typeof(target) === "string" || isAddressable(target),
+            "invalid value for Contract target", "target", target);
+
         if (runner == null) { runner = null; }
         const iface = Interface.from(abi);
         defineProperties<BaseContract>(this, { target, runner, interface: iface });
