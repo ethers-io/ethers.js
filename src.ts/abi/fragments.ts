@@ -717,7 +717,7 @@ export class ParamType {
             }
             const childType = this.arrayChildren;
 
-            const result = value.slice();
+            const result = [...value]
             result.forEach((value, index) => {
                 childType.#walkAsync(promises, value, process, (value: any) => {
                     result[index] = value;
@@ -733,7 +733,7 @@ export class ParamType {
             // Convert the object into an array
             let result: Array<any>;
             if (Array.isArray(value)) {
-                result = value.slice();
+                result = [...value]
 
             } else {
                 if (value == null || typeof(value) !== "object") {
