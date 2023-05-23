@@ -1,10 +1,10 @@
 import { Interface, Typed } from "../abi/index.js";
-import { resolveAddress } from "../address/index.js";
+import { isAddressable, resolveAddress } from "../address/index.js";
 // import from provider.ts instead of index.ts to prevent circular dep
 // from EtherscanProvider
 import { copyRequest, Log, TransactionResponse } from "../providers/provider.js";
 import {
-    defineProperties, isCallException, isHexString, resolveProperties,
+    defineProperties, getBigInt, isCallException, isHexString, resolveProperties,
     makeError, assert, assertArgument
 } from "../utils/index.js";
 
@@ -172,13 +172,23 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
 
         const iface = contract.interface;
 
+        const noValue = (getBigInt((tx.value || BN_0), "overrides.value") === BN_0);
+        const noData = ((tx.data || "0x") === "0x");
+
+        if (iface.fallback && !iface.fallback.payable && iface.receive && !noData && !noValue) {
+            assertArgument(false, "cannot send data to receive or send value to non-payable fallback", "overrides", overrides);
+        }
+
+        assertArgument(iface.fallback || noData,
+          "cannot send data to receive-only contract", "overrides.data", tx.data);
+
         // Only allow payable contracts to set non-zero value
         const payable = iface.receive || (iface.fallback && iface.fallback.payable);
-        assertArgument(payable || (tx.value || BN_0) === BN_0,
-          "cannot send value to non-payable contract", "overrides.value", tx.value);
+        assertArgument(payable || noValue,
+          "cannot send value to non-payable fallback", "overrides.value", tx.value);
 
         // Only allow fallback contracts to set non-empty data
-        assertArgument(iface.fallback || (tx.data || "0x") === "0x",
+        assertArgument(iface.fallback || noData,
           "cannot send data to receive-only contract", "overrides.data", tx.data);
 
         return tx;
@@ -609,6 +619,9 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     readonly fallback!: null | WrappedFallback;
 
     constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _deployTx?: null | TransactionResponse) {
+        assertArgument(typeof(target) === "string" || isAddressable(target),
+            "invalid value for Contract target", "target", target);
+
         if (runner == null) { runner = null; }
         const iface = Interface.from(abi);
         defineProperties<BaseContract>(this, { target, runner, interface: iface });

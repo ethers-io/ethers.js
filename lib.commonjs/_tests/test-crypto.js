@@ -469,9 +469,9 @@ describe("tests ECDH shared secret", function () {
         it(`tests shared secrets match: ${name}`, function () {
             const signA = new index_js_2.SigningKey(keyA);
             const signB = new index_js_2.SigningKey(keyB);
-            assert_1.default.equal(shared, signA.computeSharedSecret(signB.publicKey), "privA + pubB");
-            assert_1.default.equal(shared, signB.computeSharedSecret(signA.publicKey), "pubA + privB");
-            assert_1.default.equal(shared, signA.computeSharedSecret(signB.privateKey), "privA + privB");
+            assert_1.default.equal(signA.computeSharedSecret(signB.publicKey), shared, "privA + pubB");
+            assert_1.default.equal(signB.computeSharedSecret(signA.publicKey), shared, "pubA + privB");
+            assert_1.default.equal(signA.computeSharedSecret(signB.privateKey), shared, "privA + privB");
         });
     }
 });

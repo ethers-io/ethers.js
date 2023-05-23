@@ -36,21 +36,32 @@ const defaultConfig = { stallTimeout: 400, priority: 1, weight: 1 };
 const defaultState = {
     blockNumber: -2, requests: 0, lateResponses: 0, errorResponses: 0,
     outOfSync: -1, unsupportedEvents: 0, rollingDuration: 0, score: 0,
-    _network: null, _updateNumber: null, _totalTime: 0
+    _network: null, _updateNumber: null, _totalTime: 0,
+    _lastFatalError: null, _lastFatalErrorTimestamp: 0
 };
 async function waitForSync(config, blockNumber) {
     while (config.blockNumber < 0 || config.blockNumber < blockNumber) {
         if (!config._updateNumber) {
             config._updateNumber = (async () => {
-                const blockNumber = await config.provider.getBlockNumber();
-                if (blockNumber > config.blockNumber) {
-                    config.blockNumber = blockNumber;
+                try {
+                    const blockNumber = await config.provider.getBlockNumber();
+                    if (blockNumber > config.blockNumber) {
+                        config.blockNumber = blockNumber;
+                    }
+                }
+                catch (error) {
+                    config.blockNumber = -2;
+                    config._lastFatalError = error;
+                    config._lastFatalErrorTimestamp = getTime();
                 }
                 config._updateNumber = null;
             })();
         }
         await config._updateNumber;
         config.outOfSync++;
+        if (config._lastFatalError) {
+            break;
+        }
     }
 }
 function _normalize(value) {
@@ -284,6 +295,9 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
         shuffle(allConfigs);
         allConfigs.sort((a, b) => (b.priority - a.priority));
         for (const config of allConfigs) {
+            if (config._lastFatalError) {
+                continue;
+            }
             if (configs.indexOf(config) === -1) {
                 return config;
             }
@@ -335,9 +349,11 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
         if (!initialSync) {
             const promises = [];
             this.#configs.forEach((config) => {
-                promises.push(waitForSync(config, 0));
                 promises.push((async () => {
-                    config._network = await config.provider.getNetwork();
+                    await waitForSync(config, 0);
+                    if (!config._lastFatalError) {
+                        config._network = await config.provider.getNetwork();
+                    }
                 })());
             });
             this.#initialSyncPromise = initialSync = (async () => {
@@ -346,6 +362,9 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
                 // Check all the networks match
                 let chainId = null;
                 for (const config of this.#configs) {
+                    if (config._lastFatalError) {
+                        continue;
+                    }
                     const network = (config._network);
                     if (chainId == null) {
                         chainId = network.chainId;
@@ -377,7 +396,7 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
             case "getBlockNumber": {
                 // We need to get the bootstrap block height
                 if (this.#height === -2) {
-                    this.#height = Math.ceil((0, index_js_1.getNumber)(getMedian(this.quorum, this.#configs.map((c) => ({
+                    this.#height = Math.ceil((0, index_js_1.getNumber)(getMedian(this.quorum, this.#configs.filter((c) => (!c._lastFatalError)).map((c) => ({
                         value: c.blockNumber,
                         tag: (0, index_js_1.getNumber)(c.blockNumber).toString(),
                         weight: c.weight

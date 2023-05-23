@@ -1,6 +1,5 @@
 node_modules/**
 output/**
-misc/**
 
 **/*.swp
 **/*.tgz

@@ -2,22 +2,19 @@
 function throwError(message, info) {
   const error = new Error(`AssertionError: ${ message }`);
   error.code = "ERR_ASSERTION";
-  for (const key of info) { error[key] = info[key]; }
+  for (const key in info) { error[key] = info[key]; }
   throw error;
 }
 
 export function equal(actual, expected, reason) {
-  if (actual != expected) {
-      if (reason == null) { reason = `${ actual } == ${ expected }`; }
+  if (actual == expected) { return; }
 
-      throwError(reason, { actual, expected, operator: "==" });
-  }
+  if (reason == null) { reason = `${ actual } == ${ expected }`; }
+  throwError(reason, { actual, expected, operator: "==" });
 }
 
 function isDeepEqual(actual, expected, memo) {
-  if (actual === expected) {
-    return true;
-  }
+  if (actual === expected) { return true; }
 
   // One or both things aren't objects
   if (actual === null || typeof(expected) !== 'object') {
@@ -70,7 +67,7 @@ export function throws(func, checkFunc, reason) {
     func();
 
   } catch (e) {
-    if (checkFunc(e)) { return true; }
+    if (checkFunc(e)) { return; }
 
     throwError(`The expected exception validation function returned false`, {
       actual: e,
@@ -86,7 +83,11 @@ export function throws(func, checkFunc, reason) {
 
 export async function rejects(func, checkFunc, reason) {
   try {
-    await func();
+    if (func.then) {
+      await func;
+    } else {
+      await func();
+    }
   } catch (e) {
     if (checkFunc(e)) { return true; }
 
@@ -98,7 +99,7 @@ export async function rejects(func, checkFunc, reason) {
   }
 
   throwError("Missing rejection", {
-    operator: "rejects"
+    operation: "rejects"
   });
 }
 

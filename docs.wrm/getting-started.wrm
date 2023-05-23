@@ -295,9 +295,9 @@ human-readable ABI, which is just the Solidity signature.
 
 _code: simplified ERC-20 ABI @lang<script>
   abi = [
-    "function decimals() returns (string)",
-    "function symbol() returns (string)",
-    "function balanceOf(address addr) returns (uint)"
+    "function decimals() view returns (string)",
+    "function symbol() view returns (string)",
+    "function balanceOf(address addr) view returns (uint)"
   ]
 
   // Create a contract

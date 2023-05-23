@@ -19,12 +19,12 @@
   },
   "description": "A complete and compact Ethereum library, for dapps, wallets and any other tools.",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "13.3.0",
+    "@rollup/plugin-node-resolve": "15.0.2",
     "@types/mocha": "9.1.1",
     "@types/semver": "7.3.12",
     "c8": "7.12.0",
     "mocha": "10.0.0",
-    "rollup": "2.78.1",
+    "rollup": "3.21.5",
     "semver": "7.3.7",
     "typescript": "5.0.4",
     "uglify-js": "3.17.0"
@@ -93,7 +93,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "1bc8b55d502a95c4ae58352bdcfce9e5f9ea72d3",
+  "gitHead": "83d7f43b9ca4b9868a3952510e56b41ea8610baa",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",

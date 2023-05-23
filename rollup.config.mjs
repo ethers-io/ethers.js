@@ -5,7 +5,7 @@ function getConfig(opts) {
   if (opts == null) { opts = { }; }
 
   const file = `./dist/ethers${ (opts.suffix || "") }.js`;
-  const exportConditions = [ "default", "module", "import" ];
+  const exportConditions = [ "import", "default" ];
   const mainFields = [ "module", "main" ];
   if (opts.browser) { mainFields.unshift("browser"); }
 

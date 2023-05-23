@@ -3,9 +3,18 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.4.0 (2023-04-27 21:17)
+ethers/v6.4.0 (2023-05-18 17:28)
 --------------------------------
 
+  - Coerce value into BigInt when checking for value ([83d7f43](https://github.com/ethers-io/ethers.js/commit/83d7f43b9ca4b9868a3952510e56b41ea8610baa)).
+  - Better errors when junk passed as Contract target ([#3947](https://github.com/ethers-io/ethers.js/issues/3947), [#4053](https://github.com/ethers-io/ethers.js/issues/4053); [219b16d](https://github.com/ethers-io/ethers.js/commit/219b16dc284b0c6a532c8c49e824d8234f94222b)).
+  - More robust message checking in socket providers ([#4051](https://github.com/ethers-io/ethers.js/issues/4051); [f58990b](https://github.com/ethers-io/ethers.js/commit/f58990b80cfd83579014339315e58663c0aa6ae3)).
+  - More robust defaultProvider start-up when a backend fails on bootstrap ([#3979](https://github.com/ethers-io/ethers.js/issues/3979); [984f6fa](https://github.com/ethers-io/ethers.js/commit/984f6fa155fca08ebec2353c75ee0a0b974e8568)).
+  - Fix Result.map when Array contains zero elements ([#4036](https://github.com/ethers-io/ethers.js/issues/4036), [#4048](https://github.com/ethers-io/ethers.js/issues/4048); [2e5935b](https://github.com/ethers-io/ethers.js/commit/2e5935b91cff462165a054b33c8b8413f51e3f39)).
+  - Fixed error handling for contracts with receive and non-payable fallback ([6db7458](https://github.com/ethers-io/ethers.js/commit/6db7458cf0a09e8e8a2abb712239972ab81dc9df)).
+  - Remove superfluous logging in defaultProvider ([f87f6ef](https://github.com/ethers-io/ethers.js/commit/f87f6ef9a01ca399664f9fe106b0a677dba0c8e8)).
+  - Removed superfluous logging ([1bc8b55](https://github.com/ethers-io/ethers.js/commit/1bc8b55d502a95c4ae58352bdcfce9e5f9ea72d3)).
+  - Fix receipt gas price when effectiveGasPrice is 0 on testnets ([#4014](https://github.com/ethers-io/ethers.js/issues/4014); [2b0fe61](https://github.com/ethers-io/ethers.js/commit/2b0fe611335432aee334d777a64d8c7827881618)).
   - Added error event to provider ([#3970](https://github.com/ethers-io/ethers.js/issues/3970), [#3982](https://github.com/ethers-io/ethers.js/issues/3982); [af0291c](https://github.com/ethers-io/ethers.js/commit/af0291c01639674658f5049343da88a84da763a1)).
   - Removed superfluous parameters for internal transaction functions ([e848978](https://github.com/ethers-io/ethers.js/commit/e8489787585c2e69a23f6cdec6901f22b096aebe)).
   - More aggresive tree-shaking ([076edad](https://github.com/ethers-io/ethers.js/commit/076edad81ef62474f48f2b4c8af0edc6e4fd64f2)).
