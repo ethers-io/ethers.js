@@ -206,6 +206,10 @@ _code:  @lang<javascript>
   formatEther(eth)
   //_result:
 
+    // Convert a value in wei to a string in gwei to display in a UI
+  formatGwei(eth)
+  //_result:
+
   // Convert a value in wei to a string in gwei to display in a UI
   formatUnits(feePerGas, "gwei")
   //_result:
