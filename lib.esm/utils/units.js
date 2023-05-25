@@ -74,6 +74,12 @@ export function formatEther(wei) {
     return formatUnits(wei, 18);
 }
 /**
+ *  Converts %%value%% into a //decimal string// using 9 decimal places.
+ */
+export function formatGwei(wei) {
+    return formatUnits(wei, 9);
+}
+/**
  *  Converts the //decimal string// %%ether%% to a BigInt, using 18
  *  decimal places.
  */
