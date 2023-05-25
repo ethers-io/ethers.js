@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseEther = exports.formatEther = exports.parseUnits = exports.formatUnits = void 0;
+exports.parseEther = exports.formatGwei = exports.formatEther = exports.parseUnits = exports.formatUnits = void 0;
 /**
  *  Most interactions with Ethereum requires integer values, which use
  *  the smallest magnitude unit.
@@ -79,6 +79,13 @@ function formatEther(wei) {
     return formatUnits(wei, 18);
 }
 exports.formatEther = formatEther;
+/**
+ *  Converts %%value%% into a //decimal string// using 9 decimal places.
+ */
+function formatGwei(wei) {
+    return formatUnits(wei, 9);
+}
+exports.formatGwei = formatGwei;
 /**
  *  Converts the //decimal string// %%ether%% to a BigInt, using 18
  *  decimal places.

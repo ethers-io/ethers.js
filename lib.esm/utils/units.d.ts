@@ -17,6 +17,10 @@ export declare function parseUnits(value: string, unit?: string | Numeric): bigi
  */
 export declare function formatEther(wei: BigNumberish): string;
 /**
+ *  Converts %%value%% into a //decimal string// using 9 decimal places.
+ */
+export declare function formatGwei(wei: BigNumberish): string;
+/**
  *  Converts the //decimal string// %%ether%% to a BigInt, using 18
  *  decimal places.
  */
