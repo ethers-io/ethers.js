@@ -430,7 +430,7 @@ export class FixedNumber {
      *  Returns a comparison result between %%this%% and %%other%%.
      *
      *  This is suitable for use in sorting, where ``-1`` implies %%this%%
-     *  is smaller, ``1`` implies %%other%% is larger and ``0`` implies
+     *  is smaller, ``1`` implies %%this%% is larger and ``0`` implies
      *  both are equal.
      */
      cmp(other: FixedNumber): number {
@@ -446,7 +446,7 @@ export class FixedNumber {
 
          // Comnpare
          if (a < b) { return -1; }
-         if (a > b) { return -1; }
+         if (a > b) { return 1; }
          return 0;
      }
 
