@@ -10,15 +10,25 @@ import { decodeOwlA } from "./decode-owla.js";
  *  based on latin-1 small.
  *
  *  If necessary, there are tools within the ``generation/`` folder
- *  to create these necessary data.
+ *  to create the necessary data.
  */
 export class WordlistOwlA extends WordlistOwl {
     #accent;
+    /**
+     *  Creates a new Wordlist for %%locale%% using the OWLA %%data%%
+     *  and %%accent%% data and validated against the %%checksum%%.
+     */
     constructor(locale, data, accent, checksum) {
         super(locale, data, checksum);
         this.#accent = accent;
     }
+    /**
+     *  The OWLA-encoded accent data.
+     */
     get _accent() { return this.#accent; }
+    /**
+     *  Decode all the words for the wordlist.
+     */
     _decodeWords() {
         return decodeOwlA(this._data, this._accent);
     }

@@ -9,7 +9,7 @@ import { Wordlist } from "./wordlist.js";
  *  based on ASCII-7 small.
  *
  *  If necessary, there are tools within the ``generation/`` folder
- *  to create these necessary data.
+ *  to create the necessary data.
  */
 export declare class WordlistOwl extends Wordlist {
     #private;
@@ -18,7 +18,13 @@ export declare class WordlistOwl extends Wordlist {
      *  and validated against the %%checksum%%.
      */
     constructor(locale: string, data: string, checksum: string);
+    /**
+     *  The OWL-encoded data.
+     */
     get _data(): string;
+    /**
+     *  Decode all the words for the wordlist.
+     */
     _decodeWords(): Array<string>;
     getWord(index: number): string;
     getWordIndex(word: string): number;

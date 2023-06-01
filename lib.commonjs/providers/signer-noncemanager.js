@@ -3,10 +3,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NonceManager = void 0;
 const index_js_1 = require("../utils/index.js");
 const abstract_signer_js_1 = require("./abstract-signer.js");
+/**
+ *  A **NonceManager** wraps another [[Signer]] and automatically manages
+ *  the nonce, ensuring serialized and sequential nonces are used during
+ *  transaction.
+ */
 class NonceManager extends abstract_signer_js_1.AbstractSigner {
+    /**
+     *  The Signer being managed.
+     */
     signer;
     #noncePromise;
     #delta;
+    /**
+     *  Creates a new **NonceManager** to manage %%signer%%.
+     */
     constructor(signer) {
         super(signer.provider);
         (0, index_js_1.defineProperties)(this, { signer });
@@ -29,9 +40,17 @@ class NonceManager extends abstract_signer_js_1.AbstractSigner {
         }
         return super.getNonce(blockTag);
     }
+    /**
+     *  Manually increment the nonce. This may be useful when managng
+     *  offline transactions.
+     */
     increment() {
         this.#delta++;
     }
+    /**
+     *  Resets the nonce, causing the **NonceManager** to reload the current
+     *  nonce from the blockchain on the next transaction.
+     */
     reset() {
         this.#delta = 0;
         this.#noncePromise = null;

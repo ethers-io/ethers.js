@@ -106,8 +106,9 @@ function getBuiltinCallException(action, tx, data, abiCoder) {
     });
 }
 /**
-  * About AbiCoder
-  */
+ *  The **AbiCoder** is a low-level class responsible for encoding JavaScript
+ *  values into binary data and decoding binary data into JavaScript values.
+ */
 class AbiCoder {
     #getCoder(param) {
         if (param.isArray()) {

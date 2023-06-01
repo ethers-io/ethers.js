@@ -3,7 +3,7 @@ function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 /**
- *  @TODO
+ *  Return the polling subscriber for common events.
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -20,7 +20,8 @@ export function getPollingSubscriber(provider, event) {
 }
 // @TODO: refactor this
 /**
- *  @TODO
+ *  A **PollingBlockSubscriber** polls at a regular interval for a change
+ *  in the block number.
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -31,12 +32,18 @@ export class PollingBlockSubscriber {
     // The most recent block we have scanned for events. The value -2
     // indicates we still need to fetch an initial block number
     #blockNumber;
+    /**
+     *  Create a new **PollingBlockSubscriber** attached to %%provider%%.
+     */
     constructor(provider) {
         this.#provider = provider;
         this.#poller = null;
         this.#interval = 4000;
         this.#blockNumber = -2;
     }
+    /**
+     *  The polling interval.
+     */
     get pollingInterval() { return this.#interval; }
     set pollingInterval(value) { this.#interval = value; }
     async #poll() {
@@ -95,7 +102,8 @@ export class PollingBlockSubscriber {
     }
 }
 /**
- *  @TODO
+ *  An **OnBlockSubscriber** can be sub-classed, with a [[_poll]]
+ *  implmentation which will be called on every new block.
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -103,6 +111,9 @@ export class OnBlockSubscriber {
     #provider;
     #poll;
     #running;
+    /**
+     *  Create a new **OnBlockSubscriber** attached to %%provider%%.
+     */
     constructor(provider) {
         this.#provider = provider;
         this.#running = false;
@@ -110,6 +121,9 @@ export class OnBlockSubscriber {
             this._poll(blockNumber, this.#provider);
         };
     }
+    /**
+     *  Called on every new block.
+     */
     async _poll(blockNumber, provider) {
         throw new Error("sub-classes must override this");
     }
@@ -132,7 +146,7 @@ export class OnBlockSubscriber {
     resume() { this.start(); }
 }
 /**
- *  @TODO
+ *  @_ignore:
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -148,12 +162,17 @@ export class PollingOrphanSubscriber extends OnBlockSubscriber {
     }
 }
 /**
- *  @TODO
+ *  A **PollingTransactionSubscriber** will poll for a given transaction
+ *  hash for its receipt.
  *
  *  @_docloc: api/providers/abstract-provider
  */
 export class PollingTransactionSubscriber extends OnBlockSubscriber {
     #hash;
+    /**
+     *  Create a new **PollingTransactionSubscriber** attached to
+     *  %%provider%%, listening for %%hash%%.
+     */
     constructor(provider, hash) {
         super(provider);
         this.#hash = hash;
@@ -166,7 +185,7 @@ export class PollingTransactionSubscriber extends OnBlockSubscriber {
     }
 }
 /**
- *  @TODO
+ *  A **PollingEventSubscriber** will poll for a given filter for its logs.
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -178,6 +197,10 @@ export class PollingEventSubscriber {
     // The most recent block we have scanned for events. The value -2
     // indicates we still need to fetch an initial block number
     #blockNumber;
+    /**
+     *  Create a new **PollingTransactionSubscriber** attached to
+     *  %%provider%%, listening for %%filter%%.
+     */
     constructor(provider, filter) {
         this.#provider = provider;
         this.#filter = copy(filter);

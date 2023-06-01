@@ -1,5 +1,7 @@
 /**
- *  Explain events...
+ *  Events allow for applications to use the observer pattern, which
+ *  allows subscribing and publishing events, outside the normal
+ *  execution paths.
  *
  *  @_section api/utils/events:Events  [about-events]
  */

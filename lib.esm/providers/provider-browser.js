@@ -1,8 +1,17 @@
 import { assertArgument } from "../utils/index.js";
 import { JsonRpcApiPollingProvider } from "./provider-jsonrpc.js";
 ;
+/**
+ *  A **BrowserProvider** is intended to wrap an injected provider which
+ *  adheres to the [[link-eip-1193]] standard, which most (if not all)
+ *  currently do.
+ */
 export class BrowserProvider extends JsonRpcApiPollingProvider {
     #request;
+    /**
+     *  Connnect to the %%ethereum%% provider, optionally forcing the
+     *  %%network%%.
+     */
     constructor(ethereum, network) {
         super(network, { batchMaxCount: 1 });
         this.#request = async (method, params) => {
@@ -54,6 +63,9 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
         }
         return super.getRpcError(payload, error);
     }
+    /**
+     *  Resolves to ``true`` if the provider manages the %%address%%.
+     */
     async hasSigner(address) {
         if (address == null) {
             address = 0;

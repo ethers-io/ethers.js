@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoidSigner = exports.AbstractSigner = void 0;
 /**
- *  About Abstract Signer and subclassing
+ *  Generally the [[Wallet]] and [[JsonRpcSigner]] and their sub-classes
+ *  are sufficent for most developers, but this is provided to
+ *  fascilitate more complex Signers.
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
  */
@@ -36,8 +38,20 @@ async function populate(signer, tx) {
     }
     return await (0, index_js_3.resolveProperties)(pop);
 }
+/**
+ *  An **AbstractSigner** includes most of teh functionality required
+ *  to get a [[Signer]] working as expected, but requires a few
+ *  Signer-specific methods be overridden.
+ *
+ */
 class AbstractSigner {
+    /**
+     *  The provider this signer is connected to.
+     */
     provider;
+    /**
+     *  Creates a new Signer connected to %%provider%%.
+     */
     constructor(provider) {
         (0, index_js_3.defineProperties)(this, { provider: (provider || null) });
     }
@@ -172,8 +186,23 @@ class AbstractSigner {
     }
 }
 exports.AbstractSigner = AbstractSigner;
+/**
+ *  A **VoidSigner** is a class deisgned to allow an address to be used
+ *  in any API which accepts a Signer, but for which there are no
+ *  credentials available to perform any actual signing.
+ *
+ *  This for example allow impersonating an account for the purpose of
+ *  static calls or estimating gas, but does not allow sending transactions.
+ */
 class VoidSigner extends AbstractSigner {
+    /**
+     *  The signer address.
+     */
     address;
+    /**
+     *  Creates a new **VoidSigner** with %%address%% attached to
+     *  %%provider%%.
+     */
     constructor(address, provider) {
         super(provider);
         (0, index_js_3.defineProperties)(this, { address });

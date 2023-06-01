@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.4.0";
+    const version = "6.4.1";
 
     /**
      *  Property helper functions.
@@ -66,7 +66,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  About Errors.
+     *  All errors in ethers include properties to ensure they are both
+     *  human-readable (i.e. ``.message``) and machine-readable (i.e. ``.code``).
+     *
+     *  The [[isError]] function can be used to check the error ``code`` and
+     *  provide a type guard for the properties present on that error interface.
      *
      *  @_section: api/utils/errors:Errors  [about-errors]
      */
@@ -534,6 +538,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         assertArgument(false, "invalid BigNumberish value", name || "value", value);
     }
+    /**
+     *  Returns %%value%% as a bigint, validating it is valid as a bigint
+     *  value and that it is positive.
+     */
     function getUint(value, name) {
         const result = getBigInt(value, name);
         assert$1(result >= BN_0$a, "unsigned value cannot be negative", "NUMERIC_FAULT", {
@@ -725,7 +733,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  Explain events...
+     *  Events allow for applications to use the observer pattern, which
+     *  allows subscribing and publishing events, outside the normal
+     *  execution paths.
      *
      *  @_section api/utils/events:Events  [about-events]
      */
@@ -1016,7 +1026,21 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  Explain fetching here...
+     *  Fetching content from the web is environment-specific, so Ethers
+     *  provides an abstraction the each environment can implement to provide
+     *  this service.
+     *
+     *  On [Node.js](link-node), the ``http`` and ``https`` libs are used to
+     *  create a request object, register event listeners and process data
+     *  and populate the [[FetchResponse]].
+     *
+     *  In a browser, the [DOM fetch](link-js-fetch) is used, and the resulting
+     *  ``Promise`` is waited on to retreive the payload.
+     *
+     *  The [[FetchRequest]] is responsible for handling many common situations,
+     *  such as redirects, server throttling, authentcation, etc.
+     *
+     *  It also handles common gateways, such as IPFS and data URIs.
      *
      *  @_section api/utils/fetching:Fetching Web Content  [about-fetch]
      */
@@ -1791,7 +1815,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  About fixed-point math...
+     *  The **FixedNumber** class permits using values with decimal places,
+     *  using fixed-pont math.
+     *
+     *  Fixed-point math is still based on integers under-the-hood, but uses an
+     *  internal offset to store fractional components below, and each operation
+     *  corrects for this after each operation.
      *
      *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [about-fixed-point-math]
      */
@@ -2113,7 +2142,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Returns a comparison result between %%this%% and %%other%%.
          *
          *  This is suitable for use in sorting, where ``-1`` implies %%this%%
-         *  is smaller, ``1`` implies %%other%% is larger and ``0`` implies
+         *  is smaller, ``1`` implies %%this%% is larger and ``0`` implies
          *  both are equal.
          */
         cmp(other) {
@@ -2131,7 +2160,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return -1;
             }
             if (a > b) {
-                return -1;
+                return 1;
             }
             return 0;
         }
@@ -6161,6 +6190,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *
      *  @_section: api/crypto:Cryptographic Functions   [about-crypto]
      */
+    /**
+     *  Once called, prevents any future change to the underlying cryptographic
+     *  primitives using the ``.register`` feature for hooks.
+     */
     function lock() {
         computeHmac.lock();
         keccak256.lock();
@@ -6533,11 +6566,26 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return new Typed(_gaurd, `bytes${(size) ? size : ""}`, value, { size });
     }
     const _typedSymbol = Symbol.for("_ethers_typed");
+    /**
+     *  The **Typed** class to wrap values providing explicit type information.
+     */
     class Typed {
+        /**
+         *  The type, as a Solidity-compatible type.
+         */
         type;
+        /**
+         *  The actual value.
+         */
         value;
         #options;
+        /**
+         *  @_ignore:
+         */
         _typedSymbol;
+        /**
+         *  @_ignore:
+         */
         constructor(gaurd, type, value, options) {
             if (options == null) {
                 options = null;
@@ -6548,6 +6596,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // Check the value is valid
             this.format();
         }
+        /**
+         *  Format the type as a Human-Readable type.
+         */
         format() {
             if (this.type === "array") {
                 throw new Error("");
@@ -6560,24 +6611,45 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return this.type;
         }
+        /**
+         *  The default value returned by this type.
+         */
         defaultValue() {
             return 0;
         }
+        /**
+         *  The minimum value for numeric types.
+         */
         minValue() {
             return 0;
         }
+        /**
+         *  The maximum value for numeric types.
+         */
         maxValue() {
             return 0;
         }
+        /**
+         *  Returns ``true`` and provides a type guard is this is a [[TypedBigInt]].
+         */
         isBigInt() {
             return !!(this.type.match(/^u?int[0-9]+$/));
         }
+        /**
+         *  Returns ``true`` and provides a type guard is this is a [[TypedData]].
+         */
         isData() {
             return this.type.startsWith("bytes");
         }
+        /**
+         *  Returns ``true`` and provides a type guard is this is a [[TypedString]].
+         */
         isString() {
             return (this.type === "string");
         }
+        /**
+         *  Returns the tuple name, if this is a tuple. Throws otherwise.
+         */
         get tupleName() {
             if (this.type !== "tuple") {
                 throw TypeError("not a tuple");
@@ -6588,6 +6660,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // - `null` indicates the length is unforced, it could be dynamic
         // - `-1` indicates the length is dynamic
         // - any other value indicates it is a static array and is its length
+        /**
+         *  Returns the length of the array type or ``-1`` if it is dynamic.
+         *
+         *  Throws if the type is not an array.
+         */
         get arrayLength() {
             if (this.type !== "array") {
                 throw TypeError("not an array");
@@ -6600,117 +6677,435 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return null;
         }
+        /**
+         *  Returns a new **Typed** of %%type%% with the %%value%%.
+         */
         static from(type, value) {
             return new Typed(_gaurd, type, value);
         }
+        /**
+         *  Return a new ``uint8`` type for %%v%%.
+         */
         static uint8(v) { return n(v, 8); }
+        /**
+         *  Return a new ``uint16`` type for %%v%%.
+         */
         static uint16(v) { return n(v, 16); }
+        /**
+         *  Return a new ``uint24`` type for %%v%%.
+         */
         static uint24(v) { return n(v, 24); }
+        /**
+         *  Return a new ``uint32`` type for %%v%%.
+         */
         static uint32(v) { return n(v, 32); }
+        /**
+         *  Return a new ``uint40`` type for %%v%%.
+         */
         static uint40(v) { return n(v, 40); }
+        /**
+         *  Return a new ``uint48`` type for %%v%%.
+         */
         static uint48(v) { return n(v, 48); }
+        /**
+         *  Return a new ``uint56`` type for %%v%%.
+         */
         static uint56(v) { return n(v, 56); }
+        /**
+         *  Return a new ``uint64`` type for %%v%%.
+         */
         static uint64(v) { return n(v, 64); }
+        /**
+         *  Return a new ``uint72`` type for %%v%%.
+         */
         static uint72(v) { return n(v, 72); }
+        /**
+         *  Return a new ``uint80`` type for %%v%%.
+         */
         static uint80(v) { return n(v, 80); }
+        /**
+         *  Return a new ``uint88`` type for %%v%%.
+         */
         static uint88(v) { return n(v, 88); }
+        /**
+         *  Return a new ``uint96`` type for %%v%%.
+         */
         static uint96(v) { return n(v, 96); }
+        /**
+         *  Return a new ``uint104`` type for %%v%%.
+         */
         static uint104(v) { return n(v, 104); }
+        /**
+         *  Return a new ``uint112`` type for %%v%%.
+         */
         static uint112(v) { return n(v, 112); }
+        /**
+         *  Return a new ``uint120`` type for %%v%%.
+         */
         static uint120(v) { return n(v, 120); }
+        /**
+         *  Return a new ``uint128`` type for %%v%%.
+         */
         static uint128(v) { return n(v, 128); }
+        /**
+         *  Return a new ``uint136`` type for %%v%%.
+         */
         static uint136(v) { return n(v, 136); }
+        /**
+         *  Return a new ``uint144`` type for %%v%%.
+         */
         static uint144(v) { return n(v, 144); }
+        /**
+         *  Return a new ``uint152`` type for %%v%%.
+         */
         static uint152(v) { return n(v, 152); }
+        /**
+         *  Return a new ``uint160`` type for %%v%%.
+         */
         static uint160(v) { return n(v, 160); }
+        /**
+         *  Return a new ``uint168`` type for %%v%%.
+         */
         static uint168(v) { return n(v, 168); }
+        /**
+         *  Return a new ``uint176`` type for %%v%%.
+         */
         static uint176(v) { return n(v, 176); }
+        /**
+         *  Return a new ``uint184`` type for %%v%%.
+         */
         static uint184(v) { return n(v, 184); }
+        /**
+         *  Return a new ``uint192`` type for %%v%%.
+         */
         static uint192(v) { return n(v, 192); }
+        /**
+         *  Return a new ``uint200`` type for %%v%%.
+         */
         static uint200(v) { return n(v, 200); }
+        /**
+         *  Return a new ``uint208`` type for %%v%%.
+         */
         static uint208(v) { return n(v, 208); }
+        /**
+         *  Return a new ``uint216`` type for %%v%%.
+         */
         static uint216(v) { return n(v, 216); }
+        /**
+         *  Return a new ``uint224`` type for %%v%%.
+         */
         static uint224(v) { return n(v, 224); }
+        /**
+         *  Return a new ``uint232`` type for %%v%%.
+         */
         static uint232(v) { return n(v, 232); }
+        /**
+         *  Return a new ``uint240`` type for %%v%%.
+         */
         static uint240(v) { return n(v, 240); }
+        /**
+         *  Return a new ``uint248`` type for %%v%%.
+         */
         static uint248(v) { return n(v, 248); }
+        /**
+         *  Return a new ``uint256`` type for %%v%%.
+         */
         static uint256(v) { return n(v, 256); }
+        /**
+         *  Return a new ``uint256`` type for %%v%%.
+         */
         static uint(v) { return n(v, 256); }
+        /**
+         *  Return a new ``int8`` type for %%v%%.
+         */
         static int8(v) { return n(v, -8); }
+        /**
+         *  Return a new ``int16`` type for %%v%%.
+         */
         static int16(v) { return n(v, -16); }
+        /**
+         *  Return a new ``int24`` type for %%v%%.
+         */
         static int24(v) { return n(v, -24); }
+        /**
+         *  Return a new ``int32`` type for %%v%%.
+         */
         static int32(v) { return n(v, -32); }
+        /**
+         *  Return a new ``int40`` type for %%v%%.
+         */
         static int40(v) { return n(v, -40); }
+        /**
+         *  Return a new ``int48`` type for %%v%%.
+         */
         static int48(v) { return n(v, -48); }
+        /**
+         *  Return a new ``int56`` type for %%v%%.
+         */
         static int56(v) { return n(v, -56); }
+        /**
+         *  Return a new ``int64`` type for %%v%%.
+         */
         static int64(v) { return n(v, -64); }
+        /**
+         *  Return a new ``int72`` type for %%v%%.
+         */
         static int72(v) { return n(v, -72); }
+        /**
+         *  Return a new ``int80`` type for %%v%%.
+         */
         static int80(v) { return n(v, -80); }
+        /**
+         *  Return a new ``int88`` type for %%v%%.
+         */
         static int88(v) { return n(v, -88); }
+        /**
+         *  Return a new ``int96`` type for %%v%%.
+         */
         static int96(v) { return n(v, -96); }
+        /**
+         *  Return a new ``int104`` type for %%v%%.
+         */
         static int104(v) { return n(v, -104); }
+        /**
+         *  Return a new ``int112`` type for %%v%%.
+         */
         static int112(v) { return n(v, -112); }
+        /**
+         *  Return a new ``int120`` type for %%v%%.
+         */
         static int120(v) { return n(v, -120); }
+        /**
+         *  Return a new ``int128`` type for %%v%%.
+         */
         static int128(v) { return n(v, -128); }
+        /**
+         *  Return a new ``int136`` type for %%v%%.
+         */
         static int136(v) { return n(v, -136); }
+        /**
+         *  Return a new ``int144`` type for %%v%%.
+         */
         static int144(v) { return n(v, -144); }
+        /**
+         *  Return a new ``int52`` type for %%v%%.
+         */
         static int152(v) { return n(v, -152); }
+        /**
+         *  Return a new ``int160`` type for %%v%%.
+         */
         static int160(v) { return n(v, -160); }
+        /**
+         *  Return a new ``int168`` type for %%v%%.
+         */
         static int168(v) { return n(v, -168); }
+        /**
+         *  Return a new ``int176`` type for %%v%%.
+         */
         static int176(v) { return n(v, -176); }
+        /**
+         *  Return a new ``int184`` type for %%v%%.
+         */
         static int184(v) { return n(v, -184); }
+        /**
+         *  Return a new ``int92`` type for %%v%%.
+         */
         static int192(v) { return n(v, -192); }
+        /**
+         *  Return a new ``int200`` type for %%v%%.
+         */
         static int200(v) { return n(v, -200); }
+        /**
+         *  Return a new ``int208`` type for %%v%%.
+         */
         static int208(v) { return n(v, -208); }
+        /**
+         *  Return a new ``int216`` type for %%v%%.
+         */
         static int216(v) { return n(v, -216); }
+        /**
+         *  Return a new ``int224`` type for %%v%%.
+         */
         static int224(v) { return n(v, -224); }
+        /**
+         *  Return a new ``int232`` type for %%v%%.
+         */
         static int232(v) { return n(v, -232); }
+        /**
+         *  Return a new ``int240`` type for %%v%%.
+         */
         static int240(v) { return n(v, -240); }
+        /**
+         *  Return a new ``int248`` type for %%v%%.
+         */
         static int248(v) { return n(v, -248); }
+        /**
+         *  Return a new ``int256`` type for %%v%%.
+         */
         static int256(v) { return n(v, -256); }
+        /**
+         *  Return a new ``int256`` type for %%v%%.
+         */
         static int(v) { return n(v, -256); }
+        /**
+         *  Return a new ``bytes1`` type for %%v%%.
+         */
         static bytes1(v) { return b(v, 1); }
+        /**
+         *  Return a new ``bytes2`` type for %%v%%.
+         */
         static bytes2(v) { return b(v, 2); }
+        /**
+         *  Return a new ``bytes3`` type for %%v%%.
+         */
         static bytes3(v) { return b(v, 3); }
+        /**
+         *  Return a new ``bytes4`` type for %%v%%.
+         */
         static bytes4(v) { return b(v, 4); }
+        /**
+         *  Return a new ``bytes5`` type for %%v%%.
+         */
         static bytes5(v) { return b(v, 5); }
+        /**
+         *  Return a new ``bytes6`` type for %%v%%.
+         */
         static bytes6(v) { return b(v, 6); }
+        /**
+         *  Return a new ``bytes7`` type for %%v%%.
+         */
         static bytes7(v) { return b(v, 7); }
+        /**
+         *  Return a new ``bytes8`` type for %%v%%.
+         */
         static bytes8(v) { return b(v, 8); }
+        /**
+         *  Return a new ``bytes9`` type for %%v%%.
+         */
         static bytes9(v) { return b(v, 9); }
+        /**
+         *  Return a new ``bytes10`` type for %%v%%.
+         */
         static bytes10(v) { return b(v, 10); }
+        /**
+         *  Return a new ``bytes11`` type for %%v%%.
+         */
         static bytes11(v) { return b(v, 11); }
+        /**
+         *  Return a new ``bytes12`` type for %%v%%.
+         */
         static bytes12(v) { return b(v, 12); }
+        /**
+         *  Return a new ``bytes13`` type for %%v%%.
+         */
         static bytes13(v) { return b(v, 13); }
+        /**
+         *  Return a new ``bytes14`` type for %%v%%.
+         */
         static bytes14(v) { return b(v, 14); }
+        /**
+         *  Return a new ``bytes15`` type for %%v%%.
+         */
         static bytes15(v) { return b(v, 15); }
+        /**
+         *  Return a new ``bytes16`` type for %%v%%.
+         */
         static bytes16(v) { return b(v, 16); }
+        /**
+         *  Return a new ``bytes17`` type for %%v%%.
+         */
         static bytes17(v) { return b(v, 17); }
+        /**
+         *  Return a new ``bytes18`` type for %%v%%.
+         */
         static bytes18(v) { return b(v, 18); }
+        /**
+         *  Return a new ``bytes19`` type for %%v%%.
+         */
         static bytes19(v) { return b(v, 19); }
+        /**
+         *  Return a new ``bytes20`` type for %%v%%.
+         */
         static bytes20(v) { return b(v, 20); }
+        /**
+         *  Return a new ``bytes21`` type for %%v%%.
+         */
         static bytes21(v) { return b(v, 21); }
+        /**
+         *  Return a new ``bytes22`` type for %%v%%.
+         */
         static bytes22(v) { return b(v, 22); }
+        /**
+         *  Return a new ``bytes23`` type for %%v%%.
+         */
         static bytes23(v) { return b(v, 23); }
+        /**
+         *  Return a new ``bytes24`` type for %%v%%.
+         */
         static bytes24(v) { return b(v, 24); }
+        /**
+         *  Return a new ``bytes25`` type for %%v%%.
+         */
         static bytes25(v) { return b(v, 25); }
+        /**
+         *  Return a new ``bytes26`` type for %%v%%.
+         */
         static bytes26(v) { return b(v, 26); }
+        /**
+         *  Return a new ``bytes27`` type for %%v%%.
+         */
         static bytes27(v) { return b(v, 27); }
+        /**
+         *  Return a new ``bytes28`` type for %%v%%.
+         */
         static bytes28(v) { return b(v, 28); }
+        /**
+         *  Return a new ``bytes29`` type for %%v%%.
+         */
         static bytes29(v) { return b(v, 29); }
+        /**
+         *  Return a new ``bytes30`` type for %%v%%.
+         */
         static bytes30(v) { return b(v, 30); }
+        /**
+         *  Return a new ``bytes31`` type for %%v%%.
+         */
         static bytes31(v) { return b(v, 31); }
+        /**
+         *  Return a new ``bytes32`` type for %%v%%.
+         */
         static bytes32(v) { return b(v, 32); }
+        /**
+         *  Return a new ``address`` type for %%v%%.
+         */
         static address(v) { return new Typed(_gaurd, "address", v); }
+        /**
+         *  Return a new ``bool`` type for %%v%%.
+         */
         static bool(v) { return new Typed(_gaurd, "bool", !!v); }
+        /**
+         *  Return a new ``bytes`` type for %%v%%.
+         */
         static bytes(v) { return new Typed(_gaurd, "bytes", v); }
+        /**
+         *  Return a new ``string`` type for %%v%%.
+         */
         static string(v) { return new Typed(_gaurd, "string", v); }
+        /**
+         *  Return a new ``array`` type for %%v%%, allowing %%dynamic%% length.
+         */
         static array(v, dynamic) {
             throw new Error("not implemented yet");
         }
+        /**
+         *  Return a new ``tuple`` type for %%v%%, with the optional %%name%%.
+         */
         static tuple(v, name) {
             throw new Error("not implemented yet");
         }
+        /**
+         *  Return a new ``uint8`` type for %%v%%.
+         */
         static overrides(v) {
             return new Typed(_gaurd, "overrides", Object.assign({}, v));
         }
@@ -9256,14 +9651,40 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function encodeType(name, fields) {
         return `${name}(${fields.map(({ name, type }) => (type + " " + name)).join(",")})`;
     }
+    /**
+     *  A **TypedDataEncode** prepares and encodes [[link-eip-712]] payloads
+     *  for signed typed data.
+     *
+     *  This is useful for those that wish to compute various components of a
+     *  typed data hash, primary types, or sub-components, but generally the
+     *  higher level [[Signer-signTypedData]] is more useful.
+     */
     class TypedDataEncoder {
+        /**
+         *  The primary type for the structured [[types]].
+         *
+         *  This is derived automatically from the [[types]], since no
+         *  recursion is possible, once the DAG for the types is consturcted
+         *  internally, the primary type must be the only remaining type with
+         *  no parent nodes.
+         */
         primaryType;
         #types;
+        /**
+         *  The types.
+         */
         get types() {
             return JSON.parse(this.#types);
         }
         #fullTypes;
         #encoderCache;
+        /**
+         *  Create a new **TypedDataEncoder** for %%types%%.
+         *
+         *  This performs all necessary checking that types are valid and
+         *  do not violate the [[link-eip-712]] structural constraints as
+         *  well as computes the [[primaryType]].
+         */
         constructor(types) {
             this.#types = JSON.stringify(types);
             this.#fullTypes = new Map();
@@ -9329,6 +9750,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 this.#fullTypes.set(name, encodeType(name, types[name]) + st.map((t) => encodeType(t, types[t])).join(""));
             }
         }
+        /**
+         *  Returnthe encoder for the specific %%type%%.
+         */
         getEncoder(type) {
             let encoder = this.#encoderCache.get(type);
             if (!encoder) {
@@ -9377,23 +9801,41 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             assertArgument(false, `unknown type: ${type}`, "type", type);
         }
+        /**
+         *  Return the full type for %%name%%.
+         */
         encodeType(name) {
             const result = this.#fullTypes.get(name);
             assertArgument(result, `unknown type: ${JSON.stringify(name)}`, "name", name);
             return result;
         }
+        /**
+         *  Return the encoded %%value%% for the %%type%%.
+         */
         encodeData(type, value) {
             return this.getEncoder(type)(value);
         }
+        /**
+         *  Returns the hash of %%value%% for the type of %%name%%.
+         */
         hashStruct(name, value) {
             return keccak256(this.encodeData(name, value));
         }
+        /**
+         *  Return the fulled encoded %%value%% for the [[types]].
+         */
         encode(value) {
             return this.encodeData(this.primaryType, value);
         }
+        /**
+         *  Return the hash of the fully encoded %%value%% for the [[types]].
+         */
         hash(value) {
             return this.hashStruct(this.primaryType, value);
         }
+        /**
+         *  @_ignore:
+         */
         _visit(type, value, callback) {
             // Basic encoder type (address, bool, uint256, etc)
             {
@@ -9418,18 +9860,37 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             assertArgument(false, `unknown type: ${type}`, "type", type);
         }
+        /**
+         *  Call %%calback%% for each value in %%value%%, passing the type and
+         *  component within %%value%%.
+         *
+         *  This is useful for replacing addresses or other transformation that
+         *  may be desired on each component, based on its type.
+         */
         visit(value, callback) {
             return this._visit(this.primaryType, value, callback);
         }
+        /**
+         *  Create a new **TypedDataEncoder** for %%types%%.
+         */
         static from(types) {
             return new TypedDataEncoder(types);
         }
+        /**
+         *  Return the primary type for %%types%%.
+         */
         static getPrimaryType(types) {
             return TypedDataEncoder.from(types).primaryType;
         }
+        /**
+         *  Return the hashed struct for %%value%% using %%types%% and %%name%%.
+         */
         static hashStruct(name, types, value) {
             return TypedDataEncoder.from(types).hashStruct(name, value);
         }
+        /**
+         *  Return the domain hash for %%domain%%.
+         */
         static hashDomain(domain) {
             const domainFields = [];
             for (const name in domain) {
@@ -9445,6 +9906,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
             return TypedDataEncoder.hashStruct("EIP712Domain", { EIP712Domain: domainFields }, domain);
         }
+        /**
+         *  Return the fully encoded [[link-eip-712]] %%value%% for %%types%% with %%domain%%.
+         */
         static encode(domain, types, value) {
             return concat([
                 "0x1901",
@@ -9452,10 +9916,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 TypedDataEncoder.from(types).hash(value)
             ]);
         }
+        /**
+         *  Return the hash of the fully encoded [[link-eip-712]] %%value%% for %%types%% with %%domain%%.
+         */
         static hash(domain, types, value) {
             return keccak256(TypedDataEncoder.encode(domain, types, value));
         }
         // Replaces all address types with ENS names with their looked up address
+        /**
+         * Resolves to the value from resolving all addresses in %%value%% for
+         * %%types%% and the %%domain%%.
+         */
         static async resolveNames(domain, types, value, resolveName) {
             // Make a copy to isolate it from the object passed in
             domain = Object.assign({}, domain);
@@ -9497,6 +9968,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
             return { domain, value };
         }
+        /**
+         *  Returns the JSON-encoded payload expected by nodes which implement
+         *  the JSON-RPC [[link-eip-712]] method.
+         */
         static getPayload(domain, types, value) {
             // Validate the domain fields
             TypedDataEncoder.hashDomain(domain);
@@ -9552,7 +10027,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  About frgaments...
+     *  A fragment is a single item from an ABI, which may represent any of:
+     *
+     *  - [Functions](FunctionFragment)
+     *  - [Events](EventFragment)
+     *  - [Constructors](ConstructorFragment)
+     *  - Custom [Errors](ErrorFragment)
+     *  - [Fallback or Receive](FallbackFragment) functions
      *
      *  @_subsection api/abi/abi-coder:Fragments  [about-fragments]
      */
@@ -9885,7 +10366,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const FunctionFragmentInternal = "_FunctionInternal";
     const StructFragmentInternal = "_StructInternal";
     /**
-     *  Each input and output of a [[Fragment]] is an Array of **PAramType**.
+     *  Each input and output of a [[Fragment]] is an Array of **ParamType**.
      */
     class ParamType {
         /**
@@ -10009,15 +10490,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return result;
         }
-        /*
-         *  Returns true if %%value%% is an Array type.
-         *
-         *  This provides a type gaurd ensuring that the
-         *  [[arrayChildren]] and [[arrayLength]] are non-null.
-         */
-        //static isArray(value: any): value is { arrayChildren: ParamType, arrayLength: number } {
-        //    return value && (value.baseType === "array")
-        //}
         /**
          *  Returns true if %%this%% is an Array type.
          *
@@ -10369,6 +10841,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         get selector() {
             return id(this.format("sighash")).substring(0, 10);
         }
+        /**
+         *  Returns a string representation of this fragment as %%format%%.
+         */
         format(format) {
             if (format == null) {
                 format = "sighash";
@@ -10387,6 +10862,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             result.push(this.name + joinParams(format, this.inputs));
             return result.join(" ");
         }
+        /**
+         *  Returns a new **ErrorFragment** for %%obj%%.
+         */
         static from(obj) {
             if (ErrorFragment.isFragment(obj)) {
                 return obj;
@@ -10402,6 +10880,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return new ErrorFragment(_guard$2, obj.name, obj.inputs ? obj.inputs.map(ParamType.from) : []);
         }
+        /**
+         *  Returns ``true`` and provides a type guard if %%value%% is an
+         *  **ErrorFragment**.
+         */
         static isFragment(value) {
             return (value && value[internal$1] === ErrorFragmentInternal);
         }
@@ -10410,6 +10892,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  A Fragment which represents an Event.
      */
     class EventFragment extends NamedFragment {
+        /**
+         *  Whether this event is anonymous.
+         */
         anonymous;
         /**
          *  @private
@@ -10425,6 +10910,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         get topicHash() {
             return id(this.format("sighash"));
         }
+        /**
+         *  Returns a string representation of this event as %%format%%.
+         */
         format(format) {
             if (format == null) {
                 format = "sighash";
@@ -10447,11 +10935,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return result.join(" ");
         }
+        /**
+         *  Return the topic hash for an event with %%name%% and %%params%%.
+         */
         static getTopicHash(name, params) {
             params = (params || []).map((p) => ParamType.from(p));
             const fragment = new EventFragment(_guard$2, name, params, false);
             return fragment.topicHash;
         }
+        /**
+         *  Returns a new **EventFragment** for %%obj%%.
+         */
         static from(obj) {
             if (EventFragment.isFragment(obj)) {
                 return obj;
@@ -10468,6 +10962,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return new EventFragment(_guard$2, obj.name, obj.inputs ? obj.inputs.map((p) => ParamType.from(p, true)) : [], !!obj.anonymous);
         }
+        /**
+         *  Returns ``true`` and provides a type guard if %%value%% is an
+         *  **EventFragment**.
+         */
         static isFragment(value) {
             return (value && value[internal$1] === EventFragmentInternal);
         }
@@ -10476,7 +10974,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  A Fragment which represents a constructor.
      */
     class ConstructorFragment extends Fragment {
+        /**
+         *  Whether the constructor can receive an endowment.
+         */
         payable;
+        /**
+         *  The recommended gas limit for deployment or ``null``.
+         */
         gas;
         /**
          *  @private
@@ -10486,6 +10990,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             Object.defineProperty(this, internal$1, { value: ConstructorFragmentInternal });
             defineProperties(this, { payable, gas });
         }
+        /**
+         *  Returns a string representation of this constructor as %%format%%.
+         */
         format(format) {
             assert$1(format != null && format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
             if (format === "json") {
@@ -10504,6 +11011,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return result.join(" ");
         }
+        /**
+         *  Returns a new **ConstructorFragment** for %%obj%%.
+         */
         static from(obj) {
             if (ConstructorFragment.isFragment(obj)) {
                 return obj;
@@ -10521,6 +11031,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return new ConstructorFragment(_guard$2, "constructor", obj.inputs ? obj.inputs.map(ParamType.from) : [], !!obj.payable, (obj.gas != null) ? obj.gas : null);
         }
+        /**
+         *  Returns ``true`` and provides a type guard if %%value%% is a
+         *  **ConstructorFragment**.
+         */
         static isFragment(value) {
             return (value && value[internal$1] === ConstructorFragmentInternal);
         }
@@ -10538,6 +11052,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             Object.defineProperty(this, internal$1, { value: FallbackFragmentInternal });
             defineProperties(this, { payable });
         }
+        /**
+         *  Returns a string representation of this fallback as %%format%%.
+         */
         format(format) {
             const type = ((this.inputs.length === 0) ? "receive" : "fallback");
             if (format === "json") {
@@ -10546,6 +11063,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return `${type}()${this.payable ? " payable" : ""}`;
         }
+        /**
+         *  Returns a new **FallbackFragment** for %%obj%%.
+         */
         static from(obj) {
             if (FallbackFragment.isFragment(obj)) {
                 return obj;
@@ -10594,6 +11114,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             assertArgument(false, "invalid fallback description", "obj", obj);
         }
+        /**
+         *  Returns ``true`` and provides a type guard if %%value%% is a
+         *  **FallbackFragment**.
+         */
         static isFragment(value) {
             return (value && value[internal$1] === FallbackFragmentInternal);
         }
@@ -10620,7 +11144,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         payable;
         /**
-         *  The amount of gas to send when calling this function
+         *  The recommended gas limit to send when calling this function.
          */
         gas;
         /**
@@ -10640,6 +11164,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         get selector() {
             return id(this.format("sighash")).substring(0, 10);
         }
+        /**
+         *  Returns a string representation of this function as %%format%%.
+         */
         format(format) {
             if (format == null) {
                 format = "sighash";
@@ -10675,11 +11202,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return result.join(" ");
         }
+        /**
+         *  Return the selector for a function with %%name%% and %%params%%.
+         */
         static getSelector(name, params) {
             params = (params || []).map((p) => ParamType.from(p));
             const fragment = new FunctionFragment(_guard$2, name, "view", params, [], null);
             return fragment.selector;
         }
+        /**
+         *  Returns a new **FunctionFragment** for %%obj%%.
+         */
         static from(obj) {
             if (FunctionFragment.isFragment(obj)) {
                 return obj;
@@ -10720,6 +11253,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             //        payable: false but stateMutability is "nonpayable")
             return new FunctionFragment(_guard$2, obj.name, stateMutability, obj.inputs ? obj.inputs.map(ParamType.from) : [], obj.outputs ? obj.outputs.map(ParamType.from) : [], (obj.gas != null) ? obj.gas : null);
         }
+        /**
+         *  Returns ``true`` and provides a type guard if %%value%% is a
+         *  **FunctionFragment**.
+         */
         static isFragment(value) {
             return (value && value[internal$1] === FunctionFragmentInternal);
         }
@@ -10735,9 +11272,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             super(guard, "struct", name, inputs);
             Object.defineProperty(this, internal$1, { value: StructFragmentInternal });
         }
+        /**
+         *  Returns a string representation of this struct as %%format%%.
+         */
         format() {
             throw new Error("@TODO");
         }
+        /**
+         *  Returns a new **StructFragment** for %%obj%%.
+         */
         static from(obj) {
             if (typeof (obj) === "string") {
                 return StructFragment.from(lex(obj));
@@ -10750,6 +11293,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return new StructFragment(_guard$2, obj.name, obj.inputs ? obj.inputs.map(ParamType.from) : []);
         }
+        // @TODO: fix this return type
+        /**
+         *  Returns ``true`` and provides a type guard if %%value%% is a
+         *  **StructFragment**.
+         */
         static isFragment(value) {
             return (value && value[internal$1] === StructFragmentInternal);
         }
@@ -10846,8 +11394,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         });
     }
     /**
-      * About AbiCoder
-      */
+     *  The **AbiCoder** is a low-level class responsible for encoding JavaScript
+     *  values into binary data and decoding binary data into JavaScript values.
+     */
     class AbiCoder {
         #getCoder(param) {
             if (param.isArray()) {
@@ -10981,16 +11530,44 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  About Interface
+     *  The Interface class is a low-level class that accepts an
+     *  ABI and provides all the necessary functionality to encode
+     *  and decode paramaters to and results from methods, events
+     *  and errors.
+     *
+     *  It also provides several convenience methods to automatically
+     *  search and find matching transactions and events to parse them.
      *
      *  @_subsection api/abi:Interfaces  [interfaces]
      */
+    /**
+     *  When using the [[Interface-parseLog]] to automatically match a Log to its event
+     *  for parsing, a **LogDescription** is returned.
+     */
     class LogDescription {
+        /**
+         *  The matching fragment for the ``topic0``.
+         */
         fragment;
+        /**
+         *  The name of the Event.
+         */
         name;
+        /**
+         *  The full Event signature.
+         */
         signature;
+        /**
+         *  The topic hash for the Event.
+         */
         topic;
+        /**
+         *  The arguments passed into the Event with ``emit``.
+         */
         args;
+        /**
+         *  @_ignore:
+         */
         constructor(fragment, topic, args) {
             const name = fragment.name, signature = fragment.format();
             defineProperties(this, {
@@ -10998,13 +11575,39 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
         }
     }
+    /**
+     *  When using the [[Interface-parseTransaction]] to automatically match
+     *  a transaction data to its function for parsing,
+     *  a **TransactionDescription** is returned.
+     */
     class TransactionDescription {
+        /**
+         *  The matching fragment from the transaction ``data``.
+         */
         fragment;
+        /**
+         *  The name of the Function from the transaction ``data``.
+         */
         name;
+        /**
+         *  The arguments passed to the Function from the transaction ``data``.
+         */
         args;
+        /**
+         *  The full Function signature from the transaction ``data``.
+         */
         signature;
+        /**
+         *  The selector for the Function from the transaction ``data``.
+         */
         selector;
+        /**
+         *  The ``value`` (in wei) from the transaction.
+         */
         value;
+        /**
+         *  @_ignore:
+         */
         constructor(fragment, selector, args, value) {
             const name = fragment.name, signature = fragment.format();
             defineProperties(this, {
@@ -11012,12 +11615,34 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
         }
     }
+    /**
+     *  When using the [[Interface-parseError]] to automatically match an
+     *  error for a call result for parsing, an **ErrorDescription** is returned.
+     */
     class ErrorDescription {
+        /**
+         *  The matching fragment.
+         */
         fragment;
+        /**
+         *  The name of the Error.
+         */
         name;
+        /**
+         *  The arguments passed to the Error with ``revert``.
+         */
         args;
+        /**
+         *  The full Error signature.
+         */
         signature;
+        /**
+         *  The selector for the Error.
+         */
         selector;
+        /**
+         *  @_ignore:
+         */
         constructor(fragment, selector, args) {
             const name = fragment.name, signature = fragment.format();
             defineProperties(this, {
@@ -11025,12 +11650,32 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
         }
     }
+    /**
+     *  An **Indexed** is used as a value when a value that does not
+     *  fit within a topic (i.e. not a fixed-length, 32-byte type). It
+     *  is the ``keccak256`` of the value, and used for types such as
+     *  arrays, tuples, bytes and strings.
+     */
     class Indexed {
+        /**
+         *  The ``keccak256`` of the value logged.
+         */
         hash;
+        /**
+         *  @_ignore:
+         */
         _isIndexed;
+        /**
+         *  Returns ``true`` if %%value%% is an **Indexed**.
+         *
+         *  This provides a Type Guard for property access.
+         */
         static isIndexed(value) {
             return !!(value && value._isIndexed);
         }
+        /**
+         *  @_ignore:
+         */
         constructor(hash) {
             defineProperties(this, { hash, _isIndexed: true });
         }
@@ -12043,6 +12688,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             };
         }
     }
+    /**
+     *  Returns a copy of %%req%% with all properties coerced to their strict
+     *  types.
+     */
     function copyRequest(req) {
         const result = {};
         // These could be addresses, ENS names or Addressables
@@ -12100,6 +12749,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         number;
         /**
          *  The block hash.
+         *
+         *  This hash includes all properties, so can be safely used to identify
+         *  an exact set of block properties.
          */
         hash;
         /**
@@ -12196,7 +12848,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         /**
          *  Returns the complete transactions for blocks which
          *  prefetched them, by passing ``true`` to %%prefetchTxs%%
-         *  into [[provider_getBlock]].
+         *  into [[Provider-getBlock]].
          */
         get prefetchedTransactions() {
             const txs = this.#transactions.slice();
@@ -12291,6 +12943,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return tx;
             }
         }
+        /**
+         *  If a **Block** was fetched with a request to include the transactions
+         *  this will allow synchronous access to those transactions.
+         *
+         *  If the transactions were not prefetched, this will throw.
+         */
         getPrefetchedTransaction(indexOrHash) {
             const txs = this.prefetchedTransactions;
             if (typeof (indexOrHash) === "number") {
@@ -12305,18 +12963,19 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             assertArgument(false, "no matching transaction", "indexOrHash", indexOrHash);
         }
         /**
-         *  Has this block been mined.
-         *
-         *  If true, the block has been typed-gaurded that all mined
-         *  properties are non-null.
+         *  Returns true if this block been mined. This provides a type guard
+         *  for all properties on a [[MinedBlock]].
          */
         isMined() { return !!this.hash; }
         /**
-         *
+         *  Returns true if this block is an [[link-eip-2930]] block.
          */
         isLondon() {
             return !!this.baseFeePerGas;
         }
+        /**
+         *  @_ignore:
+         */
         orphanedEvent() {
             if (!this.isMined()) {
                 throw new Error("");
@@ -12326,17 +12985,69 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     //////////////////////
     // Log
+    /**
+     *  A **Log** in Ethereum represents an event that has been included in a
+     *  transaction using the ``LOG*`` opcodes, which are most commonly used by
+     *  Solidity's emit for announcing events.
+     */
     class Log {
+        /**
+         *  The provider connected to the log used to fetch additional details
+         *  if necessary.
+         */
         provider;
+        /**
+         *  The transaction hash of the transaction this log occurred in. Use the
+         *  [[Log-getTransaction]] to get the [[TransactionResponse]].
+         */
         transactionHash;
+        /**
+         *  The block hash of the block this log occurred in. Use the
+         *  [[Log-getBlock]] to get the [[Block]].
+         */
         blockHash;
+        /**
+         *  The block number of the block this log occurred in. It is preferred
+         *  to use the [[Block-hash]] when fetching the related [[Block]],
+         *  since in the case of an orphaned block, the block at that height may
+         *  have changed.
+         */
         blockNumber;
+        /**
+         *  If the **Log** represents a block that was removed due to an orphaned
+         *  block, this will be true.
+         *
+         *  This can only happen within an orphan event listener.
+         */
         removed;
+        /**
+         *  The address of the contract that emitted this log.
+         */
         address;
+        /**
+         *  The data included in this log when it was emitted.
+         */
         data;
+        /**
+         *  The indexed topics included in this log when it was emitted.
+         *
+         *  All topics are included in the bloom filters, so they can be
+         *  efficiently filtered using the [[Provider-getLogs]] method.
+         */
         topics;
+        /**
+         *  The index within the block this log occurred at. This is generally
+         *  not useful to developers, but can be used with the various roots
+         *  to proof inclusion within a block.
+         */
         index;
+        /**
+         *  The index within the transaction of this log.
+         */
         transactionIndex;
+        /**
+         *  @_ignore:
+         */
         constructor(log, provider) {
             this.provider = provider;
             const topics = Object.freeze(log.topics.slice());
@@ -12352,6 +13063,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 transactionIndex: log.transactionIndex,
             });
         }
+        /**
+         *  Returns a JSON-compatible object.
+         */
         toJSON() {
             const { address, blockHash, blockNumber, data, index, removed, topics, transactionHash, transactionIndex } = this;
             return {
@@ -12360,21 +13074,34 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 removed, topics, transactionHash, transactionIndex
             };
         }
+        /**
+         *  Returns the block that this log occurred in.
+         */
         async getBlock() {
             const block = await this.provider.getBlock(this.blockHash);
             assert$1(!!block, "failed to find transaction", "UNKNOWN_ERROR", {});
             return block;
         }
+        /**
+         *  Returns the transaction that this log occurred in.
+         */
         async getTransaction() {
             const tx = await this.provider.getTransaction(this.transactionHash);
             assert$1(!!tx, "failed to find transaction", "UNKNOWN_ERROR", {});
             return tx;
         }
+        /**
+         *  Returns the transaction receipt fot the transaction that this
+         *  log occurred in.
+         */
         async getTransactionReceipt() {
             const receipt = await this.provider.getTransactionReceipt(this.transactionHash);
             assert$1(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", {});
             return receipt;
         }
+        /**
+         *  @_ignore:
+         */
         removedEvent() {
             return createRemovedLogFilter(this);
         }
@@ -12394,24 +13121,102 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         root: null;
     }
     */
+    /**
+     *  A **TransactionReceipt** includes additional information about a
+     *  transaction that is only available after it has been mined.
+     */
     class TransactionReceipt {
+        /**
+         *  The provider connected to the log used to fetch additional details
+         *  if necessary.
+         */
         provider;
+        /**
+         *  The address the transaction was send to.
+         */
         to;
+        /**
+         *  The sender of the transaction.
+         */
         from;
+        /**
+         *  The address of the contract if the transaction was directly
+         *  responsible for deploying one.
+         *
+         *  This is non-null **only** if the ``to`` is empty and the ``data``
+         *  was successfully executed as initcode.
+         */
         contractAddress;
+        /**
+         *  The transaction hash.
+         */
         hash;
+        /**
+         *  The index of this transaction within the block transactions.
+         */
         index;
+        /**
+         *  The block hash of the [[Block]] this transaction was included in.
+         */
         blockHash;
+        /**
+         *  The block number of the [[Block]] this transaction was included in.
+         */
         blockNumber;
+        /**
+         *  The bloom filter bytes that represent all logs that occurred within
+         *  this transaction. This is generally not useful for most developers,
+         *  but can be used to validate the included logs.
+         */
         logsBloom;
+        /**
+         *  The actual amount of gas used by this transaction.
+         *
+         *  When creating a transaction, the amount of gas that will be used can
+         *  only be approximated, but the sender must pay the gas fee for the
+         *  entire gas limit. After the transaction, the difference is refunded.
+         */
         gasUsed;
+        /**
+         *  The amount of gas used by all transactions within the block for this
+         *  and all transactions with a lower ``index``.
+         *
+         *  This is generally not useful for developers but can be used to
+         *  validate certain aspects of execution.
+         */
         cumulativeGasUsed;
+        /**
+         *  The actual gas price used during execution.
+         *
+         *  Due to the complexity of [[link-eip-1559]] this value can only
+         *  be caluclated after the transaction has been mined, snce the base
+         *  fee is protocol-enforced.
+         */
         gasPrice;
+        /**
+         *  The [[link-eip-2718]] transaction type.
+         */
         type;
         //readonly byzantium!: boolean;
+        /**
+         *  The status of this transaction, indicating success (i.e. ``1``) or
+         *  a revert (i.e. ``0``).
+         *
+         *  This is available in post-byzantium blocks, but some backends may
+         *  backfill this value.
+         */
         status;
+        /**
+         *  The root hash of this transaction.
+         *
+         *  This is no present and was only included in pre-byzantium blocks, but
+         *  could be used to validate certain parts of the receipt.
+         */
         root;
         #logs;
+        /**
+         *  @_ignore:
+         */
         constructor(tx, provider) {
             this.#logs = Object.freeze(tx.logs.map((log) => {
                 return new Log(log, provider);
@@ -12442,7 +13247,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 root: tx.root
             });
         }
+        /**
+         *  The logs for this transaction.
+         */
         get logs() { return this.#logs; }
+        /**
+         *  Returns a JSON-compatible representation.
+         */
         toJSON() {
             const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
             status, root } = this;
@@ -12458,6 +13269,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 hash, index, logs, logsBloom, root, status, to
             };
         }
+        /**
+         *  @_ignore:
+         */
         get length() { return this.logs.length; }
         [Symbol.iterator]() {
             let index = 0;
@@ -12470,9 +13284,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
             };
         }
+        /**
+         *  The total fee for this transaction, in wei.
+         */
         get fee() {
             return this.gasUsed * this.gasPrice;
         }
+        /**
+         *  Resolves to the block this transaction occurred in.
+         */
         async getBlock() {
             const block = await this.provider.getBlock(this.blockHash);
             if (block == null) {
@@ -12480,6 +13300,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return block;
         }
+        /**
+         *  Resolves to the transaction this transaction occurred in.
+         */
         async getTransaction() {
             const tx = await this.provider.getTransaction(this.hash);
             if (tx == null) {
@@ -12487,30 +13310,44 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return tx;
         }
+        /**
+         *  Resolves to the return value of the execution of this transaction.
+         *
+         *  Support for this feature is limited, as it requires an archive node
+         *  with the ``debug_`` or ``trace_`` API enabled.
+         */
         async getResult() {
             return (await this.provider.getTransactionResult(this.hash));
         }
+        /**
+         *  Resolves to the number of confirmations this transaction has.
+         */
         async confirmations() {
             return (await this.provider.getBlockNumber()) - this.blockNumber + 1;
         }
+        /**
+         *  @_ignore:
+         */
         removedEvent() {
             return createRemovedTransactionFilter(this);
         }
+        /**
+         *  @_ignore:
+         */
         reorderedEvent(other) {
             assert$1(!other || other.isMined(), "unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
             return createReorderedTransactionFilter(this, other);
         }
     }
-    /*
-    export type ReplacementDetectionSetup = {
-        to: string;
-        from: string;
-        value: bigint;
-        data: string;
-        nonce: number;
-        block: number;
-    };
-    */
+    /**
+     *  A **TransactionResponse** includes all properties about a transaction
+     *  that was sent to the network, which may or may not be included in a
+     *  block.
+     *
+     *  The [[TransactionResponse-isMined]] can be used to check if the
+     *  transaction has been mined as well as type guard that the otherwise
+     *  possibly ``null`` properties are defined.
+     */
     class TransactionResponse {
         /**
          *  The provider this is connected to, which will influence how its
@@ -12620,8 +13457,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         accessList;
         #startBlock;
         /**
-         *  Create a new TransactionResponse with %%tx%% parameters
-         *  connected to %%provider%%.
+         *  @_ignore:
          */
         constructor(tx, provider) {
             this.provider = provider;
@@ -12645,7 +13481,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#startBlock = -1;
         }
         /**
-         *  Returns a JSON representation of this transaction.
+         *  Returns a JSON-compatible representation of this transaction.
          */
         toJSON() {
             const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;
@@ -12956,24 +13792,56 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     // import from provider.ts instead of index.ts to prevent circular dep
     // from EtherscanProvider
+    /**
+     *  An **EventLog** contains additional properties parsed from the [[Log]].
+     */
     class EventLog extends Log {
+        /**
+         *  The Contract Interface.
+         */
         interface;
+        /**
+         *  The matching event.
+         */
         fragment;
+        /**
+         *  The parsed arguments passed to the event by ``emit``.
+         */
         args;
+        /**
+         * @_ignore:
+         */
         constructor(log, iface, fragment) {
             super(log, log.provider);
             const args = iface.decodeEventLog(fragment, log.data, log.topics);
             defineProperties(this, { args, fragment, interface: iface });
         }
+        /**
+         *  The name of the event.
+         */
         get eventName() { return this.fragment.name; }
+        /**
+         *  The signature of the event.
+         */
         get eventSignature() { return this.fragment.format(); }
     }
+    /**
+     *  A **ContractTransactionReceipt** includes the parsed logs from a
+     *  [[TransactionReceipt]].
+     */
     class ContractTransactionReceipt extends TransactionReceipt {
         #iface;
+        /**
+         *  @_ignore:
+         */
         constructor(iface, provider, tx) {
             super(tx, provider);
             this.#iface = iface;
         }
+        /**
+         *  The parsed logs for any [[Log]] which has a matching event in the
+         *  Contract ABI.
+         */
         get logs() {
             return super.logs.map((log) => {
                 const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]) : null;
@@ -12986,12 +13854,28 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
         }
     }
+    /**
+     *  A **ContractTransactionResponse** will return a
+     *  [[ContractTransactionReceipt]] when waited on.
+     */
     class ContractTransactionResponse extends TransactionResponse {
         #iface;
+        /**
+         *  @_ignore:
+         */
         constructor(iface, provider, tx) {
             super(tx, provider);
             this.#iface = iface;
         }
+        /**
+         *  Resolves once this transaction has been mined and has
+         *  %%confirms%% blocks including it (default: ``1``) with an
+         *  optional %%timeout%%.
+         *
+         *  This can resolve to ``null`` only if %%confirms%% is ``0``
+         *  and the transaction has not been mined, otherwise this will
+         *  wait until enough confirmations have completed.
+         */
         async wait(confirms) {
             const receipt = await super.wait();
             if (receipt == null) {
@@ -13000,31 +13884,63 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new ContractTransactionReceipt(this.#iface, this.provider, receipt);
         }
     }
+    /**
+     *  A **ContractUnknownEventPayload** is included as the last parameter to
+     *  Contract Events when the event does not match any events in the ABI.
+     */
     class ContractUnknownEventPayload extends EventPayload {
+        /**
+         *  The log with no matching events.
+         */
         log;
+        /**
+         *  @_event:
+         */
         constructor(contract, listener, filter, log) {
             super(contract, listener, filter);
             defineProperties(this, { log });
         }
+        /**
+         *  Resolves to the block the event occured in.
+         */
         async getBlock() {
             return await this.log.getBlock();
         }
+        /**
+         *  Resolves to the transaction the event occured in.
+         */
         async getTransaction() {
             return await this.log.getTransaction();
         }
+        /**
+         *  Resolves to the transaction receipt the event occured in.
+         */
         async getTransactionReceipt() {
             return await this.log.getTransactionReceipt();
         }
     }
+    /**
+     *  A **ContractEventPayload** is included as the last parameter to
+     *  Contract Events when the event is known.
+     */
     class ContractEventPayload extends ContractUnknownEventPayload {
+        /**
+         *  @_ignore:
+         */
         constructor(contract, listener, filter, fragment, _log) {
             super(contract, listener, filter, new EventLog(_log, contract.interface, fragment));
             const args = contract.interface.decodeEventLog(fragment, this.log.data, this.log.topics);
             defineProperties(this, { args, fragment });
         }
+        /**
+         *  The event name.
+         */
         get eventName() {
             return this.fragment.name;
         }
+        /**
+         *  The event signature.
+         */
         get eventSignature() {
             return this.fragment.format();
         }
@@ -13494,12 +14410,43 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     const passProperties = ["then"];
     class BaseContract {
+        /**
+         *  The target to connect to.
+         *
+         *  This can be an address, ENS name or any [[Addressable]], such as
+         *  another contract. To get the resovled address, use the ``getAddress``
+         *  method.
+         */
         target;
+        /**
+         *  The contract Interface.
+         */
         interface;
+        /**
+         *  The connected runner. This is generally a [[Provider]] or a
+         *  [[Signer]], which dictates what operations are supported.
+         *
+         *  For example, a **Contract** connected to a [[Provider]] may
+         *  only execute read-only operations.
+         */
         runner;
+        /**
+         *  All the Events available on this contract.
+         */
         filters;
+        /**
+         *  @_ignore:
+         */
         [internal];
+        /**
+         *  The fallback or receive function if any.
+         */
         fallback;
+        /**
+         *  Creates a new contract connected to %%target%% with the %%abi%% and
+         *  optionally connected to a %%runner%% to perform operations on behalf
+         *  of.
+         */
         constructor(target, abi, runner, _deployTx) {
             assertArgument(typeof (target) === "string" || isAddressable(target), "invalid value for Contract target", "target", target);
             if (runner == null) {
@@ -13598,10 +14545,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
             });
         }
+        /**
+         *  Return a new Contract instance with the same target and ABI, but
+         *  a different %%runner%%.
+         */
         connect(runner) {
             return new BaseContract(this.target, this.interface, runner);
         }
+        /**
+         *  Return the resolved address of this Contract.
+         */
         async getAddress() { return await getInternal(this).addrPromise; }
+        /**
+         *  Return the dedployed bytecode or null if no bytecode is found.
+         */
         async getDeployedCode() {
             const provider = getProvider(this.runner);
             assert$1(provider, "runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "getDeployedCode" });
@@ -13611,6 +14568,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return code;
         }
+        /**
+         *  Resolve to this Contract once the bytecode has been deployed, or
+         *  resolve immediately if already deployed.
+         */
         async waitForDeployment() {
             // We have the deployement transaction; just use that (throws if deployement fails)
             const deployTx = this.deploymentTransaction();
@@ -13642,9 +14603,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 checkCode();
             });
         }
+        /**
+         *  Return the transaction used to deploy this contract.
+         *
+         *  This is only available if this instance was returned from a
+         *  [[ContractFactory]].
+         */
         deploymentTransaction() {
             return getInternal(this).deployTx;
         }
+        /**
+         *  Return the function for a given name. This is useful when a contract
+         *  method name conflicts with a JavaScript name such as ``prototype`` or
+         *  when using a Contract programatically.
+         */
         getFunction(key) {
             if (typeof (key) !== "string") {
                 key = key.format();
@@ -13652,16 +14624,29 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const func = buildWrappedMethod(this, key);
             return func;
         }
+        /**
+         *  Return the event for a given name. This is useful when a contract
+         *  event name conflicts with a JavaScript name such as ``prototype`` or
+         *  when using a Contract programatically.
+         */
         getEvent(key) {
             if (typeof (key) !== "string") {
                 key = key.format();
             }
             return buildWrappedEvent(this, key);
         }
+        /**
+         *  @_ignore:
+         */
         async queryTransaction(hash) {
             // Is this useful?
             throw new Error("@TODO");
         }
+        /**
+         *  Provide historic access to event data for %%event%% in the range
+         *  %%fromBlock%% (default: ``0``) to %%toBlock%% (default: ``"latest"``)
+         *  inclusive.
+         */
         async queryFilter(event, fromBlock, toBlock) {
             if (fromBlock == null) {
                 fromBlock = 0;
@@ -13691,21 +14676,37 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
             });
         }
+        /**
+         *  Add an event %%listener%% for the %%event%%.
+         */
         async on(event, listener) {
             const sub = await getSub(this, "on", event);
             sub.listeners.push({ listener, once: false });
             sub.start();
             return this;
         }
+        /**
+         *  Add an event %%listener%% for the %%event%%, but remove the listener
+         *  after it is fired once.
+         */
         async once(event, listener) {
             const sub = await getSub(this, "once", event);
             sub.listeners.push({ listener, once: true });
             sub.start();
             return this;
         }
+        /**
+         *  Emit an %%event%% calling all listeners with %%args%%.
+         *
+         *  Resolves to ``true`` if any listeners were called.
+         */
         async emit(event, ...args) {
             return await emit(this, event, args, null);
         }
+        /**
+         *  Resolves to the number of listeners of %%event%% or the total number
+         *  of listeners if unspecified.
+         */
         async listenerCount(event) {
             if (event) {
                 const sub = await hasSub(this, event);
@@ -13721,6 +14722,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return total;
         }
+        /**
+         *  Resolves to the listeners subscribed to %%event%% or all listeners
+         *  if unspecified.
+         */
         async listeners(event) {
             if (event) {
                 const sub = await hasSub(this, event);
@@ -13736,6 +14741,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return result;
         }
+        /**
+         *  Remove the %%listener%% from the listeners for %%event%% or remove
+         *  all listeners if unspecified.
+         */
         async off(event, listener) {
             const sub = await hasSub(this, event);
             if (!sub) {
@@ -13753,6 +14762,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return this;
         }
+        /**
+         *  Remove all the listeners for %%event%% or remove all listeners if
+         *  unspecified.
+         */
         async removeAllListeners(event) {
             if (event) {
                 const sub = await hasSub(this, event);
@@ -13771,14 +14784,21 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return this;
         }
-        // Alias for "on"
+        /**
+         *  Alias for [on].
+         */
         async addListener(event, listener) {
             return await this.on(event, listener);
         }
-        // Alias for "off"
+        /**
+         *  Alias for [off].
+         */
         async removeListener(event, listener) {
             return await this.off(event, listener);
         }
+        /**
+         *  Create a new Class for the %%abi%%.
+         */
         static buildClass(abi) {
             class CustomContract extends BaseContract {
                 constructor(address, runner = null) {
@@ -13788,6 +14808,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return CustomContract;
         }
         ;
+        /**
+         *  Create a new BaseContract with a specified Interface.
+         */
         static from(target, abi, runner) {
             if (runner == null) {
                 runner = null;
@@ -13799,15 +14822,37 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function _ContractBase() {
         return BaseContract;
     }
+    /**
+     *  A [[BaseContract]] with no type guards on its methods or events.
+     */
     class Contract extends _ContractBase() {
     }
 
     // A = Arguments to the constructor
     // I = Interface of deployed contracts
+    /**
+     *  A **ContractFactory** is used to deploy a Contract to the blockchain.
+     */
     class ContractFactory {
+        /**
+         *  The Contract Interface.
+         */
         interface;
+        /**
+         *  The Contract deployment bytecode. Often called the initcode.
+         */
         bytecode;
+        /**
+         *  The ContractRunner to deploy the Contract as.
+         */
         runner;
+        /**
+         *  Create a new **ContractFactory** with %%abi%% and %%bytecode%%,
+         *  optionally connected to %%runner%%.
+         *
+         *  The %%bytecode%% may be the ``bytecode`` property within the
+         *  standard Solidity JSON output.
+         */
         constructor(abi, bytecode, runner) {
             const iface = Interface.from(abi);
             // Dereference Solidity bytecode objects and allow a missing `0x`-prefix
@@ -13827,6 +14872,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 bytecode, interface: iface, runner: (runner || null)
             });
         }
+        /**
+         *  Resolves to the transaction to deploy the contract, passing %%args%%
+         *  into the constructor.
+         */
         async getDeployTransaction(...args) {
             let overrides = {};
             const fragment = this.interface.deploy;
@@ -13840,6 +14889,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const data = concat([this.bytecode, this.interface.encodeDeploy(resolvedArgs)]);
             return Object.assign({}, overrides, { data });
         }
+        /**
+         *  Resolves to the Contract deployed by passing %%args%% into the
+         *  constructor.
+         *
+         *  This will resovle to the Contract before it has been deployed to the
+         *  network, so the [[BaseContract-waitForDeployment]] should be used before
+         *  sending any transactions to it.
+         */
         async deploy(...args) {
             const tx = await this.getDeployTransaction(...args);
             assert$1(this.runner && typeof (this.runner.sendTransaction) === "function", "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
@@ -13849,9 +14906,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const address = getCreateAddress(sentTx);
             return new BaseContract(address, this.interface, this.runner, sentTx);
         }
+        /**
+         *  Return a new **ContractFactory** with the same ABI and bytecode,
+         *  but connected to %%runner%%.
+         */
         connect(runner) {
             return new ContractFactory(this.interface, this.bytecode, runner);
         }
+        /**
+         *  Create a new **ContractFactory** from the standard Solidity JSON output.
+         */
         static fromSolidity(output, runner) {
             assertArgument(output != null, "bad compiler output", "output", output);
             if (typeof (output) === "string") {
@@ -13870,7 +14934,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  About ENS Resolver
+     *  ENS is a service which allows easy-to-remember names to map to
+     *  network addresses.
      *
      *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
      */
@@ -13892,19 +14957,34 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  A provider plugin super-class for processing multicoin address types.
      */
     class MulticoinProviderPlugin {
+        /**
+         *  The name.
+         */
         name;
+        /**
+         *  Creates a new **MulticoinProviderPluing** for %%name%%.
+         */
         constructor(name) {
             defineProperties(this, { name });
         }
         connect(proivder) {
             return this;
         }
+        /**
+         *  Returns ``true`` if %%coinType%% is supported by this plugin.
+         */
         supportsCoinType(coinType) {
             return false;
         }
+        /**
+         *  Resovles to the encoded %%address%% for %%coinType%%.
+         */
         async encodeAddress(coinType, address) {
             throw new Error("unsupported coin");
         }
+        /**
+         *  Resovles to the decoded %%data%% for %%coinType%%.
+         */
         async decodeAddress(coinType, data) {
             throw new Error("unsupported coin");
         }
@@ -14569,23 +15649,71 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
+    /**
+     *  A **NetworkPlugin** provides additional functionality on a [[Network]].
+     */
     class NetworkPlugin {
+        /**
+         *  The name of the plugin.
+         *
+         *  It is recommended to use reverse-domain-notation, which permits
+         *  unique names with a known authority as well as hierarchal entries.
+         */
         name;
+        /**
+         *  Creates a new **NetworkPlugin**.
+         */
         constructor(name) {
             defineProperties(this, { name });
         }
+        /**
+         *  Creates a copy of this plugin.
+         */
         clone() {
             return new NetworkPlugin(this.name);
         }
     }
+    /**
+     *  A **GasCostPlugin** allows a network to provide alternative values when
+     *  computing the intrinsic gas required for a transaction.
+     */
     class GasCostPlugin extends NetworkPlugin {
+        /**
+         *  The block number to treat these values as valid from.
+         *
+         *  This allows a hardfork to have updated values included as well as
+         *  mulutiple hardforks to be supported.
+         */
         effectiveBlock;
+        /**
+         *  The transactions base fee.
+         */
         txBase;
+        /**
+         *  The fee for creating a new account.
+         */
         txCreate;
+        /**
+         *  The fee per zero-byte in the data.
+         */
         txDataZero;
+        /**
+         *  The fee per non-zero-byte in the data.
+         */
         txDataNonzero;
+        /**
+         *  The fee per storage key in the [[link-eip-2930]] access list.
+         */
         txAccessListStorageKey;
+        /**
+         *  The fee per address in the [[link-eip-2930]] access list.
+         */
         txAccessListAddress;
+        /**
+         *  Creates a new GasCostPlugin from %%effectiveBlock%% until the
+         *  latest block or another GasCostPlugin supercedes that block number,
+         *  with the associated %%costs%%.
+         */
         constructor(effectiveBlock, costs) {
             if (effectiveBlock == null) {
                 effectiveBlock = 0;
@@ -14612,13 +15740,29 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new GasCostPlugin(this.effectiveBlock, this);
         }
     }
-    // Networks shoudl use this plugin to specify the contract address
-    // and network necessary to resolve ENS names.
+    /**
+     *  An **EnsPlugin** allows a [[Network]] to specify the ENS Registry
+     *  Contract address and the target network to use when using that
+     *  contract.
+     *
+     *  Various testnets have their own instance of the contract to use, but
+     *  in general, the mainnet instance supports multi-chain addresses and
+     *  should be used.
+     */
     class EnsPlugin extends NetworkPlugin {
-        // The ENS contract address
+        /**
+         *  The ENS Registrty Contract address.
+         */
         address;
-        // The network ID that the ENS contract lives on
+        /**
+         *  The chain ID that the ENS contract lives on.
+         */
         targetNetwork;
+        /**
+         *  Creates a new **EnsPlugin** connected to %%address%% on the
+         *  %%targetNetwork%%. The default ENS address and mainnet is used
+         *  if unspecified.
+         */
         constructor(address, targetNetwork) {
             super("org.ethers.plugins.network.Ens");
             defineProperties(this, {
@@ -14630,15 +15774,31 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new EnsPlugin(this.address, this.targetNetwork);
         }
     }
+    /**
+     *  A **FeeDataNetworkPlugin** allows a network to provide and alternate
+     *  means to specify its fee data.
+     *
+     *  For example, a network which does not support [[link-eip-1559]] may
+     *  choose to use a Gas Station site to approximate the gas price.
+     */
     class FeeDataNetworkPlugin extends NetworkPlugin {
         #feeDataFunc;
+        /**
+         *  The fee data function provided to the constructor.
+         */
         get feeDataFunc() {
             return this.#feeDataFunc;
         }
+        /**
+         *  Creates a new **FeeDataNetworkPlugin**.
+         */
         constructor(feeDataFunc) {
             super("org.ethers.plugins.network.FeeData");
             this.#feeDataFunc = feeDataFunc;
         }
+        /**
+         *  Resolves to the fee data.
+         */
         async getFeeData(provider) {
             return await this.#feeDataFunc(provider);
         }
@@ -14672,7 +15832,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     */
 
     /**
-     *  About networks
+     *  A **Network** encapsulates the various properties required to
+     *  interact with a specific chain.
      *
      *  @_subsection: api/providers:Networks  [networks]
      */
@@ -14728,15 +15889,25 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     */
     const Networks = new Map();
     // @TODO: Add a _ethersNetworkObj variable to better detect network ovjects
+    /**
+     *  A **Network** provides access to a chain's properties and allows
+     *  for plug-ins to extend functionality.
+     */
     class Network {
         #name;
         #chainId;
         #plugins;
+        /**
+         *  Creates a new **Network** for %%name%% and %%chainId%%.
+         */
         constructor(name, chainId) {
             this.#name = name;
             this.#chainId = getBigInt(chainId);
             this.#plugins = new Map();
         }
+        /**
+         *  Returns a JSON-compatible representation of a Network.
+         */
         toJSON() {
             return { name: this.name, chainId: String(this.chainId) };
         }
@@ -15018,7 +16189,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     // @TODO: refactor this
     /**
-     *  @TODO
+     *  A **PollingBlockSubscriber** polls at a regular interval for a change
+     *  in the block number.
      *
      *  @_docloc: api/providers/abstract-provider
      */
@@ -15029,12 +16201,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // The most recent block we have scanned for events. The value -2
         // indicates we still need to fetch an initial block number
         #blockNumber;
+        /**
+         *  Create a new **PollingBlockSubscriber** attached to %%provider%%.
+         */
         constructor(provider) {
             this.#provider = provider;
             this.#poller = null;
             this.#interval = 4000;
             this.#blockNumber = -2;
         }
+        /**
+         *  The polling interval.
+         */
         get pollingInterval() { return this.#interval; }
         set pollingInterval(value) { this.#interval = value; }
         async #poll() {
@@ -15093,7 +16271,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
     /**
-     *  @TODO
+     *  An **OnBlockSubscriber** can be sub-classed, with a [[_poll]]
+     *  implmentation which will be called on every new block.
      *
      *  @_docloc: api/providers/abstract-provider
      */
@@ -15101,6 +16280,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #provider;
         #poll;
         #running;
+        /**
+         *  Create a new **OnBlockSubscriber** attached to %%provider%%.
+         */
         constructor(provider) {
             this.#provider = provider;
             this.#running = false;
@@ -15108,6 +16290,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 this._poll(blockNumber, this.#provider);
             };
         }
+        /**
+         *  Called on every new block.
+         */
         async _poll(blockNumber, provider) {
             throw new Error("sub-classes must override this");
         }
@@ -15130,7 +16315,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         resume() { this.start(); }
     }
     /**
-     *  @TODO
+     *  @_ignore:
      *
      *  @_docloc: api/providers/abstract-provider
      */
@@ -15145,12 +16330,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
     /**
-     *  @TODO
+     *  A **PollingTransactionSubscriber** will poll for a given transaction
+     *  hash for its receipt.
      *
      *  @_docloc: api/providers/abstract-provider
      */
     class PollingTransactionSubscriber extends OnBlockSubscriber {
         #hash;
+        /**
+         *  Create a new **PollingTransactionSubscriber** attached to
+         *  %%provider%%, listening for %%hash%%.
+         */
         constructor(provider, hash) {
             super(provider);
             this.#hash = hash;
@@ -15163,7 +16353,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
     /**
-     *  @TODO
+     *  A **PollingEventSubscriber** will poll for a given filter for its logs.
      *
      *  @_docloc: api/providers/abstract-provider
      */
@@ -15175,6 +16365,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // The most recent block we have scanned for events. The value -2
         // indicates we still need to fetch an initial block number
         #blockNumber;
+        /**
+         *  Create a new **PollingTransactionSubscriber** attached to
+         *  %%provider%%, listening for %%filter%%.
+         */
         constructor(provider, filter) {
             this.#provider = provider;
             this.#filter = copy$2(filter);
@@ -15235,7 +16429,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  About Subclassing the Provider...
+     *  The available providers should suffice for most developers purposes,
+     *  but the [[AbstractProvider]] class has many features which enable
+     *  sub-classing it for specific purposes.
      *
      *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
      */
@@ -15275,8 +16471,19 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return v;
         });
     }
+    /**
+     *  An **UnmanagedSubscriber** is useful for events which do not require
+     *  any additional management, such as ``"debug"`` which only requires
+     *  emit in synchronous event loop triggered calls.
+     */
     class UnmanagedSubscriber {
+        /**
+         *  The name fof the event.
+         */
         name;
+        /**
+         *  Create a new UnmanagedSubscriber with %%name%%.
+         */
         constructor(name) { defineProperties(this, { name }); }
         start() { }
         stop() { }
@@ -15361,6 +16568,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         assertArgument(false, "unknown ProviderEvent", "event", _event);
     }
     function getTime$1() { return (new Date()).getTime(); }
+    /**
+     *  An **AbstractProvider** provides a base class for other sub-classes to
+     *  implement the [[Provider]] API by normalizing input arguments and
+     *  formatting output results as well as tracking events for consistent
+     *  behaviour on an eventually-consistent network.
+     */
     class AbstractProvider {
         #subs;
         #plugins;
@@ -15374,8 +16587,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #nextTimer;
         #timers;
         #disableCcipRead;
-        // @TODO: This should be a () => Promise<Network> so network can be
-        // done when needed; or rely entirely on _detectNetwork?
+        /**
+         *  Create a new **AbstractProvider** connected to %%network%%, or
+         *  use the various network detection capabilities to discover the
+         *  [[Network]] if necessary.
+         */
         constructor(_network) {
             if (_network === "any") {
                 this.#anyNetwork = true;
@@ -15400,10 +16616,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#timers = new Map();
             this.#disableCcipRead = false;
         }
+        /**
+         *  Returns ``this``, to allow an **AbstractProvider** to implement
+         *  the [[ContractRunner]] interface.
+         */
         get provider() { return this; }
+        /**
+         *  Returns all the registered plug-ins.
+         */
         get plugins() {
             return Array.from(this.#plugins.values());
         }
+        /**
+         *  Attach a new plug-in.
+         */
         attachPlugin(plugin) {
             if (this.#plugins.get(plugin.name)) {
                 throw new Error(`cannot replace existing plugin: ${plugin.name} `);
@@ -15411,9 +16637,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#plugins.set(plugin.name, plugin.connect(this));
             return this;
         }
+        /**
+         *  Get a plugin by name.
+         */
         getPlugin(name) {
             return (this.#plugins.get(name)) || null;
         }
+        /**
+         *  Prevent any CCIP-read operation, regardless of whether requested
+         *  in a [[call]] using ``enableCcipRead``.
+         */
         get disableCcipRead() { return this.#disableCcipRead; }
         set disableCcipRead(value) { this.#disableCcipRead = !!value; }
         // Shares multiple identical requests made during the same 250ms
@@ -15432,6 +16665,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return await perform;
         }
+        /**
+         *  Resolves to the data for executing the CCIP-read operations.
+         */
         async ccipReadFetch(tx, calldata, urls) {
             if (this.disableCcipRead || urls.length === 0 || tx.to == null) {
                 return null;
@@ -15478,25 +16714,55 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 transaction: tx, info: { urls, errorMessages }
             });
         }
+        /**
+         *  Provides the opportunity for a sub-class to wrap a block before
+         *  returning it, to add additional properties or an alternate
+         *  sub-class of [[Block]].
+         */
         _wrapBlock(value, network) {
             return new Block(formatBlock(value), this);
         }
+        /**
+         *  Provides the opportunity for a sub-class to wrap a log before
+         *  returning it, to add additional properties or an alternate
+         *  sub-class of [[Log]].
+         */
         _wrapLog(value, network) {
             return new Log(formatLog(value), this);
         }
+        /**
+         *  Provides the opportunity for a sub-class to wrap a transaction
+         *  receipt before returning it, to add additional properties or an
+         *  alternate sub-class of [[TransactionReceipt]].
+         */
         _wrapTransactionReceipt(value, network) {
             return new TransactionReceipt(formatTransactionReceipt(value), this);
         }
+        /**
+         *  Provides the opportunity for a sub-class to wrap a transaction
+         *  response before returning it, to add additional properties or an
+         *  alternate sub-class of [[TransactionResponse]].
+         */
         _wrapTransactionResponse(tx, network) {
             return new TransactionResponse(formatTransactionResponse(tx), this);
         }
+        /**
+         *  Resolves to the Network, forcing a network detection using whatever
+         *  technique the sub-class requires.
+         *
+         *  Sub-classes **must** override this.
+         */
         _detectNetwork() {
             assert$1(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
                 operation: "_detectNetwork"
             });
         }
-        // Sub-classes should override this and handle PerformActionRequest requests, calling
-        // the super for any unhandled actions.
+        /**
+         *  Sub-classes should use this to perform all built-in operations. All
+         *  methods sanitizes and normalizes the values passed into this.
+         *
+         *  Sub-classes **must** override this.
+         */
         async _perform(req) {
             assert$1(false, `unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
                 operation: req.method,
@@ -15511,9 +16777,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return blockNumber;
         }
+        /**
+         *  Returns or resolves to the address for %%address%%, resolving ENS
+         *  names and [[Addressable]] objects and returning if already an
+         *  address.
+         */
         _getAddress(address) {
             return resolveAddress(address, this);
         }
+        /**
+         *  Returns or resolves to a valid block tag for %%blockTag%%, resolving
+         *  negative values and returning if already a valid block tag.
+         */
         _getBlockTag(blockTag) {
             if (blockTag == null) {
                 return "latest";
@@ -15547,6 +16822,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             assertArgument(false, "invalid blockTag", "blockTag", blockTag);
         }
+        /**
+         *  Returns or resolves to a filter for %%filter%%, resolving any ENS
+         *  names or [[Addressable]] object and returning if already a valid
+         *  filter.
+         */
         _getFilter(filter) {
             // Create a canonical representation of the topics
             const topics = (filter.topics || []).map((t) => {
@@ -15622,6 +16902,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return resolve(address, fromBlock, toBlock);
         }
+        /**
+         *  Returns or resovles to a transaction for %%request%%, resolving
+         *  any ENS names or [[Addressable]] and returning if already a valid
+         *  transaction.
+         */
         _getTransactionRequest(_request) {
             const request = copyRequest(_request);
             const promises = [];
@@ -15951,7 +17236,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     "function resolver(bytes32) view returns (address)"
                 ], this);
                 const resolver = await ensContract.resolver(node);
-                if (resolver == null || resolver === ZeroHash) {
+                if (resolver == null || resolver === ZeroAddress) {
                     return null;
                 }
                 const resolverContract = new Contract(resolver, [
@@ -16023,6 +17308,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 operation: "waitForBlock"
             });
         }
+        /**
+         *  Clear a timer created using the [[_setTimeout]] method.
+         */
         _clearTimeout(timerId) {
             const timer = this.#timers.get(timerId);
             if (!timer) {
@@ -16033,6 +17321,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             this.#timers.delete(timerId);
         }
+        /**
+         *  Create a timer that will execute %%func%% after at least %%timeout%%
+         *  (in ms). If %%timeout%% is unspecified, then %%func%% will execute
+         *  in the next event loop.
+         *
+         *  [Pausing](AbstractProvider-paused) the provider will pause any
+         *  associated timers.
+         */
         _setTimeout(_func, timeout) {
             if (timeout == null) {
                 timeout = 0;
@@ -16051,13 +17347,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return timerId;
         }
+        /**
+         *  Perform %%func%% on each subscriber.
+         */
         _forEachSubscriber(func) {
             for (const sub of this.#subs.values()) {
                 func(sub.subscriber);
             }
         }
-        // Event API; sub-classes should override this; any supported
-        // event filter will have been munged into an EventFilter
+        /**
+         *  Sub-classes may override this to customize subscription
+         *  implementations.
+         */
         _getSubscriber(sub) {
             switch (sub.type) {
                 case "debug":
@@ -16075,6 +17376,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             throw new Error(`unsupported event: ${sub.type}`);
         }
+        /**
+         *  If a [[Subscriber]] fails and needs to replace itself, this
+         *  method may be used.
+         *
+         *  For example, this is used for providers when using the
+         *  ``eth_getFilterChanges`` method, which can return null if state
+         *  filters are not supported by the backend, allowing the Subscriber
+         *  to swap in a [[PollingEventSubscriber]].
+         */
         _recoverSubscriber(oldSub, newSub) {
             for (const sub of this.#subs.values()) {
                 if (sub.subscriber === oldSub) {
@@ -16236,8 +17546,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         async removeListener(event, listener) {
             return this.off(event, listener);
         }
-        // Sub-classes should override this to shutdown any sockets, etc.
-        // but MUST call this super.shutdown.
+        /**
+         *  Sub-classes may use this to shutdown any sockets or release their
+         *  resources.
+         *
+         *  Sub-classes **must** call ``super.destroy()``.
+         */
         destroy() {
             // Stop all listeners
             this.removeAllListeners();
@@ -16246,6 +17560,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 this._clearTimeout(timerId);
             }
         }
+        /**
+         *  Whether the provider is currently paused.
+         *
+         *  A paused provider will not emit any events, and generally should
+         *  not make any requests to the network, but that is up to sub-classes
+         *  to manage.
+         *
+         *  Setting ``paused = true`` is identical to calling ``.pause(false)``,
+         *  which will buffer any events that occur while paused until the
+         *  provider is unpaused.
+         */
         get paused() { return (this.#pausedState != null); }
         set paused(pause) {
             if (!!pause === this.paused) {
@@ -16258,6 +17583,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 this.pause(false);
             }
         }
+        /**
+         *  Pause the provider. If %%dropWhilePaused%%, any events that occur
+         *  while paused are dropped, otherwise all events will be emitted once
+         *  the provider is unpaused.
+         */
         pause(dropWhilePaused) {
             this.#lastBlockNumber = -1;
             if (this.#pausedState != null) {
@@ -16279,6 +17609,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 timer.time = getTime$1() - timer.time;
             }
         }
+        /**
+         *  Resume the provider.
+         */
         resume() {
             if (this.#pausedState == null) {
                 return;
@@ -16427,7 +17760,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  About Abstract Signer and subclassing
+     *  Generally the [[Wallet]] and [[JsonRpcSigner]] and their sub-classes
+     *  are sufficent for most developers, but this is provided to
+     *  fascilitate more complex Signers.
      *
      *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
      */
@@ -16457,8 +17792,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         return await resolveProperties(pop);
     }
+    /**
+     *  An **AbstractSigner** includes most of teh functionality required
+     *  to get a [[Signer]] working as expected, but requires a few
+     *  Signer-specific methods be overridden.
+     *
+     */
     class AbstractSigner {
+        /**
+         *  The provider this signer is connected to.
+         */
         provider;
+        /**
+         *  Creates a new Signer connected to %%provider%%.
+         */
         constructor(provider) {
             defineProperties(this, { provider: (provider || null) });
         }
@@ -16592,8 +17939,23 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return await provider.broadcastTransaction(await this.signTransaction(txObj));
         }
     }
+    /**
+     *  A **VoidSigner** is a class deisgned to allow an address to be used
+     *  in any API which accepts a Signer, but for which there are no
+     *  credentials available to perform any actual signing.
+     *
+     *  This for example allow impersonating an account for the purpose of
+     *  static calls or estimating gas, but does not allow sending transactions.
+     */
     class VoidSigner extends AbstractSigner {
+        /**
+         *  The signer address.
+         */
         address;
+        /**
+         *  Creates a new **VoidSigner** with %%address%% attached to
+         *  %%provider%%.
+         */
         constructor(address, provider) {
             super(provider);
             defineProperties(this, { address });
@@ -16672,6 +18034,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #running;
         #network;
         #hault;
+        /**
+         *  Creates a new **FilterIdSubscriber** which will used [[_subscribe]]
+         *  and [[_emitResults]] to setup the subscription and provide the event
+         *  to the %%provider%%.
+         */
         constructor(provider) {
             this.#provider = provider;
             this.#filterIdPromise = null;
@@ -16680,12 +18047,21 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#network = null;
             this.#hault = false;
         }
+        /**
+         *  Sub-classes **must** override this to begin the subscription.
+         */
         _subscribe(provider) {
             throw new Error("subclasses must override this");
         }
+        /**
+         *  Sub-classes **must** override this handle the events.
+         */
         _emitResults(provider, result) {
             throw new Error("subclasses must override this");
         }
+        /**
+         *  Sub-classes **must** override this handle recovery on errors.
+         */
         _recover(provider) {
             throw new Error("subclasses must override this");
         }
@@ -16770,6 +18146,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      */
     class FilterIdEventSubscriber extends FilterIdSubscriber {
         #event;
+        /**
+         *  Creates a new **FilterIdEventSubscriber** attached to %%provider%%
+         *  listening for %%filter%%.
+         */
         constructor(provider, filter) {
             super(provider);
             this.#event = copy(filter);
@@ -16804,7 +18184,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  About JSON-RPC...
+     *  One of the most common ways to interact with the blockchain is
+     *  by a node running a JSON-RPC interface which can be connected to,
+     *  based on the transport, using:
+     *
+     *  - HTTP or HTTPS - [[JsonRpcProvider]]
+     *  - WebSocket - [[WebSocketProvider]]
+     *  - IPC - [[IpcSocketProvider]]
      *
      * @_section: api/providers/jsonrpc:JSON-RPC Provider  [about-jsonrpcProvider]
      */
@@ -18320,13 +19706,24 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *
      *  @_subsection: api/providers/abstract-provider
      */
+    /**
+     *  A **SocketSubscriber** uses a socket transport to handle events and
+     *  should use [[_emit]] to manage the events.
+     */
     class SocketSubscriber {
         #provider;
         #filter;
+        /**
+         *  The filter.
+         */
         get filter() { return JSON.parse(this.#filter); }
         #filterId;
         #paused;
         #emitPromise;
+        /**
+         *  Creates a new **SocketSubscriber** attached to %%provider%% listening
+         *  to %%filter%%.
+         */
         constructor(provider, filter) {
             this.#provider = provider;
             this.#filter = JSON.stringify(filter);
@@ -18355,6 +19752,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         resume() {
             this.#paused = null;
         }
+        /**
+         *  @_ignore:
+         */
         _handleMessage(message) {
             if (this.#filterId == null) {
                 return;
@@ -18376,11 +19776,22 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 });
             }
         }
+        /**
+         *  Sub-classes **must** override this to emit the events on the
+         *  provider.
+         */
         async _emit(provider, message) {
             throw new Error("sub-classes must implemente this; _emit");
         }
     }
+    /**
+     *  A **SocketBlockSubscriber** listens for ``newHeads`` events and emits
+     *  ``"block"`` events.
+     */
     class SocketBlockSubscriber extends SocketSubscriber {
+        /**
+         *  @_ignore:
+         */
         constructor(provider) {
             super(provider, ["newHeads"]);
         }
@@ -18388,7 +19799,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             provider.emit("block", parseInt(message.number));
         }
     }
+    /**
+     *  A **SocketPendingSubscriber** listens for pending transacitons and emits
+     *  ``"pending"`` events.
+     */
     class SocketPendingSubscriber extends SocketSubscriber {
+        /**
+         *  @_ignore:
+         */
         constructor(provider) {
             super(provider, ["newPendingTransactions"]);
         }
@@ -18396,9 +19814,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             provider.emit("pending", message);
         }
     }
+    /**
+     *  A **SocketEventSubscriber** listens for event logs.
+     */
     class SocketEventSubscriber extends SocketSubscriber {
         #logFilter;
+        /**
+         *  The filter.
+         */
         get logFilter() { return JSON.parse(this.#logFilter); }
+        /**
+         *  @_ignore:
+         */
         constructor(provider, filter) {
             super(provider, ["logs", filter]);
             this.#logFilter = JSON.stringify(filter);
@@ -18408,8 +19835,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
     /**
-     *  SocketProvider...
-     *
+     *  A **SocketProvider** is backed by a long-lived connection over a
+     *  socket, which can subscribe and receive real-time messages over
+     *  its communication channel.
      */
     class SocketProvider extends JsonRpcApiProvider {
         #callbacks;
@@ -18418,6 +19846,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // If any events come in before a subscriber has finished
         // registering, queue them
         #pending;
+        /**
+         *  Creates a new **SocketProvider** connected to %%network%%.
+         *
+         *  If unspecified, the network will be discovered.
+         */
         constructor(network) {
             super(network, { batchMaxCount: 1 });
             this.#callbacks = new Map();
@@ -18452,6 +19885,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return super._getSubscriber(sub);
         }
+        /**
+         *  Register a new subscriber. This is used internalled by Subscribers
+         *  and generally is unecessary unless extending capabilities.
+         */
         _register(filterId, subscriber) {
             this.#subs.set(filterId, subscriber);
             const pending = this.#pending.get(filterId);
@@ -18490,7 +19927,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             })();
         }
         */
-        // Sub-classes must call this for each message
+        /**
+         *  Sub-classes **must** call this with messages received over their
+         *  transport to be processed and dispatched.
+         */
         async _processMessage(message) {
             const result = (JSON.parse(message));
             if (result && typeof (result) === "object" && "id" in result) {
@@ -18528,11 +19968,25 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return;
             }
         }
+        /**
+         *  Sub-classes **must** override this to send %%message%% over their
+         *  transport.
+         */
         async _write(message) {
             throw new Error("sub-classes must override this");
         }
     }
 
+    /**
+     *  A JSON-RPC provider which is backed by a WebSocket.
+     *
+     *  WebSockets are often preferred because they retain a live connection
+     *  to a server, which permits more instant access to events.
+     *
+     *  However, this incurs higher server infrasturture costs, so additional
+     *  resources may be required to host your own WebSocket nodes and many
+     *  third-party services charge additional fees for WebSocket endpoints.
+     */
     class WebSocketProvider extends SocketProvider {
         #connect;
         #websocket;
@@ -18861,7 +20315,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  Explain all the nitty-gritty about the **FallbackProvider**.
+     *  A **FallbackProvider** providers resiliance, security and performatnce
+     *  in a way that is customizable and configurable.
      *
      *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
      */
@@ -19057,16 +20512,36 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return bestResult;
     }
     /**
-     *  A Fallback Provider.
+     *  A **FallbackProvider** manages several [[Providers]] providing
+     *  resiliance by switching between slow or misbehaving nodes, security
+     *  by requiring multiple backends to aggree and performance by allowing
+     *  faster backends to respond earlier.
      *
      */
     class FallbackProvider extends AbstractProvider {
+        /**
+         *  The number of backends that must agree on a value before it is
+         *  accpeted.
+         */
         quorum;
+        /**
+         *  @_ignore:
+         */
         eventQuorum;
+        /**
+         *  @_ignore:
+         */
         eventWorkers;
         #configs;
         #height;
         #initialSyncPromise;
+        /**
+         *  Creates a new **FallbackProvider** with %%providers%% connected to
+         *  %%network%%.
+         *
+         *  If a [[Provider]] is included in %%providers%%, defaults are used
+         *  for the configuration.
+         */
         constructor(providers, network) {
             super(network);
             this.#configs = providers.map((p) => {
@@ -19102,6 +20577,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         //_getSubscriber(sub: Subscription): Subscriber {
         //    throw new Error("@TODO");
         //}
+        /**
+         *  Transforms a %%req%% into the correct method call on %%provider%%.
+         */
         async _translatePerform(provider, req) {
             switch (req.method) {
                 case "broadcastTransaction":
@@ -19475,10 +20953,21 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return new FallbackProvider(providers);
     }
 
+    /**
+     *  A **NonceManager** wraps another [[Signer]] and automatically manages
+     *  the nonce, ensuring serialized and sequential nonces are used during
+     *  transaction.
+     */
     class NonceManager extends AbstractSigner {
+        /**
+         *  The Signer being managed.
+         */
         signer;
         #noncePromise;
         #delta;
+        /**
+         *  Creates a new **NonceManager** to manage %%signer%%.
+         */
         constructor(signer) {
             super(signer.provider);
             defineProperties(this, { signer });
@@ -19501,9 +20990,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return super.getNonce(blockTag);
         }
+        /**
+         *  Manually increment the nonce. This may be useful when managng
+         *  offline transactions.
+         */
         increment() {
             this.#delta++;
         }
+        /**
+         *  Resets the nonce, causing the **NonceManager** to reload the current
+         *  nonce from the blockchain on the next transaction.
+         */
         reset() {
             this.#delta = 0;
             this.#noncePromise = null;
@@ -19528,8 +21025,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
 
+    /**
+     *  A **BrowserProvider** is intended to wrap an injected provider which
+     *  adheres to the [[link-eip-1193]] standard, which most (if not all)
+     *  currently do.
+     */
     class BrowserProvider extends JsonRpcApiPollingProvider {
         #request;
+        /**
+         *  Connnect to the %%ethereum%% provider, optionally forcing the
+         *  %%network%%.
+         */
         constructor(ethereum, network) {
             super(network, { batchMaxCount: 1 });
             this.#request = async (method, params) => {
@@ -19581,6 +21087,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return super.getRpcError(payload, error);
         }
+        /**
+         *  Resolves to ``true`` if the provider manages the %%address%%.
+         */
         async hasSigner(address) {
             if (address == null) {
                 address = 0;
@@ -19917,7 +21426,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  based on ASCII-7 small.
      *
      *  If necessary, there are tools within the ``generation/`` folder
-     *  to create these necessary data.
+     *  to create the necessary data.
      */
     class WordlistOwl extends Wordlist {
         #data;
@@ -19932,7 +21441,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#checksum = checksum;
             this.#words = null;
         }
+        /**
+         *  The OWL-encoded data.
+         */
         get _data() { return this.#data; }
+        /**
+         *  Decode all the words for the wordlist.
+         */
         _decodeWords() {
             return decodeOwl(this.#data);
         }
@@ -21686,15 +23201,25 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  based on latin-1 small.
      *
      *  If necessary, there are tools within the ``generation/`` folder
-     *  to create these necessary data.
+     *  to create the necessary data.
      */
     class WordlistOwlA extends WordlistOwl {
         #accent;
+        /**
+         *  Creates a new Wordlist for %%locale%% using the OWLA %%data%%
+         *  and %%accent%% data and validated against the %%checksum%%.
+         */
         constructor(locale, data, accent, checksum) {
             super(locale, data, checksum);
             this.#accent = accent;
         }
+        /**
+         *  The OWLA-encoded accent data.
+         */
         get _accent() { return this.#accent; }
+        /**
+         *  Decode all the words for the wordlist.
+         */
         _decodeWords() {
             return decodeOwlA(this._data, this._accent);
         }

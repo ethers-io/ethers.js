@@ -14,8 +14,9 @@ import { Result } from "./coders/abstract-coder.js";
 import { ParamType } from "./fragments.js";
 import type { BytesLike, CallExceptionAction, CallExceptionError } from "../utils/index.js";
 /**
-  * About AbiCoder
-  */
+ *  The **AbiCoder** is a low-level class responsible for encoding JavaScript
+ *  values into binary data and decoding binary data into JavaScript values.
+ */
 export declare class AbiCoder {
     #private;
     /**

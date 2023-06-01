@@ -14,13 +14,24 @@ exports.SocketProvider = exports.SocketEventSubscriber = exports.SocketPendingSu
 const abstract_provider_js_1 = require("./abstract-provider.js");
 const index_js_1 = require("../utils/index.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
+/**
+ *  A **SocketSubscriber** uses a socket transport to handle events and
+ *  should use [[_emit]] to manage the events.
+ */
 class SocketSubscriber {
     #provider;
     #filter;
+    /**
+     *  The filter.
+     */
     get filter() { return JSON.parse(this.#filter); }
     #filterId;
     #paused;
     #emitPromise;
+    /**
+     *  Creates a new **SocketSubscriber** attached to %%provider%% listening
+     *  to %%filter%%.
+     */
     constructor(provider, filter) {
         this.#provider = provider;
         this.#filter = JSON.stringify(filter);
@@ -50,6 +61,9 @@ class SocketSubscriber {
     resume() {
         this.#paused = null;
     }
+    /**
+     *  @_ignore:
+     */
     _handleMessage(message) {
         if (this.#filterId == null) {
             return;
@@ -71,12 +85,23 @@ class SocketSubscriber {
             });
         }
     }
+    /**
+     *  Sub-classes **must** override this to emit the events on the
+     *  provider.
+     */
     async _emit(provider, message) {
         throw new Error("sub-classes must implemente this; _emit");
     }
 }
 exports.SocketSubscriber = SocketSubscriber;
+/**
+ *  A **SocketBlockSubscriber** listens for ``newHeads`` events and emits
+ *  ``"block"`` events.
+ */
 class SocketBlockSubscriber extends SocketSubscriber {
+    /**
+     *  @_ignore:
+     */
     constructor(provider) {
         super(provider, ["newHeads"]);
     }
@@ -85,7 +110,14 @@ class SocketBlockSubscriber extends SocketSubscriber {
     }
 }
 exports.SocketBlockSubscriber = SocketBlockSubscriber;
+/**
+ *  A **SocketPendingSubscriber** listens for pending transacitons and emits
+ *  ``"pending"`` events.
+ */
 class SocketPendingSubscriber extends SocketSubscriber {
+    /**
+     *  @_ignore:
+     */
     constructor(provider) {
         super(provider, ["newPendingTransactions"]);
     }
@@ -94,9 +126,18 @@ class SocketPendingSubscriber extends SocketSubscriber {
     }
 }
 exports.SocketPendingSubscriber = SocketPendingSubscriber;
+/**
+ *  A **SocketEventSubscriber** listens for event logs.
+ */
 class SocketEventSubscriber extends SocketSubscriber {
     #logFilter;
+    /**
+     *  The filter.
+     */
     get logFilter() { return JSON.parse(this.#logFilter); }
+    /**
+     *  @_ignore:
+     */
     constructor(provider, filter) {
         super(provider, ["logs", filter]);
         this.#logFilter = JSON.stringify(filter);
@@ -107,8 +148,9 @@ class SocketEventSubscriber extends SocketSubscriber {
 }
 exports.SocketEventSubscriber = SocketEventSubscriber;
 /**
- *  SocketProvider...
- *
+ *  A **SocketProvider** is backed by a long-lived connection over a
+ *  socket, which can subscribe and receive real-time messages over
+ *  its communication channel.
  */
 class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
     #callbacks;
@@ -117,6 +159,11 @@ class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
     // If any events come in before a subscriber has finished
     // registering, queue them
     #pending;
+    /**
+     *  Creates a new **SocketProvider** connected to %%network%%.
+     *
+     *  If unspecified, the network will be discovered.
+     */
     constructor(network) {
         super(network, { batchMaxCount: 1 });
         this.#callbacks = new Map();
@@ -151,6 +198,10 @@ class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
         }
         return super._getSubscriber(sub);
     }
+    /**
+     *  Register a new subscriber. This is used internalled by Subscribers
+     *  and generally is unecessary unless extending capabilities.
+     */
     _register(filterId, subscriber) {
         this.#subs.set(filterId, subscriber);
         const pending = this.#pending.get(filterId);
@@ -189,7 +240,10 @@ class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
         })();
     }
     */
-    // Sub-classes must call this for each message
+    /**
+     *  Sub-classes **must** call this with messages received over their
+     *  transport to be processed and dispatched.
+     */
     async _processMessage(message) {
         const result = (JSON.parse(message));
         if (result && typeof (result) === "object" && "id" in result) {
@@ -227,6 +281,10 @@ class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
             return;
         }
     }
+    /**
+     *  Sub-classes **must** override this to send %%message%% over their
+     *  transport.
+     */
     async _write(message) {
         throw new Error("sub-classes must override this");
     }

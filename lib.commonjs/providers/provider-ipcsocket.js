@@ -18,8 +18,16 @@ function splitBuffer(data) {
     }
     return { messages, remaining: data.subarray(lastStart) };
 }
+/**
+ *  An **IpcSocketProvider** connects over an IPC socket on the host
+ *  which provides fast access to the node, but requires the node and
+ *  the script run on the same machine.
+ */
 class IpcSocketProvider extends provider_socket_js_1.SocketProvider {
     #socket;
+    /**
+     *  The connected socket.
+     */
     get socket() { return this.#socket; }
     constructor(path, network) {
         super(network);

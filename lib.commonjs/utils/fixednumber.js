@@ -2,7 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FixedNumber = void 0;
 /**
- *  About fixed-point math...
+ *  The **FixedNumber** class permits using values with decimal places,
+ *  using fixed-pont math.
+ *
+ *  Fixed-point math is still based on integers under-the-hood, but uses an
+ *  internal offset to store fractional components below, and each operation
+ *  corrects for this after each operation.
  *
  *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [about-fixed-point-math]
  */
@@ -330,7 +335,7 @@ class FixedNumber {
      *  Returns a comparison result between %%this%% and %%other%%.
      *
      *  This is suitable for use in sorting, where ``-1`` implies %%this%%
-     *  is smaller, ``1`` implies %%other%% is larger and ``0`` implies
+     *  is smaller, ``1`` implies %%this%% is larger and ``0`` implies
      *  both are equal.
      */
     cmp(other) {
@@ -348,7 +353,7 @@ class FixedNumber {
             return -1;
         }
         if (a > b) {
-            return -1;
+            return 1;
         }
         return 0;
     }

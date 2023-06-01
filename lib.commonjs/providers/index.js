@@ -1,6 +1,12 @@
 "use strict";
 /**
- *  About providers.
+ *  A **Provider** provides a connection to the blockchain, whch can be
+ *  used to query its current state, simulate execution and send transactions
+ *  to update the state.
+ *
+ *  It is one of the most fundamental components of interacting with a
+ *  blockchain application, and there are many ways to connect, such as over
+ *  HTTP, WebSockets or injected providers such as [MetaMask](link-metamask).
  *
  *  @_section: api/providers:Providers  [about-providers]
  */

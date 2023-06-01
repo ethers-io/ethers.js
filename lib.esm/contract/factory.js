@@ -4,10 +4,29 @@ import { concat, defineProperties, getBytes, hexlify, assert, assertArgument } f
 import { BaseContract, copyOverrides, resolveArgs } from "./contract.js";
 // A = Arguments to the constructor
 // I = Interface of deployed contracts
+/**
+ *  A **ContractFactory** is used to deploy a Contract to the blockchain.
+ */
 export class ContractFactory {
+    /**
+     *  The Contract Interface.
+     */
     interface;
+    /**
+     *  The Contract deployment bytecode. Often called the initcode.
+     */
     bytecode;
+    /**
+     *  The ContractRunner to deploy the Contract as.
+     */
     runner;
+    /**
+     *  Create a new **ContractFactory** with %%abi%% and %%bytecode%%,
+     *  optionally connected to %%runner%%.
+     *
+     *  The %%bytecode%% may be the ``bytecode`` property within the
+     *  standard Solidity JSON output.
+     */
     constructor(abi, bytecode, runner) {
         const iface = Interface.from(abi);
         // Dereference Solidity bytecode objects and allow a missing `0x`-prefix
@@ -27,6 +46,10 @@ export class ContractFactory {
             bytecode, interface: iface, runner: (runner || null)
         });
     }
+    /**
+     *  Resolves to the transaction to deploy the contract, passing %%args%%
+     *  into the constructor.
+     */
     async getDeployTransaction(...args) {
         let overrides = {};
         const fragment = this.interface.deploy;
@@ -40,6 +63,14 @@ export class ContractFactory {
         const data = concat([this.bytecode, this.interface.encodeDeploy(resolvedArgs)]);
         return Object.assign({}, overrides, { data });
     }
+    /**
+     *  Resolves to the Contract deployed by passing %%args%% into the
+     *  constructor.
+     *
+     *  This will resovle to the Contract before it has been deployed to the
+     *  network, so the [[BaseContract-waitForDeployment]] should be used before
+     *  sending any transactions to it.
+     */
     async deploy(...args) {
         const tx = await this.getDeployTransaction(...args);
         assert(this.runner && typeof (this.runner.sendTransaction) === "function", "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
@@ -49,9 +80,16 @@ export class ContractFactory {
         const address = getCreateAddress(sentTx);
         return new BaseContract(address, this.interface, this.runner, sentTx);
     }
+    /**
+     *  Return a new **ContractFactory** with the same ABI and bytecode,
+     *  but connected to %%runner%%.
+     */
     connect(runner) {
         return new ContractFactory(this.interface, this.bytecode, runner);
     }
+    /**
+     *  Create a new **ContractFactory** from the standard Solidity JSON output.
+     */
     static fromSolidity(output, runner) {
         assertArgument(output != null, "bad compiler output", "output", output);
         if (typeof (output) === "string") {

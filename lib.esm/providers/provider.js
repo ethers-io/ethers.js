@@ -73,6 +73,10 @@ export class FeeData {
     }
 }
 ;
+/**
+ *  Returns a copy of %%req%% with all properties coerced to their strict
+ *  types.
+ */
 export function copyRequest(req) {
     const result = {};
     // These could be addresses, ENS names or Addressables
@@ -130,6 +134,9 @@ export class Block {
     number;
     /**
      *  The block hash.
+     *
+     *  This hash includes all properties, so can be safely used to identify
+     *  an exact set of block properties.
      */
     hash;
     /**
@@ -226,7 +233,7 @@ export class Block {
     /**
      *  Returns the complete transactions for blocks which
      *  prefetched them, by passing ``true`` to %%prefetchTxs%%
-     *  into [[provider_getBlock]].
+     *  into [[Provider-getBlock]].
      */
     get prefetchedTransactions() {
         const txs = this.#transactions.slice();
@@ -321,6 +328,12 @@ export class Block {
             return tx;
         }
     }
+    /**
+     *  If a **Block** was fetched with a request to include the transactions
+     *  this will allow synchronous access to those transactions.
+     *
+     *  If the transactions were not prefetched, this will throw.
+     */
     getPrefetchedTransaction(indexOrHash) {
         const txs = this.prefetchedTransactions;
         if (typeof (indexOrHash) === "number") {
@@ -335,18 +348,19 @@ export class Block {
         assertArgument(false, "no matching transaction", "indexOrHash", indexOrHash);
     }
     /**
-     *  Has this block been mined.
-     *
-     *  If true, the block has been typed-gaurded that all mined
-     *  properties are non-null.
+     *  Returns true if this block been mined. This provides a type guard
+     *  for all properties on a [[MinedBlock]].
      */
     isMined() { return !!this.hash; }
     /**
-     *
+     *  Returns true if this block is an [[link-eip-2930]] block.
      */
     isLondon() {
         return !!this.baseFeePerGas;
     }
+    /**
+     *  @_ignore:
+     */
     orphanedEvent() {
         if (!this.isMined()) {
             throw new Error("");
@@ -356,17 +370,69 @@ export class Block {
 }
 //////////////////////
 // Log
+/**
+ *  A **Log** in Ethereum represents an event that has been included in a
+ *  transaction using the ``LOG*`` opcodes, which are most commonly used by
+ *  Solidity's emit for announcing events.
+ */
 export class Log {
+    /**
+     *  The provider connected to the log used to fetch additional details
+     *  if necessary.
+     */
     provider;
+    /**
+     *  The transaction hash of the transaction this log occurred in. Use the
+     *  [[Log-getTransaction]] to get the [[TransactionResponse]].
+     */
     transactionHash;
+    /**
+     *  The block hash of the block this log occurred in. Use the
+     *  [[Log-getBlock]] to get the [[Block]].
+     */
     blockHash;
+    /**
+     *  The block number of the block this log occurred in. It is preferred
+     *  to use the [[Block-hash]] when fetching the related [[Block]],
+     *  since in the case of an orphaned block, the block at that height may
+     *  have changed.
+     */
     blockNumber;
+    /**
+     *  If the **Log** represents a block that was removed due to an orphaned
+     *  block, this will be true.
+     *
+     *  This can only happen within an orphan event listener.
+     */
     removed;
+    /**
+     *  The address of the contract that emitted this log.
+     */
     address;
+    /**
+     *  The data included in this log when it was emitted.
+     */
     data;
+    /**
+     *  The indexed topics included in this log when it was emitted.
+     *
+     *  All topics are included in the bloom filters, so they can be
+     *  efficiently filtered using the [[Provider-getLogs]] method.
+     */
     topics;
+    /**
+     *  The index within the block this log occurred at. This is generally
+     *  not useful to developers, but can be used with the various roots
+     *  to proof inclusion within a block.
+     */
     index;
+    /**
+     *  The index within the transaction of this log.
+     */
     transactionIndex;
+    /**
+     *  @_ignore:
+     */
     constructor(log, provider) {
         this.provider = provider;
         const topics = Object.freeze(log.topics.slice());
@@ -382,6 +448,9 @@ export class Log {
             transactionIndex: log.transactionIndex,
         });
     }
+    /**
+     *  Returns a JSON-compatible object.
+     */
     toJSON() {
         const { address, blockHash, blockNumber, data, index, removed, topics, transactionHash, transactionIndex } = this;
         return {
@@ -390,21 +459,34 @@ export class Log {
             removed, topics, transactionHash, transactionIndex
         };
     }
+    /**
+     *  Returns the block that this log occurred in.
+     */
     async getBlock() {
         const block = await this.provider.getBlock(this.blockHash);
         assert(!!block, "failed to find transaction", "UNKNOWN_ERROR", {});
         return block;
     }
+    /**
+     *  Returns the transaction that this log occurred in.
+     */
     async getTransaction() {
         const tx = await this.provider.getTransaction(this.transactionHash);
         assert(!!tx, "failed to find transaction", "UNKNOWN_ERROR", {});
         return tx;
     }
+    /**
+     *  Returns the transaction receipt fot the transaction that this
+     *  log occurred in.
+     */
     async getTransactionReceipt() {
         const receipt = await this.provider.getTransactionReceipt(this.transactionHash);
         assert(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", {});
         return receipt;
     }
+    /**
+     *  @_ignore:
+     */
     removedEvent() {
         return createRemovedLogFilter(this);
     }
@@ -424,24 +506,102 @@ export interface ByzantiumTransactionReceipt {
     root: null;
 }
 */
+/**
+ *  A **TransactionReceipt** includes additional information about a
+ *  transaction that is only available after it has been mined.
+ */
 export class TransactionReceipt {
+    /**
+     *  The provider connected to the log used to fetch additional details
+     *  if necessary.
+     */
     provider;
+    /**
+     *  The address the transaction was send to.
+     */
     to;
+    /**
+     *  The sender of the transaction.
+     */
     from;
+    /**
+     *  The address of the contract if the transaction was directly
+     *  responsible for deploying one.
+     *
+     *  This is non-null **only** if the ``to`` is empty and the ``data``
+     *  was successfully executed as initcode.
+     */
     contractAddress;
+    /**
+     *  The transaction hash.
+     */
     hash;
+    /**
+     *  The index of this transaction within the block transactions.
+     */
     index;
+    /**
+     *  The block hash of the [[Block]] this transaction was included in.
+     */
     blockHash;
+    /**
+     *  The block number of the [[Block]] this transaction was included in.
+     */
     blockNumber;
+    /**
+     *  The bloom filter bytes that represent all logs that occurred within
+     *  this transaction. This is generally not useful for most developers,
+     *  but can be used to validate the included logs.
+     */
     logsBloom;
+    /**
+     *  The actual amount of gas used by this transaction.
+     *
+     *  When creating a transaction, the amount of gas that will be used can
+     *  only be approximated, but the sender must pay the gas fee for the
+     *  entire gas limit. After the transaction, the difference is refunded.
+     */
     gasUsed;
+    /**
+     *  The amount of gas used by all transactions within the block for this
+     *  and all transactions with a lower ``index``.
+     *
+     *  This is generally not useful for developers but can be used to
+     *  validate certain aspects of execution.
+     */
     cumulativeGasUsed;
+    /**
+     *  The actual gas price used during execution.
+     *
+     *  Due to the complexity of [[link-eip-1559]] this value can only
+     *  be caluclated after the transaction has been mined, snce the base
+     *  fee is protocol-enforced.
+     */
     gasPrice;
+    /**
+     *  The [[link-eip-2718]] transaction type.
+     */
     type;
     //readonly byzantium!: boolean;
+    /**
+     *  The status of this transaction, indicating success (i.e. ``1``) or
+     *  a revert (i.e. ``0``).
+     *
+     *  This is available in post-byzantium blocks, but some backends may
+     *  backfill this value.
+     */
     status;
+    /**
+     *  The root hash of this transaction.
+     *
+     *  This is no present and was only included in pre-byzantium blocks, but
+     *  could be used to validate certain parts of the receipt.
+     */
     root;
     #logs;
+    /**
+     *  @_ignore:
+     */
     constructor(tx, provider) {
         this.#logs = Object.freeze(tx.logs.map((log) => {
             return new Log(log, provider);
@@ -472,7 +632,13 @@ export class TransactionReceipt {
             root: tx.root
         });
     }
+    /**
+     *  The logs for this transaction.
+     */
     get logs() { return this.#logs; }
+    /**
+     *  Returns a JSON-compatible representation.
+     */
     toJSON() {
         const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
         status, root } = this;
@@ -488,6 +654,9 @@ export class TransactionReceipt {
             hash, index, logs, logsBloom, root, status, to
         };
     }
+    /**
+     *  @_ignore:
+     */
     get length() { return this.logs.length; }
     [Symbol.iterator]() {
         let index = 0;
@@ -500,9 +669,15 @@ export class TransactionReceipt {
             }
         };
     }
+    /**
+     *  The total fee for this transaction, in wei.
+     */
     get fee() {
         return this.gasUsed * this.gasPrice;
     }
+    /**
+     *  Resolves to the block this transaction occurred in.
+     */
     async getBlock() {
         const block = await this.provider.getBlock(this.blockHash);
         if (block == null) {
@@ -510,6 +685,9 @@ export class TransactionReceipt {
         }
         return block;
     }
+    /**
+     *  Resolves to the transaction this transaction occurred in.
+     */
     async getTransaction() {
         const tx = await this.provider.getTransaction(this.hash);
         if (tx == null) {
@@ -517,30 +695,44 @@ export class TransactionReceipt {
         }
         return tx;
     }
+    /**
+     *  Resolves to the return value of the execution of this transaction.
+     *
+     *  Support for this feature is limited, as it requires an archive node
+     *  with the ``debug_`` or ``trace_`` API enabled.
+     */
     async getResult() {
         return (await this.provider.getTransactionResult(this.hash));
     }
+    /**
+     *  Resolves to the number of confirmations this transaction has.
+     */
     async confirmations() {
         return (await this.provider.getBlockNumber()) - this.blockNumber + 1;
     }
+    /**
+     *  @_ignore:
+     */
     removedEvent() {
         return createRemovedTransactionFilter(this);
     }
+    /**
+     *  @_ignore:
+     */
     reorderedEvent(other) {
         assert(!other || other.isMined(), "unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
         return createReorderedTransactionFilter(this, other);
     }
 }
-/*
-export type ReplacementDetectionSetup = {
-    to: string;
-    from: string;
-    value: bigint;
-    data: string;
-    nonce: number;
-    block: number;
-};
-*/
+/**
+ *  A **TransactionResponse** includes all properties about a transaction
+ *  that was sent to the network, which may or may not be included in a
+ *  block.
+ *
+ *  The [[TransactionResponse-isMined]] can be used to check if the
+ *  transaction has been mined as well as type guard that the otherwise
+ *  possibly ``null`` properties are defined.
+ */
 export class TransactionResponse {
     /**
      *  The provider this is connected to, which will influence how its
@@ -650,8 +842,7 @@ export class TransactionResponse {
     accessList;
     #startBlock;
     /**
-     *  Create a new TransactionResponse with %%tx%% parameters
-     *  connected to %%provider%%.
+     *  @_ignore:
      */
     constructor(tx, provider) {
         this.provider = provider;
@@ -675,7 +866,7 @@ export class TransactionResponse {
         this.#startBlock = -1;
     }
     /**
-     *  Returns a JSON representation of this transaction.
+     *  Returns a JSON-compatible representation of this transaction.
      */
     toJSON() {
         const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;

@@ -1,10 +1,18 @@
 /**
- *  About Errors.
+ *  All errors in ethers include properties to ensure they are both
+ *  human-readable (i.e. ``.message``) and machine-readable (i.e. ``.code``).
+ *
+ *  The [[isError]] function can be used to check the error ``code`` and
+ *  provide a type guard for the properties present on that error interface.
  *
  *  @_section: api/utils/errors:Errors  [about-errors]
  */
 import type { TransactionRequest, TransactionReceipt, TransactionResponse } from "../providers/index.js";
 import type { FetchRequest, FetchResponse } from "./fetch.js";
+/**
+ *  An error may contain additional properties, but those must not
+ *  conflict with any impliciat properties.
+ */
 export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
 /**
  *  All errors emitted by ethers have an **ErrorCode** to help
@@ -121,6 +129,9 @@ export interface UnsupportedOperationError extends EthersError<"UNSUPPORTED_OPER
      */
     operation: string;
 }
+/**
+ *  This Error indicates a proplem connecting to a network.
+ */
 export interface NetworkError extends EthersError<"NETWORK_ERROR"> {
     event: string;
 }

@@ -3,6 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebSocketProvider = void 0;
 const ws_js_1 = require("./ws.js"); /*-browser*/
 const provider_socket_js_1 = require("./provider-socket.js");
+/**
+ *  A JSON-RPC provider which is backed by a WebSocket.
+ *
+ *  WebSockets are often preferred because they retain a live connection
+ *  to a server, which permits more instant access to events.
+ *
+ *  However, this incurs higher server infrasturture costs, so additional
+ *  resources may be required to host your own WebSocket nodes and many
+ *  third-party services charge additional fees for WebSocket endpoints.
+ */
 class WebSocketProvider extends provider_socket_js_1.SocketProvider {
     #connect;
     #websocket;

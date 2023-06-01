@@ -23,6 +23,11 @@ class FilterIdSubscriber {
     #running;
     #network;
     #hault;
+    /**
+     *  Creates a new **FilterIdSubscriber** which will used [[_subscribe]]
+     *  and [[_emitResults]] to setup the subscription and provide the event
+     *  to the %%provider%%.
+     */
     constructor(provider) {
         this.#provider = provider;
         this.#filterIdPromise = null;
@@ -31,12 +36,21 @@ class FilterIdSubscriber {
         this.#network = null;
         this.#hault = false;
     }
+    /**
+     *  Sub-classes **must** override this to begin the subscription.
+     */
     _subscribe(provider) {
         throw new Error("subclasses must override this");
     }
+    /**
+     *  Sub-classes **must** override this handle the events.
+     */
     _emitResults(provider, result) {
         throw new Error("subclasses must override this");
     }
+    /**
+     *  Sub-classes **must** override this handle recovery on errors.
+     */
     _recover(provider) {
         throw new Error("subclasses must override this");
     }
@@ -122,6 +136,10 @@ exports.FilterIdSubscriber = FilterIdSubscriber;
  */
 class FilterIdEventSubscriber extends FilterIdSubscriber {
     #event;
+    /**
+     *  Creates a new **FilterIdEventSubscriber** attached to %%provider%%
+     *  listening for %%filter%%.
+     */
     constructor(provider, filter) {
         super(provider);
         this.#event = copy(filter);

@@ -1,6 +1,12 @@
 "use strict";
 /**
- *  About JSON-RPC...
+ *  One of the most common ways to interact with the blockchain is
+ *  by a node running a JSON-RPC interface which can be connected to,
+ *  based on the transport, using:
+ *
+ *  - HTTP or HTTPS - [[JsonRpcProvider]]
+ *  - WebSocket - [[WebSocketProvider]]
+ *  - IPC - [[IpcSocketProvider]]
  *
  * @_section: api/providers/jsonrpc:JSON-RPC Provider  [about-jsonrpcProvider]
  */

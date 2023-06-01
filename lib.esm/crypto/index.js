@@ -16,6 +16,10 @@ import { sha256, sha512 } from "./sha2.js";
 export { computeHmac, randomBytes, keccak256, ripemd160, sha256, sha512, pbkdf2, scrypt, scryptSync };
 export { SigningKey } from "./signing-key.js";
 export { Signature } from "./signature.js";
+/**
+ *  Once called, prevents any future change to the underlying cryptographic
+ *  primitives using the ``.register`` feature for hooks.
+ */
 function lock() {
     computeHmac.lock();
     keccak256.lock();

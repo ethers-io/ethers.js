@@ -2,7 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FetchResponse = exports.FetchRequest = exports.FetchCancelSignal = void 0;
 /**
- *  Explain fetching here...
+ *  Fetching content from the web is environment-specific, so Ethers
+ *  provides an abstraction the each environment can implement to provide
+ *  this service.
+ *
+ *  On [Node.js](link-node), the ``http`` and ``https`` libs are used to
+ *  create a request object, register event listeners and process data
+ *  and populate the [[FetchResponse]].
+ *
+ *  In a browser, the [DOM fetch](link-js-fetch) is used, and the resulting
+ *  ``Promise`` is waited on to retreive the payload.
+ *
+ *  The [[FetchRequest]] is responsible for handling many common situations,
+ *  such as redirects, server throttling, authentcation, etc.
+ *
+ *  It also handles common gateways, such as IPFS and data URIs.
  *
  *  @_section api/utils/fetching:Fetching Web Content  [about-fetch]
  */

@@ -1,9 +1,16 @@
+/**
+ *  An environments implementation of ``getUrl`` must return this type.
+ */
 export type GetUrlResponse = {
     statusCode: number;
     statusMessage: string;
     headers: Record<string, string>;
     body: null | Uint8Array;
 };
+/**
+ *  This can be used to control how throttling is handled in
+ *  [[FetchRequest-setThrottleParams]].
+ */
 export type FetchThrottleParams = {
     maxAttempts?: number;
     slotInterval?: number;

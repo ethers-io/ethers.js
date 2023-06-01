@@ -1,6 +1,6 @@
 "use strict";
 /**
- *  Transactions..
+ *  Each state-changing operation on Ethereum requires a transaction.
  *
  *  @_section api/transaction:Transactions  [about-transactions]
  */

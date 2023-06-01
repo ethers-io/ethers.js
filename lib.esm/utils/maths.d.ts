@@ -30,6 +30,10 @@ export declare function mask(_value: BigNumberish, _bits: Numeric): bigint;
  *  a BigInt, then an ArgumentError will be thrown for %%name%%.
  */
 export declare function getBigInt(value: BigNumberish, name?: string): bigint;
+/**
+ *  Returns %%value%% as a bigint, validating it is valid as a bigint
+ *  value and that it is positive.
+ */
 export declare function getUint(value: BigNumberish, name?: string): bigint;
 export declare function toBigInt(value: BigNumberish | Uint8Array): bigint;
 /**

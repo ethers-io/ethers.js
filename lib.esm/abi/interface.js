@@ -1,5 +1,11 @@
 /**
- *  About Interface
+ *  The Interface class is a low-level class that accepts an
+ *  ABI and provides all the necessary functionality to encode
+ *  and decode paramaters to and results from methods, events
+ *  and errors.
+ *
+ *  It also provides several convenience methods to automatically
+ *  search and find matching transactions and events to parse them.
  *
  *  @_subsection api/abi:Interfaces  [interfaces]
  */
@@ -11,12 +17,34 @@ import { checkResultErrors, Result } from "./coders/abstract-coder.js";
 import { ConstructorFragment, ErrorFragment, EventFragment, Fragment, FunctionFragment, ParamType } from "./fragments.js";
 import { Typed } from "./typed.js";
 export { checkResultErrors, Result };
+/**
+ *  When using the [[Interface-parseLog]] to automatically match a Log to its event
+ *  for parsing, a **LogDescription** is returned.
+ */
 export class LogDescription {
+    /**
+     *  The matching fragment for the ``topic0``.
+     */
     fragment;
+    /**
+     *  The name of the Event.
+     */
     name;
+    /**
+     *  The full Event signature.
+     */
     signature;
+    /**
+     *  The topic hash for the Event.
+     */
     topic;
+    /**
+     *  The arguments passed into the Event with ``emit``.
+     */
     args;
+    /**
+     *  @_ignore:
+     */
     constructor(fragment, topic, args) {
         const name = fragment.name, signature = fragment.format();
         defineProperties(this, {
@@ -24,13 +52,39 @@ export class LogDescription {
         });
     }
 }
+/**
+ *  When using the [[Interface-parseTransaction]] to automatically match
+ *  a transaction data to its function for parsing,
+ *  a **TransactionDescription** is returned.
+ */
 export class TransactionDescription {
+    /**
+     *  The matching fragment from the transaction ``data``.
+     */
     fragment;
+    /**
+     *  The name of the Function from the transaction ``data``.
+     */
     name;
+    /**
+     *  The arguments passed to the Function from the transaction ``data``.
+     */
     args;
+    /**
+     *  The full Function signature from the transaction ``data``.
+     */
     signature;
+    /**
+     *  The selector for the Function from the transaction ``data``.
+     */
     selector;
+    /**
+     *  The ``value`` (in wei) from the transaction.
+     */
     value;
+    /**
+     *  @_ignore:
+     */
     constructor(fragment, selector, args, value) {
         const name = fragment.name, signature = fragment.format();
         defineProperties(this, {
@@ -38,12 +92,34 @@ export class TransactionDescription {
         });
     }
 }
+/**
+ *  When using the [[Interface-parseError]] to automatically match an
+ *  error for a call result for parsing, an **ErrorDescription** is returned.
+ */
 export class ErrorDescription {
+    /**
+     *  The matching fragment.
+     */
     fragment;
+    /**
+     *  The name of the Error.
+     */
     name;
+    /**
+     *  The arguments passed to the Error with ``revert``.
+     */
     args;
+    /**
+     *  The full Error signature.
+     */
     signature;
+    /**
+     *  The selector for the Error.
+     */
     selector;
+    /**
+     *  @_ignore:
+     */
     constructor(fragment, selector, args) {
         const name = fragment.name, signature = fragment.format();
         defineProperties(this, {
@@ -51,12 +127,32 @@ export class ErrorDescription {
         });
     }
 }
+/**
+ *  An **Indexed** is used as a value when a value that does not
+ *  fit within a topic (i.e. not a fixed-length, 32-byte type). It
+ *  is the ``keccak256`` of the value, and used for types such as
+ *  arrays, tuples, bytes and strings.
+ */
 export class Indexed {
+    /**
+     *  The ``keccak256`` of the value logged.
+     */
     hash;
+    /**
+     *  @_ignore:
+     */
     _isIndexed;
+    /**
+     *  Returns ``true`` if %%value%% is an **Indexed**.
+     *
+     *  This provides a Type Guard for property access.
+     */
     static isIndexed(value) {
         return !!(value && value._isIndexed);
     }
+    /**
+     *  @_ignore:
+     */
     constructor(hash) {
         defineProperties(this, { hash, _isIndexed: true });
     }

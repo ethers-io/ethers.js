@@ -2,7 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.ContractUnknownEventPayload = exports.ContractEventPayload = exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
 /**
- *  About contracts...
+ *  A **Contract** object is a meta-class (a class whose definition is
+ *  defined at runtime), which communicates with a deployed smart contract
+ *  on the blockchain and provides a simple JavaScript interface to call
+ *  methods, send transaction, query historic logs and listen for its events.
  *
  *  @_section: api/contract:Contracts  [about-contracts]
  */

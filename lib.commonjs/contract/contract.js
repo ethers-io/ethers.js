@@ -474,12 +474,43 @@ async function emit(contract, event, args, payloadFunc) {
 }
 const passProperties = ["then"];
 class BaseContract {
+    /**
+     *  The target to connect to.
+     *
+     *  This can be an address, ENS name or any [[Addressable]], such as
+     *  another contract. To get the resovled address, use the ``getAddress``
+     *  method.
+     */
     target;
+    /**
+     *  The contract Interface.
+     */
     interface;
+    /**
+     *  The connected runner. This is generally a [[Provider]] or a
+     *  [[Signer]], which dictates what operations are supported.
+     *
+     *  For example, a **Contract** connected to a [[Provider]] may
+     *  only execute read-only operations.
+     */
     runner;
+    /**
+     *  All the Events available on this contract.
+     */
     filters;
+    /**
+     *  @_ignore:
+     */
     [internal];
+    /**
+     *  The fallback or receive function if any.
+     */
     fallback;
+    /**
+     *  Creates a new contract connected to %%target%% with the %%abi%% and
+     *  optionally connected to a %%runner%% to perform operations on behalf
+     *  of.
+     */
     constructor(target, abi, runner, _deployTx) {
         (0, index_js_3.assertArgument)(typeof (target) === "string" || (0, index_js_2.isAddressable)(target), "invalid value for Contract target", "target", target);
         if (runner == null) {
@@ -578,10 +609,20 @@ class BaseContract {
             }
         });
     }
+    /**
+     *  Return a new Contract instance with the same target and ABI, but
+     *  a different %%runner%%.
+     */
     connect(runner) {
         return new BaseContract(this.target, this.interface, runner);
     }
+    /**
+     *  Return the resolved address of this Contract.
+     */
     async getAddress() { return await getInternal(this).addrPromise; }
+    /**
+     *  Return the dedployed bytecode or null if no bytecode is found.
+     */
     async getDeployedCode() {
         const provider = getProvider(this.runner);
         (0, index_js_3.assert)(provider, "runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "getDeployedCode" });
@@ -591,6 +632,10 @@ class BaseContract {
         }
         return code;
     }
+    /**
+     *  Resolve to this Contract once the bytecode has been deployed, or
+     *  resolve immediately if already deployed.
+     */
     async waitForDeployment() {
         // We have the deployement transaction; just use that (throws if deployement fails)
         const deployTx = this.deploymentTransaction();
@@ -622,9 +667,20 @@ class BaseContract {
             checkCode();
         });
     }
+    /**
+     *  Return the transaction used to deploy this contract.
+     *
+     *  This is only available if this instance was returned from a
+     *  [[ContractFactory]].
+     */
     deploymentTransaction() {
         return getInternal(this).deployTx;
     }
+    /**
+     *  Return the function for a given name. This is useful when a contract
+     *  method name conflicts with a JavaScript name such as ``prototype`` or
+     *  when using a Contract programatically.
+     */
     getFunction(key) {
         if (typeof (key) !== "string") {
             key = key.format();
@@ -632,16 +688,29 @@ class BaseContract {
         const func = buildWrappedMethod(this, key);
         return func;
     }
+    /**
+     *  Return the event for a given name. This is useful when a contract
+     *  event name conflicts with a JavaScript name such as ``prototype`` or
+     *  when using a Contract programatically.
+     */
     getEvent(key) {
         if (typeof (key) !== "string") {
             key = key.format();
         }
         return buildWrappedEvent(this, key);
     }
+    /**
+     *  @_ignore:
+     */
     async queryTransaction(hash) {
         // Is this useful?
         throw new Error("@TODO");
     }
+    /**
+     *  Provide historic access to event data for %%event%% in the range
+     *  %%fromBlock%% (default: ``0``) to %%toBlock%% (default: ``"latest"``)
+     *  inclusive.
+     */
     async queryFilter(event, fromBlock, toBlock) {
         if (fromBlock == null) {
             fromBlock = 0;
@@ -671,21 +740,37 @@ class BaseContract {
             }
         });
     }
+    /**
+     *  Add an event %%listener%% for the %%event%%.
+     */
     async on(event, listener) {
         const sub = await getSub(this, "on", event);
         sub.listeners.push({ listener, once: false });
         sub.start();
         return this;
     }
+    /**
+     *  Add an event %%listener%% for the %%event%%, but remove the listener
+     *  after it is fired once.
+     */
     async once(event, listener) {
         const sub = await getSub(this, "once", event);
         sub.listeners.push({ listener, once: true });
         sub.start();
         return this;
     }
+    /**
+     *  Emit an %%event%% calling all listeners with %%args%%.
+     *
+     *  Resolves to ``true`` if any listeners were called.
+     */
     async emit(event, ...args) {
         return await emit(this, event, args, null);
     }
+    /**
+     *  Resolves to the number of listeners of %%event%% or the total number
+     *  of listeners if unspecified.
+     */
     async listenerCount(event) {
         if (event) {
             const sub = await hasSub(this, event);
@@ -701,6 +786,10 @@ class BaseContract {
         }
         return total;
     }
+    /**
+     *  Resolves to the listeners subscribed to %%event%% or all listeners
+     *  if unspecified.
+     */
     async listeners(event) {
         if (event) {
             const sub = await hasSub(this, event);
@@ -716,6 +805,10 @@ class BaseContract {
         }
         return result;
     }
+    /**
+     *  Remove the %%listener%% from the listeners for %%event%% or remove
+     *  all listeners if unspecified.
+     */
     async off(event, listener) {
         const sub = await hasSub(this, event);
         if (!sub) {
@@ -733,6 +826,10 @@ class BaseContract {
         }
         return this;
     }
+    /**
+     *  Remove all the listeners for %%event%% or remove all listeners if
+     *  unspecified.
+     */
     async removeAllListeners(event) {
         if (event) {
             const sub = await hasSub(this, event);
@@ -751,14 +848,21 @@ class BaseContract {
         }
         return this;
     }
-    // Alias for "on"
+    /**
+     *  Alias for [on].
+     */
     async addListener(event, listener) {
         return await this.on(event, listener);
     }
-    // Alias for "off"
+    /**
+     *  Alias for [off].
+     */
     async removeListener(event, listener) {
         return await this.off(event, listener);
     }
+    /**
+     *  Create a new Class for the %%abi%%.
+     */
     static buildClass(abi) {
         class CustomContract extends BaseContract {
             constructor(address, runner = null) {
@@ -768,6 +872,9 @@ class BaseContract {
         return CustomContract;
     }
     ;
+    /**
+     *  Create a new BaseContract with a specified Interface.
+     */
     static from(target, abi, runner) {
         if (runner == null) {
             runner = null;
@@ -780,6 +887,9 @@ exports.BaseContract = BaseContract;
 function _ContractBase() {
     return BaseContract;
 }
+/**
+ *  A [[BaseContract]] with no type guards on its methods or events.
+ */
 class Contract extends _ContractBase() {
 }
 exports.Contract = Contract;

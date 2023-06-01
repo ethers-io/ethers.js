@@ -151,7 +151,7 @@ const u64 = {
 /**
  *  The current version of Ethers.
  */
-const version = "6.4.0";
+const version = "6.4.1";
 
 /**
  *  Property helper functions.
@@ -196,7 +196,11 @@ function defineProperties(target, values, types) {
 }
 
 /**
- *  About Errors.
+ *  All errors in ethers include properties to ensure they are both
+ *  human-readable (i.e. ``.message``) and machine-readable (i.e. ``.code``).
+ *
+ *  The [[isError]] function can be used to check the error ``code`` and
+ *  provide a type guard for the properties present on that error interface.
  *
  *  @_section: api/utils/errors:Errors  [about-errors]
  */
@@ -968,7 +972,7 @@ class Wordlist {
  *  based on ASCII-7 small.
  *
  *  If necessary, there are tools within the ``generation/`` folder
- *  to create these necessary data.
+ *  to create the necessary data.
  */
 class WordlistOwl extends Wordlist {
     #data;
@@ -983,7 +987,13 @@ class WordlistOwl extends Wordlist {
         this.#checksum = checksum;
         this.#words = null;
     }
+    /**
+     *  The OWL-encoded data.
+     */
     get _data() { return this.#data; }
+    /**
+     *  Decode all the words for the wordlist.
+     */
     _decodeWords() {
         return decodeOwl(this.#data);
     }
@@ -1109,15 +1119,25 @@ function decodeOwlA(data, accents) {
  *  based on latin-1 small.
  *
  *  If necessary, there are tools within the ``generation/`` folder
- *  to create these necessary data.
+ *  to create the necessary data.
  */
 class WordlistOwlA extends WordlistOwl {
     #accent;
+    /**
+     *  Creates a new Wordlist for %%locale%% using the OWLA %%data%%
+     *  and %%accent%% data and validated against the %%checksum%%.
+     */
     constructor(locale, data, accent, checksum) {
         super(locale, data, checksum);
         this.#accent = accent;
     }
+    /**
+     *  The OWLA-encoded accent data.
+     */
     get _accent() { return this.#accent; }
+    /**
+     *  Decode all the words for the wordlist.
+     */
     _decodeWords() {
         return decodeOwlA(this._data, this._accent);
     }

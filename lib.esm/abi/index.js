@@ -1,5 +1,9 @@
 /**
- *  Explain about ABI here...
+ *  The Application Binary Interface (ABI) describes how method input
+ *  parameters should be encoded, their results decoded, and how to
+ *  decode events and errors.
+ *
+ *  See [About ABIs](docs-abi) for more details how they are used.
  *
  *  @_section api/abi:Application Binary Interface  [about-abi]
  *  @_navTitle: ABI

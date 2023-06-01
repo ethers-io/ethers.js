@@ -1,5 +1,6 @@
 /**
- *  About networks
+ *  A **Network** encapsulates the various properties required to
+ *  interact with a specific chain.
  *
  *  @_subsection: api/providers:Networks  [networks]
  */
@@ -58,15 +59,25 @@ export class CcipPreflightPlugin extends NetworkPlugin {
 */
 const Networks = new Map();
 // @TODO: Add a _ethersNetworkObj variable to better detect network ovjects
+/**
+ *  A **Network** provides access to a chain's properties and allows
+ *  for plug-ins to extend functionality.
+ */
 export class Network {
     #name;
     #chainId;
     #plugins;
+    /**
+     *  Creates a new **Network** for %%name%% and %%chainId%%.
+     */
     constructor(name, chainId) {
         this.#name = name;
         this.#chainId = getBigInt(chainId);
         this.#plugins = new Map();
     }
+    /**
+     *  Returns a JSON-compatible representation of a Network.
+     */
     toJSON() {
         return { name: this.name, chainId: String(this.chainId) };
     }

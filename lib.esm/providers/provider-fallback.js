@@ -1,5 +1,6 @@
 /**
- *  Explain all the nitty-gritty about the **FallbackProvider**.
+ *  A **FallbackProvider** providers resiliance, security and performatnce
+ *  in a way that is customizable and configurable.
  *
  *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
  */
@@ -199,16 +200,36 @@ function getFuzzyMode(quorum, results) {
     return bestResult;
 }
 /**
- *  A Fallback Provider.
+ *  A **FallbackProvider** manages several [[Providers]] providing
+ *  resiliance by switching between slow or misbehaving nodes, security
+ *  by requiring multiple backends to aggree and performance by allowing
+ *  faster backends to respond earlier.
  *
  */
 export class FallbackProvider extends AbstractProvider {
+    /**
+     *  The number of backends that must agree on a value before it is
+     *  accpeted.
+     */
     quorum;
+    /**
+     *  @_ignore:
+     */
     eventQuorum;
+    /**
+     *  @_ignore:
+     */
     eventWorkers;
     #configs;
     #height;
     #initialSyncPromise;
+    /**
+     *  Creates a new **FallbackProvider** with %%providers%% connected to
+     *  %%network%%.
+     *
+     *  If a [[Provider]] is included in %%providers%%, defaults are used
+     *  for the configuration.
+     */
     constructor(providers, network) {
         super(network);
         this.#configs = providers.map((p) => {
@@ -244,6 +265,9 @@ export class FallbackProvider extends AbstractProvider {
     //_getSubscriber(sub: Subscription): Subscriber {
     //    throw new Error("@TODO");
     //}
+    /**
+     *  Transforms a %%req%% into the correct method call on %%provider%%.
+     */
     async _translatePerform(provider, req) {
         switch (req.method) {
             case "broadcastTransaction":

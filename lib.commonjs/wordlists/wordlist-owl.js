@@ -17,7 +17,7 @@ const wordlist_js_1 = require("./wordlist.js");
  *  based on ASCII-7 small.
  *
  *  If necessary, there are tools within the ``generation/`` folder
- *  to create these necessary data.
+ *  to create the necessary data.
  */
 class WordlistOwl extends wordlist_js_1.Wordlist {
     #data;
@@ -32,7 +32,13 @@ class WordlistOwl extends wordlist_js_1.Wordlist {
         this.#checksum = checksum;
         this.#words = null;
     }
+    /**
+     *  The OWL-encoded data.
+     */
     get _data() { return this.#data; }
+    /**
+     *  Decode all the words for the wordlist.
+     */
     _decodeWords() {
         return (0, decode_owl_js_1.decodeOwl)(this.#data);
     }

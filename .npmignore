@@ -28,3 +28,4 @@ testcases/**
 node_modules/**
 misc/**
 **/*.tgz
+dist/*.gz

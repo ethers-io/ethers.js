@@ -1,5 +1,6 @@
 /**
- *  About networks
+ *  A **Network** encapsulates the various properties required to
+ *  interact with a specific chain.
  *
  *  @_subsection: api/providers:Networks  [networks]
  */
@@ -19,9 +20,19 @@ export type Networkish = Network | number | bigint | string | {
     ensAddress?: string;
     ensNetwork?: number;
 };
+/**
+ *  A **Network** provides access to a chain's properties and allows
+ *  for plug-ins to extend functionality.
+ */
 export declare class Network {
     #private;
+    /**
+     *  Creates a new **Network** for %%name%% and %%chainId%%.
+     */
     constructor(name: string, chainId: BigNumberish);
+    /**
+     *  Returns a JSON-compatible representation of a Network.
+     */
     toJSON(): any;
     /**
      *  The network common name.

@@ -96,6 +96,10 @@ function getBigInt(value, name) {
     (0, errors_js_1.assertArgument)(false, "invalid BigNumberish value", name || "value", value);
 }
 exports.getBigInt = getBigInt;
+/**
+ *  Returns %%value%% as a bigint, validating it is valid as a bigint
+ *  value and that it is positive.
+ */
 function getUint(value, name) {
     const result = getBigInt(value, name);
     (0, errors_js_1.assert)(result >= BN_0, "unsigned value cannot be negative", "NUMERIC_FAULT", {

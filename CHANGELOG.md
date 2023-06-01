@@ -3,6 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.4.1 (2023-06-01 17:52)
+--------------------------------
+
+  - Fixed AbstractProvider lookupAddress bug ([#4086](https://github.com/ethers-io/ethers.js/issues/4086); [15ed2f5](https://github.com/ethers-io/ethers.js/commit/15ed2f5b32084527961332481c9442a313036a01)).
+  - Fix FixedNumber comparison bug ([#4112](https://github.com/ethers-io/ethers.js/issues/4112); [d8e9586](https://github.com/ethers-io/ethers.js/commit/d8e9586044e888e424b5ead0f6e01f88140dba8a)).
+
 ethers/v6.4.0 (2023-05-18 17:28)
 --------------------------------
 

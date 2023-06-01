@@ -4,8 +4,17 @@ exports.BrowserProvider = void 0;
 const index_js_1 = require("../utils/index.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 ;
+/**
+ *  A **BrowserProvider** is intended to wrap an injected provider which
+ *  adheres to the [[link-eip-1193]] standard, which most (if not all)
+ *  currently do.
+ */
 class BrowserProvider extends provider_jsonrpc_js_1.JsonRpcApiPollingProvider {
     #request;
+    /**
+     *  Connnect to the %%ethereum%% provider, optionally forcing the
+     *  %%network%%.
+     */
     constructor(ethereum, network) {
         super(network, { batchMaxCount: 1 });
         this.#request = async (method, params) => {
@@ -57,6 +66,9 @@ class BrowserProvider extends provider_jsonrpc_js_1.JsonRpcApiPollingProvider {
         }
         return super.getRpcError(payload, error);
     }
+    /**
+     *  Resolves to ``true`` if the provider manages the %%address%%.
+     */
     async hasSigner(address) {
         if (address == null) {
             address = 0;

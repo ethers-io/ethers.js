@@ -1,5 +1,15 @@
 import { WebSocket as _WebSocket } from "./ws.js"; /*-browser*/
 import { SocketProvider } from "./provider-socket.js";
+/**
+ *  A JSON-RPC provider which is backed by a WebSocket.
+ *
+ *  WebSockets are often preferred because they retain a live connection
+ *  to a server, which permits more instant access to events.
+ *
+ *  However, this incurs higher server infrasturture costs, so additional
+ *  resources may be required to host your own WebSocket nodes and many
+ *  third-party services charge additional fees for WebSocket endpoints.
+ */
 export class WebSocketProvider extends SocketProvider {
     #connect;
     #websocket;

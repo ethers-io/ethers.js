@@ -2,6 +2,11 @@ import { Signature } from "../crypto/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { SignatureLike } from "../crypto/index.js";
 import type { AccessList, AccessListish } from "./index.js";
+/**
+ *  A **TransactionLike** is an object which is appropriate as a loose
+ *  input for many operations which will populate missing properties of
+ *  a transaction.
+ */
 export interface TransactionLike<A = string> {
     /**
      *  The type.

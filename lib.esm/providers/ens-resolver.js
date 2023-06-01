@@ -1,5 +1,6 @@
 /**
- *  About ENS Resolver
+ *  ENS is a service which allows easy-to-remember names to map to
+ *  network addresses.
  *
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
  */
@@ -27,28 +28,48 @@ function getIpfsLink(link) {
  *  A provider plugin super-class for processing multicoin address types.
  */
 export class MulticoinProviderPlugin {
+    /**
+     *  The name.
+     */
     name;
+    /**
+     *  Creates a new **MulticoinProviderPluing** for %%name%%.
+     */
     constructor(name) {
         defineProperties(this, { name });
     }
     connect(proivder) {
         return this;
     }
+    /**
+     *  Returns ``true`` if %%coinType%% is supported by this plugin.
+     */
     supportsCoinType(coinType) {
         return false;
     }
+    /**
+     *  Resovles to the encoded %%address%% for %%coinType%%.
+     */
     async encodeAddress(coinType, address) {
         throw new Error("unsupported coin");
     }
+    /**
+     *  Resovles to the decoded %%data%% for %%coinType%%.
+     */
     async decodeAddress(coinType, data) {
         throw new Error("unsupported coin");
     }
 }
 const BasicMulticoinPluginId = "org.ethers.plugins.provider.BasicMulticoin";
 /**
- *  A basic multicoin provider plugin.
+ *  A **BasicMulticoinProviderPlugin** provides service for common
+ *  coin types, which do not require additional libraries to encode or
+ *  decode.
  */
 export class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
+    /**
+     *  Creates a new **BasicMulticoinProviderPlugin**.
+     */
     constructor() {
         super(BasicMulticoinPluginId);
     }

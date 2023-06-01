@@ -13,9 +13,23 @@ import type { JsonRpcApiProvider } from "./provider-jsonrpc.js";
  */
 export declare class FilterIdSubscriber implements Subscriber {
     #private;
+    /**
+     *  Creates a new **FilterIdSubscriber** which will used [[_subscribe]]
+     *  and [[_emitResults]] to setup the subscription and provide the event
+     *  to the %%provider%%.
+     */
     constructor(provider: JsonRpcApiProvider);
+    /**
+     *  Sub-classes **must** override this to begin the subscription.
+     */
     _subscribe(provider: JsonRpcApiProvider): Promise<string>;
+    /**
+     *  Sub-classes **must** override this handle the events.
+     */
     _emitResults(provider: AbstractProvider, result: Array<any>): Promise<void>;
+    /**
+     *  Sub-classes **must** override this handle recovery on errors.
+     */
     _recover(provider: AbstractProvider): Subscriber;
     start(): void;
     stop(): void;
@@ -29,6 +43,10 @@ export declare class FilterIdSubscriber implements Subscriber {
  */
 export declare class FilterIdEventSubscriber extends FilterIdSubscriber {
     #private;
+    /**
+     *  Creates a new **FilterIdEventSubscriber** attached to %%provider%%
+     *  listening for %%filter%%.
+     */
     constructor(provider: JsonRpcApiProvider, filter: EventFilter);
     _recover(provider: AbstractProvider): Subscriber;
     _subscribe(provider: JsonRpcApiProvider): Promise<string>;

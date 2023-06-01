@@ -1,6 +1,8 @@
 "use strict";
 /**
- *  About Subclassing the Provider...
+ *  The available providers should suffice for most developers purposes,
+ *  but the [[AbstractProvider]] class has many features which enable
+ *  sub-classing it for specific purposes.
  *
  *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
  */
@@ -53,8 +55,19 @@ function getTag(prefix, value) {
         return v;
     });
 }
+/**
+ *  An **UnmanagedSubscriber** is useful for events which do not require
+ *  any additional management, such as ``"debug"`` which only requires
+ *  emit in synchronous event loop triggered calls.
+ */
 class UnmanagedSubscriber {
+    /**
+     *  The name fof the event.
+     */
     name;
+    /**
+     *  Create a new UnmanagedSubscriber with %%name%%.
+     */
     constructor(name) { (0, index_js_6.defineProperties)(this, { name }); }
     start() { }
     stop() { }
@@ -140,6 +153,12 @@ async function getSubscription(_event, provider) {
     (0, index_js_6.assertArgument)(false, "unknown ProviderEvent", "event", _event);
 }
 function getTime() { return (new Date()).getTime(); }
+/**
+ *  An **AbstractProvider** provides a base class for other sub-classes to
+ *  implement the [[Provider]] API by normalizing input arguments and
+ *  formatting output results as well as tracking events for consistent
+ *  behaviour on an eventually-consistent network.
+ */
 class AbstractProvider {
     #subs;
     #plugins;
@@ -153,8 +172,11 @@ class AbstractProvider {
     #nextTimer;
     #timers;
     #disableCcipRead;
-    // @TODO: This should be a () => Promise<Network> so network can be
-    // done when needed; or rely entirely on _detectNetwork?
+    /**
+     *  Create a new **AbstractProvider** connected to %%network%%, or
+     *  use the various network detection capabilities to discover the
+     *  [[Network]] if necessary.
+     */
     constructor(_network) {
         if (_network === "any") {
             this.#anyNetwork = true;
@@ -179,10 +201,20 @@ class AbstractProvider {
         this.#timers = new Map();
         this.#disableCcipRead = false;
     }
+    /**
+     *  Returns ``this``, to allow an **AbstractProvider** to implement
+     *  the [[ContractRunner]] interface.
+     */
     get provider() { return this; }
+    /**
+     *  Returns all the registered plug-ins.
+     */
     get plugins() {
         return Array.from(this.#plugins.values());
     }
+    /**
+     *  Attach a new plug-in.
+     */
     attachPlugin(plugin) {
         if (this.#plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${plugin.name} `);
@@ -190,9 +222,16 @@ class AbstractProvider {
         this.#plugins.set(plugin.name, plugin.connect(this));
         return this;
     }
+    /**
+     *  Get a plugin by name.
+     */
     getPlugin(name) {
         return (this.#plugins.get(name)) || null;
     }
+    /**
+     *  Prevent any CCIP-read operation, regardless of whether requested
+     *  in a [[call]] using ``enableCcipRead``.
+     */
     get disableCcipRead() { return this.#disableCcipRead; }
     set disableCcipRead(value) { this.#disableCcipRead = !!value; }
     // Shares multiple identical requests made during the same 250ms
@@ -211,6 +250,9 @@ class AbstractProvider {
         }
         return await perform;
     }
+    /**
+     *  Resolves to the data for executing the CCIP-read operations.
+     */
     async ccipReadFetch(tx, calldata, urls) {
         if (this.disableCcipRead || urls.length === 0 || tx.to == null) {
             return null;
@@ -257,25 +299,55 @@ class AbstractProvider {
             transaction: tx, info: { urls, errorMessages }
         });
     }
+    /**
+     *  Provides the opportunity for a sub-class to wrap a block before
+     *  returning it, to add additional properties or an alternate
+     *  sub-class of [[Block]].
+     */
     _wrapBlock(value, network) {
         return new provider_js_1.Block((0, format_js_1.formatBlock)(value), this);
     }
+    /**
+     *  Provides the opportunity for a sub-class to wrap a log before
+     *  returning it, to add additional properties or an alternate
+     *  sub-class of [[Log]].
+     */
     _wrapLog(value, network) {
         return new provider_js_1.Log((0, format_js_1.formatLog)(value), this);
     }
+    /**
+     *  Provides the opportunity for a sub-class to wrap a transaction
+     *  receipt before returning it, to add additional properties or an
+     *  alternate sub-class of [[TransactionReceipt]].
+     */
     _wrapTransactionReceipt(value, network) {
         return new provider_js_1.TransactionReceipt((0, format_js_1.formatTransactionReceipt)(value), this);
     }
+    /**
+     *  Provides the opportunity for a sub-class to wrap a transaction
+     *  response before returning it, to add additional properties or an
+     *  alternate sub-class of [[TransactionResponse]].
+     */
     _wrapTransactionResponse(tx, network) {
         return new provider_js_1.TransactionResponse((0, format_js_1.formatTransactionResponse)(tx), this);
     }
+    /**
+     *  Resolves to the Network, forcing a network detection using whatever
+     *  technique the sub-class requires.
+     *
+     *  Sub-classes **must** override this.
+     */
     _detectNetwork() {
         (0, index_js_6.assert)(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
             operation: "_detectNetwork"
         });
     }
-    // Sub-classes should override this and handle PerformActionRequest requests, calling
-    // the super for any unhandled actions.
+    /**
+     *  Sub-classes should use this to perform all built-in operations. All
+     *  methods sanitizes and normalizes the values passed into this.
+     *
+     *  Sub-classes **must** override this.
+     */
     async _perform(req) {
         (0, index_js_6.assert)(false, `unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
             operation: req.method,
@@ -290,9 +362,18 @@ class AbstractProvider {
         }
         return blockNumber;
     }
+    /**
+     *  Returns or resolves to the address for %%address%%, resolving ENS
+     *  names and [[Addressable]] objects and returning if already an
+     *  address.
+     */
     _getAddress(address) {
         return (0, index_js_1.resolveAddress)(address, this);
     }
+    /**
+     *  Returns or resolves to a valid block tag for %%blockTag%%, resolving
+     *  negative values and returning if already a valid block tag.
+     */
     _getBlockTag(blockTag) {
         if (blockTag == null) {
             return "latest";
@@ -326,6 +407,11 @@ class AbstractProvider {
         }
         (0, index_js_6.assertArgument)(false, "invalid blockTag", "blockTag", blockTag);
     }
+    /**
+     *  Returns or resolves to a filter for %%filter%%, resolving any ENS
+     *  names or [[Addressable]] object and returning if already a valid
+     *  filter.
+     */
     _getFilter(filter) {
         // Create a canonical representation of the topics
         const topics = (filter.topics || []).map((t) => {
@@ -401,6 +487,11 @@ class AbstractProvider {
         }
         return resolve(address, fromBlock, toBlock);
     }
+    /**
+     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  any ENS names or [[Addressable]] and returning if already a valid
+     *  transaction.
+     */
     _getTransactionRequest(_request) {
         const request = (0, provider_js_1.copyRequest)(_request);
         const promises = [];
@@ -730,7 +821,7 @@ class AbstractProvider {
                 "function resolver(bytes32) view returns (address)"
             ], this);
             const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === index_js_2.ZeroHash) {
+            if (resolver == null || resolver === index_js_2.ZeroAddress) {
                 return null;
             }
             const resolverContract = new index_js_3.Contract(resolver, [
@@ -802,6 +893,9 @@ class AbstractProvider {
             operation: "waitForBlock"
         });
     }
+    /**
+     *  Clear a timer created using the [[_setTimeout]] method.
+     */
     _clearTimeout(timerId) {
         const timer = this.#timers.get(timerId);
         if (!timer) {
@@ -812,6 +906,14 @@ class AbstractProvider {
         }
         this.#timers.delete(timerId);
     }
+    /**
+     *  Create a timer that will execute %%func%% after at least %%timeout%%
+     *  (in ms). If %%timeout%% is unspecified, then %%func%% will execute
+     *  in the next event loop.
+     *
+     *  [Pausing](AbstractProvider-paused) the provider will pause any
+     *  associated timers.
+     */
     _setTimeout(_func, timeout) {
         if (timeout == null) {
             timeout = 0;
@@ -830,13 +932,18 @@ class AbstractProvider {
         }
         return timerId;
     }
+    /**
+     *  Perform %%func%% on each subscriber.
+     */
     _forEachSubscriber(func) {
         for (const sub of this.#subs.values()) {
             func(sub.subscriber);
         }
     }
-    // Event API; sub-classes should override this; any supported
-    // event filter will have been munged into an EventFilter
+    /**
+     *  Sub-classes may override this to customize subscription
+     *  implementations.
+     */
     _getSubscriber(sub) {
         switch (sub.type) {
             case "debug":
@@ -854,6 +961,15 @@ class AbstractProvider {
         }
         throw new Error(`unsupported event: ${sub.type}`);
     }
+    /**
+     *  If a [[Subscriber]] fails and needs to replace itself, this
+     *  method may be used.
+     *
+     *  For example, this is used for providers when using the
+     *  ``eth_getFilterChanges`` method, which can return null if state
+     *  filters are not supported by the backend, allowing the Subscriber
+     *  to swap in a [[PollingEventSubscriber]].
+     */
     _recoverSubscriber(oldSub, newSub) {
         for (const sub of this.#subs.values()) {
             if (sub.subscriber === oldSub) {
@@ -1016,8 +1132,12 @@ class AbstractProvider {
     async removeListener(event, listener) {
         return this.off(event, listener);
     }
-    // Sub-classes should override this to shutdown any sockets, etc.
-    // but MUST call this super.shutdown.
+    /**
+     *  Sub-classes may use this to shutdown any sockets or release their
+     *  resources.
+     *
+     *  Sub-classes **must** call ``super.destroy()``.
+     */
     destroy() {
         // Stop all listeners
         this.removeAllListeners();
@@ -1026,6 +1146,17 @@ class AbstractProvider {
             this._clearTimeout(timerId);
         }
     }
+    /**
+     *  Whether the provider is currently paused.
+     *
+     *  A paused provider will not emit any events, and generally should
+     *  not make any requests to the network, but that is up to sub-classes
+     *  to manage.
+     *
+     *  Setting ``paused = true`` is identical to calling ``.pause(false)``,
+     *  which will buffer any events that occur while paused until the
+     *  provider is unpaused.
+     */
     get paused() { return (this.#pausedState != null); }
     set paused(pause) {
         if (!!pause === this.paused) {
@@ -1038,6 +1169,11 @@ class AbstractProvider {
             this.pause(false);
         }
     }
+    /**
+     *  Pause the provider. If %%dropWhilePaused%%, any events that occur
+     *  while paused are dropped, otherwise all events will be emitted once
+     *  the provider is unpaused.
+     */
     pause(dropWhilePaused) {
         this.#lastBlockNumber = -1;
         if (this.#pausedState != null) {
@@ -1059,6 +1195,9 @@ class AbstractProvider {
             timer.time = getTime() - timer.time;
         }
     }
+    /**
+     *  Resume the provider.
+     */
     resume() {
         if (this.#pausedState == null) {
             return;

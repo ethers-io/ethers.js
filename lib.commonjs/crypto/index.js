@@ -29,6 +29,10 @@ var signing_key_js_1 = require("./signing-key.js");
 Object.defineProperty(exports, "SigningKey", { enumerable: true, get: function () { return signing_key_js_1.SigningKey; } });
 var signature_js_1 = require("./signature.js");
 Object.defineProperty(exports, "Signature", { enumerable: true, get: function () { return signature_js_1.Signature; } });
+/**
+ *  Once called, prevents any future change to the underlying cryptographic
+ *  primitives using the ``.register`` feature for hooks.
+ */
 function lock() {
     hmac_js_1.computeHmac.lock();
     keccak_js_1.keccak256.lock();

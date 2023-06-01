@@ -1,9 +1,20 @@
 import { defineProperties } from "../utils/index.js";
 import { AbstractSigner } from "./abstract-signer.js";
+/**
+ *  A **NonceManager** wraps another [[Signer]] and automatically manages
+ *  the nonce, ensuring serialized and sequential nonces are used during
+ *  transaction.
+ */
 export class NonceManager extends AbstractSigner {
+    /**
+     *  The Signer being managed.
+     */
     signer;
     #noncePromise;
     #delta;
+    /**
+     *  Creates a new **NonceManager** to manage %%signer%%.
+     */
     constructor(signer) {
         super(signer.provider);
         defineProperties(this, { signer });
@@ -26,9 +37,17 @@ export class NonceManager extends AbstractSigner {
         }
         return super.getNonce(blockTag);
     }
+    /**
+     *  Manually increment the nonce. This may be useful when managng
+     *  offline transactions.
+     */
     increment() {
         this.#delta++;
     }
+    /**
+     *  Resets the nonce, causing the **NonceManager** to reload the current
+     *  nonce from the blockchain on the next transaction.
+     */
     reset() {
         this.#delta = 0;
         this.#noncePromise = null;

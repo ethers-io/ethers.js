@@ -1,6 +1,12 @@
 "use strict";
 /**
- *  About frgaments...
+ *  A fragment is a single item from an ABI, which may represent any of:
+ *
+ *  - [Functions](FunctionFragment)
+ *  - [Events](EventFragment)
+ *  - [Constructors](ConstructorFragment)
+ *  - Custom [Errors](ErrorFragment)
+ *  - [Fallback or Receive](FallbackFragment) functions
  *
  *  @_subsection api/abi/abi-coder:Fragments  [about-fragments]
  */
@@ -338,7 +344,7 @@ const FallbackFragmentInternal = "_FallbackInternal";
 const FunctionFragmentInternal = "_FunctionInternal";
 const StructFragmentInternal = "_StructInternal";
 /**
- *  Each input and output of a [[Fragment]] is an Array of **PAramType**.
+ *  Each input and output of a [[Fragment]] is an Array of **ParamType**.
  */
 class ParamType {
     /**
@@ -462,15 +468,6 @@ class ParamType {
         }
         return result;
     }
-    /*
-     *  Returns true if %%value%% is an Array type.
-     *
-     *  This provides a type gaurd ensuring that the
-     *  [[arrayChildren]] and [[arrayLength]] are non-null.
-     */
-    //static isArray(value: any): value is { arrayChildren: ParamType, arrayLength: number } {
-    //    return value && (value.baseType === "array")
-    //}
     /**
      *  Returns true if %%this%% is an Array type.
      *
@@ -825,6 +822,9 @@ class ErrorFragment extends NamedFragment {
     get selector() {
         return (0, index_js_2.id)(this.format("sighash")).substring(0, 10);
     }
+    /**
+     *  Returns a string representation of this fragment as %%format%%.
+     */
     format(format) {
         if (format == null) {
             format = "sighash";
@@ -843,6 +843,9 @@ class ErrorFragment extends NamedFragment {
         result.push(this.name + joinParams(format, this.inputs));
         return result.join(" ");
     }
+    /**
+     *  Returns a new **ErrorFragment** for %%obj%%.
+     */
     static from(obj) {
         if (ErrorFragment.isFragment(obj)) {
             return obj;
@@ -858,6 +861,10 @@ class ErrorFragment extends NamedFragment {
         }
         return new ErrorFragment(_guard, obj.name, obj.inputs ? obj.inputs.map(ParamType.from) : []);
     }
+    /**
+     *  Returns ``true`` and provides a type guard if %%value%% is an
+     *  **ErrorFragment**.
+     */
     static isFragment(value) {
         return (value && value[internal] === ErrorFragmentInternal);
     }
@@ -867,6 +874,9 @@ exports.ErrorFragment = ErrorFragment;
  *  A Fragment which represents an Event.
  */
 class EventFragment extends NamedFragment {
+    /**
+     *  Whether this event is anonymous.
+     */
     anonymous;
     /**
      *  @private
@@ -882,6 +892,9 @@ class EventFragment extends NamedFragment {
     get topicHash() {
         return (0, index_js_2.id)(this.format("sighash"));
     }
+    /**
+     *  Returns a string representation of this event as %%format%%.
+     */
     format(format) {
         if (format == null) {
             format = "sighash";
@@ -904,11 +917,17 @@ class EventFragment extends NamedFragment {
         }
         return result.join(" ");
     }
+    /**
+     *  Return the topic hash for an event with %%name%% and %%params%%.
+     */
     static getTopicHash(name, params) {
         params = (params || []).map((p) => ParamType.from(p));
         const fragment = new EventFragment(_guard, name, params, false);
         return fragment.topicHash;
     }
+    /**
+     *  Returns a new **EventFragment** for %%obj%%.
+     */
     static from(obj) {
         if (EventFragment.isFragment(obj)) {
             return obj;
@@ -925,6 +944,10 @@ class EventFragment extends NamedFragment {
         }
         return new EventFragment(_guard, obj.name, obj.inputs ? obj.inputs.map((p) => ParamType.from(p, true)) : [], !!obj.anonymous);
     }
+    /**
+     *  Returns ``true`` and provides a type guard if %%value%% is an
+     *  **EventFragment**.
+     */
     static isFragment(value) {
         return (value && value[internal] === EventFragmentInternal);
     }
@@ -934,7 +957,13 @@ exports.EventFragment = EventFragment;
  *  A Fragment which represents a constructor.
  */
 class ConstructorFragment extends Fragment {
+    /**
+     *  Whether the constructor can receive an endowment.
+     */
     payable;
+    /**
+     *  The recommended gas limit for deployment or ``null``.
+     */
     gas;
     /**
      *  @private
@@ -944,6 +973,9 @@ class ConstructorFragment extends Fragment {
         Object.defineProperty(this, internal, { value: ConstructorFragmentInternal });
         (0, index_js_1.defineProperties)(this, { payable, gas });
     }
+    /**
+     *  Returns a string representation of this constructor as %%format%%.
+     */
     format(format) {
         (0, index_js_1.assert)(format != null && format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
         if (format === "json") {
@@ -962,6 +994,9 @@ class ConstructorFragment extends Fragment {
         }
         return result.join(" ");
     }
+    /**
+     *  Returns a new **ConstructorFragment** for %%obj%%.
+     */
     static from(obj) {
         if (ConstructorFragment.isFragment(obj)) {
             return obj;
@@ -979,6 +1014,10 @@ class ConstructorFragment extends Fragment {
         }
         return new ConstructorFragment(_guard, "constructor", obj.inputs ? obj.inputs.map(ParamType.from) : [], !!obj.payable, (obj.gas != null) ? obj.gas : null);
     }
+    /**
+     *  Returns ``true`` and provides a type guard if %%value%% is a
+     *  **ConstructorFragment**.
+     */
     static isFragment(value) {
         return (value && value[internal] === ConstructorFragmentInternal);
     }
@@ -997,6 +1036,9 @@ class FallbackFragment extends Fragment {
         Object.defineProperty(this, internal, { value: FallbackFragmentInternal });
         (0, index_js_1.defineProperties)(this, { payable });
     }
+    /**
+     *  Returns a string representation of this fallback as %%format%%.
+     */
     format(format) {
         const type = ((this.inputs.length === 0) ? "receive" : "fallback");
         if (format === "json") {
@@ -1005,6 +1047,9 @@ class FallbackFragment extends Fragment {
         }
         return `${type}()${this.payable ? " payable" : ""}`;
     }
+    /**
+     *  Returns a new **FallbackFragment** for %%obj%%.
+     */
     static from(obj) {
         if (FallbackFragment.isFragment(obj)) {
             return obj;
@@ -1053,6 +1098,10 @@ class FallbackFragment extends Fragment {
         }
         (0, index_js_1.assertArgument)(false, "invalid fallback description", "obj", obj);
     }
+    /**
+     *  Returns ``true`` and provides a type guard if %%value%% is a
+     *  **FallbackFragment**.
+     */
     static isFragment(value) {
         return (value && value[internal] === FallbackFragmentInternal);
     }
@@ -1080,7 +1129,7 @@ class FunctionFragment extends NamedFragment {
      */
     payable;
     /**
-     *  The amount of gas to send when calling this function
+     *  The recommended gas limit to send when calling this function.
      */
     gas;
     /**
@@ -1100,6 +1149,9 @@ class FunctionFragment extends NamedFragment {
     get selector() {
         return (0, index_js_2.id)(this.format("sighash")).substring(0, 10);
     }
+    /**
+     *  Returns a string representation of this function as %%format%%.
+     */
     format(format) {
         if (format == null) {
             format = "sighash";
@@ -1135,11 +1187,17 @@ class FunctionFragment extends NamedFragment {
         }
         return result.join(" ");
     }
+    /**
+     *  Return the selector for a function with %%name%% and %%params%%.
+     */
     static getSelector(name, params) {
         params = (params || []).map((p) => ParamType.from(p));
         const fragment = new FunctionFragment(_guard, name, "view", params, [], null);
         return fragment.selector;
     }
+    /**
+     *  Returns a new **FunctionFragment** for %%obj%%.
+     */
     static from(obj) {
         if (FunctionFragment.isFragment(obj)) {
             return obj;
@@ -1180,6 +1238,10 @@ class FunctionFragment extends NamedFragment {
         //        payable: false but stateMutability is "nonpayable")
         return new FunctionFragment(_guard, obj.name, stateMutability, obj.inputs ? obj.inputs.map(ParamType.from) : [], obj.outputs ? obj.outputs.map(ParamType.from) : [], (obj.gas != null) ? obj.gas : null);
     }
+    /**
+     *  Returns ``true`` and provides a type guard if %%value%% is a
+     *  **FunctionFragment**.
+     */
     static isFragment(value) {
         return (value && value[internal] === FunctionFragmentInternal);
     }
@@ -1196,9 +1258,15 @@ class StructFragment extends NamedFragment {
         super(guard, "struct", name, inputs);
         Object.defineProperty(this, internal, { value: StructFragmentInternal });
     }
+    /**
+     *  Returns a string representation of this struct as %%format%%.
+     */
     format() {
         throw new Error("@TODO");
     }
+    /**
+     *  Returns a new **StructFragment** for %%obj%%.
+     */
     static from(obj) {
         if (typeof (obj) === "string") {
             return StructFragment.from(lex(obj));
@@ -1211,6 +1279,11 @@ class StructFragment extends NamedFragment {
         }
         return new StructFragment(_guard, obj.name, obj.inputs ? obj.inputs.map(ParamType.from) : []);
     }
+    // @TODO: fix this return type
+    /**
+     *  Returns ``true`` and provides a type guard if %%value%% is a
+     *  **StructFragment**.
+     */
     static isFragment(value) {
         return (value && value[internal] === StructFragmentInternal);
     }
