@@ -15,7 +15,7 @@
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 
 import { getAddress, resolveAddress } from "../address/index.js";
-import { ZeroHash } from "../constants/index.js";
+import { ZeroAddress } from "../constants/index.js";
 import { Contract } from "../contract/index.js";
 import { namehash } from "../hash/index.js";
 import { Transaction } from "../transaction/index.js";
@@ -1140,7 +1140,7 @@ export class AbstractProvider implements Provider {
             ], this);
 
             const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroHash) { return null; }
+            if (resolver == null || resolver === ZeroAddress) { return null; }
 
             const resolverContract = new Contract(resolver, [
                 "function name(bytes32) view returns (string)"
