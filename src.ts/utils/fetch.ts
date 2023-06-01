@@ -1,5 +1,19 @@
 /**
- *  Explain fetching here...
+ *  Fetching content from the web is environment-specific, so Ethers
+ *  provides an abstraction the each environment can implement to provide
+ *  this service.
+ *
+ *  On [Node.js](link-node), the ``http`` and ``https`` libs are used to
+ *  create a request object, register event listeners and process data
+ *  and populate the [[FetchResponse]].
+ *
+ *  In a browser, the [DOM fetch](link-js-fetch) is used, and the resulting
+ *  ``Promise`` is waited on to retreive the payload.
+ *
+ *  The [[FetchRequest]] is responsible for handling many common situations,
+ *  such as redirects, server throttling, authentcation, etc.
+ *
+ *  It also handles common gateways, such as IPFS and data URIs.
  *
  *  @_section api/utils/fetching:Fetching Web Content  [about-fetch]
  */
@@ -11,7 +25,9 @@ import { toUtf8Bytes, toUtf8String } from "./utf8.js"
 
 import { getUrl } from "./geturl.js";
 
-
+/**
+ *  An environments implementation of ``getUrl`` must return this type.
+ */
 export type GetUrlResponse = {
     statusCode: number,
     statusMessage: string,
@@ -19,10 +35,15 @@ export type GetUrlResponse = {
     body: null | Uint8Array
 };
 
+/**
+ *  This can be used to control how throttling is handled in
+ *  [[FetchRequest-setThrottleParams]].
+ */
 export type FetchThrottleParams = {
     maxAttempts?: number;
     slotInterval?: number;
 };
+
 /**
  *  Called before any network request, allowing updated headers (e.g. Bearer tokens), etc.
  */

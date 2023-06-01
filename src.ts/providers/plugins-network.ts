@@ -10,13 +10,28 @@ import type {
 
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 
+/**
+ *  A **NetworkPlugin** provides additional functionality on a [[Network]].
+ */
 export class NetworkPlugin {
+    /**
+     *  The name of the plugin.
+     *
+     *  It is recommended to use reverse-domain-notation, which permits
+     *  unique names with a known authority as well as hierarchal entries.
+     */
     readonly name!: string;
 
+    /**
+     *  Creates a new **NetworkPlugin**.
+     */
     constructor(name: string) {
         defineProperties<NetworkPlugin>(this, { name });
     }
 
+    /**
+     *  Creates a copy of this plugin.
+     */
     clone(): NetworkPlugin {
         return new NetworkPlugin(this.name);
     }
@@ -26,28 +41,91 @@ export class NetworkPlugin {
 //    }
 }
 
-// Networks can use this plugin to override calculations for the
-// intrinsic gas cost of a transaction for networks that differ
-// from the latest hardfork on Ethereum mainnet.
+
+/**
+ *  The gas cost parameters for a [[GasCostPlugin]].
+ */
 export type GasCostParameters = {
+    /**
+     *  The transactions base fee.
+     */
     txBase?: number;
+
+    /**
+     *  The fee for creating a new account.
+     */
     txCreate?: number;
+
+    /**
+     *  The fee per zero-byte in the data.
+     */
     txDataZero?: number;
+
+    /**
+     *  The fee per non-zero-byte in the data.
+     */
     txDataNonzero?: number;
+
+    /**
+     *  The fee per storage key in the [[link-eip-2930]] access list.
+     */
     txAccessListStorageKey?: number;
+
+    /**
+     *  The fee per address in the [[link-eip-2930]] access list.
+     */
     txAccessListAddress?: number;
 };
 
+/**
+ *  A **GasCostPlugin** allows a network to provide alternative values when
+ *  computing the intrinsic gas required for a transaction.
+ */
 export class GasCostPlugin extends NetworkPlugin implements GasCostParameters {
+    /**
+     *  The block number to treat these values as valid from.
+     *
+     *  This allows a hardfork to have updated values included as well as
+     *  mulutiple hardforks to be supported.
+     */
     readonly effectiveBlock!: number;
 
+    /**
+     *  The transactions base fee.
+     */
     readonly txBase!: number;
+
+    /**
+     *  The fee for creating a new account.
+     */
     readonly txCreate!: number;
+
+    /**
+     *  The fee per zero-byte in the data.
+     */
     readonly txDataZero!: number;
+
+    /**
+     *  The fee per non-zero-byte in the data.
+     */
     readonly txDataNonzero!: number;
+
+    /**
+     *  The fee per storage key in the [[link-eip-2930]] access list.
+     */
     readonly txAccessListStorageKey!: number;
+
+    /**
+     *  The fee per address in the [[link-eip-2930]] access list.
+     */
     readonly txAccessListAddress!: number;
 
+
+    /**
+     *  Creates a new GasCostPlugin from %%effectiveBlock%% until the
+     *  latest block or another GasCostPlugin supercedes that block number,
+     *  with the associated %%costs%%.
+     */
     constructor(effectiveBlock?: number, costs?: GasCostParameters) {
         if (effectiveBlock == null) { effectiveBlock = 0; }
         super(`org.ethers.network.plugins.GasCost#${ (effectiveBlock || 0) }`);
@@ -75,16 +153,32 @@ export class GasCostPlugin extends NetworkPlugin implements GasCostParameters {
     }
 }
 
-// Networks shoudl use this plugin to specify the contract address
-// and network necessary to resolve ENS names.
+/**
+ *  An **EnsPlugin** allows a [[Network]] to specify the ENS Registry
+ *  Contract address and the target network to use when using that
+ *  contract.
+ *
+ *  Various testnets have their own instance of the contract to use, but
+ *  in general, the mainnet instance supports multi-chain addresses and
+ *  should be used.
+ */
 export class EnsPlugin extends NetworkPlugin {
 
-    // The ENS contract address
+    /**
+     *  The ENS Registrty Contract address.
+     */
     readonly address!: string;
 
-    // The network ID that the ENS contract lives on
+    /**
+     *  The chain ID that the ENS contract lives on.
+     */
     readonly targetNetwork!: number;
 
+    /**
+     *  Creates a new **EnsPlugin** connected to %%address%% on the
+     *  %%targetNetwork%%. The default ENS address and mainnet is used
+     *  if unspecified.
+     */
     constructor(address?: null | string, targetNetwork?: null | number) {
         super("org.ethers.plugins.network.Ens");
         defineProperties<EnsPlugin>(this, {
@@ -98,18 +192,34 @@ export class EnsPlugin extends NetworkPlugin {
     }
 }
 
+/**
+ *  A **FeeDataNetworkPlugin** allows a network to provide and alternate
+ *  means to specify its fee data.
+ *
+ *  For example, a network which does not support [[link-eip-1559]] may
+ *  choose to use a Gas Station site to approximate the gas price.
+ */
 export class FeeDataNetworkPlugin extends NetworkPlugin {
     readonly #feeDataFunc: (provider: Provider) => Promise<FeeData>;
 
+    /**
+     *  The fee data function provided to the constructor.
+     */
     get feeDataFunc(): (provider: Provider) => Promise<FeeData> {
         return this.#feeDataFunc;
     }
 
+    /**
+     *  Creates a new **FeeDataNetworkPlugin**.
+     */
     constructor(feeDataFunc: (provider: Provider) => Promise<FeeData>) {
         super("org.ethers.plugins.network.FeeData");
         this.#feeDataFunc = feeDataFunc;
     }
 
+    /**
+     *  Resolves to the fee data.
+     */
     async getFeeData(provider: Provider): Promise<FeeData> {
         return await this.#feeDataFunc(provider);
     }

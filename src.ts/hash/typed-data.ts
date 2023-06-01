@@ -21,16 +21,50 @@ const BN_0 = BigInt(0);
 const BN_1 = BigInt(1);
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
+// @TODO: in v7, verifyingContract should be an AddressLike and use resolveAddress
+
+/**
+ *  The domain for an [[link-eip-712]] payload.
+ */
 export interface TypedDataDomain {
+    /**
+     *  The human-readable name of the signing domain.
+     */
     name?: null | string;
+
+    /**
+     *  The major version of the signing domain.
+     */
     version?: null | string;
+
+    /**
+     *  The chain ID of the signing domain.
+     */
     chainId?: null | BigNumberish;
+
+    /**
+     *  The the address of the contract that will verify the signature.
+     */
     verifyingContract?: null | string;
+
+    /**
+     *  A salt used for purposes decided by the specific domain.
+     */
     salt?: null | BytesLike;
 };
 
+/**
+ *  A specific field of a structured [[link-eip-712]] type.
+ */
 export interface TypedDataField {
+    /**
+     *  The field name.
+     */
     name: string;
+
+    /**
+     *  The type of the field.
+     */
     type: string;
 };
 
@@ -147,10 +181,30 @@ function encodeType(name: string, fields: Array<TypedDataField>): string {
     return `${ name }(${ fields.map(({ name, type }) => (type + " " + name)).join(",") })`;
 }
 
+/**
+ *  A **TypedDataEncode** prepares and encodes [[link-eip-712]] payloads
+ *  for signed typed data.
+ *
+ *  This is useful for those that wish to compute various components of a
+ *  typed data hash, primary types, or sub-components, but generally the
+ *  higher level [[Signer-signTypedData]] is more useful.
+ */
 export class TypedDataEncoder {
+    /**
+     *  The primary type for the structured [[types]].
+     *
+     *  This is derived automatically from the [[types]], since no
+     *  recursion is possible, once the DAG for the types is consturcted
+     *  internally, the primary type must be the only remaining type with
+     *  no parent nodes.
+     */
     readonly primaryType!: string;
 
     readonly #types: string;
+
+    /**
+     *  The types.
+     */
     get types(): Record<string, Array<TypedDataField>> {
         return JSON.parse(this.#types);
     }
@@ -159,6 +213,13 @@ export class TypedDataEncoder {
 
     readonly #encoderCache: Map<string, (value: any) => string>;
 
+    /**
+     *  Create a new **TypedDataEncoder** for %%types%%.
+     *
+     *  This performs all necessary checking that types are valid and
+     *  do not violate the [[link-eip-712]] structural constraints as
+     *  well as computes the [[primaryType]].
+     */
     constructor(types: Record<string, Array<TypedDataField>>) {
         this.#types = JSON.stringify(types);
         this.#fullTypes = new Map();
@@ -241,6 +302,9 @@ export class TypedDataEncoder {
         }
     }
 
+    /**
+     *  Returnthe encoder for the specific %%type%%.
+     */
     getEncoder(type: string): (value: any) => string {
         let encoder = this.#encoderCache.get(type);
         if (!encoder) {
@@ -293,28 +357,46 @@ export class TypedDataEncoder {
         assertArgument(false, `unknown type: ${ type }`, "type", type);
     }
 
+    /**
+     *  Return the full type for %%name%%.
+     */
     encodeType(name: string): string {
         const result = this.#fullTypes.get(name);
         assertArgument(result, `unknown type: ${ JSON.stringify(name) }`, "name", name);
         return result;
     }
 
+    /**
+     *  Return the encoded %%value%% for the %%type%%.
+     */
     encodeData(type: string, value: any): string {
         return this.getEncoder(type)(value);
     }
 
+    /**
+     *  Returns the hash of %%value%% for the type of %%name%%.
+     */
     hashStruct(name: string, value: Record<string, any>): string {
         return keccak256(this.encodeData(name, value));
     }
 
+    /**
+     *  Return the fulled encoded %%value%% for the [[types]].
+     */
     encode(value: Record<string, any>): string {
         return this.encodeData(this.primaryType, value);
     }
 
+    /**
+     *  Return the hash of the fully encoded %%value%% for the [[types]].
+     */
     hash(value: Record<string, any>): string {
         return this.hashStruct(this.primaryType, value);
     }
 
+    /**
+     *  @_ignore:
+     */
     _visit(type: string, value: any, callback: (type: string, data: any) => any): any {
         // Basic encoder type (address, bool, uint256, etc)
         {
@@ -341,22 +423,41 @@ export class TypedDataEncoder {
         assertArgument(false, `unknown type: ${ type }`, "type", type);
     }
 
+    /**
+     *  Call %%calback%% for each value in %%value%%, passing the type and
+     *  component within %%value%%.
+     *
+     *  This is useful for replacing addresses or other transformation that
+     *  may be desired on each component, based on its type.
+     */
     visit(value: Record<string, any>, callback: (type: string, data: any) => any): any {
         return this._visit(this.primaryType, value, callback);
     }
 
+    /**
+     *  Create a new **TypedDataEncoder** for %%types%%.
+     */
     static from(types: Record<string, Array<TypedDataField>>): TypedDataEncoder {
         return new TypedDataEncoder(types);
     }
 
+    /**
+     *  Return the primary type for %%types%%.
+     */
     static getPrimaryType(types: Record<string, Array<TypedDataField>>): string {
         return TypedDataEncoder.from(types).primaryType;
     }
 
+    /**
+     *  Return the hashed struct for %%value%% using %%types%% and %%name%%.
+     */
     static hashStruct(name: string, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
         return TypedDataEncoder.from(types).hashStruct(name, value);
     }
 
+    /**
+     *  Return the domain hash for %%domain%%.
+     */
     static hashDomain(domain: TypedDataDomain): string {
         const domainFields: Array<TypedDataField> = [ ];
         for (const name in domain) {
@@ -373,6 +474,9 @@ export class TypedDataEncoder {
         return TypedDataEncoder.hashStruct("EIP712Domain", { EIP712Domain: domainFields }, domain);
     }
 
+    /**
+     *  Return the fully encoded [[link-eip-712]] %%value%% for %%types%% with %%domain%%.
+     */
     static encode(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
         return concat([
             "0x1901",
@@ -381,11 +485,18 @@ export class TypedDataEncoder {
         ]);
     }
 
+    /**
+     *  Return the hash of the fully encoded [[link-eip-712]] %%value%% for %%types%% with %%domain%%.
+     */
     static hash(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
         return keccak256(TypedDataEncoder.encode(domain, types, value));
     }
 
     // Replaces all address types with ENS names with their looked up address
+    /**
+     * Resolves to the value from resolving all addresses in %%value%% for
+     * %%types%% and the %%domain%%.
+     */
     static async resolveNames(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, resolveName: (name: string) => Promise<string>): Promise<{ domain: TypedDataDomain, value: any }> {
         // Make a copy to isolate it from the object passed in
         domain = Object.assign({ }, domain);
@@ -435,6 +546,10 @@ export class TypedDataEncoder {
         return { domain, value };
     }
 
+    /**
+     *  Returns the JSON-encoded payload expected by nodes which implement
+     *  the JSON-RPC [[link-eip-712]] method.
+     */
     static getPayload(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): any {
         // Validate the domain fields
         TypedDataEncoder.hashDomain(domain);

@@ -22,6 +22,11 @@ const BN_28 = BigInt(28)
 const BN_35 = BigInt(35);
 const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
+/**
+ *  A **TransactionLike** is an object which is appropriate as a loose
+ *  input for many operations which will populate missing properties of
+ *  a transaction.
+ */
 export interface TransactionLike<A = string> {
     /**
      *  The type.

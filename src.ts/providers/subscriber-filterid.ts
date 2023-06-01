@@ -33,6 +33,11 @@ export class FilterIdSubscriber implements Subscriber {
 
     #hault: boolean;
 
+    /**
+     *  Creates a new **FilterIdSubscriber** which will used [[_subscribe]]
+     *  and [[_emitResults]] to setup the subscription and provide the event
+     *  to the %%provider%%.
+     */
     constructor(provider: JsonRpcApiProvider) {
         this.#provider = provider;
 
@@ -46,14 +51,23 @@ export class FilterIdSubscriber implements Subscriber {
         this.#hault = false;
     }
 
+    /**
+     *  Sub-classes **must** override this to begin the subscription.
+     */
     _subscribe(provider: JsonRpcApiProvider): Promise<string> {
         throw new Error("subclasses must override this");
     }
 
+    /**
+     *  Sub-classes **must** override this handle the events.
+     */
     _emitResults(provider: AbstractProvider, result: Array<any>): Promise<void> {
         throw new Error("subclasses must override this");
     }
 
+    /**
+     *  Sub-classes **must** override this handle recovery on errors.
+     */
     _recover(provider: AbstractProvider): Subscriber {
         throw new Error("subclasses must override this");
     }
@@ -141,6 +155,10 @@ export class FilterIdSubscriber implements Subscriber {
 export class FilterIdEventSubscriber extends FilterIdSubscriber {
     #event: EventFilter;
 
+    /**
+     *  Creates a new **FilterIdEventSubscriber** attached to %%provider%%
+     *  listening for %%filter%%.
+     */
     constructor(provider: JsonRpcApiProvider, filter: EventFilter) {
         super(provider);
         this.#event = copy(filter);

@@ -1,5 +1,10 @@
 /**
- *  About fixed-point math...
+ *  The **FixedNumber** class permits using values with decimal places,
+ *  using fixed-pont math.
+ *
+ *  Fixed-point math is still based on integers under-the-hood, but uses an
+ *  internal offset to store fractional components below, and each operation
+ *  corrects for this after each operation.
  *
  *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [about-fixed-point-math]
  */

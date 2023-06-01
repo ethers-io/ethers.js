@@ -16,6 +16,19 @@ import type { Network } from "./network.js";
 
 const BN_0 = BigInt(0);
 
+/**
+ *  A **BlockTag** specifies a specific block.
+ *
+ *  **numeric value** - specifies the block height, where
+ *  the genesis block is block 0; many operations accept a negative
+ *  value which indicates the block number should be deducted from
+ *  the most recent block. A numeric value may be a ``number``, ``bigint``,
+ *  or a decimal of hex string.
+ *
+ *  **blockhash** - specifies a specific block by its blockhash; this allows
+ *  potentially orphaned blocks to be specifed, without ambiguity, but many
+ *  backends do not support this for some operations.
+ */
 export type BlockTag = BigNumberish | string;
 
 import {
@@ -101,62 +114,215 @@ export class FeeData {
 }
 
 
+/**
+ *  A **TransactionRequest** is a transactions with potentially various
+ *  properties not defined, or with less strict types for its values.
+ *
+ *  This is used to pass to various operations, which will internally
+ *  coerce any types and populate any necessary values.
+ */
 export interface TransactionRequest {
+    /**
+     *  The transaction type.
+     */
     type?: null | number;
 
+    /**
+     *  The target of the transaction.
+     */
     to?: null | AddressLike;
+
+    /**
+     *  The sender of the transaction.
+     */
     from?: null | AddressLike;
 
+    /**
+     *  The nonce of the transaction, used to prevent replay attacks.
+     */
     nonce?: null | number;
 
+    /**
+     *  The maximum amount of gas to allow this transaction to consime.
+     */
     gasLimit?: null | BigNumberish;
+
+    /**
+     *  The gas price to use for legacy transactions or transactions on
+     *  legacy networks.
+     *
+     *  Most of the time the ``max*FeePerGas`` is preferred.
+     */
     gasPrice?: null | BigNumberish;
 
+    /**
+     *  The [[link-eip-1559]] maximum priority fee to pay per gas.
+     */
     maxPriorityFeePerGas?: null | BigNumberish;
+
+    /**
+     *  The [[link-eip-1559]] maximum total fee to pay per gas. The actual
+     *  value used is protocol enforced to be the block's base fee.
+     */
     maxFeePerGas?: null | BigNumberish;
 
+    /**
+     *  The transaction data.
+     */
     data?: null | string;
+
+    /**
+     *  The transaction value (in wei).
+     */
     value?: null | BigNumberish;
+
+    /**
+     *  The chain ID for the network this transaction is valid on.
+     */
     chainId?: null | BigNumberish;
 
+    /**
+     *  The [[link-eip-2930]] access list. Storage slots included in the access
+     *  list are //warmed// by pre-loading them, so their initial cost to
+     *  fetch is guaranteed, but then each additional access is cheaper.
+     */
     accessList?: null | AccessListish;
 
+    /**
+     *  A custom object, which can be passed along for network-specific
+     *  values.
+     */
     customData?: any;
 
     // Only meaningful when used for call
+
+    /**
+     *  When using ``call`` or ``estimateGas``, this allows a specific
+     *  block to be queried. Many backends do not support this and when
+     *  unsupported errors are silently squelched and ``"latest"`` is used. 
+     */
     blockTag?: BlockTag;
+
+    /**
+     *  When using ``call``, this enables CCIP-read, which permits the
+     *  provider to be redirected to web-based content during execution,
+     *  which is then further validated by the contract.
+     *
+     *  There are potential security implications allowing CCIP-read, as
+     *  it could be used to expose the IP address or user activity during
+     *  the fetch to unexpected parties.
+     */
     enableCcipRead?: boolean;
 
     // Todo?
     //gasMultiplier?: number;
 };
 
+/**
+ *  A **PreparedTransactionRequest** is identical to a [[TransactionRequest]]
+ *  except all the property types are strictly enforced.
+ */
 export interface PreparedTransactionRequest {
+    /**
+     *  The transaction type.
+     */
     type?: number;
 
+
+    /**
+     *  The target of the transaction.
+     */
     to?: AddressLike;
+
+    /**
+     *  The sender of the transaction.
+     */
     from?: AddressLike;
+
+    /**
+     *  The nonce of the transaction, used to prevent replay attacks.
+     */
 
     nonce?: number;
 
+    /**
+     *  The maximum amount of gas to allow this transaction to consime.
+     */
     gasLimit?: bigint;
+
+    /**
+     *  The gas price to use for legacy transactions or transactions on
+     *  legacy networks.
+     *
+     *  Most of the time the ``max*FeePerGas`` is preferred.
+     */
     gasPrice?: bigint;
 
+    /**
+     *  The [[link-eip-1559]] maximum priority fee to pay per gas.
+     */
     maxPriorityFeePerGas?: bigint;
+
+    /**
+     *  The [[link-eip-1559]] maximum total fee to pay per gas. The actual
+     *  value used is protocol enforced to be the block's base fee.
+     */
     maxFeePerGas?: bigint;
 
+    /**
+     *  The transaction data.
+     */
     data?: string;
+
+
+    /**
+     *  The transaction value (in wei).
+     */
     value?: bigint;
+
+    /**
+     *  The chain ID for the network this transaction is valid on.
+     */
     chainId?: bigint;
 
+    /**
+     *  The [[link-eip-2930]] access list. Storage slots included in the access
+     *  list are //warmed// by pre-loading them, so their initial cost to
+     *  fetch is guaranteed, but then each additional access is cheaper.
+     */
     accessList?: AccessList;
 
+    /**
+     *  A custom object, which can be passed along for network-specific
+     *  values.
+     */
     customData?: any;
 
+
+
+    /**
+     *  When using ``call`` or ``estimateGas``, this allows a specific
+     *  block to be queried. Many backends do not support this and when
+     *  unsupported errors are silently squelched and ``"latest"`` is used. 
+     */
     blockTag?: BlockTag;
+
+    /**
+     *  When using ``call``, this enables CCIP-read, which permits the
+     *  provider to be redirected to web-based content during execution,
+     *  which is then further validated by the contract.
+     *
+     *  There are potential security implications allowing CCIP-read, as
+     *  it could be used to expose the IP address or user activity during
+     *  the fetch to unexpected parties.
+     */
     enableCcipRead?: boolean;
 }
 
+/**
+ *  Returns a copy of %%req%% with all properties coerced to their strict
+ *  types.
+ */
 export function copyRequest(req: TransactionRequest): PreparedTransactionRequest {
     const result: any = { };
 
@@ -206,10 +372,30 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
  *  Before a block is included, it is a //pending// block.
  */
 export interface MinedBlock extends Block {
+    /**
+     *  The block number also known as the block height.
+     */
     readonly number: number;
+
+    /**
+     *  The block hash.
+     */
     readonly hash: string;
+
+    /**
+     *  The block timestamp, in seconds from epoch.
+     */
     readonly timestamp: number;
+
+    /**
+     *  The block date, created from the [[timestamp]].
+     */
     readonly date: Date;
+
+    /**
+     *  The miner of the block, also known as the ``author`` or
+     *  block ``producer``.
+     */
     readonly miner: string;
 }
 
@@ -218,6 +404,7 @@ export interface MinedBlock extends Block {
  *  Ethereum.
  */
 export class Block implements BlockParams, Iterable<string> {
+
     /**
      *  The provider connected to the block used to fetch additional details
      *  if necessary.
@@ -232,6 +419,9 @@ export class Block implements BlockParams, Iterable<string> {
 
     /**
      *  The block hash.
+     *
+     *  This hash includes all properties, so can be safely used to identify
+     *  an exact set of block properties.
      */
     readonly hash!: null | string;
 
@@ -348,7 +538,7 @@ export class Block implements BlockParams, Iterable<string> {
     /**
      *  Returns the complete transactions for blocks which
      *  prefetched them, by passing ``true`` to %%prefetchTxs%%
-     *  into [[provider_getBlock]].
+     *  into [[Provider-getBlock]].
      */
     get prefetchedTransactions(): Array<TransactionResponse> {
         const txs = this.#transactions.slice();
@@ -445,6 +635,12 @@ export class Block implements BlockParams, Iterable<string> {
         }
     }
 
+    /**
+     *  If a **Block** was fetched with a request to include the transactions
+     *  this will allow synchronous access to those transactions.
+     *
+     *  If the transactions were not prefetched, this will throw.
+     */
     getPrefetchedTransaction(indexOrHash: number | string): TransactionResponse {
         const txs = this.prefetchedTransactions;
         if (typeof(indexOrHash) === "number") {
@@ -460,20 +656,21 @@ export class Block implements BlockParams, Iterable<string> {
     }
 
     /**
-     *  Has this block been mined.
-     *
-     *  If true, the block has been typed-gaurded that all mined
-     *  properties are non-null.
+     *  Returns true if this block been mined. This provides a type guard
+     *  for all properties on a [[MinedBlock]].
      */
     isMined(): this is MinedBlock { return !!this.hash; }
 
     /**
-     *
+     *  Returns true if this block is an [[link-eip-2930]] block.
      */
     isLondon(): this is (Block & { baseFeePerGas: bigint }) {
         return !!this.baseFeePerGas;
     }
 
+    /**
+     *  @_ignore:
+     */
     orphanedEvent(): OrphanFilter {
         if (!this.isMined()) { throw new Error(""); }
         return createOrphanedBlockFilter(this);
@@ -483,24 +680,80 @@ export class Block implements BlockParams, Iterable<string> {
 //////////////////////
 // Log
 
+/**
+ *  A **Log** in Ethereum represents an event that has been included in a
+ *  transaction using the ``LOG*`` opcodes, which are most commonly used by
+ *  Solidity's emit for announcing events.
+ */
 export class Log implements LogParams {
+
+    /**
+     *  The provider connected to the log used to fetch additional details
+     *  if necessary.
+     */
     readonly provider: Provider;
 
+    /**
+     *  The transaction hash of the transaction this log occurred in. Use the
+     *  [[Log-getTransaction]] to get the [[TransactionResponse]].
+     */
     readonly transactionHash!: string;
+
+    /**
+     *  The block hash of the block this log occurred in. Use the
+     *  [[Log-getBlock]] to get the [[Block]].
+     */
     readonly blockHash!: string;
+
+    /**
+     *  The block number of the block this log occurred in. It is preferred
+     *  to use the [[Block-hash]] when fetching the related [[Block]],
+     *  since in the case of an orphaned block, the block at that height may
+     *  have changed.
+     */
     readonly blockNumber!: number;
 
+    /**
+     *  If the **Log** represents a block that was removed due to an orphaned
+     *  block, this will be true.
+     *
+     *  This can only happen within an orphan event listener.
+     */
     readonly removed!: boolean;
 
+    /**
+     *  The address of the contract that emitted this log.
+     */
     readonly address!: string;
+
+    /**
+     *  The data included in this log when it was emitted.
+     */
     readonly data!: string;
 
+    /**
+     *  The indexed topics included in this log when it was emitted.
+     *
+     *  All topics are included in the bloom filters, so they can be
+     *  efficiently filtered using the [[Provider-getLogs]] method.
+     */
     readonly topics!: ReadonlyArray<string>;
 
+    /**
+     *  The index within the block this log occurred at. This is generally
+     *  not useful to developers, but can be used with the various roots
+     *  to proof inclusion within a block.
+     */
     readonly index!: number;
+
+    /**
+     *  The index within the transaction of this log.
+     */
     readonly transactionIndex!: number;
 
-
+    /**
+     *  @_ignore:
+     */
     constructor(log: LogParams, provider: Provider) {
         this.provider = provider;
 
@@ -522,6 +775,9 @@ export class Log implements LogParams {
         });
     }
 
+    /**
+     *  Returns a JSON-compatible object.
+     */
     toJSON(): any {
         const {
             address, blockHash, blockNumber, data, index,
@@ -535,24 +791,37 @@ export class Log implements LogParams {
         };
     }
 
+    /**
+     *  Returns the block that this log occurred in.
+     */
     async getBlock(): Promise<Block> {
         const block = await this.provider.getBlock(this.blockHash);
         assert(!!block, "failed to find transaction", "UNKNOWN_ERROR", { });
         return block;
     }
 
+    /**
+     *  Returns the transaction that this log occurred in.
+     */
     async getTransaction(): Promise<TransactionResponse> {
         const tx = await this.provider.getTransaction(this.transactionHash);
         assert(!!tx, "failed to find transaction", "UNKNOWN_ERROR", { });
         return tx;
     }
 
+    /**
+     *  Returns the transaction receipt fot the transaction that this
+     *  log occurred in.
+     */
     async getTransactionReceipt(): Promise<TransactionReceipt> {
         const receipt = await this.provider.getTransactionReceipt(this.transactionHash);
         assert(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", { });
         return receipt;
     }
 
+    /**
+     *  @_ignore:
+     */
     removedEvent(): OrphanFilter {
         return createRemovedLogFilter(this);
     }
@@ -575,32 +844,118 @@ export interface ByzantiumTransactionReceipt {
 }
 */
 
+/**
+ *  A **TransactionReceipt** includes additional information about a
+ *  transaction that is only available after it has been mined.
+ */
 export class TransactionReceipt implements TransactionReceiptParams, Iterable<Log> {
+    /**
+     *  The provider connected to the log used to fetch additional details
+     *  if necessary.
+     */
     readonly provider!: Provider;
 
+    /**
+     *  The address the transaction was send to.
+     */
     readonly to!: null | string;
+
+    /**
+     *  The sender of the transaction.
+     */
     readonly from!: string;
+
+    /**
+     *  The address of the contract if the transaction was directly
+     *  responsible for deploying one.
+     *
+     *  This is non-null **only** if the ``to`` is empty and the ``data``
+     *  was successfully executed as initcode.
+     */
     readonly contractAddress!: null | string;
 
+    /**
+     *  The transaction hash.
+     */
     readonly hash!: string;
+
+    /**
+     *  The index of this transaction within the block transactions.
+     */
     readonly index!: number;
 
+    /**
+     *  The block hash of the [[Block]] this transaction was included in.
+     */
     readonly blockHash!: string;
+
+    /**
+     *  The block number of the [[Block]] this transaction was included in.
+     */
     readonly blockNumber!: number;
 
+    /**
+     *  The bloom filter bytes that represent all logs that occurred within
+     *  this transaction. This is generally not useful for most developers,
+     *  but can be used to validate the included logs.
+     */
     readonly logsBloom!: string;
 
+    /**
+     *  The actual amount of gas used by this transaction.
+     *
+     *  When creating a transaction, the amount of gas that will be used can
+     *  only be approximated, but the sender must pay the gas fee for the
+     *  entire gas limit. After the transaction, the difference is refunded.
+     */
     readonly gasUsed!: bigint;
+
+    /**
+     *  The amount of gas used by all transactions within the block for this
+     *  and all transactions with a lower ``index``.
+     *
+     *  This is generally not useful for developers but can be used to
+     *  validate certain aspects of execution.
+     */
     readonly cumulativeGasUsed!: bigint;
+
+    /**
+     *  The actual gas price used during execution.
+     *
+     *  Due to the complexity of [[link-eip-1559]] this value can only
+     *  be caluclated after the transaction has been mined, snce the base
+     *  fee is protocol-enforced.
+     */
     readonly gasPrice!: bigint;
 
+    /**
+     *  The [[link-eip-2718]] transaction type.
+     */
     readonly type!: number;
     //readonly byzantium!: boolean;
+
+    /**
+     *  The status of this transaction, indicating success (i.e. ``1``) or
+     *  a revert (i.e. ``0``).
+     *
+     *  This is available in post-byzantium blocks, but some backends may
+     *  backfill this value.
+     */
     readonly status!: null | number;
+
+    /**
+     *  The root hash of this transaction.
+     *
+     *  This is no present and was only included in pre-byzantium blocks, but
+     *  could be used to validate certain parts of the receipt.
+     */
     readonly root!: null | string;
 
     readonly #logs: ReadonlyArray<Log>;
 
+    /**
+     *  @_ignore:
+     */
     constructor(tx: TransactionReceiptParams, provider: Provider) {
         this.#logs = Object.freeze(tx.logs.map((log) => {
             return new Log(log, provider);
@@ -639,8 +994,14 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
         });
     }
 
+    /**
+     *  The logs for this transaction.
+     */
     get logs(): ReadonlyArray<Log> { return this.#logs; }
 
+    /**
+     *  Returns a JSON-compatible representation.
+     */
     toJSON(): any {
         const {
             to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom,
@@ -661,6 +1022,9 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
         };
     }
 
+    /**
+     *  @_ignore:
+     */
     get length(): number { return this.logs.length; }
 
     [Symbol.iterator](): Iterator<Log> {
@@ -675,34 +1039,58 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
         };
     }
 
+    /**
+     *  The total fee for this transaction, in wei.
+     */
     get fee(): bigint {
         return this.gasUsed * this.gasPrice;
     }
 
+    /**
+     *  Resolves to the block this transaction occurred in.
+     */
     async getBlock(): Promise<Block> {
         const block = await this.provider.getBlock(this.blockHash);
         if (block == null) { throw new Error("TODO"); }
         return block;
     }
 
+    /**
+     *  Resolves to the transaction this transaction occurred in.
+     */
     async getTransaction(): Promise<TransactionResponse> {
         const tx = await this.provider.getTransaction(this.hash);
         if (tx == null) { throw new Error("TODO"); }
         return tx;
     }
 
+    /**
+     *  Resolves to the return value of the execution of this transaction.
+     *
+     *  Support for this feature is limited, as it requires an archive node
+     *  with the ``debug_`` or ``trace_`` API enabled.
+     */
     async getResult(): Promise<string> {
         return <string>(await this.provider.getTransactionResult(this.hash));
     }
 
+    /**
+     *  Resolves to the number of confirmations this transaction has.
+     */
     async confirmations(): Promise<number> {
         return (await this.provider.getBlockNumber()) - this.blockNumber + 1;
     }
 
+    /**
+     *  @_ignore:
+     */
     removedEvent(): OrphanFilter {
         return createRemovedTransactionFilter(this);
     }
 
+    /**
+     *  @_ignore:
+     */
     reorderedEvent(other?: TransactionResponse): OrphanFilter {
         assert(!other || other.isMined(), "unmined 'other' transction cannot be orphaned",
             "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
@@ -714,22 +1102,38 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 //////////////////////
 // Transaction Response
 
+/**
+ *  A **MinedTransactionResponse** is an interface representing a
+ *  transaction which has been mined and allows for a type guard for its
+ *  property values being defined.
+ */
 export interface MinedTransactionResponse extends TransactionResponse {
+    /**
+     *  The block number this transaction occurred in.
+     */
     blockNumber: number;
+
+    /**
+     *  The block hash this transaction occurred in.
+     */
     blockHash: string;
+
+    /**
+     *  The date this transaction occurred on.
+     */
     date: Date;
 }
 
-/*
-export type ReplacementDetectionSetup = {
-    to: string;
-    from: string;
-    value: bigint;
-    data: string;
-    nonce: number;
-    block: number;
-};
-*/
+
+/**
+ *  A **TransactionResponse** includes all properties about a transaction
+ *  that was sent to the network, which may or may not be included in a
+ *  block.
+ *
+ *  The [[TransactionResponse-isMined]] can be used to check if the
+ *  transaction has been mined as well as type guard that the otherwise
+ *  possibly ``null`` properties are defined.
+ */
 export class TransactionResponse implements TransactionLike<string>, TransactionResponseParams {
     /**
      *  The provider this is connected to, which will influence how its
@@ -858,8 +1262,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
     #startBlock: number;
 
     /**
-     *  Create a new TransactionResponse with %%tx%% parameters
-     *  connected to %%provider%%.
+     *  @_ignore:
      */
     constructor(tx: TransactionResponseParams, provider: Provider) {
         this.provider = provider;
@@ -893,7 +1296,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
     }
 
     /**
-     *  Returns a JSON representation of this transaction.
+     *  Returns a JSON-compatible representation of this transaction.
      */
     toJSON(): any {
         const {
@@ -1272,17 +1675,40 @@ export type TopicFilter = Array<null | string | Array<string>>;
 // @TODO:
 //export type DeferableTopicFilter = Array<null | string | Promise<string> | Array<string | Promise<string>>>;
 
+/**
+ *  An **EventFilter** allows efficiently filtering logs (also known as
+ *  events) using bloom filters included within blocks.
+ */
 export interface EventFilter {
     address?: AddressLike | Array<AddressLike>;
     topics?: TopicFilter;
 }
 
+/**
+ *  A **Filter** allows searching a specific range of blocks for mathcing
+ *  logs.
+ */
 export interface Filter extends EventFilter {
+
+    /**
+     *  The start block for the filter (inclusive).
+     */
     fromBlock?: BlockTag;
+
+    /**
+     *  The end block for the filter (inclusive).
+     */
     toBlock?: BlockTag;
 }
 
+/**
+ *  A **FilterByBlockHash** allows searching a specific block for mathcing
+ *  logs.
+ */
 export interface FilterByBlockHash extends EventFilter {
+    /**
+     *  The blockhash of the specific block for the filter.
+     */
     blockHash?: string;
 }
 
@@ -1290,6 +1716,30 @@ export interface FilterByBlockHash extends EventFilter {
 //////////////////////
 // ProviderEvent
 
+/**
+ *  A **ProviderEvent** provides the types of events that can be subscribed
+ *  to on a [[Provider]].
+ *
+ *  Each provider may include additional possible events it supports, but
+ *  the most commonly supported are:
+ *
+ *  **``"block"``** - calls the listener with the current block number on each
+ *  new block.
+ *
+ *  **``"error"``** - calls the listener on each async error that occurs during
+ *  the event loop, with the error.
+ *
+ *  **``"debug"``** - calls the listener on debug events, which can be used to
+ *  troubleshoot network errors, provider problems, etc.
+ *
+ *  **``transaction hash``** - calls the listener on each block after the
+ *  transaction has been mined; generally ``.once`` is more appropriate for
+ *  this event.
+ *
+ *  **``Array``** - calls the listener on each log that matches the filter.
+ *
+ *  [[EventFilter]] - calls the listener with each matching log
+ */
 export type ProviderEvent = string | Array<string | Array<string>> | EventFilter | OrphanFilter;
 
 

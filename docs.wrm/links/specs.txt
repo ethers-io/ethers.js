@@ -43,6 +43,7 @@ link-namehash [namehash](https://docs.ens.domains/contract-api-reference/name-pr
 link-rlp [Recursive-Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/)
 link-pbkdf2 [PBKDF2](https://en.wikipedia.org/wiki/PBKDF2)
 link-solc-abi [ABI Specification](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html#formal-specification-of-the-encoding)
+link-solc-jsonabi [ABI JSON Specification](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html#json)
 link-solc-errors [Solidity Custom Errors](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#errors)
 link-solc-events [Solidity Events](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#events)
 link-solc-output [solc standard output](https://solidity.readthedocs.io/en/v0.6.0/using-the-compiler.html#output-description)

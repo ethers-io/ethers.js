@@ -1,5 +1,6 @@
 /**
- *  Explain all the nitty-gritty about the **FallbackProvider**.
+ *  A **FallbackProvider** providers resiliance, security and performatnce
+ *  in a way that is customizable and configurable.
  *
  *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
  */
@@ -45,17 +46,27 @@ function stringify(value: any): string {
  */
 export interface FallbackProviderConfig {
 
-    // The provider
+    /**
+     *  The provider.
+     */
     provider: AbstractProvider;
 
-    // How long to wait for a response before getting impatient
-    // and ispatching the next provider
+    /**
+     *  The amount of time to wait before kicking off the next provider.
+     *
+     *  Any providers that have not responded can still respond and be
+     *  counted, but this ensures new providers start.
+     */
     stallTimeout?: number;
 
-    // Lower values are dispatched first
+    /**
+     *  The priority. Lower priority providers are dispatched first.
+     */
     priority?: number;
 
-    // How much this provider contributes to the quorum
+    /**
+     *  The amount of weight a provider is given against the quorum.
+     */
     weight?: number;
 };
 
@@ -68,28 +79,44 @@ const defaultConfig = { stallTimeout: 400, priority: 1, weight: 1 };
  */
 export interface FallbackProviderState extends Required<FallbackProviderConfig> {
 
-    // The most recent blockNumber this provider has reported (-2 if none)
+    /**
+     *  The most recent blockNumber this provider has reported (-2 if none).
+     */
     blockNumber: number;
 
-    // The number of total requests ever sent to this provider
+    /**
+     *  The number of total requests ever sent to this provider.
+     */
     requests: number;
 
-    // The number of responses that errored
+    /**
+     *  The number of responses that errored.
+     */
     errorResponses: number;
 
-    // The number of responses that occured after the result resolved
+    /**
+     *  The number of responses that occured after the result resolved.
+     */
     lateResponses: number;
 
-    // How many times syncing was required to catch up the expected block
+    /**
+     *  How many times syncing was required to catch up the expected block.
+     */
     outOfSync: number;
 
-    // The number of requests which reported unsupported operation
+    /**
+     *  The number of requests which reported unsupported operation.
+     */
     unsupportedEvents: number;
 
-    // A rolling average (5% current duration) for response time
+    /**
+     *  A rolling average (5% current duration) for response time.
+     */
     rollingDuration: number;
 
-    // The ratio of quorum-agreed results to total
+    /**
+     *  The ratio of quorum-agreed results to total.
+     */
     score: number;
 }
 
@@ -317,13 +344,28 @@ function getFuzzyMode(quorum: number, results: Array<TallyResult>): undefined | 
 }
 
 /**
- *  A Fallback Provider.
+ *  A **FallbackProvider** manages several [[Providers]] providing
+ *  resiliance by switching between slow or misbehaving nodes, security
+ *  by requiring multiple backends to aggree and performance by allowing
+ *  faster backends to respond earlier.
  *
  */
 export class FallbackProvider extends AbstractProvider {
 
+    /**
+     *  The number of backends that must agree on a value before it is
+     *  accpeted.
+     */
     readonly quorum: number;
+
+    /**
+     *  @_ignore:
+     */
     readonly eventQuorum: number;
+
+    /**
+     *  @_ignore:
+     */
     readonly eventWorkers: number;
 
     readonly #configs: Array<Config>;
@@ -331,6 +373,13 @@ export class FallbackProvider extends AbstractProvider {
     #height: number;
     #initialSyncPromise: null | Promise<void>;
 
+    /**
+     *  Creates a new **FallbackProvider** with %%providers%% connected to
+     *  %%network%%.
+     *
+     *  If a [[Provider]] is included in %%providers%%, defaults are used
+     *  for the configuration.
+     */
     constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish) {
         super(network);
         this.#configs = providers.map((p) => {
@@ -371,6 +420,9 @@ export class FallbackProvider extends AbstractProvider {
     //    throw new Error("@TODO");
     //}
 
+    /**
+     *  Transforms a %%req%% into the correct method call on %%provider%%.
+     */
     async _translatePerform(provider: AbstractProvider, req: PerformActionRequest): Promise<any> {
         switch (req.method) {
             case "broadcastTransaction":

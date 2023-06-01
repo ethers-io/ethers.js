@@ -20,11 +20,34 @@ import type { ContractTransactionResponse } from "./wrappers.js";
 
 // A = Arguments to the constructor
 // I = Interface of deployed contracts
+
+/**
+ *  A **ContractFactory** is used to deploy a Contract to the blockchain.
+ */
 export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract> {
+
+    /**
+     *  The Contract Interface.
+     */
     readonly interface!: Interface;
+
+    /**
+     *  The Contract deployment bytecode. Often called the initcode.
+     */
     readonly bytecode!: string;
+
+    /**
+     *  The ContractRunner to deploy the Contract as.
+     */
     readonly runner!: null | ContractRunner;
 
+    /**
+     *  Create a new **ContractFactory** with %%abi%% and %%bytecode%%,
+     *  optionally connected to %%runner%%.
+     *
+     *  The %%bytecode%% may be the ``bytecode`` property within the
+     *  standard Solidity JSON output.
+     */
     constructor(abi: Interface | InterfaceAbi, bytecode: BytesLike | { object: string }, runner?: null | ContractRunner) {
         const iface = Interface.from(abi);
 
@@ -42,6 +65,10 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
         });
     }
 
+    /**
+     *  Resolves to the transaction to deploy the contract, passing %%args%%
+     *  into the constructor.
+     */
     async getDeployTransaction(...args: ContractMethodArgs<A>): Promise<ContractDeployTransaction> {
         let overrides: Omit<ContractDeployTransaction, "data"> = { };
 
@@ -61,6 +88,14 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
         return Object.assign({ }, overrides, { data });
     }
 
+    /**
+     *  Resolves to the Contract deployed by passing %%args%% into the
+     *  constructor.
+     *
+     *  This will resovle to the Contract before it has been deployed to the
+     *  network, so the [[BaseContract-waitForDeployment]] should be used before
+     *  sending any transactions to it.
+     */
     async deploy(...args: ContractMethodArgs<A>): Promise<BaseContract & { deploymentTransaction(): ContractTransactionResponse } & Omit<I, keyof BaseContract>> {
         const tx = await this.getDeployTransaction(...args);
 
@@ -73,10 +108,17 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
         return new (<any>BaseContract)(address, this.interface, this.runner, sentTx);
     }
 
+    /**
+     *  Return a new **ContractFactory** with the same ABI and bytecode,
+     *  but connected to %%runner%%.
+     */
     connect(runner: null | ContractRunner): ContractFactory<A, I> {
         return new ContractFactory(this.interface, this.bytecode, runner);
     }
 
+    /**
+     *  Create a new **ContractFactory** from the standard Solidity JSON output.
+     */
     static fromSolidity<A extends Array<any> = Array<any>, I = ContractInterface>(output: any, runner?: ContractRunner): ContractFactory<A, I> {
         assertArgument(output != null, "bad compiler output", "output", output);
 

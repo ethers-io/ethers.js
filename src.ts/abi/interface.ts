@@ -1,5 +1,11 @@
 /**
- *  About Interface
+ *  The Interface class is a low-level class that accepts an
+ *  ABI and provides all the necessary functionality to encode
+ *  and decode paramaters to and results from methods, events
+ *  and errors.
+ *
+ *  It also provides several convenience methods to automatically
+ *  search and find matching transactions and events to parse them.
  *
  *  @_subsection api/abi:Interfaces  [interfaces]
  */
@@ -27,13 +33,39 @@ import type { JsonFragment } from "./fragments.js";
 
 export { checkResultErrors, Result };
 
+/**
+ *  When using the [[Interface-parseLog]] to automatically match a Log to its event
+ *  for parsing, a **LogDescription** is returned.
+ */
 export class LogDescription {
+    /**
+     *  The matching fragment for the ``topic0``.
+     */
     readonly fragment!: EventFragment;
+
+    /**
+     *  The name of the Event.
+     */
     readonly name!: string;
+
+    /**
+     *  The full Event signature.
+     */
     readonly signature!: string;
+
+    /**
+     *  The topic hash for the Event.
+     */
     readonly topic!: string;
+
+    /**
+     *  The arguments passed into the Event with ``emit``.
+     */
     readonly args!: Result
 
+    /**
+     *  @_ignore:
+     */
     constructor(fragment: EventFragment, topic: string, args: Result) {
         const name = fragment.name, signature = fragment.format();
         defineProperties<LogDescription>(this, {
@@ -42,14 +74,45 @@ export class LogDescription {
     }
 }
 
+/**
+ *  When using the [[Interface-parseTransaction]] to automatically match
+ *  a transaction data to its function for parsing,
+ *  a **TransactionDescription** is returned.
+ */
 export class TransactionDescription {
+    /**
+     *  The matching fragment from the transaction ``data``.
+     */
     readonly fragment!: FunctionFragment;
+
+    /**
+     *  The name of the Function from the transaction ``data``.
+     */
     readonly name!: string;
+
+    /**
+     *  The arguments passed to the Function from the transaction ``data``.
+     */
     readonly args!: Result;
+
+    /**
+     *  The full Function signature from the transaction ``data``.
+     */
     readonly signature!: string;
+
+    /**
+     *  The selector for the Function from the transaction ``data``.
+     */
     readonly selector!: string;
+
+    /**
+     *  The ``value`` (in wei) from the transaction.
+     */
     readonly value!: bigint;
 
+    /**
+     *  @_ignore:
+     */
     constructor(fragment: FunctionFragment, selector: string, args: Result, value: bigint) {
         const name = fragment.name, signature = fragment.format();
         defineProperties<TransactionDescription>(this, {
@@ -58,13 +121,39 @@ export class TransactionDescription {
     }
 }
 
+/**
+ *  When using the [[Interface-parseError]] to automatically match an
+ *  error for a call result for parsing, an **ErrorDescription** is returned.
+ */
 export class ErrorDescription {
+    /**
+     *  The matching fragment.
+     */
     readonly fragment!: ErrorFragment;
+
+    /**
+     *  The name of the Error.
+     */
     readonly name!: string;
+
+    /**
+     *  The arguments passed to the Error with ``revert``.
+     */
     readonly args!: Result;
+
+    /**
+     *  The full Error signature.
+     */
     readonly signature!: string;
+
+    /**
+     *  The selector for the Error.
+     */
     readonly selector!: string;
 
+    /**
+     *  @_ignore:
+     */
     constructor(fragment: ErrorFragment, selector: string, args: Result) {
         const name = fragment.name, signature = fragment.format();
         defineProperties<ErrorDescription>(this, {
@@ -73,14 +162,35 @@ export class ErrorDescription {
     }
 }
 
+/**
+ *  An **Indexed** is used as a value when a value that does not
+ *  fit within a topic (i.e. not a fixed-length, 32-byte type). It
+ *  is the ``keccak256`` of the value, and used for types such as
+ *  arrays, tuples, bytes and strings.
+ */
 export class Indexed {
+    /**
+     *  The ``keccak256`` of the value logged.
+     */
     readonly hash!: null | string;
+
+    /**
+     *  @_ignore:
+     */
     readonly _isIndexed!: boolean;
 
+    /**
+     *  Returns ``true`` if %%value%% is an **Indexed**.
+     *
+     *  This provides a Type Guard for property access.
+     */
     static isIndexed(value: any): value is Indexed {
         return !!(value && value._isIndexed);
     }
 
+    /**
+     *  @_ignore:
+     */
     constructor(hash: null | string) {
         defineProperties<Indexed>(this, { hash, _isIndexed: true })
     }
@@ -152,7 +262,23 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
 */
 
 /**
- *  @TODO
+ *  An **InterfaceAbi** may be any supported ABI format.
+ *
+ *  A string is expected to be a JSON string, which will be parsed
+ *  using ``JSON.parse``. This means that the value **must** be a valid
+ *  JSON string, with no stray commas, etc.
+ *
+ *  An array may contain any combination of:
+ *  - Human-Readable fragments
+ *  - Parsed JSON fragment
+ *  - [[Fragment]] instances
+ *
+ *  A **Human-Readable Fragment** is a string which resembles a Solidity
+ *  signature and is introduced in [this blog entry](link-ricmoo-humanreadableabi).
+ *  For example, ``function balanceOf(address) view returns (uint)``.
+ *
+ *  A **Parsed JSON Fragment** is a JavaScript Object desribed in the
+ *  [Solidity documentation](link-solc-jsonabi).
  */
 export type InterfaceAbi = string | ReadonlyArray<Fragment | JsonFragment | string>;
 

@@ -6,6 +6,9 @@ import { SocketProvider } from "./provider-socket.js";
 
 import type { Networkish } from "./network.js";
 
+/**
+ *  A generic interface to a Websocket-like object.
+ */
 export interface WebSocketLike {
     onopen: null | ((...args: Array<any>) => any);
     onmessage: null | ((...args: Array<any>) => any);
@@ -17,8 +20,22 @@ export interface WebSocketLike {
     close(code?: number, reason?: string): void;
 }
 
+/**
+ *  A function which can be used to re-create a WebSocket connection
+ *  on disconnect.
+ */
 export type WebSocketCreator = () => WebSocketLike;
 
+/**
+ *  A JSON-RPC provider which is backed by a WebSocket.
+ *
+ *  WebSockets are often preferred because they retain a live connection
+ *  to a server, which permits more instant access to events.
+ *
+ *  However, this incurs higher server infrasturture costs, so additional
+ *  resources may be required to host your own WebSocket nodes and many
+ *  third-party services charge additional fees for WebSocket endpoints.
+ */
 export class WebSocketProvider extends SocketProvider {
     #connect: null | WebSocketCreator;
 

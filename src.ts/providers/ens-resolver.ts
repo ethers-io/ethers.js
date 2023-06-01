@@ -1,5 +1,6 @@
 /**
- *  About ENS Resolver
+ *  ENS is a service which allows easy-to-remember names to map to
+ *  network addresses.
  *
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
  */
@@ -50,7 +51,14 @@ export type AvatarLinkageType = "name" | "avatar" | "!avatar" | "url" | "data" |
  *  An individual record for each step during avatar resolution.
  */
 export interface AvatarLinkage {
+    /**
+     *  The type of linkage.
+     */
     type: AvatarLinkageType;
+
+    /**
+     *  The linkage value.
+     */
     value: string;
 };
 
@@ -63,7 +71,17 @@ export interface AvatarLinkage {
  *  each completed step during avatar resolution.
  */
 export interface AvatarResult {
+    /**
+     *  How the [[url]] was arrived at, resolving the many steps required
+     *  for an avatar URL.
+     */
     linkage: Array<AvatarLinkage>;
+
+    /**
+     *  The avatar URL or null if the avatar was not set, or there was
+     *  an issue during validation (such as the address not owning the
+     *  avatar or a metadata error).
+     */
     url: null | string;
 };
 
@@ -71,8 +89,14 @@ export interface AvatarResult {
  *  A provider plugin super-class for processing multicoin address types.
  */
 export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin {
+    /**
+     *  The name.
+     */
     readonly name!: string;
 
+    /**
+     *  Creates a new **MulticoinProviderPluing** for %%name%%.
+     */
     constructor(name: string) {
         defineProperties<MulticoinProviderPlugin>(this, { name });
     }
@@ -81,14 +105,23 @@ export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin 
         return this;
     }
 
+    /**
+     *  Returns ``true`` if %%coinType%% is supported by this plugin.
+     */
     supportsCoinType(coinType: number): boolean {
         return false;
     }
 
+    /**
+     *  Resovles to the encoded %%address%% for %%coinType%%.
+     */
     async encodeAddress(coinType: number, address: string): Promise<string> {
         throw new Error("unsupported coin");
     }
 
+    /**
+     *  Resovles to the decoded %%data%% for %%coinType%%.
+     */
     async decodeAddress(coinType: number, data: BytesLike): Promise<string> {
         throw new Error("unsupported coin");
     }
@@ -97,9 +130,14 @@ export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin 
 const BasicMulticoinPluginId = "org.ethers.plugins.provider.BasicMulticoin";
 
 /**
- *  A basic multicoin provider plugin.
+ *  A **BasicMulticoinProviderPlugin** provides service for common
+ *  coin types, which do not require additional libraries to encode or
+ *  decode.
  */
 export class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
+    /**
+     *  Creates a new **BasicMulticoinProviderPlugin**.
+     */
     constructor() {
         super(BasicMulticoinPluginId);
     }

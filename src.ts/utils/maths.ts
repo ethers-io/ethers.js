@@ -113,6 +113,10 @@ export function getBigInt(value: BigNumberish, name?: string): bigint {
     assertArgument(false, "invalid BigNumberish value", name || "value", value);
 }
 
+/**
+ *  Returns %%value%% as a bigint, validating it is valid as a bigint
+ *  value and that it is positive.
+ */
 export function getUint(value: BigNumberish, name?: string): bigint {
     const result = getBigInt(value, name);
     assert(result >= BN_0, "unsigned value cannot be negative", "NUMERIC_FAULT", {

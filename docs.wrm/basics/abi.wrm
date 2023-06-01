@@ -1,26 +1,97 @@
-_section: ABI
+_section: Application Binary Interfaces  @<docs-abi>
 
-Explain about ABI here, what it does and does not do
+When interacting with any application, whether it is on Ethereum,
+over the internet or within a compiled application on a computer
+all information is stored and sent as binary data which is just a
+sequence of bytes.
 
-- encodes arbitrary (but defined) data structures to raw bytes
+So every application must agree on how to encode and decode their
+information as a sequence of bytes.
 
-_subsection: Call
+An **Application Binary Interface** (ABI) provides a way to describe
+the encoding and decoding process, in a generic way so that a variety
+of types and structures of types can be defined.
 
-About encoding
+For example, a string is often encoded as a UTF-8 sequence of bytes,
+which uses specific bits within sub-sequences to indicate emoji and
+other special characters. Every implementation of UTF-8 must understand
+and operate under the same rules so that strings work universally. In
+this way, UTF-8 standard is itself an ABI.
 
-_heading: selector or signature hash (sighash)
+When interacting with Ethereum, a contract received a sequence of bytes
+as input (provided by sending a transaction or through a call) and
+returns a result as a sequence of bytes. So, each Contract has its own
+ABI that helps specify how to encode the input and how to decode the output.
 
-_heading: Results
+It is up to the contract developer to make this ABI available. Many
+Contracts implement a standard (such as ERC-20), in which case the
+ABI for that standard can be used. Many developers choose to verify their
+source code on Etherscan, in which case Etherscan computes the ABI and
+provides it through their website (which can be fetched using the ``getContract``
+method). Otherwise, beyond reverse engineering the Contract there is
+not a meaningful way to extract the contract ABI.
 
-_subsection: Events
+_subsection: Call Data Representation
+
+When calling a Contract on Ethereum, the input data must be encoded
+according to the ABI.
+
+The first 4 bytes of the data are the **method selector**, which is
+the keccak256 hash of the normalized method signature.
+
+Then the method parameters are encoded and concatenated to the selector.
+
+All encoded data is made up of components padded to 32 bytes, so the length
+of input data will always be congruent to ``4 mod 32``.
+
+The result of a successful call will be encoded values, whose components
+are padded to 32 bytes each as well, so the length of a result will always
+be congruent to ``0 mod 32``, on success.
+
+The result of a reverted call will contain the **error selector** as the
+first 4 bytes, which is the keccak256 of the normalized error signature,
+followed by the encoded values, whose components are padded to 32 bytes
+each, so the length of a revert will be congruent to ``4 mod 32``.
+
+The one exception to all this is that ``revert(false)`` will return a
+result or ``0x``.
+
+
+_subsection: Event Data Representation
+
+When an Event is emitted from a contract, there are two places data is
+logged in a Log: the **topics** and the **data**.
+
+An additonal fee is paid for each **topic**, but this affords a topic
+to be indexed in a bloom filter within the block, which allows efficient
+filtering.
+
+The **topic hash** is always the first topic in a Log, which is the
+keccak256 of the normalized event signature. This allows a specific
+event to be efficiently filtered, finding the matching events in a block.
+
+Each additional **indexed** parameter (i.e. parameters marked with
+``indexed`` in the signautre) are placed in the topics as well, but may be
+filtered to find matching values.
+
+All non-indexed parameters are encoded and placed in the **data**. This
+is cheaper and more compact, but does not allow filtering on these values.
+
+For example, the event ``Transfer(address indexed from, address indexed to, uint value)``
+would require 3 topics, which are the topic hash, the ``from`` address
+and the ``to`` address and the data would contain 32 bytes, which is
+the padded big-endian representation of ``value``. This allows for
+efficient filtering by the event (i.e. ``Transfer``) as well as the ``from``
+address and ``to`` address.
 
 
 _subsection: Deployment
 
-About initcode
+When deploying a transaction, the data provided is treated as **initcode**,
+which executes the data as normal EVM bytecode, which returns a sequence
+of bytes, but instead of that sequence of bytes being treated as data that
+result is instead the bytecode to install as the bytecode of the contract.
 
-Another paragraph [[link-bip-39]].
-
-_heading: Foo?
-
-Bar?
+The bytecode produced by Solidity is designed to have all constructor
+parameters encoded normally and concatenated to the bytecode and provided
+as the ``data`` to a transaction with no ``to`` address.

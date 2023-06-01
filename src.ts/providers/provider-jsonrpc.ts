@@ -1,5 +1,11 @@
 /**
- *  About JSON-RPC...
+ *  One of the most common ways to interact with the blockchain is
+ *  by a node running a JSON-RPC interface which can be connected to,
+ *  based on the transport, using:
+ *
+ *  - HTTP or HTTPS - [[JsonRpcProvider]]
+ *  - WebSocket - [[WebSocketProvider]]
+ *  - IPC - [[IpcSocketProvider]]
  *
  * @_section: api/providers/jsonrpc:JSON-RPC Provider  [about-jsonrpcProvider]
  */
@@ -81,9 +87,24 @@ function isPollable(value: any): value is Pollable {
  *  A JSON-RPC payload, which are sent to a JSON-RPC server.
  */
 export type JsonRpcPayload = {
+    /**
+     *  The JSON-RPC request ID.
+     */
     id: number;
+
+    /**
+     *  The JSON-RPC request method.
+     */
     method: string;
+
+    /**
+     *  The JSON-RPC request parameters.
+     */
     params: Array<any> | Record<string, any>;
+
+    /**
+     *  A required constant in the JSON-RPC specification.
+     */
     jsonrpc: "2.0";
 };
 
@@ -91,7 +112,14 @@ export type JsonRpcPayload = {
  *  A JSON-RPC result, which are returned on success from a JSON-RPC server.
  */
 export type JsonRpcResult = {
+    /**
+     *  The response ID to match it to the relevant request.
+     */
     id: number;
+
+    /**
+     *  The response result.
+     */
     result: any;
 };
 
@@ -99,7 +127,14 @@ export type JsonRpcResult = {
  *  A JSON-RPC error, which are returned on failure from a JSON-RPC server.
  */
 export type JsonRpcError = {
+    /**
+     *  The response ID to match it to the relevant request.
+     */
     id: number;
+
+    /**
+     *  The response error.
+     */
     error: {
         code: number;
         message?: string;
@@ -168,22 +203,72 @@ const defaultOptions = {
     batchMaxCount: 100       // 100 requests
 }
 
+/**
+ *  A **JsonRpcTransactionRequest** is formatted as needed by the JSON-RPC
+ *  Ethereum API specification.
+ */
 export interface JsonRpcTransactionRequest {
+     /**
+      *  The sender address to use when signing.
+      */
      from?: string;
+
+     /**
+      *  The target address.
+      */
      to?: string;
+
+     /**
+      *  The transaction data.
+      */
      data?: string;
 
+     /**
+      *  The chain ID the transaction is valid on.
+      */
      chainId?: string;
+
+     /**
+      *  The [[link-eip-2718]] transaction type.
+      */
      type?: string;
+
+     /**
+      *  The maximum amount of gas to allow a transaction to consume.
+      *
+      *  In most other places in ethers, this is called ``gasLimit`` which
+      *  differs from the JSON-RPC Ethereum API specification.
+      */
      gas?: string;
 
+     /**
+      *  The gas price per wei for transactions prior to [[link-eip-1559]].
+      */
      gasPrice?: string;
+
+     /**
+      *  The maximum fee per gas for [[link-eip-1559]] transactions.
+      */
      maxFeePerGas?: string;
+
+     /**
+      *  The maximum priority fee per gas for [[link-eip-1559]] transactions.
+      */
      maxPriorityFeePerGas?: string;
 
+     /**
+      *  The nonce for the transaction.
+      */
      nonce?: string;
+
+     /**
+      *  The transaction value (in wei).
+      */
      value?: string;
 
+     /**
+      *  The transaction access list.
+      */
      accessList?: Array<{ address: string, storageKeys: Array<string> }>;
 }
 
