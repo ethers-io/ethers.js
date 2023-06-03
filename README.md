@@ -21,7 +21,7 @@ in [TypeScript](https://www.typescriptlang.org).
 - Meta-classes create JavaScript objects from any contract ABI, including **ABIv2** and **Human-Readable ABI**
 - Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), [Alchemy](https://alchemyapi.io), [Ankr](https://ankr.com) or [MetaMask](https://metamask.io)
 - **ENS names** are first-class citizens; they can be used anywhere an Ethereum addresses can be used
-- **Tiny** (~120kb compressed; 400kb uncompressed)
+- **Small** (~120kb compressed; 400kb uncompressed)
 - **Tree-shaking** focused; include only what you need during bundling
 - **Complete** functionality for all your Ethereum desires
 - Extensive [documentation](https://docs.ethers.org/v6/)
