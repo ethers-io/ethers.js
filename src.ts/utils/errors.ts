@@ -214,6 +214,9 @@ export interface UnsupportedOperationError extends EthersError<"UNSUPPORTED_OPER
  *  This Error indicates a proplem connecting to a network.
  */
 export interface NetworkError extends EthersError<"NETWORK_ERROR"> {
+    /**
+     *  The network event.
+     */
     event: string;
 }
 
