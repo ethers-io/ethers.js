@@ -4,7 +4,7 @@ import {
 //    CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
-    PocketProvider,
+//    PocketProvider,
     QuickNodeProvider,
 
     FallbackProvider,
@@ -69,6 +69,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+/*
     {
         name: "PocketProvider",
         networks: ethNetworks,
@@ -76,6 +77,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new PocketProvider(network);
         }
     },
+*/
     {
         name: "QuickNodeProvider",
         networks: ethNetworks,

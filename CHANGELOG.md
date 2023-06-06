@@ -3,7 +3,7 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.4.2 (2023-06-05 22:12)
+ethers/v6.4.2 (2023-06-05 22:41)
 --------------------------------
 
   - Bump ens-normalize version ([#4071](https://github.com/ethers-io/ethers.js/issues/4071), [#4077](https://github.com/ethers-io/ethers.js/issues/4077), [#4080](https://github.com/ethers-io/ethers.js/issues/4080), [#4102](https://github.com/ethers-io/ethers.js/issues/4102); [c135784](https://github.com/ethers-io/ethers.js/commit/c1357847dcdec93d72f28d890f9271d0289ccefd)).

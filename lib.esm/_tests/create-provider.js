@@ -1,7 +1,9 @@
 import { AlchemyProvider, 
 //    AnkrProvider,
 //    CloudflareProvider,
-EtherscanProvider, InfuraProvider, PocketProvider, QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
+EtherscanProvider, InfuraProvider, 
+//    PocketProvider,
+QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
 ;
 const ethNetworks = ["default", "mainnet", "goerli"];
 //const maticNetworks = [ "matic", "maticmum" ];
@@ -52,13 +54,15 @@ const ProviderCreators = [
             return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
-    {
-        name: "PocketProvider",
-        networks: ethNetworks,
-        create: function (network) {
-            return new PocketProvider(network);
-        }
-    },
+    /*
+        {
+            name: "PocketProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                return new PocketProvider(network);
+            }
+        },
+    */
     {
         name: "QuickNodeProvider",
         networks: ethNetworks,
