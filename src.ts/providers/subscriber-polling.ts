@@ -239,6 +239,7 @@ export class PollingEventSubscriber implements Subscriber {
         const filter = copy(this.#filter);
         filter.fromBlock = this.#blockNumber + 1;
         filter.toBlock = blockNumber;
+
         const logs = await this.#provider.getLogs(filter);
 
         // No logs could just mean the node has not indexed them yet,
@@ -250,10 +251,13 @@ export class PollingEventSubscriber implements Subscriber {
             return;
         }
 
-        this.#blockNumber = blockNumber;
-
         for (const log of logs) {
             this.#provider.emit(this.#filter, log);
+
+            // Only advance the block number when logs were found to
+            // account for networks (like BNB and Polygon) which may
+            // sacrifice event consistency for block event speed
+            this.#blockNumber = log.blockNumber;
         }
     }
 
