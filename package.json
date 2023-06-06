@@ -9,7 +9,7 @@
     "./lib.esm/wordlists/wordlists.js": "./lib.esm/wordlists/wordlists-browser.js"
   },
   "dependencies": {
-    "@adraffy/ens-normalize": "https://github.com/ricmoo/ens-normalize.js",
+    "@adraffy/ens-normalize": "1.9.2",
     "@noble/hashes": "1.1.2",
     "@noble/secp256k1": "1.7.1",
     "@types/node": "18.15.13",
@@ -93,7 +93,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "15ed2f5b32084527961332481c9442a313036a01",
+  "gitHead": "9b0e9920c09577296ec0e2abb3acc3f3299d96c7",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -131,5 +131,5 @@
     "test-esm": "mocha --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js"
   },
   "sideEffects": false,
-  "version": "6.4.1"
+  "version": "6.4.2"
 }
