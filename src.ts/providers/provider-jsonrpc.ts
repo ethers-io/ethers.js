@@ -505,7 +505,12 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
 
                             // No result; the node failed us in unexpected ways
                             if (resp == null) {
-                                return reject(makeError("no response from server", "BAD_DATA", { value: result, info: { payload } }));
+                                const error = makeError("missing response for request", "BAD_DATA", {
+                                    value: result, info: { payload }
+                                });
+                                this.emit("error", error);
+                                reject(error);
+                                continue;
                             }
 
                             // The response is an error
