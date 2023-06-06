@@ -225,9 +225,12 @@ export class PollingEventSubscriber {
             }
             return;
         }
-        this.#blockNumber = blockNumber;
         for (const log of logs) {
             this.#provider.emit(this.#filter, log);
+            // Only advance the block number when logs were found to
+            // account for networks (like BNB and Polygon) which may
+            // sacrifice event consistency for block event speed
+            this.#blockNumber = log.blockNumber;
         }
     }
     start() {

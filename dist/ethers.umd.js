@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.4.1";
+    const version = "6.4.2";
 
     /**
      *  Property helper functions.
@@ -16393,9 +16393,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 return;
             }
-            this.#blockNumber = blockNumber;
             for (const log of logs) {
                 this.#provider.emit(this.#filter, log);
+                // Only advance the block number when logs were found to
+                // account for networks (like BNB and Polygon) which may
+                // sacrifice event consistency for block event speed
+                this.#blockNumber = log.blockNumber;
             }
         }
         start() {

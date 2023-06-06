@@ -3,6 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.4.2 (2023-06-05 22:12)
+--------------------------------
+
+  - Bump ens-normalize version ([#4071](https://github.com/ethers-io/ethers.js/issues/4071), [#4077](https://github.com/ethers-io/ethers.js/issues/4077), [#4080](https://github.com/ethers-io/ethers.js/issues/4080), [#4102](https://github.com/ethers-io/ethers.js/issues/4102); [c135784](https://github.com/ethers-io/ethers.js/commit/c1357847dcdec93d72f28d890f9271d0289ccefd)).
+  - Fix for networks with polling with non-consistent block and filter events ([#4119](https://github.com/ethers-io/ethers.js/issues/4119); [9b0e992](https://github.com/ethers-io/ethers.js/commit/9b0e9920c09577296ec0e2abb3acc3f3299d96c7)).
+
 ethers/v6.4.1 (2023-06-01 17:52)
 --------------------------------
 
