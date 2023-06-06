@@ -495,6 +495,11 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
                         // Process results in batch order
                         for (const { resolve, reject, payload } of batch) {
 
+                            if (this.destroyed) {
+                                reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: payload.method }));
+                                continue;
+                            }
+
                             // Find the matching result
                             const resp = result.filter((r) => (r.id === payload.id))[0];
 
@@ -506,7 +511,6 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
                             // The response is an error
                             if ("error" in resp) {
                                 return reject(this.getRpcError(payload, resp));
-
                             }
 
                             // All good; send the result
@@ -578,13 +582,6 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
      *  Sub-classes **MUST** override this.
      */
     abstract _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>>;
-    /*
-     {
-        assert(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
-            operation: "jsonRpcApiProvider._send"
-        });
-    }
-    */
 
 
     /**
@@ -678,11 +675,12 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         (async () => {
 
             // Bootstrap the network
-            while (this.#network == null) {
+            while (this.#network == null && !this.destroyed) {
                 try {
                     this.#network = await this._detectNetwork();
                 } catch (error) {
-                    console.log("JsonRpcProvider failed to startup; retry in 1s");
+                    console.log("JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)");
+                    this.emit("error", makeError("failed to bootstrap network detection", "NETWORK_ERROR", { event: "initial-network-discovery", info: { error } }));
                     await stall(1000);
                 }
             }
@@ -973,6 +971,11 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     send(method: string, params: Array<any> | Record<string, any>): Promise<any> {
         // @TODO: cache chainId?? purge on switch_networks
 
+        // We have been destroyed; no operations are supported anymore
+        if (this.destroyed) {
+            return Promise.reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: method }));
+        }
+
         const id = this.#nextId++;
         const promise = new Promise((resolve, reject) => {
             this.#payloads.push({
@@ -1030,6 +1033,26 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     async listAccounts(): Promise<Array<JsonRpcSigner>> {
         const accounts: Array<string> = await this.send("eth_accounts", [ ]);
         return accounts.map((a) => new JsonRpcSigner(this, a));
+    }
+
+    destroy(): void {
+
+        // Stop processing requests
+        if (this.#drainTimer) {
+            clearTimeout(this.#drainTimer);
+            this.#drainTimer = null;
+        }
+
+        // Cancel all pending requests
+        for (const { payload, reject } of this.#payloads) {
+            reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: payload.method }));
+        }
+
+        this.#payloads = [ ];
+
+        // Parent clean-up
+        super.destroy();
+
     }
 }
 

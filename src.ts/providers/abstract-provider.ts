@@ -421,6 +421,8 @@ export class AbstractProvider implements Provider {
     // null=unpaused, true=paused+dropWhilePaused, false=paused
     #pausedState: null | boolean;
 
+    #destroyed: boolean;
+
     #networkPromise: null | Promise<Network>;
     readonly #anyNetwork: boolean;
 
@@ -461,6 +463,8 @@ export class AbstractProvider implements Provider {
         this.#subs = new Map();
         this.#plugins = new Map();
         this.#pausedState = null;
+
+        this.#destroyed = false;
 
         this.#nextTimer = 1;
         this.#timers = new Map();
@@ -1446,8 +1450,19 @@ export class AbstractProvider implements Provider {
     }
 
     /**
+     *  If this provider has been destroyed using the [[destroy]] method.
+     *
+     *  Once destroyed, all resources are reclaimed, internal event loops
+     *  and timers are cleaned up and no further requests may be sent to
+     *  the provider.
+     */
+    get destroyed(): boolean {
+        return this.#destroyed;
+    }
+
+    /**
      *  Sub-classes may use this to shutdown any sockets or release their
-     *  resources.
+     *  resources and reject any pending requests.
      *
      *  Sub-classes **must** call ``super.destroy()``.
      */
@@ -1459,6 +1474,8 @@ export class AbstractProvider implements Provider {
         for (const timerId of this.#timers.keys()) {
             this._clearTimeout(timerId);
         }
+
+        this.#destroyed = true;
     }
 
     /**
