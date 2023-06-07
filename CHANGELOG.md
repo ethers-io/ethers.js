@@ -3,6 +3,15 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.5.0 (2023-06-06 22:41)
+--------------------------------
+
+  - Fix CJS browser bundling ([#4033](https://github.com/ethers-io/ethers.js/issues/4033); [38ee319](https://github.com/ethers-io/ethers.js/commit/38ee3195b0192d8180899fd61308e03fa3a0eb32)).
+  - Fixed type guard for non-Typed instances ([#4087](https://github.com/ethers-io/ethers.js/issues/4087); [20c3d1b](https://github.com/ethers-io/ethers.js/commit/20c3d1b109743e33ab60a75d69bf7ede73b15ce2)).
+  - Add confirmations to TransactionResponse ([#4094](https://github.com/ethers-io/ethers.js/issues/4094); [bb8685b](https://github.com/ethers-io/ethers.js/commit/bb8685b112ce1c689c740d4dbcb358c16fb9b22d)).
+  - Fix stray promises when a node returns invalid results ([#4118](https://github.com/ethers-io/ethers.js/issues/4118); [3c1bad2](https://github.com/ethers-io/ethers.js/commit/3c1bad2fb7ad4a6ff90ff11f3e382fd18e41c800)).
+  - Added support to detect and stop providers spinning on intitial network detection ([#4015](https://github.com/ethers-io/ethers.js/issues/4015); [f37a52d](https://github.com/ethers-io/ethers.js/commit/f37a52da28ac130b7f4de52901618320994ea87a)).
+
 ethers/v6.4.2 (2023-06-05 22:41)
 --------------------------------
 

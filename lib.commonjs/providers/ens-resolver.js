@@ -469,7 +469,7 @@ class EnsResolver {
                 return null;
             }
             // Optimization since the eth node cannot change and does
-            // not have a wildcar resolver
+            // not have a wildcard resolver
             if (name !== "eth" && currentName === "eth") {
                 return null;
             }

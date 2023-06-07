@@ -915,6 +915,24 @@ export class TransactionResponse {
         return this.provider.getTransaction(this.hash);
     }
     /**
+     *  Resolve to the number of confirmations this transaction has.
+     */
+    async confirmations() {
+        if (this.blockNumber == null) {
+            const { tx, blockNumber } = await resolveProperties({
+                tx: this.getTransaction(),
+                blockNumber: this.provider.getBlockNumber()
+            });
+            // Not mined yet...
+            if (tx == null || tx.blockNumber == null) {
+                return 0;
+            }
+            return blockNumber - tx.blockNumber + 1;
+        }
+        const blockNumber = await this.provider.getBlockNumber();
+        return blockNumber - this.blockNumber + 1;
+    }
+    /**
      *  Resolves once this transaction has been mined and has
      *  %%confirms%% blocks including it (default: ``1``) with an
      *  optional %%timeout%%.

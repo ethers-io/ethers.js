@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.4.2";
+    const version = "6.5.0";
 
     /**
      *  Property helper functions.
@@ -7113,7 +7113,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Returns true only if %%value%% is a [[Typed]] instance.
          */
         static isTyped(value) {
-            return (value && value._typedSymbol === _typedSymbol);
+            return (value
+                && typeof (value) === "object"
+                && "_typedSymbol" in value
+                && value._typedSymbol === _typedSymbol);
         }
         /**
          *  If the value is a [[Typed]] instance, validates the underlying value
@@ -13530,6 +13533,24 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return this.provider.getTransaction(this.hash);
         }
         /**
+         *  Resolve to the number of confirmations this transaction has.
+         */
+        async confirmations() {
+            if (this.blockNumber == null) {
+                const { tx, blockNumber } = await resolveProperties({
+                    tx: this.getTransaction(),
+                    blockNumber: this.provider.getBlockNumber()
+                });
+                // Not mined yet...
+                if (tx == null || tx.blockNumber == null) {
+                    return 0;
+                }
+                return blockNumber - tx.blockNumber + 1;
+            }
+            const blockNumber = await this.provider.getBlockNumber();
+            return blockNumber - this.blockNumber + 1;
+        }
+        /**
          *  Resolves once this transaction has been mined and has
          *  %%confirms%% blocks including it (default: ``1``) with an
          *  optional %%timeout%%.
@@ -15379,7 +15400,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return null;
                 }
                 // Optimization since the eth node cannot change and does
-                // not have a wildcar resolver
+                // not have a wildcard resolver
                 if (name !== "eth" && currentName === "eth") {
                     return null;
                 }
@@ -16582,6 +16603,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #plugins;
         // null=unpaused, true=paused+dropWhilePaused, false=paused
         #pausedState;
+        #destroyed;
         #networkPromise;
         #anyNetwork;
         #performCache;
@@ -16615,6 +16637,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#subs = new Map();
             this.#plugins = new Map();
             this.#pausedState = null;
+            this.#destroyed = false;
             this.#nextTimer = 1;
             this.#timers = new Map();
             this.#disableCcipRead = false;
@@ -17550,8 +17573,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return this.off(event, listener);
         }
         /**
+         *  If this provider has been destroyed using the [[destroy]] method.
+         *
+         *  Once destroyed, all resources are reclaimed, internal event loops
+         *  and timers are cleaned up and no further requests may be sent to
+         *  the provider.
+         */
+        get destroyed() {
+            return this.#destroyed;
+        }
+        /**
          *  Sub-classes may use this to shutdown any sockets or release their
-         *  resources.
+         *  resources and reject any pending requests.
          *
          *  Sub-classes **must** call ``super.destroy()``.
          */
@@ -17562,6 +17595,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             for (const timerId of this.#timers.keys()) {
                 this._clearTimeout(timerId);
             }
+            this.#destroyed = true;
         }
         /**
          *  Whether the provider is currently paused.
@@ -18420,11 +18454,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                             this.emit("debug", { action: "receiveRpcResult", result });
                             // Process results in batch order
                             for (const { resolve, reject, payload } of batch) {
+                                if (this.destroyed) {
+                                    reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: payload.method }));
+                                    continue;
+                                }
                                 // Find the matching result
                                 const resp = result.filter((r) => (r.id === payload.id))[0];
                                 // No result; the node failed us in unexpected ways
                                 if (resp == null) {
-                                    return reject(makeError("no response from server", "BAD_DATA", { value: result, info: { payload } }));
+                                    const error = makeError("missing response for request", "BAD_DATA", {
+                                        value: result, info: { payload }
+                                    });
+                                    this.emit("error", error);
+                                    reject(error);
+                                    continue;
                                 }
                                 // The response is an error
                                 if ("error" in resp) {
@@ -18482,13 +18525,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             assert$1(this.#network, "network is not available yet", "NETWORK_ERROR");
             return this.#network;
         }
-        /*
-         {
-            assert(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
-                operation: "jsonRpcApiProvider._send"
-            });
-        }
-        */
         /**
          *  Resolves to the non-normalized value by performing %%req%%.
          *
@@ -18569,12 +18605,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#notReady = null;
             (async () => {
                 // Bootstrap the network
-                while (this.#network == null) {
+                while (this.#network == null && !this.destroyed) {
                     try {
                         this.#network = await this._detectNetwork();
                     }
                     catch (error) {
-                        console.log("JsonRpcProvider failed to startup; retry in 1s");
+                        console.log("JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)");
+                        this.emit("error", makeError("failed to bootstrap network detection", "NETWORK_ERROR", { event: "initial-network-discovery", info: { error } }));
                         await stall$3(1000);
                     }
                 }
@@ -18826,6 +18863,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         send(method, params) {
             // @TODO: cache chainId?? purge on switch_networks
+            // We have been destroyed; no operations are supported anymore
+            if (this.destroyed) {
+                return Promise.reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: method }));
+            }
             const id = this.#nextId++;
             const promise = new Promise((resolve, reject) => {
                 this.#payloads.push({
@@ -18878,6 +18919,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         async listAccounts() {
             const accounts = await this.send("eth_accounts", []);
             return accounts.map((a) => new JsonRpcSigner(this, a));
+        }
+        destroy() {
+            // Stop processing requests
+            if (this.#drainTimer) {
+                clearTimeout(this.#drainTimer);
+                this.#drainTimer = null;
+            }
+            // Cancel all pending requests
+            for (const { payload, reject } of this.#payloads) {
+                reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: payload.method }));
+            }
+            this.#payloads = [];
+            // Parent clean-up
+            super.destroy();
         }
     }
     class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
@@ -22760,7 +22815,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
         }
         /**
-         *  Create am HD Node from %%mnemonic%%.
+         *  Create an HD Node from %%mnemonic%%.
          */
         static fromMnemonic(mnemonic, path) {
             if (!path) {

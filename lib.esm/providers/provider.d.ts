@@ -776,6 +776,10 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
      */
     getTransaction(): Promise<null | TransactionResponse>;
     /**
+     *  Resolve to the number of confirmations this transaction has.
+     */
+    confirmations(): Promise<number>;
+    /**
      *  Resolves once this transaction has been mined and has
      *  %%confirms%% blocks including it (default: ``1``) with an
      *  optional %%timeout%%.

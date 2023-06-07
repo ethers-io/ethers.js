@@ -242,11 +242,20 @@ export class JsonRpcApiProvider extends AbstractProvider {
                         this.emit("debug", { action: "receiveRpcResult", result });
                         // Process results in batch order
                         for (const { resolve, reject, payload } of batch) {
+                            if (this.destroyed) {
+                                reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: payload.method }));
+                                continue;
+                            }
                             // Find the matching result
                             const resp = result.filter((r) => (r.id === payload.id))[0];
                             // No result; the node failed us in unexpected ways
                             if (resp == null) {
-                                return reject(makeError("no response from server", "BAD_DATA", { value: result, info: { payload } }));
+                                const error = makeError("missing response for request", "BAD_DATA", {
+                                    value: result, info: { payload }
+                                });
+                                this.emit("error", error);
+                                reject(error);
+                                continue;
                             }
                             // The response is an error
                             if ("error" in resp) {
@@ -304,13 +313,6 @@ export class JsonRpcApiProvider extends AbstractProvider {
         assert(this.#network, "network is not available yet", "NETWORK_ERROR");
         return this.#network;
     }
-    /*
-     {
-        assert(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
-            operation: "jsonRpcApiProvider._send"
-        });
-    }
-    */
     /**
      *  Resolves to the non-normalized value by performing %%req%%.
      *
@@ -391,12 +393,13 @@ export class JsonRpcApiProvider extends AbstractProvider {
         this.#notReady = null;
         (async () => {
             // Bootstrap the network
-            while (this.#network == null) {
+            while (this.#network == null && !this.destroyed) {
                 try {
                     this.#network = await this._detectNetwork();
                 }
                 catch (error) {
-                    console.log("JsonRpcProvider failed to startup; retry in 1s");
+                    console.log("JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)");
+                    this.emit("error", makeError("failed to bootstrap network detection", "NETWORK_ERROR", { event: "initial-network-discovery", info: { error } }));
                     await stall(1000);
                 }
             }
@@ -648,6 +651,10 @@ export class JsonRpcApiProvider extends AbstractProvider {
      */
     send(method, params) {
         // @TODO: cache chainId?? purge on switch_networks
+        // We have been destroyed; no operations are supported anymore
+        if (this.destroyed) {
+            return Promise.reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: method }));
+        }
         const id = this.#nextId++;
         const promise = new Promise((resolve, reject) => {
             this.#payloads.push({
@@ -700,6 +707,20 @@ export class JsonRpcApiProvider extends AbstractProvider {
     async listAccounts() {
         const accounts = await this.send("eth_accounts", []);
         return accounts.map((a) => new JsonRpcSigner(this, a));
+    }
+    destroy() {
+        // Stop processing requests
+        if (this.#drainTimer) {
+            clearTimeout(this.#drainTimer);
+            this.#drainTimer = null;
+        }
+        // Cancel all pending requests
+        for (const { payload, reject } of this.#payloads) {
+            reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: payload.method }));
+        }
+        this.#payloads = [];
+        // Parent clean-up
+        super.destroy();
     }
 }
 export class JsonRpcApiPollingProvider extends JsonRpcApiProvider {

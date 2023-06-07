@@ -580,7 +580,10 @@ class Typed {
      *  Returns true only if %%value%% is a [[Typed]] instance.
      */
     static isTyped(value) {
-        return (value && value._typedSymbol === _typedSymbol);
+        return (value
+            && typeof (value) === "object"
+            && "_typedSymbol" in value
+            && value._typedSymbol === _typedSymbol);
     }
     /**
      *  If the value is a [[Typed]] instance, validates the underlying value

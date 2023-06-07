@@ -138,7 +138,7 @@ export declare class HDNodeWallet extends BaseWallet {
      */
     static createRandom(password?: string, path?: string, wordlist?: Wordlist): HDNodeWallet;
     /**
-     *  Create am HD Node from %%mnemonic%%.
+     *  Create an HD Node from %%mnemonic%%.
      */
     static fromMnemonic(mnemonic: Mnemonic, path?: string): HDNodeWallet;
     /**

@@ -393,8 +393,16 @@ export declare class AbstractProvider implements Provider {
     addListener(event: ProviderEvent, listener: Listener): Promise<this>;
     removeListener(event: ProviderEvent, listener: Listener): Promise<this>;
     /**
+     *  If this provider has been destroyed using the [[destroy]] method.
+     *
+     *  Once destroyed, all resources are reclaimed, internal event loops
+     *  and timers are cleaned up and no further requests may be sent to
+     *  the provider.
+     */
+    get destroyed(): boolean;
+    /**
      *  Sub-classes may use this to shutdown any sockets or release their
-     *  resources.
+     *  resources and reject any pending requests.
      *
      *  Sub-classes **must** call ``super.destroy()``.
      */

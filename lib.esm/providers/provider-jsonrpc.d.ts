@@ -313,6 +313,7 @@ export declare abstract class JsonRpcApiProvider extends AbstractProvider {
      */
     getSigner(address?: number | string): Promise<JsonRpcSigner>;
     listAccounts(): Promise<Array<JsonRpcSigner>>;
+    destroy(): void;
 }
 export declare abstract class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     #private;
