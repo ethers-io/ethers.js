@@ -371,7 +371,7 @@ export class HDNodeWallet extends BaseWallet {
     }
 
     /**
-     *  Create am HD Node from %%mnemonic%%.
+     *  Create an HD Node from %%mnemonic%%.
      */
     static fromMnemonic(mnemonic: Mnemonic, path?: string): HDNodeWallet {
         if (!path) { path = defaultPath; }
