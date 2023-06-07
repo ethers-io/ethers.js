@@ -771,7 +771,10 @@ export class Typed {
      *  Returns true only if %%value%% is a [[Typed]] instance.
      */
     static isTyped(value: any): value is Typed {
-        return (value && value._typedSymbol === _typedSymbol);
+        return (value
+            && typeof(value) === "object"
+            && "_typedSymbol" in value
+            && value._typedSymbol === _typedSymbol);
     }
 
     /**
