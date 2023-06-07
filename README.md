@@ -21,24 +21,29 @@ in [TypeScript](https://www.typescriptlang.org).
 - Meta-classes create JavaScript objects from any contract ABI, including **ABIv2** and **Human-Readable ABI**
 - Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), [Alchemy](https://alchemyapi.io), [Ankr](https://ankr.com) or [MetaMask](https://metamask.io)
 - **ENS names** are first-class citizens; they can be used anywhere an Ethereum addresses can be used
-- **Tiny** (~120kb compressed; 400kb uncompressed)
+- **Small** (~144kb compressed; 460kb uncompressed)
 - **Tree-shaking** focused; include only what you need during bundling
 - **Complete** functionality for all your Ethereum desires
 - Extensive [documentation](https://docs.ethers.org/v6/)
 - Large collection of **test cases** which are maintained and added to
-- Fully written in **TypeScript**, with strict types for security
+- Fully written in **TypeScript**, with strict types for security and safety
 - **MIT License** (including ALL dependencies); completely open source to do with as you please
 
 
 Keep Updated
 ------------
 
-For the latest news and advisories, please follow the
-[@ethersproject](https://twitter.com/ethersproject) on Twitter (low-traffic,
-non-marketing, important information only) as well as watch this GitHub project.
+For advisories and important notices, follow [@ethersproject](https://twitter.com/ethersproject)
+on Twitter (low-traffic, non-marketing, important information only) as well as watch this GitHub project.
+
+For more general news, discussions, and feedback, follow or DM me,
+[@ricmoo](https://twitter.com/ricmoo) on Twitter or on the
+[Ethers Discord](https://discord.gg/qYtSscGYYc).
+
 
 For the latest changes, see the
 [CHANGELOG](https://github.com/ethers-io/ethers.js/blob/main/CHANGELOG.md).
+
 
 **Summaries**
 
@@ -121,7 +126,8 @@ The `ethers` package only includes the most common and most core
 functionality to interact with Ethereum. There are many other
 packages designed to further enhance the functionality and experience.
 
-- Hardware Wallets (@TODO)
+- Hardware Wallets (coming soon)
+- Account Abstraction (coming soon)
 
 
 License
