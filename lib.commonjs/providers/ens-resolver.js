@@ -229,7 +229,7 @@ class EnsResolver {
         });
     }
     /**
-     *  Resolves to the EIP-643 text record for %%key%%, or ``null``
+     *  Resolves to the EIP-634 text record for %%key%%, or ``null``
      *  if unconfigured.
      */
     async getText(key) {

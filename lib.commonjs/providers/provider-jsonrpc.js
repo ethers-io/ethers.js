@@ -263,7 +263,8 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                             }
                             // The response is an error
                             if ("error" in resp) {
-                                return reject(this.getRpcError(payload, resp));
+                                reject(this.getRpcError(payload, resp));
+                                continue;
                             }
                             // All good; send the result
                             resolve(resp.result);

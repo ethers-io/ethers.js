@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.5.0";
+const version = "6.5.1";
 
 /**
  *  Property helper functions.
@@ -15154,7 +15154,7 @@ class EnsResolver {
         });
     }
     /**
-     *  Resolves to the EIP-643 text record for %%key%%, or ``null``
+     *  Resolves to the EIP-634 text record for %%key%%, or ``null``
      *  if unconfigured.
      */
     async getText(key) {
@@ -18465,7 +18465,8 @@ class JsonRpcApiProvider extends AbstractProvider {
                             }
                             // The response is an error
                             if ("error" in resp) {
-                                return reject(this.getRpcError(payload, resp));
+                                reject(this.getRpcError(payload, resp));
+                                continue;
                             }
                             // All good; send the result
                             resolve(resp.result);

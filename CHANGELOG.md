@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.5.1 (2023-06-07 20:19)
+--------------------------------
+
+  - Fix lost promise fulfillment when a batch has an error response ([#4126](https://github.com/ethers-io/ethers.js/issues/4126); [8dd21f0](https://github.com/ethers-io/ethers.js/commit/8dd21f03334ffd3cdb7ac532376d51fd4130c7ab)).
+
 ethers/v6.5.0 (2023-06-06 22:41)
 --------------------------------
 
