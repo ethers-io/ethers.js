@@ -5,11 +5,12 @@
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
  */
 
+import { getAddress } from "../address/index.js";
 import { ZeroAddress } from "../constants/index.js";
 import { Contract } from "../contract/index.js";
 import { dnsEncode, namehash } from "../hash/index.js";
 import {
-    hexlify, toBeHex,
+    hexlify, isHexString, toBeHex,
     defineProperties, encodeBase58,
     assert, assertArgument, isError,
     FetchRequest
@@ -184,7 +185,7 @@ export class EnsResolver {
             "function supportsInterface(bytes4) view returns (bool)",
             "function resolve(bytes, bytes) view returns (bytes)",
             "function addr(bytes32) view returns (address)",
-            "function addr(bytes32, uint) view returns (address)",
+            "function addr(bytes32, uint) view returns (bytes)",
             "function text(bytes32, string) view returns (string)",
             "function contenthash(bytes32) view returns (bytes)",
         ], provider);
@@ -276,6 +277,14 @@ export class EnsResolver {
             }
         }
 
+        // Try decoding its EVM canonical chain as an EVM chain address first
+        if (coinType >= 0 && coinType < 0x80000000) {
+            let ethCoinType = coinType + 0x80000000;
+
+            const data = await this.#fetch("addr(bytes32,uint)", [ ethCoinType ]);
+            if (isHexString(data, 20)) { return getAddress(data); }
+        }
+
         let coinPlugin: null | MulticoinProviderPlugin = null;
         for (const plugin of this.provider.plugins) {
             if (!(plugin instanceof MulticoinProviderPlugin)) { continue; }
@@ -294,7 +303,7 @@ export class EnsResolver {
         if (data == null || data === "0x") { return null; }
 
         // Compute the address
-        const address = await coinPlugin.encodeAddress(coinType, data);
+        const address = await coinPlugin.decodeAddress(coinType, data);
 
         if (address != null) { return address; }
 
