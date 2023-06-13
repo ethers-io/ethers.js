@@ -313,7 +313,7 @@ export class FixedNumber {
         return new FixedNumber(_guard, val, this._format);
     }
 
-    _add(o: FixedNumber, safeOp?: string): FixedNumber {
+    private _add(o: FixedNumber, safeOp?: string): FixedNumber {
         this._checkFormat(o);
         return this._checkValue(this._val + o._val, safeOp);
     }
@@ -331,7 +331,7 @@ export class FixedNumber {
      */
     add(other: FixedNumber): FixedNumber { return this._add(other, "add"); }
 
-    _sub(o: FixedNumber, safeOp?: string): FixedNumber {
+    private _sub(o: FixedNumber, safeOp?: string): FixedNumber {
         this._checkFormat(o);
         return this._checkValue(this._val - o._val, safeOp);
     }
@@ -349,7 +349,7 @@ export class FixedNumber {
      */
     sub(other: FixedNumber): FixedNumber { return this._sub(other, "sub"); }
 
-    _mul(o: FixedNumber, safeOp?: string): FixedNumber {
+    private _mul(o: FixedNumber, safeOp?: string): FixedNumber {
         this._checkFormat(o);
         return this._checkValue((this._val * o._val) / this._tens, safeOp);
     }
@@ -381,7 +381,7 @@ export class FixedNumber {
         return this._checkValue(value / this._tens, "mulSignal");
     }
 
-    _div(o: FixedNumber, safeOp?: string): FixedNumber {
+    private _div(o: FixedNumber, safeOp?: string): FixedNumber {
         assert(o._val !== BN_0, "division by zero", "NUMERIC_FAULT", {
             operation: "div", fault: "divide-by-zero", value: this
         });
