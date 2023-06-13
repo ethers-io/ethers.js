@@ -769,6 +769,14 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     }
 
     /**
+     *  Return a new Contract instance with the same ABI and runner, but
+     *  a different %%target%%.
+     */
+    attach(target: string | Addressable): BaseContract {
+        return new BaseContract(target, this.interface, this.runner);
+    }
+
+    /**
      *  Return the resolved address of this Contract.
      */
     async getAddress(): Promise<string> { return await getInternal(this).addrPromise; }
@@ -1022,7 +1030,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     /**
      *  Create a new Class for the %%abi%%.
      */
-    static buildClass<T = ContractInterface>(abi: InterfaceAbi): new (target: string, runner?: null | ContractRunner) => BaseContract & Omit<T, keyof BaseContract> {
+    static buildClass<T = ContractInterface>(abi: Interface | InterfaceAbi): new (target: string, runner?: null | ContractRunner) => BaseContract & Omit<T, keyof BaseContract> {
         class CustomContract extends BaseContract {
             constructor(address: string, runner: null | ContractRunner = null) {
                 super(address, abi, runner);
@@ -1034,14 +1042,14 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     /**
      *  Create a new BaseContract with a specified Interface.
      */
-    static from<T = ContractInterface>(target: string, abi: InterfaceAbi, runner?: null | ContractRunner): BaseContract & Omit<T, keyof BaseContract> {
+    static from<T = ContractInterface>(target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner): BaseContract & Omit<T, keyof BaseContract> {
         if (runner == null) { runner = null; }
         const contract = new this(target, abi, runner );
         return contract as any;
     }
 }
 
-function _ContractBase(): new (target: string, abi: InterfaceAbi, runner?: null | ContractRunner) => BaseContract & Omit<ContractInterface, keyof BaseContract> {
+function _ContractBase(): new (target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner) => BaseContract & Omit<ContractInterface, keyof BaseContract> {
     return BaseContract as any;
 }
 

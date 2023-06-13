@@ -9,6 +9,7 @@ import {
 import { BaseContract, copyOverrides, resolveArgs } from "./contract.js";
 
 import type { InterfaceAbi } from "../abi/index.js";
+import type { Addressable } from "../address/index.js";
 import type { ContractRunner } from "../providers/index.js";
 import type { BytesLike } from "../utils/index.js";
 
@@ -63,6 +64,10 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
         defineProperties<ContractFactory>(this, {
             bytecode, interface: iface, runner: (runner || null)
         });
+    }
+
+    attach(target: string | Addressable): BaseContract & Omit<I, keyof BaseContract> {
+        return new (<any>BaseContract)(target, this.interface, this.runner);
     }
 
     /**
