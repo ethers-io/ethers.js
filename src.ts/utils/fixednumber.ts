@@ -11,11 +11,11 @@
 import { getBytes } from "./data.js";
 import { assert, assertArgument, assertPrivate } from "./errors.js";
 import {
-    getBigInt, fromTwos, mask, toBigInt
+    getBigInt, getNumber, fromTwos, mask, toBigInt
 } from "./maths.js";
 import { defineProperties } from "./properties.js";
 
-import type { BigNumberish, BytesLike } from "./index.js";
+import type { BigNumberish, BytesLike, Numeric } from "./index.js";
 
 const BN_N1 = BigInt(-1);
 const BN_0 = BigInt(0);
@@ -565,8 +565,8 @@ export class FixedNumber {
      *  for %%decimals%%) cannot fit in %%format%%, either due to overflow
      *  or underflow (precision loss).
      */
-    static fromValue(_value: BigNumberish, decimals?: number, _format?: FixedFormat): FixedNumber {
-        if (decimals == null) { decimals = 0; }
+    static fromValue(_value: BigNumberish, _decimals?: Numeric, _format?: FixedFormat): FixedNumber {
+        const decimals = (_decimals == null) ? 0: getNumber(_decimals);
         const format = getFormat(_format);
 
         let value = getBigInt(_value, "value");
