@@ -10,10 +10,7 @@
  */
 import { getBytes } from "./data.js";
 import { assert, assertArgument, assertPrivate } from "./errors.js";
-import {
-    getBigInt, fromTwos, mask, toBigInt
-} from "./maths.js";
-import { defineProperties } from "./properties.js";
+import { getBigInt, fromTwos, mask, toBigInt } from "./maths.js";
 
 import type { BigNumberish, BytesLike } from "./index.js";
 
@@ -228,20 +225,20 @@ export class FixedNumber {
      */
     readonly format!: string;
 
-    readonly #format: _FixedFormat;
+    private readonly _format: _FixedFormat;
 
     // The actual value (accounting for decimals)
-    #val: bigint;
+    private readonly _val: bigint;
 
     // A base-10 value to multiple values by to maintain the magnitude
-    readonly #tens: bigint;
+    private readonly _tens: bigint;
 
     /**
      *  This is a property so console.log shows a human-meaningful value.
      *
      *  @private
      */
-    readonly _value!: string;
+    private readonly _value!: string;
 
     // Use this when changing this file to get some typing info,
     // but then switch to any to mask the internal type
@@ -250,48 +247,46 @@ export class FixedNumber {
     /**
      *  @private
      */
-    constructor(guard: any, value: bigint, format: any) {
+    private constructor(guard: any, value: bigint, format: any) {
         assertPrivate(guard, _guard, "FixedNumber");
 
-        this.#val = value;
+        this._val = value;
+        this._value = toString(value, format.decimals);
 
-        this.#format = format;
+        this.format = format.name
+        this._format = format;
 
-        const _value = toString(value, format.decimals);
-
-        defineProperties<FixedNumber>(this, { format: format.name, _value });
-
-        this.#tens = getTens(format.decimals);
+        this._tens = getTens(format.decimals);
     }
 
     /**
      *  If true, negative values are permitted, otherwise only
      *  positive values and zero are allowed.
      */
-    get signed(): boolean { return this.#format.signed; }
+    get signed(): boolean { return this._format.signed; }
 
     /**
      *  The number of bits available to store the value.
      */
-    get width(): number { return this.#format.width; }
+    get width(): number { return this._format.width; }
 
     /**
      *  The number of decimal places in the fixed-point arithment field.
      */
-    get decimals(): number { return this.#format.decimals; }
+    get decimals(): number { return this._format.decimals; }
 
     /**
      *  The value as an integer, based on the smallest unit the
      *  [[decimals]] allow.
      */
-    get value(): bigint { return this.#val; }
+    get value(): bigint { return this._val; }
 
-    #checkFormat(other: FixedNumber): void {
+    private _checkFormat(other: FixedNumber): void {
         assertArgument(this.format === other.format,
             "incompatible format; use fixedNumber.toFormat", "other", other);
     }
 
-    #checkValue(val: bigint, safeOp?: string): FixedNumber {
+    private _checkValue(val: bigint, safeOp?: string): FixedNumber {
 /*
         const width = BigInt(this.width);
         if (this.signed) {
@@ -314,63 +309,63 @@ export class FixedNumber {
             val = masked;
         }
 */
-        val = checkValue(val, this.#format, safeOp);
-        return new FixedNumber(_guard, val, this.#format);
+        val = checkValue(val, this._format, safeOp);
+        return new FixedNumber(_guard, val, this._format);
     }
 
-    #add(o: FixedNumber, safeOp?: string): FixedNumber {
-        this.#checkFormat(o);
-        return this.#checkValue(this.#val + o.#val, safeOp);
+    _add(o: FixedNumber, safeOp?: string): FixedNumber {
+        this._checkFormat(o);
+        return this._checkValue(this._val + o._val, safeOp);
     }
 
     /**
      *  Returns a new [[FixedNumber]] with the result of %%this%% added
      *  to %%other%%, ignoring overflow.
      */
-    addUnsafe(other: FixedNumber): FixedNumber { return this.#add(other); }
+    addUnsafe(other: FixedNumber): FixedNumber { return this._add(other); }
 
     /**
      *  Returns a new [[FixedNumber]] with the result of %%this%% added
      *  to %%other%%. A [[NumericFaultError]] is thrown if overflow
      *  occurs.
      */
-    add(other: FixedNumber): FixedNumber { return this.#add(other, "add"); }
+    add(other: FixedNumber): FixedNumber { return this._add(other, "add"); }
 
-    #sub(o: FixedNumber, safeOp?: string): FixedNumber {
-        this.#checkFormat(o);
-        return this.#checkValue(this.#val - o.#val, safeOp);
+    _sub(o: FixedNumber, safeOp?: string): FixedNumber {
+        this._checkFormat(o);
+        return this._checkValue(this._val - o._val, safeOp);
     }
 
     /**
      *  Returns a new [[FixedNumber]] with the result of %%other%% subtracted
      *  from %%this%%, ignoring overflow.
      */
-    subUnsafe(other: FixedNumber): FixedNumber { return this.#sub(other); }
+    subUnsafe(other: FixedNumber): FixedNumber { return this._sub(other); }
 
     /**
      *  Returns a new [[FixedNumber]] with the result of %%other%% subtracted
      *  from %%this%%. A [[NumericFaultError]] is thrown if overflow
      *  occurs.
      */
-    sub(other: FixedNumber): FixedNumber { return this.#sub(other, "sub"); }
+    sub(other: FixedNumber): FixedNumber { return this._sub(other, "sub"); }
 
-    #mul(o: FixedNumber, safeOp?: string): FixedNumber {
-        this.#checkFormat(o);
-        return this.#checkValue((this.#val * o.#val) / this.#tens, safeOp);
+    _mul(o: FixedNumber, safeOp?: string): FixedNumber {
+        this._checkFormat(o);
+        return this._checkValue((this._val * o._val) / this._tens, safeOp);
     }
 
     /**
      *  Returns a new [[FixedNumber]] with the result of %%this%% multiplied
      *  by %%other%%, ignoring overflow and underflow (precision loss).
      */
-    mulUnsafe(other: FixedNumber): FixedNumber { return this.#mul(other); }
+    mulUnsafe(other: FixedNumber): FixedNumber { return this._mul(other); }
 
     /**
      *  Returns a new [[FixedNumber]] with the result of %%this%% multiplied
      *  by %%other%%. A [[NumericFaultError]] is thrown if overflow
      *  occurs.
      */
-    mul(other: FixedNumber): FixedNumber { return this.#mul(other, "mul"); }
+    mul(other: FixedNumber): FixedNumber { return this._mul(other, "mul"); }
 
     /**
      *  Returns a new [[FixedNumber]] with the result of %%this%% multiplied
@@ -378,20 +373,20 @@ export class FixedNumber {
      *  occurs or if underflow (precision loss) occurs.
      */
     mulSignal(other: FixedNumber): FixedNumber {
-        this.#checkFormat(other);
-        const value = this.#val * other.#val;
-        assert((value % this.#tens) === BN_0, "precision lost during signalling mul", "NUMERIC_FAULT", {
+        this._checkFormat(other);
+        const value = this._val * other._val;
+        assert((value % this._tens) === BN_0, "precision lost during signalling mul", "NUMERIC_FAULT", {
             operation: "mulSignal", fault: "underflow", value: this
         });
-        return this.#checkValue(value / this.#tens, "mulSignal");
+        return this._checkValue(value / this._tens, "mulSignal");
     }
 
-    #div(o: FixedNumber, safeOp?: string): FixedNumber {
-        assert(o.#val !== BN_0, "division by zero", "NUMERIC_FAULT", {
+    _div(o: FixedNumber, safeOp?: string): FixedNumber {
+        assert(o._val !== BN_0, "division by zero", "NUMERIC_FAULT", {
             operation: "div", fault: "divide-by-zero", value: this
         });
-        this.#checkFormat(o);
-        return this.#checkValue((this.#val * this.#tens) / o.#val, safeOp);
+        this._checkFormat(o);
+        return this._checkValue((this._val * this._tens) / o._val, safeOp);
     }
 
     /**
@@ -399,14 +394,14 @@ export class FixedNumber {
      *  by %%other%%, ignoring underflow (precision loss). A
      *  [[NumericFaultError]] is thrown if overflow occurs.
      */
-    divUnsafe(other: FixedNumber): FixedNumber { return this.#div(other); }
+    divUnsafe(other: FixedNumber): FixedNumber { return this._div(other); }
 
     /**
      *  Returns a new [[FixedNumber]] with the result of %%this%% divided
      *  by %%other%%, ignoring underflow (precision loss). A
      *  [[NumericFaultError]] is thrown if overflow occurs.
      */
-    div(other: FixedNumber): FixedNumber { return this.#div(other, "div"); }
+    div(other: FixedNumber): FixedNumber { return this._div(other, "div"); }
 
 
     /**
@@ -415,15 +410,15 @@ export class FixedNumber {
      *  (precision loss) occurs.
      */
     divSignal(other: FixedNumber): FixedNumber {
-        assert(other.#val !== BN_0, "division by zero", "NUMERIC_FAULT", {
+        assert(other._val !== BN_0, "division by zero", "NUMERIC_FAULT", {
             operation: "div", fault: "divide-by-zero", value: this
         });
-        this.#checkFormat(other);
-        const value = (this.#val * this.#tens);
-        assert((value % other.#val) === BN_0, "precision lost during signalling div", "NUMERIC_FAULT", {
+        this._checkFormat(other);
+        const value = (this._val * this._tens);
+        assert((value % other._val) === BN_0, "precision lost during signalling div", "NUMERIC_FAULT", {
             operation: "divSignal", fault: "underflow", value: this
         });
-        return this.#checkValue(value / other.#val, "divSignal");
+        return this._checkValue(value / other._val, "divSignal");
     }
 
     /**
@@ -482,10 +477,10 @@ export class FixedNumber {
      *  The decimal component of the result will always be ``0``.
      */
     floor(): FixedNumber {
-        let val = this.#val;
-        if (this.#val < BN_0) { val -= this.#tens - BN_1; }
-        val = (this.#val / this.#tens) * this.#tens;
-        return this.#checkValue(val, "floor");
+        let val = this._val;
+        if (this._val < BN_0) { val -= this._tens - BN_1; }
+        val = (this._val / this._tens) * this._tens;
+        return this._checkValue(val, "floor");
     }
 
     /**
@@ -495,10 +490,10 @@ export class FixedNumber {
      *  The decimal component of the result will always be ``0``.
      */
     ceiling(): FixedNumber {
-        let val = this.#val;
-        if (this.#val > BN_0) { val += this.#tens - BN_1; }
-        val = (this.#val / this.#tens) * this.#tens;
-        return this.#checkValue(val, "ceiling");
+        let val = this._val;
+        if (this._val > BN_0) { val += this._tens - BN_1; }
+        val = (this._val / this._tens) * this._tens;
+        return this._checkValue(val, "ceiling");
     }
 
     /**
@@ -518,20 +513,20 @@ export class FixedNumber {
         const tens = getTens(delta);
         value = (value / tens) * tens;
 
-        checkValue(value, this.#format, "round");
+        checkValue(value, this._format, "round");
 
-        return new FixedNumber(_guard, value, this.#format);
+        return new FixedNumber(_guard, value, this._format);
     }
 
     /**
      *  Returns true if %%this%% is equal to ``0``.
      */
-    isZero(): boolean { return (this.#val === BN_0); }
+    isZero(): boolean { return (this._val === BN_0); }
 
     /**
      *  Returns true if %%this%% is less than ``0``.
      */
-    isNegative(): boolean { return (this.#val < BN_0); }
+    isNegative(): boolean { return (this._val < BN_0); }
 
     /**
      *  Returns the string representation of %%this%%.
