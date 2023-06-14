@@ -398,6 +398,24 @@ type _PerformAccountRequest = {
     method: "getStorage", position: bigint
 }
 
+/**
+ *  Options for configuring some internal aspects of an [[AbstractProvider]].
+ *
+ *  **``cacheTimeout``** - how long to cache a low-level ``_perform``
+ *  for, based on input parameters. This reduces the number of calls
+ *  to getChainId and getBlockNumber, but may break test chains which
+ *  can perform operations (internally) synchronously. Use ``-1`` to
+ *  disable, ``0`` will only buffer within the same event loop and
+ *  any other value is in ms. (default: ``250``)
+ */
+export type AbstractProviderOptions = {
+    cacheTimeout?: number;
+};
+
+const defaultOptions = {
+    cacheTimeout: 250
+};
+
 type CcipArgs = {
     sender: string;
     urls: Array<string>;
@@ -436,12 +454,15 @@ export class AbstractProvider implements Provider {
 
     #disableCcipRead: boolean;
 
+    #options: Required<AbstractProviderOptions>;
+
     /**
      *  Create a new **AbstractProvider** connected to %%network%%, or
      *  use the various network detection capabilities to discover the
      *  [[Network]] if necessary.
      */
-    constructor(_network?: "any" | Networkish) {
+    constructor(_network?: "any" | Networkish, options?: AbstractProviderOptions) {
+        this.#options = Object.assign({ }, defaultOptions, options || { });
 
         if (_network === "any") {
             this.#anyNetwork = true;
@@ -512,19 +533,25 @@ export class AbstractProvider implements Provider {
 
     // Shares multiple identical requests made during the same 250ms
     async #perform<T = any>(req: PerformActionRequest): Promise<T> {
+        const timeout = this.#options.cacheTimeout;
+
+        // Caching disabled
+        if (timeout < 0) { return await this._perform(req); }
+
         // Create a tag
         const tag = getTag(req.method, req);
 
         let perform = this.#performCache.get(tag);
         if (!perform) {
             perform = this._perform(req);
+
             this.#performCache.set(tag, perform);
 
             setTimeout(() => {
                 if (this.#performCache.get(tag) === perform) {
                     this.#performCache.delete(tag);
                 }
-            }, 250);
+            }, timeout);
         }
 
         return await perform;

@@ -34,7 +34,7 @@ import { PollingEventSubscriber } from "./subscriber-polling.js";
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 
-import type { PerformActionRequest, Subscriber, Subscription } from "./abstract-provider.js";
+import type { AbstractProviderOptions, PerformActionRequest, Subscriber, Subscription } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
 import type { Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
@@ -185,6 +185,8 @@ export type DebugEventJsonRpcApiProvider = {
  *
  *  **``batchMaxCount``** - maximum number of requests to allow in a batch.
  *  If ``batchMaxCount = 1``, then batching is disabled. (default: ``100``)
+ *
+ *  **``cacheTimeout``** - passed as [[AbstractProviderOptions]].
  */
 export type JsonRpcApiProviderOptions = {
     polling?: boolean;
@@ -192,6 +194,8 @@ export type JsonRpcApiProviderOptions = {
     batchStallTime?: number;
     batchMaxSize?: number;
     batchMaxCount?: number;
+
+    cacheTimeout?: number;
 };
 
 const defaultOptions = {
@@ -200,7 +204,9 @@ const defaultOptions = {
 
     batchStallTime: 10,      // 10ms
     batchMaxSize: (1 << 20), // 1Mb
-    batchMaxCount: 100       // 100 requests
+    batchMaxCount: 100,      // 100 requests
+
+    cacheTimeout: 250
 }
 
 /**
@@ -537,7 +543,11 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     }
 
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions) {
-        super(network);
+        const superOptions: AbstractProviderOptions = { };
+        if (options && options.cacheTimeout != null) {
+            superOptions.cacheTimeout = options.cacheTimeout;
+        }
+        super(network, superOptions);
 
         this.#nextId = 1;
         this.#options = Object.assign({ }, defaultOptions, options || { });
