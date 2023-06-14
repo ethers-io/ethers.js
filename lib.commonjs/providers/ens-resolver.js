@@ -7,10 +7,11 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EnsResolver = exports.BasicMulticoinProviderPlugin = exports.MulticoinProviderPlugin = void 0;
-const index_js_1 = require("../constants/index.js");
-const index_js_2 = require("../contract/index.js");
-const index_js_3 = require("../hash/index.js");
-const index_js_4 = require("../utils/index.js");
+const index_js_1 = require("../address/index.js");
+const index_js_2 = require("../constants/index.js");
+const index_js_3 = require("../contract/index.js");
+const index_js_4 = require("../hash/index.js");
+const index_js_5 = require("../utils/index.js");
 // @TODO: This should use the fetch-data:ipfs gateway
 // Trim off the ipfs:// prefix and return the default gateway URL
 function getIpfsLink(link) {
@@ -21,7 +22,7 @@ function getIpfsLink(link) {
         link = link.substring(7);
     }
     else {
-        (0, index_js_4.assertArgument)(false, "unsupported IPFS format", "link", link);
+        (0, index_js_5.assertArgument)(false, "unsupported IPFS format", "link", link);
     }
     return `https:/\/gateway.ipfs.io/ipfs/${link}`;
 }
@@ -39,7 +40,7 @@ class MulticoinProviderPlugin {
      *  Creates a new **MulticoinProviderPluing** for %%name%%.
      */
     constructor(name) {
-        (0, index_js_4.defineProperties)(this, { name });
+        (0, index_js_5.defineProperties)(this, { name });
     }
     connect(proivder) {
         return this;
@@ -107,13 +108,13 @@ class EnsResolver {
     #supports2544;
     #resolver;
     constructor(provider, address, name) {
-        (0, index_js_4.defineProperties)(this, { provider, address, name });
+        (0, index_js_5.defineProperties)(this, { provider, address, name });
         this.#supports2544 = null;
-        this.#resolver = new index_js_2.Contract(address, [
+        this.#resolver = new index_js_3.Contract(address, [
             "function supportsInterface(bytes4) view returns (bool)",
             "function resolve(bytes, bytes) view returns (bytes)",
             "function addr(bytes32) view returns (address)",
-            "function addr(bytes32, uint) view returns (address)",
+            "function addr(bytes32, uint) view returns (bytes)",
             "function text(bytes32, string) view returns (string)",
             "function contenthash(bytes32) view returns (bytes)",
         ], provider);
@@ -130,7 +131,7 @@ class EnsResolver {
                 catch (error) {
                     // Wildcard resolvers must understand supportsInterface
                     // and return true.
-                    if ((0, index_js_4.isError)(error, "CALL_EXCEPTION")) {
+                    if ((0, index_js_5.isError)(error, "CALL_EXCEPTION")) {
                         return false;
                     }
                     // Let future attempts try again...
@@ -145,15 +146,15 @@ class EnsResolver {
         params = (params || []).slice();
         const iface = this.#resolver.interface;
         // The first parameters is always the nodehash
-        params.unshift((0, index_js_3.namehash)(this.name));
+        params.unshift((0, index_js_4.namehash)(this.name));
         let fragment = null;
         if (await this.supportsWildcard()) {
             fragment = iface.getFunction(funcName);
-            (0, index_js_4.assert)(fragment, "missing fragment", "UNKNOWN_ERROR", {
+            (0, index_js_5.assert)(fragment, "missing fragment", "UNKNOWN_ERROR", {
                 info: { funcName }
             });
             params = [
-                (0, index_js_3.dnsEncode)(this.name),
+                (0, index_js_4.dnsEncode)(this.name),
                 iface.encodeFunctionData(fragment, params)
             ];
             funcName = "resolve(bytes,bytes)";
@@ -169,7 +170,7 @@ class EnsResolver {
             return result;
         }
         catch (error) {
-            if (!(0, index_js_4.isError)(error, "CALL_EXCEPTION")) {
+            if (!(0, index_js_5.isError)(error, "CALL_EXCEPTION")) {
                 throw error;
             }
         }
@@ -187,16 +188,24 @@ class EnsResolver {
             try {
                 const result = await this.#fetch("addr(bytes32)");
                 // No address
-                if (result == null || result === index_js_1.ZeroAddress) {
+                if (result == null || result === index_js_2.ZeroAddress) {
                     return null;
                 }
                 return result;
             }
             catch (error) {
-                if ((0, index_js_4.isError)(error, "CALL_EXCEPTION")) {
+                if ((0, index_js_5.isError)(error, "CALL_EXCEPTION")) {
                     return null;
                 }
                 throw error;
+            }
+        }
+        // Try decoding its EVM canonical chain as an EVM chain address first
+        if (coinType >= 0 && coinType < 0x80000000) {
+            let ethCoinType = coinType + 0x80000000;
+            const data = await this.#fetch("addr(bytes32,uint)", [ethCoinType]);
+            if ((0, index_js_5.isHexString)(data, 20)) {
+                return (0, index_js_1.getAddress)(data);
             }
         }
         let coinPlugin = null;
@@ -219,11 +228,11 @@ class EnsResolver {
             return null;
         }
         // Compute the address
-        const address = await coinPlugin.encodeAddress(coinType, data);
+        const address = await coinPlugin.decodeAddress(coinType, data);
         if (address != null) {
             return address;
         }
-        (0, index_js_4.assert)(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
+        (0, index_js_5.assert)(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${coinType})`,
             info: { coinType, data }
         });
@@ -255,7 +264,7 @@ class EnsResolver {
             const scheme = (ipfs[1] === "e3010170") ? "ipfs" : "ipns";
             const length = parseInt(ipfs[4], 16);
             if (ipfs[5].length === length * 2) {
-                return `${scheme}:/\/${(0, index_js_4.encodeBase58)("0x" + ipfs[2])}`;
+                return `${scheme}:/\/${(0, index_js_5.encodeBase58)("0x" + ipfs[2])}`;
             }
         }
         // Swarm (CID: 1, Type: swarm-manifest; hash/length hard-coded to keccak256/32)
@@ -263,7 +272,7 @@ class EnsResolver {
         if (swarm && swarm[1].length === 64) {
             return `bzz:/\/${swarm[1]}`;
         }
-        (0, index_js_4.assert)(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+        (0, index_js_5.assert)(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
             info: { data }
         });
@@ -333,7 +342,7 @@ class EnsResolver {
                             return { url: null, linkage };
                         }
                         const tokenId = comps[1];
-                        const contract = new index_js_2.Contract(comps[0], [
+                        const contract = new index_js_3.Contract(comps[0], [
                             // ERC-721
                             "function tokenURI(uint) view returns (string)",
                             "function ownerOf(uint) view returns (address)",
@@ -367,7 +376,7 @@ class EnsResolver {
                         linkage.push({ type: "metadata-url-base", value: metadataUrl });
                         // ERC-1155 allows a generic {id} in the URL
                         if (scheme === "erc1155") {
-                            metadataUrl = metadataUrl.replace("{id}", (0, index_js_4.toBeHex)(tokenId, 32).substring(2));
+                            metadataUrl = metadataUrl.replace("{id}", (0, index_js_5.toBeHex)(tokenId, 32).substring(2));
                             linkage.push({ type: "metadata-url-expanded", value: metadataUrl });
                         }
                         // Transform IPFS metadata links
@@ -377,7 +386,7 @@ class EnsResolver {
                         linkage.push({ type: "metadata-url", value: metadataUrl });
                         // Get the token metadata
                         let metadata = {};
-                        const response = await (new index_js_4.FetchRequest(metadataUrl)).send();
+                        const response = await (new index_js_5.FetchRequest(metadataUrl)).send();
                         response.assertOk();
                         try {
                             metadata = response.bodyJson;
@@ -389,7 +398,7 @@ class EnsResolver {
                             catch (error) {
                                 const bytes = response.body;
                                 if (bytes) {
-                                    linkage.push({ type: "!metadata", value: (0, index_js_4.hexlify)(bytes) });
+                                    linkage.push({ type: "!metadata", value: (0, index_js_5.hexlify)(bytes) });
                                 }
                                 return { url: null, linkage };
                             }
@@ -432,7 +441,7 @@ class EnsResolver {
         const network = await provider.getNetwork();
         const ensPlugin = network.getPlugin("org.ethers.plugins.network.Ens");
         // No ENS...
-        (0, index_js_4.assert)(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
+        (0, index_js_5.assert)(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
             operation: "getEnsAddress", info: { network }
         });
         return ensPlugin.address;
@@ -440,13 +449,13 @@ class EnsResolver {
     static async #getResolver(provider, name) {
         const ensAddr = await EnsResolver.getEnsAddress(provider);
         try {
-            const contract = new index_js_2.Contract(ensAddr, [
+            const contract = new index_js_3.Contract(ensAddr, [
                 "function resolver(bytes32) view returns (address)"
             ], provider);
-            const addr = await contract.resolver((0, index_js_3.namehash)(name), {
+            const addr = await contract.resolver((0, index_js_4.namehash)(name), {
                 enableCcipRead: true
             });
-            if (addr === index_js_1.ZeroAddress) {
+            if (addr === index_js_2.ZeroAddress) {
                 return null;
             }
             return addr;

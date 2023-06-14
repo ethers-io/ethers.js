@@ -228,6 +228,19 @@ export type PerformActionRequest = {
     hash: string;
 };
 /**
+ *  Options for configuring some internal aspects of an [[AbstractProvider]].
+ *
+ *  **``cacheTimeout``** - how long to cache a low-level ``_perform``
+ *  for, based on input parameters. This reduces the number of calls
+ *  to getChainId and getBlockNumber, but may break test chains which
+ *  can perform operations (internally) synchronously. Use ``-1`` to
+ *  disable, ``0`` will only buffer within the same event loop and
+ *  any other value is in ms. (default: ``250``)
+ */
+export type AbstractProviderOptions = {
+    cacheTimeout?: number;
+};
+/**
  *  An **AbstractProvider** provides a base class for other sub-classes to
  *  implement the [[Provider]] API by normalizing input arguments and
  *  formatting output results as well as tracking events for consistent
@@ -240,7 +253,7 @@ export declare class AbstractProvider implements Provider {
      *  use the various network detection capabilities to discover the
      *  [[Network]] if necessary.
      */
-    constructor(_network?: "any" | Networkish);
+    constructor(_network?: "any" | Networkish, options?: AbstractProviderOptions);
     /**
      *  Returns ``this``, to allow an **AbstractProvider** to implement
      *  the [[ContractRunner]] interface.

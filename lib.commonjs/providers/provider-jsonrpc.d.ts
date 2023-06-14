@@ -112,6 +112,8 @@ export type DebugEventJsonRpcApiProvider = {
  *
  *  **``batchMaxCount``** - maximum number of requests to allow in a batch.
  *  If ``batchMaxCount = 1``, then batching is disabled. (default: ``100``)
+ *
+ *  **``cacheTimeout``** - passed as [[AbstractProviderOptions]].
  */
 export type JsonRpcApiProviderOptions = {
     polling?: boolean;
@@ -119,6 +121,7 @@ export type JsonRpcApiProviderOptions = {
     batchStallTime?: number;
     batchMaxSize?: number;
     batchMaxCount?: number;
+    cacheTimeout?: number;
 };
 /**
  *  A **JsonRpcTransactionRequest** is formatted as needed by the JSON-RPC

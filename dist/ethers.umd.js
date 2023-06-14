@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.5.1";
+    const version = "6.6.0";
 
     /**
      *  Property helper functions.
@@ -2269,10 +2269,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  for %%decimals%%) cannot fit in %%format%%, either due to overflow
          *  or underflow (precision loss).
          */
-        static fromValue(_value, decimals, _format) {
-            if (decimals == null) {
-                decimals = 0;
-            }
+        static fromValue(_value, _decimals, _format) {
+            const decimals = (_decimals == null) ? 0 : getNumber(_decimals);
             const format = getFormat(_format);
             let value = getBigInt(_value, "value");
             const delta = decimals - format.decimals;
@@ -14574,6 +14572,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new BaseContract(this.target, this.interface, runner);
         }
         /**
+         *  Return a new Contract instance with the same ABI and runner, but
+         *  a different %%target%%.
+         */
+        attach(target) {
+            return new BaseContract(target, this.interface, this.runner);
+        }
+        /**
          *  Return the resolved address of this Contract.
          */
         async getAddress() { return await getInternal(this).addrPromise; }
@@ -14893,6 +14898,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 bytecode, interface: iface, runner: (runner || null)
             });
         }
+        attach(target) {
+            return new BaseContract(target, this.interface, this.runner);
+        }
         /**
          *  Resolves to the transaction to deploy the contract, passing %%args%%
          *  into the constructor.
@@ -15044,7 +15052,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 "function supportsInterface(bytes4) view returns (bool)",
                 "function resolve(bytes, bytes) view returns (bytes)",
                 "function addr(bytes32) view returns (address)",
-                "function addr(bytes32, uint) view returns (address)",
+                "function addr(bytes32, uint) view returns (bytes)",
                 "function text(bytes32, string) view returns (string)",
                 "function contenthash(bytes32) view returns (bytes)",
             ], provider);
@@ -15130,6 +15138,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     throw error;
                 }
             }
+            // Try decoding its EVM canonical chain as an EVM chain address first
+            if (coinType >= 0 && coinType < 0x80000000) {
+                let ethCoinType = coinType + 0x80000000;
+                const data = await this.#fetch("addr(bytes32,uint)", [ethCoinType]);
+                if (isHexString(data, 20)) {
+                    return getAddress(data);
+                }
+            }
             let coinPlugin = null;
             for (const plugin of this.provider.plugins) {
                 if (!(plugin instanceof MulticoinProviderPlugin)) {
@@ -15150,7 +15166,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return null;
             }
             // Compute the address
-            const address = await coinPlugin.encodeAddress(coinType, data);
+            const address = await coinPlugin.decodeAddress(coinType, data);
             if (address != null) {
                 return address;
             }
@@ -16592,6 +16608,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         assertArgument(false, "unknown ProviderEvent", "event", _event);
     }
     function getTime$1() { return (new Date()).getTime(); }
+    const defaultOptions$1 = {
+        cacheTimeout: 250
+    };
     /**
      *  An **AbstractProvider** provides a base class for other sub-classes to
      *  implement the [[Provider]] API by normalizing input arguments and
@@ -16612,12 +16631,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #nextTimer;
         #timers;
         #disableCcipRead;
+        #options;
         /**
          *  Create a new **AbstractProvider** connected to %%network%%, or
          *  use the various network detection capabilities to discover the
          *  [[Network]] if necessary.
          */
-        constructor(_network) {
+        constructor(_network, options) {
+            this.#options = Object.assign({}, defaultOptions$1, options || {});
             if (_network === "any") {
                 this.#anyNetwork = true;
                 this.#networkPromise = null;
@@ -16677,6 +16698,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         set disableCcipRead(value) { this.#disableCcipRead = !!value; }
         // Shares multiple identical requests made during the same 250ms
         async #perform(req) {
+            const timeout = this.#options.cacheTimeout;
+            // Caching disabled
+            if (timeout < 0) {
+                return await this._perform(req);
+            }
             // Create a tag
             const tag = getTag(req.method, req);
             let perform = this.#performCache.get(tag);
@@ -16687,7 +16713,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     if (this.#performCache.get(tag) === perform) {
                         this.#performCache.delete(tag);
                     }
-                }, 250);
+                }, timeout);
             }
             return await perform;
         }
@@ -18272,7 +18298,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         staticNetwork: null,
         batchStallTime: 10,
         batchMaxSize: (1 << 20),
-        batchMaxCount: 100 // 100 requests
+        batchMaxCount: 100,
+        cacheTimeout: 250
     };
     // @TODO: Unchecked Signers
     class JsonRpcSigner extends AbstractSigner {
@@ -18490,7 +18517,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }, stallTime);
         }
         constructor(network, options) {
-            super(network);
+            const superOptions = {};
+            if (options && options.cacheTimeout != null) {
+                superOptions.cacheTimeout = options.cacheTimeout;
+            }
+            super(network, superOptions);
             this.#nextId = 1;
             this.#options = Object.assign({}, defaultOptions, options || {});
             this.#payloads = [];
@@ -23349,6 +23380,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         MessagePrefix: MessagePrefix,
         MinInt256: MinInt256,
         Mnemonic: Mnemonic,
+        MulticoinProviderPlugin: MulticoinProviderPlugin,
         N: N$1,
         NamedFragment: NamedFragment,
         Network: Network,
@@ -23536,6 +23568,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     exports.MessagePrefix = MessagePrefix;
     exports.MinInt256 = MinInt256;
     exports.Mnemonic = Mnemonic;
+    exports.MulticoinProviderPlugin = MulticoinProviderPlugin;
     exports.N = N$1;
     exports.NamedFragment = NamedFragment;
     exports.Network = Network;

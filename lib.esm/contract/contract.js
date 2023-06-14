@@ -612,6 +612,13 @@ export class BaseContract {
         return new BaseContract(this.target, this.interface, runner);
     }
     /**
+     *  Return a new Contract instance with the same ABI and runner, but
+     *  a different %%target%%.
+     */
+    attach(target) {
+        return new BaseContract(target, this.interface, this.runner);
+    }
+    /**
      *  Return the resolved address of this Contract.
      */
     async getAddress() { return await getInternal(this).addrPromise; }

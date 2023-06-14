@@ -63,7 +63,8 @@ const defaultOptions = {
     staticNetwork: null,
     batchStallTime: 10,
     batchMaxSize: (1 << 20),
-    batchMaxCount: 100 // 100 requests
+    batchMaxCount: 100,
+    cacheTimeout: 250
 };
 // @TODO: Unchecked Signers
 class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
@@ -282,7 +283,11 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         }, stallTime);
     }
     constructor(network, options) {
-        super(network);
+        const superOptions = {};
+        if (options && options.cacheTimeout != null) {
+            superOptions.cacheTimeout = options.cacheTimeout;
+        }
+        super(network, superOptions);
         this.#nextId = 1;
         this.#options = Object.assign({}, defaultOptions, options || {});
         this.#payloads = [];

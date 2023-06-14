@@ -10,7 +10,7 @@
  */
 import { getBytes } from "./data.js";
 import { assert, assertArgument, assertPrivate } from "./errors.js";
-import { getBigInt, fromTwos, mask, toBigInt } from "./maths.js";
+import { getBigInt, getNumber, fromTwos, mask, toBigInt } from "./maths.js";
 import { defineProperties } from "./properties.js";
 const BN_N1 = BigInt(-1);
 const BN_0 = BigInt(0);
@@ -459,10 +459,8 @@ export class FixedNumber {
      *  for %%decimals%%) cannot fit in %%format%%, either due to overflow
      *  or underflow (precision loss).
      */
-    static fromValue(_value, decimals, _format) {
-        if (decimals == null) {
-            decimals = 0;
-        }
+    static fromValue(_value, _decimals, _format) {
+        const decimals = (_decimals == null) ? 0 : getNumber(_decimals);
         const format = getFormat(_format);
         let value = getBigInt(_value, "value");
         const delta = decimals - format.decimals;

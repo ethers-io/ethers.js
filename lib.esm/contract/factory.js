@@ -46,6 +46,9 @@ export class ContractFactory {
             bytecode, interface: iface, runner: (runner || null)
         });
     }
+    attach(target) {
+        return new BaseContract(target, this.interface, this.runner);
+    }
     /**
      *  Resolves to the transaction to deploy the contract, passing %%args%%
      *  into the constructor.

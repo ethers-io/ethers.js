@@ -462,10 +462,8 @@ class FixedNumber {
      *  for %%decimals%%) cannot fit in %%format%%, either due to overflow
      *  or underflow (precision loss).
      */
-    static fromValue(_value, decimals, _format) {
-        if (decimals == null) {
-            decimals = 0;
-        }
+    static fromValue(_value, _decimals, _format) {
+        const decimals = (_decimals == null) ? 0 : (0, maths_js_1.getNumber)(_decimals);
         const format = getFormat(_format);
         let value = (0, maths_js_1.getBigInt)(_value, "value");
         const delta = decimals - format.decimals;

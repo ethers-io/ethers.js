@@ -1,4 +1,4 @@
-import type { BigNumberish, BytesLike } from "./index.js";
+import type { BigNumberish, BytesLike, Numeric } from "./index.js";
 /**
  *  A description of a fixed-point arithmetic field.
  *
@@ -232,7 +232,7 @@ export declare class FixedNumber {
      *  for %%decimals%%) cannot fit in %%format%%, either due to overflow
      *  or underflow (precision loss).
      */
-    static fromValue(_value: BigNumberish, decimals?: number, _format?: FixedFormat): FixedNumber;
+    static fromValue(_value: BigNumberish, _decimals?: Numeric, _format?: FixedFormat): FixedNumber;
     /**
      *  Creates a new [[FixedNumber]] for %%value%% with %%format%%.
      *

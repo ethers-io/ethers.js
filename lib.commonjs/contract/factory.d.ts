@@ -1,6 +1,7 @@
 import { Interface } from "../abi/index.js";
 import { BaseContract } from "./contract.js";
 import type { InterfaceAbi } from "../abi/index.js";
+import type { Addressable } from "../address/index.js";
 import type { ContractRunner } from "../providers/index.js";
 import type { BytesLike } from "../utils/index.js";
 import type { ContractInterface, ContractMethodArgs, ContractDeployTransaction } from "./types.js";
@@ -31,6 +32,7 @@ export declare class ContractFactory<A extends Array<any> = Array<any>, I = Base
     constructor(abi: Interface | InterfaceAbi, bytecode: BytesLike | {
         object: string;
     }, runner?: null | ContractRunner);
+    attach(target: string | Addressable): BaseContract & Omit<I, keyof BaseContract>;
     /**
      *  Resolves to the transaction to deploy the contract, passing %%args%%
      *  into the constructor.

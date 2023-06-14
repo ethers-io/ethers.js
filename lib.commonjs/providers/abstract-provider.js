@@ -153,6 +153,9 @@ async function getSubscription(_event, provider) {
     (0, index_js_6.assertArgument)(false, "unknown ProviderEvent", "event", _event);
 }
 function getTime() { return (new Date()).getTime(); }
+const defaultOptions = {
+    cacheTimeout: 250
+};
 /**
  *  An **AbstractProvider** provides a base class for other sub-classes to
  *  implement the [[Provider]] API by normalizing input arguments and
@@ -173,12 +176,14 @@ class AbstractProvider {
     #nextTimer;
     #timers;
     #disableCcipRead;
+    #options;
     /**
      *  Create a new **AbstractProvider** connected to %%network%%, or
      *  use the various network detection capabilities to discover the
      *  [[Network]] if necessary.
      */
-    constructor(_network) {
+    constructor(_network, options) {
+        this.#options = Object.assign({}, defaultOptions, options || {});
         if (_network === "any") {
             this.#anyNetwork = true;
             this.#networkPromise = null;
@@ -238,6 +243,11 @@ class AbstractProvider {
     set disableCcipRead(value) { this.#disableCcipRead = !!value; }
     // Shares multiple identical requests made during the same 250ms
     async #perform(req) {
+        const timeout = this.#options.cacheTimeout;
+        // Caching disabled
+        if (timeout < 0) {
+            return await this._perform(req);
+        }
         // Create a tag
         const tag = getTag(req.method, req);
         let perform = this.#performCache.get(tag);
@@ -248,7 +258,7 @@ class AbstractProvider {
                 if (this.#performCache.get(tag) === perform) {
                     this.#performCache.delete(tag);
                 }
-            }, 250);
+            }, timeout);
         }
         return await perform;
     }

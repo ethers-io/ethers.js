@@ -60,6 +60,11 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
      */
     connect(runner: null | ContractRunner): BaseContract;
     /**
+     *  Return a new Contract instance with the same ABI and runner, but
+     *  a different %%target%%.
+     */
+    attach(target: string | Addressable): BaseContract;
+    /**
      *  Return the resolved address of this Contract.
      */
     getAddress(): Promise<string>;
@@ -147,13 +152,13 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
     /**
      *  Create a new Class for the %%abi%%.
      */
-    static buildClass<T = ContractInterface>(abi: InterfaceAbi): new (target: string, runner?: null | ContractRunner) => BaseContract & Omit<T, keyof BaseContract>;
+    static buildClass<T = ContractInterface>(abi: Interface | InterfaceAbi): new (target: string, runner?: null | ContractRunner) => BaseContract & Omit<T, keyof BaseContract>;
     /**
      *  Create a new BaseContract with a specified Interface.
      */
-    static from<T = ContractInterface>(target: string, abi: InterfaceAbi, runner?: null | ContractRunner): BaseContract & Omit<T, keyof BaseContract>;
+    static from<T = ContractInterface>(target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner): BaseContract & Omit<T, keyof BaseContract>;
 }
-declare const Contract_base: new (target: string, abi: InterfaceAbi, runner?: ContractRunner | null | undefined) => BaseContract & Omit<ContractInterface, keyof BaseContract>;
+declare const Contract_base: new (target: string, abi: Interface | InterfaceAbi, runner?: ContractRunner | null | undefined) => BaseContract & Omit<ContractInterface, keyof BaseContract>;
 /**
  *  A [[BaseContract]] with no type guards on its methods or events.
  */

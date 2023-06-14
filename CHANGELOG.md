@@ -3,6 +3,15 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.6.0 (2023-06-13 21:42)
+--------------------------------
+
+  - Add exports for AbstractProviderOptions and for MulticoinProviderPlugin ([203a759](https://github.com/ethers-io/ethers.js/commit/203a759efc65bf6901d3e574a601525ea3936238)).
+  - Add option to adjust perform cache timeout in AbstractProvider ([de0f518](https://github.com/ethers-io/ethers.js/commit/de0f5189f695c181a5fa09100af96a691a338e2b)).
+  - Add full support for MultiCoin plugins and automatic detection for EVM-compatible coin types ([#3888](https://github.com/ethers-io/ethers.js/issues/3888), [#4081](https://github.com/ethers-io/ethers.js/issues/4081); [84375be](https://github.com/ethers-io/ethers.js/commit/84375be92d32a2939cf4a2f713e4c554b5b54a32)).
+  - Allow Interface instances where InterfaceAbi are allowed ([#4142](https://github.com/ethers-io/ethers.js/issues/4142); [2318005](https://github.com/ethers-io/ethers.js/commit/2318005dfd996c8a7c51603d0264ceabe9bb6141)).
+  - Allow Numeric type for decimals in FixedNumber ([#4141](https://github.com/ethers-io/ethers.js/issues/4141); [9055ef6](https://github.com/ethers-io/ethers.js/commit/9055ef6c69291f1a44ea23a2e7b5aaf3140a5577)).
+
 ethers/v6.5.1 (2023-06-07 20:19)
 --------------------------------
 

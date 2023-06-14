@@ -4,10 +4,11 @@
  *
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
  */
+import { getAddress } from "../address/index.js";
 import { ZeroAddress } from "../constants/index.js";
 import { Contract } from "../contract/index.js";
 import { dnsEncode, namehash } from "../hash/index.js";
-import { hexlify, toBeHex, defineProperties, encodeBase58, assert, assertArgument, isError, FetchRequest } from "../utils/index.js";
+import { hexlify, isHexString, toBeHex, defineProperties, encodeBase58, assert, assertArgument, isError, FetchRequest } from "../utils/index.js";
 // @TODO: This should use the fetch-data:ipfs gateway
 // Trim off the ipfs:// prefix and return the default gateway URL
 function getIpfsLink(link) {
@@ -108,7 +109,7 @@ export class EnsResolver {
             "function supportsInterface(bytes4) view returns (bool)",
             "function resolve(bytes, bytes) view returns (bytes)",
             "function addr(bytes32) view returns (address)",
-            "function addr(bytes32, uint) view returns (address)",
+            "function addr(bytes32, uint) view returns (bytes)",
             "function text(bytes32, string) view returns (string)",
             "function contenthash(bytes32) view returns (bytes)",
         ], provider);
@@ -194,6 +195,14 @@ export class EnsResolver {
                 throw error;
             }
         }
+        // Try decoding its EVM canonical chain as an EVM chain address first
+        if (coinType >= 0 && coinType < 0x80000000) {
+            let ethCoinType = coinType + 0x80000000;
+            const data = await this.#fetch("addr(bytes32,uint)", [ethCoinType]);
+            if (isHexString(data, 20)) {
+                return getAddress(data);
+            }
+        }
         let coinPlugin = null;
         for (const plugin of this.provider.plugins) {
             if (!(plugin instanceof MulticoinProviderPlugin)) {
@@ -214,7 +223,7 @@ export class EnsResolver {
             return null;
         }
         // Compute the address
-        const address = await coinPlugin.encodeAddress(coinType, data);
+        const address = await coinPlugin.decodeAddress(coinType, data);
         if (address != null) {
             return address;
         }
