@@ -4,7 +4,7 @@ This guide aims to capture some of the high-level differences
 between v5 and v6 to help those migrating an existing app and
 those already familiar with v5 that just need a quick primer.
 
-The biggest differnce in v6 is the use of modern ES6 features,
+The biggest difference in v6 is the use of modern ES6 features,
 so a lot of changes are largely internal.
 
 - [BigNumbers](migrate-bigint)
@@ -172,7 +172,7 @@ managed as a monorepo.
 
 In v6 all imports are available in the root package, and for those
 who wish to have finer-grained control, the ``pkg.exports`` makes
-certain folders avilable directly.
+certain folders available directly.
 
 _code: importing in v5  @lang<script>
 
@@ -314,7 +314,7 @@ _code: fetching content  @lang<script>
       url, user: "username", password: "password"
       // etc. properties have FetchRequest equivalents
   };
-  data = await ethers.utils.detchJson(req, json, processFunc)
+  data = await ethers.utils.fetchJson(req, json, processFunc)
 
   // v6
   req = new ethers.FetchRequest(url)
