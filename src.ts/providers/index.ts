@@ -26,7 +26,10 @@ export {
 
 export { getDefaultProvider } from "./default-provider.js";
 
-export { EnsResolver } from "./ens-resolver.js";
+export {
+    EnsResolver,
+    MulticoinProviderPlugin
+} from "./ens-resolver.js";
 
 export { Network } from "./network.js";
 
@@ -74,7 +77,7 @@ export {
 } from "./provider-socket.js";
 
 export type {
-    Subscription, Subscriber,
+    AbstractProviderOptions, Subscription, Subscriber,
     AbstractProviderPlugin,
     PerformActionFilter, PerformActionTransaction, PerformActionRequest,
 } from "./abstract-provider.js"
