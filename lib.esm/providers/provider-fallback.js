@@ -220,6 +220,7 @@ export class FallbackProvider extends AbstractProvider {
      *  @_ignore:
      */
     eventWorkers;
+    pollingInterval;
     #configs;
     #height;
     #initialSyncPromise;
@@ -230,7 +231,7 @@ export class FallbackProvider extends AbstractProvider {
      *  If a [[Provider]] is included in %%providers%%, defaults are used
      *  for the configuration.
      */
-    constructor(providers, network) {
+    constructor(providers, network, options) {
         super(network);
         this.#configs = providers.map((p) => {
             if (p instanceof AbstractProvider) {
@@ -242,9 +243,10 @@ export class FallbackProvider extends AbstractProvider {
         });
         this.#height = -2;
         this.#initialSyncPromise = null;
-        this.quorum = 2; //Math.ceil(providers.length /  2);
-        this.eventQuorum = 1;
-        this.eventWorkers = 1;
+        this.quorum = options?.quorum ?? 2; //Math.ceil(providers.length /  2);
+        this.eventQuorum = options?.eventQuorum ?? 1;
+        this.eventWorkers = options?.eventWorkers ?? 1;
+        this.pollingInterval = options?.pollingInterval ?? 400;
         assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0), "quorum exceed provider wieght", "quorum", this.quorum);
     }
     get providerConfigs() {
@@ -262,9 +264,11 @@ export class FallbackProvider extends AbstractProvider {
         return Network.from(getBigInt(await this._perform({ method: "chainId" })));
     }
     // @TODO: Add support to select providers to be the event subscriber
-    //_getSubscriber(sub: Subscription): Subscriber {
-    //    throw new Error("@TODO");
-    //}
+    _getSubscriber(sub) {
+        const subscriber = super._getSubscriber(sub);
+        subscriber.pollingInterval = this.pollingInterval;
+        return subscriber;
+    }
     /**
      *  Transforms a %%req%% into the correct method call on %%provider%%.
      */

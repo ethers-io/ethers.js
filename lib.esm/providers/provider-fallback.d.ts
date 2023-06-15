@@ -1,4 +1,4 @@
-import { AbstractProvider } from "./abstract-provider.js";
+import { AbstractProvider, Subscriber, Subscription } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
@@ -70,6 +70,11 @@ export type FallbackProviderOptions = {
     quorum: number;
     eventQuorum: number;
     eventWorkers: number;
+    /**
+     *  The frequency (in ms) to poll for events.
+     *  Fallback Providers poll for events by default.
+     */
+    pollingInterval: number;
 };
 /**
  *  A **FallbackProvider** manages several [[Providers]] providing
@@ -93,6 +98,7 @@ export declare class FallbackProvider extends AbstractProvider {
      *  @_ignore:
      */
     readonly eventWorkers: number;
+    readonly pollingInterval: number;
     /**
      *  Creates a new **FallbackProvider** with %%providers%% connected to
      *  %%network%%.
@@ -100,9 +106,10 @@ export declare class FallbackProvider extends AbstractProvider {
      *  If a [[Provider]] is included in %%providers%%, defaults are used
      *  for the configuration.
      */
-    constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish);
+    constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish, options?: FallbackProviderOptions);
     get providerConfigs(): Array<FallbackProviderState>;
     _detectNetwork(): Promise<Network>;
+    _getSubscriber(sub: Subscription): Subscriber;
     /**
      *  Transforms a %%req%% into the correct method call on %%provider%%.
      */

@@ -8,7 +8,7 @@ import {
     getBigInt, getNumber, assert, assertArgument
 } from "../utils/index.js";
 
-import { AbstractProvider } from "./abstract-provider.js";
+import { AbstractProvider, Subscriber, Subscription } from "./abstract-provider.js";
 import { Network } from "./network.js"
 
 import type { PerformActionRequest } from "./abstract-provider.js";
@@ -175,6 +175,12 @@ export type FallbackProviderOptions = {
     // Set this to 0 to use getLog polling, which implies eventQuorum
     // is equal to quorum.
     eventWorkers: number;
+    
+    /**
+     *  The frequency (in ms) to poll for events. 
+     *  Fallback Providers poll for events by default.
+     */
+    pollingInterval: number;
 };
 
 type RunnerResult = { result: any } | { error: Error };
@@ -368,6 +374,8 @@ export class FallbackProvider extends AbstractProvider {
      */
     readonly eventWorkers: number;
 
+    readonly pollingInterval: number;
+
     readonly #configs: Array<Config>;
 
     #height: number;
@@ -380,7 +388,7 @@ export class FallbackProvider extends AbstractProvider {
      *  If a [[Provider]] is included in %%providers%%, defaults are used
      *  for the configuration.
      */
-    constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish) {
+    constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish, options?: FallbackProviderOptions) {
         super(network);
         this.#configs = providers.map((p) => {
             if (p instanceof AbstractProvider) {
@@ -393,9 +401,10 @@ export class FallbackProvider extends AbstractProvider {
         this.#height = -2;
         this.#initialSyncPromise = null;
 
-        this.quorum = 2; //Math.ceil(providers.length /  2);
-        this.eventQuorum = 1;
-        this.eventWorkers = 1;
+        this.quorum = options?.quorum ?? 2; //Math.ceil(providers.length /  2);
+        this.eventQuorum = options?.eventQuorum ?? 1;
+        this.eventWorkers = options?.eventWorkers ?? 1;
+        this.pollingInterval = options?.pollingInterval ?? 400;
 
         assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0),
             "quorum exceed provider wieght", "quorum", this.quorum);
@@ -416,9 +425,13 @@ export class FallbackProvider extends AbstractProvider {
     }
 
     // @TODO: Add support to select providers to be the event subscriber
-    //_getSubscriber(sub: Subscription): Subscriber {
-    //    throw new Error("@TODO");
-    //}
+    _getSubscriber(sub: Subscription): Subscriber {
+      const subscriber = super._getSubscriber(sub);
+      
+      subscriber.pollingInterval = this.pollingInterval;
+
+      return subscriber;
+    }
 
     /**
      *  Transforms a %%req%% into the correct method call on %%provider%%.
