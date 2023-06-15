@@ -304,6 +304,9 @@ export class FallbackProvider extends AbstractProvider {
                 return await provider.getTransactionResult(req.hash);
         }
     }
+    #sortConfigsByAscendingPriority(configs) {
+        configs.sort((a, b) => a.priority - b.priority);
+    }
     // Grab the next (random) config that is not already part of
     // the running set
     #getNextConfig(running) {
@@ -314,7 +317,7 @@ export class FallbackProvider extends AbstractProvider {
         // Shuffle the states, sorted by priority
         const allConfigs = this.#configs.slice();
         shuffle(allConfigs);
-        allConfigs.sort((a, b) => (b.priority - a.priority));
+        this.#sortConfigsByAscendingPriority(allConfigs);
         for (const config of allConfigs) {
             if (config._lastFatalError) {
                 continue;

@@ -460,6 +460,10 @@ export class FallbackProvider extends AbstractProvider {
         }
     }
 
+    #sortConfigsByAscendingPriority(configs: Config[]): void {
+        configs.sort((a, b) => a.priority - b.priority);
+    }
+
     // Grab the next (random) config that is not already part of
     // the running set
     #getNextConfig(running: Set<RunnerState>): null | Config {
@@ -467,12 +471,12 @@ export class FallbackProvider extends AbstractProvider {
         //        do not require waitForSync and disfavour providers that
         //        seem down-ish or are behaving slowly
 
-        const configs = Array.from(running).map((r) => r.config)
+        const configs = Array.from(running).map((r) => r.config);
 
         // Shuffle the states, sorted by priority
         const allConfigs = this.#configs.slice();
         shuffle(allConfigs);
-        allConfigs.sort((a, b) => (b.priority - a.priority));
+        this.#sortConfigsByAscendingPriority(allConfigs);
 
         for (const config of allConfigs) {
             if (config._lastFatalError) { continue; }
