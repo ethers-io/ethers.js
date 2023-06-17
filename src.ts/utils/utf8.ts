@@ -6,7 +6,7 @@
  *
  *  @_subsection api/utils:Strings and UTF-8  [about-strings]
  */
-import { getBytes } from "./data.js";
+import { HexString, getBytes } from "./data.js";
 import { assertArgument, assertNormalize } from "./errors.js";
 
 import type { BytesLike } from "./index.js";
@@ -162,8 +162,8 @@ function getUtf8CodePoints(_bytes: BytesLike, onError?: Utf8ErrorFunc): Array<nu
         }
 
         // Multibyte; how many bytes left for this character?
-        let extraLength = null;
-        let overlongMask = null;
+        let extraLength: number | null = null;
+        let overlongMask: number | null = null;
 
         // 110x xxxx 10xx xxxx
         if ((c & 0xe0) === 0xc0) {
@@ -253,7 +253,7 @@ export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8
         str = str.normalize(form);
     }
 
-    let result = [];
+    let result: any = [];
     for (let i = 0; i < str.length; i++) {
         const c = str.charCodeAt(i);
 

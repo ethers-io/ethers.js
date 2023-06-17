@@ -201,7 +201,7 @@ const TestData = (function() {
     return [ String(data.length), zlib.deflateRawSync(data).toString("base64") ].join(",");
   }
 
-  let data = [ ];
+  let data: any = [ ];
   data.push(`import { ethers } from "/index.js";`);
   data.push(`import { inflate } from "/static/tiny-inflate.js";`);
   data.push(`const fs = new Map();`);

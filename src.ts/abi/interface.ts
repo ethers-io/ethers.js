@@ -595,7 +595,7 @@ export class Interface {
 
         // It is a bare name, look up the function (will return null if ambiguous)
         if (key.indexOf("(") === -1) {
-            const matching = [ ];
+            const matching: any = [ ];
             for (const [ name, fragment ] of this.#events) {
                 if (name.split("("/* fix:) */)[0] === key) { matching.push(fragment); }
             }
@@ -716,7 +716,7 @@ export class Interface {
 
         // It is a bare name, look up the function (will return null if ambiguous)
         if (key.indexOf("(") === -1) {
-            const matching = [ ];
+            const matching: any = [ ];
             for (const [ name, fragment ] of this.#errors) {
                 if (name.split("("/* fix:) */)[0] === key) { matching.push(fragment); }
             }
@@ -1154,7 +1154,7 @@ export class Interface {
         const keys: Array<null | string> = [ ];
         let nonIndexedIndex = 0, indexedIndex = 0;
         fragment.inputs.forEach((param, index) => {
-            let value = null;
+            let value: Indexed | null = null;
             if (param.indexed) {
                 if (resultIndexed == null) {
                     value = new Indexed(null);

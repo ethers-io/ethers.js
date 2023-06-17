@@ -328,7 +328,7 @@ function getFuzzyMode(quorum: number, results: Array<TallyResult>): undefined | 
     }
 
     let bestWeight = 0;
-    let bestResult = undefined;
+    let bestResult: number | undefined = undefined;
 
     for (const { weight, result } of tally.values()) {
         // Use this result, if this result meets quorum and has either:

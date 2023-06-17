@@ -899,7 +899,7 @@ export class AbstractProvider implements Provider {
             })())
         });
 
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
+        let maxFeePerGas: bigint | null = null, maxPriorityFeePerGas: bigint | null = null;
 
         if (block && block.baseFeePerGas) {
             // We may want to compute this more accurately in the future,
