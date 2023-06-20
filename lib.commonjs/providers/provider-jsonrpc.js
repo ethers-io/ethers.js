@@ -644,7 +644,14 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                 operation: payload.method, info: { error }
             });
         }
-        return (0, index_js_5.makeError)("could not coalesce error", "UNKNOWN_ERROR", { error });
+        const unknownErrorMessage = `could not coalesce error: method ${method}, chainId ${this.#network?.chainId}, url ${this.#getJsonRpcUrl()}`;
+        return (0, index_js_5.makeError)(unknownErrorMessage, 'UNKNOWN_ERROR', { error });
+    }
+    #getJsonRpcUrl() {
+        if (this instanceof JsonRpcProvider) {
+            return this._getConnection().url;
+        }
+        return 'unknown';
     }
     /**
      *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
