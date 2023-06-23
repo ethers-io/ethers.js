@@ -939,7 +939,7 @@ export class AbstractProvider implements Provider {
          try {
              return hexlify(await this._perform({ method: "call", transaction, blockTag }));
 
-         } catch (error) {
+         } catch (error: any) {
              // CCIP Read OffchainLookup
              if (!this.disableCcipRead && isCallException(error) && error.data && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
                  const data = error.data;
@@ -1007,6 +1007,7 @@ export class AbstractProvider implements Provider {
             tx: this._getTransactionRequest(_tx),
             blockTag: this._getBlockTag(_tx.blockTag)
         });
+
         return await this.#checkNetwork(this.#call(tx, blockTag, _tx.enableCcipRead ? 0: -1));
     }
 

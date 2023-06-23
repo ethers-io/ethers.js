@@ -351,7 +351,7 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
     if ("blockTag" in req) { result.blockTag = req.blockTag; }
 
     if ("enableCcipRead" in req) {
-        result.enableCcipReadEnabled = !!req.enableCcipRead
+        result.enableCcipRead = !!req.enableCcipRead
     }
 
     if ("customData" in req) {
