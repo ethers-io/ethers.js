@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.6.1 (2023-06-23 00:05)
+--------------------------------
+
+  - Fixed CCIP read in contract calls ([#4043](https://github.com/ethers-io/ethers.js/issues/4043); [d51e3fb](https://github.com/ethers-io/ethers.js/commit/d51e3fbff43c31d88353ac71151626312d22c0b9)).
+
 ethers/v6.6.0 (2023-06-13 21:42)
 --------------------------------
 

@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.6.0";
+    const version = "6.6.1";
 
     /**
      *  Property helper functions.
@@ -12726,7 +12726,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             result.blockTag = req.blockTag;
         }
         if ("enableCcipRead" in req) {
-            result.enableCcipReadEnabled = !!req.enableCcipRead;
+            result.enableCcipRead = !!req.enableCcipRead;
         }
         if ("customData" in req) {
             result.customData = req.customData;

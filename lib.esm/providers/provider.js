@@ -110,7 +110,7 @@ export function copyRequest(req) {
         result.blockTag = req.blockTag;
     }
     if ("enableCcipRead" in req) {
-        result.enableCcipReadEnabled = !!req.enableCcipRead;
+        result.enableCcipRead = !!req.enableCcipRead;
     }
     if ("customData" in req) {
         result.customData = req.customData;
