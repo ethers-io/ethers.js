@@ -96,6 +96,8 @@ export class EtherscanPlugin extends NetworkPlugin {
     }
 }
 
+const skipKeys = [ "enableCcipRead" ];
+
 let nextId = 1;
 
 /**
@@ -308,6 +310,8 @@ export class EtherscanProvider extends AbstractProvider {
     _getTransactionPostData(transaction: TransactionRequest): Record<string, string> {
         const result: Record<string, string> = { };
         for (let key in transaction) {
+            if (skipKeys.indexOf(key) >= 0) { continue; }
+
             if ((<any>transaction)[key] == null) { continue; }
             let value = (<any>transaction)[key];
             if (key === "type" && value === 0) { continue; }
