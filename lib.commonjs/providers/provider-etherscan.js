@@ -57,6 +57,7 @@ class EtherscanPlugin extends plugins_network_js_1.NetworkPlugin {
     }
 }
 exports.EtherscanPlugin = EtherscanPlugin;
+const skipKeys = ["enableCcipRead"];
 let nextId = 1;
 /**
  *  The **EtherscanBaseProvider** is the super-class of
@@ -240,6 +241,9 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
     _getTransactionPostData(transaction) {
         const result = {};
         for (let key in transaction) {
+            if (skipKeys.indexOf(key) >= 0) {
+                continue;
+            }
             if (transaction[key] == null) {
                 continue;
             }

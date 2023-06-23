@@ -19368,6 +19368,7 @@ class EtherscanPlugin extends NetworkPlugin {
         return new EtherscanPlugin(this.baseUrl);
     }
 }
+const skipKeys = ["enableCcipRead"];
 let nextId = 1;
 /**
  *  The **EtherscanBaseProvider** is the super-class of
@@ -19550,6 +19551,9 @@ class EtherscanProvider extends AbstractProvider {
     _getTransactionPostData(transaction) {
         const result = {};
         for (let key in transaction) {
+            if (skipKeys.indexOf(key) >= 0) {
+                continue;
+            }
             if (transaction[key] == null) {
                 continue;
             }

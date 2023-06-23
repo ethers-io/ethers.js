@@ -19374,6 +19374,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new EtherscanPlugin(this.baseUrl);
         }
     }
+    const skipKeys = ["enableCcipRead"];
     let nextId = 1;
     /**
      *  The **EtherscanBaseProvider** is the super-class of
@@ -19556,6 +19557,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         _getTransactionPostData(transaction) {
             const result = {};
             for (let key in transaction) {
+                if (skipKeys.indexOf(key) >= 0) {
+                    continue;
+                }
                 if (transaction[key] == null) {
                     continue;
                 }
