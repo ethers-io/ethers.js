@@ -967,7 +967,22 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             });
         }
 
-        return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
+        const unknownErrorMessage = `could not coalesce error: method ${method}, chainId ${
+          this.#network?.chainId
+        }, url ${this.#getJsonRpcUrl()}`;
+
+        return makeError(
+          unknownErrorMessage,
+          'UNKNOWN_ERROR',
+          { error },
+        );
+    }
+
+    #getJsonRpcUrl() {
+        if (this instanceof JsonRpcProvider) {
+          return this._getConnection().url;
+        }
+        return 'unknown';
     }
 
 
