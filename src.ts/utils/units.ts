@@ -52,7 +52,7 @@ export function formatUnits(value: BigNumberish, unit?: string | Numeric): strin
         decimals = getNumber(unit, "unit");
     }
 
-    return FixedNumber.fromValue(value, decimals, { decimals }).toString();
+    return FixedNumber.fromValue(value, decimals, { decimals, width: 512 }).toString();
 }
 
 /**
@@ -72,7 +72,7 @@ export function parseUnits(value: string, unit?: string | Numeric): bigint {
         decimals = getNumber(unit, "unit");
     }
 
-    return FixedNumber.fromString(value, { decimals }).value;
+    return FixedNumber.fromString(value, { decimals, width: 512 }).value;
 }
 
 /**
