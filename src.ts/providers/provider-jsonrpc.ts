@@ -961,13 +961,20 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             }
         }
 
-        if (message.match(/the method .* does not exist/i)) {
+        let unsupported = !!message.match(/the method .* does not exist/i);
+        if (!unsupported) {
+            if (error && (<any>error).details && (<any>error).details.startsWith("Unauthorized method:")) {
+                unsupported = true;
+            }
+        }
+
+        if (unsupported) {
             return makeError("unsupported operation", "UNSUPPORTED_OPERATION", {
-                operation: payload.method, info: { error }
+                operation: payload.method, info: { error, payload }
             });
         }
 
-        return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
+        return makeError("could not coalesce error", "UNKNOWN_ERROR", { error, payload });
     }
 
 
