@@ -3,6 +3,13 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.6.2 (2023-06-27 23:30)
+--------------------------------
+
+  - Wider error detection for call exceptions on certain backends ([#4154](https://github.com/ethers-io/ethers.js/issues/4154), [#4155](https://github.com/ethers-io/ethers.js/issues/4155); [9197f9f](https://github.com/ethers-io/ethers.js/commit/9197f9f938b5f3b5f97c043f2dab06854656c932)).
+  - Added wider error deetection for JSON-RPC unsupported operation ([#4162](https://github.com/ethers-io/ethers.js/issues/4162); [1dc8986](https://github.com/ethers-io/ethers.js/commit/1dc8986a33be9dce536b24189326cbfaabf1342e)).
+  - Fixed formatUnits and parseUnits for values over 128 bits ([#4037](https://github.com/ethers-io/ethers.js/issues/4037), [#4133](https://github.com/ethers-io/ethers.js/issues/4133); [3d141b4](https://github.com/ethers-io/ethers.js/commit/3d141b44b528f52b3c9205125b64ce342f91643c)).
+
 ethers/v6.6.1 (2023-06-23 00:35)
 --------------------------------
 

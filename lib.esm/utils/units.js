@@ -47,7 +47,7 @@ export function formatUnits(value, unit) {
     else if (unit != null) {
         decimals = getNumber(unit, "unit");
     }
-    return FixedNumber.fromValue(value, decimals, { decimals }).toString();
+    return FixedNumber.fromValue(value, decimals, { decimals, width: 512 }).toString();
 }
 /**
  *  Converts the //decimal string// %%value%% to a BigInt, assuming
@@ -65,7 +65,7 @@ export function parseUnits(value, unit) {
     else if (unit != null) {
         decimals = getNumber(unit, "unit");
     }
-    return FixedNumber.fromString(value, { decimals }).value;
+    return FixedNumber.fromString(value, { decimals, width: 512 }).value;
 }
 /**
  *  Converts %%value%% into a //decimal string// using 18 decimal places.

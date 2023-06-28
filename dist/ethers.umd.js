@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.6.1";
+    const version = "6.6.2";
 
     /**
      *  Property helper functions.
@@ -2504,7 +2504,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         else if (unit != null) {
             decimals = getNumber(unit, "unit");
         }
-        return FixedNumber.fromValue(value, decimals, { decimals }).toString();
+        return FixedNumber.fromValue(value, decimals, { decimals, width: 512 }).toString();
     }
     /**
      *  Converts the //decimal string// %%value%% to a BigInt, assuming
@@ -2522,7 +2522,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         else if (unit != null) {
             decimals = getNumber(unit, "unit");
         }
-        return FixedNumber.fromString(value, { decimals }).value;
+        return FixedNumber.fromString(value, { decimals, width: 512 }).value;
     }
     /**
      *  Converts %%value%% into a //decimal string// using 18 decimal places.
@@ -18873,12 +18873,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     });
                 }
             }
-            if (message.match(/the method .* does not exist/i)) {
+            let unsupported = !!message.match(/the method .* does not exist/i);
+            if (!unsupported) {
+                if (error && error.details && error.details.startsWith("Unauthorized method:")) {
+                    unsupported = true;
+                }
+            }
+            if (unsupported) {
                 return makeError("unsupported operation", "UNSUPPORTED_OPERATION", {
-                    operation: payload.method, info: { error }
+                    operation: payload.method, info: { error, payload }
                 });
             }
-            return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
+            return makeError("could not coalesce error", "UNKNOWN_ERROR", { error, payload });
         }
         /**
          *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
@@ -19047,7 +19053,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return null;
         }
         // These *are* the droids we're looking for.
-        if (typeof (value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
+        if (typeof (value.message) === "string" && value.message.match(/revert/i) && isHexString(value.data)) {
             return { message: value.message, data: value.data };
         }
         // Spelunk further...

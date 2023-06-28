@@ -639,12 +639,18 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                 });
             }
         }
-        if (message.match(/the method .* does not exist/i)) {
+        let unsupported = !!message.match(/the method .* does not exist/i);
+        if (!unsupported) {
+            if (error && error.details && error.details.startsWith("Unauthorized method:")) {
+                unsupported = true;
+            }
+        }
+        if (unsupported) {
             return (0, index_js_5.makeError)("unsupported operation", "UNSUPPORTED_OPERATION", {
-                operation: payload.method, info: { error }
+                operation: payload.method, info: { error, payload }
             });
         }
-        return (0, index_js_5.makeError)("could not coalesce error", "UNKNOWN_ERROR", { error });
+        return (0, index_js_5.makeError)("could not coalesce error", "UNKNOWN_ERROR", { error, payload });
     }
     /**
      *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
@@ -816,7 +822,7 @@ function spelunkData(value) {
         return null;
     }
     // These *are* the droids we're looking for.
-    if (typeof (value.message) === "string" && value.message.match("reverted") && (0, index_js_5.isHexString)(value.data)) {
+    if (typeof (value.message) === "string" && value.message.match(/revert/i) && (0, index_js_5.isHexString)(value.data)) {
         return { message: value.message, data: value.data };
     }
     // Spelunk further...

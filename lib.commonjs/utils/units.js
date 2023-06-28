@@ -50,7 +50,7 @@ function formatUnits(value, unit) {
     else if (unit != null) {
         decimals = (0, maths_js_1.getNumber)(unit, "unit");
     }
-    return fixednumber_js_1.FixedNumber.fromValue(value, decimals, { decimals }).toString();
+    return fixednumber_js_1.FixedNumber.fromValue(value, decimals, { decimals, width: 512 }).toString();
 }
 exports.formatUnits = formatUnits;
 /**
@@ -69,7 +69,7 @@ function parseUnits(value, unit) {
     else if (unit != null) {
         decimals = (0, maths_js_1.getNumber)(unit, "unit");
     }
-    return fixednumber_js_1.FixedNumber.fromString(value, { decimals }).value;
+    return fixednumber_js_1.FixedNumber.fromString(value, { decimals, width: 512 }).value;
 }
 exports.parseUnits = parseUnits;
 /**
