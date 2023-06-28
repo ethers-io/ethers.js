@@ -1165,7 +1165,7 @@ function spelunkData(value: any): null | { message: string, data: string } {
     if (value == null) { return null; }
 
     // These *are* the droids we're looking for.
-    if (typeof(value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
+    if (typeof(value.message) === "string" && value.message.match(/revert/i) && isHexString(value.data)) {
         return { message: value.message, data: value.data };
     }
 
