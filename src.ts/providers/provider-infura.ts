@@ -53,6 +53,10 @@ function getHost(name: string): string {
             return "optimism-mainnet.infura.io";
         case "optimism-goerli":
             return "optimism-goerli.infura.io";
+        case "linea":
+            return "linea-mainnet.infura.io";
+        case "linea-goerli":
+            return "linea-goerli.infura.io";
     }
 
     assertArgument(false, "unsupported network", "network", name);
