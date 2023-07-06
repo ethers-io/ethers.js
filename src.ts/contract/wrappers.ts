@@ -68,19 +68,35 @@ export class ContractTransactionReceipt extends TransactionReceipt {
         this.#iface = iface;
     }
 
+    #decodeLog(log: Log): EventLog | Log {
+        const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]): null;
+        if (fragment) {
+            try {
+                return new EventLog(log, this.#iface, fragment)
+            } catch {
+                return log;
+            }
+        } else {
+            return log;
+        }
+    }
+
     /**
      *  The parsed logs for any [[Log]] which has a matching event in the
      *  Contract ABI.
      */
     get logs(): Array<EventLog | Log> {
-        return super.logs.map((log) => {
-            const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]): null;
-            if (fragment) {
-                return new EventLog(log, this.#iface, fragment)
-            } else {
-                return log;
-            }
-        });
+        return super.logs.map(this.#decodeLog.bind(this));
+    }
+
+    /**
+      * The parsed logs for any [[Log]] which has a matching event in the
+      * Contract ABI and originates from %%address%%.
+      */
+    filteredLogs(address: string): Array<EventLog | Log> {
+        return super.logs
+            .filter((log) => log.address === address)
+            .map(this.#decodeLog.bind(this));
     }
 
 }
