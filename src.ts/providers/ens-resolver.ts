@@ -239,7 +239,7 @@ export class EnsResolver {
         }
 
         params.push({
-            ccipReadEnable: true
+            enableCcipRead: true
         });
 
         try {
