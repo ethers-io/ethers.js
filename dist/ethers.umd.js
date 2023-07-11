@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.6.2";
+    const version = "6.6.3";
 
     /**
      *  Property helper functions.
@@ -14416,6 +14416,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             catch (error) { }
             return !once;
         });
+        if (sub.listeners.length === 0) {
+            sub.stop();
+            getInternal(contract).subs.delete(sub.tag);
+        }
         return (count > 0);
     }
     async function emit(contract, event, args, payloadFunc) {
@@ -14499,7 +14503,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     }
                     addrPromise = resolver.resolveName(target).then((addr) => {
                         if (addr == null) {
-                            throw new Error("TODO");
+                            throw makeError("an ENS name used for a contract target must be correctly configured", "UNCONFIGURED_NAME", {
+                                value: target
+                            });
                         }
                         getInternal(this).addr = addr;
                         return addr;

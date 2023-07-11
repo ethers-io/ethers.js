@@ -3,6 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.6.3 (2023-07-11 20:55)
+--------------------------------
+
+  - Throw more desscriptive error for unconfigured ENS name contract targets ([#4213](https://github.com/ethers-io/ethers.js/issues/4213); [80f62ef](https://github.com/ethers-io/ethers.js/commit/80f62efc41c3a29e690af40a1976928b7f886a0e)).
+  - Fixed contract once not running stop callback ([7d061b7](https://github.com/ethers-io/ethers.js/commit/7d061b786f72cbfc461bf80d139d10aeff533a6e)).
+
 ethers/v6.6.2 (2023-06-27 23:30)
 --------------------------------
 
