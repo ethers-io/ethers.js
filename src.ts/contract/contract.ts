@@ -593,6 +593,12 @@ async function _emit(contract: BaseContract, event: ContractEventName, args: Arr
         } catch (error) { }
         return !once;
     });
+
+    if (sub.listeners.length === 0) {
+        sub.stop();
+        getInternal(contract).subs.delete(sub.tag);
+    }
+
     return (count > 0);
 }
 
