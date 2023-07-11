@@ -695,7 +695,11 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
                 }
 
                 addrPromise = resolver.resolveName(target).then((addr) => {
-                    if (addr == null) { throw new Error("TODO"); }
+                    if (addr == null) {
+                        throw makeError("an ENS name used for a contract target must be correctly configured", "UNCONFIGURED_NAME", {
+                            value: target
+                        });
+                    }
                     getInternal(this).addr = addr;
                     return addr;
                 });
