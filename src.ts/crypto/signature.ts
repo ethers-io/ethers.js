@@ -348,13 +348,13 @@ export class Signature {
             }
 
             assertError(false, "missing v");
-        })(sig.v, sig.yParityAndS, sig.yParity);
+        })(sig.v, sig.yParityAndS, getNumber(sig.yParity, "yParity"));
 
         const result = new Signature(_guard, r, s, v);
         if (networkV) { result.#networkV =  networkV; }
 
         // If multiple of v, yParity, yParityAndS we given, check they match
-        assertError(!("yParity" in sig && sig.yParity !== result.yParity), "yParity mismatch");
+        assertError(!("yParity" in sig && sig.yParity !== getNumber(result.yParity, "yParity"), "yParity mismatch");
         assertError(!("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS), "yParityAndS mismatch");
 
         return result;
