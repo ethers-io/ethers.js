@@ -1023,6 +1023,8 @@ export class Interface {
                  return id(value);
             } else if (param.type === "bytes") {
                  return keccak256(hexlify(value));
+            } else if (param.type.match(/^bytes(\d+)$/)) {
+                return this.#abiCoder.encode([param.type], [value]);
             }
 
             if (param.type === "bool" && typeof(value) === "boolean") {
