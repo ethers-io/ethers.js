@@ -792,7 +792,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     async getAddress(): Promise<string> { return await getInternal(this).addrPromise; }
 
     /**
-     *  Return the dedployed bytecode or null if no bytecode is found.
+     *  Return the deployed bytecode or null if no bytecode is found.
      */
     async getDeployedCode(): Promise<null | string> {
         const provider = getProvider(this.runner);
