@@ -1462,6 +1462,8 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
         const receipt = await this.provider.getTransactionReceipt(this.hash);
 
+        if (confirms === 0) { return receipt; }
+
         if (receipt) {
             if ((await receipt.confirmations()) >= confirms) { return receipt; }
 
