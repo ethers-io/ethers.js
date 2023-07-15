@@ -110,7 +110,7 @@ export class ContractTransactionResponse extends TransactionResponse {
      *  wait until enough confirmations have completed.
      */
     async wait(confirms?: number): Promise<null | ContractTransactionReceipt> {
-        const receipt = await super.wait();
+        const receipt = await super.wait(confirms);
         if (receipt == null) { return null; }
         return new ContractTransactionReceipt(this.#iface, this.provider, receipt);
     }
