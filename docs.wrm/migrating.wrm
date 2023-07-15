@@ -60,7 +60,7 @@ _code: simple comparison on large numbers  @lang<script>
   isEqual = value1.eq(value2)
 
   // Using BigInt in v6
-  isEqaul = (value1 == value2)
+  isEqual = (value1 == value2)
 
 
 _subsection: Contracts @<migrate-contracts>
