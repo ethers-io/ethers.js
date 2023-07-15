@@ -87,7 +87,7 @@ export class ContractTransactionResponse extends TransactionResponse {
      *  wait until enough confirmations have completed.
      */
     async wait(confirms) {
-        const receipt = await super.wait();
+        const receipt = await super.wait(confirms);
         if (receipt == null) {
             return null;
         }

@@ -155,7 +155,7 @@ export class EnsResolver {
             funcName = "resolve(bytes,bytes)";
         }
         params.push({
-            ccipReadEnable: true
+            enableCcipRead: true
         });
         try {
             const result = await this.#resolver[funcName](...params);

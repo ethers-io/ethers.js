@@ -629,7 +629,7 @@ export class BaseContract {
      */
     async getAddress() { return await getInternal(this).addrPromise; }
     /**
-     *  Return the dedployed bytecode or null if no bytecode is found.
+     *  Return the deployed bytecode or null if no bytecode is found.
      */
     async getDeployedCode() {
         const provider = getProvider(this.runner);

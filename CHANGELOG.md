@@ -3,6 +3,13 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.6.4 (2023-07-15 17:55)
+--------------------------------
+
+  - Fixed CCIP-read in the EnsResolver ([#4221](https://github.com/ethers-io/ethers.js/issues/4221); [57f1e1c](https://github.com/ethers-io/ethers.js/commit/57f1e1c47148921148e35c10c83539531942923e)).
+  - Skip checking confirmation count if confirms is 0 ([#4229](https://github.com/ethers-io/ethers.js/issues/4229), [#4242](https://github.com/ethers-io/ethers.js/issues/4242); [492919d](https://github.com/ethers-io/ethers.js/commit/492919d14f646c630f29e1596e5564df1e51f309)).
+  - Fixed waiting for confirmations in deployment transactions ([#4212](https://github.com/ethers-io/ethers.js/issues/4212), [#4230](https://github.com/ethers-io/ethers.js/issues/4230); [43c253a](https://github.com/ethers-io/ethers.js/commit/43c253a402f52a08353c424f6c4e236836cfaf36)).
+
 ethers/v6.6.3 (2023-07-11 20:55)
 --------------------------------
 

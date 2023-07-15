@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.6.3";
+    const version = "6.6.4";
 
     /**
      *  Property helper functions.
@@ -13649,6 +13649,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return;
             };
             const receipt = await this.provider.getTransactionReceipt(this.hash);
+            if (confirms === 0) {
+                return receipt;
+            }
             if (receipt) {
                 if ((await receipt.confirmations()) >= confirms) {
                     return receipt;
@@ -13896,7 +13899,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  wait until enough confirmations have completed.
          */
         async wait(confirms) {
-            const receipt = await super.wait();
+            const receipt = await super.wait(confirms);
             if (receipt == null) {
                 return null;
             }
@@ -14589,7 +14592,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         async getAddress() { return await getInternal(this).addrPromise; }
         /**
-         *  Return the dedployed bytecode or null if no bytecode is found.
+         *  Return the deployed bytecode or null if no bytecode is found.
          */
         async getDeployedCode() {
             const provider = getProvider(this.runner);
@@ -15104,7 +15107,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 funcName = "resolve(bytes,bytes)";
             }
             params.push({
-                ccipReadEnable: true
+                enableCcipRead: true
             });
             try {
                 const result = await this.#resolver[funcName](...params);

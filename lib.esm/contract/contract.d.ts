@@ -69,7 +69,7 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
      */
     getAddress(): Promise<string>;
     /**
-     *  Return the dedployed bytecode or null if no bytecode is found.
+     *  Return the deployed bytecode or null if no bytecode is found.
      */
     getDeployedCode(): Promise<null | string>;
     /**

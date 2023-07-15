@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.6.3";
+const version = "6.6.4";
 
 /**
  *  Property helper functions.
@@ -13643,6 +13643,9 @@ class TransactionResponse {
             return;
         };
         const receipt = await this.provider.getTransactionReceipt(this.hash);
+        if (confirms === 0) {
+            return receipt;
+        }
         if (receipt) {
             if ((await receipt.confirmations()) >= confirms) {
                 return receipt;
@@ -13890,7 +13893,7 @@ class ContractTransactionResponse extends TransactionResponse {
      *  wait until enough confirmations have completed.
      */
     async wait(confirms) {
-        const receipt = await super.wait();
+        const receipt = await super.wait(confirms);
         if (receipt == null) {
             return null;
         }
@@ -14583,7 +14586,7 @@ class BaseContract {
      */
     async getAddress() { return await getInternal(this).addrPromise; }
     /**
-     *  Return the dedployed bytecode or null if no bytecode is found.
+     *  Return the deployed bytecode or null if no bytecode is found.
      */
     async getDeployedCode() {
         const provider = getProvider(this.runner);
@@ -15098,7 +15101,7 @@ class EnsResolver {
             funcName = "resolve(bytes,bytes)";
         }
         params.push({
-            ccipReadEnable: true
+            enableCcipRead: true
         });
         try {
             const result = await this.#resolver[funcName](...params);
