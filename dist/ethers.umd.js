@@ -5994,7 +5994,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return { v: ((getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
                 }
                 if (yParity != null) {
-                    switch (yParity) {
+                    switch (getNumber(yParity, "sig.yParity")) {
                         case 0: return { v: 27 };
                         case 1: return { v: 28 };
                     }
@@ -6007,8 +6007,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 result.#networkV = networkV;
             }
             // If multiple of v, yParity, yParityAndS we given, check they match
-            assertError(!("yParity" in sig && sig.yParity !== result.yParity), "yParity mismatch");
-            assertError(!("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS), "yParityAndS mismatch");
+            assertError(sig.yParity == null || getNumber(sig.yParity, "sig.yParity") === result.yParity, "yParity mismatch");
+            assertError(sig.yParityAndS == null || sig.yParityAndS === result.yParityAndS, "yParityAndS mismatch");
             return result;
         }
     }
