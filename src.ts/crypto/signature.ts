@@ -7,7 +7,7 @@ import {
 } from "../utils/index.js";
 
 import type {
-    BigNumberish, BytesLike
+    BigNumberish, BytesLike, Numeric
 } from "../utils/index.js";
 
 
@@ -325,7 +325,7 @@ export class Signature {
         assertError((getBytes(s)[0] & 0x80) == 0, "non-canonical s");
 
         // Get v; by any means necessary (we check consistency below)
-        const { networkV, v } = (function(_v?: BigNumberish, yParityAndS?: string, yParity?: number): { networkV?: bigint, v: 27 | 28 } {
+        const { networkV, v } = (function(_v?: BigNumberish, yParityAndS?: string, yParity?: Numeric): { networkV?: bigint, v: 27 | 28 } {
             if (_v != null) {
                 const v = getBigInt(_v);
                 return {
@@ -340,7 +340,7 @@ export class Signature {
             }
 
             if (yParity != null) {
-                switch (yParity) {
+                switch (getNumber(yParity, "sig.yParity")) {
                     case 0: return { v: 27 };
                     case 1: return { v: 28 };
                 }
@@ -354,8 +354,8 @@ export class Signature {
         if (networkV) { result.#networkV =  networkV; }
 
         // If multiple of v, yParity, yParityAndS we given, check they match
-        assertError(!("yParity" in sig && sig.yParity !== result.yParity), "yParity mismatch");
-        assertError(!("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS), "yParityAndS mismatch");
+        assertError(sig.yParity == null || getNumber(sig.yParity, "sig.yParity") === result.yParity, "yParity mismatch");
+        assertError(sig.yParityAndS == null || sig.yParityAndS === result.yParityAndS, "yParityAndS mismatch");
 
         return result;
     }
