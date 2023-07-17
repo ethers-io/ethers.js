@@ -614,7 +614,7 @@ export class ParamType {
         if (format === "json") {
             let result: any = {
                 type: ((this.baseType === "tuple") ? "tuple": this.type),
-                name: (this.name || undefined)
+                name: (this.name ?? "")
             };
             if (typeof(this.indexed) === "boolean") { result.indexed = this.indexed; }
             if (this.isTuple()) {
