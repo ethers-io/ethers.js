@@ -185,11 +185,23 @@ signer.
 
 The //overrides// object for write methods may include any of:
 
-- ``overrides.gasPrice`` - the price to pay per gas
 - ``overrides.gasLimit`` - the limit on the amount of gas to allow the transaction
   to consume; any unused gas is returned at the gasPrice
 - ``overrides.value`` - the amount of ether (in wei) to forward with the call
 - ``overrides.nonce`` - the nonce to use for the [[Signer]]
+
+The gas price can be specified in one of two ways.
+
+Pre-EIP 1559:
+
+- ``overrides.gasPrice`` - the price to pay per gas; the priority fee is this value 
+  minus the block's base fee
+
+EIP 1559:
+
+- ``overrides.maxPriorityFeePerGas`` - the maximum priority fee the transaction is willing to pay
+- ``overrides.maxFeePerGas`` - the maximum gas price the transaction is willing to pay; the 
+  priority fee is ``min(overrides.maxPriorityFeePerGas, overrides.maxFeePerGas-block.baseFee``
 
 If the ``wait()`` method on the returned [[providers-TransactionResponse]]
 is called, there will be additional properties on the receipt:
