@@ -425,10 +425,10 @@ function injectCommonNetworks(): void {
     });
     registerEth("linea", 59144, {
         ensNetwork: 1,
-        etherscan: { url: "https:/\/lineascan.io/" }
+        etherscan: { url: "https:/\/lineascan.build/" }
     });
     registerEth("linea-goerli", 59140, {
         ensNetwork: 5,
-        etherscan: { url: "https:/\/goerli.lineascan.io/" }
+        etherscan: { url: "https:/\/goerli.lineascan.build/" }
     });
 }
