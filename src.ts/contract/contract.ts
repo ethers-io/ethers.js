@@ -88,7 +88,12 @@ class PreparedTopicFilter implements DeferredTopicFilter {
 
                 return param.walkAsync(args[index], (type, value) => {
                     if (type === "address") {
-                        return resolveAddress(value, resolver);
+                        if (Array.isArray(value)) {
+                            return value.map((v) => resolveAddress(v, resolver));
+                        } else {
+                            return resolveAddress(value, resolver);
+                        }
+                        
                     }
                     return value;
                 });
