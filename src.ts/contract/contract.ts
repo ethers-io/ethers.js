@@ -251,7 +251,8 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
     const getFragment = function(...args: ContractMethodArgs<A>): FunctionFragment {
         const fragment = contract.interface.getFunction(key, args);
         assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment"
+            operation: "fragment",
+            info: { key, args }
         });
         return fragment;
     }
@@ -348,7 +349,8 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
         get: () => {
             const fragment = contract.interface.getFunction(key);
             assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment"
+                operation: "fragment",
+                info: { key }
             });
             return fragment;
         }
@@ -363,7 +365,8 @@ function buildWrappedEvent<A extends Array<any> = Array<any>>(contract: BaseCont
         const fragment = contract.interface.getEvent(key, args);
 
         assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment"
+            operation: "fragment",
+            info: { key, args }
         });
 
         return fragment;
@@ -388,7 +391,8 @@ function buildWrappedEvent<A extends Array<any> = Array<any>>(contract: BaseCont
             const fragment = contract.interface.getEvent(key);
 
             assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment"
+                operation: "fragment",
+                info: { key }
             });
 
             return fragment;
