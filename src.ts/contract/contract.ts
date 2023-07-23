@@ -904,10 +904,12 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
             }
 
             if (foundFragment) {
-                return new EventLog(log, this.interface, foundFragment);
-            } else {
-                return new Log(log, provider);
+                try {
+                    return new EventLog(log, this.interface, foundFragment);
+                } catch (error) { }
             }
+
+            return new Log(log, provider);
         });
     }
 
