@@ -795,7 +795,11 @@ export class ParamType {
         if (ParamType.isParamType(obj)) { return obj; }
 
         if (typeof(obj) === "string") {
-            return ParamType.from(lex(obj), allowIndexed);
+            try {
+                return ParamType.from(lex(obj), allowIndexed);
+            } catch (error) {
+                assertArgument(false, "invalid param type", "obj", obj);
+            }
 
         } else if (obj instanceof TokenString) {
             let type = "", baseType = "";
@@ -1159,7 +1163,11 @@ export class EventFragment extends NamedFragment {
         if (EventFragment.isFragment(obj)) { return obj; }
 
         if (typeof(obj) === "string") {
-            return EventFragment.from(lex(obj));
+            try {
+                return EventFragment.from(lex(obj));
+            } catch (error) {
+                assertArgument(false, "invalid event fragment", "obj", obj);
+            }
 
         } else if (obj instanceof TokenString) {
             const name = consumeName("event", obj);
@@ -1237,7 +1245,11 @@ export class ConstructorFragment extends Fragment {
         if (ConstructorFragment.isFragment(obj)) { return obj; }
 
         if (typeof(obj) === "string") {
-            return ConstructorFragment.from(lex(obj));
+            try {
+                return ConstructorFragment.from(lex(obj));
+            } catch (error) {
+                assertArgument(false, "invalid constuctor fragment", "obj", obj);
+            }
 
         } else if (obj instanceof TokenString) {
             consumeKeywords(obj, setify([ "constructor" ]));
@@ -1300,7 +1312,11 @@ export class FallbackFragment extends Fragment {
         if (FallbackFragment.isFragment(obj)) { return obj; }
 
         if (typeof(obj) === "string") {
-             return FallbackFragment.from(lex(obj));
+            try {
+                return FallbackFragment.from(lex(obj));
+            } catch (error) {
+                assertArgument(false, "invalid fallback fragment", "obj", obj);
+            }
 
         } else if (obj instanceof TokenString) {
             const errorObj = obj.toString();
@@ -1472,7 +1488,11 @@ export class FunctionFragment extends NamedFragment {
         if (FunctionFragment.isFragment(obj)) { return obj; }
 
         if (typeof(obj) === "string") {
-             return FunctionFragment.from(lex(obj));
+            try {
+                return FunctionFragment.from(lex(obj));
+            } catch (error) {
+                assertArgument(false, "invalid function fragment", "obj", obj);
+            }
 
         } else if (obj instanceof TokenString) {
             const name = consumeName("function", obj);
@@ -1553,7 +1573,11 @@ export class StructFragment extends NamedFragment {
      */
     static from(obj: any): StructFragment {
         if (typeof(obj) === "string") {
-            return StructFragment.from(lex(obj));
+            try {
+                return StructFragment.from(lex(obj));
+            } catch (error) {
+                assertArgument(false, "invalid struct fragment", "obj", obj);
+            }
 
         } else if (obj instanceof TokenString) {
             const name = consumeName("struct", obj);
