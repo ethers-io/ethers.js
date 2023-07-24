@@ -5,7 +5,7 @@ import { isAddressable, resolveAddress } from "../address/index.js";
 import { copyRequest, Log, TransactionResponse } from "../providers/provider.js";
 import {
     defineProperties, getBigInt, isCallException, isHexString, resolveProperties,
-    makeError, assert, assertArgument
+    isError, makeError, assert, assertArgument
 } from "../utils/index.js";
 
 import {
@@ -724,18 +724,21 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
 
         // Add the event filters
         const filters = new Proxy({ }, {
-            get: (target, _prop, receiver) => {
+            get: (target, prop, receiver) => {
                 // Pass important checks (like `then` for Promise) through
-                if (passProperties.indexOf(<string>_prop) >= 0) {
-                    return Reflect.get(target, _prop, receiver);
+                if (typeof(prop) === "symbol" || passProperties.indexOf(prop) >= 0) {
+                    return Reflect.get(target, prop, receiver);
                 }
 
-                const prop = String(_prop);
+                try {
+                    return this.getEvent(prop);
+                } catch (error) {
+                    if (!isError(error, "INVALID_ARGUMENT") || error.argument !== "key") {
+                        throw error;
+                    }
+                }
 
-                const result = this.getEvent(prop);
-                if (result) { return result; }
-
-                throw new Error(`unknown contract event: ${ prop }`);
+                return undefined;
             },
             has: (target, prop) => {
                 // Pass important checks (like `then` for Promise) through
@@ -754,24 +757,28 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
 
         // Return a Proxy that will respond to functions
         return new Proxy(this, {
-            get: (target, _prop, receiver) => {
-                if (_prop in target || passProperties.indexOf(<string>_prop) >= 0 || typeof(_prop) === "symbol") {
-                    return Reflect.get(target, _prop, receiver);
+            get: (target, prop, receiver) => {
+                if (typeof(prop) === "symbol" || prop in target || passProperties.indexOf(prop) >= 0) {
+                    return Reflect.get(target, prop, receiver);
                 }
 
-                const prop = String(_prop);
+                // Undefined properties should return undefined
+                try {
+                    return target.getFunction(prop);
+                } catch (error) {
+                    if (!isError(error, "INVALID_ARGUMENT") || error.argument !== "key") {
+                        throw error;
+                    }
+                }
 
-                const result = target.getFunction(prop);
-                if (result) { return result; }
-
-                throw new Error(`unknown contract method: ${ prop }`);
+                return undefined;
             },
             has: (target, prop) => {
-                if (prop in target || passProperties.indexOf(<string>prop) >= 0 || typeof(prop) === "symbol") {
+                if (typeof(prop) === "symbol" || prop in target || passProperties.indexOf(prop) >= 0) {
                     return Reflect.has(target, prop);
                 }
 
-                return target.interface.hasFunction(String(prop));
+                return target.interface.hasFunction(prop);
             }
         });
 
