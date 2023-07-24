@@ -612,10 +612,21 @@ export class ParamType {
     format(format?: FormatType): string {
         if (format == null) { format = "sighash"; }
         if (format === "json") {
-            let result: any = {
+            const name = this.name || undefined; // @TODO: Make this "" (minor bump)
+
+            if (this.isArray()) {
+                const result = JSON.parse(this.arrayChildren.format("json"));
+                result.name = name;
+                result.type += `[${ (this.arrayLength < 0 ? "": String(this.arrayLength)) }]`;
+                return JSON.stringify(result);
+            }
+
+            const result: any = {
                 type: ((this.baseType === "tuple") ? "tuple": this.type),
-                name: (this.name || undefined)
+                name
             };
+
+
             if (typeof(this.indexed) === "boolean") { result.indexed = this.indexed; }
             if (this.isTuple()) {
                 result.components = this.components.map((c) => JSON.parse(c.format(format)));
