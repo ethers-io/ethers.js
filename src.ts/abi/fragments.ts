@@ -612,7 +612,7 @@ export class ParamType {
     format(format?: FormatType): string {
         if (format == null) { format = "sighash"; }
         if (format === "json") {
-            const name = this.name || undefined; // @TODO: Make this "" (minor bump)
+            const name = this.name || "";
 
             if (this.isArray()) {
                 const result = JSON.parse(this.arrayChildren.format("json"));
