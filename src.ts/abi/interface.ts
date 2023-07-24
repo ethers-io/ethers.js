@@ -14,8 +14,8 @@ import { keccak256 } from "../crypto/index.js"
 import { id } from "../hash/index.js"
 import {
     concat, dataSlice, getBigInt, getBytes, getBytesCopy,
-    hexlify, zeroPadValue, isHexString, defineProperties, assertArgument, toBeHex,
-    assert
+    hexlify, zeroPadBytes, zeroPadValue, isHexString, defineProperties,
+    assertArgument, toBeHex, assert
 } from "../utils/index.js";
 
 import { AbiCoder } from "./abi-coder.js";
@@ -1027,16 +1027,16 @@ export class Interface {
 
             if (param.type === "bool" && typeof(value) === "boolean") {
                 value = (value ? "0x01": "0x00");
+            } else if (param.type.match(/^u?int/)) {
+                value = toBeHex(value);  // @TODO: Should this toTwos??
+            } else if (param.type.match(/^bytes/)) {
+                value = zeroPadBytes(value, 32);
+            } else if (param.type === "address") {
+                // Check addresses are valid
+                this.#abiCoder.encode( [ "address" ], [ value ]);
             }
 
-            if (param.type.match(/^u?int/)) {
-                value = toBeHex(value);
-            }
-
-            // Check addresses are valid
-            if (param.type === "address") { this.#abiCoder.encode( [ "address" ], [ value ]); }
             return zeroPadValue(hexlify(value), 32);
-            //@TOOD should probably be return toHex(value, 32)
         };
 
         values.forEach((value, index) => {

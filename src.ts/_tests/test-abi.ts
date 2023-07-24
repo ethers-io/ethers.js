@@ -73,7 +73,9 @@ describe("Test Bytes32 strings", function() {
 describe("Test Interface", function() {
     const iface = new Interface([
         "function balanceOf(address owner) returns (uint)",
-        "event Transfer(address indexed from, address indexed to, uint amount)"
+        "event Transfer(address indexed from, address indexed to, uint amount)",
+        // #4244
+        "event RedemptionRequested(bytes20 indexed walletPubKeyHash, bytes redeemerOutputScript, address indexed redeemer, uint64 requestedAmount, uint64 treasuryFee, uint64 txMaxFee)"
     ]);
 
     it("does interface stuff; @TODO expand this", function() {
@@ -110,6 +112,21 @@ describe("Test Interface", function() {
         assert.equal(filter[0], "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef");
         assert.equal(filter[1], "0x0000000000000000000000008ba1f109551bd432803012645ac136ddd64dba72");
         assert.equal(filter[2], "0x000000000000000000000000ac1639cf97a3a46d431e6d1216f576622894cbb5");
+
+
+        // See: #4244
+        // https://goerli.etherscan.io/tx/0xe61cef4cd706db8e23114717a207d76cc6b0df0b74ec52805551c4d1bf347a27#eventlog
+        // See `RedemptionRequested` event.
+        {
+            const walletPubKeyHash = "0x03b74d6893ad46dfdd01b9e0e3b3385f4fce2d1e"
+            const redeemer = "0x086813525A7dC7dafFf015Cdf03896Fd276eab60"
+            const filterWithBytes20 = iface.encodeFilterTopics("RedemptionRequested", [ walletPubKeyHash, undefined, redeemer ]);
+            assert.equal(filterWithBytes20.length, 3);
+            assert.equal(filterWithBytes20[0], "0x97a0199072f487232635d50ab75860891afe0b91c976ed2fc76502c4d82d0d95");
+            assert.equal(filterWithBytes20[1], "0x03b74d6893ad46dfdd01b9e0e3b3385f4fce2d1e000000000000000000000000");
+            assert.equal(filterWithBytes20[2], "0x000000000000000000000000086813525a7dc7dafff015cdf03896fd276eab60");
+        }
+
 
         const eventLog = iface.encodeEventLog("Transfer", [ addr, addr2, 234 ]);
         assert.equal(eventLog.data, "0x00000000000000000000000000000000000000000000000000000000000000ea");
