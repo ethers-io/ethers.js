@@ -128,6 +128,21 @@ describe("Test Interface", function () {
         assert.equal(log.args[1], "0xAC1639CF97a3A46D431e6d1216f576622894cBB5");
         assert.equal(log.args[2], BigInt(234));
     });
+    // See #4248
+    it("formats JSON ABI parameters with default empty string for `name` key", function () {
+        assert.deepEqual(JSON.parse(iface.getFunction("balanceOf").format('json')), {
+            constant: false,
+            inputs: [
+                { name: "owner", type: "address" }
+            ],
+            name: "balanceOf",
+            outputs: [
+                { name: "", type: "uint256" }
+            ],
+            payable: false,
+            type: "function",
+        });
+    });
 });
 describe("Tests Legacy ABI formats", function () {
     // See: #3932

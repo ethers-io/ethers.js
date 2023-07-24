@@ -3,6 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.7.0 (2023-07-24 17:47)
+--------------------------------
+
+  - Use empty string for unnamed parameters in JSON output instead of undefined ([#4248](https://github.com/ethers-io/ethers.js/issues/4248); [8c2652c](https://github.com/ethers-io/ethers.js/commit/8c2652c8cb4d054207d89688d30930869d9d3f8b), [ba36079](https://github.com/ethers-io/ethers.js/commit/ba36079a285706694532ce726568c4c447acad47)).
+  - Return undefined for Contract properties that do not exist instead of throwing an error ([#4266](https://github.com/ethers-io/ethers.js/issues/4266); [5bf7b34](https://github.com/ethers-io/ethers.js/commit/5bf7b3494ed62952fc387b4368a0bdc86dfe163e)).
+
 ethers/v6.6.5 (2023-07-24 00:04)
 --------------------------------
 
