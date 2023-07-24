@@ -3,6 +3,17 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.6.5 (2023-07-24 00:04)
+--------------------------------
+
+  - Reflect symbols in the Contract Proxy to target ([#4048](https://github.com/ethers-io/ethers.js/issues/4048); [ac2f5e5](https://github.com/ethers-io/ethers.js/commit/ac2f5e563b8ec0e91a931470eb6ea58b0c01fb3d)).
+  - Allow arrays of address for indexed filter topics ([#4259](https://github.com/ethers-io/ethers.js/issues/4259); [93af87c](https://github.com/ethers-io/ethers.js/commit/93af87c447eeb77090e29bd940612603b3f74026)).
+  - Fixed filter encoding for bytesX ([#4244](https://github.com/ethers-io/ethers.js/issues/4244); [fa3a883](https://github.com/ethers-io/ethers.js/commit/fa3a883ff7c88611ce766f58bdd4b8ac90814470)).
+  - Fix JSON formatting for tuple arrays ([#4237](https://github.com/ethers-io/ethers.js/issues/4237); [a8bc49b](https://github.com/ethers-io/ethers.js/commit/a8bc49bdcf07a51b35f38cf209db27e116cc1a59)).
+  - Better error messages when parsing fragment strings ([#4246](https://github.com/ethers-io/ethers.js/issues/4246); [e36b6c3](https://github.com/ethers-io/ethers.js/commit/e36b6c35b7bc777c9adbe0055b32b31a13185240)).
+  - Include the missing fragment key and args when no matching Contract method or event is present ([#3809](https://github.com/ethers-io/ethers.js/issues/3809); [450a176](https://github.com/ethers-io/ethers.js/commit/450a176ee25f88a2ddb9ff23b153ef70bf1dc546)).
+  - Prevent a single malformed event from preventing other Contract logs; reported on Discord ([b1375f4](https://github.com/ethers-io/ethers.js/commit/b1375f4e4463b856855ebc684b45945455ac082e)).
+
 ethers/v6.6.4 (2023-07-16 00:35)
 --------------------------------
 

@@ -37,6 +37,9 @@ class PreparedTopicFilter {
                 }
                 return param.walkAsync(args[index], (type, value) => {
                     if (type === "address") {
+                        if (Array.isArray(value)) {
+                            return Promise.all(value.map((v) => resolveAddress(v, resolver)));
+                        }
                         return resolveAddress(value, resolver);
                     }
                     return value;
@@ -166,7 +169,8 @@ function buildWrappedMethod(contract, key) {
     const getFragment = function (...args) {
         const fragment = contract.interface.getFunction(key, args);
         assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment"
+            operation: "fragment",
+            info: { key, args }
         });
         return fragment;
     };
@@ -246,7 +250,8 @@ function buildWrappedMethod(contract, key) {
         get: () => {
             const fragment = contract.interface.getFunction(key);
             assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment"
+                operation: "fragment",
+                info: { key }
             });
             return fragment;
         }
@@ -257,7 +262,8 @@ function buildWrappedEvent(contract, key) {
     const getFragment = function (...args) {
         const fragment = contract.interface.getEvent(key, args);
         assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment"
+            operation: "fragment",
+            info: { key, args }
         });
         return fragment;
     };
@@ -276,7 +282,8 @@ function buildWrappedEvent(contract, key) {
         get: () => {
             const fragment = contract.interface.getEvent(key);
             assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment"
+                operation: "fragment",
+                info: { key }
             });
             return fragment;
         }
@@ -592,7 +599,7 @@ export class BaseContract {
         // Return a Proxy that will respond to functions
         return new Proxy(this, {
             get: (target, _prop, receiver) => {
-                if (_prop in target || passProperties.indexOf(_prop) >= 0) {
+                if (_prop in target || passProperties.indexOf(_prop) >= 0 || typeof (_prop) === "symbol") {
                     return Reflect.get(target, _prop, receiver);
                 }
                 const prop = String(_prop);
@@ -603,7 +610,7 @@ export class BaseContract {
                 throw new Error(`unknown contract method: ${prop}`);
             },
             has: (target, prop) => {
-                if (prop in target || passProperties.indexOf(prop) >= 0) {
+                if (prop in target || passProperties.indexOf(prop) >= 0 || typeof (prop) === "symbol") {
                     return Reflect.has(target, prop);
                 }
                 return target.interface.hasFunction(String(prop));
@@ -741,11 +748,12 @@ export class BaseContract {
                 catch (error) { }
             }
             if (foundFragment) {
-                return new EventLog(log, this.interface, foundFragment);
+                try {
+                    return new EventLog(log, this.interface, foundFragment);
+                }
+                catch (error) { }
             }
-            else {
-                return new Log(log, provider);
-            }
+            return new Log(log, provider);
         });
     }
     /**

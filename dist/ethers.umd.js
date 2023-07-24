@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.6.4";
+    const version = "6.6.5";
 
     /**
      *  Property helper functions.
@@ -10452,9 +10452,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 format = "sighash";
             }
             if (format === "json") {
-                let result = {
+                const name = this.name || undefined; // @TODO: Make this "" (minor bump)
+                if (this.isArray()) {
+                    const result = JSON.parse(this.arrayChildren.format("json"));
+                    result.name = name;
+                    result.type += `[${(this.arrayLength < 0 ? "" : String(this.arrayLength))}]`;
+                    return JSON.stringify(result);
+                }
+                const result = {
                     type: ((this.baseType === "tuple") ? "tuple" : this.type),
-                    name: (this.name || undefined)
+                    name
                 };
                 if (typeof (this.indexed) === "boolean") {
                     result.indexed = this.indexed;
@@ -10632,7 +10639,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return obj;
             }
             if (typeof (obj) === "string") {
-                return ParamType.from(lex(obj), allowIndexed);
+                try {
+                    return ParamType.from(lex(obj), allowIndexed);
+                }
+                catch (error) {
+                    assertArgument(false, "invalid param type", "obj", obj);
+                }
             }
             else if (obj instanceof TokenString) {
                 let type = "", baseType = "";
@@ -10952,7 +10964,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return obj;
             }
             if (typeof (obj) === "string") {
-                return EventFragment.from(lex(obj));
+                try {
+                    return EventFragment.from(lex(obj));
+                }
+                catch (error) {
+                    assertArgument(false, "invalid event fragment", "obj", obj);
+                }
             }
             else if (obj instanceof TokenString) {
                 const name = consumeName("event", obj);
@@ -11020,7 +11037,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return obj;
             }
             if (typeof (obj) === "string") {
-                return ConstructorFragment.from(lex(obj));
+                try {
+                    return ConstructorFragment.from(lex(obj));
+                }
+                catch (error) {
+                    assertArgument(false, "invalid constuctor fragment", "obj", obj);
+                }
             }
             else if (obj instanceof TokenString) {
                 consumeKeywords(obj, setify(["constructor"]));
@@ -11072,7 +11094,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return obj;
             }
             if (typeof (obj) === "string") {
-                return FallbackFragment.from(lex(obj));
+                try {
+                    return FallbackFragment.from(lex(obj));
+                }
+                catch (error) {
+                    assertArgument(false, "invalid fallback fragment", "obj", obj);
+                }
             }
             else if (obj instanceof TokenString) {
                 const errorObj = obj.toString();
@@ -11219,7 +11246,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return obj;
             }
             if (typeof (obj) === "string") {
-                return FunctionFragment.from(lex(obj));
+                try {
+                    return FunctionFragment.from(lex(obj));
+                }
+                catch (error) {
+                    assertArgument(false, "invalid function fragment", "obj", obj);
+                }
             }
             else if (obj instanceof TokenString) {
                 const name = consumeName("function", obj);
@@ -11284,7 +11316,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         static from(obj) {
             if (typeof (obj) === "string") {
-                return StructFragment.from(lex(obj));
+                try {
+                    return StructFragment.from(lex(obj));
+                }
+                catch (error) {
+                    assertArgument(false, "invalid struct fragment", "obj", obj);
+                }
             }
             else if (obj instanceof TokenString) {
                 const name = consumeName("struct", obj);
@@ -12400,15 +12437,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 if (param.type === "bool" && typeof (value) === "boolean") {
                     value = (value ? "0x01" : "0x00");
                 }
-                if (param.type.match(/^u?int/)) {
-                    value = toBeHex(value);
+                else if (param.type.match(/^u?int/)) {
+                    value = toBeHex(value); // @TODO: Should this toTwos??
                 }
-                // Check addresses are valid
-                if (param.type === "address") {
+                else if (param.type.match(/^bytes/)) {
+                    value = zeroPadBytes(value, 32);
+                }
+                else if (param.type === "address") {
+                    // Check addresses are valid
                     this.#abiCoder.encode(["address"], [value]);
                 }
                 return zeroPadValue(hexlify(value), 32);
-                //@TOOD should probably be return toHex(value, 32)
             };
             values.forEach((value, index) => {
                 const param = fragment.inputs[index];
@@ -14000,6 +14039,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     }
                     return param.walkAsync(args[index], (type, value) => {
                         if (type === "address") {
+                            if (Array.isArray(value)) {
+                                return Promise.all(value.map((v) => resolveAddress(v, resolver)));
+                            }
                             return resolveAddress(value, resolver);
                         }
                         return value;
@@ -14129,7 +14171,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         const getFragment = function (...args) {
             const fragment = contract.interface.getFunction(key, args);
             assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment"
+                operation: "fragment",
+                info: { key, args }
             });
             return fragment;
         };
@@ -14209,7 +14252,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             get: () => {
                 const fragment = contract.interface.getFunction(key);
                 assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                    operation: "fragment"
+                    operation: "fragment",
+                    info: { key }
                 });
                 return fragment;
             }
@@ -14220,7 +14264,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         const getFragment = function (...args) {
             const fragment = contract.interface.getEvent(key, args);
             assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment"
+                operation: "fragment",
+                info: { key, args }
             });
             return fragment;
         };
@@ -14239,7 +14284,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             get: () => {
                 const fragment = contract.interface.getEvent(key);
                 assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                    operation: "fragment"
+                    operation: "fragment",
+                    info: { key }
                 });
                 return fragment;
             }
@@ -14555,7 +14601,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // Return a Proxy that will respond to functions
             return new Proxy(this, {
                 get: (target, _prop, receiver) => {
-                    if (_prop in target || passProperties.indexOf(_prop) >= 0) {
+                    if (_prop in target || passProperties.indexOf(_prop) >= 0 || typeof (_prop) === "symbol") {
                         return Reflect.get(target, _prop, receiver);
                     }
                     const prop = String(_prop);
@@ -14566,7 +14612,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     throw new Error(`unknown contract method: ${prop}`);
                 },
                 has: (target, prop) => {
-                    if (prop in target || passProperties.indexOf(prop) >= 0) {
+                    if (prop in target || passProperties.indexOf(prop) >= 0 || typeof (prop) === "symbol") {
                         return Reflect.has(target, prop);
                     }
                     return target.interface.hasFunction(String(prop));
@@ -14704,11 +14750,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     catch (error) { }
                 }
                 if (foundFragment) {
-                    return new EventLog(log, this.interface, foundFragment);
+                    try {
+                        return new EventLog(log, this.interface, foundFragment);
+                    }
+                    catch (error) { }
                 }
-                else {
-                    return new Log(log, provider);
-                }
+                return new Log(log, provider);
             });
         }
         /**

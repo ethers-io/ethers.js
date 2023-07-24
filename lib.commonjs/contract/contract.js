@@ -40,6 +40,9 @@ class PreparedTopicFilter {
                 }
                 return param.walkAsync(args[index], (type, value) => {
                     if (type === "address") {
+                        if (Array.isArray(value)) {
+                            return Promise.all(value.map((v) => (0, index_js_2.resolveAddress)(v, resolver)));
+                        }
                         return (0, index_js_2.resolveAddress)(value, resolver);
                     }
                     return value;
@@ -171,7 +174,8 @@ function buildWrappedMethod(contract, key) {
     const getFragment = function (...args) {
         const fragment = contract.interface.getFunction(key, args);
         (0, index_js_3.assert)(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment"
+            operation: "fragment",
+            info: { key, args }
         });
         return fragment;
     };
@@ -251,7 +255,8 @@ function buildWrappedMethod(contract, key) {
         get: () => {
             const fragment = contract.interface.getFunction(key);
             (0, index_js_3.assert)(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment"
+                operation: "fragment",
+                info: { key }
             });
             return fragment;
         }
@@ -262,7 +267,8 @@ function buildWrappedEvent(contract, key) {
     const getFragment = function (...args) {
         const fragment = contract.interface.getEvent(key, args);
         (0, index_js_3.assert)(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment"
+            operation: "fragment",
+            info: { key, args }
         });
         return fragment;
     };
@@ -281,7 +287,8 @@ function buildWrappedEvent(contract, key) {
         get: () => {
             const fragment = contract.interface.getEvent(key);
             (0, index_js_3.assert)(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment"
+                operation: "fragment",
+                info: { key }
             });
             return fragment;
         }
@@ -597,7 +604,7 @@ class BaseContract {
         // Return a Proxy that will respond to functions
         return new Proxy(this, {
             get: (target, _prop, receiver) => {
-                if (_prop in target || passProperties.indexOf(_prop) >= 0) {
+                if (_prop in target || passProperties.indexOf(_prop) >= 0 || typeof (_prop) === "symbol") {
                     return Reflect.get(target, _prop, receiver);
                 }
                 const prop = String(_prop);
@@ -608,7 +615,7 @@ class BaseContract {
                 throw new Error(`unknown contract method: ${prop}`);
             },
             has: (target, prop) => {
-                if (prop in target || passProperties.indexOf(prop) >= 0) {
+                if (prop in target || passProperties.indexOf(prop) >= 0 || typeof (prop) === "symbol") {
                     return Reflect.has(target, prop);
                 }
                 return target.interface.hasFunction(String(prop));
@@ -746,11 +753,12 @@ class BaseContract {
                 catch (error) { }
             }
             if (foundFragment) {
-                return new wrappers_js_1.EventLog(log, this.interface, foundFragment);
+                try {
+                    return new wrappers_js_1.EventLog(log, this.interface, foundFragment);
+                }
+                catch (error) { }
             }
-            else {
-                return new provider_js_1.Log(log, provider);
-            }
+            return new provider_js_1.Log(log, provider);
         });
     }
     /**

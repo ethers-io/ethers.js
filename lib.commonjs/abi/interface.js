@@ -884,15 +884,17 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
             if (param.type === "bool" && typeof (value) === "boolean") {
                 value = (value ? "0x01" : "0x00");
             }
-            if (param.type.match(/^u?int/)) {
-                value = (0, index_js_3.toBeHex)(value);
+            else if (param.type.match(/^u?int/)) {
+                value = (0, index_js_3.toBeHex)(value); // @TODO: Should this toTwos??
             }
-            // Check addresses are valid
-            if (param.type === "address") {
+            else if (param.type.match(/^bytes/)) {
+                value = (0, index_js_3.zeroPadBytes)(value, 32);
+            }
+            else if (param.type === "address") {
+                // Check addresses are valid
                 this.#abiCoder.encode(["address"], [value]);
             }
             return (0, index_js_3.zeroPadValue)((0, index_js_3.hexlify)(value), 32);
-            //@TOOD should probably be return toHex(value, 32)
         };
         values.forEach((value, index) => {
             const param = fragment.inputs[index];

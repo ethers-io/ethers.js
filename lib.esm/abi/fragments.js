@@ -426,9 +426,16 @@ export class ParamType {
             format = "sighash";
         }
         if (format === "json") {
-            let result = {
+            const name = this.name || undefined; // @TODO: Make this "" (minor bump)
+            if (this.isArray()) {
+                const result = JSON.parse(this.arrayChildren.format("json"));
+                result.name = name;
+                result.type += `[${(this.arrayLength < 0 ? "" : String(this.arrayLength))}]`;
+                return JSON.stringify(result);
+            }
+            const result = {
                 type: ((this.baseType === "tuple") ? "tuple" : this.type),
-                name: (this.name || undefined)
+                name
             };
             if (typeof (this.indexed) === "boolean") {
                 result.indexed = this.indexed;
@@ -606,7 +613,12 @@ export class ParamType {
             return obj;
         }
         if (typeof (obj) === "string") {
-            return ParamType.from(lex(obj), allowIndexed);
+            try {
+                return ParamType.from(lex(obj), allowIndexed);
+            }
+            catch (error) {
+                assertArgument(false, "invalid param type", "obj", obj);
+            }
         }
         else if (obj instanceof TokenString) {
             let type = "", baseType = "";
@@ -926,7 +938,12 @@ export class EventFragment extends NamedFragment {
             return obj;
         }
         if (typeof (obj) === "string") {
-            return EventFragment.from(lex(obj));
+            try {
+                return EventFragment.from(lex(obj));
+            }
+            catch (error) {
+                assertArgument(false, "invalid event fragment", "obj", obj);
+            }
         }
         else if (obj instanceof TokenString) {
             const name = consumeName("event", obj);
@@ -994,7 +1011,12 @@ export class ConstructorFragment extends Fragment {
             return obj;
         }
         if (typeof (obj) === "string") {
-            return ConstructorFragment.from(lex(obj));
+            try {
+                return ConstructorFragment.from(lex(obj));
+            }
+            catch (error) {
+                assertArgument(false, "invalid constuctor fragment", "obj", obj);
+            }
         }
         else if (obj instanceof TokenString) {
             consumeKeywords(obj, setify(["constructor"]));
@@ -1046,7 +1068,12 @@ export class FallbackFragment extends Fragment {
             return obj;
         }
         if (typeof (obj) === "string") {
-            return FallbackFragment.from(lex(obj));
+            try {
+                return FallbackFragment.from(lex(obj));
+            }
+            catch (error) {
+                assertArgument(false, "invalid fallback fragment", "obj", obj);
+            }
         }
         else if (obj instanceof TokenString) {
             const errorObj = obj.toString();
@@ -1193,7 +1220,12 @@ export class FunctionFragment extends NamedFragment {
             return obj;
         }
         if (typeof (obj) === "string") {
-            return FunctionFragment.from(lex(obj));
+            try {
+                return FunctionFragment.from(lex(obj));
+            }
+            catch (error) {
+                assertArgument(false, "invalid function fragment", "obj", obj);
+            }
         }
         else if (obj instanceof TokenString) {
             const name = consumeName("function", obj);
@@ -1258,7 +1290,12 @@ export class StructFragment extends NamedFragment {
      */
     static from(obj) {
         if (typeof (obj) === "string") {
-            return StructFragment.from(lex(obj));
+            try {
+                return StructFragment.from(lex(obj));
+            }
+            catch (error) {
+                assertArgument(false, "invalid struct fragment", "obj", obj);
+            }
         }
         else if (obj instanceof TokenString) {
             const name = consumeName("struct", obj);
