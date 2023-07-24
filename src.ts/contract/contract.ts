@@ -755,7 +755,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         // Return a Proxy that will respond to functions
         return new Proxy(this, {
             get: (target, _prop, receiver) => {
-                if (_prop in target || passProperties.indexOf(<string>_prop) >= 0) {
+                if (_prop in target || passProperties.indexOf(<string>_prop) >= 0 || typeof(_prop) === "symbol") {
                     return Reflect.get(target, _prop, receiver);
                 }
 
@@ -767,7 +767,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
                 throw new Error(`unknown contract method: ${ prop }`);
             },
             has: (target, prop) => {
-                if (prop in target || passProperties.indexOf(<string>prop) >= 0) {
+                if (prop in target || passProperties.indexOf(<string>prop) >= 0 || typeof(prop) === "symbol") {
                     return Reflect.has(target, prop);
                 }
 
