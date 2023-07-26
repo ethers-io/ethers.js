@@ -172,6 +172,12 @@ export class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
                 return "https:/\/api-goerli-optimistic.etherscan.io";
+
+            case "bnb":
+                return "http:/\/api.bscscan.com";
+            case "bnbt":
+                return "http:/\/api-testnet.bscscan.com";
+
             default:
         }
 
