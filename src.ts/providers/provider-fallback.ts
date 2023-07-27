@@ -165,16 +165,20 @@ async function waitForSync(config: Config, blockNumber: number): Promise<void> {
 export type FallbackProviderOptions = {
     // How many providers must agree on a value before reporting
     // back the response
-    quorum: number;
+    quorum?: number;
 
     // How many providers must have reported the same event
-    // for it to be emitted
-    eventQuorum: number;
+    // for it to be emitted (currently unimplmented)
+    eventQuorum?: number;
 
     // How many providers to dispatch each event to simultaneously.
     // Set this to 0 to use getLog polling, which implies eventQuorum
-    // is equal to quorum.
-    eventWorkers: number;
+    // is equal to quorum. (currently unimplemented)
+    eventWorkers?: number;
+
+    cacheTimeout?: number;
+
+    pollingInterval?: number;
 };
 
 type RunnerResult = { result: any } | { error: Error };
@@ -380,8 +384,9 @@ export class FallbackProvider extends AbstractProvider {
      *  If a [[Provider]] is included in %%providers%%, defaults are used
      *  for the configuration.
      */
-    constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish) {
-        super(network);
+    constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish, options?: FallbackProviderOptions) {
+        super(network, options);
+
         this.#configs = providers.map((p) => {
             if (p instanceof AbstractProvider) {
                 return Object.assign({ provider: p }, defaultConfig, defaultState );
@@ -393,7 +398,15 @@ export class FallbackProvider extends AbstractProvider {
         this.#height = -2;
         this.#initialSyncPromise = null;
 
-        this.quorum = 2; //Math.ceil(providers.length /  2);
+        if (options && options.quorum != null) {
+            this.quorum = options.quorum;
+        } else {
+            this.quorum = Math.ceil(this.#configs.reduce((accum, config) => {
+                accum += config.weight;
+                return accum;
+            }, 0) / 2);
+        }
+
         this.eventQuorum = 1;
         this.eventWorkers = 1;
 

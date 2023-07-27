@@ -11,6 +11,7 @@ import { QuickNodeProvider } from "./provider-quicknode.js";
 
 import { FallbackProvider } from "./provider-fallback.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
+import { Network } from "./network.js";
 import { WebSocketProvider } from "./provider-websocket.js";
 
 import type { AbstractProvider } from "./abstract-provider.js";
@@ -22,6 +23,8 @@ function isWebSocketLike(value: any): value is WebSocketLike {
         typeof(value.close) === "function");
 }
 
+const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goerli matic-mumbai bnbt".split(" ");
+
 export function getDefaultProvider(network: string | Networkish | WebSocketLike, options?: any): AbstractProvider {
     if (options == null) { options = { }; }
 
@@ -32,6 +35,13 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
     if (typeof(network) === "string" && network.match(/^wss?:/) || isWebSocketLike(network)) {
         return new WebSocketProvider(network);
     }
+
+    // Get the network name, if possible
+    let name: null | string = null;
+    try {
+        name = Network.from(network).name;
+    } catch (error) { }
+
 
     const providers: Array<AbstractProvider> = [ ];
 
@@ -96,7 +106,19 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
         operation: "getDefaultProvider"
     });
 
+    // No need for a FallbackProvider
     if (providers.length === 1) { return providers[0]; }
 
-    return new FallbackProvider(providers);
+    // We use the floor because public third-party providers can be unreliable,
+    // so a low number of providers with a large quorum will fail too often
+    let quorum = Math.floor(providers.length / 2);
+
+    // Testnets don't need as strong a security gaurantee and speed is
+    // more useful during testing
+    if (name && Testnets.indexOf(name) !== -1) { quorum = 1; }
+
+    // Provided override qorum takes priority
+    if (options && options.quorum) { quorum = options.quorum; }
+
+    return new FallbackProvider(providers, undefined, { quorum });
 }
