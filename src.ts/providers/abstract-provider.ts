@@ -44,6 +44,7 @@ import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { Listener } from "../utils/index.js";
 
 import type { Networkish } from "./network.js";
+import type { FetchUrlFeeDataNetworkPlugin } from "./plugins-network.js";
 //import type { MaxPriorityFeePlugin } from "./plugins-network.js";
 import type {
     BlockParams, LogParams, TransactionReceiptParams,
@@ -410,10 +411,12 @@ type _PerformAccountRequest = {
  */
 export type AbstractProviderOptions = {
     cacheTimeout?: number;
+    pollingInterval?: number;
 };
 
 const defaultOptions = {
-    cacheTimeout: 250
+    cacheTimeout: 250,
+    pollingInterval: 4000
 };
 
 type CcipArgs = {
@@ -492,6 +495,8 @@ export class AbstractProvider implements Provider {
 
         this.#disableCcipRead = false;
     }
+
+    get pollingInterval(): number { return this.#options.pollingInterval; }
 
     /**
      *  Returns ``this``, to allow an **AbstractProvider** to implement
@@ -888,34 +893,41 @@ export class AbstractProvider implements Provider {
     }
 
     async getFeeData(): Promise<FeeData> {
-        const { block, gasPrice } = await resolveProperties({
-            block: this.getBlock("latest"),
-            gasPrice: ((async () => {
-                try {
-                    const gasPrice = await this.#perform({ method: "getGasPrice" });
-                    return getBigInt(gasPrice, "%response");
-                } catch (error) { }
-                return null
-            })())
-        });
+        const network = await this.getNetwork();
 
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
+        const getFeeDataFunc = async () => {
+            const { _block, gasPrice } = await resolveProperties({
+                _block: this.#getBlock("latest", false),
+                gasPrice: ((async () => {
+                    try {
+                        const gasPrice = await this.#perform({ method: "getGasPrice" });
+                        return getBigInt(gasPrice, "%response");
+                    } catch (error) { }
+                    return null
+                })())
+            });
 
-        if (block && block.baseFeePerGas) {
-            // We may want to compute this more accurately in the future,
-            // using the formula "check if the base fee is correct".
-            // See: https://eips.ethereum.org/EIPS/eip-1559
-            maxPriorityFeePerGas = BigInt("1000000000");
+            let maxFeePerGas = null, maxPriorityFeePerGas = null;
 
-            // Allow a network to override their maximum priority fee per gas
-            //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
-            //if (priorityFeePlugin) {
-            //    maxPriorityFeePerGas = await priorityFeePlugin.getPriorityFee(this);
-            //}
-            maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
+            // These are the recommended EIP-1559 heuristics for fee data
+            const block = this._wrapBlock(_block, network);
+            if (block && block.baseFeePerGas) {
+                maxPriorityFeePerGas = BigInt("1000000000");
+                maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
+            }
+
+            return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
+        };
+
+        // Check for a FeeDataNetWorkPlugin
+        const plugin = <FetchUrlFeeDataNetworkPlugin>network.getPlugin("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
+        if (plugin) {
+            const req = new FetchRequest(plugin.url);
+            const feeData = await plugin.processFunc(getFeeDataFunc, this, req);
+            return new FeeData(feeData.gasPrice, feeData.maxFeePerGas, feeData.maxPriorityFeePerGas);
         }
 
-        return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
+        return await getFeeDataFunc();
     }
 
 
@@ -1301,8 +1313,11 @@ export class AbstractProvider implements Provider {
             case "error":
             case "network":
                 return new UnmanagedSubscriber(sub.type);
-            case "block":
-                return new PollingBlockSubscriber(this);
+            case "block": {
+                const subscriber = new PollingBlockSubscriber(this);
+                subscriber.pollingInterval = this.pollingInterval;
+                return subscriber;
+            }
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":
