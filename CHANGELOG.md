@@ -3,10 +3,15 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.6.6 (2023-07-28 01:14)
+--------------------------------
+
+  - Better error message when passing invalid overrides object into a contract deployment ([#4182](https://github.com/ethers-io/ethers.js/issues/4182); [aa2ea3d](https://github.com/ethers-io/ethers.js/commit/aa2ea3d5296956fd0d40b83888e1ca053bb250ee)).
+
 ethers/v6.6.5 (2023-07-24 00:04)
 --------------------------------
 
-  - Reflect symbols in the Contract Proxy to target ([#4048](https://github.com/ethers-io/ethers.js/issues/4048); [ac2f5e5](https://github.com/ethers-io/ethers.js/commit/ac2f5e563b8ec0e91a931470eb6ea58b0c01fb3d)).
+  - Reflect symbols in the Contract Proxy to target ([#4084](https://github.com/ethers-io/ethers.js/issues/4048); [ac2f5e5](https://github.com/ethers-io/ethers.js/commit/ac2f5e563b8ec0e91a931470eb6ea58b0c01fb3d)).
   - Allow arrays of address for indexed filter topics ([#4259](https://github.com/ethers-io/ethers.js/issues/4259); [93af87c](https://github.com/ethers-io/ethers.js/commit/93af87c447eeb77090e29bd940612603b3f74026)).
   - Fixed filter encoding for bytesX ([#4244](https://github.com/ethers-io/ethers.js/issues/4244); [fa3a883](https://github.com/ethers-io/ethers.js/commit/fa3a883ff7c88611ce766f58bdd4b8ac90814470)).
   - Fix JSON formatting for tuple arrays ([#4237](https://github.com/ethers-io/ethers.js/issues/4237); [a8bc49b](https://github.com/ethers-io/ethers.js/commit/a8bc49bdcf07a51b35f38cf209db27e116cc1a59)).

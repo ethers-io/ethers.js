@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.6.5";
+    const version = "6.6.6";
 
     /**
      *  Property helper functions.
@@ -14082,8 +14082,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  @_ignore:
      */
     async function copyOverrides(arg, allowed) {
+        // Make sure the overrides passed in are a valid overrides object
+        const _overrides = Typed.dereference(arg, "overrides");
+        assertArgument(typeof (_overrides) === "object", "invalid overrides parameter", "overrides", arg);
         // Create a shallow copy (we'll deep-ify anything needed during normalizing)
-        const overrides = copyRequest(Typed.dereference(arg, "overrides"));
+        const overrides = copyRequest(_overrides);
         assertArgument(overrides.to == null || (allowed || []).indexOf("to") >= 0, "cannot override to", "overrides.to", overrides.to);
         assertArgument(overrides.data == null || (allowed || []).indexOf("data") >= 0, "cannot override data", "overrides.data", overrides.data);
         // Resolve any from
