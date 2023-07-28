@@ -3,6 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.6.7 (2023-07-28 14:50)
+--------------------------------
+
+  - Prevent malformed logs from preventing other logs being decoded ([#4275](https://github.com/ethers-io/ethers.js/issues/4275); [0dca645](https://github.com/ethers-io/ethers.js/commit/0dca645632d73488bf6ad460e0d779361a537bbe)).
+  - Allow visibility on human-readable constructors (via telegram) ([3a52201](https://github.com/ethers-io/ethers.js/commit/3a52201fe2ba68a00105cca2c0901da5ffa18d6b)).
+
 ethers/v6.6.6 (2023-07-28 01:14)
 --------------------------------
 

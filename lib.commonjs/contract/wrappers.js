@@ -60,11 +60,12 @@ class ContractTransactionReceipt extends provider_js_1.TransactionReceipt {
         return super.logs.map((log) => {
             const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]) : null;
             if (fragment) {
-                return new EventLog(log, this.#iface, fragment);
+                try {
+                    return new EventLog(log, this.#iface, fragment);
+                }
+                catch (error) { }
             }
-            else {
-                return log;
-            }
+            return log;
         });
     }
 }

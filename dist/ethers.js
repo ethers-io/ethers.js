@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.6.6";
+const version = "6.6.7";
 
 /**
  *  Property helper functions.
@@ -10038,6 +10038,8 @@ function setify(items) {
     items.forEach((k) => result.add(k));
     return Object.freeze(result);
 }
+const _kwVisibDeploy = "external public payable";
+const KwVisibDeploy = setify(_kwVisibDeploy.split(" "));
 // Visibility Keywords
 const _kwVisib = "constant external internal payable private public pure view";
 const KwVisib = setify(_kwVisib.split(" "));
@@ -11041,7 +11043,7 @@ class ConstructorFragment extends Fragment {
         else if (obj instanceof TokenString) {
             consumeKeywords(obj, setify(["constructor"]));
             const inputs = consumeParams(obj);
-            const payable = !!consumeKeywords(obj, setify(["payable"])).has("payable");
+            const payable = !!consumeKeywords(obj, KwVisibDeploy).has("payable");
             const gas = consumeGas(obj);
             consumeEoi(obj);
             return new ConstructorFragment(_guard$2, "constructor", inputs, payable, gas);
@@ -13901,11 +13903,12 @@ class ContractTransactionReceipt extends TransactionReceipt {
         return super.logs.map((log) => {
             const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]) : null;
             if (fragment) {
-                return new EventLog(log, this.#iface, fragment);
+                try {
+                    return new EventLog(log, this.#iface, fragment);
+                }
+                catch (error) { }
             }
-            else {
-                return log;
-            }
+            return log;
         });
     }
 }
