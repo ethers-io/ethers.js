@@ -34,7 +34,7 @@ import { PollingEventSubscriber } from "./subscriber-polling.js";
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 
-import type { AbstractProviderOptions, PerformActionRequest, Subscriber, Subscription } from "./abstract-provider.js";
+import type { PerformActionRequest, Subscriber, Subscription } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
 import type { Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 import type { Signer } from "./signer.js";
@@ -196,6 +196,7 @@ export type JsonRpcApiProviderOptions = {
     batchMaxCount?: number;
 
     cacheTimeout?: number;
+    pollingInterval?: number;
 };
 
 const defaultOptions = {
@@ -206,7 +207,8 @@ const defaultOptions = {
     batchMaxSize: (1 << 20), // 1Mb
     batchMaxCount: 100,      // 100 requests
 
-    cacheTimeout: 250
+    cacheTimeout: 250,
+    pollingInterval: 4000
 }
 
 /**
@@ -543,11 +545,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     }
 
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions) {
-        const superOptions: AbstractProviderOptions = { };
-        if (options && options.cacheTimeout != null) {
-            superOptions.cacheTimeout = options.cacheTimeout;
-        }
-        super(network, superOptions);
+        super(network, options);
 
         this.#nextId = 1;
         this.#options = Object.assign({ }, defaultOptions, options || { });
@@ -1079,6 +1077,12 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     }
 }
 
+// @TODO: remove this in v7, it is not exported because this functionality
+// is exposed in the JsonRpcApiProvider by setting polling to true. It should
+// be safe to remove regardless, because it isn't reachable, but just in case.
+/**
+ *  @_ignore:
+ */
 export abstract class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     #pollingInterval: number;
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions) {
