@@ -133,8 +133,12 @@ function getProvider(value: null | ContractRunner): null | Provider {
  */
 export async function copyOverrides<O extends string = "data" | "to">(arg: any, allowed?: Array<string>): Promise<Omit<ContractTransaction, O>> {
 
+    // Make sure the overrides passed in are a valid overrides object
+    const _overrides = Typed.dereference(arg, "overrides");
+    assertArgument(typeof(_overrides) === "object", "invalid overrides parameter", "overrides", arg);
+
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
-    const overrides = copyRequest(Typed.dereference(arg, "overrides"));
+    const overrides = copyRequest(_overrides);
 
     assertArgument(overrides.to == null || (allowed || [ ]).indexOf("to") >= 0,
       "cannot override to", "overrides.to", overrides.to);
