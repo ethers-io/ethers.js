@@ -76,10 +76,12 @@ export class ContractTransactionReceipt extends TransactionReceipt {
         return super.logs.map((log) => {
             const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]): null;
             if (fragment) {
-                return new EventLog(log, this.#iface, fragment)
-            } else {
-                return log;
+                try {
+                    return new EventLog(log, this.#iface, fragment)
+                } catch (error) { }
             }
+
+            return log;
         });
     }
 
