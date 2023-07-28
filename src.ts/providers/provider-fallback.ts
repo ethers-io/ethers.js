@@ -485,7 +485,7 @@ export class FallbackProvider extends AbstractProvider {
         // Shuffle the states, sorted by priority
         const allConfigs = this.#configs.slice();
         shuffle(allConfigs);
-        allConfigs.sort((a, b) => (b.priority - a.priority));
+        allConfigs.sort((a, b) => (a.priority - b.priority));
 
         for (const config of allConfigs) {
             if (config._lastFatalError) { continue; }
