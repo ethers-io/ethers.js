@@ -28,6 +28,17 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
 export function getDefaultProvider(network: string | Networkish | WebSocketLike, options?: any): AbstractProvider {
     if (options == null) { options = { }; }
 
+    const allowService = (name: string) => {
+        if (options[name] === "-") { return false; }
+        if (typeof(options.exclusive) === "string") {
+            return (name === options.exclusive);
+        }
+        if (Array.isArray(options.exclusive)) {
+            return (options.exclusive.indexOf(name) !== -1);
+        }
+        return true;
+    };
+
     if (typeof(network) === "string" && network.match(/^https?:/)) {
         return new JsonRpcProvider(network);
     }
@@ -45,39 +56,37 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
 
     const providers: Array<AbstractProvider> = [ ];
 
-    if (options.publicPolygon !== "-" && staticNetwork) {
+    if (allowService("publicPolygon") && staticNetwork) {
         if (staticNetwork.name === "matic") {
             providers.push(new JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
-        } else if (staticNetwork.name === "matic-mumbai") {
-            providers.push(new JsonRpcProvider("https:/\/rpc-mumbai.matic.today/", staticNetwork, { staticNetwork }));
         }
     }
 
-    if (options.alchemy !== "-") {
+    if (allowService("alchemy")) {
         try {
             providers.push(new AlchemyProvider(network, options.alchemy));
         } catch (error) { }
     }
 
-    if (options.ankr !== "-" && options.ankr != null) {
+    if (allowService("ankr") && options.ankr != null) {
         try {
             providers.push(new AnkrProvider(network, options.ankr));
         } catch (error) { }
     }
 
-    if (options.cloudflare !== "-") {
+    if (allowService("cloudflare")) {
         try {
             providers.push(new CloudflareProvider(network));
         } catch (error) { }
     }
 
-    if (options.etherscan !== "-") {
+    if (allowService("etherscan")) {
         try {
             providers.push(new EtherscanProvider(network, options.etherscan));
         } catch (error) { }
     }
 
-    if (options.infura !== "-") {
+    if (allowService("infura")) {
         try {
             let projectId = options.infura;
             let projectSecret: undefined | string = undefined;
@@ -103,7 +112,7 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
         } catch (error) { console.log(error); }
     }
 */
-    if (options.quicknode !== "-") {
+    if (allowService("quicknode")) {
         try {
             let token = options.quicknode;
             providers.push(new QuickNodeProvider(network, token));
