@@ -36,14 +36,22 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
         return new WebSocketProvider(network);
     }
 
-    // Get the network name, if possible
-    let name: null | string = null;
+    // Get the network and name, if possible
+    let staticNetwork: null | Network = null;
     try {
-        name = Network.from(network).name;
+        staticNetwork = Network.from(network);
     } catch (error) { }
 
 
     const providers: Array<AbstractProvider> = [ ];
+
+    if (options.publicPolygon !== "-" && staticNetwork) {
+        if (staticNetwork.name === "matic") {
+            providers.push(new JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
+        } else if (staticNetwork.name === "matic-mumbai") {
+            providers.push(new JsonRpcProvider("https:/\/rpc-mumbai.matic.today/", staticNetwork, { staticNetwork }));
+        }
+    }
 
     if (options.alchemy !== "-") {
         try {
@@ -112,10 +120,11 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
     // We use the floor because public third-party providers can be unreliable,
     // so a low number of providers with a large quorum will fail too often
     let quorum = Math.floor(providers.length / 2);
+    if (quorum > 2) { quorum = 2; }
 
     // Testnets don't need as strong a security gaurantee and speed is
     // more useful during testing
-    if (name && Testnets.indexOf(name) !== -1) { quorum = 1; }
+    if (staticNetwork && Testnets.indexOf(staticNetwork.name) !== -1) { quorum = 1; }
 
     // Provided override qorum takes priority
     if (options && options.quorum) { quorum = options.quorum; }
