@@ -77,8 +77,9 @@ export {
     EnsResolver,
     Network,
 
-    EnsPlugin, EtherscanPlugin, FeeDataNetworkPlugin, GasCostPlugin, NetworkPlugin,
-    MulticoinProviderPlugin,
+    EnsPlugin, EtherscanPlugin,
+    FeeDataNetworkPlugin, FetchUrlFeeDataNetworkPlugin,
+    GasCostPlugin, NetworkPlugin, MulticoinProviderPlugin,
 
     SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber,
     SocketSubscriber, UnmanagedSubscriber,
@@ -162,7 +163,7 @@ export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 export type {
     Provider, Signer,
 
-    AbstractProviderOptions,
+    AbstractProviderOptions, FallbackProviderOptions,
 
     AbstractProviderPlugin, BlockParams, BlockTag, ContractRunner, DebugEventBrowserProvider,
     Eip1193Provider, EventFilter, Filter, FilterByBlockHash, GasCostParameters,

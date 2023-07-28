@@ -40,6 +40,7 @@ export {
     GasCostPlugin,
     EnsPlugin,
     FeeDataNetworkPlugin,
+    FetchUrlFeeDataNetworkPlugin,
 } from "./plugins-network.js";
 
 export {
@@ -114,6 +115,8 @@ export type {
 export type {
     DebugEventBrowserProvider, Eip1193Provider
 } from "./provider-browser.js";
+
+export type { FallbackProviderOptions } from "./provider-fallback.js";
 
 export type {
     JsonRpcPayload, JsonRpcResult, JsonRpcError,
