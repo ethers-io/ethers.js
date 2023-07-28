@@ -333,8 +333,8 @@ function getGasStationPlugin(url: string) {
                 maxPriorityFeePerGas: parseUnits(payload.maxPriorityFee, 9),
             };
             return feeData;
-        } catch (error) {
-            assert(false, `error encountered with polygon gas station (${ JSON.stringify(request.url) })`, "SERVER_ERROR", { request, response, info: { error } });
+        } catch (error: any) {
+            assert(false, `error encountered with polygon gas station (${ JSON.stringify(request.url) })`, "SERVER_ERROR", { request, response, error });
         }
     });
 }
@@ -385,19 +385,19 @@ function injectCommonNetworks(): void {
     registerEth("classic", 61, { });
     registerEth("classicKotti", 6, { });
 
-    registerEth("xdai", 100, { ensNetwork: 1 });
 
-    registerEth("optimism", 10, {
-        ensNetwork: 1,
-    });
-    registerEth("optimism-goerli", 420, { });
 
     registerEth("arbitrum", 42161, {
         ensNetwork: 1,
     });
     registerEth("arbitrum-goerli", 421613, { });
 
-    // Polygon has a 35 gwei maxPriorityFee requirement
+    registerEth("bnb", 56, { ensNetwork: 1 });
+    registerEth("bnbt", 97, { });
+
+    registerEth("linea", 59144, { ensNetwork: 1 });
+    registerEth("linea-goerli", 59140, { });
+
     registerEth("matic", 137, {
         ensNetwork: 1,
         plugins: [
@@ -411,6 +411,10 @@ function injectCommonNetworks(): void {
         ]
     });
 
-    registerEth("bnb", 56, { ensNetwork: 1 });
-    registerEth("bnbt", 97, { });
+    registerEth("optimism", 10, {
+        ensNetwork: 1,
+    });
+    registerEth("optimism-goerli", 420, { });
+
+    registerEth("xdai", 100, { ensNetwork: 1 });
 }
