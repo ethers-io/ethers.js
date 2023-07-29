@@ -121,6 +121,9 @@ function setify(items: Array<string>): ReadonlySet<string> {
     return Object.freeze(result);
 }
 
+const _kwVisibDeploy = "external public payable";
+const KwVisibDeploy = setify(_kwVisibDeploy.split(" "));
+
 // Visibility Keywords
 const _kwVisib = "constant external internal payable private public pure view";
 const KwVisib = setify(_kwVisib.split(" "));
@@ -1265,7 +1268,7 @@ export class ConstructorFragment extends Fragment {
         } else if (obj instanceof TokenString) {
             consumeKeywords(obj, setify([ "constructor" ]));
             const inputs = consumeParams(obj);
-            const payable = !!consumeKeywords(obj, setify([ "payable" ])).has("payable");
+            const payable = !!consumeKeywords(obj, KwVisibDeploy).has("payable");
             const gas = consumeGas(obj);
             consumeEoi(obj);
 

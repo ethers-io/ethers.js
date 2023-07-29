@@ -239,6 +239,7 @@ export type PerformActionRequest = {
  */
 export type AbstractProviderOptions = {
     cacheTimeout?: number;
+    pollingInterval?: number;
 };
 /**
  *  An **AbstractProvider** provides a base class for other sub-classes to
@@ -254,6 +255,7 @@ export declare class AbstractProvider implements Provider {
      *  [[Network]] if necessary.
      */
     constructor(_network?: "any" | Networkish, options?: AbstractProviderOptions);
+    get pollingInterval(): number;
     /**
      *  Returns ``this``, to allow an **AbstractProvider** to implement
      *  the [[ContractRunner]] interface.

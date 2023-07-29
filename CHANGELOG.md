@@ -3,16 +3,43 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.7.0 (2023-07-29 02:33)
+--------------------------------
+
+  - Added new exports for FallbackProviderOptions and FetchUrlFeeDataNetworkPlugin ([#2828](https://github.com/ethers-io/ethers.js/issues/2828), [#4160](https://github.com/ethers-io/ethers.js/issues/4160); [b1dbbb0](https://github.com/ethers-io/ethers.js/commit/b1dbbb0de3f10a3d9e12d6a84ad5c52bea25c7f6)).
+  - Allow overriding pollingInterval in JsonRpcProvider constructor (via discord) ([f42f258](https://github.com/ethers-io/ethers.js/commit/f42f258beb305a06e563ad16522f095a72da32eb)).
+  - Fixed FallbackProvider priority sorting ([#4150](https://github.com/ethers-io/ethers.js/issues/4150); [78538eb](https://github.com/ethers-io/ethers.js/commit/78538eb100addd135d29e60c9fa4fed3946278fa)).
+  - Added linea network to InfuraProvider and Network ([#4184](https://github.com/ethers-io/ethers.js/issues/4184), [#4190](https://github.com/ethers-io/ethers.js/issues/4190); [d3e5e2c](https://github.com/ethers-io/ethers.js/commit/d3e5e2c45b28c377f306091acfc024e30c49ef20)).
+  - Added whitelist support to getDefaultProvider ([82bb936](https://github.com/ethers-io/ethers.js/commit/82bb936542e29c6441ac8dc2d3ebbdd4edb708ee)).
+  - Add Polygon RPC endpoints to the default provider ([#3689](https://github.com/ethers-io/ethers.js/issues/3689); [23704a9](https://github.com/ethers-io/ethers.js/commit/23704a9c44d5857817e138fb19d44ce2103ca005)).
+  - Added customizable quorum to FallbackProvider ([#4160](https://github.com/ethers-io/ethers.js/issues/4160); [8f0a509](https://github.com/ethers-io/ethers.js/commit/8f0a50921a12a866addcf5b0fabc576bfc287689)).
+  - Added basic Gas Station support via a NetworkPlugin ([#2828](https://github.com/ethers-io/ethers.js/issues/2828); [229145d](https://github.com/ethers-io/ethers.js/commit/229145ddf566a962517588eaeed155734c7d4598)).
+  - Add BNB URLs to EtherscanProvider networks ([ec39abe](https://github.com/ethers-io/ethers.js/commit/ec39abe067259fad4ea8607a6c5aece61890eb41)).
+  - Added tests for JSON format ([#4248](https://github.com/ethers-io/ethers.js/issues/4248); [ba36079](https://github.com/ethers-io/ethers.js/commit/ba36079a285706694532ce726568c4c447acad47)).
+  - Use empty string for unnamed parameters in JSON output instead of undefined ([#4248](https://github.com/ethers-io/ethers.js/issues/4248); [8c2652c](https://github.com/ethers-io/ethers.js/commit/8c2652c8cb4d054207d89688d30930869d9d3f8b)).
+  - Return undefined for Contract properties that do not exist instead of throwing an error ([#4266](https://github.com/ethers-io/ethers.js/issues/4266); [5bf7b34](https://github.com/ethers-io/ethers.js/commit/5bf7b3494ed62952fc387b4368a0bdc86dfe163e)).
+
 ethers/v6.7.0 (2023-07-24 17:47)
 --------------------------------
 
   - Use empty string for unnamed parameters in JSON output instead of undefined ([#4248](https://github.com/ethers-io/ethers.js/issues/4248); [8c2652c](https://github.com/ethers-io/ethers.js/commit/8c2652c8cb4d054207d89688d30930869d9d3f8b), [ba36079](https://github.com/ethers-io/ethers.js/commit/ba36079a285706694532ce726568c4c447acad47)).
   - Return undefined for Contract properties that do not exist instead of throwing an error ([#4266](https://github.com/ethers-io/ethers.js/issues/4266); [5bf7b34](https://github.com/ethers-io/ethers.js/commit/5bf7b3494ed62952fc387b4368a0bdc86dfe163e)).
 
+ethers/v6.6.7 (2023-07-28 14:50)
+--------------------------------
+
+  - Prevent malformed logs from preventing other logs being decoded ([#4275](https://github.com/ethers-io/ethers.js/issues/4275); [0dca645](https://github.com/ethers-io/ethers.js/commit/0dca645632d73488bf6ad460e0d779361a537bbe)).
+  - Allow visibility on human-readable constructors ([#4278](https://github.com/ethers-io/ethers.js/issues/4278); [3a52201](https://github.com/ethers-io/ethers.js/commit/3a52201fe2ba68a00105cca2c0901da5ffa18d6b)).
+
+ethers/v6.6.6 (2023-07-28 01:14)
+--------------------------------
+
+  - Better error message when passing invalid overrides object into a contract deployment ([#4182](https://github.com/ethers-io/ethers.js/issues/4182); [aa2ea3d](https://github.com/ethers-io/ethers.js/commit/aa2ea3d5296956fd0d40b83888e1ca053bb250ee)).
+
 ethers/v6.6.5 (2023-07-24 00:04)
 --------------------------------
 
-  - Reflect symbols in the Contract Proxy to target ([#4048](https://github.com/ethers-io/ethers.js/issues/4048); [ac2f5e5](https://github.com/ethers-io/ethers.js/commit/ac2f5e563b8ec0e91a931470eb6ea58b0c01fb3d)).
+  - Reflect symbols in the Contract Proxy to target ([#4084](https://github.com/ethers-io/ethers.js/issues/4048); [ac2f5e5](https://github.com/ethers-io/ethers.js/commit/ac2f5e563b8ec0e91a931470eb6ea58b0c01fb3d)).
   - Allow arrays of address for indexed filter topics ([#4259](https://github.com/ethers-io/ethers.js/issues/4259); [93af87c](https://github.com/ethers-io/ethers.js/commit/93af87c447eeb77090e29bd940612603b3f74026)).
   - Fixed filter encoding for bytesX ([#4244](https://github.com/ethers-io/ethers.js/issues/4244); [fa3a883](https://github.com/ethers-io/ethers.js/commit/fa3a883ff7c88611ce766f58bdd4b8ac90814470)).
   - Fix JSON formatting for tuple arrays ([#4237](https://github.com/ethers-io/ethers.js/issues/4237); [a8bc49b](https://github.com/ethers-io/ethers.js/commit/a8bc49bdcf07a51b35f38cf209db27e116cc1a59)).

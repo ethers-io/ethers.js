@@ -121,6 +121,10 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
                 return "https:/\/api-goerli-optimistic.etherscan.io";
+            case "bnb":
+                return "http:/\/api.bscscan.com";
+            case "bnbt":
+                return "http:/\/api-testnet.bscscan.com";
             default:
         }
         (0, index_js_4.assertArgument)(false, "unsupported network", "network", this.network);

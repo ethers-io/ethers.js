@@ -5,8 +5,8 @@
  *  @_subsection: api/providers:Networks  [networks]
  */
 import { accessListify } from "../transaction/index.js";
-import { getBigInt, assertArgument } from "../utils/index.js";
-import { EnsPlugin, GasCostPlugin } from "./plugins-network.js";
+import { getBigInt, assert, assertArgument } from "../utils/index.js";
+import { EnsPlugin, FetchUrlFeeDataNetworkPlugin, GasCostPlugin } from "./plugins-network.js";
 /* * * *
 // Networks which operation against an L2 can use this plugin to
 // specify how to access L1, for the purpose of resolving ENS,
@@ -24,41 +24,7 @@ export class LayerOneConnectionPlugin extends NetworkPlugin {
     }
 }
 */
-/* * * *
-export class PriceOraclePlugin extends NetworkPlugin {
-    readonly address!: string;
-
-    constructor(address: string) {
-        super("org.ethers.plugins.price-oracle");
-        defineProperties<PriceOraclePlugin>(this, { address });
-    }
-
-    clone(): PriceOraclePlugin {
-        return new PriceOraclePlugin(this.address);
-    }
-}
-*/
-// Networks or clients with a higher need for security (such as clients
-// that may automatically make CCIP requests without user interaction)
-// can use this plugin to anonymize requests or intercept CCIP requests
-// to notify and/or receive authorization from the user
-/* * * *
-export type FetchDataFunc = (req: Frozen<FetchRequest>) => Promise<FetchRequest>;
-export class CcipPreflightPlugin extends NetworkPlugin {
-    readonly fetchData!: FetchDataFunc;
-
-    constructor(fetchData: FetchDataFunc) {
-        super("org.ethers.plugins.ccip-preflight");
-        defineProperties<CcipPreflightPlugin>(this, { fetchData });
-    }
-
-    clone(): CcipPreflightPlugin {
-        return new CcipPreflightPlugin(this.fetchData);
-    }
-}
-*/
 const Networks = new Map();
-// @TODO: Add a _ethersNetworkObj variable to better detect network ovjects
 /**
  *  A **Network** provides access to a chain's properties and allows
  *  for plug-ins to extend functionality.
@@ -265,6 +231,53 @@ export class Network {
         Networks.set(nameOrChainId, networkFunc);
     }
 }
+// We don't want to bring in formatUnits because it is backed by
+// FixedNumber and we want to keep Networks tiny. The values
+// included by the Gas Stations are also IEEE 754 with lots of
+// rounding issues and exceed the strict checks formatUnits has.
+function parseUnits(_value, decimals) {
+    const value = String(_value);
+    if (!value.match(/^[0-9.]+$/)) {
+        throw new Error(`invalid gwei value: ${_value}`);
+    }
+    // Break into [ whole, fraction ]
+    const comps = value.split(".");
+    if (comps.length === 1) {
+        comps.push("");
+    }
+    // More than 1 decimal point or too many fractional positions
+    if (comps.length !== 2) {
+        throw new Error(`invalid gwei value: ${_value}`);
+    }
+    // Pad the fraction to 9 decimalplaces
+    while (comps[1].length < decimals) {
+        comps[1] += "0";
+    }
+    // Too many decimals and some non-zero ending, take the ceiling
+    if (comps[1].length > 9 && !comps[1].substring(9).match(/^0+$/)) {
+        comps[1] = (BigInt(comps[1].substring(0, 9)) + BigInt(1)).toString();
+    }
+    return BigInt(comps[0] + comps[1]);
+}
+function getGasStationPlugin(url) {
+    return new FetchUrlFeeDataNetworkPlugin(url, async (fetchFeeData, provider, request) => {
+        // Prevent Cloudflare from blocking our request in node.js
+        request.setHeader("User-Agent", "ethers");
+        let response;
+        try {
+            response = await request.send();
+            const payload = response.bodyJson.standard;
+            const feeData = {
+                maxFeePerGas: parseUnits(payload.maxFee, 9),
+                maxPriorityFeePerGas: parseUnits(payload.maxPriorityFee, 9),
+            };
+            return feeData;
+        }
+        catch (error) {
+            assert(false, `error encountered with polygon gas station (${JSON.stringify(request.url)})`, "SERVER_ERROR", { request, response, error });
+        }
+    });
+}
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks() {
@@ -280,16 +293,10 @@ function injectCommonNetworks() {
             if (options.ensNetwork != null) {
                 network.attachPlugin(new EnsPlugin(null, options.ensNetwork));
             }
-            if (options.priorityFee) {
-                //                network.attachPlugin(new MaxPriorityFeePlugin(options.priorityFee));
-            }
-            /*
-                        if (options.etherscan) {
-                            const { url, apiKey } = options.etherscan;
-                            network.attachPlugin(new EtherscanPlugin(url, apiKey));
-                        }
-            */
             network.attachPlugin(new GasCostPlugin());
+            (options.plugins || []).forEach((plugin) => {
+                network.attachPlugin(plugin);
+            });
             return network;
         };
         // Register the network by name and chain ID
@@ -309,50 +316,30 @@ function injectCommonNetworks() {
     registerEth("sepolia", 11155111, {});
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
-    registerEth("xdai", 100, { ensNetwork: 1 });
-    registerEth("optimism", 10, {
-        ensNetwork: 1,
-        etherscan: { url: "https:/\/api-optimistic.etherscan.io/" }
-    });
-    registerEth("optimism-goerli", 420, {
-        etherscan: { url: "https:/\/api-goerli-optimistic.etherscan.io/" }
-    });
     registerEth("arbitrum", 42161, {
         ensNetwork: 1,
-        etherscan: { url: "https:/\/api.arbiscan.io/" }
     });
-    registerEth("arbitrum-goerli", 421613, {
-        etherscan: { url: "https:/\/api-goerli.arbiscan.io/" }
-    });
-    // Polygon has a 35 gwei maxPriorityFee requirement
+    registerEth("arbitrum-goerli", 421613, {});
+    registerEth("bnb", 56, { ensNetwork: 1 });
+    registerEth("bnbt", 97, {});
+    registerEth("linea", 59144, { ensNetwork: 1 });
+    registerEth("linea-goerli", 59140, {});
     registerEth("matic", 137, {
         ensNetwork: 1,
-        //        priorityFee: 35000000000,
-        etherscan: {
-            //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
-            url: "https:/\/api.polygonscan.com/"
-        }
+        plugins: [
+            getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
+        ]
     });
     registerEth("matic-mumbai", 80001, {
         altNames: ["maticMumbai", "maticmum"],
-        //        priorityFee: 35000000000,
-        etherscan: {
-            //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
-            url: "https:/\/api-testnet.polygonscan.com/"
-        }
+        plugins: [
+            getGasStationPlugin("https:/\/gasstation-testnet.polygon.technology/v2")
+        ]
     });
-    registerEth("bnb", 56, {
+    registerEth("optimism", 10, {
         ensNetwork: 1,
-        etherscan: {
-            //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
-            url: "http:/\/api.bscscan.com"
-        }
     });
-    registerEth("bnbt", 97, {
-        etherscan: {
-            //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
-            url: "http:/\/api-testnet.bscscan.com"
-        }
-    });
+    registerEth("optimism-goerli", 420, {});
+    registerEth("xdai", 100, { ensNetwork: 1 });
 }
 //# sourceMappingURL=network.js.map

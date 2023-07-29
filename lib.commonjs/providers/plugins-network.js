@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = void 0;
+exports.FetchUrlFeeDataNetworkPlugin = exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = void 0;
 const properties_js_1 = require("../utils/properties.js");
 const index_js_1 = require("../utils/index.js");
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
@@ -165,6 +165,20 @@ class FeeDataNetworkPlugin extends NetworkPlugin {
     }
 }
 exports.FeeDataNetworkPlugin = FeeDataNetworkPlugin;
+class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
+    #url;
+    #processFunc;
+    get url() { return this.#url; }
+    get processFunc() { return this.#processFunc; }
+    constructor(url, processFunc) {
+        super("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
+        this.#url = url;
+        this.#processFunc = processFunc;
+    }
+    // We are immutable, so we can serve as our own clone
+    clone() { return this; }
+}
+exports.FetchUrlFeeDataNetworkPlugin = FetchUrlFeeDataNetworkPlugin;
 /*
 export class CustomBlockNetworkPlugin extends NetworkPlugin {
     readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;

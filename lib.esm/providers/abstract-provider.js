@@ -150,7 +150,8 @@ async function getSubscription(_event, provider) {
 }
 function getTime() { return (new Date()).getTime(); }
 const defaultOptions = {
-    cacheTimeout: 250
+    cacheTimeout: 250,
+    pollingInterval: 4000
 };
 /**
  *  An **AbstractProvider** provides a base class for other sub-classes to
@@ -204,6 +205,7 @@ export class AbstractProvider {
         this.#timers = new Map();
         this.#disableCcipRead = false;
     }
+    get pollingInterval() { return this.#options.pollingInterval; }
     /**
      *  Returns ``this``, to allow an **AbstractProvider** to implement
      *  the [[ContractRunner]] interface.
@@ -573,31 +575,36 @@ export class AbstractProvider {
         return expected.clone();
     }
     async getFeeData() {
-        const { block, gasPrice } = await resolveProperties({
-            block: this.getBlock("latest"),
-            gasPrice: ((async () => {
-                try {
-                    const gasPrice = await this.#perform({ method: "getGasPrice" });
-                    return getBigInt(gasPrice, "%response");
-                }
-                catch (error) { }
-                return null;
-            })())
-        });
-        let maxFeePerGas = null, maxPriorityFeePerGas = null;
-        if (block && block.baseFeePerGas) {
-            // We may want to compute this more accurately in the future,
-            // using the formula "check if the base fee is correct".
-            // See: https://eips.ethereum.org/EIPS/eip-1559
-            maxPriorityFeePerGas = BigInt("1000000000");
-            // Allow a network to override their maximum priority fee per gas
-            //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
-            //if (priorityFeePlugin) {
-            //    maxPriorityFeePerGas = await priorityFeePlugin.getPriorityFee(this);
-            //}
-            maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
+        const network = await this.getNetwork();
+        const getFeeDataFunc = async () => {
+            const { _block, gasPrice } = await resolveProperties({
+                _block: this.#getBlock("latest", false),
+                gasPrice: ((async () => {
+                    try {
+                        const gasPrice = await this.#perform({ method: "getGasPrice" });
+                        return getBigInt(gasPrice, "%response");
+                    }
+                    catch (error) { }
+                    return null;
+                })())
+            });
+            let maxFeePerGas = null, maxPriorityFeePerGas = null;
+            // These are the recommended EIP-1559 heuristics for fee data
+            const block = this._wrapBlock(_block, network);
+            if (block && block.baseFeePerGas) {
+                maxPriorityFeePerGas = BigInt("1000000000");
+                maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
+            }
+            return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
+        };
+        // Check for a FeeDataNetWorkPlugin
+        const plugin = network.getPlugin("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
+        if (plugin) {
+            const req = new FetchRequest(plugin.url);
+            const feeData = await plugin.processFunc(getFeeDataFunc, this, req);
+            return new FeeData(feeData.gasPrice, feeData.maxFeePerGas, feeData.maxPriorityFeePerGas);
         }
-        return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
+        return await getFeeDataFunc();
     }
     async estimateGas(_tx) {
         let tx = this._getTransactionRequest(_tx);
@@ -958,8 +965,11 @@ export class AbstractProvider {
             case "error":
             case "network":
                 return new UnmanagedSubscriber(sub.type);
-            case "block":
-                return new PollingBlockSubscriber(this);
+            case "block": {
+                const subscriber = new PollingBlockSubscriber(this);
+                subscriber.pollingInterval = this.pollingInterval;
+                return subscriber;
+            }
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":

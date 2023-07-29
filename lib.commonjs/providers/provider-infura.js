@@ -37,6 +37,10 @@ function getHost(name) {
             return "arbitrum-mainnet.infura.io";
         case "arbitrum-goerli":
             return "arbitrum-goerli.infura.io";
+        case "linea":
+            return "linea-mainnet.infura.io";
+        case "linea-goerli":
+            return "linea-goerli.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
         case "matic-mumbai":

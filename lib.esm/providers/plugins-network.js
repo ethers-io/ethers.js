@@ -158,6 +158,19 @@ export class FeeDataNetworkPlugin extends NetworkPlugin {
         return new FeeDataNetworkPlugin(this.#feeDataFunc);
     }
 }
+export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
+    #url;
+    #processFunc;
+    get url() { return this.#url; }
+    get processFunc() { return this.#processFunc; }
+    constructor(url, processFunc) {
+        super("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
+        this.#url = url;
+        this.#processFunc = processFunc;
+    }
+    // We are immutable, so we can serve as our own clone
+    clone() { return this; }
+}
 /*
 export class CustomBlockNetworkPlugin extends NetworkPlugin {
     readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;

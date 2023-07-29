@@ -122,6 +122,7 @@ export type JsonRpcApiProviderOptions = {
     batchMaxSize?: number;
     batchMaxCount?: number;
     cacheTimeout?: number;
+    pollingInterval?: number;
 };
 /**
  *  A **JsonRpcTransactionRequest** is formatted as needed by the JSON-RPC
@@ -318,6 +319,9 @@ export declare abstract class JsonRpcApiProvider extends AbstractProvider {
     listAccounts(): Promise<Array<JsonRpcSigner>>;
     destroy(): void;
 }
+/**
+ *  @_ignore:
+ */
 export declare abstract class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     #private;
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions);

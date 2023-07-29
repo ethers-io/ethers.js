@@ -67,9 +67,11 @@ export interface FallbackProviderState extends Required<FallbackProviderConfig> 
  *  Additional options to configure a [[FallbackProvider]].
  */
 export type FallbackProviderOptions = {
-    quorum: number;
-    eventQuorum: number;
-    eventWorkers: number;
+    quorum?: number;
+    eventQuorum?: number;
+    eventWorkers?: number;
+    cacheTimeout?: number;
+    pollingInterval?: number;
 };
 /**
  *  A **FallbackProvider** manages several [[Providers]] providing
@@ -100,7 +102,7 @@ export declare class FallbackProvider extends AbstractProvider {
      *  If a [[Provider]] is included in %%providers%%, defaults are used
      *  for the configuration.
      */
-    constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish);
+    constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish, options?: FallbackProviderOptions);
     get providerConfigs(): Array<FallbackProviderState>;
     _detectNetwork(): Promise<Network>;
     /**

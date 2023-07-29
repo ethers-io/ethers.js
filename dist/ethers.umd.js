@@ -2511,7 +2511,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  %%unit%% decimal places. The %%unit%% may the number of decimal places
      *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
      */
-    function parseUnits(value, unit) {
+    function parseUnits$1(value, unit) {
         assertArgument(typeof (value) === "string", "value must be a string", "value", value);
         let decimals = 18;
         if (typeof (unit) === "string") {
@@ -2535,7 +2535,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  decimal places.
      */
     function parseEther(ether) {
-        return parseUnits(ether, 18);
+        return parseUnits$1(ether, 18);
     }
 
     /**
@@ -10044,6 +10044,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         items.forEach((k) => result.add(k));
         return Object.freeze(result);
     }
+    const _kwVisibDeploy = "external public payable";
+    const KwVisibDeploy = setify(_kwVisibDeploy.split(" "));
     // Visibility Keywords
     const _kwVisib = "constant external internal payable private public pure view";
     const KwVisib = setify(_kwVisib.split(" "));
@@ -11047,7 +11049,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             else if (obj instanceof TokenString) {
                 consumeKeywords(obj, setify(["constructor"]));
                 const inputs = consumeParams(obj);
-                const payable = !!consumeKeywords(obj, setify(["payable"])).has("payable");
+                const payable = !!consumeKeywords(obj, KwVisibDeploy).has("payable");
                 const gas = consumeGas(obj);
                 consumeEoi(obj);
                 return new ConstructorFragment(_guard$2, "constructor", inputs, payable, gas);
@@ -13907,11 +13909,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return super.logs.map((log) => {
                 const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]) : null;
                 if (fragment) {
-                    return new EventLog(log, this.#iface, fragment);
+                    try {
+                        return new EventLog(log, this.#iface, fragment);
+                    }
+                    catch (error) { }
                 }
-                else {
-                    return log;
-                }
+                return log;
             });
         }
     }
@@ -14082,8 +14085,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  @_ignore:
      */
     async function copyOverrides(arg, allowed) {
+        // Make sure the overrides passed in are a valid overrides object
+        const _overrides = Typed.dereference(arg, "overrides");
+        assertArgument(typeof (_overrides) === "object", "invalid overrides parameter", "overrides", arg);
         // Create a shallow copy (we'll deep-ify anything needed during normalizing)
-        const overrides = copyRequest(Typed.dereference(arg, "overrides"));
+        const overrides = copyRequest(_overrides);
         assertArgument(overrides.to == null || (allowed || []).indexOf("to") >= 0, "cannot override to", "overrides.to", overrides.to);
         assertArgument(overrides.data == null || (allowed || []).indexOf("data") >= 0, "cannot override data", "overrides.data", overrides.data);
         // Resolve any from
@@ -15906,6 +15912,19 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new FeeDataNetworkPlugin(this.#feeDataFunc);
         }
     }
+    class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
+        #url;
+        #processFunc;
+        get url() { return this.#url; }
+        get processFunc() { return this.#processFunc; }
+        constructor(url, processFunc) {
+            super("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
+            this.#url = url;
+            this.#processFunc = processFunc;
+        }
+        // We are immutable, so we can serve as our own clone
+        clone() { return this; }
+    }
     /*
     export class CustomBlockNetworkPlugin extends NetworkPlugin {
         readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;
@@ -15954,41 +15973,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
     */
-    /* * * *
-    export class PriceOraclePlugin extends NetworkPlugin {
-        readonly address!: string;
-
-        constructor(address: string) {
-            super("org.ethers.plugins.price-oracle");
-            defineProperties<PriceOraclePlugin>(this, { address });
-        }
-
-        clone(): PriceOraclePlugin {
-            return new PriceOraclePlugin(this.address);
-        }
-    }
-    */
-    // Networks or clients with a higher need for security (such as clients
-    // that may automatically make CCIP requests without user interaction)
-    // can use this plugin to anonymize requests or intercept CCIP requests
-    // to notify and/or receive authorization from the user
-    /* * * *
-    export type FetchDataFunc = (req: Frozen<FetchRequest>) => Promise<FetchRequest>;
-    export class CcipPreflightPlugin extends NetworkPlugin {
-        readonly fetchData!: FetchDataFunc;
-
-        constructor(fetchData: FetchDataFunc) {
-            super("org.ethers.plugins.ccip-preflight");
-            defineProperties<CcipPreflightPlugin>(this, { fetchData });
-        }
-
-        clone(): CcipPreflightPlugin {
-            return new CcipPreflightPlugin(this.fetchData);
-        }
-    }
-    */
     const Networks = new Map();
-    // @TODO: Add a _ethersNetworkObj variable to better detect network ovjects
     /**
      *  A **Network** provides access to a chain's properties and allows
      *  for plug-ins to extend functionality.
@@ -16195,6 +16180,53 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             Networks.set(nameOrChainId, networkFunc);
         }
     }
+    // We don't want to bring in formatUnits because it is backed by
+    // FixedNumber and we want to keep Networks tiny. The values
+    // included by the Gas Stations are also IEEE 754 with lots of
+    // rounding issues and exceed the strict checks formatUnits has.
+    function parseUnits(_value, decimals) {
+        const value = String(_value);
+        if (!value.match(/^[0-9.]+$/)) {
+            throw new Error(`invalid gwei value: ${_value}`);
+        }
+        // Break into [ whole, fraction ]
+        const comps = value.split(".");
+        if (comps.length === 1) {
+            comps.push("");
+        }
+        // More than 1 decimal point or too many fractional positions
+        if (comps.length !== 2) {
+            throw new Error(`invalid gwei value: ${_value}`);
+        }
+        // Pad the fraction to 9 decimalplaces
+        while (comps[1].length < decimals) {
+            comps[1] += "0";
+        }
+        // Too many decimals and some non-zero ending, take the ceiling
+        if (comps[1].length > 9 && !comps[1].substring(9).match(/^0+$/)) {
+            comps[1] = (BigInt(comps[1].substring(0, 9)) + BigInt(1)).toString();
+        }
+        return BigInt(comps[0] + comps[1]);
+    }
+    function getGasStationPlugin(url) {
+        return new FetchUrlFeeDataNetworkPlugin(url, async (fetchFeeData, provider, request) => {
+            // Prevent Cloudflare from blocking our request in node.js
+            request.setHeader("User-Agent", "ethers");
+            let response;
+            try {
+                response = await request.send();
+                const payload = response.bodyJson.standard;
+                const feeData = {
+                    maxFeePerGas: parseUnits(payload.maxFee, 9),
+                    maxPriorityFeePerGas: parseUnits(payload.maxPriorityFee, 9),
+                };
+                return feeData;
+            }
+            catch (error) {
+                assert$1(false, `error encountered with polygon gas station (${JSON.stringify(request.url)})`, "SERVER_ERROR", { request, response, error });
+            }
+        });
+    }
     // See: https://chainlist.org
     let injected = false;
     function injectCommonNetworks() {
@@ -16210,14 +16242,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 if (options.ensNetwork != null) {
                     network.attachPlugin(new EnsPlugin(null, options.ensNetwork));
                 }
-                if (options.priorityFee) ;
-                /*
-                            if (options.etherscan) {
-                                const { url, apiKey } = options.etherscan;
-                                network.attachPlugin(new EtherscanPlugin(url, apiKey));
-                            }
-                */
                 network.attachPlugin(new GasCostPlugin());
+                (options.plugins || []).forEach((plugin) => {
+                    network.attachPlugin(plugin);
+                });
                 return network;
             };
             // Register the network by name and chain ID
@@ -16237,51 +16265,31 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         registerEth("sepolia", 11155111, {});
         registerEth("classic", 61, {});
         registerEth("classicKotti", 6, {});
-        registerEth("xdai", 100, { ensNetwork: 1 });
-        registerEth("optimism", 10, {
-            ensNetwork: 1,
-            etherscan: { url: "https:/\/api-optimistic.etherscan.io/" }
-        });
-        registerEth("optimism-goerli", 420, {
-            etherscan: { url: "https:/\/api-goerli-optimistic.etherscan.io/" }
-        });
         registerEth("arbitrum", 42161, {
             ensNetwork: 1,
-            etherscan: { url: "https:/\/api.arbiscan.io/" }
         });
-        registerEth("arbitrum-goerli", 421613, {
-            etherscan: { url: "https:/\/api-goerli.arbiscan.io/" }
-        });
-        // Polygon has a 35 gwei maxPriorityFee requirement
+        registerEth("arbitrum-goerli", 421613, {});
+        registerEth("bnb", 56, { ensNetwork: 1 });
+        registerEth("bnbt", 97, {});
+        registerEth("linea", 59144, { ensNetwork: 1 });
+        registerEth("linea-goerli", 59140, {});
         registerEth("matic", 137, {
             ensNetwork: 1,
-            //        priorityFee: 35000000000,
-            etherscan: {
-                //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
-                url: "https:/\/api.polygonscan.com/"
-            }
+            plugins: [
+                getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
+            ]
         });
         registerEth("matic-mumbai", 80001, {
             altNames: ["maticMumbai", "maticmum"],
-            //        priorityFee: 35000000000,
-            etherscan: {
-                //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
-                url: "https:/\/api-testnet.polygonscan.com/"
-            }
+            plugins: [
+                getGasStationPlugin("https:/\/gasstation-testnet.polygon.technology/v2")
+            ]
         });
-        registerEth("bnb", 56, {
+        registerEth("optimism", 10, {
             ensNetwork: 1,
-            etherscan: {
-                //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
-                url: "http:/\/api.bscscan.com"
-            }
         });
-        registerEth("bnbt", 97, {
-            etherscan: {
-                //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
-                url: "http:/\/api-testnet.bscscan.com"
-            }
-        });
+        registerEth("optimism-goerli", 420, {});
+        registerEth("xdai", 100, { ensNetwork: 1 });
     }
 
     function copy$2(obj) {
@@ -16672,7 +16680,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     function getTime$1() { return (new Date()).getTime(); }
     const defaultOptions$1 = {
-        cacheTimeout: 250
+        cacheTimeout: 250,
+        pollingInterval: 4000
     };
     /**
      *  An **AbstractProvider** provides a base class for other sub-classes to
@@ -16726,6 +16735,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#timers = new Map();
             this.#disableCcipRead = false;
         }
+        get pollingInterval() { return this.#options.pollingInterval; }
         /**
          *  Returns ``this``, to allow an **AbstractProvider** to implement
          *  the [[ContractRunner]] interface.
@@ -17095,31 +17105,36 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return expected.clone();
         }
         async getFeeData() {
-            const { block, gasPrice } = await resolveProperties({
-                block: this.getBlock("latest"),
-                gasPrice: ((async () => {
-                    try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return getBigInt(gasPrice, "%response");
-                    }
-                    catch (error) { }
-                    return null;
-                })())
-            });
-            let maxFeePerGas = null, maxPriorityFeePerGas = null;
-            if (block && block.baseFeePerGas) {
-                // We may want to compute this more accurately in the future,
-                // using the formula "check if the base fee is correct".
-                // See: https://eips.ethereum.org/EIPS/eip-1559
-                maxPriorityFeePerGas = BigInt("1000000000");
-                // Allow a network to override their maximum priority fee per gas
-                //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
-                //if (priorityFeePlugin) {
-                //    maxPriorityFeePerGas = await priorityFeePlugin.getPriorityFee(this);
-                //}
-                maxFeePerGas = (block.baseFeePerGas * BN_2$1) + maxPriorityFeePerGas;
+            const network = await this.getNetwork();
+            const getFeeDataFunc = async () => {
+                const { _block, gasPrice } = await resolveProperties({
+                    _block: this.#getBlock("latest", false),
+                    gasPrice: ((async () => {
+                        try {
+                            const gasPrice = await this.#perform({ method: "getGasPrice" });
+                            return getBigInt(gasPrice, "%response");
+                        }
+                        catch (error) { }
+                        return null;
+                    })())
+                });
+                let maxFeePerGas = null, maxPriorityFeePerGas = null;
+                // These are the recommended EIP-1559 heuristics for fee data
+                const block = this._wrapBlock(_block, network);
+                if (block && block.baseFeePerGas) {
+                    maxPriorityFeePerGas = BigInt("1000000000");
+                    maxFeePerGas = (block.baseFeePerGas * BN_2$1) + maxPriorityFeePerGas;
+                }
+                return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
+            };
+            // Check for a FeeDataNetWorkPlugin
+            const plugin = network.getPlugin("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
+            if (plugin) {
+                const req = new FetchRequest(plugin.url);
+                const feeData = await plugin.processFunc(getFeeDataFunc, this, req);
+                return new FeeData(feeData.gasPrice, feeData.maxFeePerGas, feeData.maxPriorityFeePerGas);
             }
-            return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
+            return await getFeeDataFunc();
         }
         async estimateGas(_tx) {
             let tx = this._getTransactionRequest(_tx);
@@ -17480,8 +17495,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 case "error":
                 case "network":
                     return new UnmanagedSubscriber(sub.type);
-                case "block":
-                    return new PollingBlockSubscriber(this);
+                case "block": {
+                    const subscriber = new PollingBlockSubscriber(this);
+                    subscriber.pollingInterval = this.pollingInterval;
+                    return subscriber;
+                }
                 case "event":
                     return new PollingEventSubscriber(this, sub.filter);
                 case "transaction":
@@ -18362,7 +18380,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         batchStallTime: 10,
         batchMaxSize: (1 << 20),
         batchMaxCount: 100,
-        cacheTimeout: 250
+        cacheTimeout: 250,
+        pollingInterval: 4000
     };
     // @TODO: Unchecked Signers
     class JsonRpcSigner extends AbstractSigner {
@@ -18580,11 +18599,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }, stallTime);
         }
         constructor(network, options) {
-            const superOptions = {};
-            if (options && options.cacheTimeout != null) {
-                superOptions.cacheTimeout = options.cacheTimeout;
-            }
-            super(network, superOptions);
+            super(network, options);
             this.#nextId = 1;
             this.#options = Object.assign({}, defaultOptions, options || {});
             this.#payloads = [];
@@ -19036,6 +19051,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             super.destroy();
         }
     }
+    // @TODO: remove this in v7, it is not exported because this functionality
+    // is exposed in the JsonRpcApiProvider by setting polling to true. It should
+    // be safe to remove regardless, because it isn't reachable, but just in case.
+    /**
+     *  @_ignore:
+     */
     class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
         #pollingInterval;
         constructor(network, options) {
@@ -19507,6 +19528,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return "https:/\/api-optimistic.etherscan.io";
                 case "optimism-goerli":
                     return "https:/\/api-goerli-optimistic.etherscan.io";
+                case "bnb":
+                    return "http:/\/api.bscscan.com";
+                case "bnbt":
+                    return "http:/\/api-testnet.bscscan.com";
             }
             assertArgument(false, "unsupported network", "network", this.network);
         }
@@ -20245,6 +20270,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return "arbitrum-mainnet.infura.io";
             case "arbitrum-goerli":
                 return "arbitrum-goerli.infura.io";
+            case "linea":
+                return "linea-mainnet.infura.io";
+            case "linea-goerli":
+                return "linea-goerli.infura.io";
             case "matic":
                 return "polygon-mainnet.infura.io";
             case "matic-mumbai":
@@ -20705,8 +20734,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  If a [[Provider]] is included in %%providers%%, defaults are used
          *  for the configuration.
          */
-        constructor(providers, network) {
-            super(network);
+        constructor(providers, network, options) {
+            super(network, options);
             this.#configs = providers.map((p) => {
                 if (p instanceof AbstractProvider) {
                     return Object.assign({ provider: p }, defaultConfig, defaultState);
@@ -20717,7 +20746,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
             this.#height = -2;
             this.#initialSyncPromise = null;
-            this.quorum = 2; //Math.ceil(providers.length /  2);
+            if (options && options.quorum != null) {
+                this.quorum = options.quorum;
+            }
+            else {
+                this.quorum = Math.ceil(this.#configs.reduce((accum, config) => {
+                    accum += config.weight;
+                    return accum;
+                }, 0) / 2);
+            }
             this.eventQuorum = 1;
             this.eventWorkers = 1;
             assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0), "quorum exceed provider wieght", "quorum", this.quorum);
@@ -20789,7 +20826,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // Shuffle the states, sorted by priority
             const allConfigs = this.#configs.slice();
             shuffle(allConfigs);
-            allConfigs.sort((a, b) => (b.priority - a.priority));
+            allConfigs.sort((a, b) => (a.priority - b.priority));
             for (const config of allConfigs) {
                 if (config._lastFatalError) {
                     continue;
@@ -21038,42 +21075,66 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return (value && typeof (value.send) === "function" &&
             typeof (value.close) === "function");
     }
+    const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goerli matic-mumbai bnbt".split(" ");
     function getDefaultProvider(network, options) {
         if (options == null) {
             options = {};
         }
+        const allowService = (name) => {
+            if (options[name] === "-") {
+                return false;
+            }
+            if (typeof (options.exclusive) === "string") {
+                return (name === options.exclusive);
+            }
+            if (Array.isArray(options.exclusive)) {
+                return (options.exclusive.indexOf(name) !== -1);
+            }
+            return true;
+        };
         if (typeof (network) === "string" && network.match(/^https?:/)) {
             return new JsonRpcProvider(network);
         }
         if (typeof (network) === "string" && network.match(/^wss?:/) || isWebSocketLike(network)) {
             return new WebSocketProvider(network);
         }
+        // Get the network and name, if possible
+        let staticNetwork = null;
+        try {
+            staticNetwork = Network.from(network);
+        }
+        catch (error) { }
         const providers = [];
-        if (options.alchemy !== "-") {
+        if (allowService("publicPolygon") && staticNetwork) {
+            if (staticNetwork.name === "matic") {
+                providers.push(new JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
+            }
+        }
+        if (allowService("alchemy")) {
             try {
                 providers.push(new AlchemyProvider(network, options.alchemy));
             }
             catch (error) { }
         }
-        if (options.ankr !== "-" && options.ankr != null) {
+        if (allowService("ankr") && options.ankr != null) {
             try {
                 providers.push(new AnkrProvider(network, options.ankr));
             }
             catch (error) { }
         }
-        if (options.cloudflare !== "-") {
+        if (allowService("cloudflare")) {
             try {
                 providers.push(new CloudflareProvider(network));
             }
             catch (error) { }
         }
-        if (options.etherscan !== "-") {
+        if (allowService("etherscan")) {
             try {
                 providers.push(new EtherscanProvider(network, options.etherscan));
             }
             catch (error) { }
         }
-        if (options.infura !== "-") {
+        if (allowService("infura")) {
             try {
                 let projectId = options.infura;
                 let projectSecret = undefined;
@@ -21100,7 +21161,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 } catch (error) { console.log(error); }
             }
         */
-        if (options.quicknode !== "-") {
+        if (allowService("quicknode")) {
             try {
                 let token = options.quicknode;
                 providers.push(new QuickNodeProvider(network, token));
@@ -21110,10 +21171,26 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         assert$1(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
             operation: "getDefaultProvider"
         });
+        // No need for a FallbackProvider
         if (providers.length === 1) {
             return providers[0];
         }
-        return new FallbackProvider(providers);
+        // We use the floor because public third-party providers can be unreliable,
+        // so a low number of providers with a large quorum will fail too often
+        let quorum = Math.floor(providers.length / 2);
+        if (quorum > 2) {
+            quorum = 2;
+        }
+        // Testnets don't need as strong a security gaurantee and speed is
+        // more useful during testing
+        if (staticNetwork && Testnets.indexOf(staticNetwork.name) !== -1) {
+            quorum = 1;
+        }
+        // Provided override qorum takes priority
+        if (options && options.quorum) {
+            quorum = options.quorum;
+        }
+        return new FallbackProvider(providers, undefined, { quorum });
     }
 
     /**
@@ -23431,6 +23508,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         FetchCancelSignal: FetchCancelSignal,
         FetchRequest: FetchRequest,
         FetchResponse: FetchResponse,
+        FetchUrlFeeDataNetworkPlugin: FetchUrlFeeDataNetworkPlugin,
         FixedNumber: FixedNumber,
         Fragment: Fragment,
         FunctionFragment: FunctionFragment,
@@ -23551,7 +23629,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         mask: mask,
         namehash: namehash,
         parseEther: parseEther,
-        parseUnits: parseUnits,
+        parseUnits: parseUnits$1,
         pbkdf2: pbkdf2,
         randomBytes: randomBytes,
         recoverAddress: recoverAddress,
@@ -23619,6 +23697,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     exports.FetchCancelSignal = FetchCancelSignal;
     exports.FetchRequest = FetchRequest;
     exports.FetchResponse = FetchResponse;
+    exports.FetchUrlFeeDataNetworkPlugin = FetchUrlFeeDataNetworkPlugin;
     exports.FixedNumber = FixedNumber;
     exports.Fragment = Fragment;
     exports.FunctionFragment = FunctionFragment;
@@ -23740,7 +23819,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     exports.mask = mask;
     exports.namehash = namehash;
     exports.parseEther = parseEther;
-    exports.parseUnits = parseUnits;
+    exports.parseUnits = parseUnits$1;
     exports.pbkdf2 = pbkdf2;
     exports.randomBytes = randomBytes;
     exports.recoverAddress = recoverAddress;

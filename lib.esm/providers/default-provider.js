@@ -8,47 +8,72 @@ import { InfuraProvider } from "./provider-infura.js";
 import { QuickNodeProvider } from "./provider-quicknode.js";
 import { FallbackProvider } from "./provider-fallback.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
+import { Network } from "./network.js";
 import { WebSocketProvider } from "./provider-websocket.js";
 function isWebSocketLike(value) {
     return (value && typeof (value.send) === "function" &&
         typeof (value.close) === "function");
 }
+const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goerli matic-mumbai bnbt".split(" ");
 export function getDefaultProvider(network, options) {
     if (options == null) {
         options = {};
     }
+    const allowService = (name) => {
+        if (options[name] === "-") {
+            return false;
+        }
+        if (typeof (options.exclusive) === "string") {
+            return (name === options.exclusive);
+        }
+        if (Array.isArray(options.exclusive)) {
+            return (options.exclusive.indexOf(name) !== -1);
+        }
+        return true;
+    };
     if (typeof (network) === "string" && network.match(/^https?:/)) {
         return new JsonRpcProvider(network);
     }
     if (typeof (network) === "string" && network.match(/^wss?:/) || isWebSocketLike(network)) {
         return new WebSocketProvider(network);
     }
+    // Get the network and name, if possible
+    let staticNetwork = null;
+    try {
+        staticNetwork = Network.from(network);
+    }
+    catch (error) { }
     const providers = [];
-    if (options.alchemy !== "-") {
+    if (allowService("publicPolygon") && staticNetwork) {
+        if (staticNetwork.name === "matic") {
+            providers.push(new JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
+        }
+    }
+    if (allowService("alchemy")) {
         try {
             providers.push(new AlchemyProvider(network, options.alchemy));
         }
         catch (error) { }
     }
-    if (options.ankr !== "-" && options.ankr != null) {
+    if (allowService("ankr") && options.ankr != null) {
         try {
             providers.push(new AnkrProvider(network, options.ankr));
         }
         catch (error) { }
     }
-    if (options.cloudflare !== "-") {
+    if (allowService("cloudflare")) {
         try {
             providers.push(new CloudflareProvider(network));
         }
         catch (error) { }
     }
-    if (options.etherscan !== "-") {
+    if (allowService("etherscan")) {
         try {
             providers.push(new EtherscanProvider(network, options.etherscan));
         }
         catch (error) { }
     }
-    if (options.infura !== "-") {
+    if (allowService("infura")) {
         try {
             let projectId = options.infura;
             let projectSecret = undefined;
@@ -75,7 +100,7 @@ export function getDefaultProvider(network, options) {
             } catch (error) { console.log(error); }
         }
     */
-    if (options.quicknode !== "-") {
+    if (allowService("quicknode")) {
         try {
             let token = options.quicknode;
             providers.push(new QuickNodeProvider(network, token));
@@ -85,9 +110,25 @@ export function getDefaultProvider(network, options) {
     assert(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
         operation: "getDefaultProvider"
     });
+    // No need for a FallbackProvider
     if (providers.length === 1) {
         return providers[0];
     }
-    return new FallbackProvider(providers);
+    // We use the floor because public third-party providers can be unreliable,
+    // so a low number of providers with a large quorum will fail too often
+    let quorum = Math.floor(providers.length / 2);
+    if (quorum > 2) {
+        quorum = 2;
+    }
+    // Testnets don't need as strong a security gaurantee and speed is
+    // more useful during testing
+    if (staticNetwork && Testnets.indexOf(staticNetwork.name) !== -1) {
+        quorum = 1;
+    }
+    // Provided override qorum takes priority
+    if (options && options.quorum) {
+        quorum = options.quorum;
+    }
+    return new FallbackProvider(providers, undefined, { quorum });
 }
 //# sourceMappingURL=default-provider.js.map

@@ -83,8 +83,11 @@ function getProvider(value) {
  *  @_ignore:
  */
 async function copyOverrides(arg, allowed) {
+    // Make sure the overrides passed in are a valid overrides object
+    const _overrides = index_js_1.Typed.dereference(arg, "overrides");
+    (0, index_js_3.assertArgument)(typeof (_overrides) === "object", "invalid overrides parameter", "overrides", arg);
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
-    const overrides = (0, provider_js_1.copyRequest)(index_js_1.Typed.dereference(arg, "overrides"));
+    const overrides = (0, provider_js_1.copyRequest)(_overrides);
     (0, index_js_3.assertArgument)(overrides.to == null || (allowed || []).indexOf("to") >= 0, "cannot override to", "overrides.to", overrides.to);
     (0, index_js_3.assertArgument)(overrides.data == null || (allowed || []).indexOf("data") >= 0, "cannot override data", "overrides.data", overrides.data);
     // Resolve any from

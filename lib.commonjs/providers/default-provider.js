@@ -11,47 +11,72 @@ const provider_infura_js_1 = require("./provider-infura.js");
 const provider_quicknode_js_1 = require("./provider-quicknode.js");
 const provider_fallback_js_1 = require("./provider-fallback.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
+const network_js_1 = require("./network.js");
 const provider_websocket_js_1 = require("./provider-websocket.js");
 function isWebSocketLike(value) {
     return (value && typeof (value.send) === "function" &&
         typeof (value.close) === "function");
 }
+const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goerli matic-mumbai bnbt".split(" ");
 function getDefaultProvider(network, options) {
     if (options == null) {
         options = {};
     }
+    const allowService = (name) => {
+        if (options[name] === "-") {
+            return false;
+        }
+        if (typeof (options.exclusive) === "string") {
+            return (name === options.exclusive);
+        }
+        if (Array.isArray(options.exclusive)) {
+            return (options.exclusive.indexOf(name) !== -1);
+        }
+        return true;
+    };
     if (typeof (network) === "string" && network.match(/^https?:/)) {
         return new provider_jsonrpc_js_1.JsonRpcProvider(network);
     }
     if (typeof (network) === "string" && network.match(/^wss?:/) || isWebSocketLike(network)) {
         return new provider_websocket_js_1.WebSocketProvider(network);
     }
+    // Get the network and name, if possible
+    let staticNetwork = null;
+    try {
+        staticNetwork = network_js_1.Network.from(network);
+    }
+    catch (error) { }
     const providers = [];
-    if (options.alchemy !== "-") {
+    if (allowService("publicPolygon") && staticNetwork) {
+        if (staticNetwork.name === "matic") {
+            providers.push(new provider_jsonrpc_js_1.JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
+        }
+    }
+    if (allowService("alchemy")) {
         try {
             providers.push(new provider_alchemy_js_1.AlchemyProvider(network, options.alchemy));
         }
         catch (error) { }
     }
-    if (options.ankr !== "-" && options.ankr != null) {
+    if (allowService("ankr") && options.ankr != null) {
         try {
             providers.push(new provider_ankr_js_1.AnkrProvider(network, options.ankr));
         }
         catch (error) { }
     }
-    if (options.cloudflare !== "-") {
+    if (allowService("cloudflare")) {
         try {
             providers.push(new provider_cloudflare_js_1.CloudflareProvider(network));
         }
         catch (error) { }
     }
-    if (options.etherscan !== "-") {
+    if (allowService("etherscan")) {
         try {
             providers.push(new provider_etherscan_js_1.EtherscanProvider(network, options.etherscan));
         }
         catch (error) { }
     }
-    if (options.infura !== "-") {
+    if (allowService("infura")) {
         try {
             let projectId = options.infura;
             let projectSecret = undefined;
@@ -78,7 +103,7 @@ function getDefaultProvider(network, options) {
             } catch (error) { console.log(error); }
         }
     */
-    if (options.quicknode !== "-") {
+    if (allowService("quicknode")) {
         try {
             let token = options.quicknode;
             providers.push(new provider_quicknode_js_1.QuickNodeProvider(network, token));
@@ -88,10 +113,26 @@ function getDefaultProvider(network, options) {
     (0, index_js_1.assert)(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
         operation: "getDefaultProvider"
     });
+    // No need for a FallbackProvider
     if (providers.length === 1) {
         return providers[0];
     }
-    return new provider_fallback_js_1.FallbackProvider(providers);
+    // We use the floor because public third-party providers can be unreliable,
+    // so a low number of providers with a large quorum will fail too often
+    let quorum = Math.floor(providers.length / 2);
+    if (quorum > 2) {
+        quorum = 2;
+    }
+    // Testnets don't need as strong a security gaurantee and speed is
+    // more useful during testing
+    if (staticNetwork && Testnets.indexOf(staticNetwork.name) !== -1) {
+        quorum = 1;
+    }
+    // Provided override qorum takes priority
+    if (options && options.quorum) {
+        quorum = options.quorum;
+    }
+    return new provider_fallback_js_1.FallbackProvider(providers, undefined, { quorum });
 }
 exports.getDefaultProvider = getDefaultProvider;
 //# sourceMappingURL=default-provider.js.map

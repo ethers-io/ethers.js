@@ -61,7 +61,8 @@ const defaultOptions = {
     batchStallTime: 10,
     batchMaxSize: (1 << 20),
     batchMaxCount: 100,
-    cacheTimeout: 250
+    cacheTimeout: 250,
+    pollingInterval: 4000
 };
 // @TODO: Unchecked Signers
 export class JsonRpcSigner extends AbstractSigner {
@@ -279,11 +280,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
         }, stallTime);
     }
     constructor(network, options) {
-        const superOptions = {};
-        if (options && options.cacheTimeout != null) {
-            superOptions.cacheTimeout = options.cacheTimeout;
-        }
-        super(network, superOptions);
+        super(network, options);
         this.#nextId = 1;
         this.#options = Object.assign({}, defaultOptions, options || {});
         this.#payloads = [];
@@ -735,6 +732,12 @@ export class JsonRpcApiProvider extends AbstractProvider {
         super.destroy();
     }
 }
+// @TODO: remove this in v7, it is not exported because this functionality
+// is exposed in the JsonRpcApiProvider by setting polling to true. It should
+// be safe to remove regardless, because it isn't reachable, but just in case.
+/**
+ *  @_ignore:
+ */
 export class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     #pollingInterval;
     constructor(network, options) {
