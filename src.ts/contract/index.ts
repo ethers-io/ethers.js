@@ -17,7 +17,7 @@ export {
 export {
     ContractEventPayload, ContractUnknownEventPayload,
     ContractTransactionReceipt, ContractTransactionResponse,
-    EventLog,
+    EventLog, UndecodedEventLog
 } from "./wrappers.js";
 
 export type {

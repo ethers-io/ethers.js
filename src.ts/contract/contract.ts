@@ -11,7 +11,7 @@ import {
 import {
     ContractEventPayload, ContractUnknownEventPayload,
     ContractTransactionResponse,
-    EventLog
+    EventLog, UndecodedEventLog
 } from "./wrappers.js";
 
 import type { EventFragment, FunctionFragment, InterfaceAbi, ParamType, Result } from "../abi/index.js";
@@ -892,9 +892,24 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
      *  @_ignore:
      */
     async queryTransaction(hash: string): Promise<Array<EventLog>> {
-        // Is this useful?
         throw new Error("@TODO");
     }
+
+    /*
+    // @TODO: this is a non-backwards compatible change, but will be added
+    //        in v7 and in a potential SmartContract class in an upcoming
+    //        v6 release
+    async getTransactionReceipt(hash: string): Promise<null | ContractTransactionReceipt> {
+        const provider = getProvider(this.runner);
+        assert(provider, "contract runner does not have a provider",
+            "UNSUPPORTED_OPERATION", { operation: "queryTransaction" });
+
+        const receipt = await provider.getTransactionReceipt(hash);
+        if (receipt == null) { return null; }
+
+        return new ContractTransactionReceipt(this.interface, provider, receipt);
+    }
+    */
 
     /**
      *  Provide historic access to event data for %%event%% in the range
@@ -924,7 +939,9 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
             if (foundFragment) {
                 try {
                     return new EventLog(log, this.interface, foundFragment);
-                } catch (error) { }
+                } catch (error: any) {
+                    return new UndecodedEventLog(log, error);
+                }
             }
 
             return new Log(log, provider);

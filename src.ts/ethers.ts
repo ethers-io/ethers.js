@@ -31,7 +31,7 @@ export {
 export {
     BaseContract, Contract,
     ContractFactory,
-    ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EventLog,
+    ContractEventPayload, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EventLog, UndecodedEventLog
 } from "./contract/index.js";
 
 export {

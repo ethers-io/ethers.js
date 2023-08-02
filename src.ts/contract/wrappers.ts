@@ -54,6 +54,25 @@ export class EventLog extends Log {
 }
 
 /**
+ *  An **EventLog** contains additional properties parsed from the [[Log]].
+ */
+export class UndecodedEventLog extends Log {
+
+    /**
+     *  The error encounted when trying to decode the log.
+     */
+    readonly error!: Error;
+
+    /**
+     * @_ignore:
+     */
+    constructor(log: Log, error: Error) {
+        super(log, log.provider);
+        defineProperties<UndecodedEventLog>(this, { error });
+    }
+}
+
+/**
  *  A **ContractTransactionReceipt** includes the parsed logs from a
  *  [[TransactionReceipt]].
  */
@@ -78,7 +97,9 @@ export class ContractTransactionReceipt extends TransactionReceipt {
             if (fragment) {
                 try {
                     return new EventLog(log, this.#iface, fragment)
-                } catch (error) { }
+                } catch (error: any) {
+                    return new UndecodedEventLog(log, error);
+                }
             }
 
             return log;
