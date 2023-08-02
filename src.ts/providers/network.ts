@@ -311,13 +311,16 @@ function parseUnits(_value: number | string, decimals: number): bigint {
     while (comps[1].length < decimals) { comps[1] += "0"; }
 
     // Too many decimals and some non-zero ending, take the ceiling
-    if (comps[1].length > 9 && !comps[1].substring(9).match(/^0+$/)) {
-        comps[1] = (BigInt(comps[1].substring(0, 9)) + BigInt(1)).toString();
+    if (comps[1].length > 9) {
+        let frac = BigInt(comps[1].substring(0, 9));
+        if (!comps[1].substring(9).match(/^0+$/)) { frac++; }
+        comps[1] = frac.toString();
     }
 
     return BigInt(comps[0] + comps[1]);
 }
 
+// Used by Polygon to use a gas station for fee data
 function getGasStationPlugin(url: string) {
     return new FetchUrlFeeDataNetworkPlugin(url, async (fetchFeeData, provider, request) => {
 
@@ -336,6 +339,26 @@ function getGasStationPlugin(url: string) {
         } catch (error: any) {
             assert(false, `error encountered with polygon gas station (${ JSON.stringify(request.url) })`, "SERVER_ERROR", { request, response, error });
         }
+    });
+}
+
+// Used by Optimism for a custom priority fee
+function getPriorityFeePlugin(maxPriorityFeePerGas: bigint) {
+    return new FetchUrlFeeDataNetworkPlugin("data:", async (fetchFeeData, provider, request) => {
+        const feeData = await fetchFeeData();
+
+        // This should always fail
+        if (feeData.maxFeePerGas == null || feeData.maxPriorityFeePerGas == null) {
+            return feeData;
+        }
+
+        // Compute the corrected baseFee to recompute the updated values
+        const baseFee = feeData.maxFeePerGas - feeData.maxPriorityFeePerGas;
+        return {
+            gasPrice: feeData.gasPrice,
+            maxFeePerGas: (baseFee + maxPriorityFeePerGas),
+            maxPriorityFeePerGas
+        };
     });
 }
 
@@ -413,6 +436,9 @@ function injectCommonNetworks(): void {
 
     registerEth("optimism", 10, {
         ensNetwork: 1,
+        plugins: [
+            getPriorityFeePlugin(BigInt("1000000"))
+        ]
     });
     registerEth("optimism-goerli", 420, { });
 
