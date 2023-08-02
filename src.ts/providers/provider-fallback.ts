@@ -668,6 +668,9 @@ export class FallbackProvider extends AbstractProvider {
             return value;
         }
 
+        // Wait for someone to either complete its perform or stall out
+        await Promise.race(interesting);
+
         // Add any new runners, because a staller timed out or a result
         // or error response came in.
         for (let i = 0; i < newRunners; i++) {
@@ -680,9 +683,6 @@ export class FallbackProvider extends AbstractProvider {
             request: "%sub-requests",
             info: { request: req, results: Array.from(running).map((r) => stringify(r.result)) }
         });
-
-        // Wait for someone to either complete its perform or stall out
-        await Promise.race(interesting);
 
         // This is recursive, but at worst case the depth is 2x the
         // number of providers (each has a perform and a staller)
@@ -716,9 +716,7 @@ export class FallbackProvider extends AbstractProvider {
 
         // Bootstrap enough runners to meet quorum
         const running: Set<RunnerState> = new Set();
-        for (let i = 0; i < this.quorum; i++) {
-            this.#addRunner(running, req);
-        }
+        this.#addRunner(running, req);
 
         const result = await this.#waitForQuorum(running, req);
 
