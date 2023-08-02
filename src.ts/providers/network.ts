@@ -423,4 +423,12 @@ function injectCommonNetworks(): void {
             url: "http:/\/api-testnet.bscscan.com"
         }
     });
+    registerEth("linea", 59144, {
+        ensNetwork: 1,
+        etherscan: { url: "https:/\/lineascan.build/" }
+    });
+    registerEth("linea-goerli", 59140, {
+        ensNetwork: 5,
+        etherscan: { url: "https:/\/goerli.lineascan.build/" }
+    });
 }
