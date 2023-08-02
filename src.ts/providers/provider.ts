@@ -1460,12 +1460,27 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
             return;
         };
 
+        const checkReceipt = (receipt: null | TransactionReceipt) => {
+            if (receipt == null || receipt.status !== 0) { return receipt; }
+            assert(false, "transaction execution reverted", "CALL_EXCEPTION", {
+                action: "sendTransaction",
+                data: null, reason: null, invocation: null, revert: null,
+                transaction: {
+                    to: receipt.to,
+                    from: receipt.from,
+                    data: "" // @TODO: in v7, split out sendTransaction properties
+                }, receipt
+            });
+        };
+
         const receipt = await this.provider.getTransactionReceipt(this.hash);
 
-        if (confirms === 0) { return receipt; }
+        if (confirms === 0) { return checkReceipt(receipt); }
 
         if (receipt) {
-            if ((await receipt.confirmations()) >= confirms) { return receipt; }
+            if ((await receipt.confirmations()) >= confirms) {
+                return checkReceipt(receipt);
+            }
 
         } else {
             // Check for a replacement; throws if a replacement was found
@@ -1496,9 +1511,10 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
                 // Done; return it!
                 if ((await receipt.confirmations()) >= confirms) {
                     cancel();
-                    resolve(receipt);
+                    try {
+                        resolve(checkReceipt(receipt));
+                    } catch (error) { reject(error); }
                 }
-
             };
             cancellers.push(() => { this.provider.off(this.hash, txListener); });
             this.provider.on(this.hash, txListener);
