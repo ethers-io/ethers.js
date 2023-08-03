@@ -3,9 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.7.0 (2023-07-29 02:33)
+ethers/v6.7.0 (2023-08-02 23:37)
 --------------------------------
 
+  - Fixed receipt wait not throwing on reverted transactions ([25fef4f](https://github.com/ethers-io/ethers.js/commit/25fef4f8d756f5bbf5a2a05e38233248a8eb43ac)).
+  - Added custom priority fee to Optimism chain (via telegram) ([ff80b04](https://github.com/ethers-io/ethers.js/commit/ff80b04f31da21496e72d3687cecd1c01efaecc5)).
+  - Add context to Logs that fail decoding due to ABI issues to help debugging ([f3c46f2](https://github.com/ethers-io/ethers.js/commit/f3c46f22994d194ff78b3b176407b2ecb7af1c77)).
   - Added new exports for FallbackProviderOptions and FetchUrlFeeDataNetworkPlugin ([#2828](https://github.com/ethers-io/ethers.js/issues/2828), [#4160](https://github.com/ethers-io/ethers.js/issues/4160); [b1dbbb0](https://github.com/ethers-io/ethers.js/commit/b1dbbb0de3f10a3d9e12d6a84ad5c52bea25c7f6)).
   - Allow overriding pollingInterval in JsonRpcProvider constructor (via discord) ([f42f258](https://github.com/ethers-io/ethers.js/commit/f42f258beb305a06e563ad16522f095a72da32eb)).
   - Fixed FallbackProvider priority sorting ([#4150](https://github.com/ethers-io/ethers.js/issues/4150); [78538eb](https://github.com/ethers-io/ethers.js/commit/78538eb100addd135d29e60c9fa4fed3946278fa)).
@@ -17,12 +20,6 @@ ethers/v6.7.0 (2023-07-29 02:33)
   - Add BNB URLs to EtherscanProvider networks ([ec39abe](https://github.com/ethers-io/ethers.js/commit/ec39abe067259fad4ea8607a6c5aece61890eb41)).
   - Added tests for JSON format ([#4248](https://github.com/ethers-io/ethers.js/issues/4248); [ba36079](https://github.com/ethers-io/ethers.js/commit/ba36079a285706694532ce726568c4c447acad47)).
   - Use empty string for unnamed parameters in JSON output instead of undefined ([#4248](https://github.com/ethers-io/ethers.js/issues/4248); [8c2652c](https://github.com/ethers-io/ethers.js/commit/8c2652c8cb4d054207d89688d30930869d9d3f8b)).
-  - Return undefined for Contract properties that do not exist instead of throwing an error ([#4266](https://github.com/ethers-io/ethers.js/issues/4266); [5bf7b34](https://github.com/ethers-io/ethers.js/commit/5bf7b3494ed62952fc387b4368a0bdc86dfe163e)).
-
-ethers/v6.7.0 (2023-07-24 17:47)
---------------------------------
-
-  - Use empty string for unnamed parameters in JSON output instead of undefined ([#4248](https://github.com/ethers-io/ethers.js/issues/4248); [8c2652c](https://github.com/ethers-io/ethers.js/commit/8c2652c8cb4d054207d89688d30930869d9d3f8b), [ba36079](https://github.com/ethers-io/ethers.js/commit/ba36079a285706694532ce726568c4c447acad47)).
   - Return undefined for Contract properties that do not exist instead of throwing an error ([#4266](https://github.com/ethers-io/ethers.js/issues/4266); [5bf7b34](https://github.com/ethers-io/ethers.js/commit/5bf7b3494ed62952fc387b4368a0bdc86dfe163e)).
 
 ethers/v6.6.7 (2023-07-28 14:50)

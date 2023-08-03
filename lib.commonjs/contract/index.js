@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.ContractUnknownEventPayload = exports.ContractEventPayload = exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
+exports.UndecodedEventLog = exports.EventLog = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.ContractUnknownEventPayload = exports.ContractEventPayload = exports.ContractFactory = exports.Contract = exports.BaseContract = void 0;
 /**
  *  A **Contract** object is a meta-class (a class whose definition is
  *  defined at runtime), which communicates with a deployed smart contract
@@ -20,4 +20,5 @@ Object.defineProperty(exports, "ContractUnknownEventPayload", { enumerable: true
 Object.defineProperty(exports, "ContractTransactionReceipt", { enumerable: true, get: function () { return wrappers_js_1.ContractTransactionReceipt; } });
 Object.defineProperty(exports, "ContractTransactionResponse", { enumerable: true, get: function () { return wrappers_js_1.ContractTransactionResponse; } });
 Object.defineProperty(exports, "EventLog", { enumerable: true, get: function () { return wrappers_js_1.EventLog; } });
+Object.defineProperty(exports, "UndecodedEventLog", { enumerable: true, get: function () { return wrappers_js_1.UndecodedEventLog; } });
 //# sourceMappingURL=index.js.map

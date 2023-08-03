@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContractEventPayload = exports.ContractUnknownEventPayload = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.EventLog = void 0;
+exports.ContractEventPayload = exports.ContractUnknownEventPayload = exports.ContractTransactionResponse = exports.ContractTransactionReceipt = exports.UndecodedEventLog = exports.EventLog = void 0;
 // import from provider.ts instead of index.ts to prevent circular dep
 // from EtherscanProvider
 const provider_js_1 = require("../providers/provider.js");
@@ -40,6 +40,23 @@ class EventLog extends provider_js_1.Log {
 }
 exports.EventLog = EventLog;
 /**
+ *  An **EventLog** contains additional properties parsed from the [[Log]].
+ */
+class UndecodedEventLog extends provider_js_1.Log {
+    /**
+     *  The error encounted when trying to decode the log.
+     */
+    error;
+    /**
+     * @_ignore:
+     */
+    constructor(log, error) {
+        super(log, log.provider);
+        (0, index_js_1.defineProperties)(this, { error });
+    }
+}
+exports.UndecodedEventLog = UndecodedEventLog;
+/**
  *  A **ContractTransactionReceipt** includes the parsed logs from a
  *  [[TransactionReceipt]].
  */
@@ -63,7 +80,9 @@ class ContractTransactionReceipt extends provider_js_1.TransactionReceipt {
                 try {
                     return new EventLog(log, this.#iface, fragment);
                 }
-                catch (error) { }
+                catch (error) {
+                    return new UndecodedEventLog(log, error);
+                }
             }
             return log;
         });

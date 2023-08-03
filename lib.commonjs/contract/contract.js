@@ -733,9 +733,23 @@ class BaseContract {
      *  @_ignore:
      */
     async queryTransaction(hash) {
-        // Is this useful?
         throw new Error("@TODO");
     }
+    /*
+    // @TODO: this is a non-backwards compatible change, but will be added
+    //        in v7 and in a potential SmartContract class in an upcoming
+    //        v6 release
+    async getTransactionReceipt(hash: string): Promise<null | ContractTransactionReceipt> {
+        const provider = getProvider(this.runner);
+        assert(provider, "contract runner does not have a provider",
+            "UNSUPPORTED_OPERATION", { operation: "queryTransaction" });
+
+        const receipt = await provider.getTransactionReceipt(hash);
+        if (receipt == null) { return null; }
+
+        return new ContractTransactionReceipt(this.interface, provider, receipt);
+    }
+    */
     /**
      *  Provide historic access to event data for %%event%% in the range
      *  %%fromBlock%% (default: ``0``) to %%toBlock%% (default: ``"latest"``)
@@ -766,7 +780,9 @@ class BaseContract {
                 try {
                     return new wrappers_js_1.EventLog(log, this.interface, foundFragment);
                 }
-                catch (error) { }
+                catch (error) {
+                    return new wrappers_js_1.UndecodedEventLog(log, error);
+                }
             }
             return new provider_js_1.Log(log, provider);
         });

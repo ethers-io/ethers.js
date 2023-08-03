@@ -13689,13 +13689,27 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 return;
             };
+            const checkReceipt = (receipt) => {
+                if (receipt == null || receipt.status !== 0) {
+                    return receipt;
+                }
+                assert$1(false, "transaction execution reverted", "CALL_EXCEPTION", {
+                    action: "sendTransaction",
+                    data: null, reason: null, invocation: null, revert: null,
+                    transaction: {
+                        to: receipt.to,
+                        from: receipt.from,
+                        data: "" // @TODO: in v7, split out sendTransaction properties
+                    }, receipt
+                });
+            };
             const receipt = await this.provider.getTransactionReceipt(this.hash);
             if (confirms === 0) {
-                return receipt;
+                return checkReceipt(receipt);
             }
             if (receipt) {
                 if ((await receipt.confirmations()) >= confirms) {
-                    return receipt;
+                    return checkReceipt(receipt);
                 }
             }
             else {
@@ -13724,7 +13738,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     // Done; return it!
                     if ((await receipt.confirmations()) >= confirms) {
                         cancel();
-                        resolve(receipt);
+                        try {
+                            resolve(checkReceipt(receipt));
+                        }
+                        catch (error) {
+                            reject(error);
+                        }
                     }
                 };
                 cancellers.push(() => { this.provider.off(this.hash, txListener); });
@@ -13889,6 +13908,22 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         get eventSignature() { return this.fragment.format(); }
     }
     /**
+     *  An **EventLog** contains additional properties parsed from the [[Log]].
+     */
+    class UndecodedEventLog extends Log {
+        /**
+         *  The error encounted when trying to decode the log.
+         */
+        error;
+        /**
+         * @_ignore:
+         */
+        constructor(log, error) {
+            super(log, log.provider);
+            defineProperties(this, { error });
+        }
+    }
+    /**
      *  A **ContractTransactionReceipt** includes the parsed logs from a
      *  [[TransactionReceipt]].
      */
@@ -13912,7 +13947,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     try {
                         return new EventLog(log, this.#iface, fragment);
                     }
-                    catch (error) { }
+                    catch (error) {
+                        return new UndecodedEventLog(log, error);
+                    }
                 }
                 return log;
             });
@@ -14733,9 +14770,23 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  @_ignore:
          */
         async queryTransaction(hash) {
-            // Is this useful?
             throw new Error("@TODO");
         }
+        /*
+        // @TODO: this is a non-backwards compatible change, but will be added
+        //        in v7 and in a potential SmartContract class in an upcoming
+        //        v6 release
+        async getTransactionReceipt(hash: string): Promise<null | ContractTransactionReceipt> {
+            const provider = getProvider(this.runner);
+            assert(provider, "contract runner does not have a provider",
+                "UNSUPPORTED_OPERATION", { operation: "queryTransaction" });
+
+            const receipt = await provider.getTransactionReceipt(hash);
+            if (receipt == null) { return null; }
+
+            return new ContractTransactionReceipt(this.interface, provider, receipt);
+        }
+        */
         /**
          *  Provide historic access to event data for %%event%% in the range
          *  %%fromBlock%% (default: ``0``) to %%toBlock%% (default: ``"latest"``)
@@ -14766,7 +14817,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     try {
                         return new EventLog(log, this.interface, foundFragment);
                     }
-                    catch (error) { }
+                    catch (error) {
+                        return new UndecodedEventLog(log, error);
+                    }
                 }
                 return new Log(log, provider);
             });
@@ -16203,11 +16256,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             comps[1] += "0";
         }
         // Too many decimals and some non-zero ending, take the ceiling
-        if (comps[1].length > 9 && !comps[1].substring(9).match(/^0+$/)) {
-            comps[1] = (BigInt(comps[1].substring(0, 9)) + BigInt(1)).toString();
+        if (comps[1].length > 9) {
+            let frac = BigInt(comps[1].substring(0, 9));
+            if (!comps[1].substring(9).match(/^0+$/)) {
+                frac++;
+            }
+            comps[1] = frac.toString();
         }
         return BigInt(comps[0] + comps[1]);
     }
+    // Used by Polygon to use a gas station for fee data
     function getGasStationPlugin(url) {
         return new FetchUrlFeeDataNetworkPlugin(url, async (fetchFeeData, provider, request) => {
             // Prevent Cloudflare from blocking our request in node.js
@@ -16225,6 +16283,23 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             catch (error) {
                 assert$1(false, `error encountered with polygon gas station (${JSON.stringify(request.url)})`, "SERVER_ERROR", { request, response, error });
             }
+        });
+    }
+    // Used by Optimism for a custom priority fee
+    function getPriorityFeePlugin(maxPriorityFeePerGas) {
+        return new FetchUrlFeeDataNetworkPlugin("data:", async (fetchFeeData, provider, request) => {
+            const feeData = await fetchFeeData();
+            // This should always fail
+            if (feeData.maxFeePerGas == null || feeData.maxPriorityFeePerGas == null) {
+                return feeData;
+            }
+            // Compute the corrected baseFee to recompute the updated values
+            const baseFee = feeData.maxFeePerGas - feeData.maxPriorityFeePerGas;
+            return {
+                gasPrice: feeData.gasPrice,
+                maxFeePerGas: (baseFee + maxPriorityFeePerGas),
+                maxPriorityFeePerGas
+            };
         });
     }
     // See: https://chainlist.org
@@ -16287,6 +16362,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         });
         registerEth("optimism", 10, {
             ensNetwork: 1,
+            plugins: [
+                getPriorityFeePlugin(BigInt("1000000"))
+            ]
         });
         registerEth("optimism-goerli", 420, {});
         registerEth("xdai", 100, { ensNetwork: 1 });
@@ -23555,6 +23633,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         TransactionResponse: TransactionResponse,
         Typed: Typed,
         TypedDataEncoder: TypedDataEncoder,
+        UndecodedEventLog: UndecodedEventLog,
         UnmanagedSubscriber: UnmanagedSubscriber,
         Utf8ErrorFuncs: Utf8ErrorFuncs,
         VoidSigner: VoidSigner,
@@ -23744,6 +23823,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     exports.TransactionResponse = TransactionResponse;
     exports.Typed = Typed;
     exports.TypedDataEncoder = TypedDataEncoder;
+    exports.UndecodedEventLog = UndecodedEventLog;
     exports.UnmanagedSubscriber = UnmanagedSubscriber;
     exports.Utf8ErrorFuncs = Utf8ErrorFuncs;
     exports.VoidSigner = VoidSigner;

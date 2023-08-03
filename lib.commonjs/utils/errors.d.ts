@@ -274,9 +274,9 @@ export interface UnexpectedArgumentError extends EthersError<"UNEXPECTED_ARGUMEN
     expectedCount: number;
 }
 /**
- *  The action that resulted in the error.
+ *  The action that resulted in the call exception.
  */
-export type CallExceptionAction = "call" | "estimateGas" | "getTransactionResult" | "unknown";
+export type CallExceptionAction = "call" | "estimateGas" | "getTransactionResult" | "sendTransaction" | "unknown";
 /**
  *  The related transaction that caused the error.
  */
@@ -321,6 +321,11 @@ export interface CallExceptionError extends EthersError<"CALL_EXCEPTION"> {
         name: string;
         args: Array<any>;
     };
+    /**
+     *  If the error occurred in a transaction that was mined
+     *  (with a status of ``0``), this is the receipt.
+     */
+    receipt?: TransactionReceipt;
 }
 /**
  *  The sending account has insufficient funds to cover the

@@ -36,6 +36,22 @@ export class EventLog extends Log {
     get eventSignature() { return this.fragment.format(); }
 }
 /**
+ *  An **EventLog** contains additional properties parsed from the [[Log]].
+ */
+export class UndecodedEventLog extends Log {
+    /**
+     *  The error encounted when trying to decode the log.
+     */
+    error;
+    /**
+     * @_ignore:
+     */
+    constructor(log, error) {
+        super(log, log.provider);
+        defineProperties(this, { error });
+    }
+}
+/**
  *  A **ContractTransactionReceipt** includes the parsed logs from a
  *  [[TransactionReceipt]].
  */
@@ -59,7 +75,9 @@ export class ContractTransactionReceipt extends TransactionReceipt {
                 try {
                     return new EventLog(log, this.#iface, fragment);
                 }
-                catch (error) { }
+                catch (error) {
+                    return new UndecodedEventLog(log, error);
+                }
             }
             return log;
         });

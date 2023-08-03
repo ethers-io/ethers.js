@@ -8,5 +8,5 @@
  */
 export { BaseContract, Contract } from "./contract.js";
 export { ContractFactory } from "./factory.js";
-export { ContractEventPayload, ContractUnknownEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EventLog, } from "./wrappers.js";
+export { ContractEventPayload, ContractUnknownEventPayload, ContractTransactionReceipt, ContractTransactionResponse, EventLog, UndecodedEventLog } from "./wrappers.js";
 //# sourceMappingURL=index.js.map

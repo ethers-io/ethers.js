@@ -13683,13 +13683,27 @@ class TransactionResponse {
             }
             return;
         };
+        const checkReceipt = (receipt) => {
+            if (receipt == null || receipt.status !== 0) {
+                return receipt;
+            }
+            assert$1(false, "transaction execution reverted", "CALL_EXCEPTION", {
+                action: "sendTransaction",
+                data: null, reason: null, invocation: null, revert: null,
+                transaction: {
+                    to: receipt.to,
+                    from: receipt.from,
+                    data: "" // @TODO: in v7, split out sendTransaction properties
+                }, receipt
+            });
+        };
         const receipt = await this.provider.getTransactionReceipt(this.hash);
         if (confirms === 0) {
-            return receipt;
+            return checkReceipt(receipt);
         }
         if (receipt) {
             if ((await receipt.confirmations()) >= confirms) {
-                return receipt;
+                return checkReceipt(receipt);
             }
         }
         else {
@@ -13718,7 +13732,12 @@ class TransactionResponse {
                 // Done; return it!
                 if ((await receipt.confirmations()) >= confirms) {
                     cancel();
-                    resolve(receipt);
+                    try {
+                        resolve(checkReceipt(receipt));
+                    }
+                    catch (error) {
+                        reject(error);
+                    }
                 }
             };
             cancellers.push(() => { this.provider.off(this.hash, txListener); });
@@ -13883,6 +13902,22 @@ class EventLog extends Log {
     get eventSignature() { return this.fragment.format(); }
 }
 /**
+ *  An **EventLog** contains additional properties parsed from the [[Log]].
+ */
+class UndecodedEventLog extends Log {
+    /**
+     *  The error encounted when trying to decode the log.
+     */
+    error;
+    /**
+     * @_ignore:
+     */
+    constructor(log, error) {
+        super(log, log.provider);
+        defineProperties(this, { error });
+    }
+}
+/**
  *  A **ContractTransactionReceipt** includes the parsed logs from a
  *  [[TransactionReceipt]].
  */
@@ -13906,7 +13941,9 @@ class ContractTransactionReceipt extends TransactionReceipt {
                 try {
                     return new EventLog(log, this.#iface, fragment);
                 }
-                catch (error) { }
+                catch (error) {
+                    return new UndecodedEventLog(log, error);
+                }
             }
             return log;
         });
@@ -14727,9 +14764,23 @@ class BaseContract {
      *  @_ignore:
      */
     async queryTransaction(hash) {
-        // Is this useful?
         throw new Error("@TODO");
     }
+    /*
+    // @TODO: this is a non-backwards compatible change, but will be added
+    //        in v7 and in a potential SmartContract class in an upcoming
+    //        v6 release
+    async getTransactionReceipt(hash: string): Promise<null | ContractTransactionReceipt> {
+        const provider = getProvider(this.runner);
+        assert(provider, "contract runner does not have a provider",
+            "UNSUPPORTED_OPERATION", { operation: "queryTransaction" });
+
+        const receipt = await provider.getTransactionReceipt(hash);
+        if (receipt == null) { return null; }
+
+        return new ContractTransactionReceipt(this.interface, provider, receipt);
+    }
+    */
     /**
      *  Provide historic access to event data for %%event%% in the range
      *  %%fromBlock%% (default: ``0``) to %%toBlock%% (default: ``"latest"``)
@@ -14760,7 +14811,9 @@ class BaseContract {
                 try {
                     return new EventLog(log, this.interface, foundFragment);
                 }
-                catch (error) { }
+                catch (error) {
+                    return new UndecodedEventLog(log, error);
+                }
             }
             return new Log(log, provider);
         });
@@ -16197,11 +16250,16 @@ function parseUnits(_value, decimals) {
         comps[1] += "0";
     }
     // Too many decimals and some non-zero ending, take the ceiling
-    if (comps[1].length > 9 && !comps[1].substring(9).match(/^0+$/)) {
-        comps[1] = (BigInt(comps[1].substring(0, 9)) + BigInt(1)).toString();
+    if (comps[1].length > 9) {
+        let frac = BigInt(comps[1].substring(0, 9));
+        if (!comps[1].substring(9).match(/^0+$/)) {
+            frac++;
+        }
+        comps[1] = frac.toString();
     }
     return BigInt(comps[0] + comps[1]);
 }
+// Used by Polygon to use a gas station for fee data
 function getGasStationPlugin(url) {
     return new FetchUrlFeeDataNetworkPlugin(url, async (fetchFeeData, provider, request) => {
         // Prevent Cloudflare from blocking our request in node.js
@@ -16219,6 +16277,23 @@ function getGasStationPlugin(url) {
         catch (error) {
             assert$1(false, `error encountered with polygon gas station (${JSON.stringify(request.url)})`, "SERVER_ERROR", { request, response, error });
         }
+    });
+}
+// Used by Optimism for a custom priority fee
+function getPriorityFeePlugin(maxPriorityFeePerGas) {
+    return new FetchUrlFeeDataNetworkPlugin("data:", async (fetchFeeData, provider, request) => {
+        const feeData = await fetchFeeData();
+        // This should always fail
+        if (feeData.maxFeePerGas == null || feeData.maxPriorityFeePerGas == null) {
+            return feeData;
+        }
+        // Compute the corrected baseFee to recompute the updated values
+        const baseFee = feeData.maxFeePerGas - feeData.maxPriorityFeePerGas;
+        return {
+            gasPrice: feeData.gasPrice,
+            maxFeePerGas: (baseFee + maxPriorityFeePerGas),
+            maxPriorityFeePerGas
+        };
     });
 }
 // See: https://chainlist.org
@@ -16281,6 +16356,9 @@ function injectCommonNetworks() {
     });
     registerEth("optimism", 10, {
         ensNetwork: 1,
+        plugins: [
+            getPriorityFeePlugin(BigInt("1000000"))
+        ]
     });
     registerEth("optimism-goerli", 420, {});
     registerEth("xdai", 100, { ensNetwork: 1 });
@@ -23549,6 +23627,7 @@ var ethers = /*#__PURE__*/Object.freeze({
     TransactionResponse: TransactionResponse,
     Typed: Typed,
     TypedDataEncoder: TypedDataEncoder,
+    UndecodedEventLog: UndecodedEventLog,
     UnmanagedSubscriber: UnmanagedSubscriber,
     Utf8ErrorFuncs: Utf8ErrorFuncs,
     VoidSigner: VoidSigner,
@@ -23657,5 +23736,5 @@ var ethers = /*#__PURE__*/Object.freeze({
     zeroPadValue: zeroPadValue
 });
 
-export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EnsPlugin, EnsResolver, ErrorDescription, ErrorFragment, EtherSymbol, EtherscanPlugin, EtherscanProvider, EventFragment, EventLog, EventPayload, FallbackFragment, FallbackProvider, FeeData, FeeDataNetworkPlugin, FetchCancelSignal, FetchRequest, FetchResponse, FetchUrlFeeDataNetworkPlugin, FixedNumber, Fragment, FunctionFragment, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, InfuraWebSocketProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, MulticoinProviderPlugin, N$1 as N, NamedFragment, Network, NetworkPlugin, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber, SocketProvider, SocketSubscriber, StructFragment, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, UnmanagedSubscriber, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, copyRequest, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getIndexedAccountPath, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits$1 as parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, uuidV4, verifyMessage, verifyTypedData, version, wordlists, zeroPadBytes, zeroPadValue };
+export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EnsPlugin, EnsResolver, ErrorDescription, ErrorFragment, EtherSymbol, EtherscanPlugin, EtherscanProvider, EventFragment, EventLog, EventPayload, FallbackFragment, FallbackProvider, FeeData, FeeDataNetworkPlugin, FetchCancelSignal, FetchRequest, FetchResponse, FetchUrlFeeDataNetworkPlugin, FixedNumber, Fragment, FunctionFragment, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, InfuraWebSocketProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, MulticoinProviderPlugin, N$1 as N, NamedFragment, Network, NetworkPlugin, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber, SocketProvider, SocketSubscriber, StructFragment, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, UndecodedEventLog, UnmanagedSubscriber, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, copyRequest, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getIndexedAccountPath, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits$1 as parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, uuidV4, verifyMessage, verifyTypedData, version, wordlists, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map

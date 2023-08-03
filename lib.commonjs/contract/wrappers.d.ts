@@ -35,6 +35,19 @@ export declare class EventLog extends Log {
     get eventSignature(): string;
 }
 /**
+ *  An **EventLog** contains additional properties parsed from the [[Log]].
+ */
+export declare class UndecodedEventLog extends Log {
+    /**
+     *  The error encounted when trying to decode the log.
+     */
+    readonly error: Error;
+    /**
+     * @_ignore:
+     */
+    constructor(log: Log, error: Error);
+}
+/**
  *  A **ContractTransactionReceipt** includes the parsed logs from a
  *  [[TransactionReceipt]].
  */
