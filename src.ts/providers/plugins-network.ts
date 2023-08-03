@@ -231,9 +231,20 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
     readonly #url: string;
     readonly #processFunc: (f: () => Promise<FeeData>, p: Provider, r: FetchRequest) => Promise<{ gasPrice?: null | bigint, maxFeePerGas?: null | bigint, maxPriorityFeePerGas?: null | bigint }>;
 
-    get url() { return this.#url; }
-    get processFunc() { return this.#processFunc; }
+    /**
+     *  The URL to initialize the FetchRequest with in %%processFunc%%.
+     */
+    get url(): string { return this.#url; }
 
+    /**
+     *  The callback to use when computing the FeeData.
+     */
+    get processFunc(): (f: () => Promise<FeeData>, p: Provider, r: FetchRequest) => Promise<{ gasPrice?: null | bigint, maxFeePerGas?: null | bigint, maxPriorityFeePerGas?: null | bigint }> { return this.#processFunc; }
+
+    /**
+     *  Creates a new **FetchUrlFeeDataNetworkPlugin** which will
+     *  be used when computing the fee data for the network.
+     */
     constructor(url: string, processFunc: (f: () => Promise<FeeData>, p: Provider, r: FetchRequest) => Promise<{ gasPrice?: null | bigint, maxFeePerGas?: null | bigint, maxPriorityFeePerGas?: null | bigint }>) {
         super("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
         this.#url = url;
