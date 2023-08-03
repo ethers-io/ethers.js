@@ -7,6 +7,7 @@ function stall(duration) {
 setupProviders();
 describe("Sends Transactions", function () {
     const wallet = new Wallet((process.env.FAUCET_PRIVATEKEY));
+    console.log("Faucet Address:", wallet.address);
     const networkName = "goerli";
     for (const providerName of providerNames) {
         const provider = getProvider(providerName, networkName);

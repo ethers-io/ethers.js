@@ -168,8 +168,18 @@ exports.FeeDataNetworkPlugin = FeeDataNetworkPlugin;
 class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
     #url;
     #processFunc;
+    /**
+     *  The URL to initialize the FetchRequest with in %%processFunc%%.
+     */
     get url() { return this.#url; }
+    /**
+     *  The callback to use when computing the FeeData.
+     */
     get processFunc() { return this.#processFunc; }
+    /**
+     *  Creates a new **FetchUrlFeeDataNetworkPlugin** which will
+     *  be used when computing the fee data for the network.
+     */
     constructor(url, processFunc) {
         super("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
         this.#url = url;

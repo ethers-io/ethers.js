@@ -144,12 +144,22 @@ export declare class FeeDataNetworkPlugin extends NetworkPlugin {
 }
 export declare class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
     #private;
+    /**
+     *  The URL to initialize the FetchRequest with in %%processFunc%%.
+     */
     get url(): string;
+    /**
+     *  The callback to use when computing the FeeData.
+     */
     get processFunc(): (f: () => Promise<FeeData>, p: Provider, r: FetchRequest) => Promise<{
-        gasPrice?: bigint | null | undefined;
-        maxFeePerGas?: bigint | null | undefined;
-        maxPriorityFeePerGas?: bigint | null | undefined;
+        gasPrice?: null | bigint;
+        maxFeePerGas?: null | bigint;
+        maxPriorityFeePerGas?: null | bigint;
     }>;
+    /**
+     *  Creates a new **FetchUrlFeeDataNetworkPlugin** which will
+     *  be used when computing the fee data for the network.
+     */
     constructor(url: string, processFunc: (f: () => Promise<FeeData>, p: Provider, r: FetchRequest) => Promise<{
         gasPrice?: null | bigint;
         maxFeePerGas?: null | bigint;

@@ -3,7 +3,7 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.7.0 (2023-08-02 23:37)
+ethers/v6.7.0 (2023-08-02 23:52)
 --------------------------------
 
   - Fixed receipt wait not throwing on reverted transactions ([25fef4f](https://github.com/ethers-io/ethers.js/commit/25fef4f8d756f5bbf5a2a05e38233248a8eb43ac)).
