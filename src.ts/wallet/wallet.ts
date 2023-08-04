@@ -35,7 +35,7 @@ function stall(duration: number): Promise<void> {
 export class Wallet extends BaseWallet {
 
     /**
-     *  Create a new wallet for the %%privateKey%%, optionally connected
+     *  Create a new wallet for the private %%key%%, optionally connected
      *  to %%provider%%.
      */
     constructor(key: string | SigningKey, provider?: null | Provider) {
