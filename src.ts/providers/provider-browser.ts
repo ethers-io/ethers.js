@@ -18,6 +18,8 @@ export interface Eip1193Provider {
      *  See [[link-eip-1193]] for details on this method.
      */
     request(request: { method: string, params?: Array<any> | Record<string, any> }): Promise<any>;
+    on(eventName: string | symbol, listener: (...args: any[]) => void): this;
+    removeListener(eventName: string | symbol, listener: (...args: any[]) => void): this;
 };
 
 /**
