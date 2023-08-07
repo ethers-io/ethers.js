@@ -483,11 +483,11 @@ export class FallbackProvider extends AbstractProvider {
     }
 
     // Adds a new runner (if available) to running.
-    #addRunner(running: Set<RunnerState>, req: PerformActionRequest): null | RunnerState {
+    #addRunner(running: Set<RunnerState>, req: PerformActionRequest): number {
         const config = this.#getNextConfig(running);
 
         // No runners available
-        if (config == null) { return null; }
+        if (config == null) { return 0; }
 
         // Create a new runner
         const runner: RunnerState = {
@@ -524,7 +524,7 @@ export class FallbackProvider extends AbstractProvider {
         })();
 
         running.add(runner);
-        return runner;
+        return runner.config.weight;
     }
 
     // Initializes the blockNumber and network for each runner and
@@ -716,7 +716,11 @@ export class FallbackProvider extends AbstractProvider {
 
         // Bootstrap enough runners to meet quorum
         const running: Set<RunnerState> = new Set();
-        this.#addRunner(running, req);
+        let weightSoFar = 0;
+        for (let i = 0; i < this.quorum; i++) {
+            weightSoFar += this.#addRunner(running, req);
+            if (weightSoFar >= this.quorum) { break; }
+        }
 
         const result = await this.#waitForQuorum(running, req);
 
