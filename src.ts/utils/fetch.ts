@@ -312,7 +312,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
      *  to a string.
      */
     setHeader(key: string, value: string | number): void {
-        this.#headers[String(key).toLowerCase()] = String(value);
+        this.#headers[String(key)] = String(value);
     }
 
     /**
