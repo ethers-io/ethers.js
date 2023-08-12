@@ -35,7 +35,7 @@ _code: importing in Node.js  @lang<script>
 
 _code: importing ESM in a browser  @lang<script>
   <script type="module">
-    import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.min.js";
+    import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
     // Your code here...
   </script>
 
