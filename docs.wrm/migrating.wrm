@@ -348,9 +348,13 @@ _code: hex conversion  @lang<script>
 _code: solidity non-standard packed  @lang<script>
   // v5
   ethers.utils.solidityPack(types, values)
+  ethers.utils.solidityKeccak256(types, values)
+  ethers.utils.soliditySha256(types, values)
 
   // v6
   ethers.solidityPacked(types, values)
+  ethers.utils.solidityPackedKeccak256(types, values)
+  ethers.utils.solidityPackedSha256(types, values)
 
 _code: property manipulation  @lang<script>
   // v5
