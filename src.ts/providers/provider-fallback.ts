@@ -414,6 +414,10 @@ export class FallbackProvider extends AbstractProvider {
             "quorum exceed provider wieght", "quorum", this.quorum);
     }
 
+    get providerType() {
+        return 'fallback' as const;
+    }
+
     get providerConfigs(): Array<FallbackProviderState> {
         return this.#configs.map((c) => {
             const result: any = Object.assign({ }, c);

@@ -428,6 +428,8 @@ type CcipArgs = {
     errorArgs: Array<any>
 };
 
+type ProviderType = "jsonrpc" | "etherscan" | "fallback" | "";
+
 /**
  *  An **AbstractProvider** provides a base class for other sub-classes to
  *  implement the [[Provider]] API by normalizing input arguments and
@@ -503,6 +505,17 @@ export class AbstractProvider implements Provider {
      *  the [[ContractRunner]] interface.
      */
     get provider(): this { return this; }
+
+    /**
+     *  Returns a string that identifies the AbstractProvider subclass, for
+     *  better duck typing.
+     */
+    get providerType(): ProviderType {
+        assert(false, "not implemented yet", "NOT_IMPLEMENTED", {
+            operation: "providerType"
+        });
+        return "";
+    }
 
     /**
      *  Returns all the registered plug-ins.
