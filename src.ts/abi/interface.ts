@@ -1154,7 +1154,7 @@ export class Interface {
         const keys: Array<null | string> = [ ];
         let nonIndexedIndex = 0, indexedIndex = 0;
         fragment.inputs.forEach((param, index) => {
-            let value: null | Indexed = null;
+            let value: null | Indexed | Error = null;
             if (param.indexed) {
                 if (resultIndexed == null) {
                     value = new Indexed(null);
@@ -1165,14 +1165,14 @@ export class Interface {
                 } else {
                     try {
                         value = resultIndexed[indexedIndex++];
-                    } catch (error) {
+                    } catch (error: any) {
                         value = error;
                     }
                 }
             } else {
                 try {
                     value = resultNonIndexed[nonIndexedIndex++];
-                } catch (error) {
+                } catch (error: any) {
                     value = error;
                 }
             }
