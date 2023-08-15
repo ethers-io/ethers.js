@@ -11,7 +11,7 @@ If using NPM, you must first install Ethers.
 
 _code: installing via NPM @lang<shell>
   # Install ethers
-  /home/ricmoo/test-ethers> npm install ethers@beta-exports
+  /home/ricmoo/test-ethers> npm install ethers
 
 _null:
 
@@ -35,7 +35,7 @@ _code: importing in Node.js  @lang<script>
 
 _code: importing ESM in a browser  @lang<script>
   <script type="module">
-    import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.min.js";
+    import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
     // Your code here...
   </script>
 
