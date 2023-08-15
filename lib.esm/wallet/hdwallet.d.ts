@@ -227,7 +227,7 @@ export declare class HDNodeVoidWallet extends VoidSigner {
     derivePath(path: string): HDNodeVoidWallet;
 }
 /**
- *  Returns the [[link-bip-32]] path for the acount at %%index%%.
+ *  Returns the [[link-bip-32]] path for the account at %%index%%.
  *
  *  This is the pattern used by wallets like Ledger.
  *

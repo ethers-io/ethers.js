@@ -155,7 +155,7 @@ class SigningKey {
         const sig = signature_js_1.Signature.from(signature);
         const der = secp256k1.Signature.fromCompact((0, index_js_1.getBytesCopy)((0, index_js_1.concat)([sig.r, sig.s]))).toDERRawBytes();
         const pubKey = secp256k1.recoverPublicKey((0, index_js_1.getBytesCopy)(digest), der, sig.yParity);
-        (0, index_js_1.assertArgument)(pubKey != null, "invalid signautre for digest", "signature", signature);
+        (0, index_js_1.assertArgument)(pubKey != null, "invalid signature for digest", "signature", signature);
         return (0, index_js_1.hexlify)(pubKey);
     }
     /**

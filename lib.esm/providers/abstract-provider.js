@@ -588,7 +588,8 @@ export class AbstractProvider {
                     return null;
                 })())
             });
-            let maxFeePerGas = null, maxPriorityFeePerGas = null;
+            let maxFeePerGas = null;
+            let maxPriorityFeePerGas = null;
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {

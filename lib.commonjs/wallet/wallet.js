@@ -23,7 +23,7 @@ function stall(duration) {
  */
 class Wallet extends base_wallet_js_1.BaseWallet {
     /**
-     *  Create a new wallet for the %%privateKey%%, optionally connected
+     *  Create a new wallet for the private %%key%%, optionally connected
      *  to %%provider%%.
      */
     constructor(key, provider) {

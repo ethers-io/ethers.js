@@ -274,9 +274,13 @@ function getGasStationPlugin(url) {
         request.setHeader("User-Agent", "ethers");
         let response;
         try {
-            response = await request.send();
+            const [_response, _feeData] = await Promise.all([
+                request.send(), fetchFeeData()
+            ]);
+            response = _response;
             const payload = response.bodyJson.standard;
             const feeData = {
+                gasPrice: _feeData.gasPrice,
                 maxFeePerGas: parseUnits(payload.maxFee, 9),
                 maxPriorityFeePerGas: parseUnits(payload.maxPriorityFee, 9),
             };

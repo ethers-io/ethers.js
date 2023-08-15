@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.7.0";
+    const version = "6.7.1";
 
     /**
      *  Property helper functions.
@@ -6162,7 +6162,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const sig = Signature.from(signature);
             const der = Signature$1.fromCompact(getBytesCopy(concat([sig.r, sig.s]))).toDERRawBytes();
             const pubKey = recoverPublicKey(getBytesCopy(digest), der, sig.yParity);
-            assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
+            assertArgument(pubKey != null, "invalid signature for digest", "signature", signature);
             return hexlify(pubKey);
         }
         /**
@@ -16282,9 +16282,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             request.setHeader("User-Agent", "ethers");
             let response;
             try {
-                response = await request.send();
+                const [_response, _feeData] = await Promise.all([
+                    request.send(), fetchFeeData()
+                ]);
+                response = _response;
                 const payload = response.bodyJson.standard;
                 const feeData = {
+                    gasPrice: _feeData.gasPrice,
                     maxFeePerGas: parseUnits(payload.maxFee, 9),
                     maxPriorityFeePerGas: parseUnits(payload.maxPriorityFee, 9),
                 };
@@ -17206,7 +17210,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         return null;
                     })())
                 });
-                let maxFeePerGas = null, maxPriorityFeePerGas = null;
+                let maxFeePerGas = null;
+                let maxPriorityFeePerGas = null;
                 // These are the recommended EIP-1559 heuristics for fee data
                 const block = this._wrapBlock(_block, network);
                 if (block && block.baseFeePerGas) {
@@ -19980,7 +19985,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - a sub-class MUST override the `_write(string)` method
      *  - a sub-class MUST call `_processMessage(string)` for each message
      *
-     *  @_subsection: api/providers/abstract-provider
+     *  @_subsection: api/providers/abstract-provider:Socket Providers  [about-socketProvider]
      */
     /**
      *  A **SocketSubscriber** uses a socket transport to handle events and
@@ -23249,7 +23254,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     */
     /**
-     *  Returns the [[link-bip-32]] path for the acount at %%index%%.
+     *  Returns the [[link-bip-32]] path for the account at %%index%%.
      *
      *  This is the pattern used by wallets like Ledger.
      *
@@ -23340,7 +23345,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      */
     class Wallet extends BaseWallet {
         /**
-         *  Create a new wallet for the %%privateKey%%, optionally connected
+         *  Create a new wallet for the private %%key%%, optionally connected
          *  to %%provider%%.
          */
         constructor(key, provider) {

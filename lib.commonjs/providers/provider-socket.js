@@ -7,7 +7,7 @@
  *  - a sub-class MUST override the `_write(string)` method
  *  - a sub-class MUST call `_processMessage(string)` for each message
  *
- *  @_subsection: api/providers/abstract-provider
+ *  @_subsection: api/providers/abstract-provider:Socket Providers  [about-socketProvider]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketProvider = exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = void 0;

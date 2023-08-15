@@ -6,7 +6,7 @@
  *  - a sub-class MUST override the `_write(string)` method
  *  - a sub-class MUST call `_processMessage(string)` for each message
  *
- *  @_subsection: api/providers/abstract-provider
+ *  @_subsection: api/providers/abstract-provider:Socket Providers  [about-socketProvider]
  */
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 import type { Subscriber, Subscription } from "./abstract-provider.js";

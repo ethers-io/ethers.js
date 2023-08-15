@@ -6,7 +6,7 @@
  *  - a sub-class MUST override the `_write(string)` method
  *  - a sub-class MUST call `_processMessage(string)` for each message
  *
- *  @_subsection: api/providers/abstract-provider
+ *  @_subsection: api/providers/abstract-provider:Socket Providers  [about-socketProvider]
  */
 import { UnmanagedSubscriber } from "./abstract-provider.js";
 import { assert, assertArgument, makeError } from "../utils/index.js";
