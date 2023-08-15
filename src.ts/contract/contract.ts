@@ -679,7 +679,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         Object.defineProperty(this, internal, { value: { } });
 
         let addrPromise;
-        let addr = null;
+        let addr: null | string = null;
 
         let deployTx: null | ContractTransactionResponse = null;
         if (_deployTx) {

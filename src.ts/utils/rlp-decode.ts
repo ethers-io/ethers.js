@@ -27,7 +27,7 @@ type Decoded = {
 };
 
 function _decodeChildren(data: Uint8Array, offset: number, childOffset: number, length: number): Decoded {
-    const result = [];
+    const result: Array<any> = [];
 
     while (childOffset < offset + 1 + length) {
         const decoded = _decode(data, childOffset);

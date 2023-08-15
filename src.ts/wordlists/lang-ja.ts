@@ -49,7 +49,7 @@ function toString(data: Array<number>): string {
 function loadWords(): Array<string> {
     if (_wordlist !== null) { return _wordlist; }
 
-    const wordlist = [];
+    const wordlist: Array<string> = [];
 
     // Transforms for normalizing (sort is a not quite UTF-8)
     const transform: { [key: string]: string | boolean } = {};
@@ -91,7 +91,7 @@ function loadWords(): Array<string> {
     for (let length = 3; length <= 9; length++) {
         const d = data[length - 3];
         for (let offset = 0; offset < d.length; offset += length) {
-            const word = [];
+            const word: Array<number> = [];
             for (let i = 0; i < length; i++) {
                  const k = mapping.indexOf(d[offset + i]);
                  word.push(227);

@@ -843,7 +843,7 @@ export class ParamType {
                 comps = null;
             }
 
-            let indexed = null;
+            let indexed: null | boolean = null;
             const keywords = consumeKeywords(obj, KwModifiers);
             if (keywords.has("indexed")) {
                 if (!allowIndexed) { throw new Error(""); }
@@ -1079,7 +1079,7 @@ export class ErrorFragment extends NamedFragment {
             });
         }
 
-        const result = [ ];
+        const result: Array<string> = [ ];
         if (format !== "sighash") { result.push("error"); }
         result.push(this.name + joinParams(format, this.inputs));
         return result.join(" ");
@@ -1154,7 +1154,7 @@ export class EventFragment extends NamedFragment {
             });
         }
 
-        const result = [ ];
+        const result: Array<string> = [ ];
         if (format !== "sighash") { result.push("event"); }
         result.push(this.name + joinParams(format, this.inputs));
         if (format !== "sighash" && this.anonymous) { result.push("anonymous"); }
@@ -1465,7 +1465,7 @@ export class FunctionFragment extends NamedFragment {
             });
         }
 
-        const result = [];
+        const result: Array<string> = [];
 
         if (format !== "sighash") { result.push("function"); }
 

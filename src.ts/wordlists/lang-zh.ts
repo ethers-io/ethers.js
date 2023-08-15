@@ -24,7 +24,7 @@ const style = "~!@#$%^&*_-=[]{}|;:,.()<>?"
 function loadWords(locale: string): Array<string> {
     if (_wordlist[locale] != null) { return _wordlist[locale] as Array<string>; }
 
-    const wordlist = [];
+    const wordlist: Array<string> = [];
 
     let deltaOffset = 0;
     for (let i = 0; i < 2048; i++) {

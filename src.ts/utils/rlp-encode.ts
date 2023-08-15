@@ -6,7 +6,7 @@ import type { RlpStructuredData } from "./rlp.js";
 
 
 function arrayifyInteger(value: number): Array<number> {
-    const result = [];
+    const result: Array<number> = [];
     while (value) {
         result.unshift(value & 0xff);
         value >>= 8;

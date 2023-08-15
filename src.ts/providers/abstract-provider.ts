@@ -907,7 +907,8 @@ export class AbstractProvider implements Provider {
                 })())
             });
 
-            let maxFeePerGas = null, maxPriorityFeePerGas = null;
+            let maxFeePerGas: null | bigint = null;
+            let maxPriorityFeePerGas: null | bigint = null;
 
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);

@@ -249,7 +249,7 @@ describe("Test Typed Contract Interaction", function() {
         }
     ];
 
-    const abi = [ ];
+    const abi: Array<string> = [ ];
     for (let i = 1; i <= 32; i++) {
         abi.push(`function testTyped(uint${ i * 8 }) public pure returns (string memory)`);
         abi.push(`function testTyped(int${ i * 8 }) public pure returns (string memory)`);

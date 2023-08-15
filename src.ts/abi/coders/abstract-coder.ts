@@ -182,7 +182,7 @@ export class Result extends Array<any> {
         }
         if (end > this.length) { end = this.length; }
 
-        const result = [ ], names = [ ];
+        const result: Array<any> = [ ], names: Array<null | string> = [ ];
         for (let i = start; i < end; i++) {
             result.push(this[i]);
             names.push(this.#names[i]);
@@ -195,7 +195,7 @@ export class Result extends Array<any> {
      *  @_ignore
      */
     filter(callback: (el: any, index: number, array: Result) => boolean, thisArg?: any): Result {
-        const result = [ ], names = [ ];
+        const result: Array<any> = [ ], names: Array<null | string> = [ ];
         for (let i = 0; i < this.length; i++) {
             const item = this[i];
             if (item instanceof Error) {

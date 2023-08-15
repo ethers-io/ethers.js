@@ -18,7 +18,7 @@ function fromHex(hex: string): string {
 }
 
 function repeat(text: string, length: number): Array<string> {
-    const result = [ ];
+    const result: Array<string> = [ ];
     while (result.length < length) { result.push(text); }
     return result;
 }

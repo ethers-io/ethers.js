@@ -171,7 +171,7 @@ export class ArrayCoder extends Coder {
 
         assertArgumentCount(value.length, count, "coder array" + (this.localName? (" "+ this.localName): ""));
 
-        let coders = [];
+        let coders: Array<Coder> = [ ];
         for (let i = 0; i < value.length; i++) { coders.push(this.coder); }
 
         return pack(writer, coders, value);
@@ -190,7 +190,7 @@ export class ArrayCoder extends Coder {
             assert(count * WordSize <= reader.dataLength, "insufficient data length",
                 "BUFFER_OVERRUN", { buffer: reader.bytes, offset: count * WordSize, length: reader.dataLength });
         }
-        let coders = [];
+        let coders: Array<Coder> = [];
         for (let i = 0; i < count; i++) { coders.push(new AnonymousCoder(this.coder)); }
 
         return unpack(reader, coders);
