@@ -405,6 +405,9 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                     this.#network = await this._detectNetwork();
                 }
                 catch (error) {
+                    if (this.destroyed) {
+                        break;
+                    }
                     console.log("JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)");
                     this.emit("error", (0, index_js_5.makeError)("failed to bootstrap network detection", "NETWORK_ERROR", { event: "initial-network-discovery", info: { error } }));
                     await stall(1000);

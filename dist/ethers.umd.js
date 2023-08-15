@@ -18813,6 +18813,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         this.#network = await this._detectNetwork();
                     }
                     catch (error) {
+                        if (this.destroyed) {
+                            break;
+                        }
                         console.log("JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)");
                         this.emit("error", makeError("failed to bootstrap network detection", "NETWORK_ERROR", { event: "initial-network-discovery", info: { error } }));
                         await stall$3(1000);

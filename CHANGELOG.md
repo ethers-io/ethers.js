@@ -3,9 +3,10 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.7.1 (2023-08-15 00:57)
+ethers/v6.7.1 (2023-08-15 03:08)
 --------------------------------
 
+  - Prevent destroyed providers from emitting network detection errors ([7d41730](https://github.com/ethers-io/ethers.js/commit/7d4173049edc3b4ff2de1971c3ecca3b08588651)).
   - Fix VSCode reported lint issues ([#4153](https://github.com/ethers-io/ethers.js/issues/4153), [#4156](https://github.com/ethers-io/ethers.js/issues/4156), [#4158](https://github.com/ethers-io/ethers.js/issues/4158), [#4159](https://github.com/ethers-io/ethers.js/issues/4159); [4eb84da](https://github.com/ethers-io/ethers.js/commit/4eb84da865a82a27c5113c38102b6b710096958e), [203dfc3](https://github.com/ethers-io/ethers.js/commit/203dfc33b9c8e72c9cdfe0a349ac763ef17a4484)).
   - Add gasPrice to Polygon feeData for type 0 and type 1 legacy transactions ([#4315](https://github.com/ethers-io/ethers.js/issues/4315); [0df3ab9](https://github.com/ethers-io/ethers.js/commit/0df3ab93137039de1e1986bbfe9a5b32ceffa8a4)).
 
