@@ -31,7 +31,8 @@ import type { AbstractProvider } from "./abstract-provider.js";
 import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
 
-
+// The public RPC endpoint doesn't require
+// API key, but it's rate-limited
 const defaultApiKey = "";
 
 function getHost(name: string): string {
