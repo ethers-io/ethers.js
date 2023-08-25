@@ -8,6 +8,7 @@ import { EtherscanProvider } from "./provider-etherscan.js";
 import { InfuraProvider } from "./provider-infura.js";
 //import { PocketProvider } from "./provider-pocket.js";
 import { QuickNodeProvider } from "./provider-quicknode.js";
+import { TenderlyProvider } from "./provider-tenderly.js";
 
 import { FallbackProvider } from "./provider-fallback.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
@@ -83,6 +84,12 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
     if (allowService("etherscan")) {
         try {
             providers.push(new EtherscanProvider(network, options.etherscan));
+        } catch (error) { }
+    }
+
+    if (allowService("tenderly")) {
+        try {
+            providers.push(new TenderlyProvider(network, options.tenderly));
         } catch (error) { }
     }
 

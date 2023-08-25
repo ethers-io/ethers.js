@@ -6,6 +6,7 @@ import {
     InfuraProvider,
 //    PocketProvider,
     QuickNodeProvider,
+    TenderlyProvider,
 
     FallbackProvider,
     isError,
@@ -86,11 +87,18 @@ const ProviderCreators: Array<ProviderCreator> = [
         }
     },
     {
+        name: "TenderlyProvider",
+        networks: ethNetworks,
+        create: function(network: string) {
+            return new TenderlyProvider(network);
+        }
+    },
+    {
         name: "FallbackProvider",
         networks: ethNetworks,
         create: function(network: string) {
             const providers: Array<AbstractProvider> = [];
-            for (const providerName of [ "AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider" ]) {
+            for (const providerName of [ "AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider", "TenderlyProvider" ]) {
                 const provider = getProvider(providerName, network);
                 if (provider) { providers.push(provider); }
             }
