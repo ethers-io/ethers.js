@@ -22,6 +22,7 @@ import { hexlify } from "./data.js";
 import { assert, assertArgument } from "./errors.js";
 import { defineProperties } from "./properties.js";
 import { toUtf8Bytes, toUtf8String } from "./utf8.js"
+import type { Agent } from 'http';
 
 import { getUrl } from "./geturl.js";
 
@@ -198,6 +199,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     #retry?: null | FetchRetryFunc;
 
     #signal?: FetchCancelSignal;
+    #agent?: null | Agent;
 
     #throttle: Required<FetchThrottleParams>;
 
@@ -320,6 +322,14 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
      */
     clearHeaders(): void {
         this.#headers = { };
+    }
+
+    /**
+     *  Get the current httpAgent ( Node.js only )
+     */
+    get agent(): Agent | null { return this.#agent || null; }
+    set agent(_agent: Agent | null) {
+        this.#agent = _agent;
     }
 
     [Symbol.iterator](): Iterator<[ key: string, value: string ]> {

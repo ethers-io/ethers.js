@@ -28,6 +28,8 @@ export async function getUrl(req: FetchRequest, signal?: FetchCancelSignal): Pro
 
     const options: any = { method, headers };
 
+    if (req.agent && req.agent !== null) { options.agent = req.agent; };
+
     const request = ((protocol === "http") ? http: https).request(req.url, options);
 
     request.setTimeout(req.timeout);
