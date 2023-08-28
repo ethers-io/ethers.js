@@ -40,7 +40,7 @@ export type DebugEventBrowserProvider = {
 export declare class BrowserProvider extends JsonRpcApiPollingProvider {
     #private;
     /**
-     *  Connnect to the %%ethereum%% provider, optionally forcing the
+     *  Connect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
     constructor(ethereum: Eip1193Provider, network?: Networkish);
