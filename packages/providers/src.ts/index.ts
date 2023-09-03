@@ -27,7 +27,7 @@ import { FallbackProvider, FallbackProviderConfig } from "./fallback-provider";
 import { IpcProvider } from "./ipc-provider";
 import { InfuraProvider, InfuraWebSocketProvider } from "./infura-provider";
 import { JsonRpcProvider, JsonRpcSigner } from "./json-rpc-provider";
-import { JsonRpcBatchProvider } from "./json-rpc-batch-provider";
+import { JsonRpcBatchProvider, InfuraBatchProvider, StaticJsonRpcBatchProvider } from "./json-rpc-batch-provider";
 import { NodesmithProvider } from "./nodesmith-provider";
 import { PocketProvider } from "./pocket-provider";
 import { StaticJsonRpcProvider, UrlJsonRpcProvider } from "./url-json-rpc-provider";
@@ -114,12 +114,14 @@ export {
     CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
+    InfuraBatchProvider,
     InfuraWebSocketProvider,
     JsonRpcProvider,
     JsonRpcBatchProvider,
     NodesmithProvider,
     PocketProvider,
     StaticJsonRpcProvider,
+    StaticJsonRpcBatchProvider,
     Web3Provider,
     WebSocketProvider,
 

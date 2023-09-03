@@ -1,12 +1,16 @@
 
 import { deepCopy } from "@ethersproject/properties";
-import { fetchJson } from "@ethersproject/web";
+import { ConnectionInfo, fetchJson } from "@ethersproject/web";
 
 import { JsonRpcProvider } from "./json-rpc-provider";
+import { Networkish } from "@ethersproject/networks";
+import { InfuraProvider } from "./infura-provider";
+import { StaticJsonRpcProvider } from "./url-json-rpc-provider";
 
 // Experimental
 
-export class JsonRpcBatchProvider extends JsonRpcProvider {
+export class BatchSender {
+    _provider: JsonRpcProvider;
     _pendingBatchAggregator: NodeJS.Timer;
     _pendingBatch: Array<{
         request: { method: string, params: Array<any>, id: number, jsonrpc: "2.0" },
@@ -14,11 +18,15 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
         reject: (error: Error) => void
     }>;
 
-    send(method: string, params: Array<any>): Promise<any> {
+    constructor(provider: JsonRpcProvider) {
+        this._provider = provider
+    }
+
+    async send(method: string, params: Array<any>): Promise<any> {
         const request = {
             method: method,
             params: params,
-            id: (this._nextId++),
+            id: (this._provider._nextId++),
             jsonrpc: "2.0"
         };
 
@@ -48,14 +56,14 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
                 // Get the request as an array of requests
                 const request = batch.map((inflight) => inflight.request);
 
-                this.emit("debug", {
+                this._provider.emit("debug", {
                     action: "requestBatch",
                     request: deepCopy(request),
                     provider: this
                 });
 
-                return fetchJson(this.connection, JSON.stringify(request)).then((result) => {
-                    this.emit("debug", {
+                return fetchJson(this._provider.connection, JSON.stringify(request)).then((result) => {
+                    this._provider.emit("debug", {
                         action: "response",
                         request: request,
                         response: result,
@@ -77,7 +85,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
                     });
 
                 }, (error) => {
-                    this.emit("debug", {
+                    this._provider.emit("debug", {
                         action: "response",
                         error: error,
                         request: request,
@@ -93,5 +101,41 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
         }
 
         return promise;
+    }
+}
+
+export class JsonRpcBatchProvider extends JsonRpcProvider {
+    _batchSender: BatchSender
+    constructor(url?: ConnectionInfo | string, network?: Networkish) {
+        super(url, network);
+        this._batchSender = new BatchSender(this)
+    }
+
+    async send (method: string, params: any[]): Promise<any> {
+        return this._batchSender.send(method, params)
+    }
+}
+
+export class InfuraBatchProvider extends InfuraProvider {
+    _batchSender: BatchSender
+    constructor(network?: Networkish, apiKey?: any) {
+        super(network, apiKey);
+        this._batchSender = new BatchSender(this)
+    }
+
+    async send (method: string, params: any[]): Promise<any> {
+        return this._batchSender.send(method, params)
+    }
+}
+
+export class StaticJsonRpcBatchProvider extends StaticJsonRpcProvider {
+    _batchSender: BatchSender
+    constructor(url?: ConnectionInfo | string, network?: Networkish) {
+        super(url, network);
+        this._batchSender = new BatchSender(this)
+    }
+
+    async send (method: string, params: any[]): Promise<any> {
+        return this._batchSender.send(method, params)
     }
 }
