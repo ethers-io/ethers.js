@@ -233,7 +233,7 @@ class LookupPlugin extends EnsPlugin {
 }
 cli.addPlugin("lookup", LookupPlugin);
 
-abstract class AccountPlugin extends EnsPlugin {
+abstract class EnsNodePlugin extends EnsPlugin {
     name: string;
     nodehash: string;
 
@@ -258,10 +258,6 @@ abstract class AccountPlugin extends EnsPlugin {
         let command = params[0];
         params = params.slice(1);
 
-        if (this.accounts.length !== 1) {
-            this.throwError(command + " requires an account");
-        }
-
         if (args.length !== params.length) {
             this.throwError(command + " requires exactly " + listify(params));
         }
@@ -272,6 +268,28 @@ abstract class AccountPlugin extends EnsPlugin {
     }
 }
 
+abstract class AccountPlugin extends EnsNodePlugin {
+    name: string;
+    nodehash: string;
+
+    static getHelp(): Help {
+        return logger.throwError("subclasses must implement this", ethers.errors.UNSUPPORTED_OPERATION, {
+            operation: "getHelp"
+        });
+    }
+
+    async prepareArgs(args: Array<string>): Promise<void> {
+        await super.prepareArgs(args);
+
+        let helpLine = ethers.utils.getStatic<() => Help>(this.constructor, "getHelp")().name;
+        let params = helpLine.split(" ");
+        let command = params[0];
+
+        if (this.accounts.length !== 1) {
+            this.throwError(command + " requires an account");
+        }
+    }
+}
 
 abstract class ControllerPlugin extends AccountPlugin {
     salt: string;
@@ -607,7 +625,7 @@ class SetNamePlugin extends AddressAccountPlugin {
 }
 cli.addPlugin("set-name", SetNamePlugin);
 
-abstract class TextAccountPlugin extends AccountPlugin {
+abstract class SetTextAccountPlugin extends AccountPlugin {
     abstract getHeader(): string;
     abstract getKey(): string;
     abstract getValue(): string;
@@ -629,7 +647,7 @@ abstract class TextAccountPlugin extends AccountPlugin {
     }
 }
 
-class SetTextPlugin extends TextAccountPlugin {
+class SetTextPlugin extends SetTextAccountPlugin {
     key: string;
     value: string;
 
@@ -640,13 +658,13 @@ class SetTextPlugin extends TextAccountPlugin {
         }
     }
 
-    getHeader(): string { return "Test" }
+    getHeader(): string { return "Text"; }
     getKey(): string { return this.key; }
     getValue(): string { return this.value; }
 }
 cli.addPlugin("set-text", SetTextPlugin);
 
-class SetEmailPlugin extends TextAccountPlugin {
+class SetEmailPlugin extends SetTextAccountPlugin {
     email: string;
 
     static getHelp(): Help {
@@ -656,13 +674,13 @@ class SetEmailPlugin extends TextAccountPlugin {
         }
     }
 
-    getHeader(): string { return "E-mail" }
+    getHeader(): string { return "E-mail"; }
     getKey(): string { return "email"; }
     getValue(): string { return this.email; }
 }
 cli.addPlugin("set-email", SetEmailPlugin);
 
-class SetWebsitePlugin extends TextAccountPlugin {
+class SetWebsitePlugin extends SetTextAccountPlugin {
     url: string;
 
     static getHelp(): Help {
@@ -672,7 +690,7 @@ class SetWebsitePlugin extends TextAccountPlugin {
         }
     }
 
-    getHeader(): string { return "Website" }
+    getHeader(): string { return "Website"; }
     getKey(): string { return "url"; }
     getValue(): string { return this.url; }
 }
@@ -716,6 +734,98 @@ class SetContentPlugin extends AccountPlugin {
     }
 }
 cli.addPlugin("set-content", SetContentPlugin);
+
+abstract class GetTextAccountPlugin extends EnsNodePlugin {
+    abstract getHeader(): string;
+    abstract getKey(): string;
+
+    async run(): Promise<void> {
+        await super.run();
+
+        let key = this.getKey();
+        let resolver = await this.getResolver(this.nodehash);
+        let value = await resolver.text(this.nodehash, key);
+
+        this.dump("Get " + this.getHeader() + ": " + this.name, {
+            Nodehash: this.nodehash,
+            Key: key,
+            Value: value,
+        });
+    }
+}
+
+class GetTextPlugin extends GetTextAccountPlugin {
+    key: string;
+
+    static getHelp(): Help {
+        return {
+           name: "get-text NAME KEY",
+           help: "Get a text record"
+        }
+    }
+
+    getHeader(): string { return "Text"; }
+    getKey(): string { return this.key; }
+}
+cli.addPlugin("get-text", GetTextPlugin);
+
+class GetEmailPlugin extends GetTextAccountPlugin {
+    static getHelp(): Help {
+        return {
+           name: "get-email NAME KEY",
+           help: "Get the email text record"
+        }
+    }
+
+    getHeader(): string { return "E-mail"; }
+    getKey(): string { return "email"; }
+}
+cli.addPlugin("get-email", GetEmailPlugin);
+
+class GetWebsitePlugin extends GetTextAccountPlugin {
+    static getHelp(): Help {
+        return {
+           name: "get-website NAME KEY",
+           help: "Get the website text record"
+        }
+    }
+
+    getHeader(): string { return "Website"; }
+    getKey(): string { return "url"; }
+}
+cli.addPlugin("get-website", GetWebsitePlugin);
+
+class GetContentPlugin extends EnsNodePlugin {
+    static getHelp(): Help {
+        return {
+           name: "get-content NAME",
+           help: "Get the IPFS Content Hash"
+        }
+    }
+
+    async run(): Promise<void> {
+        await super.run();
+
+        let resolver = await this.getResolver(this.nodehash);
+        let multihash = await resolver.contenthash(this.nodehash);
+
+        if (multihash.substring(0, 10) !== "0xe3010170") {
+          this.throwError("Multihash is not an IPFS hash");
+        }
+        let bytes = Buffer.from(multihash.substring(10), 'hex');
+        if (bytes.length !== 34 || bytes[0] !== 18 || bytes[1] !== 32) {
+          this.throwError("Unsupported IPFS hash");
+        }
+        let hash = Base58.encode(bytes);
+
+        this.dump("Get Content Hash: " + this.name, {
+            Nodehash: this.nodehash,
+            "Content Hash": hash
+        });
+
+    }
+}
+cli.addPlugin("get-content", GetContentPlugin);
 
 class MigrateRegistrarPlugin extends AccountPlugin {
     readonly label: string;
