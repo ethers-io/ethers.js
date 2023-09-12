@@ -2,3 +2,4 @@ link-npm-ethers [link-ethers-npm](https://www.npmjs.com/search?q=%40ethersprojec
 link-npm-events [EventEmitter](https://nodejs.org/dist/latest-v13.x/docs/api/events.html#events_class_eventemitter)
 link-npm-query-bignumber [link-npm-query-bignumber](https://www.npmjs.com/search?q=bignumber)
 link-npm-react-native-get-random-values [React Native get-random-values](https://www.npmjs.com/package/react-native-get-random-values)
+link-npm-react-native-quick-crypto [Quick Crypto](https://www.npmjs.com/package/react-native-quick-crypto)
