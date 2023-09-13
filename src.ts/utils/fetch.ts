@@ -23,7 +23,7 @@ import { assert, assertArgument } from "./errors.js";
 import { defineProperties } from "./properties.js";
 import { toUtf8Bytes, toUtf8String } from "./utf8.js"
 
-import { getUrl } from "./geturl.js";
+import { createGetUrl } from "./geturl.js";
 
 /**
  *  An environments implementation of ``getUrl`` must return this type.
@@ -77,7 +77,7 @@ const MAX_ATTEMPTS = 12;
 const SLOT_INTERVAL = 250;
 
 // The global FetchGetUrlFunc implementation.
-let getUrlFunc: FetchGetUrlFunc = getUrl;
+let defaultGetUrlFunc: FetchGetUrlFunc = createGetUrl();
 
 const reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
 const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
@@ -200,6 +200,8 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     #signal?: FetchCancelSignal;
 
     #throttle: Required<FetchThrottleParams>;
+
+    #getUrlFunc: null | FetchGetUrlFunc;
 
     /**
      *  The fetch URI to requrest.
@@ -430,6 +432,28 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
     }
 
     /**
+     *  This function is called to fetch content from HTTP and
+     *  HTTPS URLs and is platform specific (e.g. nodejs vs
+     *  browsers).
+     *
+     *  This is by default the currently registered global getUrl
+     *  function, which can be changed using [[registerGetUrl]].
+     *  If this has been set, setting is to ``null`` will cause
+     *  this FetchRequest (and any future clones) to revert back to
+     *  using the currently registered global getUrl function.
+     *
+     *  Setting this is generally not necessary, but may be useful
+     *  for developers that wish to intercept requests or to
+     *  configurege a proxy or other agent.
+     */
+    get getUrlFunc(): FetchGetUrlFunc {
+        return this.#getUrlFunc || defaultGetUrlFunc;
+    }
+    set getUrlFunc(value: null | FetchGetUrlFunc) {
+        this.#getUrlFunc = value;
+    }
+
+    /**
      *  Create a new FetchRequest instance with default values.
      *
      *  Once created, each property may be set before issuing a
@@ -448,6 +472,8 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
             slotInterval: SLOT_INTERVAL,
             maxAttempts: MAX_ATTEMPTS
         };
+
+        this.#getUrlFunc = null;
     }
 
     toString(): string {
@@ -510,7 +536,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         // We have a preflight function; update the request
         if (this.preflightFunc) { req = await this.preflightFunc(req); }
 
-        const resp = await getUrlFunc(req, checkSignal(_request.#signal));
+        const resp = await this.getUrlFunc(req, checkSignal(_request.#signal));
         let response = new FetchResponse(resp.statusCode, resp.statusMessage, resp.headers, resp.body, _request);
 
         if (response.statusCode === 301 || response.statusCode === 302) {
@@ -641,6 +667,8 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         clone.#process = this.#process;
         clone.#retry = this.#retry;
 
+        clone.#getUrlFunc = this.#getUrlFunc;
+
         return clone;
     }
 
@@ -686,7 +714,22 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
      */
     static registerGetUrl(getUrl: FetchGetUrlFunc): void {
         if (locked) { throw new Error("gateways locked"); }
-        getUrlFunc = getUrl;
+        defaultGetUrlFunc = getUrl;
+    }
+
+    /**
+     *  Creates a getUrl function that fetches content from HTTP and
+     *  HTTPS URLs.
+     *
+     *  The available %%options%% are dependent on the platform
+     *  implementation of the default getUrl function.
+     *
+     *  This is not generally something that is needed, but is useful
+     *  when trying to customize simple behaviour when fetching HTTP
+     *  content.
+     */
+    static createGetUrlFunc(options?: Record<string, any>): FetchGetUrlFunc {
+        return createGetUrl(options);
     }
 
     /**
