@@ -47,3 +47,5 @@ link-solidity-errors [link-solidity-errors](https://docs.soliditylang.org/en/v0.
 link-solidity-events [link-solidity-events](https://docs.soliditylang.org/en/v0.8.4/abi-spec.html#events)
 
 link-other-ethereum-dev-docs [link-other-ethereum-dev-docs](https://ethereum.org/en/developers/docs/)
+
+link-sol-recovermessage [RecoverMessage.sol](https://sepolia.etherscan.io/address/0xf554da5e35b2e40c09ddb481545a395da1736513#code)
