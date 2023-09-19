@@ -31,8 +31,8 @@ import type {
     ContractEvent,
     ContractTransaction,
     DeferredTopicFilter,
-    WrappedFallback
-} from "./types.js";
+    WrappedFallback, Overrides,
+} from './types.js'
 
 const BN_0 = BigInt(0);
 
@@ -254,6 +254,7 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
 }
 
 function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extends R | ContractTransactionResponse = ContractTransactionResponse>(contract: BaseContract, key: string): BaseContractMethod<A, R, D> {
+    const defaultOverrides = getInternal(contract).defaultOverrides;
 
     const getFragment = function(...args: ContractMethodArgs<A>): FunctionFragment {
         const fragment = contract.interface.getFunction(key, args);
@@ -268,9 +269,9 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
         const fragment = getFragment(...args);
 
         // If an overrides was passed in, copy it and normalize the values
-        let overrides: Omit<ContractTransaction, "data" | "to"> = { };
+        let overrides: Omit<ContractTransaction, "data" | "to"> = await copyOverrides(defaultOverrides);
         if (fragment.inputs.length + 1 === args.length) {
-            overrides = await copyOverrides(args.pop());
+            overrides = Object.assign({}, defaultOverrides, await copyOverrides(args.pop()));
         }
 
         if (fragment.inputs.length !== args.length) {
@@ -430,6 +431,8 @@ type Internal = {
     deployTx: null | ContractTransactionResponse;
 
     subs: Map<string, Sub>;
+
+    defaultOverrides: null | Overrides;
 };
 
 const internalValues: WeakMap<BaseContract, Internal> = new WeakMap();
@@ -668,9 +671,21 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
      *  optionally connected to a %%runner%% to perform operations on behalf
      *  of.
      */
-    constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _deployTx?: null | TransactionResponse) {
+    constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _deployTx?: null | TransactionResponse, _defaultOverrides?: null | Overrides)
+    constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _opts?: { _deployTx?: null | TransactionResponse, _defaultOverrides?: null | Overrides })
+    constructor(target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner , _optsOrDeployTx?: null | TransactionResponse| { _deployTx?: null | TransactionResponse, _defaultOverrides?: null | Overrides }, _defaultOverrides?: null | Overrides) {
         assertArgument(typeof(target) === "string" || isAddressable(target),
             "invalid value for Contract target", "target", target);
+
+        let _deployTx: null | TransactionResponse = null;
+        if (_optsOrDeployTx && typeof _optsOrDeployTx === "object") {
+            if ("_deployTx" in _optsOrDeployTx) {
+                _deployTx = _optsOrDeployTx._deployTx ?? _deployTx;
+            }
+            if ("_defaultOverrides" in _optsOrDeployTx) {
+                _defaultOverrides = _optsOrDeployTx._defaultOverrides ?? _defaultOverrides;
+            }
+        }
 
         if (runner == null) { runner = null; }
         const iface = Interface.from(abi);
@@ -687,6 +702,11 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
             // @TODO: the provider can be null; make a custom dummy provider that will throw a
             // meaningful error
             deployTx = new ContractTransactionResponse(this.interface, <Provider>provider, _deployTx);
+        }
+
+        let defaultOverrides: null | Overrides = null;
+        if (_defaultOverrides) {
+            defaultOverrides = Object.assign({}, _defaultOverrides);
         }
 
         let subs = new Map();
@@ -724,7 +744,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
         }
 
         // Set our private values
-        setInternal(this, { addrPromise, addr, deployTx, subs });
+        setInternal(this, { addrPromise, addr, deployTx, subs, defaultOverrides });
 
         // Add the event filters
         const filters = new Proxy({ }, {
@@ -865,6 +885,16 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
      */
     deploymentTransaction(): null | ContractTransactionResponse {
         return getInternal(this).deployTx;
+    }
+
+    /**
+     *  Return the transaction used to deploy this contract.
+     *
+     *  This is only available if this instance was returned from a
+     *  [[ContractFactory]].
+     */
+    defaultOverrides(): null | Overrides {
+        return getInternal(this).defaultOverrides;
     }
 
     /**
@@ -1096,7 +1126,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     }
 }
 
-function _ContractBase(): new (target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner) => BaseContract & Omit<ContractInterface, keyof BaseContract> {
+function _ContractBase(): new (target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner, _opts?: { _defaultOverrides?: null | Overrides }) => BaseContract & Omit<ContractInterface, keyof BaseContract> {
     return BaseContract as any;
 }
 
