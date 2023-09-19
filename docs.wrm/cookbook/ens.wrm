@@ -4,7 +4,7 @@ Here is a collection of short, but useful examples of working with
 ENS entries.
 
 
-_subsection: Get all Text rectods  @<cookbook-ens-allText>
+_subsection: Get all Text records  @<cookbook-ens-allText>
 
 Here is a short recipe to get all the text records set for an ENS
 name.
