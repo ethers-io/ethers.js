@@ -19,7 +19,7 @@ to install:
 
 _code: Fetching all ENS text records.  @lang<script>
 
-mport { ethers } from "ethers";
+import { ethers } from "ethers";
 import { MulticallProvider } from "@ethers-ext/provider-multicall";
 
 async function getTextRecords(_provider, name) {
