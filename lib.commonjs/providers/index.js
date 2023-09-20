@@ -11,7 +11,7 @@
  *  @_section: api/providers:Providers  [about-providers]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = exports.WebSocketProvider = exports.SocketProvider = exports.IpcSocketProvider = exports.QuickNodeProvider = exports.PocketProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanPlugin = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.BrowserProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.copyRequest = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.FetchUrlFeeDataNetworkPlugin = exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.GasCostPlugin = exports.NetworkPlugin = exports.NonceManager = exports.Network = exports.MulticoinProviderPlugin = exports.EnsResolver = exports.getDefaultProvider = exports.showThrottleMessage = exports.VoidSigner = exports.AbstractSigner = exports.UnmanagedSubscriber = exports.AbstractProvider = void 0;
+exports.SocketSubscriber = exports.SocketPendingSubscriber = exports.SocketEventSubscriber = exports.SocketBlockSubscriber = exports.IpcSocketProvider = exports.WebSocketProvider = exports.StatelessProvider = exports.SocketProvider = exports.QuickNodeProvider = exports.PocketProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.EtherscanPlugin = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyProvider = exports.BrowserProvider = exports.JsonRpcSigner = exports.JsonRpcProvider = exports.JsonRpcApiProvider = exports.FallbackProvider = exports.copyRequest = exports.TransactionResponse = exports.TransactionReceipt = exports.Log = exports.FeeData = exports.Block = exports.NetworkPlugin = exports.GasCostPlugin = exports.FetchUrlFeeDataNetworkPlugin = exports.FeeDataNetworkPlugin = exports.EnsPlugin = exports.NonceManager = exports.Network = exports.MulticoinProviderPlugin = exports.EnsResolver = exports.getDefaultProvider = exports.showThrottleMessage = exports.VoidSigner = exports.AbstractSigner = exports.UnmanagedSubscriber = exports.AbstractProvider = void 0;
 var abstract_provider_js_1 = require("./abstract-provider.js");
 Object.defineProperty(exports, "AbstractProvider", { enumerable: true, get: function () { return abstract_provider_js_1.AbstractProvider; } });
 Object.defineProperty(exports, "UnmanagedSubscriber", { enumerable: true, get: function () { return abstract_provider_js_1.UnmanagedSubscriber; } });
@@ -30,11 +30,11 @@ Object.defineProperty(exports, "Network", { enumerable: true, get: function () {
 var signer_noncemanager_js_1 = require("./signer-noncemanager.js");
 Object.defineProperty(exports, "NonceManager", { enumerable: true, get: function () { return signer_noncemanager_js_1.NonceManager; } });
 var plugins_network_js_1 = require("./plugins-network.js");
-Object.defineProperty(exports, "NetworkPlugin", { enumerable: true, get: function () { return plugins_network_js_1.NetworkPlugin; } });
-Object.defineProperty(exports, "GasCostPlugin", { enumerable: true, get: function () { return plugins_network_js_1.GasCostPlugin; } });
 Object.defineProperty(exports, "EnsPlugin", { enumerable: true, get: function () { return plugins_network_js_1.EnsPlugin; } });
 Object.defineProperty(exports, "FeeDataNetworkPlugin", { enumerable: true, get: function () { return plugins_network_js_1.FeeDataNetworkPlugin; } });
 Object.defineProperty(exports, "FetchUrlFeeDataNetworkPlugin", { enumerable: true, get: function () { return plugins_network_js_1.FetchUrlFeeDataNetworkPlugin; } });
+Object.defineProperty(exports, "GasCostPlugin", { enumerable: true, get: function () { return plugins_network_js_1.GasCostPlugin; } });
+Object.defineProperty(exports, "NetworkPlugin", { enumerable: true, get: function () { return plugins_network_js_1.NetworkPlugin; } });
 var provider_js_1 = require("./provider.js");
 Object.defineProperty(exports, "Block", { enumerable: true, get: function () { return provider_js_1.Block; } });
 Object.defineProperty(exports, "FeeData", { enumerable: true, get: function () { return provider_js_1.FeeData; } });
@@ -57,8 +57,8 @@ Object.defineProperty(exports, "AnkrProvider", { enumerable: true, get: function
 var provider_cloudflare_js_1 = require("./provider-cloudflare.js");
 Object.defineProperty(exports, "CloudflareProvider", { enumerable: true, get: function () { return provider_cloudflare_js_1.CloudflareProvider; } });
 var provider_etherscan_js_1 = require("./provider-etherscan.js");
-Object.defineProperty(exports, "EtherscanProvider", { enumerable: true, get: function () { return provider_etherscan_js_1.EtherscanProvider; } });
 Object.defineProperty(exports, "EtherscanPlugin", { enumerable: true, get: function () { return provider_etherscan_js_1.EtherscanPlugin; } });
+Object.defineProperty(exports, "EtherscanProvider", { enumerable: true, get: function () { return provider_etherscan_js_1.EtherscanProvider; } });
 var provider_infura_js_1 = require("./provider-infura.js");
 Object.defineProperty(exports, "InfuraProvider", { enumerable: true, get: function () { return provider_infura_js_1.InfuraProvider; } });
 Object.defineProperty(exports, "InfuraWebSocketProvider", { enumerable: true, get: function () { return provider_infura_js_1.InfuraWebSocketProvider; } });
@@ -66,15 +66,17 @@ var provider_pocket_js_1 = require("./provider-pocket.js");
 Object.defineProperty(exports, "PocketProvider", { enumerable: true, get: function () { return provider_pocket_js_1.PocketProvider; } });
 var provider_quicknode_js_1 = require("./provider-quicknode.js");
 Object.defineProperty(exports, "QuickNodeProvider", { enumerable: true, get: function () { return provider_quicknode_js_1.QuickNodeProvider; } });
-const provider_ipcsocket_js_1 = require("./provider-ipcsocket.js"); /*-browser*/
-Object.defineProperty(exports, "IpcSocketProvider", { enumerable: true, get: function () { return provider_ipcsocket_js_1.IpcSocketProvider; } });
 var provider_socket_js_1 = require("./provider-socket.js");
 Object.defineProperty(exports, "SocketProvider", { enumerable: true, get: function () { return provider_socket_js_1.SocketProvider; } });
+var provider_stateless_js_1 = require("./provider-stateless.js");
+Object.defineProperty(exports, "StatelessProvider", { enumerable: true, get: function () { return provider_stateless_js_1.StatelessProvider; } });
 var provider_websocket_js_1 = require("./provider-websocket.js");
 Object.defineProperty(exports, "WebSocketProvider", { enumerable: true, get: function () { return provider_websocket_js_1.WebSocketProvider; } });
+const provider_ipcsocket_js_1 = require("./provider-ipcsocket.js"); /*-browser*/
+Object.defineProperty(exports, "IpcSocketProvider", { enumerable: true, get: function () { return provider_ipcsocket_js_1.IpcSocketProvider; } });
 var provider_socket_js_2 = require("./provider-socket.js");
-Object.defineProperty(exports, "SocketSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketSubscriber; } });
 Object.defineProperty(exports, "SocketBlockSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketBlockSubscriber; } });
-Object.defineProperty(exports, "SocketPendingSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketPendingSubscriber; } });
 Object.defineProperty(exports, "SocketEventSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketEventSubscriber; } });
+Object.defineProperty(exports, "SocketPendingSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketPendingSubscriber; } });
+Object.defineProperty(exports, "SocketSubscriber", { enumerable: true, get: function () { return provider_socket_js_2.SocketSubscriber; } });
 //# sourceMappingURL=index.js.map
