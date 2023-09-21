@@ -40,6 +40,10 @@ function getHost(name: string): string {
             return "opt-mainnet.g.alchemy.com";
         case "optimism-goerli":
             return "opt-goerli.g.alchemy.com";
+        case "base":
+            return "base-mainnet.g.alchemy.com";
+        case "base-goerli":
+            return "base-goerli.g.alchemy.com";
     }
 
     assertArgument(false, "unsupported network", "network", name);
