@@ -6,6 +6,7 @@ import { AlchemyProvider } from "./provider-alchemy.js";
 import { CloudflareProvider } from "./provider-cloudflare.js";
 import { EtherscanProvider } from "./provider-etherscan.js";
 import { InfuraProvider } from "./provider-infura.js";
+import { LlamaNodesProvider } from "./provider-llamanodes.js";
 //import { PocketProvider } from "./provider-pocket.js";
 import { QuickNodeProvider } from "./provider-quicknode.js";
 
@@ -138,6 +139,12 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
                 projectId = projectId.projectId;
             }
             providers.push(new InfuraProvider(network, projectId, projectSecret));
+        } catch (error) { }
+    }
+
+    if (allowService("llamanodes")) {
+        try {
+            providers.push(new LlamaNodesProvider(network, options.llamanodes));
         } catch (error) { }
     }
 /*
