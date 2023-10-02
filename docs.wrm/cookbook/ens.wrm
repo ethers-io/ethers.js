@@ -43,7 +43,7 @@ async function getTextRecords(_provider, name) {
   // Filter the *unique* keys
   const keys = [ ...(new Set(logs.map((log) => log.args.key))) ];
 
-  // Get the values for the keys; failures are discard
+  // Get the values for the keys; failures are discarded
   const values = await Promise.all(keys.map((key) => {
       try {
           return resolver.getText(key);
