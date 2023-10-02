@@ -22,7 +22,7 @@ user from accidentally authorizing an action they didn't intend.
 
 _subsection: Messages  @<cookbook-signing-messages>
 
-A signed message can be any data, bu it is generally recommended
+A signed message can be any data, but it is generally recommended
 to use human-readable text, as this is easier for a user to
 verify visually.
 
@@ -30,7 +30,7 @@ This technique could be used, for example, to sign into a service
 by using the text ``"I am signing into ethers.org on 2023-06-04 12:57pm"``.
 The user can then see the message in MetaMask or on a Ledger
 Hardware Wallet and accept that they wish to sign the message which
-the site can then autheticate them with. By providing a timestamp
+the site can then authenticate them with. By providing a timestamp,
 the site can ensure that an older signed message cannot be used again
 in the future.
 
@@ -48,7 +48,7 @@ since 0x19 is invalid as the first byte of a transaction (in [[link-rlp]] it
 indicates a single byte of value 25), the initial byte ``\\x19`` has
 now been adopted as a prefix for //some sort of signed data//,
 where the second byte determines how to interpret that data. If the
-second bytes is 69 (the letter ``"E"``, as in
+second byte is 69 (the letter ``"E"``, as in
 ``"Ethereum Signed Message:\\n"``), then the format is a
 the above prefixed message format.
 
@@ -105,7 +105,7 @@ await contract.recoverStringFromExpanded(message, sig);
 await contract.recoverStringFromVRS(message, sig.v, sig.r, sig.s);
 //_result:
 
-// Or if using a an API that expects a raw signature.
+// Or if using an API that expects a raw signature.
 await contract.recoverStringFromRaw(message, rawSig);
 //_result:
 
@@ -202,7 +202,7 @@ contract RecoverMessage {
       return _ecrecover(message, v, sig.r, s);
   }
 
-  // Recover the address from the an expanded Signature struct.
+  // Recover the address from the expanded Signature struct.
   //
   // This Signature format is 96 bytes in length.
   function recoverStringFromExpanded(string calldata message, SignatureExpanded calldata sig) public pure returns (address) {
