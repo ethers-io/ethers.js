@@ -31,8 +31,8 @@ export class NonceManager extends AbstractSigner {
         return this.signer.getAddress();
     }
 
-    connect(provider: null | Provider): NonceManager {
-        return new NonceManager(this.signer.connect(provider), this.redisUrl);
+    connect(provider: null | Provider, redisUrl: string): NonceManager {
+        return new NonceManager(this.signer.connect(provider), redisUrl);
     }
 
     async getNonce(blockTag?: BlockTag): Promise<number> {
