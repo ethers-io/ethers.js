@@ -5,12 +5,21 @@ import type {
     BlockTag, Provider, TransactionRequest, TransactionResponse
 } from "./provider.js";
 import type { Signer } from "./signer.js";
-
+/**
+ *  A **NonceManager** wraps another [[Signer]] and automatically manages
+ *  the nonce, ensuring serialized and sequential nonces are used during
+ *  transaction.
+ */
 export class NonceManager extends AbstractSigner {
+    /**
+     *  The Signer being managed.
+     */
     private signer: Signer;
     private redis: Redis.Redis;
     private delta: number;
-
+    /**
+     *  Creates a new **NonceManager** to manage %%signer%%.
+     */
     constructor(signer: Signer, redisUrl: string) {
         super(signer.provider);
         this.signer = signer;
@@ -42,7 +51,10 @@ export class NonceManager extends AbstractSigner {
 
         return super.getNonce(blockTag);
     }
-
+    /**
+     *  Manually increment the nonce. This may be useful when managng
+     *  offline transactions.
+     */
     increment(): void {
         this.delta++;
     }
