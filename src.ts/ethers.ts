@@ -186,7 +186,7 @@ export type {
     ErrorCode,
     FixedFormat,
     Utf8ErrorFunc, UnicodeNormalizationForm, Utf8ErrorReason,
-    RlpStructuredData,
+    RlpStructuredData, RlpStructuredDataish,
 
     GetUrlResponse,
     FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc,
