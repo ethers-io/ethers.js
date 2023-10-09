@@ -817,7 +817,7 @@ export class AbstractProvider implements Provider {
         [ "to", "from" ].forEach((key) => {
             if ((<any>request)[key] == null) { return; }
 
-            const addr = resolveAddress((<any>request)[key]);
+            const addr = resolveAddress((<any>request)[key], this);
             if (isPromise(addr)) {
                 promises.push((async function() { (<any>request)[key] = await addr; })());
             } else {
