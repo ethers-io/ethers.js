@@ -22,7 +22,7 @@ import type { FetchRequest, FetchResponse } from "./fetch.js";
  *  An error may contain additional properties, but those must not
  *  conflict with any impliciat properties.
  */
-export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
+export type ErrorInfo<T> = Omit<T, "code" | "name" | "message" | "shortMessage"> & { shortMessage?: string };
 
 
 function stringify(value: any): any {
@@ -158,6 +158,12 @@ export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
      *  The string error code.
      */
     code: ErrorCode;
+
+    /**
+     *  A short message describing the error, with minimal additional
+     *  details.
+     */
+    shortMessage: string;
 
     /**
      *  Additional info regarding the error that may be useful.
@@ -648,6 +654,8 @@ export function isCallException(error: any): error is CallExceptionError {
  *  ethers version, %%code%% and all aditional properties, serialized.
  */
 export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): T {
+    let shortMessage = message;
+
     {
         const details: Array<string> = [];
         if (info) {
@@ -655,6 +663,7 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
                 throw new Error(`value will overwrite populated values: ${ stringify(info) }`);
             }
             for (const key in info) {
+                if (key === "shortMessage") { continue; }
                 const value = <any>(info[<keyof ErrorInfo<T>>key]);
 //                try {
                     details.push(key + "=" + stringify(value));
@@ -688,6 +697,10 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
     defineProperties<EthersError>(<EthersError>error, { code });
 
     if (info) { Object.assign(error, info); }
+
+    if ((<any>error).shortMessage == null) {
+        defineProperties<EthersError>(<EthersError>error, { shortMessage });
+    }
 
     return <T>error;
 }
