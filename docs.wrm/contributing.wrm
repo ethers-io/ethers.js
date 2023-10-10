@@ -65,7 +65,7 @@ _code: Building with the v2 Flatworm @lang<shell>
   /home/ricmoo/flatworm> npm install
 
   # Ready to build the docs; output to a folder ./output/
-  /home/ricmoo/flatworm> node lib/test-api-index PATH_TO_WRM_ROOT
+  /home/ricmoo/flatworm> node lib/cli-test PATH_TO_WRM_ROOT
 
 Eventually the code for the v2 branch will be cleaned up, and it
 will be much easier to include as a ``devDependency`` for Ethers.
