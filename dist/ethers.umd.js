@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.7.1";
+    const version = "6.8.0";
 
     /**
      *  Property helper functions.
@@ -150,6 +150,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  ethers version, %%code%% and all aditional properties, serialized.
      */
     function makeError(message, code, info) {
+        let shortMessage = message;
         {
             const details = [];
             if (info) {
@@ -157,6 +158,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     throw new Error(`value will overwrite populated values: ${stringify$1(info)}`);
                 }
                 for (const key in info) {
+                    if (key === "shortMessage") {
+                        continue;
+                    }
                     const value = (info[key]);
                     //                try {
                     details.push(key + "=" + stringify$1(value));
@@ -188,6 +192,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (info) {
             Object.assign(error, info);
         }
+        if (error.shortMessage == null) {
+            defineProperties(error, { shortMessage });
+        }
         return error;
     }
     /**
@@ -196,7 +203,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *
      *  @see [[api:makeError]]
      */
-    function assert$1(check, message, code, info) {
+    function assert(check, message, code, info) {
         if (!check) {
             throw makeError(message, code, info);
         }
@@ -209,7 +216,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  any further code does not need additional compile-time checks.
      */
     function assertArgument(check, message, name, value) {
-        assert$1(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
+        assert(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
     }
     function assertArgumentCount(count, expectedCount, message) {
         if (message == null) {
@@ -218,11 +225,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (message) {
             message = ": " + message;
         }
-        assert$1(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+        assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
             count: count,
             expectedCount: expectedCount
         });
-        assert$1(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+        assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
             count: count,
             expectedCount: expectedCount
         });
@@ -254,7 +261,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  Throws if the normalization %%form%% is not supported.
      */
     function assertNormalize(form) {
-        assert$1(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+        assert(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
             operation: "String.prototype.normalize", info: { form }
         });
     }
@@ -274,7 +281,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 method += ".";
                 operation += " " + className;
             }
-            assert$1(false, `private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
+            assert(false, `private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
                 operation
             });
         }
@@ -388,7 +395,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function dataSlice(data, start, end) {
         const bytes = getBytes(data);
         if (end != null && end > bytes.length) {
-            assert$1(false, "cannot slice beyond data bounds", "BUFFER_OVERRUN", {
+            assert(false, "cannot slice beyond data bounds", "BUFFER_OVERRUN", {
                 buffer: bytes, length: bytes.length, offset: end
             });
         }
@@ -407,7 +414,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     function zeroPad(data, length, left) {
         const bytes = getBytes(data);
-        assert$1(length >= bytes.length, "padding exceeds data length", "BUFFER_OVERRUN", {
+        assert(length >= bytes.length, "padding exceeds data length", "BUFFER_OVERRUN", {
             buffer: new Uint8Array(bytes),
             length: length,
             offset: length + 1
@@ -468,7 +475,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function fromTwos(_value, _width) {
         const value = getUint(_value, "value");
         const width = BigInt(getNumber(_width, "width"));
-        assert$1((value >> width) === BN_0$a, "overflow", "NUMERIC_FAULT", {
+        assert((value >> width) === BN_0$a, "overflow", "NUMERIC_FAULT", {
             operation: "fromTwos", fault: "overflow", value: _value
         });
         // Top bit set; treat as a negative value
@@ -490,14 +497,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         const limit = (BN_1$5 << (width - BN_1$5));
         if (value < BN_0$a) {
             value = -value;
-            assert$1(value <= limit, "too low", "NUMERIC_FAULT", {
+            assert(value <= limit, "too low", "NUMERIC_FAULT", {
                 operation: "toTwos", fault: "overflow", value: _value
             });
             const mask = (BN_1$5 << width) - BN_1$5;
             return ((~value) & mask) + BN_1$5;
         }
         else {
-            assert$1(value < limit, "too high", "NUMERIC_FAULT", {
+            assert(value < limit, "too high", "NUMERIC_FAULT", {
                 operation: "toTwos", fault: "overflow", value: _value
             });
         }
@@ -544,7 +551,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      */
     function getUint(value, name) {
         const result = getBigInt(value, name);
-        assert$1(result >= BN_0$a, "unsigned value cannot be negative", "NUMERIC_FAULT", {
+        assert(result >= BN_0$a, "unsigned value cannot be negative", "NUMERIC_FAULT", {
             fault: "overflow", operation: "getUint", value
         });
         return result;
@@ -613,7 +620,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         else {
             const width = getNumber(_width, "width");
-            assert$1(width * 2 >= result.length, `value exceeds width (${width} bits)`, "NUMERIC_FAULT", {
+            assert(width * 2 >= result.length, `value exceeds width (${width} bits)`, "NUMERIC_FAULT", {
                 operation: "toBeHex",
                 fault: "overflow",
                 value: _value
@@ -990,39 +997,42 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     // @TODO: timeout is completely ignored; start a Promise.any with a reject?
-    async function getUrl(req, _signal) {
-        const protocol = req.url.split(":")[0].toLowerCase();
-        assert$1(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
-            info: { protocol },
-            operation: "request"
-        });
-        assert$1(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
-            operation: "request"
-        });
-        let signal = undefined;
-        if (_signal) {
-            const controller = new AbortController();
-            signal = controller.signal;
-            _signal.addListener(() => { controller.abort(); });
+    function createGetUrl(options) {
+        async function getUrl(req, _signal) {
+            const protocol = req.url.split(":")[0].toLowerCase();
+            assert(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+                info: { protocol },
+                operation: "request"
+            });
+            assert(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+                operation: "request"
+            });
+            let signal = undefined;
+            if (_signal) {
+                const controller = new AbortController();
+                signal = controller.signal;
+                _signal.addListener(() => { controller.abort(); });
+            }
+            const init = {
+                method: req.method,
+                headers: new Headers(Array.from(req)),
+                body: req.body || undefined,
+                signal
+            };
+            const resp = await fetch(req.url, init);
+            const headers = {};
+            resp.headers.forEach((value, key) => {
+                headers[key.toLowerCase()] = value;
+            });
+            const respBody = await resp.arrayBuffer();
+            const body = (respBody == null) ? null : new Uint8Array(respBody);
+            return {
+                statusCode: resp.status,
+                statusMessage: resp.statusText,
+                headers, body
+            };
         }
-        const init = {
-            method: req.method,
-            headers: new Headers(Array.from(req)),
-            body: req.body || undefined,
-            signal
-        };
-        const resp = await fetch(req.url, init);
-        const headers = {};
-        resp.headers.forEach((value, key) => {
-            headers[key.toLowerCase()] = value;
-        });
-        const respBody = await resp.arrayBuffer();
-        const body = (respBody == null) ? null : new Uint8Array(respBody);
-        return {
-            statusCode: resp.status,
-            statusMessage: resp.statusText,
-            headers, body
-        };
+        return getUrl;
     }
 
     /**
@@ -1047,7 +1057,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const MAX_ATTEMPTS = 12;
     const SLOT_INTERVAL = 250;
     // The global FetchGetUrlFunc implementation.
-    let getUrlFunc = getUrl;
+    let defaultGetUrlFunc = createGetUrl();
     const reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
     const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
     // If locked, new Gateways cannot be added
@@ -1112,14 +1122,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
         }
         addListener(listener) {
-            assert$1(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+            assert(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
                 operation: "fetchCancelSignal.addCancelListener"
             });
             this.#listeners.push(listener);
         }
         get cancelled() { return this.#cancelled; }
         checkSignal() {
-            assert$1(!this.cancelled, "cancelled", "CANCELLED", {});
+            assert(!this.cancelled, "cancelled", "CANCELLED", {});
         }
     }
     // Check the signal, throwing if it is cancelled
@@ -1160,6 +1170,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #retry;
         #signal;
         #throttle;
+        #getUrlFunc;
         /**
          *  The fetch URI to requrest.
          */
@@ -1382,6 +1393,27 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#retry = retry;
         }
         /**
+         *  This function is called to fetch content from HTTP and
+         *  HTTPS URLs and is platform specific (e.g. nodejs vs
+         *  browsers).
+         *
+         *  This is by default the currently registered global getUrl
+         *  function, which can be changed using [[registerGetUrl]].
+         *  If this has been set, setting is to ``null`` will cause
+         *  this FetchRequest (and any future clones) to revert back to
+         *  using the currently registered global getUrl function.
+         *
+         *  Setting this is generally not necessary, but may be useful
+         *  for developers that wish to intercept requests or to
+         *  configurege a proxy or other agent.
+         */
+        get getUrlFunc() {
+            return this.#getUrlFunc || defaultGetUrlFunc;
+        }
+        set getUrlFunc(value) {
+            this.#getUrlFunc = value;
+        }
+        /**
          *  Create a new FetchRequest instance with default values.
          *
          *  Once created, each property may be set before issuing a
@@ -1398,6 +1430,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 slotInterval: SLOT_INTERVAL,
                 maxAttempts: MAX_ATTEMPTS
             };
+            this.#getUrlFunc = null;
         }
         toString() {
             return `<FetchRequest method=${JSON.stringify(this.method)} url=${JSON.stringify(this.url)} headers=${JSON.stringify(this.headers)} body=${this.#body ? hexlify(this.#body) : "null"}>`;
@@ -1418,7 +1451,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (attempt >= this.#throttle.maxAttempts) {
                 return _response.makeServerError("exceeded maximum retry limit");
             }
-            assert$1(getTime$2() <= expires, "timeout", "TIMEOUT", {
+            assert(getTime$2() <= expires, "timeout", "TIMEOUT", {
                 operation: "request.send", reason: "timeout", request: _request
             });
             if (delay > 0) {
@@ -1452,7 +1485,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (this.preflightFunc) {
                 req = await this.preflightFunc(req);
             }
-            const resp = await getUrlFunc(req, checkSignal(_request.#signal));
+            const resp = await this.getUrlFunc(req, checkSignal(_request.#signal));
             let response = new FetchResponse(resp.statusCode, resp.statusMessage, resp.headers, resp.body, _request);
             if (response.statusCode === 301 || response.statusCode === 302) {
                 // Redirect
@@ -1499,7 +1532,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Resolves to the response by sending the request.
          */
         send() {
-            assert$1(this.#signal == null, "request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
+            assert(this.#signal == null, "request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
             this.#signal = new FetchCancelSignal(this);
             return this.#send(0, getTime$2() + this.timeout, 0, this, new FetchResponse(0, "", {}, null, this));
         }
@@ -1508,7 +1541,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  error to be rejected from the [[send]].
          */
         cancel() {
-            assert$1(this.#signal != null, "request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
+            assert(this.#signal != null, "request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
             const signal = fetchSignals.get(this);
             if (!signal) {
                 throw new Error("missing signal; should not happen");
@@ -1527,7 +1560,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // - non-GET requests
             // - downgrading the security (e.g. https => http)
             // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
-            assert$1(this.method === "GET" && (current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
+            assert(this.method === "GET" && (current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
                 operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
             });
             // Create a copy of this request, with a new URL
@@ -1572,6 +1605,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             clone.#preflight = this.#preflight;
             clone.#process = this.#process;
             clone.#retry = this.#retry;
+            clone.#getUrlFunc = this.#getUrlFunc;
             return clone;
         }
         /**
@@ -1617,7 +1651,21 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (locked$5) {
                 throw new Error("gateways locked");
             }
-            getUrlFunc = getUrl;
+            defaultGetUrlFunc = getUrl;
+        }
+        /**
+         *  Creates a getUrl function that fetches content from HTTP and
+         *  HTTPS URLs.
+         *
+         *  The available %%options%% are dependent on the platform
+         *  implementation of the default getUrl function.
+         *
+         *  This is not generally something that is needed, but is useful
+         *  when trying to customize simple behaviour when fetching HTTP
+         *  content.
+         */
+        static createGetUrlFunc(options) {
+            return createGetUrl();
         }
         /**
          *  Creates a function that can "fetch" data URIs.
@@ -1684,7 +1732,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return (this.#body == null) ? "" : toUtf8String(this.#body);
             }
             catch (error) {
-                assert$1(false, "response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
+                assert(false, "response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
                     operation: "bodyText", info: { response: this }
                 });
             }
@@ -1700,7 +1748,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return JSON.parse(this.bodyText);
             }
             catch (error) {
-                assert$1(false, "response body is not valid JSON", "UNSUPPORTED_OPERATION", {
+                assert(false, "response body is not valid JSON", "UNSUPPORTED_OPERATION", {
                     operation: "bodyJson", info: { response: this }
                 });
             }
@@ -1799,7 +1847,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (message === "") {
                 message = `server response ${this.statusCode} ${this.statusMessage}`;
             }
-            assert$1(false, message, "SERVER_ERROR", {
+            assert(false, message, "SERVER_ERROR", {
                 request: (this.request || "unknown request"), response: this, error
             });
         }
@@ -1846,7 +1894,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         const width = BigInt(format.width);
         if (format.signed) {
             const limit = (BN_1$4 << (width - BN_1$4));
-            assert$1(safeOp == null || (val >= -limit && val < limit), "overflow", "NUMERIC_FAULT", {
+            assert(safeOp == null || (val >= -limit && val < limit), "overflow", "NUMERIC_FAULT", {
                 operation: safeOp, fault: "overflow", value: val
             });
             if (val > BN_0$8) {
@@ -1858,7 +1906,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         else {
             const limit = (BN_1$4 << width);
-            assert$1(safeOp == null || (val >= 0 && val < limit), "overflow", "NUMERIC_FAULT", {
+            assert(safeOp == null || (val >= 0 && val < limit), "overflow", "NUMERIC_FAULT", {
                 operation: safeOp, fault: "overflow", value: val
             });
             val = (((val % limit) + limit) % limit) & (limit - BN_1$4);
@@ -2098,13 +2146,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         mulSignal(other) {
             this.#checkFormat(other);
             const value = this.#val * other.#val;
-            assert$1((value % this.#tens) === BN_0$8, "precision lost during signalling mul", "NUMERIC_FAULT", {
+            assert((value % this.#tens) === BN_0$8, "precision lost during signalling mul", "NUMERIC_FAULT", {
                 operation: "mulSignal", fault: "underflow", value: this
             });
             return this.#checkValue(value / this.#tens, "mulSignal");
         }
         #div(o, safeOp) {
-            assert$1(o.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
+            assert(o.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
                 operation: "div", fault: "divide-by-zero", value: this
             });
             this.#checkFormat(o);
@@ -2128,12 +2176,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  (precision loss) occurs.
          */
         divSignal(other) {
-            assert$1(other.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
+            assert(other.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
                 operation: "div", fault: "divide-by-zero", value: this
             });
             this.#checkFormat(other);
             const value = (this.#val * this.#tens);
-            assert$1((value % other.#val) === BN_0$8, "precision lost during signalling div", "NUMERIC_FAULT", {
+            assert((value % other.#val) === BN_0$8, "precision lost during signalling div", "NUMERIC_FAULT", {
                 operation: "divSignal", fault: "underflow", value: this
             });
             return this.#checkValue(value / other.#val, "divSignal");
@@ -2276,7 +2324,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const delta = decimals - format.decimals;
             if (delta > 0) {
                 const tens = getTens(delta);
-                assert$1((value % tens) === BN_0$8, "value loses precision for format", "NUMERIC_FAULT", {
+                assert((value % tens) === BN_0$8, "value loses precision for format", "NUMERIC_FAULT", {
                     operation: "fromValue", fault: "underflow", value: _value
                 });
                 value /= tens;
@@ -2303,7 +2351,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 decimal += Zeros$1;
             }
             // Check precision is safe
-            assert$1(decimal.substring(format.decimals).match(/^0*$/), "too many decimals for format", "NUMERIC_FAULT", {
+            assert(decimal.substring(format.decimals).match(/^0*$/), "too many decimals for format", "NUMERIC_FAULT", {
                 operation: "fromString", fault: "underflow", value: _value
             });
             // Remove extra padding
@@ -2355,7 +2403,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const decoded = _decode(data, childOffset);
             result.push(decoded.result);
             childOffset += decoded.consumed;
-            assert$1(childOffset <= offset + 1 + length, "child data too short", "BUFFER_OVERRUN", {
+            assert(childOffset <= offset + 1 + length, "child data too short", "BUFFER_OVERRUN", {
                 buffer: data, length, offset
             });
         }
@@ -2363,11 +2411,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     // returns { consumed: number, result: Object }
     function _decode(data, offset) {
-        assert$1(data.length !== 0, "data too short", "BUFFER_OVERRUN", {
+        assert(data.length !== 0, "data too short", "BUFFER_OVERRUN", {
             buffer: data, length: 0, offset: 1
         });
         const checkOffset = (offset) => {
-            assert$1(offset <= data.length, "data short segment too short", "BUFFER_OVERRUN", {
+            assert(offset <= data.length, "data short segment too short", "BUFFER_OVERRUN", {
                 buffer: data, length: data.length, offset
             });
         };
@@ -2694,7 +2742,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         toObject() {
             return this.#names.reduce((accum, name, index) => {
-                assert$1(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
+                assert(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
                     operation: "toObject()"
                 });
                 // Add values for names that don't conflict
@@ -2830,7 +2878,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     function getValue$1(value) {
         let bytes = toBeArray(value);
-        assert$1(bytes.length <= WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: WordSize, offset: bytes.length });
+        assert(bytes.length <= WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: WordSize, offset: bytes.length });
         if (bytes.length !== WordSize) {
             bytes = getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));
         }
@@ -2936,7 +2984,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     alignedLength = length;
                 }
                 else {
-                    assert$1(false, "data out-of-bounds", "BUFFER_OVERRUN", {
+                    assert(false, "data out-of-bounds", "BUFFER_OVERRUN", {
                         buffer: getBytesCopy(this.#data),
                         length: this.#data.length,
                         offset: this.#offset + alignedLength
@@ -2969,15 +3017,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (!Number.isSafeInteger(n) || n < 0)
             throw new Error(`Wrong positive integer: ${n}`);
     }
-    function bool(b) {
-        if (typeof b !== 'boolean')
-            throw new Error(`Expected boolean, not ${b}`);
-    }
     function bytes(b, ...lengths) {
         if (!(b instanceof Uint8Array))
-            throw new TypeError('Expected Uint8Array');
+            throw new Error('Expected Uint8Array');
         if (lengths.length > 0 && !lengths.includes(b.length))
-            throw new TypeError(`Expected Uint8Array of length ${lengths}, not of length=${b.length}`);
+            throw new Error(`Expected Uint8Array of length ${lengths}, not of length=${b.length}`);
     }
     function hash(hash) {
         if (typeof hash !== 'function' || typeof hash.create !== 'function')
@@ -2998,31 +3042,30 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             throw new Error(`digestInto() expects output buffer of length at least ${min}`);
         }
     }
-    const assert = {
-        number,
-        bool,
-        bytes,
-        hash,
-        exists,
-        output,
-    };
+
+    const crypto$1 = typeof globalThis === 'object' && 'crypto' in globalThis ? globalThis.crypto : undefined;
 
     /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-    // The import here is via the package name. This is to ensure
-    // that exports mapping/resolution does fall into place.
+    // We use WebCrypto aka globalThis.crypto, which exists in browsers and node.js 16+.
+    // node.js versions earlier than v19 don't declare it in global scope.
+    // For node.js, package.json#exports field mapping rewrites import
+    // from `crypto` to `cryptoNode`, which imports native module.
+    // Makes the utils un-importable in browsers without a bundler.
+    // Once node.js 18 is deprecated, we can just drop the import.
+    const u8a$1 = (a) => a instanceof Uint8Array;
     const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
     // Cast array to view
     const createView = (arr) => new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
     // The rotate right (circular right shift) operation for uint32
     const rotr = (word, shift) => (word << (32 - shift)) | (word >>> shift);
+    // big-endian hardware is rare. Just in case someone still decides to run hashes:
+    // early-throw an error because we don't support BE yet.
     const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
-    // There is almost no big endian hardware, but js typed arrays uses platform specific endianness.
-    // So, just to be sure not to corrupt anything.
     if (!isLE)
         throw new Error('Non little-endian hardware is not supported');
-    Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
-    // There is no setImmediate in browser and setTimeout is slow. However, call to async function will return Promise
-    // which will be fullfiled only on next scheduler queue processing step and this is exactly what we need.
+    // There is no setImmediate in browser and setTimeout is slow.
+    // call of async fn will return Promise, which will be fullfiled only on
+    // next scheduler queue processing step and this is exactly what we need.
     const nextTick = async () => { };
     // Returns control to thread each 'tick' ms to avoid blocking
     async function asyncLoop(iters, tick, cb) {
@@ -3037,18 +3080,39 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             ts += diff;
         }
     }
-    function utf8ToBytes(str) {
-        if (typeof str !== 'string') {
-            throw new TypeError(`utf8ToBytes expected string, got ${typeof str}`);
-        }
-        return new TextEncoder().encode(str);
+    /**
+     * @example utf8ToBytes('abc') // new Uint8Array([97, 98, 99])
+     */
+    function utf8ToBytes$1(str) {
+        if (typeof str !== 'string')
+            throw new Error(`utf8ToBytes expected string, got ${typeof str}`);
+        return new Uint8Array(new TextEncoder().encode(str)); // https://bugzil.la/1681809
     }
+    /**
+     * Normalizes (non-hex) string or Uint8Array to Uint8Array.
+     * Warning: when Uint8Array is passed, it would NOT get copied.
+     * Keep in mind for future mutable operations.
+     */
     function toBytes(data) {
         if (typeof data === 'string')
-            data = utf8ToBytes(data);
-        if (!(data instanceof Uint8Array))
-            throw new TypeError(`Expected input type is Uint8Array (got ${typeof data})`);
+            data = utf8ToBytes$1(data);
+        if (!u8a$1(data))
+            throw new Error(`expected Uint8Array, got ${typeof data}`);
         return data;
+    }
+    /**
+     * Copies several Uint8Arrays into one.
+     */
+    function concatBytes$1(...arrays) {
+        const r = new Uint8Array(arrays.reduce((sum, a) => sum + a.length, 0));
+        let pad = 0; // walk through each item, ensure they have proper type
+        arrays.forEach((a) => {
+            if (!u8a$1(a))
+                throw new Error('Uint8Array expected');
+            r.set(a, pad);
+            pad += a.length;
+        });
+        return r;
     }
     // For runtime check if class implements interface
     class Hash {
@@ -3057,52 +3121,53 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return this._cloneInto();
         }
     }
-    // Check if object doens't have custom constructor (like Uint8Array/Array)
-    const isPlainObject = (obj) => Object.prototype.toString.call(obj) === '[object Object]' && obj.constructor === Object;
+    const toStr = {}.toString;
     function checkOpts(defaults, opts) {
-        if (opts !== undefined && (typeof opts !== 'object' || !isPlainObject(opts)))
-            throw new TypeError('Options should be object or undefined');
+        if (opts !== undefined && toStr.call(opts) !== '[object Object]')
+            throw new Error('Options should be object or undefined');
         const merged = Object.assign(defaults, opts);
         return merged;
     }
-    function wrapConstructor(hashConstructor) {
-        const hashC = (message) => hashConstructor().update(toBytes(message)).digest();
-        const tmp = hashConstructor();
+    function wrapConstructor(hashCons) {
+        const hashC = (msg) => hashCons().update(toBytes(msg)).digest();
+        const tmp = hashCons();
         hashC.outputLen = tmp.outputLen;
         hashC.blockLen = tmp.blockLen;
-        hashC.create = () => hashConstructor();
+        hashC.create = () => hashCons();
         return hashC;
     }
-    function wrapConstructorWithOpts(hashCons) {
-        const hashC = (msg, opts) => hashCons(opts).update(toBytes(msg)).digest();
-        const tmp = hashCons({});
-        hashC.outputLen = tmp.outputLen;
-        hashC.blockLen = tmp.blockLen;
-        hashC.create = (opts) => hashCons(opts);
-        return hashC;
+    /**
+     * Secure PRNG. Uses `crypto.getRandomValues`, which defers to OS.
+     */
+    function randomBytes$2(bytesLength = 32) {
+        if (crypto$1 && typeof crypto$1.getRandomValues === 'function') {
+            return crypto$1.getRandomValues(new Uint8Array(bytesLength));
+        }
+        throw new Error('crypto.getRandomValues must be defined');
     }
 
     // HMAC (RFC 2104)
     class HMAC extends Hash {
-        constructor(hash, _key) {
+        constructor(hash$1, _key) {
             super();
             this.finished = false;
             this.destroyed = false;
-            assert.hash(hash);
+            hash(hash$1);
             const key = toBytes(_key);
-            this.iHash = hash.create();
-            if (!(this.iHash instanceof Hash))
-                throw new TypeError('Expected instance of class which extends utils.Hash');
-            const blockLen = (this.blockLen = this.iHash.blockLen);
+            this.iHash = hash$1.create();
+            if (typeof this.iHash.update !== 'function')
+                throw new Error('Expected instance of class which extends utils.Hash');
+            this.blockLen = this.iHash.blockLen;
             this.outputLen = this.iHash.outputLen;
+            const blockLen = this.blockLen;
             const pad = new Uint8Array(blockLen);
             // blockLen can be bigger than outputLen
-            pad.set(key.length > this.iHash.blockLen ? hash.create().update(key).digest() : key);
+            pad.set(key.length > blockLen ? hash$1.create().update(key).digest() : key);
             for (let i = 0; i < pad.length; i++)
                 pad[i] ^= 0x36;
             this.iHash.update(pad);
             // By doing update (processing of first block) of outer hash here we can re-use it between multiple calls via clone
-            this.oHash = hash.create();
+            this.oHash = hash$1.create();
             // Undo internal XOR && apply outer XOR
             for (let i = 0; i < pad.length; i++)
                 pad[i] ^= 0x36 ^ 0x5c;
@@ -3110,13 +3175,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             pad.fill(0);
         }
         update(buf) {
-            assert.exists(this);
+            exists(this);
             this.iHash.update(buf);
             return this;
         }
         digestInto(out) {
-            assert.exists(this);
-            assert.bytes(out, this.outputLen);
+            exists(this);
+            bytes(out, this.outputLen);
             this.finished = true;
             this.iHash.digestInto(out);
             this.oHash.update(out);
@@ -3157,13 +3222,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     hmac.create = (hash, key) => new HMAC(hash, key);
 
     // Common prologue and epilogue for sync/async functions
-    function pbkdf2Init(hash, _password, _salt, _opts) {
-        assert.hash(hash);
+    function pbkdf2Init(hash$1, _password, _salt, _opts) {
+        hash(hash$1);
         const opts = checkOpts({ dkLen: 32, asyncTick: 10 }, _opts);
         const { c, dkLen, asyncTick } = opts;
-        assert.number(c);
-        assert.number(dkLen);
-        assert.number(asyncTick);
+        number(c);
+        number(dkLen);
+        number(asyncTick);
         if (c < 1)
             throw new Error('PBKDF2: iterations (c) should be >= 1');
         const password = toBytes(_password);
@@ -3171,7 +3236,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // DK = PBKDF2(PRF, Password, Salt, c, dkLen);
         const DK = new Uint8Array(dkLen);
         // U1 = PRF(Password, Salt + INT_32_BE(i))
-        const PRF = hmac.create(hash, password);
+        const PRF = hmac.create(hash$1, password);
         const PRFSalt = PRF._cloneInto().update(salt);
         return { c, dkLen, asyncTick, DK, PRF, PRFSalt };
     }
@@ -3244,7 +3309,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.view = createView(this.buffer);
         }
         update(data) {
-            assert.exists(this);
+            exists(this);
             const { view, buffer, blockLen } = this;
             data = toBytes(data);
             const len = data.length;
@@ -3270,8 +3335,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return this;
         }
         digestInto(out) {
-            assert.exists(this);
-            assert.output(out, this);
+            exists(this);
+            output(out, this);
             this.finished = true;
             // Padding
             // We can avoid allocation of buffer for padding completely if it
@@ -3295,7 +3360,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             setBigUint64(view, blockLen - 8, BigInt(this.length * 8), isLE);
             this.process(view, 0);
             const oview = createView(out);
-            this.get().forEach((v, i) => oview.setUint32(4 * i, v, isLE));
+            const len = this.outputLen;
+            // NOTE: we do division by 4 later, which should be fused in single op with modulo by JIT
+            if (len % 4)
+                throw new Error('_sha2: outputLen should be aligned to 32bit');
+            const outLen = len / 4;
+            const state = this.get();
+            if (outLen > state.length)
+                throw new Error('_sha2: outputLen bigger than state');
+            for (let i = 0; i < outLen; i++)
+                oview.setUint32(4 * i, state[i], isLE);
         }
         digest() {
             const { buffer, outputLen } = this;
@@ -3318,6 +3392,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
 
+    // SHA2-256 need to try 2^128 hashes to execute birthday attack.
+    // BTC network is doing 2^67 hashes/sec as per early 2023.
     // Choice: a ? b : c
     const Chi = (a, b, c) => (a & b) ^ (~a & c);
     // Majority function, true if any two inpust is true
@@ -3325,7 +3401,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     // Round constants:
     // first 32 bits of the fractional parts of the cube roots of the first 64 primes 2..311)
     // prettier-ignore
-    const SHA256_K = new Uint32Array([
+    const SHA256_K = /* @__PURE__ */ new Uint32Array([
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
         0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
         0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
@@ -3337,12 +3413,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     ]);
     // Initial state (first 32 bits of the fractional parts of the square roots of the first 8 primes 2..19):
     // prettier-ignore
-    const IV = new Uint32Array([
+    const IV = /* @__PURE__ */ new Uint32Array([
         0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
     ]);
     // Temporary buffer, not used to store anything between runs
     // Named this way because it matches specification.
-    const SHA256_W = new Uint32Array(64);
+    const SHA256_W = /* @__PURE__ */ new Uint32Array(64);
     class SHA256 extends SHA2 {
         constructor() {
             super(64, 32, 8, false);
@@ -3422,17 +3498,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      * SHA2-256 hash function
      * @param message - data that would be hashed
      */
-    const sha256$1 = wrapConstructor(() => new SHA256());
+    const sha256$1 = /* @__PURE__ */ wrapConstructor(() => new SHA256());
 
-    const U32_MASK64 = BigInt(2 ** 32 - 1);
-    const _32n = BigInt(32);
+    const U32_MASK64 = /* @__PURE__ */ BigInt(2 ** 32 - 1);
+    const _32n = /* @__PURE__ */ BigInt(32);
     // We are not using BigUint64Array, because they are extremely slow as per 2022
     function fromBig(n, le = false) {
         if (le)
             return { h: Number(n & U32_MASK64), l: Number((n >> _32n) & U32_MASK64) };
         return { h: Number((n >> _32n) & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
     }
-    function split(lst, le = false) {
+    function split$1(lst, le = false) {
         let Ah = new Uint32Array(lst.length);
         let Al = new Uint32Array(lst.length);
         for (let i = 0; i < lst.length; i++) {
@@ -3443,7 +3519,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     const toBig = (h, l) => (BigInt(h >>> 0) << _32n) | BigInt(l >>> 0);
     // for Shift in [0, 32)
-    const shrSH = (h, l, s) => h >>> s;
+    const shrSH = (h, _l, s) => h >>> s;
     const shrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
     // Right rotate for Shift in [1, 32)
     const rotrSH = (h, l, s) => (h >>> s) | (l << (32 - s));
@@ -3452,8 +3528,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const rotrBH = (h, l, s) => (h << (64 - s)) | (l >>> (s - 32));
     const rotrBL = (h, l, s) => (h >>> (s - 32)) | (l << (64 - s));
     // Right rotate for shift===32 (just swaps l&h)
-    const rotr32H = (h, l) => l;
-    const rotr32L = (h, l) => h;
+    const rotr32H = (_h, l) => l;
+    const rotr32L = (h, _l) => h;
     // Left rotate for Shift in [1, 32)
     const rotlSH = (h, l, s) => (h << s) | (l >>> (32 - s));
     const rotlSL = (h, l, s) => (l << s) | (h >>> (32 - s));
@@ -3462,7 +3538,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
     // JS uses 32-bit signed integers for bitwise operations which means we cannot
     // simple take carry out of low bit sum by shift, we need to use division.
-    // Removing "export" has 5% perf penalty -_-
     function add(Ah, Al, Bh, Bl) {
         const l = (Al >>> 0) + (Bl >>> 0);
         return { h: (Ah + Bh + ((l / 2 ** 32) | 0)) | 0, l: l | 0 };
@@ -3476,17 +3551,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const add5H = (low, Ah, Bh, Ch, Dh, Eh) => (Ah + Bh + Ch + Dh + Eh + ((low / 2 ** 32) | 0)) | 0;
     // prettier-ignore
     const u64 = {
-        fromBig, split, toBig,
+        fromBig, split: split$1, toBig,
         shrSH, shrSL,
         rotrSH, rotrSL, rotrBH, rotrBL,
         rotr32H, rotr32L,
         rotlSH, rotlSL, rotlBH, rotlBL,
         add, add3L, add3H, add4L, add4H, add5H, add5L,
     };
+    var u64$1 = u64;
 
     // Round contants (first 32 bits of the fractional parts of the cube roots of the first 80 primes 2..409):
     // prettier-ignore
-    const [SHA512_Kh, SHA512_Kl] = u64.split([
+    const [SHA512_Kh, SHA512_Kl] = /* @__PURE__ */ (() => u64$1.split([
         '0x428a2f98d728ae22', '0x7137449123ef65cd', '0xb5c0fbcfec4d3b2f', '0xe9b5dba58189dbbc',
         '0x3956c25bf348b538', '0x59f111f1b605d019', '0x923f82a4af194f9b', '0xab1c5ed5da6d8118',
         '0xd807aa98a3030242', '0x12835b0145706fbe', '0x243185be4ee4b28c', '0x550c7dc3d5ffb4e2',
@@ -3507,10 +3583,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         '0x06f067aa72176fba', '0x0a637dc5a2c898a6', '0x113f9804bef90dae', '0x1b710b35131c471b',
         '0x28db77f523047d84', '0x32caab7b40c72493', '0x3c9ebe0a15c9bebc', '0x431d67c49c100d4c',
         '0x4cc5d4becb3e42b6', '0x597f299cfc657e2a', '0x5fcb6fab3ad6faec', '0x6c44198c4a475817'
-    ].map(n => BigInt(n)));
+    ].map(n => BigInt(n))))();
     // Temporary buffer, not used to store anything between runs
-    const SHA512_W_H = new Uint32Array(80);
-    const SHA512_W_L = new Uint32Array(80);
+    const SHA512_W_H = /* @__PURE__ */ new Uint32Array(80);
+    const SHA512_W_L = /* @__PURE__ */ new Uint32Array(80);
     class SHA512 extends SHA2 {
         constructor() {
             super(128, 64, 16, false);
@@ -3569,16 +3645,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 // s0 := (w[i-15] rightrotate 1) xor (w[i-15] rightrotate 8) xor (w[i-15] rightshift 7)
                 const W15h = SHA512_W_H[i - 15] | 0;
                 const W15l = SHA512_W_L[i - 15] | 0;
-                const s0h = u64.rotrSH(W15h, W15l, 1) ^ u64.rotrSH(W15h, W15l, 8) ^ u64.shrSH(W15h, W15l, 7);
-                const s0l = u64.rotrSL(W15h, W15l, 1) ^ u64.rotrSL(W15h, W15l, 8) ^ u64.shrSL(W15h, W15l, 7);
+                const s0h = u64$1.rotrSH(W15h, W15l, 1) ^ u64$1.rotrSH(W15h, W15l, 8) ^ u64$1.shrSH(W15h, W15l, 7);
+                const s0l = u64$1.rotrSL(W15h, W15l, 1) ^ u64$1.rotrSL(W15h, W15l, 8) ^ u64$1.shrSL(W15h, W15l, 7);
                 // s1 := (w[i-2] rightrotate 19) xor (w[i-2] rightrotate 61) xor (w[i-2] rightshift 6)
                 const W2h = SHA512_W_H[i - 2] | 0;
                 const W2l = SHA512_W_L[i - 2] | 0;
-                const s1h = u64.rotrSH(W2h, W2l, 19) ^ u64.rotrBH(W2h, W2l, 61) ^ u64.shrSH(W2h, W2l, 6);
-                const s1l = u64.rotrSL(W2h, W2l, 19) ^ u64.rotrBL(W2h, W2l, 61) ^ u64.shrSL(W2h, W2l, 6);
+                const s1h = u64$1.rotrSH(W2h, W2l, 19) ^ u64$1.rotrBH(W2h, W2l, 61) ^ u64$1.shrSH(W2h, W2l, 6);
+                const s1l = u64$1.rotrSL(W2h, W2l, 19) ^ u64$1.rotrBL(W2h, W2l, 61) ^ u64$1.shrSL(W2h, W2l, 6);
                 // SHA256_W[i] = s0 + s1 + SHA256_W[i - 7] + SHA256_W[i - 16];
-                const SUMl = u64.add4L(s0l, s1l, SHA512_W_L[i - 7], SHA512_W_L[i - 16]);
-                const SUMh = u64.add4H(SUMl, s0h, s1h, SHA512_W_H[i - 7], SHA512_W_H[i - 16]);
+                const SUMl = u64$1.add4L(s0l, s1l, SHA512_W_L[i - 7], SHA512_W_L[i - 16]);
+                const SUMh = u64$1.add4H(SUMl, s0h, s1h, SHA512_W_H[i - 7], SHA512_W_H[i - 16]);
                 SHA512_W_H[i] = SUMh | 0;
                 SHA512_W_L[i] = SUMl | 0;
             }
@@ -3586,19 +3662,19 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // Compression function main loop, 80 rounds
             for (let i = 0; i < 80; i++) {
                 // S1 := (e rightrotate 14) xor (e rightrotate 18) xor (e rightrotate 41)
-                const sigma1h = u64.rotrSH(Eh, El, 14) ^ u64.rotrSH(Eh, El, 18) ^ u64.rotrBH(Eh, El, 41);
-                const sigma1l = u64.rotrSL(Eh, El, 14) ^ u64.rotrSL(Eh, El, 18) ^ u64.rotrBL(Eh, El, 41);
+                const sigma1h = u64$1.rotrSH(Eh, El, 14) ^ u64$1.rotrSH(Eh, El, 18) ^ u64$1.rotrBH(Eh, El, 41);
+                const sigma1l = u64$1.rotrSL(Eh, El, 14) ^ u64$1.rotrSL(Eh, El, 18) ^ u64$1.rotrBL(Eh, El, 41);
                 //const T1 = (H + sigma1 + Chi(E, F, G) + SHA256_K[i] + SHA256_W[i]) | 0;
                 const CHIh = (Eh & Fh) ^ (~Eh & Gh);
                 const CHIl = (El & Fl) ^ (~El & Gl);
                 // T1 = H + sigma1 + Chi(E, F, G) + SHA512_K[i] + SHA512_W[i]
                 // prettier-ignore
-                const T1ll = u64.add5L(Hl, sigma1l, CHIl, SHA512_Kl[i], SHA512_W_L[i]);
-                const T1h = u64.add5H(T1ll, Hh, sigma1h, CHIh, SHA512_Kh[i], SHA512_W_H[i]);
+                const T1ll = u64$1.add5L(Hl, sigma1l, CHIl, SHA512_Kl[i], SHA512_W_L[i]);
+                const T1h = u64$1.add5H(T1ll, Hh, sigma1h, CHIh, SHA512_Kh[i], SHA512_W_H[i]);
                 const T1l = T1ll | 0;
                 // S0 := (a rightrotate 28) xor (a rightrotate 34) xor (a rightrotate 39)
-                const sigma0h = u64.rotrSH(Ah, Al, 28) ^ u64.rotrBH(Ah, Al, 34) ^ u64.rotrBH(Ah, Al, 39);
-                const sigma0l = u64.rotrSL(Ah, Al, 28) ^ u64.rotrBL(Ah, Al, 34) ^ u64.rotrBL(Ah, Al, 39);
+                const sigma0h = u64$1.rotrSH(Ah, Al, 28) ^ u64$1.rotrBH(Ah, Al, 34) ^ u64$1.rotrBH(Ah, Al, 39);
+                const sigma0l = u64$1.rotrSL(Ah, Al, 28) ^ u64$1.rotrBL(Ah, Al, 34) ^ u64$1.rotrBL(Ah, Al, 39);
                 const MAJh = (Ah & Bh) ^ (Ah & Ch) ^ (Bh & Ch);
                 const MAJl = (Al & Bl) ^ (Al & Cl) ^ (Bl & Cl);
                 Hh = Gh | 0;
@@ -3607,26 +3683,26 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 Gl = Fl | 0;
                 Fh = Eh | 0;
                 Fl = El | 0;
-                ({ h: Eh, l: El } = u64.add(Dh | 0, Dl | 0, T1h | 0, T1l | 0));
+                ({ h: Eh, l: El } = u64$1.add(Dh | 0, Dl | 0, T1h | 0, T1l | 0));
                 Dh = Ch | 0;
                 Dl = Cl | 0;
                 Ch = Bh | 0;
                 Cl = Bl | 0;
                 Bh = Ah | 0;
                 Bl = Al | 0;
-                const All = u64.add3L(T1l, sigma0l, MAJl);
-                Ah = u64.add3H(All, T1h, sigma0h, MAJh);
+                const All = u64$1.add3L(T1l, sigma0l, MAJl);
+                Ah = u64$1.add3H(All, T1h, sigma0h, MAJh);
                 Al = All | 0;
             }
             // Add the compressed chunk to the current hash value
-            ({ h: Ah, l: Al } = u64.add(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0));
-            ({ h: Bh, l: Bl } = u64.add(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0));
-            ({ h: Ch, l: Cl } = u64.add(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0));
-            ({ h: Dh, l: Dl } = u64.add(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0));
-            ({ h: Eh, l: El } = u64.add(this.Eh | 0, this.El | 0, Eh | 0, El | 0));
-            ({ h: Fh, l: Fl } = u64.add(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0));
-            ({ h: Gh, l: Gl } = u64.add(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0));
-            ({ h: Hh, l: Hl } = u64.add(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0));
+            ({ h: Ah, l: Al } = u64$1.add(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0));
+            ({ h: Bh, l: Bl } = u64$1.add(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0));
+            ({ h: Ch, l: Cl } = u64$1.add(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0));
+            ({ h: Dh, l: Dl } = u64$1.add(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0));
+            ({ h: Eh, l: El } = u64$1.add(this.Eh | 0, this.El | 0, Eh | 0, El | 0));
+            ({ h: Fh, l: Fl } = u64$1.add(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0));
+            ({ h: Gh, l: Gl } = u64$1.add(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0));
+            ({ h: Hh, l: Hl } = u64$1.add(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0));
             this.set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl);
         }
         roundClean() {
@@ -3638,55 +3714,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
     }
-    class SHA512_256 extends SHA512 {
-        constructor() {
-            super();
-            // h -- high 32 bits, l -- low 32 bits
-            this.Ah = 0x22312194 | 0;
-            this.Al = 0xfc2bf72c | 0;
-            this.Bh = 0x9f555fa3 | 0;
-            this.Bl = 0xc84c64c2 | 0;
-            this.Ch = 0x2393b86b | 0;
-            this.Cl = 0x6f53b151 | 0;
-            this.Dh = 0x96387719 | 0;
-            this.Dl = 0x5940eabd | 0;
-            this.Eh = 0x96283ee2 | 0;
-            this.El = 0xa88effe3 | 0;
-            this.Fh = 0xbe5e1e25 | 0;
-            this.Fl = 0x53863992 | 0;
-            this.Gh = 0x2b0199fc | 0;
-            this.Gl = 0x2c85b8aa | 0;
-            this.Hh = 0x0eb72ddc | 0;
-            this.Hl = 0x81c52ca2 | 0;
-            this.outputLen = 32;
-        }
-    }
-    class SHA384 extends SHA512 {
-        constructor() {
-            super();
-            // h -- high 32 bits, l -- low 32 bits
-            this.Ah = 0xcbbb9d5d | 0;
-            this.Al = 0xc1059ed8 | 0;
-            this.Bh = 0x629a292a | 0;
-            this.Bl = 0x367cd507 | 0;
-            this.Ch = 0x9159015a | 0;
-            this.Cl = 0x3070dd17 | 0;
-            this.Dh = 0x152fecd8 | 0;
-            this.Dl = 0xf70e5939 | 0;
-            this.Eh = 0x67332667 | 0;
-            this.El = 0xffc00b31 | 0;
-            this.Fh = 0x8eb44a87 | 0;
-            this.Fl = 0x68581511 | 0;
-            this.Gh = 0xdb0c2e0d | 0;
-            this.Gl = 0x64f98fa7 | 0;
-            this.Hh = 0x47b5481d | 0;
-            this.Hl = 0xbefa4fa4 | 0;
-            this.outputLen = 48;
-        }
-    }
-    const sha512$1 = wrapConstructor(() => new SHA512());
-    wrapConstructor(() => new SHA512_256());
-    wrapConstructor(() => new SHA384());
+    const sha512$1 = /* @__PURE__ */ wrapConstructor(() => new SHA512());
 
     /* Browser Crypto Shims */
     function getGlobal$1() {
@@ -3702,7 +3730,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         throw new Error('unable to locate global object');
     }
     const anyGlobal = getGlobal$1();
-    const crypto$1 = anyGlobal.crypto || anyGlobal.msCrypto;
+    const crypto = anyGlobal.crypto || anyGlobal.msCrypto;
     function createHash(algo) {
         switch (algo) {
             case "sha256": return sha256$1.create();
@@ -3721,12 +3749,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return pbkdf2$1(algo, password, salt, { c: iterations, dkLen: keylen });
     }
     function randomBytes$1(length) {
-        assert$1(crypto$1 != null, "platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
+        assert(crypto != null, "platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
             operation: "randomBytes"
         });
         assertArgument(Number.isInteger(length) && length > 0 && length <= 1024, "invalid length", "length", length);
         const result = new Uint8Array(length);
-        crypto$1.getRandomValues(result);
+        crypto.getRandomValues(result);
         return result;
     }
 
@@ -3775,33 +3803,35 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     };
     Object.freeze(computeHmac);
 
+    // SHA3 (keccak) is based on a new design: basically, the internal state is bigger than output size.
+    // It's called a sponge function.
     // Various per round constants calculations
     const [SHA3_PI, SHA3_ROTL, _SHA3_IOTA] = [[], [], []];
-    const _0n$1 = BigInt(0);
-    const _1n$1 = BigInt(1);
-    const _2n$1 = BigInt(2);
-    const _7n = BigInt(7);
-    const _256n = BigInt(256);
-    const _0x71n = BigInt(0x71);
-    for (let round = 0, R = _1n$1, x = 1, y = 0; round < 24; round++) {
+    const _0n$4 = /* @__PURE__ */ BigInt(0);
+    const _1n$5 = /* @__PURE__ */ BigInt(1);
+    const _2n$3 = /* @__PURE__ */ BigInt(2);
+    const _7n = /* @__PURE__ */ BigInt(7);
+    const _256n = /* @__PURE__ */ BigInt(256);
+    const _0x71n = /* @__PURE__ */ BigInt(0x71);
+    for (let round = 0, R = _1n$5, x = 1, y = 0; round < 24; round++) {
         // Pi
         [x, y] = [y, (2 * x + 3 * y) % 5];
         SHA3_PI.push(2 * (5 * y + x));
         // Rotational
         SHA3_ROTL.push((((round + 1) * (round + 2)) / 2) % 64);
         // Iota
-        let t = _0n$1;
+        let t = _0n$4;
         for (let j = 0; j < 7; j++) {
-            R = ((R << _1n$1) ^ ((R >> _7n) * _0x71n)) % _256n;
-            if (R & _2n$1)
-                t ^= _1n$1 << ((_1n$1 << BigInt(j)) - _1n$1);
+            R = ((R << _1n$5) ^ ((R >> _7n) * _0x71n)) % _256n;
+            if (R & _2n$3)
+                t ^= _1n$5 << ((_1n$5 << /* @__PURE__ */ BigInt(j)) - _1n$5);
         }
         _SHA3_IOTA.push(t);
     }
-    const [SHA3_IOTA_H, SHA3_IOTA_L] = u64.split(_SHA3_IOTA, true);
+    const [SHA3_IOTA_H, SHA3_IOTA_L] = /* @__PURE__ */ split$1(_SHA3_IOTA, true);
     // Left rotation (without 0, 32, 64)
-    const rotlH = (h, l, s) => s > 32 ? u64.rotlBH(h, l, s) : u64.rotlSH(h, l, s);
-    const rotlL = (h, l, s) => s > 32 ? u64.rotlBL(h, l, s) : u64.rotlSL(h, l, s);
+    const rotlH = (h, l, s) => (s > 32 ? rotlBH(h, l, s) : rotlSH(h, l, s));
+    const rotlL = (h, l, s) => (s > 32 ? rotlBL(h, l, s) : rotlSL(h, l, s));
     // Same as keccakf1600, but allows to skip some rounds
     function keccakP(s, rounds = 24) {
         const B = new Uint32Array(5 * 2);
@@ -3862,7 +3892,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.finished = false;
             this.destroyed = false;
             // Can be passed from user as dkLen
-            assert.number(outputLen);
+            number(outputLen);
             // 1600 = 5x5 matrix of 64bit.  1600 bits === 200 bytes
             if (0 >= this.blockLen || this.blockLen >= 200)
                 throw new Error('Sha3 supports only keccak-f1600 function');
@@ -3875,7 +3905,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.pos = 0;
         }
         update(data) {
-            assert.exists(this);
+            exists(this);
             const { blockLen, state } = this;
             data = toBytes(data);
             const len = data.length;
@@ -3901,8 +3931,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.keccak();
         }
         writeInto(out) {
-            assert.exists(this, false);
-            assert.bytes(out);
+            exists(this, false);
+            bytes(out);
             this.finish();
             const bufferOut = this.state;
             const { blockLen } = this;
@@ -3923,11 +3953,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return this.writeInto(out);
         }
         xof(bytes) {
-            assert.number(bytes);
+            number(bytes);
             return this.xofInto(new Uint8Array(bytes));
         }
         digestInto(out) {
-            assert.output(out, this);
+            output(out, this);
             if (this.finished)
                 throw new Error('digest() was already called');
             this.writeInto(out);
@@ -3958,25 +3988,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
     const gen = (suffix, blockLen, outputLen) => wrapConstructor(() => new Keccak(blockLen, suffix, outputLen));
-    gen(0x06, 144, 224 / 8);
-    /**
-     * SHA3-256 hash function
-     * @param message - that would be hashed
-     */
-    gen(0x06, 136, 256 / 8);
-    gen(0x06, 104, 384 / 8);
-    gen(0x06, 72, 512 / 8);
-    gen(0x01, 144, 224 / 8);
     /**
      * keccak-256 hash function. Different from SHA3-256.
      * @param message - that would be hashed
      */
-    const keccak_256 = gen(0x01, 136, 256 / 8);
-    gen(0x01, 104, 384 / 8);
-    gen(0x01, 72, 512 / 8);
-    const genShake = (suffix, blockLen, outputLen) => wrapConstructorWithOpts((opts = {}) => new Keccak(blockLen, suffix, opts.dkLen === undefined ? outputLen : opts.dkLen, true));
-    genShake(0x1f, 168, 128 / 8);
-    genShake(0x1f, 136, 256 / 8);
+    const keccak_256 = /* @__PURE__ */ gen(0x01, 136, 256 / 8);
 
     /**
      *  Cryptographic hashing functions
@@ -4026,25 +4042,29 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     // https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
     // https://homes.esat.kuleuven.be/~bosselae/ripemd160/pdf/AB-9601/AB-9601.pdf
-    const Rho = new Uint8Array([7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8]);
-    const Id = Uint8Array.from({ length: 16 }, (_, i) => i);
-    const Pi = Id.map((i) => (9 * i + 5) % 16);
+    const Rho = /* @__PURE__ */ new Uint8Array([7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8]);
+    const Id = /* @__PURE__ */ Uint8Array.from({ length: 16 }, (_, i) => i);
+    const Pi = /* @__PURE__ */ Id.map((i) => (9 * i + 5) % 16);
     let idxL = [Id];
     let idxR = [Pi];
     for (let i = 0; i < 4; i++)
         for (let j of [idxL, idxR])
             j.push(j[i].map((k) => Rho[k]));
-    const shifts = [
+    const shifts = /* @__PURE__ */ [
         [11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8],
         [12, 13, 11, 15, 6, 9, 9, 7, 12, 15, 11, 13, 7, 8, 7, 7],
         [13, 15, 14, 11, 7, 7, 6, 8, 13, 14, 13, 12, 5, 5, 6, 9],
         [14, 11, 12, 14, 8, 6, 5, 5, 15, 12, 15, 14, 9, 9, 8, 6],
         [15, 12, 13, 13, 9, 5, 8, 6, 14, 11, 12, 11, 8, 6, 5, 5],
     ].map((i) => new Uint8Array(i));
-    const shiftsL = idxL.map((idx, i) => idx.map((j) => shifts[i][j]));
-    const shiftsR = idxR.map((idx, i) => idx.map((j) => shifts[i][j]));
-    const Kl = new Uint32Array([0x00000000, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e]);
-    const Kr = new Uint32Array([0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0x00000000]);
+    const shiftsL = /* @__PURE__ */ idxL.map((idx, i) => idx.map((j) => shifts[i][j]));
+    const shiftsR = /* @__PURE__ */ idxR.map((idx, i) => idx.map((j) => shifts[i][j]));
+    const Kl = /* @__PURE__ */ new Uint32Array([
+        0x00000000, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e,
+    ]);
+    const Kr = /* @__PURE__ */ new Uint32Array([
+        0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0x00000000,
+    ]);
     // The rotate left (circular left shift) operation for uint32
     const rotl$1 = (word, shift) => (word << shift) | (word >>> (32 - shift));
     // It's called f() in spec.
@@ -4061,7 +4081,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return x ^ (y | ~z);
     }
     // Temporary buffer, not used to store anything between runs
-    const BUF = new Uint32Array(16);
+    const BUF = /* @__PURE__ */ new Uint32Array(16);
     class RIPEMD160 extends SHA2 {
         constructor() {
             super(64, 20, 8, true);
@@ -4120,7 +4140,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      * RIPEMD-160 - a hash function from 1990s.
      * @param message - msg that would be hashed
      */
-    const ripemd160$1 = wrapConstructor(() => new RIPEMD160());
+    const ripemd160$1 = /* @__PURE__ */ wrapConstructor(() => new RIPEMD160());
 
     let locked$2 = false;
     const _ripemd160 = function (data) {
@@ -4333,12 +4353,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             maxmem: 1024 ** 3 + 1024,
         }, _opts);
         const { N, r, p, dkLen, asyncTick, maxmem, onProgress } = opts;
-        assert.number(N);
-        assert.number(r);
-        assert.number(p);
-        assert.number(dkLen);
-        assert.number(asyncTick);
-        assert.number(maxmem);
+        number(N);
+        number(r);
+        number(p);
+        number(dkLen);
+        number(asyncTick);
+        number(maxmem);
         if (onProgress !== undefined && typeof onProgress !== 'function')
             throw new Error('progressCb should be function');
         const blockSize = 128 * r;
@@ -4434,13 +4454,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             for (let i = 0; i < blockSize32; i++)
                 V[i] = B32[Pi + i]; // V[0] = B[i]
             let pos = 0;
-            await asyncLoop(N - 1, asyncTick, (i) => {
+            await asyncLoop(N - 1, asyncTick, () => {
                 BlockMix(V, pos, V, (pos += blockSize32), r); // V[i] = BlockMix(V[i-1]);
                 blockMixCb();
             });
             BlockMix(V, (N - 1) * blockSize32, B32, Pi, r); // Process last element
             blockMixCb();
-            await asyncLoop(N, asyncTick, (i) => {
+            await asyncLoop(N, asyncTick, () => {
                 // First u32 of the last 64-byte block (u32 is LE)
                 const j = B32[Pi + blockSize32 - 16] % N; // j = Integrify(X) % iterations
                 for (let k = 0; k < blockSize32; k++)
@@ -4618,587 +4638,49 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     };
     Object.freeze(sha256);
 
-    var _nodeResolve_empty = {};
-
-    var nodeCrypto = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        default: _nodeResolve_empty
-    });
-
-    /*! noble-secp256k1 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
-    const _0n = BigInt(0);
-    const _1n = BigInt(1);
-    const _2n = BigInt(2);
-    const _3n = BigInt(3);
-    const _8n = BigInt(8);
-    const CURVE = Object.freeze({
-        a: _0n,
-        b: BigInt(7),
-        P: BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f'),
-        n: BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141'),
-        h: _1n,
-        Gx: BigInt('55066263022277343669578718895168534326250603453777594175500187360389116729240'),
-        Gy: BigInt('32670510020758816978083085130507043184471273380659243275938904335757337482424'),
-        beta: BigInt('0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee'),
-    });
-    const divNearest = (a, b) => (a + b / _2n) / b;
-    const endo = {
-        beta: BigInt('0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee'),
-        splitScalar(k) {
-            const { n } = CURVE;
-            const a1 = BigInt('0x3086d221a7d46bcde86c90e49284eb15');
-            const b1 = -_1n * BigInt('0xe4437ed6010e88286f547fa90abfe4c3');
-            const a2 = BigInt('0x114ca50f7a8e2f3f657c1108d9d44cfd8');
-            const b2 = a1;
-            const POW_2_128 = BigInt('0x100000000000000000000000000000000');
-            const c1 = divNearest(b2 * k, n);
-            const c2 = divNearest(-b1 * k, n);
-            let k1 = mod(k - c1 * a1 - c2 * a2, n);
-            let k2 = mod(-c1 * b1 - c2 * b2, n);
-            const k1neg = k1 > POW_2_128;
-            const k2neg = k2 > POW_2_128;
-            if (k1neg)
-                k1 = n - k1;
-            if (k2neg)
-                k2 = n - k2;
-            if (k1 > POW_2_128 || k2 > POW_2_128) {
-                throw new Error('splitScalarEndo: Endomorphism failed, k=' + k);
-            }
-            return { k1neg, k1, k2neg, k2 };
-        },
-    };
-    const fieldLen = 32;
-    const groupLen = 32;
-    const hashLen = 32;
-    const compressedLen = fieldLen + 1;
-    const uncompressedLen = 2 * fieldLen + 1;
-    function weierstrass(x) {
-        const { a, b } = CURVE;
-        const x2 = mod(x * x);
-        const x3 = mod(x2 * x);
-        return mod(x3 + a * x + b);
-    }
-    const USE_ENDOMORPHISM = CURVE.a === _0n;
-    class ShaError extends Error {
-        constructor(message) {
-            super(message);
-        }
-    }
-    function assertJacPoint(other) {
-        if (!(other instanceof JacobianPoint))
-            throw new TypeError('JacobianPoint expected');
-    }
-    class JacobianPoint {
-        constructor(x, y, z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-        static fromAffine(p) {
-            if (!(p instanceof Point)) {
-                throw new TypeError('JacobianPoint#fromAffine: expected Point');
-            }
-            if (p.equals(Point.ZERO))
-                return JacobianPoint.ZERO;
-            return new JacobianPoint(p.x, p.y, _1n);
-        }
-        static toAffineBatch(points) {
-            const toInv = invertBatch(points.map((p) => p.z));
-            return points.map((p, i) => p.toAffine(toInv[i]));
-        }
-        static normalizeZ(points) {
-            return JacobianPoint.toAffineBatch(points).map(JacobianPoint.fromAffine);
-        }
-        equals(other) {
-            assertJacPoint(other);
-            const { x: X1, y: Y1, z: Z1 } = this;
-            const { x: X2, y: Y2, z: Z2 } = other;
-            const Z1Z1 = mod(Z1 * Z1);
-            const Z2Z2 = mod(Z2 * Z2);
-            const U1 = mod(X1 * Z2Z2);
-            const U2 = mod(X2 * Z1Z1);
-            const S1 = mod(mod(Y1 * Z2) * Z2Z2);
-            const S2 = mod(mod(Y2 * Z1) * Z1Z1);
-            return U1 === U2 && S1 === S2;
-        }
-        negate() {
-            return new JacobianPoint(this.x, mod(-this.y), this.z);
-        }
-        double() {
-            const { x: X1, y: Y1, z: Z1 } = this;
-            const A = mod(X1 * X1);
-            const B = mod(Y1 * Y1);
-            const C = mod(B * B);
-            const x1b = X1 + B;
-            const D = mod(_2n * (mod(x1b * x1b) - A - C));
-            const E = mod(_3n * A);
-            const F = mod(E * E);
-            const X3 = mod(F - _2n * D);
-            const Y3 = mod(E * (D - X3) - _8n * C);
-            const Z3 = mod(_2n * Y1 * Z1);
-            return new JacobianPoint(X3, Y3, Z3);
-        }
-        add(other) {
-            assertJacPoint(other);
-            const { x: X1, y: Y1, z: Z1 } = this;
-            const { x: X2, y: Y2, z: Z2 } = other;
-            if (X2 === _0n || Y2 === _0n)
-                return this;
-            if (X1 === _0n || Y1 === _0n)
-                return other;
-            const Z1Z1 = mod(Z1 * Z1);
-            const Z2Z2 = mod(Z2 * Z2);
-            const U1 = mod(X1 * Z2Z2);
-            const U2 = mod(X2 * Z1Z1);
-            const S1 = mod(mod(Y1 * Z2) * Z2Z2);
-            const S2 = mod(mod(Y2 * Z1) * Z1Z1);
-            const H = mod(U2 - U1);
-            const r = mod(S2 - S1);
-            if (H === _0n) {
-                if (r === _0n) {
-                    return this.double();
-                }
-                else {
-                    return JacobianPoint.ZERO;
-                }
-            }
-            const HH = mod(H * H);
-            const HHH = mod(H * HH);
-            const V = mod(U1 * HH);
-            const X3 = mod(r * r - HHH - _2n * V);
-            const Y3 = mod(r * (V - X3) - S1 * HHH);
-            const Z3 = mod(Z1 * Z2 * H);
-            return new JacobianPoint(X3, Y3, Z3);
-        }
-        subtract(other) {
-            return this.add(other.negate());
-        }
-        multiplyUnsafe(scalar) {
-            const P0 = JacobianPoint.ZERO;
-            if (typeof scalar === 'bigint' && scalar === _0n)
-                return P0;
-            let n = normalizeScalar(scalar);
-            if (n === _1n)
-                return this;
-            if (!USE_ENDOMORPHISM) {
-                let p = P0;
-                let d = this;
-                while (n > _0n) {
-                    if (n & _1n)
-                        p = p.add(d);
-                    d = d.double();
-                    n >>= _1n;
-                }
-                return p;
-            }
-            let { k1neg, k1, k2neg, k2 } = endo.splitScalar(n);
-            let k1p = P0;
-            let k2p = P0;
-            let d = this;
-            while (k1 > _0n || k2 > _0n) {
-                if (k1 & _1n)
-                    k1p = k1p.add(d);
-                if (k2 & _1n)
-                    k2p = k2p.add(d);
-                d = d.double();
-                k1 >>= _1n;
-                k2 >>= _1n;
-            }
-            if (k1neg)
-                k1p = k1p.negate();
-            if (k2neg)
-                k2p = k2p.negate();
-            k2p = new JacobianPoint(mod(k2p.x * endo.beta), k2p.y, k2p.z);
-            return k1p.add(k2p);
-        }
-        precomputeWindow(W) {
-            const windows = USE_ENDOMORPHISM ? 128 / W + 1 : 256 / W + 1;
-            const points = [];
-            let p = this;
-            let base = p;
-            for (let window = 0; window < windows; window++) {
-                base = p;
-                points.push(base);
-                for (let i = 1; i < 2 ** (W - 1); i++) {
-                    base = base.add(p);
-                    points.push(base);
-                }
-                p = base.double();
-            }
-            return points;
-        }
-        wNAF(n, affinePoint) {
-            if (!affinePoint && this.equals(JacobianPoint.BASE))
-                affinePoint = Point.BASE;
-            const W = (affinePoint && affinePoint._WINDOW_SIZE) || 1;
-            if (256 % W) {
-                throw new Error('Point#wNAF: Invalid precomputation window, must be power of 2');
-            }
-            let precomputes = affinePoint && pointPrecomputes.get(affinePoint);
-            if (!precomputes) {
-                precomputes = this.precomputeWindow(W);
-                if (affinePoint && W !== 1) {
-                    precomputes = JacobianPoint.normalizeZ(precomputes);
-                    pointPrecomputes.set(affinePoint, precomputes);
-                }
-            }
-            let p = JacobianPoint.ZERO;
-            let f = JacobianPoint.BASE;
-            const windows = 1 + (USE_ENDOMORPHISM ? 128 / W : 256 / W);
-            const windowSize = 2 ** (W - 1);
-            const mask = BigInt(2 ** W - 1);
-            const maxNumber = 2 ** W;
-            const shiftBy = BigInt(W);
-            for (let window = 0; window < windows; window++) {
-                const offset = window * windowSize;
-                let wbits = Number(n & mask);
-                n >>= shiftBy;
-                if (wbits > windowSize) {
-                    wbits -= maxNumber;
-                    n += _1n;
-                }
-                const offset1 = offset;
-                const offset2 = offset + Math.abs(wbits) - 1;
-                const cond1 = window % 2 !== 0;
-                const cond2 = wbits < 0;
-                if (wbits === 0) {
-                    f = f.add(constTimeNegate(cond1, precomputes[offset1]));
-                }
-                else {
-                    p = p.add(constTimeNegate(cond2, precomputes[offset2]));
-                }
-            }
-            return { p, f };
-        }
-        multiply(scalar, affinePoint) {
-            let n = normalizeScalar(scalar);
-            let point;
-            let fake;
-            if (USE_ENDOMORPHISM) {
-                const { k1neg, k1, k2neg, k2 } = endo.splitScalar(n);
-                let { p: k1p, f: f1p } = this.wNAF(k1, affinePoint);
-                let { p: k2p, f: f2p } = this.wNAF(k2, affinePoint);
-                k1p = constTimeNegate(k1neg, k1p);
-                k2p = constTimeNegate(k2neg, k2p);
-                k2p = new JacobianPoint(mod(k2p.x * endo.beta), k2p.y, k2p.z);
-                point = k1p.add(k2p);
-                fake = f1p.add(f2p);
-            }
-            else {
-                const { p, f } = this.wNAF(n, affinePoint);
-                point = p;
-                fake = f;
-            }
-            return JacobianPoint.normalizeZ([point, fake])[0];
-        }
-        toAffine(invZ) {
-            const { x, y, z } = this;
-            const is0 = this.equals(JacobianPoint.ZERO);
-            if (invZ == null)
-                invZ = is0 ? _8n : invert(z);
-            const iz1 = invZ;
-            const iz2 = mod(iz1 * iz1);
-            const iz3 = mod(iz2 * iz1);
-            const ax = mod(x * iz2);
-            const ay = mod(y * iz3);
-            const zz = mod(z * iz1);
-            if (is0)
-                return Point.ZERO;
-            if (zz !== _1n)
-                throw new Error('invZ was invalid');
-            return new Point(ax, ay);
-        }
-    }
-    JacobianPoint.BASE = new JacobianPoint(CURVE.Gx, CURVE.Gy, _1n);
-    JacobianPoint.ZERO = new JacobianPoint(_0n, _1n, _0n);
-    function constTimeNegate(condition, item) {
-        const neg = item.negate();
-        return condition ? neg : item;
-    }
-    const pointPrecomputes = new WeakMap();
-    class Point {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-        }
-        _setWindowSize(windowSize) {
-            this._WINDOW_SIZE = windowSize;
-            pointPrecomputes.delete(this);
-        }
-        hasEvenY() {
-            return this.y % _2n === _0n;
-        }
-        static fromCompressedHex(bytes) {
-            const isShort = bytes.length === 32;
-            const x = bytesToNumber(isShort ? bytes : bytes.subarray(1));
-            if (!isValidFieldElement(x))
-                throw new Error('Point is not on curve');
-            const y2 = weierstrass(x);
-            let y = sqrtMod(y2);
-            const isYOdd = (y & _1n) === _1n;
-            if (isShort) {
-                if (isYOdd)
-                    y = mod(-y);
-            }
-            else {
-                const isFirstByteOdd = (bytes[0] & 1) === 1;
-                if (isFirstByteOdd !== isYOdd)
-                    y = mod(-y);
-            }
-            const point = new Point(x, y);
-            point.assertValidity();
-            return point;
-        }
-        static fromUncompressedHex(bytes) {
-            const x = bytesToNumber(bytes.subarray(1, fieldLen + 1));
-            const y = bytesToNumber(bytes.subarray(fieldLen + 1, fieldLen * 2 + 1));
-            const point = new Point(x, y);
-            point.assertValidity();
-            return point;
-        }
-        static fromHex(hex) {
-            const bytes = ensureBytes(hex);
-            const len = bytes.length;
-            const header = bytes[0];
-            if (len === fieldLen)
-                return this.fromCompressedHex(bytes);
-            if (len === compressedLen && (header === 0x02 || header === 0x03)) {
-                return this.fromCompressedHex(bytes);
-            }
-            if (len === uncompressedLen && header === 0x04)
-                return this.fromUncompressedHex(bytes);
-            throw new Error(`Point.fromHex: received invalid point. Expected 32-${compressedLen} compressed bytes or ${uncompressedLen} uncompressed bytes, not ${len}`);
-        }
-        static fromPrivateKey(privateKey) {
-            return Point.BASE.multiply(normalizePrivateKey(privateKey));
-        }
-        static fromSignature(msgHash, signature, recovery) {
-            const { r, s } = normalizeSignature(signature);
-            if (![0, 1, 2, 3].includes(recovery))
-                throw new Error('Cannot recover: invalid recovery bit');
-            const h = truncateHash(ensureBytes(msgHash));
-            const { n } = CURVE;
-            const radj = recovery === 2 || recovery === 3 ? r + n : r;
-            const rinv = invert(radj, n);
-            const u1 = mod(-h * rinv, n);
-            const u2 = mod(s * rinv, n);
-            const prefix = recovery & 1 ? '03' : '02';
-            const R = Point.fromHex(prefix + numTo32bStr(radj));
-            const Q = Point.BASE.multiplyAndAddUnsafe(R, u1, u2);
-            if (!Q)
-                throw new Error('Cannot recover signature: point at infinify');
-            Q.assertValidity();
-            return Q;
-        }
-        toRawBytes(isCompressed = false) {
-            return hexToBytes(this.toHex(isCompressed));
-        }
-        toHex(isCompressed = false) {
-            const x = numTo32bStr(this.x);
-            if (isCompressed) {
-                const prefix = this.hasEvenY() ? '02' : '03';
-                return `${prefix}${x}`;
-            }
-            else {
-                return `04${x}${numTo32bStr(this.y)}`;
-            }
-        }
-        toHexX() {
-            return this.toHex(true).slice(2);
-        }
-        toRawX() {
-            return this.toRawBytes(true).slice(1);
-        }
-        assertValidity() {
-            const msg = 'Point is not on elliptic curve';
-            const { x, y } = this;
-            if (!isValidFieldElement(x) || !isValidFieldElement(y))
-                throw new Error(msg);
-            const left = mod(y * y);
-            const right = weierstrass(x);
-            if (mod(left - right) !== _0n)
-                throw new Error(msg);
-        }
-        equals(other) {
-            return this.x === other.x && this.y === other.y;
-        }
-        negate() {
-            return new Point(this.x, mod(-this.y));
-        }
-        double() {
-            return JacobianPoint.fromAffine(this).double().toAffine();
-        }
-        add(other) {
-            return JacobianPoint.fromAffine(this).add(JacobianPoint.fromAffine(other)).toAffine();
-        }
-        subtract(other) {
-            return this.add(other.negate());
-        }
-        multiply(scalar) {
-            return JacobianPoint.fromAffine(this).multiply(scalar, this).toAffine();
-        }
-        multiplyAndAddUnsafe(Q, a, b) {
-            const P = JacobianPoint.fromAffine(this);
-            const aP = a === _0n || a === _1n || this !== Point.BASE ? P.multiplyUnsafe(a) : P.multiply(a);
-            const bQ = JacobianPoint.fromAffine(Q).multiplyUnsafe(b);
-            const sum = aP.add(bQ);
-            return sum.equals(JacobianPoint.ZERO) ? undefined : sum.toAffine();
-        }
-    }
-    Point.BASE = new Point(CURVE.Gx, CURVE.Gy);
-    Point.ZERO = new Point(_0n, _0n);
-    function sliceDER(s) {
-        return Number.parseInt(s[0], 16) >= 8 ? '00' + s : s;
-    }
-    function parseDERInt(data) {
-        if (data.length < 2 || data[0] !== 0x02) {
-            throw new Error(`Invalid signature integer tag: ${bytesToHex(data)}`);
-        }
-        const len = data[1];
-        const res = data.subarray(2, len + 2);
-        if (!len || res.length !== len) {
-            throw new Error(`Invalid signature integer: wrong length`);
-        }
-        if (res[0] === 0x00 && res[1] <= 0x7f) {
-            throw new Error('Invalid signature integer: trailing length');
-        }
-        return { data: bytesToNumber(res), left: data.subarray(len + 2) };
-    }
-    function parseDERSignature(data) {
-        if (data.length < 2 || data[0] != 0x30) {
-            throw new Error(`Invalid signature tag: ${bytesToHex(data)}`);
-        }
-        if (data[1] !== data.length - 2) {
-            throw new Error('Invalid signature: incorrect length');
-        }
-        const { data: r, left: sBytes } = parseDERInt(data.subarray(2));
-        const { data: s, left: rBytesLeft } = parseDERInt(sBytes);
-        if (rBytesLeft.length) {
-            throw new Error(`Invalid signature: left bytes after parsing: ${bytesToHex(rBytesLeft)}`);
-        }
-        return { r, s };
-    }
-    let Signature$1 = class Signature {
-        constructor(r, s) {
-            this.r = r;
-            this.s = s;
-            this.assertValidity();
-        }
-        static fromCompact(hex) {
-            const arr = hex instanceof Uint8Array;
-            const name = 'Signature.fromCompact';
-            if (typeof hex !== 'string' && !arr)
-                throw new TypeError(`${name}: Expected string or Uint8Array`);
-            const str = arr ? bytesToHex(hex) : hex;
-            if (str.length !== 128)
-                throw new Error(`${name}: Expected 64-byte hex`);
-            return new Signature(hexToNumber(str.slice(0, 64)), hexToNumber(str.slice(64, 128)));
-        }
-        static fromDER(hex) {
-            const arr = hex instanceof Uint8Array;
-            if (typeof hex !== 'string' && !arr)
-                throw new TypeError(`Signature.fromDER: Expected string or Uint8Array`);
-            const { r, s } = parseDERSignature(arr ? hex : hexToBytes(hex));
-            return new Signature(r, s);
-        }
-        static fromHex(hex) {
-            return this.fromDER(hex);
-        }
-        assertValidity() {
-            const { r, s } = this;
-            if (!isWithinCurveOrder(r))
-                throw new Error('Invalid Signature: r must be 0 < r < n');
-            if (!isWithinCurveOrder(s))
-                throw new Error('Invalid Signature: s must be 0 < s < n');
-        }
-        hasHighS() {
-            const HALF = CURVE.n >> _1n;
-            return this.s > HALF;
-        }
-        normalizeS() {
-            return this.hasHighS() ? new Signature(this.r, mod(-this.s, CURVE.n)) : this;
-        }
-        toDERRawBytes() {
-            return hexToBytes(this.toDERHex());
-        }
-        toDERHex() {
-            const sHex = sliceDER(numberToHexUnpadded(this.s));
-            const rHex = sliceDER(numberToHexUnpadded(this.r));
-            const sHexL = sHex.length / 2;
-            const rHexL = rHex.length / 2;
-            const sLen = numberToHexUnpadded(sHexL);
-            const rLen = numberToHexUnpadded(rHexL);
-            const length = numberToHexUnpadded(rHexL + sHexL + 4);
-            return `30${length}02${rLen}${rHex}02${sLen}${sHex}`;
-        }
-        toRawBytes() {
-            return this.toDERRawBytes();
-        }
-        toHex() {
-            return this.toDERHex();
-        }
-        toCompactRawBytes() {
-            return hexToBytes(this.toCompactHex());
-        }
-        toCompactHex() {
-            return numTo32bStr(this.r) + numTo32bStr(this.s);
-        }
-    };
-    function concatBytes(...arrays) {
-        if (!arrays.every((b) => b instanceof Uint8Array))
-            throw new Error('Uint8Array list expected');
-        if (arrays.length === 1)
-            return arrays[0];
-        const length = arrays.reduce((a, arr) => a + arr.length, 0);
-        const result = new Uint8Array(length);
-        for (let i = 0, pad = 0; i < arrays.length; i++) {
-            const arr = arrays[i];
-            result.set(arr, pad);
-            pad += arr.length;
-        }
-        return result;
-    }
-    const hexes = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
-    function bytesToHex(uint8a) {
-        if (!(uint8a instanceof Uint8Array))
-            throw new Error('Expected Uint8Array');
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    // 100 lines of code in the file are duplicated from noble-hashes (utils).
+    // This is OK: `abstract` directory does not use noble-hashes.
+    // User may opt-in into using different hashing library. This way, noble-hashes
+    // won't be included into their bundle.
+    const _0n$3 = BigInt(0);
+    const _1n$4 = BigInt(1);
+    const _2n$2 = BigInt(2);
+    const u8a = (a) => a instanceof Uint8Array;
+    const hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
+    /**
+     * @example bytesToHex(Uint8Array.from([0xca, 0xfe, 0x01, 0x23])) // 'cafe0123'
+     */
+    function bytesToHex(bytes) {
+        if (!u8a(bytes))
+            throw new Error('Uint8Array expected');
+        // pre-caching improves the speed 6x
         let hex = '';
-        for (let i = 0; i < uint8a.length; i++) {
-            hex += hexes[uint8a[i]];
+        for (let i = 0; i < bytes.length; i++) {
+            hex += hexes[bytes[i]];
         }
         return hex;
-    }
-    const POW_2_256 = BigInt('0x10000000000000000000000000000000000000000000000000000000000000000');
-    function numTo32bStr(num) {
-        if (typeof num !== 'bigint')
-            throw new Error('Expected bigint');
-        if (!(_0n <= num && num < POW_2_256))
-            throw new Error('Expected number 0 <= n < 2^256');
-        return num.toString(16).padStart(64, '0');
-    }
-    function numTo32b(num) {
-        const b = hexToBytes(numTo32bStr(num));
-        if (b.length !== 32)
-            throw new Error('Error: expected 32 bytes');
-        return b;
     }
     function numberToHexUnpadded(num) {
         const hex = num.toString(16);
         return hex.length & 1 ? `0${hex}` : hex;
     }
     function hexToNumber(hex) {
-        if (typeof hex !== 'string') {
-            throw new TypeError('hexToNumber: expected string, got ' + typeof hex);
-        }
-        return BigInt(`0x${hex}`);
+        if (typeof hex !== 'string')
+            throw new Error('hex string expected, got ' + typeof hex);
+        // Big Endian
+        return BigInt(hex === '' ? '0' : `0x${hex}`);
     }
+    /**
+     * @example hexToBytes('cafe0123') // Uint8Array.from([0xca, 0xfe, 0x01, 0x23])
+     */
     function hexToBytes(hex) {
-        if (typeof hex !== 'string') {
-            throw new TypeError('hexToBytes: expected string, got ' + typeof hex);
-        }
-        if (hex.length % 2)
-            throw new Error('hexToBytes: received invalid unpadded hex' + hex.length);
-        const array = new Uint8Array(hex.length / 2);
+        if (typeof hex !== 'string')
+            throw new Error('hex string expected, got ' + typeof hex);
+        const len = hex.length;
+        if (len % 2)
+            throw new Error('padded hex string expected, got unpadded hex of length ' + len);
+        const array = new Uint8Array(len / 2);
         for (let i = 0; i < array.length; i++) {
             const j = i * 2;
             const hexByte = hex.slice(j, j + 2);
@@ -5209,452 +4691,1773 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         return array;
     }
-    function bytesToNumber(bytes) {
+    // BE: Big Endian, LE: Little Endian
+    function bytesToNumberBE(bytes) {
         return hexToNumber(bytesToHex(bytes));
     }
-    function ensureBytes(hex) {
-        return hex instanceof Uint8Array ? Uint8Array.from(hex) : hexToBytes(hex);
+    function bytesToNumberLE(bytes) {
+        if (!u8a(bytes))
+            throw new Error('Uint8Array expected');
+        return hexToNumber(bytesToHex(Uint8Array.from(bytes).reverse()));
     }
-    function normalizeScalar(num) {
-        if (typeof num === 'number' && Number.isSafeInteger(num) && num > 0)
-            return BigInt(num);
-        if (typeof num === 'bigint' && isWithinCurveOrder(num))
-            return num;
-        throw new TypeError('Expected valid private scalar: 0 < scalar < curve.n');
+    function numberToBytesBE(n, len) {
+        return hexToBytes(n.toString(16).padStart(len * 2, '0'));
     }
-    function mod(a, b = CURVE.P) {
+    function numberToBytesLE(n, len) {
+        return numberToBytesBE(n, len).reverse();
+    }
+    // Unpadded, rarely used
+    function numberToVarBytesBE(n) {
+        return hexToBytes(numberToHexUnpadded(n));
+    }
+    /**
+     * Takes hex string or Uint8Array, converts to Uint8Array.
+     * Validates output length.
+     * Will throw error for other types.
+     * @param title descriptive title for an error e.g. 'private key'
+     * @param hex hex string or Uint8Array
+     * @param expectedLength optional, will compare to result array's length
+     * @returns
+     */
+    function ensureBytes(title, hex, expectedLength) {
+        let res;
+        if (typeof hex === 'string') {
+            try {
+                res = hexToBytes(hex);
+            }
+            catch (e) {
+                throw new Error(`${title} must be valid hex string, got "${hex}". Cause: ${e}`);
+            }
+        }
+        else if (u8a(hex)) {
+            // Uint8Array.from() instead of hash.slice() because node.js Buffer
+            // is instance of Uint8Array, and its slice() creates **mutable** copy
+            res = Uint8Array.from(hex);
+        }
+        else {
+            throw new Error(`${title} must be hex string or Uint8Array`);
+        }
+        const len = res.length;
+        if (typeof expectedLength === 'number' && len !== expectedLength)
+            throw new Error(`${title} expected ${expectedLength} bytes, got ${len}`);
+        return res;
+    }
+    /**
+     * Copies several Uint8Arrays into one.
+     */
+    function concatBytes(...arrays) {
+        const r = new Uint8Array(arrays.reduce((sum, a) => sum + a.length, 0));
+        let pad = 0; // walk through each item, ensure they have proper type
+        arrays.forEach((a) => {
+            if (!u8a(a))
+                throw new Error('Uint8Array expected');
+            r.set(a, pad);
+            pad += a.length;
+        });
+        return r;
+    }
+    function equalBytes(b1, b2) {
+        // We don't care about timing attacks here
+        if (b1.length !== b2.length)
+            return false;
+        for (let i = 0; i < b1.length; i++)
+            if (b1[i] !== b2[i])
+                return false;
+        return true;
+    }
+    /**
+     * @example utf8ToBytes('abc') // new Uint8Array([97, 98, 99])
+     */
+    function utf8ToBytes(str) {
+        if (typeof str !== 'string')
+            throw new Error(`utf8ToBytes expected string, got ${typeof str}`);
+        return new Uint8Array(new TextEncoder().encode(str)); // https://bugzil.la/1681809
+    }
+    // Bit operations
+    /**
+     * Calculates amount of bits in a bigint.
+     * Same as `n.toString(2).length`
+     */
+    function bitLen(n) {
+        let len;
+        for (len = 0; n > _0n$3; n >>= _1n$4, len += 1)
+            ;
+        return len;
+    }
+    /**
+     * Gets single bit at position.
+     * NOTE: first bit position is 0 (same as arrays)
+     * Same as `!!+Array.from(n.toString(2)).reverse()[pos]`
+     */
+    function bitGet(n, pos) {
+        return (n >> BigInt(pos)) & _1n$4;
+    }
+    /**
+     * Sets single bit at position.
+     */
+    const bitSet = (n, pos, value) => {
+        return n | ((value ? _1n$4 : _0n$3) << BigInt(pos));
+    };
+    /**
+     * Calculate mask for N bits. Not using ** operator with bigints because of old engines.
+     * Same as BigInt(`0b${Array(i).fill('1').join('')}`)
+     */
+    const bitMask = (n) => (_2n$2 << BigInt(n - 1)) - _1n$4;
+    // DRBG
+    const u8n = (data) => new Uint8Array(data); // creates Uint8Array
+    const u8fr = (arr) => Uint8Array.from(arr); // another shortcut
+    /**
+     * Minimal HMAC-DRBG from NIST 800-90 for RFC6979 sigs.
+     * @returns function that will call DRBG until 2nd arg returns something meaningful
+     * @example
+     *   const drbg = createHmacDRBG<Key>(32, 32, hmac);
+     *   drbg(seed, bytesToKey); // bytesToKey must return Key or undefined
+     */
+    function createHmacDrbg(hashLen, qByteLen, hmacFn) {
+        if (typeof hashLen !== 'number' || hashLen < 2)
+            throw new Error('hashLen must be a number');
+        if (typeof qByteLen !== 'number' || qByteLen < 2)
+            throw new Error('qByteLen must be a number');
+        if (typeof hmacFn !== 'function')
+            throw new Error('hmacFn must be a function');
+        // Step B, Step C: set hashLen to 8*ceil(hlen/8)
+        let v = u8n(hashLen); // Minimal non-full-spec HMAC-DRBG from NIST 800-90 for RFC6979 sigs.
+        let k = u8n(hashLen); // Steps B and C of RFC6979 3.2: set hashLen, in our case always same
+        let i = 0; // Iterations counter, will throw when over 1000
+        const reset = () => {
+            v.fill(1);
+            k.fill(0);
+            i = 0;
+        };
+        const h = (...b) => hmacFn(k, v, ...b); // hmac(k)(v, ...values)
+        const reseed = (seed = u8n()) => {
+            // HMAC-DRBG reseed() function. Steps D-G
+            k = h(u8fr([0x00]), seed); // k = hmac(k || v || 0x00 || seed)
+            v = h(); // v = hmac(k || v)
+            if (seed.length === 0)
+                return;
+            k = h(u8fr([0x01]), seed); // k = hmac(k || v || 0x01 || seed)
+            v = h(); // v = hmac(k || v)
+        };
+        const gen = () => {
+            // HMAC-DRBG generate() function
+            if (i++ >= 1000)
+                throw new Error('drbg: tried 1000 values');
+            let len = 0;
+            const out = [];
+            while (len < qByteLen) {
+                v = h();
+                const sl = v.slice();
+                out.push(sl);
+                len += v.length;
+            }
+            return concatBytes(...out);
+        };
+        const genUntil = (seed, pred) => {
+            reset();
+            reseed(seed); // Steps D-G
+            let res = undefined; // Step H: grind until k is in [1..n-1]
+            while (!(res = pred(gen())))
+                reseed();
+            reset();
+            return res;
+        };
+        return genUntil;
+    }
+    // Validating curves and fields
+    const validatorFns = {
+        bigint: (val) => typeof val === 'bigint',
+        function: (val) => typeof val === 'function',
+        boolean: (val) => typeof val === 'boolean',
+        string: (val) => typeof val === 'string',
+        stringOrUint8Array: (val) => typeof val === 'string' || val instanceof Uint8Array,
+        isSafeInteger: (val) => Number.isSafeInteger(val),
+        array: (val) => Array.isArray(val),
+        field: (val, object) => object.Fp.isValid(val),
+        hash: (val) => typeof val === 'function' && Number.isSafeInteger(val.outputLen),
+    };
+    // type Record<K extends string | number | symbol, T> = { [P in K]: T; }
+    function validateObject(object, validators, optValidators = {}) {
+        const checkField = (fieldName, type, isOptional) => {
+            const checkVal = validatorFns[type];
+            if (typeof checkVal !== 'function')
+                throw new Error(`Invalid validator "${type}", expected function`);
+            const val = object[fieldName];
+            if (isOptional && val === undefined)
+                return;
+            if (!checkVal(val, object)) {
+                throw new Error(`Invalid param ${String(fieldName)}=${val} (${typeof val}), expected ${type}`);
+            }
+        };
+        for (const [fieldName, type] of Object.entries(validators))
+            checkField(fieldName, type, false);
+        for (const [fieldName, type] of Object.entries(optValidators))
+            checkField(fieldName, type, true);
+        return object;
+    }
+    // validate type tests
+    // const o: { a: number; b: number; c: number } = { a: 1, b: 5, c: 6 };
+    // const z0 = validateObject(o, { a: 'isSafeInteger' }, { c: 'bigint' }); // Ok!
+    // // Should fail type-check
+    // const z1 = validateObject(o, { a: 'tmp' }, { c: 'zz' });
+    // const z2 = validateObject(o, { a: 'isSafeInteger' }, { c: 'zz' });
+    // const z3 = validateObject(o, { test: 'boolean', z: 'bug' });
+    // const z4 = validateObject(o, { a: 'boolean', z: 'bug' });
+
+    var ut = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        bitGet: bitGet,
+        bitLen: bitLen,
+        bitMask: bitMask,
+        bitSet: bitSet,
+        bytesToHex: bytesToHex,
+        bytesToNumberBE: bytesToNumberBE,
+        bytesToNumberLE: bytesToNumberLE,
+        concatBytes: concatBytes,
+        createHmacDrbg: createHmacDrbg,
+        ensureBytes: ensureBytes,
+        equalBytes: equalBytes,
+        hexToBytes: hexToBytes,
+        hexToNumber: hexToNumber,
+        numberToBytesBE: numberToBytesBE,
+        numberToBytesLE: numberToBytesLE,
+        numberToHexUnpadded: numberToHexUnpadded,
+        numberToVarBytesBE: numberToVarBytesBE,
+        utf8ToBytes: utf8ToBytes,
+        validateObject: validateObject
+    });
+
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    // Utilities for modular arithmetics and finite fields
+    // prettier-ignore
+    const _0n$2 = BigInt(0), _1n$3 = BigInt(1), _2n$1 = BigInt(2), _3n$1 = BigInt(3);
+    // prettier-ignore
+    const _4n = BigInt(4), _5n = BigInt(5), _8n = BigInt(8);
+    // prettier-ignore
+    BigInt(9); BigInt(16);
+    // Calculates a modulo b
+    function mod(a, b) {
         const result = a % b;
-        return result >= _0n ? result : b + result;
+        return result >= _0n$2 ? result : b + result;
     }
-    function pow2(x, power) {
-        const { P } = CURVE;
-        let res = x;
-        while (power-- > _0n) {
-            res *= res;
-            res %= P;
+    /**
+     * Efficiently raise num to power and do modular division.
+     * Unsafe in some contexts: uses ladder, so can expose bigint bits.
+     * @example
+     * pow(2n, 6n, 11n) // 64n % 11n == 9n
+     */
+    // TODO: use field version && remove
+    function pow(num, power, modulo) {
+        if (modulo <= _0n$2 || power < _0n$2)
+            throw new Error('Expected power/modulo > 0');
+        if (modulo === _1n$3)
+            return _0n$2;
+        let res = _1n$3;
+        while (power > _0n$2) {
+            if (power & _1n$3)
+                res = (res * num) % modulo;
+            num = (num * num) % modulo;
+            power >>= _1n$3;
         }
         return res;
     }
-    function sqrtMod(x) {
-        const { P } = CURVE;
-        const _6n = BigInt(6);
-        const _11n = BigInt(11);
-        const _22n = BigInt(22);
-        const _23n = BigInt(23);
-        const _44n = BigInt(44);
-        const _88n = BigInt(88);
-        const b2 = (x * x * x) % P;
-        const b3 = (b2 * b2 * x) % P;
-        const b6 = (pow2(b3, _3n) * b3) % P;
-        const b9 = (pow2(b6, _3n) * b3) % P;
-        const b11 = (pow2(b9, _2n) * b2) % P;
-        const b22 = (pow2(b11, _11n) * b11) % P;
-        const b44 = (pow2(b22, _22n) * b22) % P;
-        const b88 = (pow2(b44, _44n) * b44) % P;
-        const b176 = (pow2(b88, _88n) * b88) % P;
-        const b220 = (pow2(b176, _44n) * b44) % P;
-        const b223 = (pow2(b220, _3n) * b3) % P;
-        const t1 = (pow2(b223, _23n) * b22) % P;
-        const t2 = (pow2(t1, _6n) * b2) % P;
-        const rt = pow2(t2, _2n);
-        const xc = (rt * rt) % P;
-        if (xc !== x)
-            throw new Error('Cannot find square root');
-        return rt;
+    // Does x ^ (2 ^ power) mod p. pow2(30, 4) == 30 ^ (2 ^ 4)
+    function pow2(x, power, modulo) {
+        let res = x;
+        while (power-- > _0n$2) {
+            res *= res;
+            res %= modulo;
+        }
+        return res;
     }
-    function invert(number, modulo = CURVE.P) {
-        if (number === _0n || modulo <= _0n) {
+    // Inverses number over modulo
+    function invert(number, modulo) {
+        if (number === _0n$2 || modulo <= _0n$2) {
             throw new Error(`invert: expected positive integers, got n=${number} mod=${modulo}`);
         }
+        // Euclidean GCD https://brilliant.org/wiki/extended-euclidean-algorithm/
+        // Fermat's little theorem "CT-like" version inv(n) = n^(m-2) mod m is 30x slower.
         let a = mod(number, modulo);
         let b = modulo;
-        let x = _0n, u = _1n;
-        while (a !== _0n) {
+        // prettier-ignore
+        let x = _0n$2, u = _1n$3;
+        while (a !== _0n$2) {
+            // JIT applies optimization if those two lines follow each other
             const q = b / a;
             const r = b % a;
             const m = x - u * q;
+            // prettier-ignore
             b = a, a = r, x = u, u = m;
         }
         const gcd = b;
-        if (gcd !== _1n)
+        if (gcd !== _1n$3)
             throw new Error('invert: does not exist');
         return mod(x, modulo);
     }
-    function invertBatch(nums, p = CURVE.P) {
-        const scratch = new Array(nums.length);
+    /**
+     * Tonelli-Shanks square root search algorithm.
+     * 1. https://eprint.iacr.org/2012/685.pdf (page 12)
+     * 2. Square Roots from 1; 24, 51, 10 to Dan Shanks
+     * Will start an infinite loop if field order P is not prime.
+     * @param P field order
+     * @returns function that takes field Fp (created from P) and number n
+     */
+    function tonelliShanks(P) {
+        // Legendre constant: used to calculate Legendre symbol (a | p),
+        // which denotes the value of a^((p-1)/2) (mod p).
+        // (a | p) ≡ 1    if a is a square (mod p)
+        // (a | p) ≡ -1   if a is not a square (mod p)
+        // (a | p) ≡ 0    if a ≡ 0 (mod p)
+        const legendreC = (P - _1n$3) / _2n$1;
+        let Q, S, Z;
+        // Step 1: By factoring out powers of 2 from p - 1,
+        // find q and s such that p - 1 = q*(2^s) with q odd
+        for (Q = P - _1n$3, S = 0; Q % _2n$1 === _0n$2; Q /= _2n$1, S++)
+            ;
+        // Step 2: Select a non-square z such that (z | p) ≡ -1 and set c ≡ zq
+        for (Z = _2n$1; Z < P && pow(Z, legendreC, P) !== P - _1n$3; Z++)
+            ;
+        // Fast-path
+        if (S === 1) {
+            const p1div4 = (P + _1n$3) / _4n;
+            return function tonelliFast(Fp, n) {
+                const root = Fp.pow(n, p1div4);
+                if (!Fp.eql(Fp.sqr(root), n))
+                    throw new Error('Cannot find square root');
+                return root;
+            };
+        }
+        // Slow-path
+        const Q1div2 = (Q + _1n$3) / _2n$1;
+        return function tonelliSlow(Fp, n) {
+            // Step 0: Check that n is indeed a square: (n | p) should not be ≡ -1
+            if (Fp.pow(n, legendreC) === Fp.neg(Fp.ONE))
+                throw new Error('Cannot find square root');
+            let r = S;
+            // TODO: will fail at Fp2/etc
+            let g = Fp.pow(Fp.mul(Fp.ONE, Z), Q); // will update both x and b
+            let x = Fp.pow(n, Q1div2); // first guess at the square root
+            let b = Fp.pow(n, Q); // first guess at the fudge factor
+            while (!Fp.eql(b, Fp.ONE)) {
+                if (Fp.eql(b, Fp.ZERO))
+                    return Fp.ZERO; // https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm (4. If t = 0, return r = 0)
+                // Find m such b^(2^m)==1
+                let m = 1;
+                for (let t2 = Fp.sqr(b); m < r; m++) {
+                    if (Fp.eql(t2, Fp.ONE))
+                        break;
+                    t2 = Fp.sqr(t2); // t2 *= t2
+                }
+                // NOTE: r-m-1 can be bigger than 32, need to convert to bigint before shift, otherwise there will be overflow
+                const ge = Fp.pow(g, _1n$3 << BigInt(r - m - 1)); // ge = 2^(r-m-1)
+                g = Fp.sqr(ge); // g = ge * ge
+                x = Fp.mul(x, ge); // x *= ge
+                b = Fp.mul(b, g); // b *= g
+                r = m;
+            }
+            return x;
+        };
+    }
+    function FpSqrt(P) {
+        // NOTE: different algorithms can give different roots, it is up to user to decide which one they want.
+        // For example there is FpSqrtOdd/FpSqrtEven to choice root based on oddness (used for hash-to-curve).
+        // P ≡ 3 (mod 4)
+        // √n = n^((P+1)/4)
+        if (P % _4n === _3n$1) {
+            // Not all roots possible!
+            // const ORDER =
+            //   0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaabn;
+            // const NUM = 72057594037927816n;
+            const p1div4 = (P + _1n$3) / _4n;
+            return function sqrt3mod4(Fp, n) {
+                const root = Fp.pow(n, p1div4);
+                // Throw if root**2 != n
+                if (!Fp.eql(Fp.sqr(root), n))
+                    throw new Error('Cannot find square root');
+                return root;
+            };
+        }
+        // Atkin algorithm for q ≡ 5 (mod 8), https://eprint.iacr.org/2012/685.pdf (page 10)
+        if (P % _8n === _5n) {
+            const c1 = (P - _5n) / _8n;
+            return function sqrt5mod8(Fp, n) {
+                const n2 = Fp.mul(n, _2n$1);
+                const v = Fp.pow(n2, c1);
+                const nv = Fp.mul(n, v);
+                const i = Fp.mul(Fp.mul(nv, _2n$1), v);
+                const root = Fp.mul(nv, Fp.sub(i, Fp.ONE));
+                if (!Fp.eql(Fp.sqr(root), n))
+                    throw new Error('Cannot find square root');
+                return root;
+            };
+        }
+        // Other cases: Tonelli-Shanks algorithm
+        return tonelliShanks(P);
+    }
+    // prettier-ignore
+    const FIELD_FIELDS = [
+        'create', 'isValid', 'is0', 'neg', 'inv', 'sqrt', 'sqr',
+        'eql', 'add', 'sub', 'mul', 'pow', 'div',
+        'addN', 'subN', 'mulN', 'sqrN'
+    ];
+    function validateField(field) {
+        const initial = {
+            ORDER: 'bigint',
+            MASK: 'bigint',
+            BYTES: 'isSafeInteger',
+            BITS: 'isSafeInteger',
+        };
+        const opts = FIELD_FIELDS.reduce((map, val) => {
+            map[val] = 'function';
+            return map;
+        }, initial);
+        return validateObject(field, opts);
+    }
+    // Generic field functions
+    /**
+     * Same as `pow` but for Fp: non-constant-time.
+     * Unsafe in some contexts: uses ladder, so can expose bigint bits.
+     */
+    function FpPow(f, num, power) {
+        // Should have same speed as pow for bigints
+        // TODO: benchmark!
+        if (power < _0n$2)
+            throw new Error('Expected power > 0');
+        if (power === _0n$2)
+            return f.ONE;
+        if (power === _1n$3)
+            return num;
+        let p = f.ONE;
+        let d = num;
+        while (power > _0n$2) {
+            if (power & _1n$3)
+                p = f.mul(p, d);
+            d = f.sqr(d);
+            power >>= _1n$3;
+        }
+        return p;
+    }
+    /**
+     * Efficiently invert an array of Field elements.
+     * `inv(0)` will return `undefined` here: make sure to throw an error.
+     */
+    function FpInvertBatch(f, nums) {
+        const tmp = new Array(nums.length);
+        // Walk from first to last, multiply them by each other MOD p
         const lastMultiplied = nums.reduce((acc, num, i) => {
-            if (num === _0n)
+            if (f.is0(num))
                 return acc;
-            scratch[i] = acc;
-            return mod(acc * num, p);
-        }, _1n);
-        const inverted = invert(lastMultiplied, p);
+            tmp[i] = acc;
+            return f.mul(acc, num);
+        }, f.ONE);
+        // Invert last element
+        const inverted = f.inv(lastMultiplied);
+        // Walk from last to first, multiply them by inverted each other MOD p
         nums.reduceRight((acc, num, i) => {
-            if (num === _0n)
+            if (f.is0(num))
                 return acc;
-            scratch[i] = mod(acc * scratch[i], p);
-            return mod(acc * num, p);
+            tmp[i] = f.mul(acc, tmp[i]);
+            return f.mul(acc, num);
         }, inverted);
-        return scratch;
+        return tmp;
     }
-    function bits2int_2(bytes) {
-        const delta = bytes.length * 8 - groupLen * 8;
-        const num = bytesToNumber(bytes);
-        return delta > 0 ? num >> BigInt(delta) : num;
+    // CURVE.n lengths
+    function nLength(n, nBitLength) {
+        // Bit size, byte size of CURVE.n
+        const _nBitLength = nBitLength !== undefined ? nBitLength : n.toString(2).length;
+        const nByteLength = Math.ceil(_nBitLength / 8);
+        return { nBitLength: _nBitLength, nByteLength };
     }
-    function truncateHash(hash, truncateOnly = false) {
-        const h = bits2int_2(hash);
-        if (truncateOnly)
-            return h;
-        const { n } = CURVE;
-        return h >= n ? h - n : h;
+    /**
+     * Initializes a finite field over prime. **Non-primes are not supported.**
+     * Do not init in loop: slow. Very fragile: always run a benchmark on a change.
+     * Major performance optimizations:
+     * * a) denormalized operations like mulN instead of mul
+     * * b) same object shape: never add or remove keys
+     * * c) Object.freeze
+     * @param ORDER prime positive bigint
+     * @param bitLen how many bits the field consumes
+     * @param isLE (def: false) if encoding / decoding should be in little-endian
+     * @param redef optional faster redefinitions of sqrt and other methods
+     */
+    function Field(ORDER, bitLen, isLE = false, redef = {}) {
+        if (ORDER <= _0n$2)
+            throw new Error(`Expected Field ORDER > 0, got ${ORDER}`);
+        const { nBitLength: BITS, nByteLength: BYTES } = nLength(ORDER, bitLen);
+        if (BYTES > 2048)
+            throw new Error('Field lengths over 2048 bytes are not supported');
+        const sqrtP = FpSqrt(ORDER);
+        const f = Object.freeze({
+            ORDER,
+            BITS,
+            BYTES,
+            MASK: bitMask(BITS),
+            ZERO: _0n$2,
+            ONE: _1n$3,
+            create: (num) => mod(num, ORDER),
+            isValid: (num) => {
+                if (typeof num !== 'bigint')
+                    throw new Error(`Invalid field element: expected bigint, got ${typeof num}`);
+                return _0n$2 <= num && num < ORDER; // 0 is valid element, but it's not invertible
+            },
+            is0: (num) => num === _0n$2,
+            isOdd: (num) => (num & _1n$3) === _1n$3,
+            neg: (num) => mod(-num, ORDER),
+            eql: (lhs, rhs) => lhs === rhs,
+            sqr: (num) => mod(num * num, ORDER),
+            add: (lhs, rhs) => mod(lhs + rhs, ORDER),
+            sub: (lhs, rhs) => mod(lhs - rhs, ORDER),
+            mul: (lhs, rhs) => mod(lhs * rhs, ORDER),
+            pow: (num, power) => FpPow(f, num, power),
+            div: (lhs, rhs) => mod(lhs * invert(rhs, ORDER), ORDER),
+            // Same as above, but doesn't normalize
+            sqrN: (num) => num * num,
+            addN: (lhs, rhs) => lhs + rhs,
+            subN: (lhs, rhs) => lhs - rhs,
+            mulN: (lhs, rhs) => lhs * rhs,
+            inv: (num) => invert(num, ORDER),
+            sqrt: redef.sqrt || ((n) => sqrtP(f, n)),
+            invertBatch: (lst) => FpInvertBatch(f, lst),
+            // TODO: do we really need constant cmov?
+            // We don't have const-time bigints anyway, so probably will be not very useful
+            cmov: (a, b, c) => (c ? b : a),
+            toBytes: (num) => (isLE ? numberToBytesLE(num, BYTES) : numberToBytesBE(num, BYTES)),
+            fromBytes: (bytes) => {
+                if (bytes.length !== BYTES)
+                    throw new Error(`Fp.fromBytes: expected ${BYTES}, got ${bytes.length}`);
+                return isLE ? bytesToNumberLE(bytes) : bytesToNumberBE(bytes);
+            },
+        });
+        return Object.freeze(f);
     }
-    let _sha256Sync;
-    let _hmacSha256Sync;
-    class HmacDrbg {
-        constructor(hashLen, qByteLen) {
-            this.hashLen = hashLen;
-            this.qByteLen = qByteLen;
-            if (typeof hashLen !== 'number' || hashLen < 2)
-                throw new Error('hashLen must be a number');
-            if (typeof qByteLen !== 'number' || qByteLen < 2)
-                throw new Error('qByteLen must be a number');
-            this.v = new Uint8Array(hashLen).fill(1);
-            this.k = new Uint8Array(hashLen).fill(0);
-            this.counter = 0;
-        }
-        hmac(...values) {
-            return utils.hmacSha256(this.k, ...values);
-        }
-        hmacSync(...values) {
-            return _hmacSha256Sync(this.k, ...values);
-        }
-        checkSync() {
-            if (typeof _hmacSha256Sync !== 'function')
-                throw new ShaError('hmacSha256Sync needs to be set');
-        }
-        incr() {
-            if (this.counter >= 1000)
-                throw new Error('Tried 1,000 k values for sign(), all were invalid');
-            this.counter += 1;
-        }
-        async reseed(seed = new Uint8Array()) {
-            this.k = await this.hmac(this.v, Uint8Array.from([0x00]), seed);
-            this.v = await this.hmac(this.v);
-            if (seed.length === 0)
-                return;
-            this.k = await this.hmac(this.v, Uint8Array.from([0x01]), seed);
-            this.v = await this.hmac(this.v);
-        }
-        reseedSync(seed = new Uint8Array()) {
-            this.checkSync();
-            this.k = this.hmacSync(this.v, Uint8Array.from([0x00]), seed);
-            this.v = this.hmacSync(this.v);
-            if (seed.length === 0)
-                return;
-            this.k = this.hmacSync(this.v, Uint8Array.from([0x01]), seed);
-            this.v = this.hmacSync(this.v);
-        }
-        async generate() {
-            this.incr();
-            let len = 0;
-            const out = [];
-            while (len < this.qByteLen) {
-                this.v = await this.hmac(this.v);
-                const sl = this.v.slice();
-                out.push(sl);
-                len += this.v.length;
+    /**
+     * Returns total number of bytes consumed by the field element.
+     * For example, 32 bytes for usual 256-bit weierstrass curve.
+     * @param fieldOrder number of field elements, usually CURVE.n
+     * @returns byte length of field
+     */
+    function getFieldBytesLength(fieldOrder) {
+        if (typeof fieldOrder !== 'bigint')
+            throw new Error('field order must be bigint');
+        const bitLength = fieldOrder.toString(2).length;
+        return Math.ceil(bitLength / 8);
+    }
+    /**
+     * Returns minimal amount of bytes that can be safely reduced
+     * by field order.
+     * Should be 2^-128 for 128-bit curve such as P256.
+     * @param fieldOrder number of field elements, usually CURVE.n
+     * @returns byte length of target hash
+     */
+    function getMinHashLength(fieldOrder) {
+        const length = getFieldBytesLength(fieldOrder);
+        return length + Math.ceil(length / 2);
+    }
+    /**
+     * "Constant-time" private key generation utility.
+     * Can take (n + n/2) or more bytes of uniform input e.g. from CSPRNG or KDF
+     * and convert them into private scalar, with the modulo bias being negligible.
+     * Needs at least 48 bytes of input for 32-byte private key.
+     * https://research.kudelskisecurity.com/2020/07/28/the-definitive-guide-to-modulo-bias-and-how-to-avoid-it/
+     * FIPS 186-5, A.2 https://csrc.nist.gov/publications/detail/fips/186/5/final
+     * RFC 9380, https://www.rfc-editor.org/rfc/rfc9380#section-5
+     * @param hash hash output from SHA3 or a similar function
+     * @param groupOrder size of subgroup - (e.g. secp256k1.CURVE.n)
+     * @param isLE interpret hash bytes as LE num
+     * @returns valid private scalar
+     */
+    function mapHashToField(key, fieldOrder, isLE = false) {
+        const len = key.length;
+        const fieldLen = getFieldBytesLength(fieldOrder);
+        const minLen = getMinHashLength(fieldOrder);
+        // No small numbers: need to understand bias story. No huge numbers: easier to detect JS timings.
+        if (len < 16 || len < minLen || len > 1024)
+            throw new Error(`expected ${minLen}-1024 bytes of input, got ${len}`);
+        const num = isLE ? bytesToNumberBE(key) : bytesToNumberLE(key);
+        // `mod(x, 11)` can sometimes produce 0. `mod(x, 10) + 1` is the same, but no 0
+        const reduced = mod(num, fieldOrder - _1n$3) + _1n$3;
+        return isLE ? numberToBytesLE(reduced, fieldLen) : numberToBytesBE(reduced, fieldLen);
+    }
+
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    // Abelian group utilities
+    const _0n$1 = BigInt(0);
+    const _1n$2 = BigInt(1);
+    // Elliptic curve multiplication of Point by scalar. Fragile.
+    // Scalars should always be less than curve order: this should be checked inside of a curve itself.
+    // Creates precomputation tables for fast multiplication:
+    // - private scalar is split by fixed size windows of W bits
+    // - every window point is collected from window's table & added to accumulator
+    // - since windows are different, same point inside tables won't be accessed more than once per calc
+    // - each multiplication is 'Math.ceil(CURVE_ORDER / 𝑊) + 1' point additions (fixed for any scalar)
+    // - +1 window is neccessary for wNAF
+    // - wNAF reduces table size: 2x less memory + 2x faster generation, but 10% slower multiplication
+    // TODO: Research returning 2d JS array of windows, instead of a single window. This would allow
+    // windows to be in different memory locations
+    function wNAF(c, bits) {
+        const constTimeNegate = (condition, item) => {
+            const neg = item.negate();
+            return condition ? neg : item;
+        };
+        const opts = (W) => {
+            const windows = Math.ceil(bits / W) + 1; // +1, because
+            const windowSize = 2 ** (W - 1); // -1 because we skip zero
+            return { windows, windowSize };
+        };
+        return {
+            constTimeNegate,
+            // non-const time multiplication ladder
+            unsafeLadder(elm, n) {
+                let p = c.ZERO;
+                let d = elm;
+                while (n > _0n$1) {
+                    if (n & _1n$2)
+                        p = p.add(d);
+                    d = d.double();
+                    n >>= _1n$2;
+                }
+                return p;
+            },
+            /**
+             * Creates a wNAF precomputation window. Used for caching.
+             * Default window size is set by `utils.precompute()` and is equal to 8.
+             * Number of precomputed points depends on the curve size:
+             * 2^(𝑊−1) * (Math.ceil(𝑛 / 𝑊) + 1), where:
+             * - 𝑊 is the window size
+             * - 𝑛 is the bitlength of the curve order.
+             * For a 256-bit curve and window size 8, the number of precomputed points is 128 * 33 = 4224.
+             * @returns precomputed point tables flattened to a single array
+             */
+            precomputeWindow(elm, W) {
+                const { windows, windowSize } = opts(W);
+                const points = [];
+                let p = elm;
+                let base = p;
+                for (let window = 0; window < windows; window++) {
+                    base = p;
+                    points.push(base);
+                    // =1, because we skip zero
+                    for (let i = 1; i < windowSize; i++) {
+                        base = base.add(p);
+                        points.push(base);
+                    }
+                    p = base.double();
+                }
+                return points;
+            },
+            /**
+             * Implements ec multiplication using precomputed tables and w-ary non-adjacent form.
+             * @param W window size
+             * @param precomputes precomputed tables
+             * @param n scalar (we don't check here, but should be less than curve order)
+             * @returns real and fake (for const-time) points
+             */
+            wNAF(W, precomputes, n) {
+                // TODO: maybe check that scalar is less than group order? wNAF behavious is undefined otherwise
+                // But need to carefully remove other checks before wNAF. ORDER == bits here
+                const { windows, windowSize } = opts(W);
+                let p = c.ZERO;
+                let f = c.BASE;
+                const mask = BigInt(2 ** W - 1); // Create mask with W ones: 0b1111 for W=4 etc.
+                const maxNumber = 2 ** W;
+                const shiftBy = BigInt(W);
+                for (let window = 0; window < windows; window++) {
+                    const offset = window * windowSize;
+                    // Extract W bits.
+                    let wbits = Number(n & mask);
+                    // Shift number by W bits.
+                    n >>= shiftBy;
+                    // If the bits are bigger than max size, we'll split those.
+                    // +224 => 256 - 32
+                    if (wbits > windowSize) {
+                        wbits -= maxNumber;
+                        n += _1n$2;
+                    }
+                    // This code was first written with assumption that 'f' and 'p' will never be infinity point:
+                    // since each addition is multiplied by 2 ** W, it cannot cancel each other. However,
+                    // there is negate now: it is possible that negated element from low value
+                    // would be the same as high element, which will create carry into next window.
+                    // It's not obvious how this can fail, but still worth investigating later.
+                    // Check if we're onto Zero point.
+                    // Add random point inside current window to f.
+                    const offset1 = offset;
+                    const offset2 = offset + Math.abs(wbits) - 1; // -1 because we skip zero
+                    const cond1 = window % 2 !== 0;
+                    const cond2 = wbits < 0;
+                    if (wbits === 0) {
+                        // The most important part for const-time getPublicKey
+                        f = f.add(constTimeNegate(cond1, precomputes[offset1]));
+                    }
+                    else {
+                        p = p.add(constTimeNegate(cond2, precomputes[offset2]));
+                    }
+                }
+                // JIT-compiler should not eliminate f here, since it will later be used in normalizeZ()
+                // Even if the variable is still unused, there are some checks which will
+                // throw an exception, so compiler needs to prove they won't happen, which is hard.
+                // At this point there is a way to F be infinity-point even if p is not,
+                // which makes it less const-time: around 1 bigint multiply.
+                return { p, f };
+            },
+            wNAFCached(P, precomputesMap, n, transform) {
+                // @ts-ignore
+                const W = P._WINDOW_SIZE || 1;
+                // Calculate precomputes on a first run, reuse them after
+                let comp = precomputesMap.get(P);
+                if (!comp) {
+                    comp = this.precomputeWindow(P, W);
+                    if (W !== 1) {
+                        precomputesMap.set(P, transform(comp));
+                    }
+                }
+                return this.wNAF(W, comp, n);
+            },
+        };
+    }
+    function validateBasic(curve) {
+        validateField(curve.Fp);
+        validateObject(curve, {
+            n: 'bigint',
+            h: 'bigint',
+            Gx: 'field',
+            Gy: 'field',
+        }, {
+            nBitLength: 'isSafeInteger',
+            nByteLength: 'isSafeInteger',
+        });
+        // Set defaults
+        return Object.freeze({
+            ...nLength(curve.n, curve.nBitLength),
+            ...curve,
+            ...{ p: curve.Fp.ORDER },
+        });
+    }
+
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    // Short Weierstrass curve. The formula is: y² = x³ + ax + b
+    function validatePointOpts(curve) {
+        const opts = validateBasic(curve);
+        validateObject(opts, {
+            a: 'field',
+            b: 'field',
+        }, {
+            allowedPrivateKeyLengths: 'array',
+            wrapPrivateKey: 'boolean',
+            isTorsionFree: 'function',
+            clearCofactor: 'function',
+            allowInfinityPoint: 'boolean',
+            fromBytes: 'function',
+            toBytes: 'function',
+        });
+        const { endo, Fp, a } = opts;
+        if (endo) {
+            if (!Fp.eql(a, Fp.ZERO)) {
+                throw new Error('Endomorphism can only be defined for Koblitz curves that have a=0');
             }
-            return concatBytes(...out);
-        }
-        generateSync() {
-            this.checkSync();
-            this.incr();
-            let len = 0;
-            const out = [];
-            while (len < this.qByteLen) {
-                this.v = this.hmacSync(this.v);
-                const sl = this.v.slice();
-                out.push(sl);
-                len += this.v.length;
+            if (typeof endo !== 'object' ||
+                typeof endo.beta !== 'bigint' ||
+                typeof endo.splitScalar !== 'function') {
+                throw new Error('Expected endomorphism with beta: bigint and splitScalar: function');
             }
-            return concatBytes(...out);
         }
+        return Object.freeze({ ...opts });
     }
-    function isWithinCurveOrder(num) {
-        return _0n < num && num < CURVE.n;
-    }
-    function isValidFieldElement(num) {
-        return _0n < num && num < CURVE.P;
-    }
-    function kmdToSig(kBytes, m, d, lowS = true) {
-        const { n } = CURVE;
-        const k = truncateHash(kBytes, true);
-        if (!isWithinCurveOrder(k))
-            return;
-        const kinv = invert(k, n);
-        const q = Point.BASE.multiply(k);
-        const r = mod(q.x, n);
-        if (r === _0n)
-            return;
-        const s = mod(kinv * mod(m + d * r, n), n);
-        if (s === _0n)
-            return;
-        let sig = new Signature$1(r, s);
-        let recovery = (q.x === sig.r ? 0 : 2) | Number(q.y & _1n);
-        if (lowS && sig.hasHighS()) {
-            sig = sig.normalizeS();
-            recovery ^= 1;
-        }
-        return { sig, recovery };
-    }
-    function normalizePrivateKey(key) {
-        let num;
-        if (typeof key === 'bigint') {
-            num = key;
-        }
-        else if (typeof key === 'number' && Number.isSafeInteger(key) && key > 0) {
-            num = BigInt(key);
-        }
-        else if (typeof key === 'string') {
-            if (key.length !== 2 * groupLen)
-                throw new Error('Expected 32 bytes of private key');
-            num = hexToNumber(key);
-        }
-        else if (key instanceof Uint8Array) {
-            if (key.length !== groupLen)
-                throw new Error('Expected 32 bytes of private key');
-            num = bytesToNumber(key);
-        }
-        else {
-            throw new TypeError('Expected valid private key');
-        }
-        if (!isWithinCurveOrder(num))
-            throw new Error('Expected private key: 0 < key < n');
-        return num;
-    }
-    function normalizePublicKey(publicKey) {
-        if (publicKey instanceof Point) {
-            publicKey.assertValidity();
-            return publicKey;
-        }
-        else {
-            return Point.fromHex(publicKey);
-        }
-    }
-    function normalizeSignature(signature) {
-        if (signature instanceof Signature$1) {
-            signature.assertValidity();
-            return signature;
-        }
-        try {
-            return Signature$1.fromDER(signature);
-        }
-        catch (error) {
-            return Signature$1.fromCompact(signature);
-        }
-    }
-    function getPublicKey(privateKey, isCompressed = false) {
-        return Point.fromPrivateKey(privateKey).toRawBytes(isCompressed);
-    }
-    function recoverPublicKey(msgHash, signature, recovery, isCompressed = false) {
-        return Point.fromSignature(msgHash, signature, recovery).toRawBytes(isCompressed);
-    }
-    function isProbPub(item) {
-        const arr = item instanceof Uint8Array;
-        const str = typeof item === 'string';
-        const len = (arr || str) && item.length;
-        if (arr)
-            return len === compressedLen || len === uncompressedLen;
-        if (str)
-            return len === compressedLen * 2 || len === uncompressedLen * 2;
-        if (item instanceof Point)
-            return true;
-        return false;
-    }
-    function getSharedSecret(privateA, publicB, isCompressed = false) {
-        if (isProbPub(privateA))
-            throw new TypeError('getSharedSecret: first arg must be private key');
-        if (!isProbPub(publicB))
-            throw new TypeError('getSharedSecret: second arg must be public key');
-        const b = normalizePublicKey(publicB);
-        b.assertValidity();
-        return b.multiply(normalizePrivateKey(privateA)).toRawBytes(isCompressed);
-    }
-    function bits2int(bytes) {
-        const slice = bytes.length > fieldLen ? bytes.slice(0, fieldLen) : bytes;
-        return bytesToNumber(slice);
-    }
-    function bits2octets(bytes) {
-        const z1 = bits2int(bytes);
-        const z2 = mod(z1, CURVE.n);
-        return int2octets(z2 < _0n ? z1 : z2);
-    }
-    function int2octets(num) {
-        return numTo32b(num);
-    }
-    function initSigArgs(msgHash, privateKey, extraEntropy) {
-        if (msgHash == null)
-            throw new Error(`sign: expected valid message hash, not "${msgHash}"`);
-        const h1 = ensureBytes(msgHash);
-        const d = normalizePrivateKey(privateKey);
-        const seedArgs = [int2octets(d), bits2octets(h1)];
-        if (extraEntropy != null) {
-            if (extraEntropy === true)
-                extraEntropy = utils.randomBytes(fieldLen);
-            const e = ensureBytes(extraEntropy);
-            if (e.length !== fieldLen)
-                throw new Error(`sign: Expected ${fieldLen} bytes of extra data`);
-            seedArgs.push(e);
-        }
-        const seed = concatBytes(...seedArgs);
-        const m = bits2int(h1);
-        return { seed, m, d };
-    }
-    function finalizeSig(recSig, opts) {
-        const { sig, recovery } = recSig;
-        const { der, recovered } = Object.assign({ canonical: true, der: true }, opts);
-        const hashed = der ? sig.toDERRawBytes() : sig.toCompactRawBytes();
-        return recovered ? [hashed, recovery] : hashed;
-    }
-    function signSync(msgHash, privKey, opts = {}) {
-        const { seed, m, d } = initSigArgs(msgHash, privKey, opts.extraEntropy);
-        const drbg = new HmacDrbg(hashLen, groupLen);
-        drbg.reseedSync(seed);
-        let sig;
-        while (!(sig = kmdToSig(drbg.generateSync(), m, d, opts.canonical)))
-            drbg.reseedSync();
-        return finalizeSig(sig, opts);
-    }
-    Point.BASE._setWindowSize(8);
-    const crypto = {
-        node: nodeCrypto,
-        web: typeof self === 'object' && 'crypto' in self ? self.crypto : undefined,
+    // ASN.1 DER encoding utilities
+    const { bytesToNumberBE: b2n, hexToBytes: h2b } = ut;
+    const DER = {
+        // asn.1 DER encoding utils
+        Err: class DERErr extends Error {
+            constructor(m = '') {
+                super(m);
+            }
+        },
+        _parseInt(data) {
+            const { Err: E } = DER;
+            if (data.length < 2 || data[0] !== 0x02)
+                throw new E('Invalid signature integer tag');
+            const len = data[1];
+            const res = data.subarray(2, len + 2);
+            if (!len || res.length !== len)
+                throw new E('Invalid signature integer: wrong length');
+            // https://crypto.stackexchange.com/a/57734 Leftmost bit of first byte is 'negative' flag,
+            // since we always use positive integers here. It must always be empty:
+            // - add zero byte if exists
+            // - if next byte doesn't have a flag, leading zero is not allowed (minimal encoding)
+            if (res[0] & 0b10000000)
+                throw new E('Invalid signature integer: negative');
+            if (res[0] === 0x00 && !(res[1] & 0b10000000))
+                throw new E('Invalid signature integer: unnecessary leading zero');
+            return { d: b2n(res), l: data.subarray(len + 2) }; // d is data, l is left
+        },
+        toSig(hex) {
+            // parse DER signature
+            const { Err: E } = DER;
+            const data = typeof hex === 'string' ? h2b(hex) : hex;
+            if (!(data instanceof Uint8Array))
+                throw new Error('ui8a expected');
+            let l = data.length;
+            if (l < 2 || data[0] != 0x30)
+                throw new E('Invalid signature tag');
+            if (data[1] !== l - 2)
+                throw new E('Invalid signature: incorrect length');
+            const { d: r, l: sBytes } = DER._parseInt(data.subarray(2));
+            const { d: s, l: rBytesLeft } = DER._parseInt(sBytes);
+            if (rBytesLeft.length)
+                throw new E('Invalid signature: left bytes after parsing');
+            return { r, s };
+        },
+        hexFromSig(sig) {
+            // Add leading zero if first byte has negative bit enabled. More details in '_parseInt'
+            const slice = (s) => (Number.parseInt(s[0], 16) & 0b1000 ? '00' + s : s);
+            const h = (num) => {
+                const hex = num.toString(16);
+                return hex.length & 1 ? `0${hex}` : hex;
+            };
+            const s = slice(h(sig.s));
+            const r = slice(h(sig.r));
+            const shl = s.length / 2;
+            const rhl = r.length / 2;
+            const sl = h(shl);
+            const rl = h(rhl);
+            return `30${h(rhl + shl + 4)}02${rl}${r}02${sl}${s}`;
+        },
     };
-    const TAGGED_HASH_PREFIXES = {};
-    const utils = {
-        bytesToHex,
-        hexToBytes,
-        concatBytes,
-        mod,
-        invert,
-        isValidPrivateKey(privateKey) {
+    // Be friendly to bad ECMAScript parsers by not using bigint literals
+    // prettier-ignore
+    const _0n = BigInt(0), _1n$1 = BigInt(1); BigInt(2); const _3n = BigInt(3); BigInt(4);
+    function weierstrassPoints(opts) {
+        const CURVE = validatePointOpts(opts);
+        const { Fp } = CURVE; // All curves has same field / group length as for now, but they can differ
+        const toBytes = CURVE.toBytes ||
+            ((_c, point, _isCompressed) => {
+                const a = point.toAffine();
+                return concatBytes(Uint8Array.from([0x04]), Fp.toBytes(a.x), Fp.toBytes(a.y));
+            });
+        const fromBytes = CURVE.fromBytes ||
+            ((bytes) => {
+                // const head = bytes[0];
+                const tail = bytes.subarray(1);
+                // if (head !== 0x04) throw new Error('Only non-compressed encoding is supported');
+                const x = Fp.fromBytes(tail.subarray(0, Fp.BYTES));
+                const y = Fp.fromBytes(tail.subarray(Fp.BYTES, 2 * Fp.BYTES));
+                return { x, y };
+            });
+        /**
+         * y² = x³ + ax + b: Short weierstrass curve formula
+         * @returns y²
+         */
+        function weierstrassEquation(x) {
+            const { a, b } = CURVE;
+            const x2 = Fp.sqr(x); // x * x
+            const x3 = Fp.mul(x2, x); // x2 * x
+            return Fp.add(Fp.add(x3, Fp.mul(x, a)), b); // x3 + a * x + b
+        }
+        // Validate whether the passed curve params are valid.
+        // We check if curve equation works for generator point.
+        // `assertValidity()` won't work: `isTorsionFree()` is not available at this point in bls12-381.
+        // ProjectivePoint class has not been initialized yet.
+        if (!Fp.eql(Fp.sqr(CURVE.Gy), weierstrassEquation(CURVE.Gx)))
+            throw new Error('bad generator point: equation left != right');
+        // Valid group elements reside in range 1..n-1
+        function isWithinCurveOrder(num) {
+            return typeof num === 'bigint' && _0n < num && num < CURVE.n;
+        }
+        function assertGE(num) {
+            if (!isWithinCurveOrder(num))
+                throw new Error('Expected valid bigint: 0 < bigint < curve.n');
+        }
+        // Validates if priv key is valid and converts it to bigint.
+        // Supports options allowedPrivateKeyLengths and wrapPrivateKey.
+        function normPrivateKeyToScalar(key) {
+            const { allowedPrivateKeyLengths: lengths, nByteLength, wrapPrivateKey, n } = CURVE;
+            if (lengths && typeof key !== 'bigint') {
+                if (key instanceof Uint8Array)
+                    key = bytesToHex(key);
+                // Normalize to hex string, pad. E.g. P521 would norm 130-132 char hex to 132-char bytes
+                if (typeof key !== 'string' || !lengths.includes(key.length))
+                    throw new Error('Invalid key');
+                key = key.padStart(nByteLength * 2, '0');
+            }
+            let num;
             try {
-                normalizePrivateKey(privateKey);
-                return true;
+                num =
+                    typeof key === 'bigint'
+                        ? key
+                        : bytesToNumberBE(ensureBytes('private key', key, nByteLength));
             }
             catch (error) {
+                throw new Error(`private key must be ${nByteLength} bytes, hex or bigint, not ${typeof key}`);
+            }
+            if (wrapPrivateKey)
+                num = mod(num, n); // disabled by default, enabled for BLS
+            assertGE(num); // num in range [1..N-1]
+            return num;
+        }
+        const pointPrecomputes = new Map();
+        function assertPrjPoint(other) {
+            if (!(other instanceof Point))
+                throw new Error('ProjectivePoint expected');
+        }
+        /**
+         * Projective Point works in 3d / projective (homogeneous) coordinates: (x, y, z) ∋ (x=x/z, y=y/z)
+         * Default Point works in 2d / affine coordinates: (x, y)
+         * We're doing calculations in projective, because its operations don't require costly inversion.
+         */
+        class Point {
+            constructor(px, py, pz) {
+                this.px = px;
+                this.py = py;
+                this.pz = pz;
+                if (px == null || !Fp.isValid(px))
+                    throw new Error('x required');
+                if (py == null || !Fp.isValid(py))
+                    throw new Error('y required');
+                if (pz == null || !Fp.isValid(pz))
+                    throw new Error('z required');
+            }
+            // Does not validate if the point is on-curve.
+            // Use fromHex instead, or call assertValidity() later.
+            static fromAffine(p) {
+                const { x, y } = p || {};
+                if (!p || !Fp.isValid(x) || !Fp.isValid(y))
+                    throw new Error('invalid affine point');
+                if (p instanceof Point)
+                    throw new Error('projective point not allowed');
+                const is0 = (i) => Fp.eql(i, Fp.ZERO);
+                // fromAffine(x:0, y:0) would produce (x:0, y:0, z:1), but we need (x:0, y:1, z:0)
+                if (is0(x) && is0(y))
+                    return Point.ZERO;
+                return new Point(x, y, Fp.ONE);
+            }
+            get x() {
+                return this.toAffine().x;
+            }
+            get y() {
+                return this.toAffine().y;
+            }
+            /**
+             * Takes a bunch of Projective Points but executes only one
+             * inversion on all of them. Inversion is very slow operation,
+             * so this improves performance massively.
+             * Optimization: converts a list of projective points to a list of identical points with Z=1.
+             */
+            static normalizeZ(points) {
+                const toInv = Fp.invertBatch(points.map((p) => p.pz));
+                return points.map((p, i) => p.toAffine(toInv[i])).map(Point.fromAffine);
+            }
+            /**
+             * Converts hash string or Uint8Array to Point.
+             * @param hex short/long ECDSA hex
+             */
+            static fromHex(hex) {
+                const P = Point.fromAffine(fromBytes(ensureBytes('pointHex', hex)));
+                P.assertValidity();
+                return P;
+            }
+            // Multiplies generator point by privateKey.
+            static fromPrivateKey(privateKey) {
+                return Point.BASE.multiply(normPrivateKeyToScalar(privateKey));
+            }
+            // "Private method", don't use it directly
+            _setWindowSize(windowSize) {
+                this._WINDOW_SIZE = windowSize;
+                pointPrecomputes.delete(this);
+            }
+            // A point on curve is valid if it conforms to equation.
+            assertValidity() {
+                if (this.is0()) {
+                    // (0, 1, 0) aka ZERO is invalid in most contexts.
+                    // In BLS, ZERO can be serialized, so we allow it.
+                    // (0, 0, 0) is wrong representation of ZERO and is always invalid.
+                    if (CURVE.allowInfinityPoint && !Fp.is0(this.py))
+                        return;
+                    throw new Error('bad point: ZERO');
+                }
+                // Some 3rd-party test vectors require different wording between here & `fromCompressedHex`
+                const { x, y } = this.toAffine();
+                // Check if x, y are valid field elements
+                if (!Fp.isValid(x) || !Fp.isValid(y))
+                    throw new Error('bad point: x or y not FE');
+                const left = Fp.sqr(y); // y²
+                const right = weierstrassEquation(x); // x³ + ax + b
+                if (!Fp.eql(left, right))
+                    throw new Error('bad point: equation left != right');
+                if (!this.isTorsionFree())
+                    throw new Error('bad point: not in prime-order subgroup');
+            }
+            hasEvenY() {
+                const { y } = this.toAffine();
+                if (Fp.isOdd)
+                    return !Fp.isOdd(y);
+                throw new Error("Field doesn't support isOdd");
+            }
+            /**
+             * Compare one point to another.
+             */
+            equals(other) {
+                assertPrjPoint(other);
+                const { px: X1, py: Y1, pz: Z1 } = this;
+                const { px: X2, py: Y2, pz: Z2 } = other;
+                const U1 = Fp.eql(Fp.mul(X1, Z2), Fp.mul(X2, Z1));
+                const U2 = Fp.eql(Fp.mul(Y1, Z2), Fp.mul(Y2, Z1));
+                return U1 && U2;
+            }
+            /**
+             * Flips point to one corresponding to (x, -y) in Affine coordinates.
+             */
+            negate() {
+                return new Point(this.px, Fp.neg(this.py), this.pz);
+            }
+            // Renes-Costello-Batina exception-free doubling formula.
+            // There is 30% faster Jacobian formula, but it is not complete.
+            // https://eprint.iacr.org/2015/1060, algorithm 3
+            // Cost: 8M + 3S + 3*a + 2*b3 + 15add.
+            double() {
+                const { a, b } = CURVE;
+                const b3 = Fp.mul(b, _3n);
+                const { px: X1, py: Y1, pz: Z1 } = this;
+                let X3 = Fp.ZERO, Y3 = Fp.ZERO, Z3 = Fp.ZERO; // prettier-ignore
+                let t0 = Fp.mul(X1, X1); // step 1
+                let t1 = Fp.mul(Y1, Y1);
+                let t2 = Fp.mul(Z1, Z1);
+                let t3 = Fp.mul(X1, Y1);
+                t3 = Fp.add(t3, t3); // step 5
+                Z3 = Fp.mul(X1, Z1);
+                Z3 = Fp.add(Z3, Z3);
+                X3 = Fp.mul(a, Z3);
+                Y3 = Fp.mul(b3, t2);
+                Y3 = Fp.add(X3, Y3); // step 10
+                X3 = Fp.sub(t1, Y3);
+                Y3 = Fp.add(t1, Y3);
+                Y3 = Fp.mul(X3, Y3);
+                X3 = Fp.mul(t3, X3);
+                Z3 = Fp.mul(b3, Z3); // step 15
+                t2 = Fp.mul(a, t2);
+                t3 = Fp.sub(t0, t2);
+                t3 = Fp.mul(a, t3);
+                t3 = Fp.add(t3, Z3);
+                Z3 = Fp.add(t0, t0); // step 20
+                t0 = Fp.add(Z3, t0);
+                t0 = Fp.add(t0, t2);
+                t0 = Fp.mul(t0, t3);
+                Y3 = Fp.add(Y3, t0);
+                t2 = Fp.mul(Y1, Z1); // step 25
+                t2 = Fp.add(t2, t2);
+                t0 = Fp.mul(t2, t3);
+                X3 = Fp.sub(X3, t0);
+                Z3 = Fp.mul(t2, t1);
+                Z3 = Fp.add(Z3, Z3); // step 30
+                Z3 = Fp.add(Z3, Z3);
+                return new Point(X3, Y3, Z3);
+            }
+            // Renes-Costello-Batina exception-free addition formula.
+            // There is 30% faster Jacobian formula, but it is not complete.
+            // https://eprint.iacr.org/2015/1060, algorithm 1
+            // Cost: 12M + 0S + 3*a + 3*b3 + 23add.
+            add(other) {
+                assertPrjPoint(other);
+                const { px: X1, py: Y1, pz: Z1 } = this;
+                const { px: X2, py: Y2, pz: Z2 } = other;
+                let X3 = Fp.ZERO, Y3 = Fp.ZERO, Z3 = Fp.ZERO; // prettier-ignore
+                const a = CURVE.a;
+                const b3 = Fp.mul(CURVE.b, _3n);
+                let t0 = Fp.mul(X1, X2); // step 1
+                let t1 = Fp.mul(Y1, Y2);
+                let t2 = Fp.mul(Z1, Z2);
+                let t3 = Fp.add(X1, Y1);
+                let t4 = Fp.add(X2, Y2); // step 5
+                t3 = Fp.mul(t3, t4);
+                t4 = Fp.add(t0, t1);
+                t3 = Fp.sub(t3, t4);
+                t4 = Fp.add(X1, Z1);
+                let t5 = Fp.add(X2, Z2); // step 10
+                t4 = Fp.mul(t4, t5);
+                t5 = Fp.add(t0, t2);
+                t4 = Fp.sub(t4, t5);
+                t5 = Fp.add(Y1, Z1);
+                X3 = Fp.add(Y2, Z2); // step 15
+                t5 = Fp.mul(t5, X3);
+                X3 = Fp.add(t1, t2);
+                t5 = Fp.sub(t5, X3);
+                Z3 = Fp.mul(a, t4);
+                X3 = Fp.mul(b3, t2); // step 20
+                Z3 = Fp.add(X3, Z3);
+                X3 = Fp.sub(t1, Z3);
+                Z3 = Fp.add(t1, Z3);
+                Y3 = Fp.mul(X3, Z3);
+                t1 = Fp.add(t0, t0); // step 25
+                t1 = Fp.add(t1, t0);
+                t2 = Fp.mul(a, t2);
+                t4 = Fp.mul(b3, t4);
+                t1 = Fp.add(t1, t2);
+                t2 = Fp.sub(t0, t2); // step 30
+                t2 = Fp.mul(a, t2);
+                t4 = Fp.add(t4, t2);
+                t0 = Fp.mul(t1, t4);
+                Y3 = Fp.add(Y3, t0);
+                t0 = Fp.mul(t5, t4); // step 35
+                X3 = Fp.mul(t3, X3);
+                X3 = Fp.sub(X3, t0);
+                t0 = Fp.mul(t3, t1);
+                Z3 = Fp.mul(t5, Z3);
+                Z3 = Fp.add(Z3, t0); // step 40
+                return new Point(X3, Y3, Z3);
+            }
+            subtract(other) {
+                return this.add(other.negate());
+            }
+            is0() {
+                return this.equals(Point.ZERO);
+            }
+            wNAF(n) {
+                return wnaf.wNAFCached(this, pointPrecomputes, n, (comp) => {
+                    const toInv = Fp.invertBatch(comp.map((p) => p.pz));
+                    return comp.map((p, i) => p.toAffine(toInv[i])).map(Point.fromAffine);
+                });
+            }
+            /**
+             * Non-constant-time multiplication. Uses double-and-add algorithm.
+             * It's faster, but should only be used when you don't care about
+             * an exposed private key e.g. sig verification, which works over *public* keys.
+             */
+            multiplyUnsafe(n) {
+                const I = Point.ZERO;
+                if (n === _0n)
+                    return I;
+                assertGE(n); // Will throw on 0
+                if (n === _1n$1)
+                    return this;
+                const { endo } = CURVE;
+                if (!endo)
+                    return wnaf.unsafeLadder(this, n);
+                // Apply endomorphism
+                let { k1neg, k1, k2neg, k2 } = endo.splitScalar(n);
+                let k1p = I;
+                let k2p = I;
+                let d = this;
+                while (k1 > _0n || k2 > _0n) {
+                    if (k1 & _1n$1)
+                        k1p = k1p.add(d);
+                    if (k2 & _1n$1)
+                        k2p = k2p.add(d);
+                    d = d.double();
+                    k1 >>= _1n$1;
+                    k2 >>= _1n$1;
+                }
+                if (k1neg)
+                    k1p = k1p.negate();
+                if (k2neg)
+                    k2p = k2p.negate();
+                k2p = new Point(Fp.mul(k2p.px, endo.beta), k2p.py, k2p.pz);
+                return k1p.add(k2p);
+            }
+            /**
+             * Constant time multiplication.
+             * Uses wNAF method. Windowed method may be 10% faster,
+             * but takes 2x longer to generate and consumes 2x memory.
+             * Uses precomputes when available.
+             * Uses endomorphism for Koblitz curves.
+             * @param scalar by which the point would be multiplied
+             * @returns New point
+             */
+            multiply(scalar) {
+                assertGE(scalar);
+                let n = scalar;
+                let point, fake; // Fake point is used to const-time mult
+                const { endo } = CURVE;
+                if (endo) {
+                    const { k1neg, k1, k2neg, k2 } = endo.splitScalar(n);
+                    let { p: k1p, f: f1p } = this.wNAF(k1);
+                    let { p: k2p, f: f2p } = this.wNAF(k2);
+                    k1p = wnaf.constTimeNegate(k1neg, k1p);
+                    k2p = wnaf.constTimeNegate(k2neg, k2p);
+                    k2p = new Point(Fp.mul(k2p.px, endo.beta), k2p.py, k2p.pz);
+                    point = k1p.add(k2p);
+                    fake = f1p.add(f2p);
+                }
+                else {
+                    const { p, f } = this.wNAF(n);
+                    point = p;
+                    fake = f;
+                }
+                // Normalize `z` for both points, but return only real one
+                return Point.normalizeZ([point, fake])[0];
+            }
+            /**
+             * Efficiently calculate `aP + bQ`. Unsafe, can expose private key, if used incorrectly.
+             * Not using Strauss-Shamir trick: precomputation tables are faster.
+             * The trick could be useful if both P and Q are not G (not in our case).
+             * @returns non-zero affine point
+             */
+            multiplyAndAddUnsafe(Q, a, b) {
+                const G = Point.BASE; // No Strauss-Shamir trick: we have 10% faster G precomputes
+                const mul = (P, a // Select faster multiply() method
+                ) => (a === _0n || a === _1n$1 || !P.equals(G) ? P.multiplyUnsafe(a) : P.multiply(a));
+                const sum = mul(this, a).add(mul(Q, b));
+                return sum.is0() ? undefined : sum;
+            }
+            // Converts Projective point to affine (x, y) coordinates.
+            // Can accept precomputed Z^-1 - for example, from invertBatch.
+            // (x, y, z) ∋ (x=x/z, y=y/z)
+            toAffine(iz) {
+                const { px: x, py: y, pz: z } = this;
+                const is0 = this.is0();
+                // If invZ was 0, we return zero point. However we still want to execute
+                // all operations, so we replace invZ with a random number, 1.
+                if (iz == null)
+                    iz = is0 ? Fp.ONE : Fp.inv(z);
+                const ax = Fp.mul(x, iz);
+                const ay = Fp.mul(y, iz);
+                const zz = Fp.mul(z, iz);
+                if (is0)
+                    return { x: Fp.ZERO, y: Fp.ZERO };
+                if (!Fp.eql(zz, Fp.ONE))
+                    throw new Error('invZ was invalid');
+                return { x: ax, y: ay };
+            }
+            isTorsionFree() {
+                const { h: cofactor, isTorsionFree } = CURVE;
+                if (cofactor === _1n$1)
+                    return true; // No subgroups, always torsion-free
+                if (isTorsionFree)
+                    return isTorsionFree(Point, this);
+                throw new Error('isTorsionFree() has not been declared for the elliptic curve');
+            }
+            clearCofactor() {
+                const { h: cofactor, clearCofactor } = CURVE;
+                if (cofactor === _1n$1)
+                    return this; // Fast-path
+                if (clearCofactor)
+                    return clearCofactor(Point, this);
+                return this.multiplyUnsafe(CURVE.h);
+            }
+            toRawBytes(isCompressed = true) {
+                this.assertValidity();
+                return toBytes(Point, this, isCompressed);
+            }
+            toHex(isCompressed = true) {
+                return bytesToHex(this.toRawBytes(isCompressed));
+            }
+        }
+        Point.BASE = new Point(CURVE.Gx, CURVE.Gy, Fp.ONE);
+        Point.ZERO = new Point(Fp.ZERO, Fp.ONE, Fp.ZERO);
+        const _bits = CURVE.nBitLength;
+        const wnaf = wNAF(Point, CURVE.endo ? Math.ceil(_bits / 2) : _bits);
+        // Validate if generator point is on curve
+        return {
+            CURVE,
+            ProjectivePoint: Point,
+            normPrivateKeyToScalar,
+            weierstrassEquation,
+            isWithinCurveOrder,
+        };
+    }
+    function validateOpts(curve) {
+        const opts = validateBasic(curve);
+        validateObject(opts, {
+            hash: 'hash',
+            hmac: 'function',
+            randomBytes: 'function',
+        }, {
+            bits2int: 'function',
+            bits2int_modN: 'function',
+            lowS: 'boolean',
+        });
+        return Object.freeze({ lowS: true, ...opts });
+    }
+    function weierstrass(curveDef) {
+        const CURVE = validateOpts(curveDef);
+        const { Fp, n: CURVE_ORDER } = CURVE;
+        const compressedLen = Fp.BYTES + 1; // e.g. 33 for 32
+        const uncompressedLen = 2 * Fp.BYTES + 1; // e.g. 65 for 32
+        function isValidFieldElement(num) {
+            return _0n < num && num < Fp.ORDER; // 0 is banned since it's not invertible FE
+        }
+        function modN(a) {
+            return mod(a, CURVE_ORDER);
+        }
+        function invN(a) {
+            return invert(a, CURVE_ORDER);
+        }
+        const { ProjectivePoint: Point, normPrivateKeyToScalar, weierstrassEquation, isWithinCurveOrder, } = weierstrassPoints({
+            ...CURVE,
+            toBytes(_c, point, isCompressed) {
+                const a = point.toAffine();
+                const x = Fp.toBytes(a.x);
+                const cat = concatBytes;
+                if (isCompressed) {
+                    return cat(Uint8Array.from([point.hasEvenY() ? 0x02 : 0x03]), x);
+                }
+                else {
+                    return cat(Uint8Array.from([0x04]), x, Fp.toBytes(a.y));
+                }
+            },
+            fromBytes(bytes) {
+                const len = bytes.length;
+                const head = bytes[0];
+                const tail = bytes.subarray(1);
+                // this.assertValidity() is done inside of fromHex
+                if (len === compressedLen && (head === 0x02 || head === 0x03)) {
+                    const x = bytesToNumberBE(tail);
+                    if (!isValidFieldElement(x))
+                        throw new Error('Point is not on curve');
+                    const y2 = weierstrassEquation(x); // y² = x³ + ax + b
+                    let y = Fp.sqrt(y2); // y = y² ^ (p+1)/4
+                    const isYOdd = (y & _1n$1) === _1n$1;
+                    // ECDSA
+                    const isHeadOdd = (head & 1) === 1;
+                    if (isHeadOdd !== isYOdd)
+                        y = Fp.neg(y);
+                    return { x, y };
+                }
+                else if (len === uncompressedLen && head === 0x04) {
+                    const x = Fp.fromBytes(tail.subarray(0, Fp.BYTES));
+                    const y = Fp.fromBytes(tail.subarray(Fp.BYTES, 2 * Fp.BYTES));
+                    return { x, y };
+                }
+                else {
+                    throw new Error(`Point of length ${len} was invalid. Expected ${compressedLen} compressed bytes or ${uncompressedLen} uncompressed bytes`);
+                }
+            },
+        });
+        const numToNByteStr = (num) => bytesToHex(numberToBytesBE(num, CURVE.nByteLength));
+        function isBiggerThanHalfOrder(number) {
+            const HALF = CURVE_ORDER >> _1n$1;
+            return number > HALF;
+        }
+        function normalizeS(s) {
+            return isBiggerThanHalfOrder(s) ? modN(-s) : s;
+        }
+        // slice bytes num
+        const slcNum = (b, from, to) => bytesToNumberBE(b.slice(from, to));
+        /**
+         * ECDSA signature with its (r, s) properties. Supports DER & compact representations.
+         */
+        class Signature {
+            constructor(r, s, recovery) {
+                this.r = r;
+                this.s = s;
+                this.recovery = recovery;
+                this.assertValidity();
+            }
+            // pair (bytes of r, bytes of s)
+            static fromCompact(hex) {
+                const l = CURVE.nByteLength;
+                hex = ensureBytes('compactSignature', hex, l * 2);
+                return new Signature(slcNum(hex, 0, l), slcNum(hex, l, 2 * l));
+            }
+            // DER encoded ECDSA signature
+            // https://bitcoin.stackexchange.com/questions/57644/what-are-the-parts-of-a-bitcoin-transaction-input-script
+            static fromDER(hex) {
+                const { r, s } = DER.toSig(ensureBytes('DER', hex));
+                return new Signature(r, s);
+            }
+            assertValidity() {
+                // can use assertGE here
+                if (!isWithinCurveOrder(this.r))
+                    throw new Error('r must be 0 < r < CURVE.n');
+                if (!isWithinCurveOrder(this.s))
+                    throw new Error('s must be 0 < s < CURVE.n');
+            }
+            addRecoveryBit(recovery) {
+                return new Signature(this.r, this.s, recovery);
+            }
+            recoverPublicKey(msgHash) {
+                const { r, s, recovery: rec } = this;
+                const h = bits2int_modN(ensureBytes('msgHash', msgHash)); // Truncate hash
+                if (rec == null || ![0, 1, 2, 3].includes(rec))
+                    throw new Error('recovery id invalid');
+                const radj = rec === 2 || rec === 3 ? r + CURVE.n : r;
+                if (radj >= Fp.ORDER)
+                    throw new Error('recovery id 2 or 3 invalid');
+                const prefix = (rec & 1) === 0 ? '02' : '03';
+                const R = Point.fromHex(prefix + numToNByteStr(radj));
+                const ir = invN(radj); // r^-1
+                const u1 = modN(-h * ir); // -hr^-1
+                const u2 = modN(s * ir); // sr^-1
+                const Q = Point.BASE.multiplyAndAddUnsafe(R, u1, u2); // (sr^-1)R-(hr^-1)G = -(hr^-1)G + (sr^-1)
+                if (!Q)
+                    throw new Error('point at infinify'); // unsafe is fine: no priv data leaked
+                Q.assertValidity();
+                return Q;
+            }
+            // Signatures should be low-s, to prevent malleability.
+            hasHighS() {
+                return isBiggerThanHalfOrder(this.s);
+            }
+            normalizeS() {
+                return this.hasHighS() ? new Signature(this.r, modN(-this.s), this.recovery) : this;
+            }
+            // DER-encoded
+            toDERRawBytes() {
+                return hexToBytes(this.toDERHex());
+            }
+            toDERHex() {
+                return DER.hexFromSig({ r: this.r, s: this.s });
+            }
+            // padded bytes of r, then padded bytes of s
+            toCompactRawBytes() {
+                return hexToBytes(this.toCompactHex());
+            }
+            toCompactHex() {
+                return numToNByteStr(this.r) + numToNByteStr(this.s);
+            }
+        }
+        const utils = {
+            isValidPrivateKey(privateKey) {
+                try {
+                    normPrivateKeyToScalar(privateKey);
+                    return true;
+                }
+                catch (error) {
+                    return false;
+                }
+            },
+            normPrivateKeyToScalar: normPrivateKeyToScalar,
+            /**
+             * Produces cryptographically secure private key from random of size
+             * (groupLen + ceil(groupLen / 2)) with modulo bias being negligible.
+             */
+            randomPrivateKey: () => {
+                const length = getMinHashLength(CURVE.n);
+                return mapHashToField(CURVE.randomBytes(length), CURVE.n);
+            },
+            /**
+             * Creates precompute table for an arbitrary EC point. Makes point "cached".
+             * Allows to massively speed-up `point.multiply(scalar)`.
+             * @returns cached point
+             * @example
+             * const fast = utils.precompute(8, ProjectivePoint.fromHex(someonesPubKey));
+             * fast.multiply(privKey); // much faster ECDH now
+             */
+            precompute(windowSize = 8, point = Point.BASE) {
+                point._setWindowSize(windowSize);
+                point.multiply(BigInt(3)); // 3 is arbitrary, just need any number here
+                return point;
+            },
+        };
+        /**
+         * Computes public key for a private key. Checks for validity of the private key.
+         * @param privateKey private key
+         * @param isCompressed whether to return compact (default), or full key
+         * @returns Public key, full when isCompressed=false; short when isCompressed=true
+         */
+        function getPublicKey(privateKey, isCompressed = true) {
+            return Point.fromPrivateKey(privateKey).toRawBytes(isCompressed);
+        }
+        /**
+         * Quick and dirty check for item being public key. Does not validate hex, or being on-curve.
+         */
+        function isProbPub(item) {
+            const arr = item instanceof Uint8Array;
+            const str = typeof item === 'string';
+            const len = (arr || str) && item.length;
+            if (arr)
+                return len === compressedLen || len === uncompressedLen;
+            if (str)
+                return len === 2 * compressedLen || len === 2 * uncompressedLen;
+            if (item instanceof Point)
+                return true;
+            return false;
+        }
+        /**
+         * ECDH (Elliptic Curve Diffie Hellman).
+         * Computes shared public key from private key and public key.
+         * Checks: 1) private key validity 2) shared key is on-curve.
+         * Does NOT hash the result.
+         * @param privateA private key
+         * @param publicB different public key
+         * @param isCompressed whether to return compact (default), or full key
+         * @returns shared public key
+         */
+        function getSharedSecret(privateA, publicB, isCompressed = true) {
+            if (isProbPub(privateA))
+                throw new Error('first arg must be private key');
+            if (!isProbPub(publicB))
+                throw new Error('second arg must be public key');
+            const b = Point.fromHex(publicB); // check for being on-curve
+            return b.multiply(normPrivateKeyToScalar(privateA)).toRawBytes(isCompressed);
+        }
+        // RFC6979: ensure ECDSA msg is X bytes and < N. RFC suggests optional truncating via bits2octets.
+        // FIPS 186-4 4.6 suggests the leftmost min(nBitLen, outLen) bits, which matches bits2int.
+        // bits2int can produce res>N, we can do mod(res, N) since the bitLen is the same.
+        // int2octets can't be used; pads small msgs with 0: unacceptatble for trunc as per RFC vectors
+        const bits2int = CURVE.bits2int ||
+            function (bytes) {
+                // For curves with nBitLength % 8 !== 0: bits2octets(bits2octets(m)) !== bits2octets(m)
+                // for some cases, since bytes.length * 8 is not actual bitLength.
+                const num = bytesToNumberBE(bytes); // check for == u8 done here
+                const delta = bytes.length * 8 - CURVE.nBitLength; // truncate to nBitLength leftmost bits
+                return delta > 0 ? num >> BigInt(delta) : num;
+            };
+        const bits2int_modN = CURVE.bits2int_modN ||
+            function (bytes) {
+                return modN(bits2int(bytes)); // can't use bytesToNumberBE here
+            };
+        // NOTE: pads output with zero as per spec
+        const ORDER_MASK = bitMask(CURVE.nBitLength);
+        /**
+         * Converts to bytes. Checks if num in `[0..ORDER_MASK-1]` e.g.: `[0..2^256-1]`.
+         */
+        function int2octets(num) {
+            if (typeof num !== 'bigint')
+                throw new Error('bigint expected');
+            if (!(_0n <= num && num < ORDER_MASK))
+                throw new Error(`bigint expected < 2^${CURVE.nBitLength}`);
+            // works with order, can have different size than numToField!
+            return numberToBytesBE(num, CURVE.nByteLength);
+        }
+        // Steps A, D of RFC6979 3.2
+        // Creates RFC6979 seed; converts msg/privKey to numbers.
+        // Used only in sign, not in verify.
+        // NOTE: we cannot assume here that msgHash has same amount of bytes as curve order, this will be wrong at least for P521.
+        // Also it can be bigger for P224 + SHA256
+        function prepSig(msgHash, privateKey, opts = defaultSigOpts) {
+            if (['recovered', 'canonical'].some((k) => k in opts))
+                throw new Error('sign() legacy options not supported');
+            const { hash, randomBytes } = CURVE;
+            let { lowS, prehash, extraEntropy: ent } = opts; // generates low-s sigs by default
+            if (lowS == null)
+                lowS = true; // RFC6979 3.2: we skip step A, because we already provide hash
+            msgHash = ensureBytes('msgHash', msgHash);
+            if (prehash)
+                msgHash = ensureBytes('prehashed msgHash', hash(msgHash));
+            // We can't later call bits2octets, since nested bits2int is broken for curves
+            // with nBitLength % 8 !== 0. Because of that, we unwrap it here as int2octets call.
+            // const bits2octets = (bits) => int2octets(bits2int_modN(bits))
+            const h1int = bits2int_modN(msgHash);
+            const d = normPrivateKeyToScalar(privateKey); // validate private key, convert to bigint
+            const seedArgs = [int2octets(d), int2octets(h1int)];
+            // extraEntropy. RFC6979 3.6: additional k' (optional).
+            if (ent != null) {
+                // K = HMAC_K(V || 0x00 || int2octets(x) || bits2octets(h1) || k')
+                const e = ent === true ? randomBytes(Fp.BYTES) : ent; // generate random bytes OR pass as-is
+                seedArgs.push(ensureBytes('extraEntropy', e)); // check for being bytes
+            }
+            const seed = concatBytes(...seedArgs); // Step D of RFC6979 3.2
+            const m = h1int; // NOTE: no need to call bits2int second time here, it is inside truncateHash!
+            // Converts signature params into point w r/s, checks result for validity.
+            function k2sig(kBytes) {
+                // RFC 6979 Section 3.2, step 3: k = bits2int(T)
+                const k = bits2int(kBytes); // Cannot use fields methods, since it is group element
+                if (!isWithinCurveOrder(k))
+                    return; // Important: all mod() calls here must be done over N
+                const ik = invN(k); // k^-1 mod n
+                const q = Point.BASE.multiply(k).toAffine(); // q = Gk
+                const r = modN(q.x); // r = q.x mod n
+                if (r === _0n)
+                    return;
+                // Can use scalar blinding b^-1(bm + bdr) where b ∈ [1,q−1] according to
+                // https://tches.iacr.org/index.php/TCHES/article/view/7337/6509. We've decided against it:
+                // a) dependency on CSPRNG b) 15% slowdown c) doesn't really help since bigints are not CT
+                const s = modN(ik * modN(m + r * d)); // Not using blinding here
+                if (s === _0n)
+                    return;
+                let recovery = (q.x === r ? 0 : 2) | Number(q.y & _1n$1); // recovery bit (2 or 3, when q.x > n)
+                let normS = s;
+                if (lowS && isBiggerThanHalfOrder(s)) {
+                    normS = normalizeS(s); // if lowS was passed, ensure s is always
+                    recovery ^= 1; // // in the bottom half of N
+                }
+                return new Signature(r, normS, recovery); // use normS, not s
+            }
+            return { seed, k2sig };
+        }
+        const defaultSigOpts = { lowS: CURVE.lowS, prehash: false };
+        const defaultVerOpts = { lowS: CURVE.lowS, prehash: false };
+        /**
+         * Signs message hash with a private key.
+         * ```
+         * sign(m, d, k) where
+         *   (x, y) = G × k
+         *   r = x mod n
+         *   s = (m + dr)/k mod n
+         * ```
+         * @param msgHash NOT message. msg needs to be hashed to `msgHash`, or use `prehash`.
+         * @param privKey private key
+         * @param opts lowS for non-malleable sigs. extraEntropy for mixing randomness into k. prehash will hash first arg.
+         * @returns signature with recovery param
+         */
+        function sign(msgHash, privKey, opts = defaultSigOpts) {
+            const { seed, k2sig } = prepSig(msgHash, privKey, opts); // Steps A, D of RFC6979 3.2.
+            const C = CURVE;
+            const drbg = createHmacDrbg(C.hash.outputLen, C.nByteLength, C.hmac);
+            return drbg(seed, k2sig); // Steps B, C, D, E, F, G
+        }
+        // Enable precomputes. Slows down first publicKey computation by 20ms.
+        Point.BASE._setWindowSize(8);
+        // utils.precompute(8, ProjectivePoint.BASE)
+        /**
+         * Verifies a signature against message hash and public key.
+         * Rejects lowS signatures by default: to override,
+         * specify option `{lowS: false}`. Implements section 4.1.4 from https://www.secg.org/sec1-v2.pdf:
+         *
+         * ```
+         * verify(r, s, h, P) where
+         *   U1 = hs^-1 mod n
+         *   U2 = rs^-1 mod n
+         *   R = U1⋅G - U2⋅P
+         *   mod(R.x, n) == r
+         * ```
+         */
+        function verify(signature, msgHash, publicKey, opts = defaultVerOpts) {
+            const sg = signature;
+            msgHash = ensureBytes('msgHash', msgHash);
+            publicKey = ensureBytes('publicKey', publicKey);
+            if ('strict' in opts)
+                throw new Error('options.strict was renamed to lowS');
+            const { lowS, prehash } = opts;
+            let _sig = undefined;
+            let P;
+            try {
+                if (typeof sg === 'string' || sg instanceof Uint8Array) {
+                    // Signature can be represented in 2 ways: compact (2*nByteLength) & DER (variable-length).
+                    // Since DER can also be 2*nByteLength bytes, we check for it first.
+                    try {
+                        _sig = Signature.fromDER(sg);
+                    }
+                    catch (derError) {
+                        if (!(derError instanceof DER.Err))
+                            throw derError;
+                        _sig = Signature.fromCompact(sg);
+                    }
+                }
+                else if (typeof sg === 'object' && typeof sg.r === 'bigint' && typeof sg.s === 'bigint') {
+                    const { r, s } = sg;
+                    _sig = new Signature(r, s);
+                }
+                else {
+                    throw new Error('PARSE');
+                }
+                P = Point.fromHex(publicKey);
+            }
+            catch (error) {
+                if (error.message === 'PARSE')
+                    throw new Error(`signature must be Signature instance, Uint8Array or hex string`);
                 return false;
             }
-        },
-        _bigintTo32Bytes: numTo32b,
-        _normalizePrivateKey: normalizePrivateKey,
-        hashToPrivateKey: (hash) => {
-            hash = ensureBytes(hash);
-            const minLen = groupLen + 8;
-            if (hash.length < minLen || hash.length > 1024) {
-                throw new Error(`Expected valid bytes of private key as per FIPS 186`);
-            }
-            const num = mod(bytesToNumber(hash), CURVE.n - _1n) + _1n;
-            return numTo32b(num);
-        },
-        randomBytes: (bytesLength = 32) => {
-            if (crypto.web) {
-                return crypto.web.getRandomValues(new Uint8Array(bytesLength));
-            }
-            else if (crypto.node) {
-                const { randomBytes } = crypto.node;
-                return Uint8Array.from(randomBytes(bytesLength));
-            }
-            else {
-                throw new Error("The environment doesn't have randomBytes function");
-            }
-        },
-        randomPrivateKey: () => utils.hashToPrivateKey(utils.randomBytes(groupLen + 8)),
-        precompute(windowSize = 8, point = Point.BASE) {
-            const cached = point === Point.BASE ? point : new Point(point.x, point.y);
-            cached._setWindowSize(windowSize);
-            cached.multiply(_3n);
-            return cached;
-        },
-        sha256: async (...messages) => {
-            if (crypto.web) {
-                const buffer = await crypto.web.subtle.digest('SHA-256', concatBytes(...messages));
-                return new Uint8Array(buffer);
-            }
-            else if (crypto.node) {
-                const { createHash } = crypto.node;
-                const hash = createHash('sha256');
-                messages.forEach((m) => hash.update(m));
-                return Uint8Array.from(hash.digest());
-            }
-            else {
-                throw new Error("The environment doesn't have sha256 function");
-            }
-        },
-        hmacSha256: async (key, ...messages) => {
-            if (crypto.web) {
-                const ckey = await crypto.web.subtle.importKey('raw', key, { name: 'HMAC', hash: { name: 'SHA-256' } }, false, ['sign']);
-                const message = concatBytes(...messages);
-                const buffer = await crypto.web.subtle.sign('HMAC', ckey, message);
-                return new Uint8Array(buffer);
-            }
-            else if (crypto.node) {
-                const { createHmac } = crypto.node;
-                const hash = createHmac('sha256', key);
-                messages.forEach((m) => hash.update(m));
-                return Uint8Array.from(hash.digest());
-            }
-            else {
-                throw new Error("The environment doesn't have hmac-sha256 function");
-            }
-        },
-        sha256Sync: undefined,
-        hmacSha256Sync: undefined,
-        taggedHash: async (tag, ...messages) => {
-            let tagP = TAGGED_HASH_PREFIXES[tag];
-            if (tagP === undefined) {
-                const tagH = await utils.sha256(Uint8Array.from(tag, (c) => c.charCodeAt(0)));
-                tagP = concatBytes(tagH, tagH);
-                TAGGED_HASH_PREFIXES[tag] = tagP;
-            }
-            return utils.sha256(tagP, ...messages);
-        },
-        taggedHashSync: (tag, ...messages) => {
-            if (typeof _sha256Sync !== 'function')
-                throw new ShaError('sha256Sync is undefined, you need to set it');
-            let tagP = TAGGED_HASH_PREFIXES[tag];
-            if (tagP === undefined) {
-                const tagH = _sha256Sync(Uint8Array.from(tag, (c) => c.charCodeAt(0)));
-                tagP = concatBytes(tagH, tagH);
-                TAGGED_HASH_PREFIXES[tag] = tagP;
-            }
-            return _sha256Sync(tagP, ...messages);
-        },
-        _JacobianPoint: JacobianPoint,
-    };
-    Object.defineProperties(utils, {
-        sha256Sync: {
-            configurable: false,
-            get() {
-                return _sha256Sync;
+            if (lowS && _sig.hasHighS())
+                return false;
+            if (prehash)
+                msgHash = CURVE.hash(msgHash);
+            const { r, s } = _sig;
+            const h = bits2int_modN(msgHash); // Cannot use fields methods, since it is group element
+            const is = invN(s); // s^-1
+            const u1 = modN(h * is); // u1 = hs^-1 mod n
+            const u2 = modN(r * is); // u2 = rs^-1 mod n
+            const R = Point.BASE.multiplyAndAddUnsafe(P, u1, u2)?.toAffine(); // R = u1⋅G + u2⋅P
+            if (!R)
+                return false;
+            const v = modN(R.x);
+            return v === r;
+        }
+        return {
+            CURVE,
+            getPublicKey,
+            getSharedSecret,
+            sign,
+            verify,
+            ProjectivePoint: Point,
+            Signature,
+            utils,
+        };
+    }
+
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    // connects noble-curves to noble-hashes
+    function getHash(hash) {
+        return {
+            hash,
+            hmac: (key, ...msgs) => hmac(hash, key, concatBytes$1(...msgs)),
+            randomBytes: randomBytes$2,
+        };
+    }
+    function createCurve(curveDef, defHash) {
+        const create = (hash) => weierstrass({ ...curveDef, ...getHash(hash) });
+        return Object.freeze({ ...create(defHash), create });
+    }
+
+    /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+    const secp256k1P = BigInt('0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f');
+    const secp256k1N = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141');
+    const _1n = BigInt(1);
+    const _2n = BigInt(2);
+    const divNearest = (a, b) => (a + b / _2n) / b;
+    /**
+     * √n = n^((p+1)/4) for fields p = 3 mod 4. We unwrap the loop and multiply bit-by-bit.
+     * (P+1n/4n).toString(2) would produce bits [223x 1, 0, 22x 1, 4x 0, 11, 00]
+     */
+    function sqrtMod(y) {
+        const P = secp256k1P;
+        // prettier-ignore
+        const _3n = BigInt(3), _6n = BigInt(6), _11n = BigInt(11), _22n = BigInt(22);
+        // prettier-ignore
+        const _23n = BigInt(23), _44n = BigInt(44), _88n = BigInt(88);
+        const b2 = (y * y * y) % P; // x^3, 11
+        const b3 = (b2 * b2 * y) % P; // x^7
+        const b6 = (pow2(b3, _3n, P) * b3) % P;
+        const b9 = (pow2(b6, _3n, P) * b3) % P;
+        const b11 = (pow2(b9, _2n, P) * b2) % P;
+        const b22 = (pow2(b11, _11n, P) * b11) % P;
+        const b44 = (pow2(b22, _22n, P) * b22) % P;
+        const b88 = (pow2(b44, _44n, P) * b44) % P;
+        const b176 = (pow2(b88, _88n, P) * b88) % P;
+        const b220 = (pow2(b176, _44n, P) * b44) % P;
+        const b223 = (pow2(b220, _3n, P) * b3) % P;
+        const t1 = (pow2(b223, _23n, P) * b22) % P;
+        const t2 = (pow2(t1, _6n, P) * b2) % P;
+        const root = pow2(t2, _2n, P);
+        if (!Fp.eql(Fp.sqr(root), y))
+            throw new Error('Cannot find square root');
+        return root;
+    }
+    const Fp = Field(secp256k1P, undefined, undefined, { sqrt: sqrtMod });
+    const secp256k1 = createCurve({
+        a: BigInt(0),
+        b: BigInt(7),
+        Fp,
+        n: secp256k1N,
+        // Base point (x, y) aka generator point
+        Gx: BigInt('55066263022277343669578718895168534326250603453777594175500187360389116729240'),
+        Gy: BigInt('32670510020758816978083085130507043184471273380659243275938904335757337482424'),
+        h: BigInt(1),
+        lowS: true,
+        /**
+         * secp256k1 belongs to Koblitz curves: it has efficiently computable endomorphism.
+         * Endomorphism uses 2x less RAM, speeds up precomputation by 2x and ECDH / key recovery by 20%.
+         * For precomputed wNAF it trades off 1/2 init time & 1/3 ram for 20% perf hit.
+         * Explanation: https://gist.github.com/paulmillr/eb670806793e84df628a7c434a873066
+         */
+        endo: {
+            beta: BigInt('0x7ae96a2b657c07106e64479eac3434e99cf0497512f58995c1396c28719501ee'),
+            splitScalar: (k) => {
+                const n = secp256k1N;
+                const a1 = BigInt('0x3086d221a7d46bcde86c90e49284eb15');
+                const b1 = -_1n * BigInt('0xe4437ed6010e88286f547fa90abfe4c3');
+                const a2 = BigInt('0x114ca50f7a8e2f3f657c1108d9d44cfd8');
+                const b2 = a1;
+                const POW_2_128 = BigInt('0x100000000000000000000000000000000'); // (2n**128n).toString(16)
+                const c1 = divNearest(b2 * k, n);
+                const c2 = divNearest(-b1 * k, n);
+                let k1 = mod(k - c1 * a1 - c2 * a2, n);
+                let k2 = mod(-c1 * b1 - c2 * b2, n);
+                const k1neg = k1 > POW_2_128;
+                const k2neg = k2 > POW_2_128;
+                if (k1neg)
+                    k1 = n - k1;
+                if (k2neg)
+                    k2 = n - k2;
+                if (k1 > POW_2_128 || k2 > POW_2_128) {
+                    throw new Error('splitScalar: Endomorphism failed, k=' + k);
+                }
+                return { k1neg, k1, k2neg, k2 };
             },
-            set(val) {
-                if (!_sha256Sync)
-                    _sha256Sync = val;
-            },
         },
-        hmacSha256Sync: {
-            configurable: false,
-            get() {
-                return _hmacSha256Sync;
-            },
-            set(val) {
-                if (!_hmacSha256Sync)
-                    _hmacSha256Sync = val;
-            },
-        },
-    });
+    }, sha256$1);
+    // Schnorr signatures are superior to ECDSA from above. Below is Schnorr-specific BIP0340 code.
+    // https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
+    BigInt(0);
+    secp256k1.ProjectivePoint;
 
     /**
      *  A constant for the zero address.
@@ -6018,11 +6821,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *
      *  @_subsection: api/crypto:Signing  [about-signing]
      */
-    //const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
-    // Make noble-secp256k1 sync
-    utils.hmacSha256Sync = function (key, ...messages) {
-        return getBytes(computeHmac("sha256", key, concat(messages)));
-    };
     /**
      *  A **SigningKey** provides high-level access to the elliptic curve
      *  cryptography (ECC) operations and key management.
@@ -6060,15 +6858,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         sign(digest) {
             assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
-            const [sigDer, recid] = signSync(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
-                recovered: true,
-                canonical: true
+            const sig = secp256k1.sign(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
+                lowS: true
             });
-            const sig = Signature$1.fromHex(sigDer);
             return Signature.from({
-                r: toBeHex("0x" + sig.r.toString(16), 32),
-                s: toBeHex("0x" + sig.s.toString(16), 32),
-                v: (recid ? 0x1c : 0x1b)
+                r: toBeHex(sig.r, 32),
+                s: toBeHex(sig.s, 32),
+                v: (sig.recovery ? 0x1c : 0x1b)
             });
         }
         /**
@@ -6095,7 +6891,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         computeSharedSecret(other) {
             const pubKey = SigningKey.computePublicKey(other);
-            return hexlify(getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey)));
+            return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey), false));
         }
         /**
          *  Compute the public key for %%key%%, optionally %%compressed%%.
@@ -6126,7 +6922,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             let bytes = getBytes(key, "key");
             // private key
             if (bytes.length === 32) {
-                const pubKey = getPublicKey(bytes, !!compressed);
+                const pubKey = secp256k1.getPublicKey(bytes, !!compressed);
                 return hexlify(pubKey);
             }
             // raw public key; use uncompressed key with 0x04 prefix
@@ -6136,7 +6932,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 pub.set(bytes, 1);
                 bytes = pub;
             }
-            const point = Point.fromHex(bytes);
+            const point = secp256k1.ProjectivePoint.fromHex(bytes);
             return hexlify(point.toRawBytes(compressed));
         }
         /**
@@ -6160,10 +6956,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         static recoverPublicKey(digest, signature) {
             assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
             const sig = Signature.from(signature);
-            const der = Signature$1.fromCompact(getBytesCopy(concat([sig.r, sig.s]))).toDERRawBytes();
-            const pubKey = recoverPublicKey(getBytesCopy(digest), der, sig.yParity);
-            assertArgument(pubKey != null, "invalid signature for digest", "signature", signature);
-            return hexlify(pubKey);
+            let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s])));
+            secpSig = secpSig.addRecoveryBit(sig.yParity);
+            const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
+            assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
+            return "0x" + pubKey.toHex(false);
         }
         /**
          *  Returns the point resulting from adding the ellipic curve points
@@ -6176,8 +6973,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  addresses from parent public keys and chain codes.
          */
         static addPoints(p0, p1, compressed) {
-            const pub0 = Point.fromHex(SigningKey.computePublicKey(p0).substring(2));
-            const pub1 = Point.fromHex(SigningKey.computePublicKey(p1).substring(2));
+            const pub0 = secp256k1.ProjectivePoint.fromHex(SigningKey.computePublicKey(p0).substring(2));
+            const pub1 = secp256k1.ProjectivePoint.fromHex(SigningKey.computePublicKey(p1).substring(2));
             return "0x" + pub0.add(pub1).toHex(!!compressed);
         }
     }
@@ -6476,7 +7273,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     async function checkAddress(target, promise) {
         const result = await promise;
         if (result == null || result === "0x0000000000000000000000000000000000000000") {
-            assert$1(typeof (target) !== "string", "unconfigured name", "UNCONFIGURED_NAME", { value: target });
+            assert(typeof (target) !== "string", "unconfigured name", "UNCONFIGURED_NAME", { value: target });
             assertArgument(false, "invalid AddressLike value; did not resolve to a value address", "target", target);
         }
         return getAddress(result);
@@ -6523,7 +7320,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (target.match(/^0x[0-9a-f]{40}$/i)) {
                 return getAddress(target);
             }
-            assert$1(resolver != null, "ENS resolution requires a provider", "UNSUPPORTED_OPERATION", { operation: "resolveName" });
+            assert(resolver != null, "ENS resolution requires a provider", "UNSUPPORTED_OPERATION", { operation: "resolveName" });
             return checkAddress(target, resolver.resolveName(target));
         }
         else if (isAddressable(target)) {
@@ -7193,8 +7990,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             let unique = {};
             arrayValues = coders.map((coder) => {
                 const name = coder.localName;
-                assert$1(name, "cannot encode object for signature with missing names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
-                assert$1(!unique[name], "cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
+                assert(name, "cannot encode object for signature with missing names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
+                assert(!unique[name], "cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
                 unique[name] = true;
                 return values[name];
             });
@@ -7326,7 +8123,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 // slot requires at least 32 bytes for their value (or 32
                 // bytes as a link to the data). This could use a much
                 // tighter bound, but we are erroring on the side of safety.
-                assert$1(count * WordSize <= reader.dataLength, "insufficient data length", "BUFFER_OVERRUN", { buffer: reader.bytes, offset: count * WordSize, length: reader.dataLength });
+                assert(count * WordSize <= reader.dataLength, "insufficient data length", "BUFFER_OVERRUN", { buffer: reader.bytes, offset: count * WordSize, length: reader.dataLength });
             }
             let coders = [];
             for (let i = 0; i < count; i++) {
@@ -7569,6 +8366,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return keccak256(toUtf8Bytes(value));
     }
 
+    // created 2023-09-12T22:05:14.211Z
+    // compressed base64-encoded blob for include-ens data
+    // source: https://github.com/adraffy/ens-normalize.js/blob/main/src/make.js
+    // see: https://github.com/adraffy/ens-normalize.js#security
+    // SHA-256: 0565ed049b9cf1614bb9e11ba7d8ac6a6fb96c893253d890f7e2b2884b9ded32
+    var COMPRESSED$1 = 'AEEUdwmgDS8BxQKKAP4BOgDjATAAngDUAIMAoABoAOAAagCOAEQAhABMAHIAOwA9ACsANgAmAGIAHgAuACgAJwAXAC0AGgAjAB8ALwAUACkAEgAeAAkAGwARABkAFgA5ACgALQArADcAFQApABAAHgAiABAAGgAeABMAGAUhBe8BFxREN8sF2wC5AK5HAW8ArQkDzQCuhzc3NzcBP68NEfMABQdHBuw5BV8FYAA9MzkI9r4ZBg7QyQAWA9CeOwLNCjcCjqkChuA/lm+RAsXTAoP6ASfnEQDytQFJAjWVCkeXAOsA6godAB/cwdAUE0WlBCN/AQUCQRjFD/MRBjHxDQSJbw0jBzUAswBxme+tnIcAYwabAysG8QAjAEMMmxcDqgPKQyDXCMMxA7kUQwD3NXOrAKmFIAAfBC0D3x4BJQDBGdUFAhEgVD8JnwmQJiNWYUzrg0oAGwAUAB0AFnNcACkAFgBP9h3gPfsDOWDKneY2ChglX1UDYD30ABsAFAAdABZzIGRAnwDD8wAjAEEMzRbDqgMB2sAFYwXqAtCnAsS4AwpUJKRtFHsadUz9AMMVbwLpABM1NJEX0ZkCgYMBEyMAxRVvAukAEzUBUFAtmUwSAy4DBTER33EftQHfSwB5MxJ/AjkWKQLzL8E/cwBB6QH9LQDPDtO9ASNriQC5DQANAwCK21EFI91zHwCoL9kBqQcHBwcHKzUDowBvAQohPvU3fAQgHwCyAc8CKQMA5zMSezr7ULgFmDp/LzVQBgEGAi8FYQVgt8AFcTtlQhpCWEmfe5tmZ6IAExsDzQ8t+X8rBKtTAltbAn0jsy8Bl6utPWMDTR8Ei2kRANkDBrNHNysDBzECQWUAcwFpJ3kAiyUhAJ0BUb8AL3EfAbfNAz81KUsFWwF3YQZtAm0A+VEfAzEJDQBRSQCzAQBlAHsAM70GD/v3IZWHBwARKQAxALsjTwHZAeMPEzmXgIHwABIAGQA8AEUAQDt3gdvIEGcQZAkGTRFMdEIVEwK0D64L7REdDNkq09PgADSxB/MDWwfzA1sDWwfzB/MDWwfzA1sDWwNbA1scEvAi28gQZw9QBHUFlgWTBN4IiyZREYkHMAjaVBV0JhxPA00BBCMtSSQ7mzMTJUpMFE0LCAQ2SmyvfUADTzGzVP2QqgPTMlc5dAkGHnkSqAAyD3skNb1OhnpPcagKU0+2tYdJak5vAsY6sEAACikJm2/Dd1YGRRAfJ6kQ+ww3AbkBPw3xS9wE9QY/BM0fgRkdD9GVoAipLeEM8SbnLqWAXiP5KocF8Uv4POELUVFsD10LaQnnOmeBUgMlAREijwrhDT0IcRD3Cs1vDekRSQc9A9lJngCpBwULFR05FbkmFGKwCw05ewb/GvoLkyazEy17AAXXGiUGUQEtGwMA0y7rhbRaNVwgT2MGBwspI8sUrFAkDSlAu3hMGh8HGSWtApVDdEqLUToelyH6PEENai4XUYAH+TwJGVMLhTyiRq9FEhHWPpE9TCJNTDAEOYMsMyePCdMPiQy9fHYBXQklCbUMdRM1ERs3yQg9Bx0xlygnGQglRplgngT7owP3E9UDDwVDCUUHFwO5HDETMhUtBRGBKNsC9zbZLrcCk1aEARsFzw8pH+MQVEfkDu0InwJpA4cl7wAxFSUAGyKfCEdnAGOP3FMJLs8Iy2pwI3gDaxTrZRF3B5UOWwerHDcVwxzlcMxeD4YMKKezCV8BeQmdAWME5wgNNV+MpCBFZ1eLXBifIGVBQ14AAjUMaRWjRMGHfAKPD28SHwE5AXcHPQ0FAnsR8RFvEJkI74YINbkz/DopBFMhhyAVCisDU2zSCysm/Qz8bQGnEmYDEDRBd/Jnr2C6KBgBBx0yyUFkIfULlk/RDKAaxRhGVDIZ6AfDA/ca9yfuQVsGAwOnBxc6UTPyBMELbQiPCUMATQ6nGwfbGG4KdYzUATWPAbudA1uVhwJzkwY7Bw8Aaw+LBX3pACECqwinAAkA0wNbAD0CsQehAB0AiUUBQQMrMwEl6QKTA5cINc8BmTMB9y0EH8cMGQD7O25OAsO1AoBuZqYF4VwCkgJNOQFRKQQJUktVA7N15QDfAE8GF+NLARmvTs8e50cB43MvAMsA/wAJOQcJRQHRAfdxALsBYws1Caa3uQFR7S0AhwAZbwHbAo0A4QA5AIP1AVcAUQVd/QXXAlNNARU1HC9bZQG/AyMBNwERAH0Gz5GpzQsjBHEH1wIQHxXlAu8yB7kFAyLjE9FCyQK94lkAMhoKPAqrCqpgX2Q3CjV2PVQAEh+sPss/UgVVO1c7XDtXO1w7VztcO1c7XDtXO1wDm8Pmw+YKcF9JYe8Mqg3YRMw6TRPfYFVgNhPMLbsUxRXSJVoZQRrAJwkl6FUNDwgt12Y0CDA0eRfAAEMpbINFY4oeNApPHOtTlVT8LR8AtUumM7MNsBsZREQFS3XxYi4WEgomAmSFAmJGX1GzAV83JAKh+wJonAJmDQKfiDgfDwJmPwJmKgRyBIMDfxcDfpY5Cjl7GzmGOicnAmwhAjI6OA4CbcsCbbLzjgM3a0kvAWsA4gDlAE4JB5wMkQECD8YAEbkCdzMCdqZDAnlPRwJ4viFg30WyRvcCfEMCeswCfQ0CfPRIBEiBZygALxlJXEpfGRtK0ALRBQLQ0EsrA4hTA4fqRMmRNgLypV0HAwOyS9JMMSkH001QTbMCi0MCitzFHwshR2sJuwKOOwKOYESbhQKO3QKOYHxRuFM5AQ5S2FSJApP/ApMQAO0AIFUiVbNV1AosHymZijLleGpFPz0Cl6MC77ZYJawAXSkClpMCloCgAK1ZsFoNhVEAPwKWuQKWUlxIXNUCmc8CmWhczl0LHQKcnznGOqECnBoCn58CnryOACETNS4TAp31Ap6WALlBYThh8wKe1wKgcgGtAp6jIwKeUqljzGQrKS8CJ7MCJoICoP8CoFDbAqYzAqXSAqgDAIECp/ZogGi1AAdNaiBq1QKs5wKssgKtawKtBgJXIQJV4AKx5dsDH1JsmwKywRECsuwbbORtZ21MYwMl0QK2YD9DbpQDKUkCuGICuUsZArkue3A6cOUCvR0DLbYDMhUCvoxyBgMzdQK+HnMmc1MCw88CwwhzhnRPOUl05AM8qwEDPJ4DPcMCxYACxksCxhSNAshtVQLISALJUwLJMgJkoQLd1nh9ZXiyeSlL1AMYp2cGAmH4GfeVKHsPXpZevxUCz28Cz3AzT1fW9xejAMqxAs93AS3uA04Wfk8JAtwrAtuOAtJTA1JgA1NjAQUDVZCAjUMEzxrxZEl5A4LSg5EC2ssC2eKEFIRNp0ADhqkAMwNkEoZ1Xf0AWQLfaQLevHd7AuIz7RgB8zQrAfSfAfLWiwLr9wLpdH0DAur9AuroAP1LAb0C7o0C66CWrpcHAu5DA4XkmH1w5HGlAvMHAG0DjhqZlwL3FwORcgOSiwL3nAL53QL4apogmq+/O5siA52HAv7+AR8APZ8gAZ+3AwWRA6ZuA6bdANXJAwZuoYyiCQ0DDE0BEwEjB3EGZb1rCQC/BG/DFY8etxEAG3k9ACcDNxJRA42DAWcrJQCM8wAlAOanC6OVCLsGI6fJBgCvBRnDBvElRUYFFoAFcD9GSDNCKUK8X3kZX8QAls0FOgCQVCGbwTsuYDoZutcONxjOGJHJ/gVfBWAFXwVgBWsFYAVfBWAFXwVgBV8FYAVfBWBOHQjfjW8KCgoKbF7xMwTRA7kGN8PDAMMEr8MA70gxFroFTj5xPnhCR0K+X30/X/AAWBkzswCNBsxzzASm70aCRS4rDDMeLz49fnXfcsH5GcoscQFz13Y4HwVnBXLJycnACNdRYwgICAqEXoWTxgA7P4kACxbZBu21Kw0AjMsTAwkVAOVtJUUsJ1JCuULESUArXy9gPi9AKwnJRQYKTD9LPoA+iT54PnkCkULEUUpDX9NWV3JVEjQAc1w3A3IBE3YnX+g7QiMJb6MKaiszRCUuQrNCxDPMCcwEX9EWJzYREBEEBwIHKn6l33JCNVIfybPJtAltydPUCmhBZw/tEKsZAJOVJU1CLRuxbUHOQAo7P0s+eEJHHA8SJVRPdGM0NVrpvBoKhfUlM0JHHGUQUhEWO1xLSj8MO0ucNAqJIzVCRxv9EFsqKyA4OQgNj2nwZgp5ZNFgE2A1K3YHS2AhQQojJmC7DgpzGG1WYFUZCQYHZO9gHWCdYIVgu2BTYJlwFh8GvRbcXbG8YgtDHrMBwzPVyQonHQgkCyYBgQJ0Ajc4nVqIAwGSCsBPIgDsK3SWEtIVBa5N8gGjAo+kVwVIZwD/AEUSCDweX4ITrRQsJ8K3TwBXFDwEAB0TvzVcAtoTS20RIwDgVgZ9BBImYgA5AL4Coi8LFnezOkCnIQFjAY4KBAPh9RcGsgZSBsEAJctdsWIRu2kTkQstRw7DAcMBKgpPBGIGMDAwKCYnKTQaLg4AKRSVAFwCdl+YUZ0JdicFD3lPAdt1F9ZZKCGxuE3yBxkFVGcA/wBFEgiCBwAOLHQSjxOtQDg1z7deFRMAZ8QTAGtKb1ApIiPHADkAvgKiLy1DFtYCmBiDAlDDWNB0eo7fpaMO/aEVRRv0ATEQZBIODyMEAc8JQhCbDRgzFD4TAEMAu9YBCgCsAOkAm5I3ABwAYxvONnR+MhXJAxgKQyxL2+kkJhMbhQKDBMkSsvF0AD9BNQ6uQC7WqSQHwxEAEEIu1hkhAH2z4iQPwyJPHNWpdyYBRSpnJALzoBAEVPPsH20MxA0CCEQKRgAFyAtFAlMNwwjEDUQJRArELtapMg7DDZgJIw+TGukEIwvDFkMAqAtDEMMMBhioe+QAO3MMRAACrgnEBSPY9Q0FDnbSBoMAB8MSYxkSxAEJAPIJAAB8FWMOFtMc/HcXwxhDAC7DAvOowwAewwJdKDKHAAHDAALrFUQVwwAbwyvzpWMWv8wA/ABpAy++bcYDUKPD0KhDCwKmJ1MAAmMA5+UZwxAagwipBRL/eADfw6fDGOMCGsOjk3l6BwOpo4sAEsMOGxMAA5sAbcMOAAvDp0MJGkMDwgipnNIPAwfIqUMGAOGDAAPzABXDAAcDAAnDAGmTABrDAA7DChjDjnEWAwABYwAOcwAuUyYABsMAF8MIKQANUgC6wy4AA8MADqMq8wCyYgAcIwAB8wqpAAXOCx0V4wAHowBCwwEKAGnDAAuDAB3DAAjDCakABdIAbqcZ3QCZCCkABdIAAAFDAAfjAB2jCCkABqIACYMAGzMAbSMA5sOIAAhjAAhDABTDBAkpAAbSAOOTAAlDC6kOzPtnAAdDAG6kQFAATwAKwwwAA0MACbUDPwAHIwAZgwACE6cDAAojAApDAAoDp/MGwwAJIwADEwAQQwgAFEMAEXMAD5MADfMADcMAGRMOFiMAFUMAbqMWuwHDAMIAE0MLAGkzEgDhUwACQwAEWgAXgwUjAAbYABjDBSYBgzBaAEFNALcQBxUMegAwMngBrA0IZgJ0KxQHBREPd1N0ZzKRJwaIHAZqNT4DqQq8BwngAB4DAwt2AX56T1ocKQNXAh1GATQGC3tOxYNagkgAMQA5CQADAQEAWxLjAIOYNAEzAH7tFRk6TglSAF8NAAlYAQ+S1ACAQwQorQBiAN4dAJ1wPyeTANVzuQDX3AIeEMp9eyMgXiUAEdkBkJizKltbVVAaRMqRAAEAhyQ/SDEz6BmfVwB6ATEsOClKIRcDOF0E/832AFNt5AByAnkCRxGCOs94NjXdAwINGBonDBwPALW2AwICAgAAAAAAAAYDBQMDARrUAwAtAAAAAgEGBgYGBgYFBQUFBQUEBQYHCAkEBQUFBQQAAAICAAAAIgCNAJAAlT0A6gC7ANwApEQAwgCyAK0AqADuAKYA2gCjAOcBCAEDAMcAgQBiANIA1AEDAN4A8gCQAKkBMQDqAN8A3AsBCQ8yO9ra2tq8xuLT1tRJOB0BUgFcNU0BWgFpAWgBWwFMUUlLbhMBUxsNEAs6PhMOACcUKy0vMj5AQENDQ0RFFEYGJFdXV1dZWVhZL1pbXVxcI2NnZ2ZoZypsbnZ1eHh4eHh4enp6enp6enp6enp8fH18e2IARPIASQCaAHgAMgBm+ACOAFcAVwA3AnbvAIsABfj4AGQAk/IAnwBPAGIAZP//sACFAIUAaQBWALEAJAC2AIMCQAJDAPwA5wD+AP4A6AD/AOkA6QDoAOYALwJ7AVEBQAE+AVQBPgE+AT4BOQE4ATgBOAEcAVgXADEQCAEAUx8SHgsdHhYAjgCWAKYAUQBqIAIxAHYAbwCXAxUDJzIDIUlGTzEAkQJPAMcCVwKkAMAClgKWApYClgKWApYCiwKWApYClgKWApYClgKVApUCmAKgApcClgKWApQClAKUApQCkgKVAnUB1AKXAp8ClgKWApUeAIETBQD+DQOfAmECOh8BVBg9AuIZEjMbAU4/G1WZAXusRAFpYQEFA0FPAQYAmTEeIJdyADFoAHEANgCRA5zMk/C2jGINwjMWygIZCaXdfDILBCs5dAE7YnQBugDlhoiHhoiGiYqKhouOjIaNkI6Ij4qQipGGkoaThpSSlYaWhpeKmIaZhpqGm4aci52QnoqfhuIC4XTpAt90AIp0LHSoAIsAdHQEQwRABEIERQRDBEkERgRBBEcESQRIBEQERgRJAJ5udACrA490ALxuAQ10ANFZdHQA13QCFHQA/mJ0AP4BIQD+APwA/AD9APwDhGZ03ASMK23HAP4A/AD8AP0A/CR0dACRYnQA/gCRASEA/gCRAvQA/gCRA4RmdNwEjCttxyR0AP9idAEhAP4A/gD8APwA/QD8AP8A/AD8AP0A/AOEZnTcBIwrbcckdHQAkWJ0ASEA/gCRAP4AkQL0AP4AkQOEZnTcBIwrbcckdAJLAT50AlIBQXQCU8l0dAJfdHQDpgL0A6YDpgOnA6cDpwOnA4RmdNwEjCttxyR0dACRYnQBIQOmAJEDpgCRAvQDpgCRA4RmdNwEjCttxyR0BDh0AJEEOQCRDpU5dSgCADR03gV2CwArdAEFAM5iCnR0AF1iAAYcOgp0dACRCnQAXAEIwWZ0CnRmdHQAkWZ0CnRmdEXgAFF03gp0dEY0tlT2u3SOAQTwscwhjZZKrhYcBSfFp9XNbKiVDOD2b+cpe4/Z17mQnbtzzhaeQtE2GGj0IDNTjRUSyTxxw/RPHW/+vS7d1NfRt9z9QPZg4X7QFfhCnkvgNPIItOsC2eV6hPannZNHlZ9xrwZXIMOlu3jSoQSq78WEjwLjw1ELSlF1aBvfzwk5ZX7AUvQzjPQKbDuQ+sm4wNOp4A6AdVuRS0t1y/DZpg4R6m7FNjM9HgvW7Bi88zaMjOo6lM8wtBBdj8LP4ylv3zCXPhebMKJc066o9sF71oFW/8JXu86HJbwDID5lzw5GWLR/LhT0Qqnp2JQxNZNfcbLIzPy+YypqRm/lBmGmex+82+PisxUumSeJkALIT6rJezxMH+CTJmQtt5uwTVbL3ptmjDUQzlSIvWi8Tl7ng1NpuRn1Ng4n14Qc+3Iil7OwkvNWogLSPkn3pihIFytyIGmMhOe3n1tWsuMy9BdKyqF4Z3v2SgggTL9KVvMXPnCbRe+oOuFFP3HejBG/w9gvmfNYvg6JuWia2lcSSN1uIjBktzoIazOHPJZ7kKHPz8mRWVdW3lA8WGF9dQF6Bm673boov3BUWDU2JNcahR23GtfHKLOz/viZ+rYnZFaIznXO67CYEJ1fXuTRpZhYZkKe54xeoagkNGLs+NTZHE0rX45/XvQ2RGADX6vcAvdxIUBV27wxGm2zjZo4X3ILgAlrOFheuZ6wtsvaIj4yLY7qqawlliaIcrz2G+c3vscAnCkCuMzMmZvMfu9lLwTvfX+3cVSyPdN9ZwgDZhfjRgNJcLiJ67b9xx8JHswprbiE3v9UphotAPIgnXVIN5KmMc0piXhc6cChPnN+MRhG9adtdttQTTwSIpl8I4/j//d3sz1326qTBTpPRM/Hgh3kzqEXs8ZAk4ErQhNO8hzrQ0DLkWMA/N+91tn2MdOJnWC2FCZehkQrwzwbKOjhvZsbM95QoeL9skYyMf4srVPVJSgg7pOLUtr/n9eT99oe9nLtFRpjA9okV2Kj8h9k5HaC0oivRD8VyXkJ81tcd4fHNXPCfloIQasxsuO18/46dR2jgul/UIet2G0kRvnyONMKhHs6J26FEoqSqd+rfYjeEGwHWVDpX1fh1jBBcKGMqRepju9Y00mDVHC+Xdij/j44rKfvfjGinNs1jO/0F3jB83XCDINN/HB84axlP+3E/klktRo+vl3U/aiyMJbIodE1XSsDn6UAzIoMtUObY2+k/4gY/l+AkZJ5Sj2vQrkyLm3FoxjhDX+31UXBFf9XrAH31fFqoBmDEZvhvvpnZ87N+oZEu7U9O/nnk+QWj3x8uyoRbEnf+O5UMr9i0nHP38IF5AvzrBW8YWBUR0mIAzIvndQq9N3v/Jto3aPjPXUPl8ASdPPyAp7jENf8bk7VMM9ol9XGmlBmeDMuGqt+WzuL6CXAxXjIhCPM5vACchgMJ/8XBGLO/D1isVvGhwwHHr1DLaI5mn2Jr/b1pUD90uciDaS8cXNDzCWvNmT/PhQe5e8nTnnnkt8Ds/SIjibcum/fqDhKopxAY8AkSrPn+IGDEKOO+U3XOP6djFs2H5N9+orhOahiQk5KnEUWa+CzkVzhp8bMHRbg81qhjjXuIKbHjSLSIBKWqockGtKinY+z4/RdBUF6pcc3JmnlxVcNgrI4SEzKUZSwcD2QCyxzKve+gAmg6ZuSRkpPFa6mfThu7LJNu3H5K42uCpNvPAsoedolKV/LHe/eJ+BbaG5MG0NaSGVPRUmNFMFFSSpXEcXwbVh7UETOZZtoVNRGOIbbkig3McEtR68cG0RZAoJevWYo7Dg/lZ1CQzblWeUvVHmr8fY4Nqd9JJiH/zEX24mJviH60fAyFr0A3c4bC1j3yZU60VgJxXn8JgJXLUIsiBnmKmMYz+7yBQFBvqb2eYnuW59joZBf56/wXvWIR4R8wTmV80i1mZy+S4+BUES+hzjk0uXpC///z/IlqHZ1monzlXp8aCfhGKMti73FI1KbL1q6IKO4fuBuZ59gagjn5xU79muMpHXg6S+e+gDM/U9BKLHbl9l6o8czQKl4RUkJJiqftQG2i3BMg/TQlUYFkJDYBOOvAugYuzYSDnZbDDd/aSd9x0Oe6F+bJcHfl9+gp6L5/TgA+BdFFovbfCrQ40s5vMPw8866pNX8zyFGeFWdxIpPVp9Rg1UPOVFbFZrvaFq/YAzHQgqMWpahMYfqHpmwXfHL1/kpYmGuHFwT55mQu0dylfNuq2Oq0hTMCPwqfxnuBIPLXfci4Y1ANy+1CUipQxld/izVh16WyG2Q0CQQ9NqtAnx1HCHwDj7sYxOSB0wopZSnOzxQOcExmxrVTF2BkOthVpGfuhaGECfCJpJKpjnihY+xOT2QJxN61+9K6QSqtv2Shr82I3jgJrqBg0wELFZPjvHpvzTtaJnLK6Vb97Yn933koO/saN7fsjwNKzp4l2lJVx2orjCGzC/4ZL4zCver6aQYtC5sdoychuFE6ufOiog+VWi5UDkbmvmtah/3aArEBIi39s5ILUnlFLgilcGuz9CQshEY7fw2ouoILAYPVT/gyAIq3TFAIwVsl+ktkRz/qGfnCDGrm5gsl/l9QdvCWGsjPz3dU7XuqKfdUrr/6XIgjp4rey6AJBmCmUJMjITHVdFb5m1p+dLMCL8t55zD42cmftmLEJC0Da04YiRCVUBLLa8D071/N5UBNBXDh0LFsmhV/5B5ExOB4j3WVG/S3lfK5o+V6ELHvy6RR9n4ac+VsK4VE4yphPvV+kG9FegTBH4ZRXL2HytUHCduJazB/KykjfetYxOXTLws267aGOd+I+JhKP//+VnXmS90OD/jvLcVu0asyqcuYN1mSb6XTlCkqv1vigZPIYwNF/zpWcT1GR/6aEIRjkh0yhg4LXJfaGobYJTY4JI58KiAKgmmgAKWdl5nYCeLqavRJGQNuYuZtZFGx+IkI4w4NS2xwbetNMunOjBu/hmKCI/w7tfiiyUd//4rbTeWt4izBY8YvGIN6vyKYmP/8X8wHKCeN+WRcKM70+tXKNGyevU9H2Dg5BsljnTf8YbsJ1TmMs74Ce2XlHisleguhyeg44rQOHZuw/6HTkhnnurK2d62q6yS7210SsAIaR+jXMQA+svkrLpsUY+F30Uw89uOdGAR6vo4FIME0EfVVeHTu6eKicfhSqOeXJhbftcd08sWEnNUL1C9fnprTgd83IMut8onVUF0hvqzZfHduPjbjwEXIcoYmy+P6tcJZHmeOv6VrvEdkHDJecjHuHeWANe79VG662qTjA/HCvumVv3qL+LrOcpqGps2ZGwQdFJ7PU4iuyRlBrwfO+xnPyr47s2cXVbWzAyznDiBGjCM3ksxjjqM62GE9C8f5U38kB3VjtabKp/nRdvMESPGDG90bWRLAt1Qk5DyLuazRR1YzdC1c+hZXvAWV8xA72S4A8B67vjVhbba3MMop293FeEXpe7zItMWrJG/LOH9ByOXmYnNJfjmfuX9KbrpgLOba4nZ+fl8Gbdv/ihv+6wFGKHCYrVwmhFC0J3V2bn2tIB1wCc1CST3d3X2OyxhguXcs4sm679UngzofuSeBewMFJboIQHbUh/m2JhW2hG9DIvG2t7yZIzKBTz9wBtnNC+2pCRYhSIuQ1j8xsz5VvqnyUIthvuoyyu7fNIrg/KQUVmGQaqkqZk/Vx5b33/gsEs8yX7SC1J+NV4icz6bvIE7C5G6McBaI8rVg56q5QBJWxn/87Q1sPK4+sQa8fLU5gXo4paaq4cOcQ4wR0VBHPGjKh+UlPCbA1nLXyEUX45qZ8J7/Ln4FPJE2TdzD0Z8MLSNQiykMMmSyOCiFfy84Rq60emYB2vD09KjYwsoIpeDcBDTElBbXxND72yhd9pC/1CMid/5HUMvAL27OtcIJDzNKpRPNqPOpyt2aPGz9QWIs9hQ9LiX5s8m9hjTUu/f7MyIatjjd+tSfQ3ufZxPpmJhTaBtZtKLUcfOCUqADuO+QoH8B9v6U+P0HV1GLQmtoNFTb3s74ivZgjES0qfK+8RdGgBbcCMSy8eBvh98+et1KIFqSe1KQPyXULBMTsIYnysIwiZBJYdI20vseV+wuJkcqGemehKjaAb9L57xZm3g2zX0bZ2xk/fU+bCo7TlnbW7JuF1YdURo/2Gw7VclDG1W7LOtas2LX4upifZ/23rzpsnY/ALfRgrcWP5hYmV9VxVOQA1fZvp9F2UNU+7d7xRyVm5wiLp3/0dlV7vdw1PMiZrbDAYzIVqEjRY2YU03sJhPnlwIPcZUG5ltL6S8XCxU1eYS5cjr34veBmXAvy7yN4ZjArIG0dfD/5UpBNlX1ZPoxJOwyqRi3wQWtOzd4oNKh0LkoTm8cwqgIfKhqqGOhwo71I+zXnMemTv2B2AUzABWyFztGgGULjDDzWYwJUVBTjKCn5K2QGMK1CQT7SzziOjo+BhAmqBjzuc3xYym2eedGeOIRJVyTwDw37iCMe4g5Vbnsb5ZBdxOAnMT7HU4DHpxWGuQ7GeiY30Cpbvzss55+5Km1YsbD5ea3NI9QNYIXol5apgSu9dZ8f8xS5dtHpido5BclDuLWY4lhik0tbJa07yJhH0BOyEut/GRbYTS6RfiTYWGMCkNpfSHi7HvdiTglEVHKZXaVhezH4kkXiIvKopYAlPusftpE4a5IZwvw1x/eLvoDIh/zpo9FiQInsTb2SAkKHV42XYBjpJDg4374XiVb3ws4qM0s9eSQ5HzsMU4OZJKuopFjBM+dAZEl8RUMx5uU2N486Kr141tVsGQfGjORYMCJAMsxELeNT4RmWjRcpdTGBwcx6XN9drWqPmJzcrGrH4+DRc7+n1w3kPZwu0BkNr6hQrqgo7JTB9A5kdJ/H7P4cWBMwsmuixAzJB3yrQpnGIq90lxAXLzDCdn1LPibsRt7rHNjgQBklRgPZ8vTbjXdgXrTWQsK5MdrXXQVPp0Rinq3frzZKJ0qD6Qhc40VzAraUXlob1gvkhK3vpmHgI6FRlQZNx6eRqkp0zy4AQlX813fAPtL3jMRaitGFFjo0zmErloC+h+YYdVQ6k4F/epxAoF0BmqEoKNTt6j4vQZNQ2BoqF9Vj53TOIoNmDiu9Xp15RkIgQIGcoLpfoIbenzpGUAtqFJp5W+LLnx38jHeECTJ/navKY1NWfN0sY1T8/pB8kIH3DU3DX+u6W3YwpypBMYOhbSxGjq84RZ84fWJow8pyHqn4S/9J15EcCMsXqrfwyd9mhiu3+rEo9pPpoJkdZqHjra4NvzFwuThNKy6hao/SlLw3ZADUcUp3w3SRVfW2rhl80zOgTYnKE0Hs2qp1J6H3xqPqIkvUDRMFDYyRbsFI3M9MEyovPk8rlw7/0a81cDVLmBsR2ze2pBuKb23fbeZC0uXoIvDppfTwIDxk1Oq2dGesGc+oJXWJLGkOha3CX+DUnzgAp9HGH9RsPZN63Hn4RMA5eSVhPHO+9RcRb/IOgtW31V1Q5IPGtoxPjC+MEJbVlIMYADd9aHYWUIQKopuPOHmoqSkubnAKnzgKHqgIOfW5RdAgotN6BN+O2ZYHkuemLnvQ8U9THVrS1RtLmKbcC7PeeDsYznvqzeg6VCNwmr0Yyx1wnLjyT84BZz3EJyCptD3yeueAyDWIs0L2qs/VQ3HUyqfrja0V1LdDzqAikeWuV4sc7RLIB69jEIBjCkyZedoUHqCrOvShVzyd73OdrJW0hPOuQv2qOoHDc9xVb6Yu6uq3Xqp2ZaH46A7lzevbxQEmfrzvAYSJuZ4WDk1Hz3QX1LVdiUK0EvlAGAYlG3Md30r7dcPN63yqBCIj25prpvZP0nI4+EgWoFG95V596CurXpKRBGRjQlHCvy5Ib/iW8nZJWwrET3mgd6mEhfP4KCuaLjopWs7h+MdXFdIv8dHQJgg1xi1eYqB0uDYjxwVmri0Sv5XKut/onqapC+FQiC2C1lvYJ9MVco6yDYsS3AANUfMtvtbYI2hfwZatiSsnoUeMZd34GVjkMMKA+XnjJpXgRW2SHTZplVowPmJsvXy6w3cfO1AK2dvtZEKTkC/TY9LFiKHCG0DnrMQdGm2lzlBHM9iEYynH2UcVMhUEjsc0oDBTgo2ZSQ1gzkAHeWeBXYFjYLuuf8yzTCy7/RFR81WDjXMbq2BOH5dURnxo6oivmxL3cKzKInlZkD31nvpHB9Kk7GfcfE1t+1V64b9LtgeJGlpRFxQCAqWJ5DoY77ski8gsOEOr2uywZaoO/NGa0X0y1pNQHBi3b2SUGNpcZxDT7rLbBf1FSnQ8guxGW3W+36BW0gBje4DOz6Ba6SVk0xiKgt+q2JOFyr4SYfnu+Ic1QZYIuwHBrgzr6UvOcSCzPTOo7D6IC4ISeS7zkl4h+2VoeHpnG/uWR3+ysNgPcOIXQbv0n4mr3BwQcdKJxgPSeyuP/z1Jjg4e9nUvoXegqQVIE30EHx5GHv+FAVUNTowYDJgyFhf5IvlYmEqRif6+WN1MkEJmDcQITx9FX23a4mxy1AQRsOHO/+eImX9l8EMJI3oPWzVXxSOeHU1dUWYr2uAA7AMb+vAEZSbU3qob9ibCyXeypEMpZ6863o6QPqlqGHZkuWABSTVNd4cOh9hv3qEpSx2Zy/DJMP6cItEmiBJ5PFqQnDEIt3NrA3COlOSgz43D7gpNFNJ5MBh4oFzhDPiglC2ypsNU4ISywY2erkyb1NC3Qh/IfWj0eDgZI4/ln8WPfBsT3meTjq1Uqt1E7Zl/qftqkx6aM9KueMCekSnMrcHj1CqTWWzEzPsZGcDe3Ue4Ws+XFYVxNbOFF8ezkvQGR6ZOtOLU2lQEnMBStx47vE6Pb7AYMBRj2OOfZXfisjJnpTfSNjo6sZ6qSvNxZNmDeS7Gk3yYyCk1HtKN2UnhMIjOXUzAqDv90lx9O/q/AT1ZMnit5XQe9wmQxnE/WSH0CqZ9/2Hy+Sfmpeg8RwsHI5Z8kC8H293m/LHVVM/BA7HaTJYg5Enk7M/xWpq0192ACfBai2LA/qrCjCr6Dh1BIMzMXINBmX96MJ5Hn2nxln/RXPFhwHxUmSV0EV2V0jm86/dxxuYSU1W7sVkEbN9EzkG0QFwPhyHKyb3t+Fj5WoUUTErcazE/N6EW6Lvp0d//SDPj7EV9UdJN+Amnf3Wwk3A0SlJ9Z00yvXZ7n3z70G47Hfsow8Wq1JXcfwnA+Yxa5mFsgV464KKP4T31wqIgzFPd3eCe3j5ory5fBF2hgCFyVFrLzI9eetNXvM7oQqyFgDo4CTp/hDV9NMX9JDHQ/nyHTLvZLNLF6ftn2OxjGm8+PqOwhxnPHWipkE/8wbtyri80Sr7pMNkQGMfo4ZYK9OcCC4ESVFFbLMIvlxSoRqWie0wxqnLfcLSXMSpMMQEJYDVObYsXIQNv4TGNwjq1kvT1UOkicTrG3IaBZ3XdScS3u8sgeZPVpOLkbiF940FjbCeNRINNvDbd01EPBrTCPpm12m43ze1bBB59Ia6Ovhnur/Nvx3IxwSWol+3H2qfCJR8df6aQf4v6WiONxkK+IqT4pKQrZK/LplgDI/PJZbOep8dtbV7oCr6CgfpWa8NczOkPx81iSHbsNhVSJBOtrLIMrL31LK9TqHqAbAHe0RLmmV806kRLDLNEhUEJfm9u0sxpkL93Zgd6rw+tqBfTMi59xqXHLXSHwSbSBl0EK0+loECOPtrl+/nsaFe197di4yUgoe4jKoAJDXc6DGDjrQOoFDWZJ9HXwt8xDrQP+7aRwWKWI1GF8s8O4KzxWBBcwnl3vnl1Oez3oh6Ea1vjR7/z7DDTrFtqU2W/KAEzAuXDNZ7MY73MF216dzdSbWmUp4lcm7keJfWaMHgut9x5C9mj66Z0lJ+yhsjVvyiWrfk1lzPOTdhG15Y7gQlXtacvI7qv/XNSscDwqkgwHT/gUsD5yB7LdRRvJxQGYINn9hTpodKFVSTPrtGvyQw+HlRFXIkodErAGu9Iy1YpfSPc3jkFh5CX3lPxv7aqjE/JAfTIpEjGb/H7MO0e2vsViSW1qa/Lmi4/n4DEI3g7lYrcanspDfEpKkdV1OjSLOy0BCUqVoECaB55vs06rXl4jqmLsPsFM/7vYJ0vrBhDCm/00A/H81l1uekJ/6Lml3Hb9+NKiLqATJmDpyzfYZFHumEjC662L0Bwkxi7E9U4cQA0XMVDuMYAIeLMPgQaMVOd8fmt5SflFIfuBoszeAw7ow5gXPE2Y/yBc/7jExARUf/BxIHQBF5Sn3i61w4z5xJdCyO1F1X3+3ax+JSvMeZ7S6QSKp1Fp/sjYz6Z+VgCZzibGeEoujryfMulH7Rai5kAft9ebcW50DyJr2uo2z97mTWIu45YsSnNSMrrNUuG1XsYBtD9TDYzQffKB87vWbkM4EbPAFgoBV4GQS+vtFDUqOFAoi1nTtmIOvg38N4hT2Sn8r8clmBCXspBlMBYTnrqFJGBT3wZOzAyJDre9dHH7+x7qaaKDOB4UQALD5ecS0DE4obubQEiuJZ0EpBVpLuYcce8Aa4PYd/V4DLDAJBYKQPCWTcrEaZ5HYbJi11Gd6hjGom1ii18VHYnG28NKpkz2UKVPxlhYSp8uZr367iOmoy7zsxehW9wzcy2zG0a80PBMCRQMb32hnaHeOR8fnNDzZhaNYhkOdDsBUZ3loDMa1YP0uS0cjUP3b/6DBlqmZOeNABDsLl5BI5QJups8uxAuWJdkUB/pO6Zax6tsg7fN5mjjDgMGngO+DPcKqiHIDbFIGudxtPTIyDi9SFMKBDcfdGQRv41q1AqmxgkVfJMnP8w/Bc7N9/TR6C7mGObFqFkIEom8sKi2xYqJLTCHK7cxzaZvqODo22c3wisBCP4HeAgcRbNPAsBkNRhSmD48dHupdBRw4mIvtS5oeF6zeT1KMCyhMnmhpkFAGWnGscoNkwvQ8ZM5lE/vgTHFYL99OuNxdFBxTEDd5v2qLR8y9WkXsWgG6kZNndFG+pO/UAkOCipqIhL3hq7cRSdrCq7YhUsTocEcnaFa6nVkhnSeRYUA1YO0z5itF9Sly3VlxYDw239TJJH6f3EUfYO5lb7bcFcz8Bp7Oo8QmnsUHOz/fagVUBtKEw1iT88j+aKkv8cscKNkMxjYr8344D1kFoZ7/td1W6LCNYN594301tUGRmFjAzeRg5vyoM1F6+bJZ/Q54jN/k8SFd3DxPTYaAUsivsBfgTn7Mx8H2SpPt4GOdYRnEJOH6jHM2p6SgB0gzIRq6fHxGMmSmqaPCmlfwxiuloaVIitLGN8wie2CDWhkzLoCJcODh7KIOAqbHEvXdUxaS4TTTs07Clzj/6GmVs9kiZDerMxEnhUB6QQPlcfqkG9882RqHoLiHGBoHfQuXIsAG8GTAtao2KVwRnvvam8jo1e312GQAKWEa4sUVEAMG4G6ckcONDwRcg1e2D3+ohXgY4UAWF8wHKQMrSnzCgfFpsxh+aHXMGtPQroQasRY4U6UdG0rz1Vjbka0MekOGRZQEvqQFlxseFor8zWFgHek3v29+WqN6gaK5gZOTOMZzpQIC1201LkMCXild3vWXSc5UX9xcFYfbRPzGFa1FDcPfPB/jUEq/FeGt419CI3YmBlVoHsa4KdcwQP5ZSwHHhFJ7/Ph/Rap/4vmG91eDwPP0lDfCDRCLszTqfzM71xpmiKi2HwS4WlqvGNwtvwF5Dqpn6KTq8ax00UMPkxDcZrEEEsIvHiUXXEphdb4GB4FymlPwBz4Gperqq5pW7TQ6/yNRhW8VT5NhuP0udlxo4gILq5ZxAZk8ZGh3g4CqxJlPKY7AQxupfUcVpWT5VItp1+30UqoyP4wWsRo3olRRgkWZZ2ZN6VC3OZFeXB8NbnUrSdikNptD1QiGuKkr8EmSR/AK9Rw+FF3s5uwuPbvHGiPeFOViltMK7AUaOsq9+x9cndk3iJEE5LKZRlWJbKOZweROzmPNVPkjE3K/TyA57Rs68TkZ3MR8akKpm7cFjnjPd/DdkWjgYoKHSr5Wu5ssoBYU4acRs5g2DHxUmdq8VXOXRbunD8QN0LhgkssgahcdoYsNvuXGUK/KXD/7oFb+VGdhqIn02veuM5bLudJOc2Ky0GMaG4W/xWBxIJcL7yliJOXOpx0AkBqUgzlDczmLT4iILXDxxtRR1oZa2JWFgiAb43obrJnG/TZC2KSK2wqOzRZTXavZZFMb1f3bXvVaNaK828w9TO610gk8JNf3gMfETzXXsbcvRGCG9JWQZ6+cDPqc4466Yo2RcKH+PILeKOqtnlbInR3MmBeGG3FH10yzkybuqEC2HSQwpA0An7d9+73BkDUTm30bZmoP/RGbgFN+GrCOfADgqr0WbI1a1okpFms8iHYw9hm0zUvlEMivBRxModrbJJ+9/p3jUdQQ9BCtQdxnOGrT5dzRUmw0593/mbRSdBg0nRvRZM5/E16m7ZHmDEtWhwvfdZCZ8J8M12W0yRMszXamWfQTwIZ4ayYktrnscQuWr8idp3PjT2eF/jmtdhIfcpMnb+IfZY2FebW6UY/AK3jP4u3Tu4zE4qlnQgLFbM19EBIsNf7KhjdbqQ/D6yiDb+NlEi2SKD+ivXVUK8ib0oBo366gXkR8ZxGjpJIDcEgZPa9TcYe0TIbiPl/rPUQDu3XBJ9X/GNq3FAUsKsll57DzaGMrjcT+gctp+9MLYXCq+sqP81eVQ0r9lt+gcQfZbACRbEjvlMskztZG8gbC8Qn9tt26Q7y7nDrbZq/LEz7kR6Jc6pg3N9rVX8Y5MJrGlML9p9lU4jbTkKqCveeZUJjHB03m2KRKR2TytoFkTXOLg7keU1s1lrPMQJpoOKLuAAC+y1HlJucU6ysB5hsXhvSPPLq5J7JtnqHKZ4vYjC4Vy8153QY+6780xDuGARsGbOs1WqzH0QS765rnSKEbbKlkO8oI/VDwUd0is13tKpqILu1mDJFNy/iJAWcvDgjxvusIT+PGz3ST/J9r9Mtfd0jpaGeiLYIqXc7DiHSS8TcjFVksi66PEkxW1z6ujbLLUGNNYnzOWpH8BZGK4bCK7iR+MbIv8ncDAz1u4StN3vTTzewr9IQjk9wxFxn+6N1ddKs0vffJiS08N3a4G1SVrlZ97Q/M+8G9fe5AP6d9/Qq4WRnORVhofPIKEdCr3llspUfE0oKIIYoByBRPh+bX1HLS3JWGJRhIvE1aW4NTd8ePi4Z+kXb+Z8snYfSNcqijhAgVsx4RCM54cXUiYkjeBmmC4ajOHrChoELscJJC7+9jjMjw5BagZKlgRMiSNYz7h7vvZIoQqbtQmspc0cUk1G/73iXtSpROl5wtLgQi0mW2Ex8i3WULhcggx6E1LMVHUsdc9GHI1PH3U2Ko0PyGdn9KdVOLm7FPBui0i9a0HpA60MsewVE4z8CAt5d401Gv6zXlIT5Ybit1VIA0FCs7wtvYreru1fUyW3oLAZ/+aTnZrOcYRNVA8spoRtlRoWflsRClFcgzkqiHOrf0/SVw+EpVaFlJ0g4Kxq1MMOmiQdpMNpte8lMMQqm6cIFXlnGbfJllysKDi+0JJMotkqgIxOSQgU9dn/lWkeVf8nUm3iwX2Nl3WDw9i6AUK3vBAbZZrcJpDQ/N64AVwjT07Jef30GSSmtNu2WlW7YoyW2FlWfZFQUwk867EdLYKk9VG6JgEnBiBxkY7LMo4YLQJJlAo9l/oTvJkSARDF/XtyAzM8O2t3eT/iXa6wDN3WewNmQHdPfsxChU/KtLG2Mn8i4ZqKdSlIaBZadxJmRzVS/o4yA65RTSViq60oa395Lqw0pzY4SipwE0SXXsKV+GZraGSkr/RW08wPRvqvSUkYBMA9lPx4m24az+IHmCbXA+0faxTRE9wuGeO06DIXa6QlKJ3puIyiuAVfPr736vzo2pBirS+Vxel3TMm3JKhz9o2ZoRvaFVpIkykb0Hcm4oHFBMcNSNj7/4GJt43ogonY2Vg4nsDQIWxAcorpXACzgBqQPjYsE/VUpXpwNManEru4NwMCFPkXvMoqvoeLN3qyu/N1eWEHttMD65v19l/0kH2mR35iv/FI+yjoHJ9gPMz67af3Mq/BoWXqu3rphiWMXVkmnPSEkpGpUI2h1MThideGFEOK6YZHPwYzMBvpNC7+ZHxPb7epfefGyIB4JzO9DTNEYnDLVVHdQyvOEVefrk6Uv5kTQYVYWWdqrdcIl7yljwwIWdfQ/y+2QB3eR/qxYObuYyB4gTbo2in4PzarU1sO9nETkmj9/AoxDA+JM3GMqQtJR4jtduHtnoCLxd1gQUscHRB/MoRYIEsP2pDZ9KvHgtlk1iTbWWbHhohwFEYX7y51fUV2nuUmnoUcqnWIQAAgl9LTVX+Bc0QGNEhChxHR4YjfE51PUdGfsSFE6ck7BL3/hTf9jLq4G1IafINxOLKeAtO7quulYvH5YOBc+zX7CrMgWnW47/jfRsWnJjYYoE7xMfWV2HN2iyIqLI';
+    const FENCED = new Map([[8217,"apostrophe"],[8260,"fraction slash"],[12539,"middle dot"]]);
+    const NSM_MAX = 4;
+
     function decode_arithmetic(bytes) {
     	let pos = 0;
     	function u16() { return (bytes[pos++] << 8) | bytes[pos++]; }
@@ -7662,6 +8468,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     // unsafe in the sense:
     // expected well-formed Base64 w/o padding 
+    // 20220922: added for https://github.com/adraffy/ens-normalize.js/issues/4
     function unsafe_atob(s) {
     	let lookup = [];
     	[...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'].forEach((c, i) => lookup[c.charCodeAt(0)] = i);
@@ -7773,10 +8580,31 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     	return m.map(v => [v[0], v.slice(1)]);
     }
 
-    // created 2023-02-21T09:18:13.549Z
-    var r$1 = read_compressed_payload('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');
-    const FENCED = new Map([[8217,"apostrophe"],[8260,"fraction slash"],[12539,"middle dot"]]);
-    const NSM_MAX = 4;
+
+    function read_trie(next) {
+    	let ret = [];
+    	let sorted = read_sorted(next); 
+    	expand(decode([]), []);
+    	return ret; // not sorted
+    	function decode(Q) { // characters that lead into this node
+    		let S = next(); // state: valid, save, check
+    		let B = read_array_while(() => { // buckets leading to new nodes
+    			let cps = read_sorted(next).map(i => sorted[i]);
+    			if (cps.length) return decode(cps);
+    		});
+    		return {S, B, Q};
+    	}
+    	function expand({S, B}, cps, saved) {
+    		if (S & 4 && saved === cps[cps.length-1]) return;
+    		if (S & 2) saved = cps[cps.length-1];
+    		if (S & 1) ret.push(cps); 
+    		for (let br of B) {
+    			for (let cp of br.Q) {
+    				expand(br, [...cps, cp], saved);
+    			}
+    		}
+    	}
+    }
 
     function hex_cp(cp) {
     	return cp.toString(16).toUpperCase().padStart(2, '0');
@@ -7812,34 +8640,24 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     	return buf.join('');
     }
 
-    // created 2023-02-21T09:18:13.549Z
-    var r = read_compressed_payload('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');
+    function compare_arrays(a, b) {
+    	let n = a.length;
+    	let c = n - b.length;
+    	for (let i = 0; c == 0 && i < n; i++) c = a[i] - b[i];
+    	return c;
+    }
+
+    // created 2023-09-12T22:05:14.211Z
+    // compressed base64-encoded blob for include-nf data
+    // source: https://github.com/adraffy/ens-normalize.js/blob/main/src/make.js
+    // see: https://github.com/adraffy/ens-normalize.js#security
+    // SHA-256: a974b6f8541fc29d919bc85118af0a44015851fab5343f8679cb31be2bdb209e
+    var COMPRESSED = 'AEUDTAHBCFQATQDRADAAcgAgADQAFAAsABQAHwAOACQADQARAAoAFwAHABIACAAPAAUACwAFAAwABAAQAAMABwAEAAoABQAIAAIACgABAAQAFAALAAIACwABAAIAAQAHAAMAAwAEAAsADAAMAAwACgANAA0AAwAKAAkABAAdAAYAZwDSAdsDJgC0CkMB8xhZAqfoC190UGcThgBurwf7PT09Pb09AjgJum8OjDllxHYUKXAPxzq6tABAxgK8ysUvWAgMPT09PT09PSs6LT2HcgWXWwFLoSMEEEl5RFVMKvO0XQ8ExDdJMnIgsj26PTQyy8FfEQ8AY8IPAGcEbwRwBHEEcgRzBHQEdQR2BHcEeAR6BHsEfAR+BIAEgfndBQoBYgULAWIFDAFiBNcE2ATZBRAFEQUvBdALFAsVDPcNBw13DYcOMA4xDjMB4BllHI0B2grbAMDpHLkQ7QHVAPRNQQFnGRUEg0yEB2uaJF8AJpIBpob5AERSMAKNoAXqaQLUBMCzEiACnwRZEkkVsS7tANAsBG0RuAQLEPABv9HICTUBXigPZwRBApMDOwAamhtaABqEAY8KvKx3LQ4ArAB8UhwEBAVSagD8AEFZADkBIadVj2UMUgx5Il4ANQC9AxIB1BlbEPMAs30CGxlXAhwZKQIECBc6EbsCoxngzv7UzRQA8M0BawL6ZwkN7wABAD33OQRcsgLJCjMCjqUChtw/km+NAsXPAoP2BT84PwURAK0RAvptb6cApQS/OMMey5HJS84UdxpxTPkCogVFITaTOwERAK5pAvkNBOVyA7q3BKlOJSALAgUIBRcEdASpBXqzABXFSWZOawLCOqw//AolCZdvv3dSBkEQGyelEPcMMwG1ATsN7UvYBPEGOwTJH30ZGQ/NlZwIpS3dDO0m4y6hgFoj9SqDBe1L9DzdC01RaA9ZC2UJ4zpjgU4DIQENIosK3Q05CG0Q8wrJaw3lEUUHOQPVSZoApQcBCxEdNRW1JhBirAsJOXcG+xr2C48mrxMpevwF0xohBk0BKRr/AM8u54WwWjFcHE9fBgMLJSPHFKhQIA0lQLd4SBobBxUlqQKRQ3BKh1E2HpMh9jw9DWYuE1F8B/U8BRlPC4E8nkarRQ4R0j6NPUgiSUwsBDV/LC8niwnPD4UMuXxyAVkJIQmxDHETMREXN8UIOQcZLZckJxUIIUaVYJoE958D8xPRAwsFPwlBBxMDtRwtEy4VKQUNgSTXAvM21S6zAo9WgAEXBcsPJR/fEFBH4A7pCJsCZQODJesALRUhABcimwhDYwBfj9hTBS7LCMdqbCN0A2cU52ERcweRDlcHpxwzFb8c4XDIXguGCCijrwlbAXUJmQFfBOMICTVbjKAgQWdTi1gYmyBhQT9d/AIxDGUVn0S9h3gCiw9rEhsBNQFzBzkNAQJ3Ee0RaxCVCOuGBDW1M/g6JQRPIYMgEQonA09szgsnJvkM+GkBoxJiAww0PXfuZ6tgtiQX/QcZMsVBYCHxC5JPzQycGsEYQlQuGeQHvwPzGvMn6kFXBf8DowMTOk0z7gS9C2kIiwk/AEkOoxcH1xhqCnGM0AExiwG3mQNXkYMCb48GNwcLAGcLhwV55QAdAqcIowAFAM8DVwA5Aq0HnQAZAIVBAT0DJy8BIeUCjwOTCDHLAZUvAfMpBBvDDBUA9zduSgLDsQKAamaiBd1YAo4CSTUBTSUEBU5HUQOvceEA2wBLBhPfRwEVq0rLGuNDAd9vKwDHAPsABTUHBUEBzQHzbQC3AV8LMQmis7UBTekpAIMAFWsB1wKJAN0ANQB/8QFTAE0FWfkF0wJPSQERMRgrV2EBuwMfATMBDQB5BsuNpckHHwRtB9MCEBsV4QLvLge1AQMi3xPNQsUCvd5VoWACZIECYkJbTa9bNyACofcCaJgCZgkCn4Q4GwsCZjsCZiYEbgR/A38TA36SOQY5dxc5gjojIwJsHQIyNjgKAm3HAm2u74ozZ0UrAWcA3gDhAEoFB5gMjQD+C8IADbUCdy8CdqI/AnlLQwJ4uh1c20WuRtcCfD8CesgCfQkCfPAFWQUgSABIfWMkAoFtAoAAAoAFAn+uSVhKWxUXSswC0QEC0MxLJwOITwOH5kTFkTIC8qFdAwMDrkvOTC0lA89NTE2vAos/AorYwRsHHUNnBbcCjjcCjlxAl4ECjtkCjlx4UbRTNQpS1FSFApP7ApMMAOkAHFUeVa9V0AYsGymVhjLheGZFOzkCl58C77JYIagAWSUClo8ClnycAKlZrFoJgU0AOwKWtQKWTlxEXNECmcsCmWRcyl0HGQKcmznCOp0CnBYCn5sCnriKAB0PMSoPAp3xAp6SALU9YTRh7wKe0wKgbgGpAp6fHwKeTqVjyGQnJSsCJ68CJn4CoPsCoEwCot0CocQCpi8Cpc4Cp/8AfQKn8mh8aLEAA0lqHGrRAqzjAqyuAq1nAq0CAlcdAlXcArHh1wMfTmyXArK9DQKy6Bds4G1jbUhfAyXNArZcOz9ukAMpRQK4XgK5RxUCuSp3cDZw4QK9GQK72nCWAzIRAr6IcgIDM3ECvhpzInNPAsPLAsMEc4J0SzVFdOADPKcDPJoDPb8CxXwCxkcCxhCJAshpUQLIRALJTwLJLgJknQLd0nh5YXiueSVL0AMYo2cCAmH0GfOVJHsLXpJeuxECz2sCz2wvS1PS8xOfAMatAs9zASnqA04SfksFAtwnAtuKAtJPA1JcA1NfAQEDVYyAiT8AyxbtYEWCHILTgs6DjQLaxwLZ3oQQhEmnPAOGpQAvA2QOhnFZ+QBVAt9lAt64c3cC4i/tFAHzMCcB9JsB8tKHAuvzAulweQLq+QLq5AD5RwG5Au6JAuuclqqXAwLuPwOF4Jh5cOBxoQLzAwBpA44WmZMC9xMDkW4DkocC95gC+dkC+GaaHJqruzebHgOdgwL++gEbADmfHJ+zAwWNA6ZqA6bZANHFAwZqoYiiBQkDDEkCwAA/AwDhQRdTARHzA2sHl2cFAJMtK7evvdsBiZkUfxEEOQH7KQUhDp0JnwCS/SlXxQL3AZ0AtwW5AG8LbUEuFCaNLgFDAYD8AbUmAHUDDgRtACwCFgyhAAAKAj0CagPdA34EkQEgRQUhfAoABQBEABMANhICdwEABdUDa+8KxQIA9wqfJ7+xt+UBkSFBQgHpFH8RNMCJAAQAGwBaAkUChIsABjpTOpSNbQC4Oo860ACNOME63AClAOgAywE6gTo7Ofw5+Tt2iTpbO56JOm85GAFWATMBbAUvNV01njWtNWY1dTW2NcU1gjWRNdI14TWeNa017jX9NbI1wTYCNhE1xjXVNhY2JzXeNe02LjY9Ni41LSE2OjY9Njw2yTcIBJA8VzY4Nt03IDcPNsogN4k3MAoEsDxnNiQ3GTdsOo03IULUQwdC4EMLHA8PCZsobShRVQYA6X8A6bABFCnXAukBowC9BbcAbwNzBL8MDAMMAQgDAAkKCwsLCQoGBAVVBI/DvwDz9b29kaUCb0QtsRTNLt4eGBcSHAMZFhYZEhYEARAEBUEcQRxBHEEcQRxBHEEaQRxBHEFCSTxBPElISUhBNkM2QTYbNklISVmBVIgBFLWZAu0BhQCjBcEAbykBvwGJAaQcEZ0ePCklMAAhMvAIMAL54gC7Bm8EescjzQMpARQpKgDUABavAj626xQAJP0A3etzuf4NNRA7efy2Z9NQrCnC0OSyANz5BBIbJ5IFDR6miIavYS6tprjjmuKebxm5C74Q225X1pkaYYPb6f1DK4k3xMEBb9S2WMjEibTNWhsRJIA+vwNVEiXTE5iXs/wezV66oFLfp9NZGYW+Gk19J2+bCT6Ye2w6LDYdgzKMUabk595eLBCXANz9HUpWbATq9vqXVx9XDg+Pc9Xp4+bsS005SVM/BJBM4687WUuf+Uj9dEi8aDNaPxtpbDxcG1THTImUMZq4UCaaNYpsVqraNyKLJXDYsFZ/5jl7bLRtO88t7P3xZaAxhb5OdPMXqsSkp1WCieG8jXm1U99+blvLlXzPCS+M93VnJCiK+09LfaSaBAVBomyDgJua8dfUzR7ga34IvR2Nvj+A9heJ6lsl1KG4NkI1032Cnff1m1wof2B9oHJK4bi6JkEdSqeNeiuo6QoZZincoc73/TH9SXF8sCE7XyuYyW8WSgbGFCjPV0ihLKhdPs08Tx82fYAkLLc4I2wdl4apY7GU5lHRFzRWJep7Ww3wbeA3qmd59/86P4xuNaqDpygXt6M85glSBHOCGgJDnt+pN9bK7HApMguX6+06RZNjzVmcZJ+wcUrJ9//bpRNxNuKpNl9uFds+S9tdx7LaM5ZkIrPj6nIU9mnbFtVbs9s/uLgl8MVczAwet+iOEzzBlYW7RCMgE6gyNLeq6+1tIx4dpgZnd0DksJS5f+JNDpwwcPNXaaVspq1fbQajOrJgK0ofKtJ1Ne90L6VO4MOl5S886p7u6xo7OLjG8TGL+HU1JXGJgppg4nNbNJ5nlzSpuPYy21JUEcUA94PoFiZfjZue+QnyQ80ekOuZVkxx4g+cvhJfHgNl4hy1/a6+RKcKlar/J29y//EztlbVPHVUeQ1zX86eQVAjR/M3dA9w4W8LfaXp4EgM85wOWasli837PzVMOnsLzR+k3o75/lRPAJSE1xAKQzEi5v10ke+VBvRt1cwQRMd+U5mLCTGVd6XiZtgBG5cDi0w22GKcVNvHiu5LQbZEDVtz0onn7k5+heuKXVsZtSzilkLRAUmjMXEMB3J9YC50XBxPiz53SC+EhnPl9WsKCv92SM/OFFIMJZYfl0WW8tIO3UxYcwdMAj7FSmgrsZ2aAZO03BOhP1bNNZItyXYQFTpC3SG1VuPDqH9GkiCDmE+JwxyIVSO5siDErAOpEXFgjy6PQtOVDj+s6e1r8heWVvmZnTciuf4EiNZzCAd7SOMhXERIOlsHIMG399i9aLTy3m2hRLZjJVDNLS53iGIK11dPqQt0zBDyg6qc7YqkDm2M5Ve6dCWCaCbTXX2rToaIgz6+zh4lYUi/+6nqcFMAkQJKHYLK0wYk5N9szV6xihDbDDFr45lN1K4aCXBq/FitPSud9gLt5ZVn+ZqGX7cwm2z5EGMgfFpIFyhGGuDPmso6TItTMwny+7uPnLCf4W6goFQFV0oQSsc9VfMmVLcLr6ZetDZbaSFTLqnSO/bIPjA3/zAUoqgGFAEQS4IhuMzEp2I3jJzbzkk/IEmyax+rhZTwd6f+CGtwPixu8IvzACquPWPREu9ZvGkUzpRwvRRuaNN6cr0W1wWits9ICdYJ7ltbgMiSL3sTPeufgNcVqMVWFkCPDH4jG2jA0XcVgQj62Cb29v9f/z/+2KbYvIv/zzjpQAPkliaVDzNrW57TZ/ZOyZD0nlfMmAIBIAGAI0D3k/mdN4xr9v85ZbZbbqfH2jGd5hUqNZWwl5SPfoGmfElmazUIeNL1j/mkF7VNAzTq4jNt8JoQ11NQOcmhprXoxSxfRGJ9LDEOAQ+dmxAQH90iti9e2u/MoeuaGcDTHoC+xsmEeWmxEKefQuIzHbpw5Tc5cEocboAD09oipWQhtTO1wivf/O+DRe2rpl/E9wlrzBorjJsOeG1B/XPW4EaJEFdNlECEZga5ZoGRHXgYouGRuVkm8tDESiEyFNo+3s5M5puSdTyUL2llnINVHEt91XUNW4ewdMgJ4boJfEyt/iY5WXqbA+A2Fkt5Z0lutiWhe9nZIyIUjyXDC3UsaG1t+eNx6z4W/OYoTB7A6x+dNSTOi9AInctbESqm5gvOLww7OWXPrmHwVZasrl4eD113pm+JtT7JVOvnCXqdzzdTRHgJ0PiGTFYW5Gvt9R9LD6Lzfs0v/TZZHSmyVNq7viIHE6DBK7Qp07Iz55EM8SYtQvZf/obBniTWi5C2/ovHfw4VndkE5XYdjOhCMRjDeOEfXeN/CwfGduiUIfsoFeUxXeQXba7c7972XNv8w+dTjjUM0QeNAReW+J014dKAD/McQYXT7c0GQPIkn3Ll6R7gGjuiQoZD0TEeEqQpKoZ15g/0OPQI17QiSv9AUROa/V/TQN3dvLArec3RrsYlvBm1b8LWzltdugsC50lNKYLEp2a+ZZYqPejULRlOJh5zj/LVMyTDvwKhMxxwuDkxJ1QpoNI0OTWLom4Z71SNzI9TV1iXJrIu9Wcnd+MCaAw8o1jSXd94YU/1gnkrC9BUEOtQvEIQ7g0i6h+KL2JKk8Ydl7HruvgWMSAmNe+LshGhV4qnWHhO9/RIPQzY1tHRj2VqOyNsDpK0cww+56AdDC4gsWwY0XxoucIWIqs/GcwnWqlaT0KPr8mbK5U94/301i1WLt4YINTVvCFBrFZbIbY8eycOdeJ2teD5IfPLCRg7jjcFTwlMFNl9zdh/o3E/hHPwj7BWg0MU09pPrBLbrCgm54A6H+I6v27+jL5gkjWg/iYdks9jbfVP5y/n0dlgWEMlKasl7JvFZd56LfybW1eeaVO0gxTfXZwD8G4SI116yx7UKVRgui6Ya1YpixqXeNLc8IxtAwCU5IhwQgn+NqHnRaDv61CxKhOq4pOX7M6pkA+Pmpd4j1vn6ACUALoLLc4vpXci8VidLxzm7qFBe7s+quuJs6ETYmnpgS3LwSZxPIltgBDXz8M1k/W2ySNv2f9/NPhxLGK2D21dkHeSGmenRT3Yqcdl0m/h3OYr8V+lXNYGf8aCCpd4bWjE4QIPj7vUKN4Nrfs7ML6Y2OyS830JCnofg/k7lpFpt4SqZc5HGg1HCOrHvOdC8bP6FGDbE/VV0mX4IakzbdS/op+Kt3G24/8QbBV7y86sGSQ/vZzU8FXs7u6jIvwchsEP2BpIhW3G8uWNwa3HmjfH/ZjhhCWvluAcF+nMf14ClKg5hGgtPLJ98ueNAkc5Hs2WZlk2QHvfreCK1CCGO6nMZVSb99VM/ajr8WHTte9JSmkXq/i/U943HEbdzW6Re/S88dKgg8pGOLlAeNiqrcLkUR3/aClFpMXcOUP3rmETcWSfMXZE3TUOi8i+fqRnTYLflVx/Vb/6GJ7eIRZUA6k3RYR3iFSK9c4iDdNwJuZL2FKz/IK5VimcNWEqdXjSoxSgmF0UPlDoUlNrPcM7ftmA8Y9gKiqKEHuWN+AZRIwtVSxye2Kf8rM3lhJ5XcBXU9n4v0Oy1RU2M+4qM8AQPVwse8ErNSob5oFPWxuqZnVzo1qB/IBxkM3EVUKFUUlO3e51259GgNcJbCmlvrdjtoTW7rChm1wyCKzpCTwozUUEOIcWLneRLgMXh+SjGSFkAllzbGS5HK7LlfCMRNRDSvbQPjcXaenNYxCvu2Qyznz6StuxVj66SgI0T8B6/sfHAJYZaZ78thjOSIFumNWLQbeZixDCCC+v0YBtkxiBB3jefHqZ/dFHU+crbj6OvS1x/JDD7vlm7zOVPwpUC01nhxZuY/63E7g';
 
     // https://unicode.org/reports/tr15/
+    // for reference implementation
+    // see: /derive/nf.js
 
-    function unpack_cc(packed) {
-    	return (packed >> 24) & 0xFF;
-    }
-    function unpack_cp(packed) {
-    	return packed & 0xFFFFFF;
-    }
-
-    const SHIFTED_RANK = new Map(read_sorted_arrays(r).flatMap((v, i) => v.map(x => [x, (i+1) << 24]))); // pre-shifted
-    const EXCLUSIONS = new Set(read_sorted(r));
-    const DECOMP = new Map();
-    const RECOMP = new Map();
-    for (let [cp, cps] of read_mapped(r)) {
-    	if (!EXCLUSIONS.has(cp) && cps.length == 2) {
-    		let [a, b] = cps;
-    		let bucket = RECOMP.get(a);
-    		if (!bucket) {
-    			bucket = new Map();
-    			RECOMP.set(a, bucket);
-    		}
-    		bucket.set(b, cp);
-    	}
-    	DECOMP.set(cp, cps.reverse()); // stored reversed
-    }
 
     // algorithmic hangul
     // https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf (page 144)
@@ -7856,6 +8674,38 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const L1 = L0 + L_COUNT;
     const V1 = V0 + V_COUNT;
     const T1$1 = T0 + T_COUNT;
+
+    function unpack_cc(packed) {
+    	return (packed >> 24) & 0xFF;
+    }
+    function unpack_cp(packed) {
+    	return packed & 0xFFFFFF;
+    }
+
+    let SHIFTED_RANK, EXCLUSIONS, DECOMP, RECOMP;
+
+    function init$1() {
+    	//console.time('nf');
+    	let r = read_compressed_payload(COMPRESSED);
+    	SHIFTED_RANK = new Map(read_sorted_arrays(r).flatMap((v, i) => v.map(x => [x, (i+1) << 24]))); // pre-shifted
+    	EXCLUSIONS = new Set(read_sorted(r));
+    	DECOMP = new Map();
+    	RECOMP = new Map();
+    	for (let [cp, cps] of read_mapped(r)) {
+    		if (!EXCLUSIONS.has(cp) && cps.length == 2) {
+    			let [a, b] = cps;
+    			let bucket = RECOMP.get(a);
+    			if (!bucket) {
+    				bucket = new Map();
+    				RECOMP.set(a, bucket);
+    			}
+    			bucket.set(b, cp);
+    		}
+    		DECOMP.set(cp, cps.reverse()); // stored reversed
+    	}
+    	//console.timeEnd('nf');
+    	// 20230905: 11ms
+    }
 
     function is_hangul(cp) {
     	return cp >= S0 && cp < S1;
@@ -7879,6 +8729,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     function decomposed(cps) {
+    	if (!SHIFTED_RANK) init$1();
     	let ret = [];
     	let buf = [];
     	let check_order = false;
@@ -7986,163 +8837,171 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function nfc(cps) {
     	return composed_from_decomposed(decomposed(cps));
     }
-    const FE0F = 0xFE0F;
-    const STOP_CH = '.';
-    const UNIQUE_PH = 1;
+
     const HYPHEN = 0x2D;
+    const STOP_CH = '.';
+    const FE0F = 0xFE0F;
+    const UNIQUE_PH = 1;
 
-    function read_set() {
-    	return new Set(read_sorted(r$1));
-    }
-    const MAPPED = new Map(read_mapped(r$1)); 
-    const IGNORED = read_set(); // ignored characters are not valid, so just read raw codepoints
-    /*
-    // direct include from payload is smaller that the decompression code
-    const FENCED = new Map(read_array_while(() => {
-    	let cp = r();
-    	if (cp) return [cp, read_str(r())];
-    }));
-    */
-    // 20230217: we still need all CM for proper error formatting
-    // but norm only needs NSM subset that are potentially-valid
-    const CM = read_set();
-    const NSM = new Set(read_sorted(r$1).map(function(i) { return this[i]; }, [...CM]));
-    /*
-    const CM_SORTED = read_sorted(r);
-    const NSM = new Set(read_sorted(r).map(i => CM_SORTED[i]));
-    const CM = new Set(CM_SORTED);
-    */
-    const ESCAPE = read_set(); // characters that should not be printed
-    read_set();
-    const CHUNKS = read_sorted_arrays(r$1);
-    function read_chunked() {
-    	// deduplicated sets + uniques
-    	return new Set([read_sorted(r$1).map(i => CHUNKS[i]), read_sorted(r$1)].flat(2));
-    }
-    const UNRESTRICTED = r$1();
-    const GROUPS = read_array_while(i => {
-    	// minifier property mangling seems unsafe
-    	// so these are manually renamed to single chars
-    	let N = read_array_while(r$1).map(x => x+0x60);
-    	if (N.length) {
-    		let R = i >= UNRESTRICTED; // first arent restricted
-    		N[0] -= 32; // capitalize
-    		N = str_from_cps(N);
-    		if (R) N=`Restricted[${N}]`;
-    		let P = read_chunked(); // primary
-    		let Q = read_chunked(); // secondary
-    		let V = [...P, ...Q].sort((a, b) => a-b); // derive: sorted valid
-    		//let M = r()-1; // combining mark
-    		let M = !r$1(); // not-whitelisted, check for NSM
-    		// code currently isn't needed
-    		/*if (M < 0) { // whitelisted
-    			M = new Map(read_array_while(() => {
-    				let i = r();
-    				if (i) return [V[i-1], read_array_while(() => {
-    					let v = read_array_while(r);
-    					if (v.length) return v.map(x => x-1);
-    				})];
-    			}));
-    		}*/
-    		return {N, P, M, R, V: new Set(V)};
-    	}
-    });
-    const WHOLE_VALID = read_set();
-    const WHOLE_MAP = new Map();
-    // decode compressed wholes
-    [...WHOLE_VALID, ...read_set()].sort((a, b) => a-b).map((cp, i, v) => {
-    	let d = r$1(); 
-    	let w = v[i] = d ? v[i-d] : {V: [], M: new Map()};
-    	w.V.push(cp); // add to member set
-    	if (!WHOLE_VALID.has(cp)) {
-    		WHOLE_MAP.set(cp, w);  // register with whole map
-    	}
-    });
-    // compute confusable-extent complements
-    for (let {V, M} of new Set(WHOLE_MAP.values())) {
-    	// connect all groups that have each whole character
-    	let recs = [];
-    	for (let cp of V) {
-    		let gs = GROUPS.filter(g => g.V.has(cp));
-    		let rec = recs.find(({G}) => gs.some(g => G.has(g)));
-    		if (!rec) {
-    			rec = {G: new Set(), V: []};
-    			recs.push(rec);
-    		}
-    		rec.V.push(cp);
-    		gs.forEach(g => rec.G.add(g));
-    	}
-    	// per character cache groups which are not a member of the extent
-    	let union = recs.flatMap(({G}) => [...G]);
-    	for (let {G, V} of recs) {
-    		let complement = new Set(union.filter(g => !G.has(g)));
-    		for (let cp of V) {
-    			M.set(cp, complement);
-    		}
-    	}
-    }
-    let union = new Set(); // exists in 1+ groups
-    let multi = new Set(); // exists in 2+ groups
-    for (let g of GROUPS) {
-    	for (let cp of g.V) {
-    		(union.has(cp) ? multi : union).add(cp);
-    	}
-    }
-    // dual purpose WHOLE_MAP: return placeholder if unique non-confusable
-    for (let cp of union) {
-    	if (!WHOLE_MAP.has(cp) && !multi.has(cp)) {
-    		WHOLE_MAP.set(cp, UNIQUE_PH);
-    	}
-    }
-    const VALID = new Set([...union, ...nfd(union)]); // possibly valid
+    // 20230913: replace [...v] with Array_from(v) to avoid large spreads
+    const Array_from = x => Array.from(x); // Array.from.bind(Array);
 
-    // decode emoji
-    const EMOJI_SORTED = read_sorted(r$1); // temporary
-    //const EMOJI_SOLO = new Set(read_sorted(r).map(i => EMOJI_SORTED[i])); // not needed
-    const EMOJI_ROOT = read_emoji_trie([]);
-    function read_emoji_trie(cps) {
-    	let B = read_array_while(() => {
-    		let keys = read_sorted(r$1).map(i => EMOJI_SORTED[i]);
-    		if (keys.length) return read_emoji_trie(keys);
-    	}).sort((a, b) => b.Q.size - a.Q.size); // sort by likelihood
-    	let temp = r$1();
-    	let V = temp % 3; // valid (0 = false, 1 = true, 2 = weird)
-    	temp = (temp / 3)|0;
-    	let F = temp & 1; // allow FE0F
-    	temp >>= 1;
-    	let S = temp & 1; // save
-    	let C = temp & 2; // check
-    	return {B, V, F, S, C, Q: new Set(cps)};
+    function group_has_cp(g, cp) {
+    	// 20230913: keep primary and secondary distinct instead of creating valid union
+    	return g.P.has(cp) || g.Q.has(cp);
     }
-    //console.log(performance.now() - t0);
 
-    // free tagging system
     class Emoji extends Array {
-    	get is_emoji() { return true; }
+    	get is_emoji() { return true; } // free tagging system
     }
 
-    // create a safe to print string 
-    // invisibles are escaped
-    // leading cm uses placeholder
-    // quoter(cp) => string, eg. 3000 => "{3000}"
-    // note: in html, you'd call this function then replace [<>&] with entities
-    function safe_str_from_cps(cps, quoter = quote_cp) {
-    	//if (Number.isInteger(cps)) cps = [cps];
-    	//if (!Array.isArray(cps)) throw new TypeError(`expected codepoints`);
-    	let buf = [];
-    	if (is_combining_mark(cps[0])) buf.push('◌');
-    	let prev = 0;
-    	let n = cps.length;
-    	for (let i = 0; i < n; i++) {
-    		let cp = cps[i];
-    		if (should_escape(cp)) {
-    			buf.push(str_from_cps(cps.slice(prev, i)));
-    			buf.push(quoter(cp));
-    			prev = i + 1;
+    let MAPPED, IGNORED, CM, NSM, ESCAPE, GROUPS, WHOLE_VALID, WHOLE_MAP, VALID, EMOJI_LIST, EMOJI_ROOT;
+
+    function init() {
+    	if (MAPPED) return;
+    	
+    	let r = read_compressed_payload(COMPRESSED$1);
+    	const read_sorted_array = () => read_sorted(r);
+    	const read_sorted_set = () => new Set(read_sorted_array());
+
+    	MAPPED = new Map(read_mapped(r)); 
+    	IGNORED = read_sorted_set(); // ignored characters are not valid, so just read raw codepoints
+
+    	/*
+    	// direct include from payload is smaller than the decompression code
+    	const FENCED = new Map(read_array_while(() => {
+    		let cp = r();
+    		if (cp) return [cp, read_str(r())];
+    	}));
+    	*/
+    	// 20230217: we still need all CM for proper error formatting
+    	// but norm only needs NSM subset that are potentially-valid
+    	CM = read_sorted_array();
+    	NSM = new Set(read_sorted_array().map(i => CM[i]));
+    	CM = new Set(CM);
+    	
+    	ESCAPE = read_sorted_set(); // characters that should not be printed
+    	read_sorted_set(); // only needed to illustrate ens_tokenize() transformations
+
+    	let chunks = read_sorted_arrays(r);
+    	let unrestricted = r();
+    	const read_chunked = () => new Set(read_sorted_array().flatMap(i => chunks[i]).concat(read_sorted_array()));
+    	GROUPS = read_array_while(i => {
+    		// minifier property mangling seems unsafe
+    		// so these are manually renamed to single chars
+    		let N = read_array_while(r).map(x => x+0x60);
+    		if (N.length) {
+    			let R = i >= unrestricted; // first arent restricted
+    			N[0] -= 32; // capitalize
+    			N = str_from_cps(N);
+    			if (R) N=`Restricted[${N}]`;
+    			let P = read_chunked(); // primary
+    			let Q = read_chunked(); // secondary
+    			let M = !r(); // not-whitelisted, check for NSM
+    			// *** this code currently isn't needed ***
+    			/*
+    			let V = [...P, ...Q].sort((a, b) => a-b); // derive: sorted valid
+    			let M = r()-1; // number of combining mark
+    			if (M < 0) { // whitelisted
+    				M = new Map(read_array_while(() => {
+    					let i = r();
+    					if (i) return [V[i-1], read_array_while(() => {
+    						let v = read_array_while(r);
+    						if (v.length) return v.map(x => x-1);
+    					})];
+    				}));
+    			}*/
+    			return {N, P, Q, M, R};
+    		}
+    	});
+
+    	// decode compressed wholes
+    	WHOLE_VALID = read_sorted_set();
+    	WHOLE_MAP = new Map();
+    	let wholes = read_sorted_array().concat(Array_from(WHOLE_VALID)).sort((a, b) => a-b); // must be sorted
+    	wholes.forEach((cp, i) => {
+    		let d = r(); 
+    		let w = wholes[i] = d ? wholes[i-d] : {V: [], M: new Map()};
+    		w.V.push(cp); // add to member set
+    		if (!WHOLE_VALID.has(cp)) {
+    			WHOLE_MAP.set(cp, w);  // register with whole map
+    		}
+    	});
+
+    	// compute confusable-extent complements
+    	for (let {V, M} of new Set(WHOLE_MAP.values())) {
+    		// connect all groups that have each whole character
+    		let recs = [];
+    		for (let cp of V) {
+    			let gs = GROUPS.filter(g => group_has_cp(g, cp));
+    			let rec = recs.find(({G}) => gs.some(g => G.has(g)));
+    			if (!rec) {
+    				rec = {G: new Set(), V: []};
+    				recs.push(rec);
+    			}
+    			rec.V.push(cp);
+    			gs.forEach(g => rec.G.add(g));
+    		}
+    		// per character cache groups which are not a member of the extent
+    		let union = recs.flatMap(x => Array_from(x.G));
+    		for (let {G, V} of recs) {
+    			let complement = new Set(union.filter(g => !G.has(g)));
+    			for (let cp of V) {
+    				M.set(cp, complement);
+    			}
     		}
     	}
-    	buf.push(str_from_cps(cps.slice(prev, n)));
-    	return buf.join('');
+
+    	// compute valid set
+    	let union = new Set(); // exists in 1+ groups
+    	let multi = new Set(); // exists in 2+ groups
+    	const add_to_union = cp => union.has(cp) ? multi.add(cp) : union.add(cp);
+    	for (let g of GROUPS) {
+    		for (let cp of g.P) add_to_union(cp);
+    		for (let cp of g.Q) add_to_union(cp);
+    	}
+    	// dual purpose WHOLE_MAP: return placeholder if unique non-confusable
+    	for (let cp of union) {
+    		if (!WHOLE_MAP.has(cp) && !multi.has(cp)) {
+    			WHOLE_MAP.set(cp, UNIQUE_PH);
+    		}
+    	}
+    	VALID = new Set(Array_from(union).concat(Array_from(nfd(union)))); // possibly valid
+
+    	// decode emoji
+    	// 20230719: emoji are now fully-expanded to avoid quirk logic 
+    	EMOJI_LIST = read_trie(r).map(v => Emoji.from(v)).sort(compare_arrays);
+    	EMOJI_ROOT = new Map(); // this has approx 7K nodes (2+ per emoji)
+    	for (let cps of EMOJI_LIST) {
+    		// 20230719: change to *slightly* stricter algorithm which disallows 
+    		// insertion of misplaced FE0F in emoji sequences (matching ENSIP-15)
+    		// example: beautified [A B] (eg. flag emoji) 
+    		//  before: allow: [A FE0F B], error: [A FE0F FE0F B] 
+    		//   after: error: both
+    		// note: this code now matches ENSNormalize.{cs,java} logic
+    		let prev = [EMOJI_ROOT];
+    		for (let cp of cps) {
+    			let next = prev.map(node => {
+    				let child = node.get(cp);
+    				if (!child) {
+    					// should this be object? 
+    					// (most have 1-2 items, few have many)
+    					// 20230719: no, v8 default map is 4?
+    					child = new Map();
+    					node.set(cp, child);
+    				}
+    				return child;
+    			});
+    			if (cp === FE0F) {
+    				prev.push(...next); // less than 20 elements
+    			} else {
+    				prev = next;
+    			}
+    		}
+    		for (let x of prev) {
+    			x.V = cps;
+    		}
+    	}
     }
 
     // if escaped: {HEX}
@@ -8161,7 +9020,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     function check_label_extension(cps) {
     	if (cps.length >= 4 && cps[2] == HYPHEN && cps[3] == HYPHEN) {
-    		throw new Error('invalid label extension');
+    		throw new Error(`invalid label extension: "${str_from_cps(cps.slice(0, 4))}"`);
     	}
     }
     function check_leading_underscore(cps) {
@@ -8192,19 +9051,48 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     	if (last == n) throw error_placement(`trailing ${prev}`);
     }
 
+    // create a safe to print string 
+    // invisibles are escaped
+    // leading cm uses placeholder
+    // quoter(cp) => string, eg. 3000 => "{3000}"
+    // note: in html, you'd call this function then replace [<>&] with entities
+    function safe_str_from_cps(cps, quoter = quote_cp) {
+    	//if (Number.isInteger(cps)) cps = [cps];
+    	//if (!Array.isArray(cps)) throw new TypeError(`expected codepoints`);
+    	let buf = [];
+    	if (is_combining_mark(cps[0])) buf.push('◌');
+    	let prev = 0;
+    	let n = cps.length;
+    	for (let i = 0; i < n; i++) {
+    		let cp = cps[i];
+    		if (should_escape(cp)) {
+    			buf.push(str_from_cps(cps.slice(prev, i)));
+    			buf.push(quoter(cp));
+    			prev = i + 1;
+    		}
+    	}
+    	buf.push(str_from_cps(cps.slice(prev, n)));
+    	return buf.join('');
+    }
+
     // note: set(s) cannot be exposed because they can be modified
+    // note: Object.freeze() doesn't work
     function is_combining_mark(cp) {
+    	init();
     	return CM.has(cp);
     }
     function should_escape(cp) {
+    	init();
     	return ESCAPE.has(cp);
     }
 
     function ens_normalize(name) {
-    	return flatten(ens_split(name));
+    	return flatten(split(name, nfc, filter_fe0f));
     }
 
-    function ens_split(name, preserve_emoji) {
+    function split(name, nf, ef) {
+    	if (!name) return []; // 20230719: empty name allowance
+    	init();
     	let offset = 0;
     	// https://unicode.org/reports/tr46/#Validity_Criteria
     	// 4.) "The label must not contain a U+002E ( . ) FULL STOP."
@@ -8215,84 +9103,74 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     			offset, // codepoint, not substring!
     		};
     		offset += input.length + 1; // + stop
-    		let norm;
     		try {
     			// 1.) "The label must be in Unicode Normalization Form NFC"
-    			let tokens = info.tokens = process(input, nfc); // if we parse, we get [norm and mapped]
+    			let tokens = info.tokens = tokens_from_str(input, nf, ef);
     			let token_count = tokens.length;
     			let type;
     			if (!token_count) { // the label was effectively empty (could of had ignored characters)
-    				// 20230120: change to strict
-    				// https://discuss.ens.domains/t/ens-name-normalization-2nd/14564/59
     				//norm = [];
     				//type = 'None'; // use this instead of next match, "ASCII"
+    				// 20230120: change to strict
+    				// https://discuss.ens.domains/t/ens-name-normalization-2nd/14564/59
     				throw new Error(`empty label`);
+    			} 
+    			let norm = info.output = tokens.flat();
+    			check_leading_underscore(norm);
+    			let emoji = info.emoji = token_count > 1 || tokens[0].is_emoji; // same as: tokens.some(x => x.is_emoji);
+    			if (!emoji && norm.every(cp => cp < 0x80)) { // special case for ascii
+    				// 20230123: matches matches WHATWG, see note 3.3
+    				check_label_extension(norm); // only needed for ascii
+    				// cant have fenced
+    				// cant have cm
+    				// cant have wholes
+    				// see derive: "Fastpath ASCII"
+    				type = 'ASCII';
     			} else {
-    				let chars = tokens[0];
-    				let emoji = token_count > 1 || chars.is_emoji;
-    				if (!emoji && chars.every(cp => cp < 0x80)) { // special case for ascii
-    					norm = chars;
-    					check_leading_underscore(norm);
-    					// only needed for ascii
-    					// 20230123: matches matches WHATWG, see note 3.3
-    					check_label_extension(norm);
-    					// cant have fenced
-    					// cant have cm
-    					// cant have wholes
-    					// see derive: "Fastpath ASCII"
-    					type = 'ASCII';
+    				let chars = tokens.flatMap(x => x.is_emoji ? [] : x); // all of the nfc tokens concat together
+    				if (!chars.length) { // theres no text, just emoji
+    					type = 'Emoji';
     				} else {
-    					if (emoji) { // there is at least one emoji
-    						info.emoji = true; 
-    						chars = tokens.flatMap(x => x.is_emoji ? [] : x); // all of the nfc tokens concat together
-    					}
-    					norm = tokens.flatMap(x => !preserve_emoji && x.is_emoji ? filter_fe0f(x) : x);
-    					check_leading_underscore(norm);
-    					if (!chars.length) { // theres no text, just emoji
-    						type = 'Emoji';
-    					} else {
-    						// 5. "The label must not begin with a combining mark, that is: General_Category=Mark."
-    						if (CM.has(norm[0])) throw error_placement('leading combining mark');
-    						for (let i = 1; i < token_count; i++) { // we've already checked the first token
-    							let cps = tokens[i];
-    							if (!cps.is_emoji && CM.has(cps[0])) { // every text token has emoji neighbors, eg. EtEEEtEt...
-    								// bidi_qq() not needed since emoji is LTR and cps is a CM
-    								throw error_placement(`emoji + combining mark: "${str_from_cps(tokens[i-1])} + ${safe_str_from_cps([cps[0]])}"`); 
-    							}
+    					// 5.) "The label must not begin with a combining mark, that is: General_Category=Mark."
+    					if (CM.has(norm[0])) throw error_placement('leading combining mark');
+    					for (let i = 1; i < token_count; i++) { // we've already checked the first token
+    						let cps = tokens[i];
+    						if (!cps.is_emoji && CM.has(cps[0])) { // every text token has emoji neighbors, eg. EtEEEtEt...
+    							// bidi_qq() not needed since emoji is LTR and cps is a CM
+    							throw error_placement(`emoji + combining mark: "${str_from_cps(tokens[i-1])} + ${safe_str_from_cps([cps[0]])}"`); 
     						}
-    						check_fenced(norm);
-    						let unique = [...new Set(chars)];
-    						let [g] = determine_group(unique); // take the first match
-    						// see derive: "Matching Groups have Same CM Style"
-    						// alternative: could form a hybrid type: Latin/Japanese/...	
-    						check_group(g, chars); // need text in order
-    						check_whole(g, unique); // only need unique text (order would be required for multiple-char confusables)
-    						type = g.N;
-    						// 20230121: consider exposing restricted flag
-    						// it's simpler to just check for 'Restricted'
-    						// or even better: type.endsWith(']')
-    						//if (g.R) info.restricted = true;
     					}
+    					check_fenced(norm);
+    					let unique = Array_from(new Set(chars));
+    					let [g] = determine_group(unique); // take the first match
+    					// see derive: "Matching Groups have Same CM Style"
+    					// alternative: could form a hybrid type: Latin/Japanese/...	
+    					check_group(g, chars); // need text in order
+    					check_whole(g, unique); // only need unique text (order would be required for multiple-char confusables)
+    					type = g.N;
+    					// 20230121: consider exposing restricted flag
+    					// it's simpler to just check for 'Restricted'
+    					// or even better: type.endsWith(']')
+    					//if (g.R) info.restricted = true;
     				}
     			}
     			info.type = type;
     		} catch (err) {
     			info.error = err; // use full error object
     		}
-    		info.output = norm;
     		return info;
     	});
     }
 
     function check_whole(group, unique) {
     	let maker;
-    	let shared = []; // TODO: can this be avoided?
+    	let shared = [];
     	for (let cp of unique) {
     		let whole = WHOLE_MAP.get(cp);
     		if (whole === UNIQUE_PH) return; // unique, non-confusable
     		if (whole) {
     			let set = whole.M.get(cp); // groups which have a character that look-like this character
-    			maker = maker ? maker.filter(g => set.has(g)) : [...set];
+    			maker = maker ? maker.filter(g => set.has(g)) : Array_from(set);
     			if (!maker.length) return; // confusable intersection is empty
     		} else {
     			shared.push(cp); 
@@ -8300,10 +9178,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     	}
     	if (maker) {
     		// we have 1+ confusable
-    		// check if any of the remaning groups
+    		// check if any of the remaining groups
     		// contain the shared characters too
     		for (let g of maker) {
-    			if (shared.every(cp => g.V.has(cp))) {
+    			if (shared.every(cp => group_has_cp(g, cp))) {
     				throw new Error(`whole-script confusable: ${group.N}/${g.N}`);
     			}
     		}
@@ -8317,11 +9195,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     	for (let cp of unique) {
     		// note: we need to dodge CM that are whitelisted
     		// but that code isn't currently necessary
-    		let gs = groups.filter(g => g.V.has(cp));
+    		let gs = groups.filter(g => group_has_cp(g, cp));
     		if (!gs.length) {
-    			if (groups === GROUPS) {
+    			if (!GROUPS.some(g => group_has_cp(g, cp))) { 
     				// the character was composed of valid parts
     				// but it's NFC form is invalid
+    				// 20230716: change to more exact statement, see: ENSNormalize.{cs,java}
+    				// note: this doesn't have to be a composition
+    				// 20230720: change to full check
     				throw error_disallowed(cp); // this should be rare
     			} else {
     				// there is no group that contains all these characters
@@ -8356,7 +9237,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     function error_group_member(g, cp) {
     	let quoted = quoted_cp(cp);
-    	let gg = GROUPS.find(g => g.P.has(cp));
+    	let gg = GROUPS.find(g => g.P.has(cp)); // only check primary
     	if (gg) {
     		quoted = `${gg.N} ${quoted}`;
     	}
@@ -8370,9 +9251,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     // assumption: cps[0] isn't a CM
     // assumption: the previous character isn't an emoji
     function check_group(g, cps) {
-    	let {V, M} = g;
     	for (let cp of cps) {
-    		if (!V.has(cp)) {
+    		if (!group_has_cp(g, cp)) {
     			// for whitelisted scripts, this will throw illegal mixture on invalid cm, eg. "e{300}{300}"
     			// at the moment, it's unnecessary to introduce an extra error type
     			// until there exists a whitelisted multi-character
@@ -8381,13 +9261,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     			//   1. illegal cm for wrong group => mixture error
     			//   2. illegal cm for same group => cm error
     			//       requires set of whitelist cm per group: 
-    			//        eg. new Set([...g.V].flatMap(nfc).filter(cp => CM.has(cp)))
+    			//        eg. new Set([...g.P, ...g.Q].flatMap(nfc).filter(cp => CM.has(cp)))
     			//   3. wrong group => mixture error
     			throw error_group_member(g, cp);
     		}
     	}
     	//if (M >= 0) { // we have a known fixed cm count
-    	if (M) { // we need to check for NSM
+    	if (g.M) { // we need to check for NSM
     		let decomposed = nfd(cps);
     		for (let i = 1, e = decomposed.length; i < e; i++) { // see: assumption
     			// 20230210: bugfix: using cps instead of decomposed h/t Carbon225
@@ -8409,7 +9289,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     					// a. Forbid sequences of the same nonspacing mark.
     					for (let k = i; k < j; k++) { // O(n^2) but n < 100
     						if (decomposed[k] == cp) {
-    							throw new Error(`non-spacing marks: repeated ${quoted_cp(cp)}`);
+    							throw new Error(`duplicate non-spacing marks: ${quoted_cp(cp)}`);
     						}
     					}
     				}
@@ -8417,7 +9297,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     				// b. Forbid sequences of more than 4 nonspacing marks (gc=Mn or gc=Me).
     				if (j - i > NSM_MAX) {
     					// note: this slice starts with a base char or spacing-mark cm
-    					throw new Error(`non-spacing marks: too many ${bidi_qq(safe_str_from_cps(decomposed.slice(i-1, j)))} (${j-i}/${NSM_MAX})`);
+    					throw new Error(`excessive non-spacing marks: ${bidi_qq(safe_str_from_cps(decomposed.slice(i-1, j)))} (${j-i}/${NSM_MAX})`);
     				}
     				i = j;
     			}
@@ -8474,7 +9354,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     // given a list of codepoints
     // returns a list of lists, where emoji are a fully-qualified (as Array subclass)
     // eg. explode_cp("abc💩d") => [[61, 62, 63], Emoji[1F4A9, FE0F], [64]]
-    function process(input, nf) {
+    // 20230818: rename for 'process' name collision h/t Javarome
+    // https://github.com/adraffy/ens-normalize.js/issues/23
+    function tokens_from_str(input, nf, ef) {
     	let ret = [];
     	let chars = [];
     	input = input.slice().reverse(); // flip so we can pop
@@ -8485,7 +9367,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     				ret.push(nf(chars));
     				chars = [];
     			}
-    			ret.push(emoji);
+    			ret.push(ef(emoji));
     		} else {
     			let cp = input.pop();
     			if (VALID.has(cp)) {
@@ -8493,8 +9375,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     			} else {
     				let cps = MAPPED.get(cp);
     				if (cps) {
-    					chars.push(...cps);
+    					chars.push(...cps); // less than 10 elements
     				} else if (!IGNORED.has(cp)) {
+    					// 20230912: unicode 15.1 changed the order of processing such that
+    					// disallowed parts are only rejected after NFC
+    					// https://unicode.org/reports/tr46/#Validity_Criteria
+    					// this doesn't impact normalization as of today
+    					// technically, this error can be removed as the group logic will apply similar logic
+    					// however the error type might be less clear
     					throw error_disallowed(cp);
     				}
     			}
@@ -8513,55 +9401,23 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     // given array of codepoints
     // returns the longest valid emoji sequence (or undefined if no match)
     // *MUTATES* the supplied array
-    // allows optional FE0F
     // disallows interleaved ignored characters
     // fills (optional) eaten array with matched codepoints
     function consume_emoji_reversed(cps, eaten) {
     	let node = EMOJI_ROOT;
     	let emoji;
-    	let saved;
-    	let stack = [];
     	let pos = cps.length;
-    	if (eaten) eaten.length = 0; // clear input buffer (if needed)
     	while (pos) {
-    		let cp = cps[--pos];
-    		node = node.B.find(x => x.Q.has(cp));
+    		node = node.get(cps[--pos]);
     		if (!node) break;
-    		if (node.S) { // remember
-    			saved = cp;
-    		} else if (node.C) { // check exclusion
-    			if (cp === saved) break;
-    		}
-    		stack.push(cp);
-    		if (node.F) {
-    			stack.push(FE0F);
-    			if (pos > 0 && cps[pos - 1] == FE0F) pos--; // consume optional FE0F
-    		}
-    		if (node.V) { // this is a valid emoji (so far)
-    			emoji = conform_emoji_copy(stack, node);
-    			if (eaten) eaten.push(...cps.slice(pos).reverse()); // copy input (if needed)
+    		let {V} = node;
+    		if (V) { // this is a valid emoji (so far)
+    			emoji = V;
+    			if (eaten) eaten.push(...cps.slice(pos).reverse()); // (optional) copy input, used for ens_tokenize()
     			cps.length = pos; // truncate
     		}
     	}
-    	/*
-    	// *** this code currently isn't needed ***
-    	if (!emoji) {
-    		let cp = cps[cps.length-1];
-    		if (EMOJI_SOLO.has(cp)) {
-    			if (eaten) eaten.push(cp);
-    			emoji = Emoji.of(cp);
-    			cps.pop();
-    		}
-    	}
-    	*/
     	return emoji;
-    }
-
-    // create a copy and fix any unicode quirks
-    function conform_emoji_copy(cps, node) {
-    	let copy = Emoji.from(cps); // copy stack
-    	if (node.V == 2) copy.splice(1, 1); // delete FE0F at position 1 (see: make.js)
-    	return copy;
     }
 
     const Zeros = new Uint8Array(32);
@@ -9186,7 +10042,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  use [[unsignedSerialized]].
          */
         get serialized() {
-            assert$1(this.signature != null, "cannot serialize unsigned transaction; maybe you meant .unsignedSerialized", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
+            assert(this.signature != null, "cannot serialize unsigned transaction; maybe you meant .unsignedSerialized", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
             switch (this.inferType()) {
                 case 0:
                     return _serializeLegacy(this, this.signature);
@@ -9195,7 +10051,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 case 2:
                     return _serializeEip1559(this, this.signature);
             }
-            assert$1(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
+            assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
         }
         /**
          *  The transaction pre-image.
@@ -9212,7 +10068,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 case 2:
                     return _serializeEip1559(this);
             }
-            assert$1(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
+            assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
         }
         /**
          *  Return the most "likely" type; currently the highest
@@ -9234,13 +10090,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
             //}
             if (this.maxFeePerGas != null && this.maxPriorityFeePerGas != null) {
-                assert$1(this.maxFeePerGas >= this.maxPriorityFeePerGas, "priorityFee cannot be more than maxFee", "BAD_DATA", { value: this });
+                assert(this.maxFeePerGas >= this.maxPriorityFeePerGas, "priorityFee cannot be more than maxFee", "BAD_DATA", { value: this });
             }
             //if (this.type === 2 && hasGasPrice) {
             //    throw new Error("eip-1559 transaction cannot have gasPrice");
             //}
-            assert$1(!hasFee || (this.type !== 0 && this.type !== 1), "transaction type cannot have maxFeePerGas or maxPriorityFeePerGas", "BAD_DATA", { value: this });
-            assert$1(this.type !== 0 || !hasAccessList, "legacy transaction cannot have accessList", "BAD_DATA", { value: this });
+            assert(!hasFee || (this.type !== 0 && this.type !== 1), "transaction type cannot have maxFeePerGas or maxPriorityFeePerGas", "BAD_DATA", { value: this });
+            assert(this.type !== 0 || !hasAccessList, "legacy transaction cannot have accessList", "BAD_DATA", { value: this });
             const types = [];
             // Explicit type
             if (this.type != null) {
@@ -9348,7 +10204,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     case 1: return Transaction.from(_parseEip2930(payload));
                     case 2: return Transaction.from(_parseEip1559(payload));
                 }
-                assert$1(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
+                assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
             }
             const result = new Transaction();
             if (tx.type != null) {
@@ -10780,7 +11636,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     case "function": return FunctionFragment.from(obj);
                     case "struct": return StructFragment.from(obj);
                 }
-                assert$1(false, `unsupported type: ${obj.type}`, "UNSUPPORTED_OPERATION", {
+                assert(false, `unsupported type: ${obj.type}`, "UNSUPPORTED_OPERATION", {
                     operation: "Fragment.from"
                 });
             }
@@ -11014,7 +11870,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Returns a string representation of this constructor as %%format%%.
          */
         format(format) {
-            assert$1(format != null && format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
+            assert(format != null && format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
             if (format === "json") {
                 return JSON.stringify({
                     type: "constructor",
@@ -12332,7 +13188,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
             }
             // Call returned data with no error, but the data is junk
-            assert$1(false, message, "BAD_DATA", {
+            assert(false, message, "BAD_DATA", {
                 value: hexlify(bytes),
                 info: { method: fragment.name, signature: fragment.format() }
             });
@@ -12423,7 +13279,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 assertArgument(f, "unknown event", "eventFragment", fragment);
                 fragment = f;
             }
-            assert$1(values.length <= fragment.inputs.length, `too many arguments for ${fragment.format()}`, "UNEXPECTED_ARGUMENT", { count: values.length, expectedCount: fragment.inputs.length });
+            assert(values.length <= fragment.inputs.length, `too many arguments for ${fragment.format()}`, "UNEXPECTED_ARGUMENT", { count: values.length, expectedCount: fragment.inputs.length });
             const topics = [];
             if (!fragment.anonymous) {
                 topics.push(fragment.topicHash);
@@ -12623,7 +13479,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Parses a revert data, finding the matching error and extracts
          *  the parameter values along with other useful error details.
          *
-         *  If the matching event cannot be found, returns null.
+         *  If the matching error cannot be found, returns null.
          */
         parseError(data) {
             const hexData = hexlify(data);
@@ -12877,7 +13733,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
         }
         /**
-         *  Returns the list of transaction hashes.
+         *  Returns the list of transaction hashes, in the order
+         *  they were executed within the block.
          */
         get transactions() {
             return this.#transactions.map((tx) => {
@@ -12888,8 +13745,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
         }
         /**
-         *  Returns the complete transactions for blocks which
-         *  prefetched them, by passing ``true`` to %%prefetchTxs%%
+         *  Returns the complete transactions, in the order they
+         *  were executed within the block.
+         *
+         *  This is only available for blocks which prefetched
+         *  transactions, by passing ``true`` to %%prefetchTxs%%
          *  into [[Provider-getBlock]].
          */
         get prefetchedTransactions() {
@@ -12899,7 +13759,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return [];
             }
             // Make sure we prefetched the transactions
-            assert$1(typeof (txs[0]) === "object", "transactions were not prefetched with block request", "UNSUPPORTED_OPERATION", {
+            assert(typeof (txs[0]) === "object", "transactions were not prefetched with block request", "UNSUPPORTED_OPERATION", {
                 operation: "transactionResponses()"
             });
             return txs;
@@ -13121,7 +13981,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         async getBlock() {
             const block = await this.provider.getBlock(this.blockHash);
-            assert$1(!!block, "failed to find transaction", "UNKNOWN_ERROR", {});
+            assert(!!block, "failed to find transaction", "UNKNOWN_ERROR", {});
             return block;
         }
         /**
@@ -13129,7 +13989,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         async getTransaction() {
             const tx = await this.provider.getTransaction(this.transactionHash);
-            assert$1(!!tx, "failed to find transaction", "UNKNOWN_ERROR", {});
+            assert(!!tx, "failed to find transaction", "UNKNOWN_ERROR", {});
             return tx;
         }
         /**
@@ -13138,7 +13998,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         async getTransactionReceipt() {
             const receipt = await this.provider.getTransactionReceipt(this.transactionHash);
-            assert$1(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", {});
+            assert(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", {});
             return receipt;
         }
         /**
@@ -13377,7 +14237,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  @_ignore:
          */
         reorderedEvent(other) {
-            assert$1(!other || other.isMined(), "unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
+            assert(!other || other.isMined(), "unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
             return createReorderedTransactionFilter(this, other);
         }
     }
@@ -13676,7 +14536,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                             else if (tx.data === "0x" && tx.from === tx.to && tx.value === BN_0$2) {
                                 reason = "cancelled";
                             }
-                            assert$1(false, "transaction was replaced", "TRANSACTION_REPLACED", {
+                            assert(false, "transaction was replaced", "TRANSACTION_REPLACED", {
                                 cancelled: (reason === "replaced" || reason === "cancelled"),
                                 reason,
                                 replacement: tx.replaceableTransaction(startBlock),
@@ -13693,7 +14553,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 if (receipt == null || receipt.status !== 0) {
                     return receipt;
                 }
-                assert$1(false, "transaction execution reverted", "CALL_EXCEPTION", {
+                assert(false, "transaction execution reverted", "CALL_EXCEPTION", {
                     action: "sendTransaction",
                     data: null, reason: null, invocation: null, revert: null,
                     transaction: {
@@ -13823,7 +14683,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  that evict this transaction.
          */
         removedEvent() {
-            assert$1(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
+            assert(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
             return createRemovedTransactionFilter(this);
         }
         /**
@@ -13831,8 +14691,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  that re-order this event against %%other%%.
          */
         reorderedEvent(other) {
-            assert$1(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
-            assert$1(!other || other.isMined(), "unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
+            assert(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
+            assert(!other || other.isMined(), "unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
             return createReorderedTransactionFilter(this, other);
         }
         /**
@@ -14060,6 +14920,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function canSend(value) {
         return (value && typeof (value.sendTransaction) === "function");
     }
+    function getResolver(value) {
+        if (value != null) {
+            if (canResolve(value)) {
+                return value;
+            }
+            if (value.provider) {
+                return value.provider;
+            }
+        }
+        return undefined;
+    }
     class PreparedTopicFilter {
         #filter;
         fragment;
@@ -14131,7 +15002,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         assertArgument(overrides.data == null || (allowed || []).indexOf("data") >= 0, "cannot override data", "overrides.data", overrides.data);
         // Resolve any from
         if (overrides.from) {
-            overrides.from = await resolveAddress(overrides.from);
+            overrides.from = overrides.from;
         }
         return overrides;
     }
@@ -14157,6 +15028,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // If an overrides was passed in, copy it and normalize the values
             const tx = (await copyOverrides(overrides, ["data"]));
             tx.to = await contract.getAddress();
+            if (tx.from) {
+                tx.from = await resolveAddress(tx.from, getResolver(contract.runner));
+            }
             const iface = contract.interface;
             const noValue = (getBigInt((tx.value || BN_0$1), "overrides.value") === BN_0$1);
             const noData = ((tx.data || "0x") === "0x");
@@ -14173,7 +15047,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         };
         const staticCall = async function (overrides) {
             const runner = getRunner(contract.runner, "call");
-            assert$1(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
+            assert(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
             const tx = await populateTransaction(overrides);
             try {
                 return await runner.call(tx);
@@ -14187,7 +15061,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         };
         const send = async function (overrides) {
             const runner = contract.runner;
-            assert$1(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
+            assert(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
             const tx = await runner.sendTransaction(await populateTransaction(overrides));
             const provider = getProvider(contract.runner);
             // @TODO: the provider can be null; make a custom dummy provider that will throw a
@@ -14196,7 +15070,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         };
         const estimateGas = async function (overrides) {
             const runner = getRunner(contract.runner, "estimateGas");
-            assert$1(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
+            assert(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
             return await runner.estimateGas(await populateTransaction(overrides));
         };
         const method = async (overrides) => {
@@ -14213,7 +15087,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function buildWrappedMethod(contract, key) {
         const getFragment = function (...args) {
             const fragment = contract.interface.getFunction(key, args);
-            assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
                 operation: "fragment",
                 info: { key, args }
             });
@@ -14225,6 +15099,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             let overrides = {};
             if (fragment.inputs.length + 1 === args.length) {
                 overrides = await copyOverrides(args.pop());
+                if (overrides.from) {
+                    overrides.from = await resolveAddress(overrides.from, getResolver(contract.runner));
+                }
             }
             if (fragment.inputs.length !== args.length) {
                 throw new Error("internal error: fragment inputs doesn't match arguments; should not happen");
@@ -14244,7 +15121,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         };
         const send = async function (...args) {
             const runner = contract.runner;
-            assert$1(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
+            assert(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
             const tx = await runner.sendTransaction(await populateTransaction(...args));
             const provider = getProvider(contract.runner);
             // @TODO: the provider can be null; make a custom dummy provider that will throw a
@@ -14253,12 +15130,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         };
         const estimateGas = async function (...args) {
             const runner = getRunner(contract.runner, "estimateGas");
-            assert$1(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
+            assert(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
             return await runner.estimateGas(await populateTransaction(...args));
         };
         const staticCallResult = async function (...args) {
             const runner = getRunner(contract.runner, "call");
-            assert$1(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
+            assert(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
             const tx = await populateTransaction(...args);
             let result = "0x";
             try {
@@ -14294,7 +15171,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             enumerable: true,
             get: () => {
                 const fragment = contract.interface.getFunction(key);
-                assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+                assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
                     operation: "fragment",
                     info: { key }
                 });
@@ -14306,7 +15183,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function buildWrappedEvent(contract, key) {
         const getFragment = function (...args) {
             const fragment = contract.interface.getEvent(key, args);
-            assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
                 operation: "fragment",
                 info: { key, args }
             });
@@ -14326,7 +15203,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             enumerable: true,
             get: () => {
                 const fragment = contract.interface.getEvent(key);
-                assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+                assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
                     operation: "fragment",
                     info: { key }
                 });
@@ -14436,7 +15313,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     async function getSub(contract, operation, event) {
         // Make sure our runner can actually subscribe to events
         const provider = getProvider(contract.runner);
-        assert$1(provider, "contract runner does not support subscribing", "UNSUPPORTED_OPERATION", { operation });
+        assert(provider, "contract runner does not support subscribing", "UNSUPPORTED_OPERATION", { operation });
         const { fragment, tag, topics } = await getSubInfo(contract, event);
         const { addr, subs } = getInternal(contract);
         let sub = subs.get(tag);
@@ -14692,7 +15569,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         async getDeployedCode() {
             const provider = getProvider(this.runner);
-            assert$1(provider, "runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "getDeployedCode" });
+            assert(provider, "runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "getDeployedCode" });
             const code = await provider.getCode(await this.getAddress());
             if (code === "0x") {
                 return null;
@@ -14717,7 +15594,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             // Make sure we can subscribe to a provider event
             const provider = getProvider(this.runner);
-            assert$1(provider != null, "contract runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "waitForDeployment" });
+            assert(provider != null, "contract runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "waitForDeployment" });
             return new Promise((resolve, reject) => {
                 const checkCode = async () => {
                     try {
@@ -14804,7 +15681,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const { fragment, topics } = await getSubInfo(this, event);
             const filter = { address, topics, fromBlock, toBlock };
             const provider = getProvider(this.runner);
-            assert$1(provider, "contract runner does not have a provider", "UNSUPPORTED_OPERATION", { operation: "queryFilter" });
+            assert(provider, "contract runner does not have a provider", "UNSUPPORTED_OPERATION", { operation: "queryFilter" });
             return (await provider.getLogs(filter)).map((log) => {
                 let foundFragment = fragment;
                 if (foundFragment == null) {
@@ -15050,7 +15927,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         async deploy(...args) {
             const tx = await this.getDeployTransaction(...args);
-            assert$1(this.runner && typeof (this.runner.sendTransaction) === "function", "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+            assert(this.runner && typeof (this.runner.sendTransaction) === "function", "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
                 operation: "sendTransaction"
             });
             const sentTx = await this.runner.sendTransaction(tx);
@@ -15210,7 +16087,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             let fragment = null;
             if (await this.supportsWildcard()) {
                 fragment = iface.getFunction(funcName);
-                assert$1(fragment, "missing fragment", "UNKNOWN_ERROR", {
+                assert(fragment, "missing fragment", "UNKNOWN_ERROR", {
                     info: { funcName }
                 });
                 params = [
@@ -15292,7 +16169,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (address != null) {
                 return address;
             }
-            assert$1(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
+            assert(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
                 operation: `getAddress(${coinType})`,
                 info: { coinType, data }
             });
@@ -15332,7 +16209,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (swarm && swarm[1].length === 64) {
                 return `bzz:/\/${swarm[1]}`;
             }
-            assert$1(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+            assert(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
                 operation: "getContentHash()",
                 info: { data }
             });
@@ -15501,7 +16378,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const network = await provider.getNetwork();
             const ensPlugin = network.getPlugin("org.ethers.plugins.network.Ens");
             // No ENS...
-            assert$1(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
+            assert(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
                 operation: "getEnsAddress", info: { network }
             });
             return ensPlugin.address;
@@ -15603,7 +16480,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 catch (error) {
                     const message = (error instanceof Error) ? error.message : "not-an-error";
-                    assert$1(false, `invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+                    assert(false, `invalid value for value.${key} (${message})`, "BAD_DATA", { value });
                 }
             }
             return result;
@@ -16295,7 +17172,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return feeData;
             }
             catch (error) {
-                assert$1(false, `error encountered with polygon gas station (${JSON.stringify(request.url)})`, "SERVER_ERROR", { request, response, error });
+                assert(false, `error encountered with polygon gas station (${JSON.stringify(request.url)})`, "SERVER_ERROR", { request, response, error });
             }
         });
     }
@@ -16922,11 +17799,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 catch (error) { }
                 // 4xx indicates the result is not present; stop
-                assert$1(resp.statusCode < 400 || resp.statusCode >= 500, `response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", { reason: "404_MISSING_RESOURCE", transaction: tx, info: { url, errorMessage } });
+                assert(resp.statusCode < 400 || resp.statusCode >= 500, `response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", { reason: "404_MISSING_RESOURCE", transaction: tx, info: { url, errorMessage } });
                 // 5xx indicates server issue; try the next url
                 errorMessages.push(errorMessage);
             }
-            assert$1(false, `error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
+            assert(false, `error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
                 reason: "500_SERVER_ERROR",
                 transaction: tx, info: { urls, errorMessages }
             });
@@ -16970,7 +17847,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Sub-classes **must** override this.
          */
         _detectNetwork() {
-            assert$1(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
+            assert(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
                 operation: "_detectNetwork"
             });
         }
@@ -16981,7 +17858,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Sub-classes **must** override this.
          */
         async _perform(req) {
-            assert$1(false, `unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
+            assert(false, `unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
                 operation: req.method,
                 info: req
             });
@@ -17131,7 +18008,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 if (request[key] == null) {
                     return;
                 }
-                const addr = resolveAddress(request[key]);
+                const addr = resolveAddress(request[key], this);
                 if (isPromise$1(addr)) {
                     promises.push((async function () { request[key] = await addr; })());
                 }
@@ -17189,7 +18066,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 else {
                     // Otherwise, we do not allow changes to the underlying network
-                    assert$1(false, `network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
+                    assert(false, `network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
                         event: "changed"
                     });
                 }
@@ -17239,7 +18116,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }), "%response");
         }
         async #call(tx, blockTag, attempt) {
-            assert$1(attempt < MAX_CCIP_REDIRECTS, "CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+            assert(attempt < MAX_CCIP_REDIRECTS, "CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
                 reason: "TOO_MANY_REDIRECTS",
                 transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
             });
@@ -17259,12 +18136,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
                     }
                     catch (error) {
-                        assert$1(false, error.message, "OFFCHAIN_FAULT", {
+                        assert(false, error.message, "OFFCHAIN_FAULT", {
                             reason: "BAD_DATA", transaction, info: { data }
                         });
                     }
                     // Check the sender of the OffchainLookup matches the transaction
-                    assert$1(ccipArgs.sender.toLowerCase() === txSender.toLowerCase(), "CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                    assert(ccipArgs.sender.toLowerCase() === txSender.toLowerCase(), "CCIP Read sender mismatch", "CALL_EXCEPTION", {
                         action: "call",
                         data,
                         reason: "OffchainLookup",
@@ -17277,7 +18154,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         }
                     });
                     const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
-                    assert$1(ccipResult != null, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                    assert(ccipResult != null, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
                         reason: "FETCH_FAILED", transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
                     });
                     const tx = {
@@ -17429,7 +18306,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         // ENS
         _getProvider(chainId) {
-            assert$1(false, "provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
+            assert(false, "provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
                 operation: "_getProvider()"
             });
         }
@@ -17527,7 +18404,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             });
         }
         async waitForBlock(blockTag) {
-            assert$1(false, "not implemented yet", "NOT_IMPLEMENTED", {
+            assert(false, "not implemented yet", "NOT_IMPLEMENTED", {
                 operation: "waitForBlock"
             });
         }
@@ -17831,7 +18708,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 if (this.#pausedState == !!dropWhilePaused) {
                     return;
                 }
-                assert$1(false, "cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
+                assert(false, "cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
                     operation: "pause"
                 });
             }
@@ -17933,11 +18810,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         const result = {
             sender: "", urls: [], calldata: "", selector: "", extraData: "", errorArgs: []
         };
-        assert$1(dataLength(data) >= 5 * 32, "insufficient OffchainLookup data", "OFFCHAIN_FAULT", {
+        assert(dataLength(data) >= 5 * 32, "insufficient OffchainLookup data", "OFFCHAIN_FAULT", {
             reason: "insufficient OffchainLookup data"
         });
         const sender = dataSlice(data, 0, 32);
-        assert$1(dataSlice(sender, 0, 12) === dataSlice(zeros, 0, 12), "corrupt OffchainLookup sender", "OFFCHAIN_FAULT", {
+        assert(dataSlice(sender, 0, 12) === dataSlice(zeros, 0, 12), "corrupt OffchainLookup sender", "OFFCHAIN_FAULT", {
             reason: "corrupt OffchainLookup sender"
         });
         result.sender = dataSlice(sender, 12);
@@ -17957,7 +18834,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             result.urls = urls;
         }
         catch (error) {
-            assert$1(false, "corrupt OffchainLookup urls", "OFFCHAIN_FAULT", {
+            assert(false, "corrupt OffchainLookup urls", "OFFCHAIN_FAULT", {
                 reason: "corrupt OffchainLookup urls"
             });
         }
@@ -17970,12 +18847,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             result.calldata = calldata;
         }
         catch (error) {
-            assert$1(false, "corrupt OffchainLookup calldata", "OFFCHAIN_FAULT", {
+            assert(false, "corrupt OffchainLookup calldata", "OFFCHAIN_FAULT", {
                 reason: "corrupt OffchainLookup calldata"
             });
         }
         // Get the callbackSelector (bytes4)
-        assert$1(dataSlice(data, 100, 128) === dataSlice(zeros, 0, 28), "corrupt OffchainLookup callbaackSelector", "OFFCHAIN_FAULT", {
+        assert(dataSlice(data, 100, 128) === dataSlice(zeros, 0, 28), "corrupt OffchainLookup callbaackSelector", "OFFCHAIN_FAULT", {
             reason: "corrupt OffchainLookup callbaackSelector"
         });
         result.selector = dataSlice(data, 96, 100);
@@ -17988,7 +18865,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             result.extraData = extraData;
         }
         catch (error) {
-            assert$1(false, "corrupt OffchainLookup extraData", "OFFCHAIN_FAULT", {
+            assert(false, "corrupt OffchainLookup extraData", "OFFCHAIN_FAULT", {
                 reason: "corrupt OffchainLookup extraData"
             });
         }
@@ -18007,7 +18884,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (signer.provider) {
             return signer.provider;
         }
-        assert$1(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
+        assert(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
     }
     async function populate(signer, tx) {
         let pop = copyRequest(tx);
@@ -18087,7 +18964,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 // Explicit Legacy or EIP-2930 transaction
                 // We need to get fee data to determine things
                 const feeData = await provider.getFeeData();
-                assert$1(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
+                assert(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
                     operation: "getGasPrice"
                 });
                 // Populate missing gasPrice
@@ -18125,7 +19002,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     else if (feeData.gasPrice != null) {
                         // Network doesn't support EIP-1559...
                         // ...but they are trying to use EIP-1559 properties
-                        assert$1(!hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
+                        assert(!hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
                             operation: "populateTransaction"
                         });
                         // Populate missing fee data
@@ -18138,7 +19015,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     }
                     else {
                         // getFeeData has failed us.
-                        assert$1(false, "failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
+                        assert(false, "failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
                             operation: "signer.getFeeData"
                         });
                     }
@@ -18202,7 +19079,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new VoidSigner(this.address, provider);
         }
         #throwUnsupported(suffix, operation) {
-            assert$1(false, `VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", { operation });
+            assert(false, `VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", { operation });
         }
         async signTransaction(tx) {
             this.#throwUnsupported("transactions", "signTransaction");
@@ -18485,7 +19362,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             defineProperties(this, { address });
         }
         connect(provider) {
-            assert$1(false, "cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
+            assert(false, "cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
                 operation: "signer.connect"
             });
         }
@@ -18725,7 +19602,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  is detected, and if it has changed, the call will reject.
          */
         get _network() {
-            assert$1(this.#network, "network is not available yet", "NETWORK_ERROR");
+            assert(this.#network, "network is not available yet", "NETWORK_ERROR");
             return this.#network;
         }
         /**
@@ -19461,7 +20338,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 catch (error) { }
                 if (data) {
-                    assert$1(!error, "an error occurred during transaction executions", "CALL_EXCEPTION", {
+                    assert(!error, "an error occurred during transaction executions", "CALL_EXCEPTION", {
                         action: "getTransactionResult",
                         data,
                         reason: null,
@@ -19471,7 +20348,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     });
                     return data;
                 }
-                assert$1(false, "could not parse trace result", "BAD_DATA", { value: trace });
+                assert(false, "could not parse trace result", "BAD_DATA", { value: trace });
             }
             return await super._perform(req);
         }
@@ -19708,21 +20585,21 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             catch (error) {
                 this.emit("debug", { action: "receiveError", id, error, reason: "assertOk" });
-                assert$1(false, "response error", "SERVER_ERROR", { request, response });
+                assert(false, "response error", "SERVER_ERROR", { request, response });
             }
             if (!response.hasBody()) {
                 this.emit("debug", { action: "receiveError", id, error: "missing body", reason: "null body" });
-                assert$1(false, "missing response", "SERVER_ERROR", { request, response });
+                assert(false, "missing response", "SERVER_ERROR", { request, response });
             }
             const result = JSON.parse(toUtf8String(response.body));
             if (module === "proxy") {
                 if (result.jsonrpc != "2.0") {
                     this.emit("debug", { action: "receiveError", id, result, reason: "invalid JSON-RPC" });
-                    assert$1(false, "invalid JSON-RPC response (missing jsonrpc='2.0')", "SERVER_ERROR", { request, response, info: { result } });
+                    assert(false, "invalid JSON-RPC response (missing jsonrpc='2.0')", "SERVER_ERROR", { request, response, info: { result } });
                 }
                 if (result.error) {
                     this.emit("debug", { action: "receiveError", id, result, reason: "JSON-RPC error" });
-                    assert$1(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
+                    assert(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
                 }
                 this.emit("debug", { action: "receiveRequest", id, result });
                 return result.result;
@@ -19735,7 +20612,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 if (result.status != 1 || (typeof (result.message) === "string" && !result.message.match(/^OK/))) {
                     this.emit("debug", { action: "receiveError", id, result });
-                    assert$1(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
+                    assert(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
                 }
                 this.emit("debug", { action: "receiveRequest", id, result });
                 return result.result;
@@ -19755,6 +20632,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 let value = transaction[key];
                 if (key === "type" && value === 0) {
+                    continue;
+                }
+                if (key === "blockTag" && value === "latest") {
                     continue;
                 }
                 // Quantity-types require no leading zero, unless 0
@@ -19794,7 +20674,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             if (req.method === "estimateGas") {
                 if (!message.match(/revert/i) && message.match(/insufficient funds/i)) {
-                    assert$1(false, "insufficient funds", "INSUFFICIENT_FUNDS", {
+                    assert(false, "insufficient funds", "INSUFFICIENT_FUNDS", {
                         transaction: req.transaction
                     });
                 }
@@ -19815,17 +20695,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 if (req.method === "broadcastTransaction") {
                     const transaction = Transaction.from(req.signedTransaction);
                     if (message.match(/replacement/i) && message.match(/underpriced/i)) {
-                        assert$1(false, "replacement fee too low", "REPLACEMENT_UNDERPRICED", {
+                        assert(false, "replacement fee too low", "REPLACEMENT_UNDERPRICED", {
                             transaction
                         });
                     }
                     if (message.match(/insufficient funds/)) {
-                        assert$1(false, "insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
+                        assert(false, "insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
                             transaction
                         });
                     }
                     if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
-                        assert$1(false, "nonce has already been used", "NONCE_EXPIRED", {
+                        assert(false, "nonce has already been used", "NONCE_EXPIRED", {
                             transaction
                         });
                     }
@@ -19886,7 +20766,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                             boolean: (req.includeTransactions ? "true" : "false")
                         });
                     }
-                    assert$1(false, "getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                    assert(false, "getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                         operation: "getBlock(blockHash)"
                     });
                 case "getTransaction":
@@ -20030,7 +20910,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // @TODO: pause should trap the current blockNumber, unsub, and on resume use getLogs
         //        and resume
         pause(dropWhilePaused) {
-            assert$1(dropWhilePaused, "preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", { operation: "pause(false)" });
+            assert(dropWhilePaused, "preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", { operation: "pause(false)" });
             this.#paused = !!dropWhilePaused;
         }
         resume() {
@@ -20408,7 +21288,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         constructor(network, projectId) {
             const provider = new InfuraProvider(network, projectId);
             const req = provider._getConnection();
-            assert$1(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
+            assert(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
             const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
             super(url, network);
             defineProperties(this, {
@@ -20999,7 +21879,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                             chainId = network.chainId;
                         }
                         else if (network.chainId !== chainId) {
-                            assert$1(false, "cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
+                            assert(false, "cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
                                 operation: "new FallbackProvider"
                             });
                         }
@@ -21065,7 +21945,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 case "broadcastTransaction":
                     return getAnyResult(this.quorum, results);
             }
-            assert$1(false, "unsupported method", "UNSUPPORTED_OPERATION", {
+            assert(false, "unsupported method", "UNSUPPORTED_OPERATION", {
                 operation: `_perform(${stringify(req.method)})`
             });
         }
@@ -21109,7 +21989,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 this.#addRunner(running, req);
             }
             // All providers have returned, and we have no result
-            assert$1(interesting.length > 0, "quorum not met", "SERVER_ERROR", {
+            assert(interesting.length > 0, "quorum not met", "SERVER_ERROR", {
                 request: "%sub-requests",
                 info: { request: req, results: Array.from(running).map((r) => stringify(r.result)) }
             });
@@ -21134,7 +22014,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     }
                 }));
                 const result = getAnyResult(this.quorum, results);
-                assert$1(result !== undefined, "problem multi-broadcasting", "SERVER_ERROR", {
+                assert(result !== undefined, "problem multi-broadcasting", "SERVER_ERROR", {
                     request: "%sub-requests",
                     info: { request: req, results: results.map(stringify) }
                 });
@@ -21172,6 +22052,49 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             typeof (value.close) === "function");
     }
     const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goerli matic-mumbai bnbt".split(" ");
+    /**
+     *  Returns a default provider for %%network%%.
+     *
+     *  If %%network%% is a [[WebSocketLike]] or string that begins with
+     *  ``"ws:"`` or ``"wss:"``, a [[WebSocketProvider]] is returned backed
+     *  by that WebSocket or URL.
+     *
+     *  If %%network%% is a string that begins with ``"HTTP:"`` or ``"HTTPS:"``,
+     *  a [[JsonRpcProvider]] is returned connected to that URL.
+     *
+     *  Otherwise, a default provider is created backed by well-known public
+     *  Web3 backends (such as [[link-infura]]) using community-provided API
+     *  keys.
+     *
+     *  The %%options%% allows specifying custom API keys per backend (setting
+     *  an API key to ``"-"`` will omit that provider) and ``options.exclusive``
+     *  can be set to either a backend name or and array of backend names, which
+     *  will whitelist **only** those backends.
+     *
+     *  Current backend strings supported are:
+     *  - ``"alchemy"``
+     *  - ``"ankr"``
+     *  - ``"cloudflare"``
+     *  - ``"etherscan"``
+     *  - ``"infura"``
+     *  - ``"publicPolygon"``
+     *  - ``"quicknode"``
+     *
+     *  @example:
+     *    // Connect to a local Geth node
+     *    provider = getDefaultProvider("http://localhost:8545/");
+     *
+     *    // Connect to Ethereum mainnet with any current and future
+     *    // third-party services available
+     *    provider = getDefaultProvider("mainnet");
+     *
+     *    // Connect to Polygoin, but only allow Etherscan and
+     *    // INFURA and use "MY_API_KEY" in calls to Etherscan.
+     *    provider = getDefaultProvider("matic", {
+     *      etherscan: "MY_API_KEY",
+     *      exclusive: [ "etherscan", "infura" ]
+     *    });
+     */
     function getDefaultProvider(network, options) {
         if (options == null) {
             options = {};
@@ -21264,7 +22187,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             catch (error) { }
         }
-        assert$1(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
+        assert(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
             operation: "getDefaultProvider"
         });
         // No need for a FallbackProvider
@@ -21641,12 +22564,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name) => {
                 // @TODO: this should use resolveName; addresses don't
                 //        need a provider
-                assert$1(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
+                assert(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
                     operation: "resolveName",
                     info: { name }
                 });
                 const address = await this.provider.resolveName(name);
-                assert$1(address != null, "unconfigured ENS name", "UNCONFIGURED_NAME", {
+                assert(address != null, "unconfigured ENS name", "UNCONFIGURED_NAME", {
                     value: name
                 });
                 return address;
@@ -22546,7 +23469,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const aesCtr = new CTR(key, iv);
             return hexlify(aesCtr.decrypt(ciphertext));
         }
-        assert$1(false, "unsupported cipher", "UNSUPPORTED_OPERATION", {
+        assert(false, "unsupported cipher", "UNSUPPORTED_OPERATION", {
             operation: "decrypt"
         });
     }
@@ -22629,7 +23552,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const key = pbkdf2(password, salt, count, dkLen, algorithm);
             return getAccount(data, key);
         }
-        assert$1(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
+        assert(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
         const { salt, N, r, p, dkLen } = params;
         const key = scryptSync(password, salt, N, r, p, dkLen);
         return getAccount(data, key);
@@ -22665,7 +23588,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return getAccount(data, key);
         }
-        assert$1(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
+        assert(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
         const { salt, N, r, p, dkLen } = params;
         const key = await scrypt(password, salt, N, r, p, dkLen, progress);
         return getAccount(data, key);
@@ -22829,7 +23752,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function ser_I(index, chainCode, publicKey, privateKey) {
         const data = new Uint8Array(37);
         if (index & HardenedBit) {
-            assert$1(privateKey != null, "cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
+            assert(privateKey != null, "cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
                 operation: "deriveChild"
             });
             // Data = 0x00 || ser_256(k_par)
@@ -22990,7 +23913,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // we should always use mainnet, and use BIP-44 to derive the network
             //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
             //   - Testnet: public=0x043587CF, private=0x04358394
-            assert$1(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
+            assert(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
             return encodeBase58Check(concat([
                 "0x0488ADE4", zpad(this.depth, 1), this.parentFingerprint,
                 zpad(this.index, 4), this.chainCode,
@@ -23199,7 +24122,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // we should always use mainnet, and use BIP-44 to derive the network
             //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
             //   - Testnet: public=0x043587CF, private=0x04358394
-            assert$1(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
+            assert(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
             return encodeBase58Check(concat([
                 "0x0488B21E",
                 zpad(this.depth, 1),
@@ -23664,7 +24587,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         ZeroAddress: ZeroAddress,
         ZeroHash: ZeroHash,
         accessListify: accessListify,
-        assert: assert$1,
+        assert: assert,
         assertArgument: assertArgument,
         assertArgumentCount: assertArgumentCount,
         assertNormalize: assertNormalize,
@@ -23854,7 +24777,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     exports.ZeroAddress = ZeroAddress;
     exports.ZeroHash = ZeroHash;
     exports.accessListify = accessListify;
-    exports.assert = assert$1;
+    exports.assert = assert;
     exports.assertArgument = assertArgument;
     exports.assertArgumentCount = assertArgumentCount;
     exports.assertNormalize = assertNormalize;

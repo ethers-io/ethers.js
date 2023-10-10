@@ -25,6 +25,6 @@ export type { EventEmitterable, Listener } from "./events.js";
 export type { GetUrlResponse, FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc, FetchGatewayFunc, FetchGetUrlFunc } from "./fetch.js";
 export type { FixedFormat } from "./fixednumber.js";
 export type { BigNumberish, Numeric } from "./maths.js";
-export type { RlpStructuredData } from "./rlp.js";
+export type { RlpStructuredData, RlpStructuredDataish } from "./rlp.js";
 export type { Utf8ErrorFunc, UnicodeNormalizationForm, Utf8ErrorReason } from "./utf8.js";
 //# sourceMappingURL=index.d.ts.map

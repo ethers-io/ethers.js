@@ -90,6 +90,7 @@ exports.isCallException = isCallException;
  *  ethers version, %%code%% and all aditional properties, serialized.
  */
 function makeError(message, code, info) {
+    let shortMessage = message;
     {
         const details = [];
         if (info) {
@@ -97,6 +98,9 @@ function makeError(message, code, info) {
                 throw new Error(`value will overwrite populated values: ${stringify(info)}`);
             }
             for (const key in info) {
+                if (key === "shortMessage") {
+                    continue;
+                }
                 const value = (info[key]);
                 //                try {
                 details.push(key + "=" + stringify(value));
@@ -127,6 +131,9 @@ function makeError(message, code, info) {
     (0, properties_js_1.defineProperties)(error, { code });
     if (info) {
         Object.assign(error, info);
+    }
+    if (error.shortMessage == null) {
+        (0, properties_js_1.defineProperties)(error, { shortMessage });
     }
     return error;
 }

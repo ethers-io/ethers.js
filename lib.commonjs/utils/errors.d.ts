@@ -13,7 +13,9 @@ import type { FetchRequest, FetchResponse } from "./fetch.js";
  *  An error may contain additional properties, but those must not
  *  conflict with any impliciat properties.
  */
-export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
+export type ErrorInfo<T> = Omit<T, "code" | "name" | "message" | "shortMessage"> & {
+    shortMessage?: string;
+};
 /**
  *  All errors emitted by ethers have an **ErrorCode** to help
  *  identify and coalesce errors to simplfy programatic analysis.
@@ -85,6 +87,11 @@ export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
      *  The string error code.
      */
     code: ErrorCode;
+    /**
+     *  A short message describing the error, with minimal additional
+     *  details.
+     */
+    shortMessage: string;
     /**
      *  Additional info regarding the error that may be useful.
      *

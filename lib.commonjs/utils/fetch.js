@@ -29,7 +29,7 @@ const geturl_js_1 = require("./geturl.js");
 const MAX_ATTEMPTS = 12;
 const SLOT_INTERVAL = 250;
 // The global FetchGetUrlFunc implementation.
-let getUrlFunc = geturl_js_1.getUrl;
+let defaultGetUrlFunc = (0, geturl_js_1.createGetUrl)();
 const reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
 const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
 // If locked, new Gateways cannot be added
@@ -143,6 +143,7 @@ class FetchRequest {
     #retry;
     #signal;
     #throttle;
+    #getUrlFunc;
     /**
      *  The fetch URI to requrest.
      */
@@ -366,6 +367,27 @@ class FetchRequest {
         this.#retry = retry;
     }
     /**
+     *  This function is called to fetch content from HTTP and
+     *  HTTPS URLs and is platform specific (e.g. nodejs vs
+     *  browsers).
+     *
+     *  This is by default the currently registered global getUrl
+     *  function, which can be changed using [[registerGetUrl]].
+     *  If this has been set, setting is to ``null`` will cause
+     *  this FetchRequest (and any future clones) to revert back to
+     *  using the currently registered global getUrl function.
+     *
+     *  Setting this is generally not necessary, but may be useful
+     *  for developers that wish to intercept requests or to
+     *  configurege a proxy or other agent.
+     */
+    get getUrlFunc() {
+        return this.#getUrlFunc || defaultGetUrlFunc;
+    }
+    set getUrlFunc(value) {
+        this.#getUrlFunc = value;
+    }
+    /**
      *  Create a new FetchRequest instance with default values.
      *
      *  Once created, each property may be set before issuing a
@@ -382,6 +404,7 @@ class FetchRequest {
             slotInterval: SLOT_INTERVAL,
             maxAttempts: MAX_ATTEMPTS
         };
+        this.#getUrlFunc = null;
     }
     toString() {
         return `<FetchRequest method=${JSON.stringify(this.method)} url=${JSON.stringify(this.url)} headers=${JSON.stringify(this.headers)} body=${this.#body ? (0, data_js_1.hexlify)(this.#body) : "null"}>`;
@@ -436,7 +459,7 @@ class FetchRequest {
         if (this.preflightFunc) {
             req = await this.preflightFunc(req);
         }
-        const resp = await getUrlFunc(req, checkSignal(_request.#signal));
+        const resp = await this.getUrlFunc(req, checkSignal(_request.#signal));
         let response = new FetchResponse(resp.statusCode, resp.statusMessage, resp.headers, resp.body, _request);
         if (response.statusCode === 301 || response.statusCode === 302) {
             // Redirect
@@ -557,6 +580,7 @@ class FetchRequest {
         clone.#preflight = this.#preflight;
         clone.#process = this.#process;
         clone.#retry = this.#retry;
+        clone.#getUrlFunc = this.#getUrlFunc;
         return clone;
     }
     /**
@@ -602,7 +626,21 @@ class FetchRequest {
         if (locked) {
             throw new Error("gateways locked");
         }
-        getUrlFunc = getUrl;
+        defaultGetUrlFunc = getUrl;
+    }
+    /**
+     *  Creates a getUrl function that fetches content from HTTP and
+     *  HTTPS URLs.
+     *
+     *  The available %%options%% are dependent on the platform
+     *  implementation of the default getUrl function.
+     *
+     *  This is not generally something that is needed, but is useful
+     *  when trying to customize simple behaviour when fetching HTTP
+     *  content.
+     */
+    static createGetUrlFunc(options) {
+        return (0, geturl_js_1.createGetUrl)(options);
     }
     /**
      *  Creates a function that can "fetch" data URIs.

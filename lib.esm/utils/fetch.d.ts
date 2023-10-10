@@ -182,6 +182,23 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
     get retryFunc(): null | FetchRetryFunc;
     set retryFunc(retry: null | FetchRetryFunc);
     /**
+     *  This function is called to fetch content from HTTP and
+     *  HTTPS URLs and is platform specific (e.g. nodejs vs
+     *  browsers).
+     *
+     *  This is by default the currently registered global getUrl
+     *  function, which can be changed using [[registerGetUrl]].
+     *  If this has been set, setting is to ``null`` will cause
+     *  this FetchRequest (and any future clones) to revert back to
+     *  using the currently registered global getUrl function.
+     *
+     *  Setting this is generally not necessary, but may be useful
+     *  for developers that wish to intercept requests or to
+     *  configurege a proxy or other agent.
+     */
+    get getUrlFunc(): FetchGetUrlFunc;
+    set getUrlFunc(value: null | FetchGetUrlFunc);
+    /**
      *  Create a new FetchRequest instance with default values.
      *
      *  Once created, each property may be set before issuing a
@@ -239,6 +256,18 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
      *  throws.
      */
     static registerGetUrl(getUrl: FetchGetUrlFunc): void;
+    /**
+     *  Creates a getUrl function that fetches content from HTTP and
+     *  HTTPS URLs.
+     *
+     *  The available %%options%% are dependent on the platform
+     *  implementation of the default getUrl function.
+     *
+     *  This is not generally something that is needed, but is useful
+     *  when trying to customize simple behaviour when fetching HTTP
+     *  content.
+     */
+    static createGetUrlFunc(options?: Record<string, any>): FetchGetUrlFunc;
     /**
      *  Creates a function that can "fetch" data URIs.
      *

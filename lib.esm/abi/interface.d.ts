@@ -368,7 +368,7 @@ export declare class Interface {
      *  Parses a revert data, finding the matching error and extracts
      *  the parameter values along with other useful error details.
      *
-     *  If the matching event cannot be found, returns null.
+     *  If the matching error cannot be found, returns null.
      */
     parseError(data: BytesLike): null | ErrorDescription;
     /**

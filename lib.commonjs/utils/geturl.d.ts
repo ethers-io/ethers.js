@@ -1,4 +1,8 @@
-import type { FetchRequest, FetchCancelSignal, GetUrlResponse } from "./fetch.js";
+import type { FetchGetUrlFunc, FetchRequest, FetchCancelSignal, GetUrlResponse } from "./fetch.js";
+/**
+ *  @_ignore:
+ */
+export declare function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc;
 /**
  *  @_ignore:
  */

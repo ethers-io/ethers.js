@@ -3,6 +3,16 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.8.0 (2023-10-09 20:22)
+--------------------------------
+
+  - Initial shortMessage support for errors ([#4241](https://github.com/ethers-io/ethers.js/issues/4241); [d6a8c14](https://github.com/ethers-io/ethers.js/commit/d6a8c14d907cf8b90347444c0186b83a5db2e293)).
+  - Fixed resolving ENS addresses used as from parameters ([#3961](https://github.com/ethers-io/ethers.js/issues/3961); [2616f4c](https://github.com/ethers-io/ethers.js/commit/2616f4c30c82bd45449b73fa37ef269d60a07d80)).
+  - Allow more loose input format for RLP encoder ([#4402](https://github.com/ethers-io/ethers.js/issues/4402); [9a4b753](https://github.com/ethers-io/ethers.js/commit/9a4b7534458fc79a0654b0eb57fc956bffa02a2f)).
+  - Update to latest noble crypto libraries ([#3975](https://github.com/ethers-io/ethers.js/issues/3975); [b27faa0](https://github.com/ethers-io/ethers.js/commit/b27faa02ac8f90e2e54b188e8139c59d98c469e3)).
+  - More robust configuration options for FetchRequest getUrl functions ([#4353](https://github.com/ethers-io/ethers.js/issues/4353); [9541f2f](https://github.com/ethers-io/ethers.js/commit/9541f2f70cd7f5c6f3caf93f5a3d5e34eae5281a)).
+  - Ignore blockTag when calling Etherscan if it is the default block tag ([dcea9b3](https://github.com/ethers-io/ethers.js/commit/dcea9b353619d85878ad2ba340ae17e5c285d558)).
+
 ethers/v6.7.1 (2023-08-15 03:08)
 --------------------------------
 

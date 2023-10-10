@@ -251,6 +251,9 @@ export class EtherscanProvider extends AbstractProvider {
             if (key === "type" && value === 0) {
                 continue;
             }
+            if (key === "blockTag" && value === "latest") {
+                continue;
+            }
             // Quantity-types require no leading zero, unless 0
             if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
                 value = toQuantity(value);

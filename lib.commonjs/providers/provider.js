@@ -225,7 +225,8 @@ class Block {
         });
     }
     /**
-     *  Returns the list of transaction hashes.
+     *  Returns the list of transaction hashes, in the order
+     *  they were executed within the block.
      */
     get transactions() {
         return this.#transactions.map((tx) => {
@@ -236,8 +237,11 @@ class Block {
         });
     }
     /**
-     *  Returns the complete transactions for blocks which
-     *  prefetched them, by passing ``true`` to %%prefetchTxs%%
+     *  Returns the complete transactions, in the order they
+     *  were executed within the block.
+     *
+     *  This is only available for blocks which prefetched
+     *  transactions, by passing ``true`` to %%prefetchTxs%%
      *  into [[Provider-getBlock]].
      */
     get prefetchedTransactions() {

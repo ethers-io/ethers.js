@@ -3,15 +3,9 @@
  *
  *  @_subsection: api/crypto:Signing  [about-signing]
  */
-import * as secp256k1 from "@noble/secp256k1";
+import { secp256k1 } from "@noble/curves/secp256k1";
 import { concat, dataLength, getBytes, getBytesCopy, hexlify, toBeHex, assertArgument } from "../utils/index.js";
-import { computeHmac } from "./hmac.js";
 import { Signature } from "./signature.js";
-//const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
-// Make noble-secp256k1 sync
-secp256k1.utils.hmacSha256Sync = function (key, ...messages) {
-    return getBytes(computeHmac("sha256", key, concat(messages)));
-};
 /**
  *  A **SigningKey** provides high-level access to the elliptic curve
  *  cryptography (ECC) operations and key management.
@@ -49,15 +43,13 @@ export class SigningKey {
      */
     sign(digest) {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
-        const [sigDer, recid] = secp256k1.signSync(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
-            recovered: true,
-            canonical: true
+        const sig = secp256k1.sign(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
+            lowS: true
         });
-        const sig = secp256k1.Signature.fromHex(sigDer);
         return Signature.from({
-            r: toBeHex("0x" + sig.r.toString(16), 32),
-            s: toBeHex("0x" + sig.s.toString(16), 32),
-            v: (recid ? 0x1c : 0x1b)
+            r: toBeHex(sig.r, 32),
+            s: toBeHex(sig.s, 32),
+            v: (sig.recovery ? 0x1c : 0x1b)
         });
     }
     /**
@@ -84,7 +76,7 @@ export class SigningKey {
      */
     computeSharedSecret(other) {
         const pubKey = SigningKey.computePublicKey(other);
-        return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey)));
+        return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey), false));
     }
     /**
      *  Compute the public key for %%key%%, optionally %%compressed%%.
@@ -125,7 +117,7 @@ export class SigningKey {
             pub.set(bytes, 1);
             bytes = pub;
         }
-        const point = secp256k1.Point.fromHex(bytes);
+        const point = secp256k1.ProjectivePoint.fromHex(bytes);
         return hexlify(point.toRawBytes(compressed));
     }
     /**
@@ -149,10 +141,11 @@ export class SigningKey {
     static recoverPublicKey(digest, signature) {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
         const sig = Signature.from(signature);
-        const der = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s]))).toDERRawBytes();
-        const pubKey = secp256k1.recoverPublicKey(getBytesCopy(digest), der, sig.yParity);
-        assertArgument(pubKey != null, "invalid signature for digest", "signature", signature);
-        return hexlify(pubKey);
+        let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s])));
+        secpSig = secpSig.addRecoveryBit(sig.yParity);
+        const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
+        assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
+        return "0x" + pubKey.toHex(false);
     }
     /**
      *  Returns the point resulting from adding the ellipic curve points
@@ -165,8 +158,8 @@ export class SigningKey {
      *  addresses from parent public keys and chain codes.
      */
     static addPoints(p0, p1, compressed) {
-        const pub0 = secp256k1.Point.fromHex(SigningKey.computePublicKey(p0).substring(2));
-        const pub1 = secp256k1.Point.fromHex(SigningKey.computePublicKey(p1).substring(2));
+        const pub0 = secp256k1.ProjectivePoint.fromHex(SigningKey.computePublicKey(p0).substring(2));
+        const pub1 = secp256k1.ProjectivePoint.fromHex(SigningKey.computePublicKey(p1).substring(2));
         return "0x" + pub0.add(pub1).toHex(!!compressed);
     }
 }

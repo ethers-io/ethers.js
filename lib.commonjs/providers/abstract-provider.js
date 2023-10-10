@@ -513,7 +513,7 @@ class AbstractProvider {
             if (request[key] == null) {
                 return;
             }
-            const addr = (0, index_js_1.resolveAddress)(request[key]);
+            const addr = (0, index_js_1.resolveAddress)(request[key], this);
             if (isPromise(addr)) {
                 promises.push((async function () { request[key] = await addr; })());
             }
