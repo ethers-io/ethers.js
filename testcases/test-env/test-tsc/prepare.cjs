@@ -6,15 +6,26 @@ function replace(filename, key, value) {
     fs.writeFileSync(filename, data);
 }
 
-// moduleResolution: node, node16, nodenext
-replace("tsconfig.json", "${TS_MODULE_RESOLUTION}", process.argv[2]);
+// TypeScript moduleResolution: node, node16, nodenext
+const tsModuleResolution = process.argv[2];
 
-// module: commonjs, es2020
-replace("tsconfig.json", "${TS_MODULE}", process.argv[3]);
+// Package module: commonjs, es2020
+const pModule = process.argv[3];
 
-// type: commonjs, module
-const type = (process.argv[3] === "commonjs") ? "commonjs": "module";
-replace("package.json", "${PKG_TYPE}", type);
+// TypeScript module: node=pModule, otherwise=pModuleResolution
+const tsModule = ({
+    node16: "node16",
+    nodenext: "nodenext"
+})[pModuleResolution] || pModule;
+
+// Package type: commonjs, module
+const pType = (pModule === "commonjs") ? "commonjs": "module";
+
+
+// Replace necessary properties in tsconfig.json and package.json
+replace("tsconfig.json", "${TS_MODULE_RESOLUTION}", tsModuleResolution);
+replace("tsconfig.json", "${TS_MODULE}", tsModule);
+replace("package.json", "${PKG_TYPE}", pType);
 
 // JavaScript
-fs.writeFileSync("index.ts", fs.readFileSync("js-" + type + ".ts"));
+fs.writeFileSync("index.ts", fs.readFileSync("js-" + pType + ".ts"));
