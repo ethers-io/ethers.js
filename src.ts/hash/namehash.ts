@@ -44,6 +44,7 @@ function ensNameSplit(name: string): Array<Uint8Array> {
  */
 export function ensNormalize(name: string): string {
     try {
+        if (name.length === 0) { throw new Error("empty label"); }
         return ens_normalize(name);
     } catch (error: any) {
         assertArgument(false, `invalid ENS name (${ error.message })`, "name", name);
@@ -65,6 +66,8 @@ export function isValidName(name: string): name is string {
  */
 export function namehash(name: string): string {
     assertArgument(typeof(name) === "string", "invalid ENS name; not a string", "name", name);
+
+    assertArgument(name.length, `invalid ENS name (empty label)`, "name", name);
 
     let result: string | Uint8Array = Zeros;
 
