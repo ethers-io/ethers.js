@@ -496,11 +496,11 @@ export class FallbackProvider extends AbstractProvider {
     }
 
     // Adds a new runner (if available) to running.
-    #addRunner(running: Set<RunnerState>, req: PerformActionRequest): null | RunnerState {
+    #addRunner(running: Set<RunnerState>, req: PerformActionRequest): number {
         const config = this.#getNextConfig(running);
 
         // No runners available
-        if (config == null) { return null; }
+        if (config == null) { return 0; }
 
         // Create a new runner
         const runner: RunnerState = {
@@ -537,7 +537,7 @@ export class FallbackProvider extends AbstractProvider {
         })();
 
         running.add(runner);
-        return runner;
+        return runner.config.weight;
     }
 
     // Initializes the blockNumber and network for each runner and
@@ -681,6 +681,9 @@ export class FallbackProvider extends AbstractProvider {
             return value;
         }
 
+        // Wait for someone to either complete its perform or stall out
+        await Promise.race(interesting);
+
         // Add any new runners, because a staller timed out or a result
         // or error response came in.
         for (let i = 0; i < newRunners; i++) {
@@ -693,9 +696,6 @@ export class FallbackProvider extends AbstractProvider {
             request: "%sub-requests",
             info: { request: req, results: Array.from(running).map((r) => stringify(r.result)) }
         });
-
-        // Wait for someone to either complete its perform or stall out
-        await Promise.race(interesting);
 
         // This is recursive, but at worst case the depth is 2x the
         // number of providers (each has a perform and a staller)
@@ -729,8 +729,10 @@ export class FallbackProvider extends AbstractProvider {
 
         // Bootstrap enough runners to meet quorum
         const running: Set<RunnerState> = new Set();
+        let weightSoFar = 0;
         for (let i = 0; i < this.quorum; i++) {
-            this.#addRunner(running, req);
+            weightSoFar += this.#addRunner(running, req);
+            if (weightSoFar >= this.quorum) { break; }
         }
 
         const result = await this.#waitForQuorum(running, req);
