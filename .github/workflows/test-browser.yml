@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "src.ts/**"
+      - "lib.esm/**"
+      - "lib.commonjs/**"
+      - "misc/test-browser/**"
 
 jobs:
   test-browser:
