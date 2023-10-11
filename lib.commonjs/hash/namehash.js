@@ -35,6 +35,9 @@ function ensNameSplit(name) {
  */
 function ensNormalize(name) {
     try {
+        if (name.length === 0) {
+            throw new Error("empty label");
+        }
         return (0, ens_normalize_1.ens_normalize)(name);
     }
     catch (error) {
@@ -58,6 +61,7 @@ exports.isValidName = isValidName;
  */
 function namehash(name) {
     (0, index_js_2.assertArgument)(typeof (name) === "string", "invalid ENS name; not a string", "name", name);
+    (0, index_js_2.assertArgument)(name.length, `invalid ENS name (empty label)`, "name", name);
     let result = Zeros;
     const comps = ensNameSplit(name);
     while (comps.length) {
