@@ -16,7 +16,7 @@ const pModule = process.argv[3];
 const tsModule = ({
     node16: "node16",
     nodenext: "nodenext"
-})[pModuleResolution] || pModule;
+})[tsModuleResolution] || pModule;
 
 // Package type: commonjs, module
 const pType = (pModule === "commonjs") ? "commonjs": "module";
