@@ -447,4 +447,6 @@ function injectCommonNetworks(): void {
     registerEth("optimism-goerli", 420, { });
 
     registerEth("xdai", 100, { ensNetwork: 1 });
+
+    registerEth("LaChain", 274, { });
 }
