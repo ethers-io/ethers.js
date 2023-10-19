@@ -11,20 +11,12 @@ import {
     assertArgument
 } from "../utils/index.js";
 
-//import { computeHmac } from "./hmac.js";
 import { Signature } from "./signature.js";
 
 import type { BytesLike } from "../utils/index.js";
 
 import type { SignatureLike } from "./index.js";
 
-
-//const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
-
-// Make noble-secp256k1 sync
-//secp256k1.utils.hmacSha256Sync = function(key: Uint8Array, ...messages: Array<Uint8Array>): Uint8Array {
-//    return getBytes(computeHmac("sha256", key, concat(messages)));
-//}
 
 /**
  *  A **SigningKey** provides high-level access to the elliptic curve
@@ -104,7 +96,6 @@ export class SigningKey {
      */
     computeSharedSecret(other: BytesLike): string {
         const pubKey = SigningKey.computePublicKey(other);
-console.log(pubKey);
         return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey), false));
     }
 
@@ -177,15 +168,13 @@ console.log(pubKey);
 
         const sig = Signature.from(signature);
 
-        const secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([ sig.r, sig.s ])));
-        secpSig.addRecoveryBit(sig.yParity);
+        let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([ sig.r, sig.s ])));
+        secpSig = secpSig.addRecoveryBit(sig.yParity);
 
         const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
         assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
 
-console.log("SS2", pubKey);
-
-        return hexlify(pubKey.toHex(false));
+        return "0x" + pubKey.toHex(false);
     }
 
     /**
