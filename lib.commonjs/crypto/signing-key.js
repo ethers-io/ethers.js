@@ -8,7 +8,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SigningKey = void 0;
 const secp256k1_1 = require("@noble/curves/secp256k1");
 const index_js_1 = require("../utils/index.js");
+//import { computeHmac } from "./hmac.js";
 const signature_js_1 = require("./signature.js");
+//const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+// Make noble-secp256k1 sync
+//secp256k1.utils.hmacSha256Sync = function(key: Uint8Array, ...messages: Array<Uint8Array>): Uint8Array {
+//    return getBytes(computeHmac("sha256", key, concat(messages)));
+//}
 /**
  *  A **SigningKey** provides high-level access to the elliptic curve
  *  cryptography (ECC) operations and key management.
@@ -79,6 +85,7 @@ class SigningKey {
      */
     computeSharedSecret(other) {
         const pubKey = SigningKey.computePublicKey(other);
+        console.log(pubKey);
         return (0, index_js_1.hexlify)(secp256k1_1.secp256k1.getSharedSecret((0, index_js_1.getBytesCopy)(this.#privateKey), (0, index_js_1.getBytes)(pubKey), false));
     }
     /**
@@ -144,11 +151,12 @@ class SigningKey {
     static recoverPublicKey(digest, signature) {
         (0, index_js_1.assertArgument)((0, index_js_1.dataLength)(digest) === 32, "invalid digest length", "digest", digest);
         const sig = signature_js_1.Signature.from(signature);
-        let secpSig = secp256k1_1.secp256k1.Signature.fromCompact((0, index_js_1.getBytesCopy)((0, index_js_1.concat)([sig.r, sig.s])));
-        secpSig = secpSig.addRecoveryBit(sig.yParity);
+        const secpSig = secp256k1_1.secp256k1.Signature.fromCompact((0, index_js_1.getBytesCopy)((0, index_js_1.concat)([sig.r, sig.s])));
+        secpSig.addRecoveryBit(sig.yParity);
         const pubKey = secpSig.recoverPublicKey((0, index_js_1.getBytesCopy)(digest));
         (0, index_js_1.assertArgument)(pubKey != null, "invalid signautre for digest", "signature", signature);
-        return "0x" + pubKey.toHex(false);
+        console.log("SS2", pubKey);
+        return (0, index_js_1.hexlify)(pubKey.toHex(false));
     }
     /**
      *  Returns the point resulting from adding the ellipic curve points

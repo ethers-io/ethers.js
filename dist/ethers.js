@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.8.0";
+const version = "6.3.1";
 
 /**
  *  Property helper functions.
@@ -60,11 +60,7 @@ function defineProperties(target, values, types) {
 }
 
 /**
- *  All errors in ethers include properties to ensure they are both
- *  human-readable (i.e. ``.message``) and machine-readable (i.e. ``.code``).
- *
- *  The [[isError]] function can be used to check the error ``code`` and
- *  provide a type guard for the properties present on that error interface.
+ *  About Errors.
  *
  *  @_section: api/utils/errors:Errors  [about-errors]
  */
@@ -144,7 +140,6 @@ function isCallException(error) {
  *  ethers version, %%code%% and all aditional properties, serialized.
  */
 function makeError(message, code, info) {
-    let shortMessage = message;
     {
         const details = [];
         if (info) {
@@ -152,9 +147,6 @@ function makeError(message, code, info) {
                 throw new Error(`value will overwrite populated values: ${stringify$1(info)}`);
             }
             for (const key in info) {
-                if (key === "shortMessage") {
-                    continue;
-                }
                 const value = (info[key]);
                 //                try {
                 details.push(key + "=" + stringify$1(value));
@@ -186,9 +178,6 @@ function makeError(message, code, info) {
     if (info) {
         Object.assign(error, info);
     }
-    if (error.shortMessage == null) {
-        defineProperties(error, { shortMessage });
-    }
     return error;
 }
 /**
@@ -197,7 +186,7 @@ function makeError(message, code, info) {
  *
  *  @see [[api:makeError]]
  */
-function assert(check, message, code, info) {
+function assert$1(check, message, code, info) {
     if (!check) {
         throw makeError(message, code, info);
     }
@@ -210,7 +199,7 @@ function assert(check, message, code, info) {
  *  any further code does not need additional compile-time checks.
  */
 function assertArgument(check, message, name, value) {
-    assert(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
+    assert$1(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
 }
 function assertArgumentCount(count, expectedCount, message) {
     if (message == null) {
@@ -219,11 +208,11 @@ function assertArgumentCount(count, expectedCount, message) {
     if (message) {
         message = ": " + message;
     }
-    assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+    assert$1(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });
-    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+    assert$1(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });
@@ -255,7 +244,7 @@ const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
  *  Throws if the normalization %%form%% is not supported.
  */
 function assertNormalize(form) {
-    assert(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
+    assert$1(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
         operation: "String.prototype.normalize", info: { form }
     });
 }
@@ -275,7 +264,7 @@ function assertPrivate(givenGuard, guard, className) {
             method += ".";
             operation += " " + className;
         }
-        assert(false, `private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
+        assert$1(false, `private constructor; use ${method}from* methods`, "UNSUPPORTED_OPERATION", {
             operation
         });
     }
@@ -389,7 +378,7 @@ function dataLength(data) {
 function dataSlice(data, start, end) {
     const bytes = getBytes(data);
     if (end != null && end > bytes.length) {
-        assert(false, "cannot slice beyond data bounds", "BUFFER_OVERRUN", {
+        assert$1(false, "cannot slice beyond data bounds", "BUFFER_OVERRUN", {
             buffer: bytes, length: bytes.length, offset: end
         });
     }
@@ -408,7 +397,7 @@ function stripZerosLeft(data) {
 }
 function zeroPad(data, length, left) {
     const bytes = getBytes(data);
-    assert(length >= bytes.length, "padding exceeds data length", "BUFFER_OVERRUN", {
+    assert$1(length >= bytes.length, "padding exceeds data length", "BUFFER_OVERRUN", {
         buffer: new Uint8Array(bytes),
         length: length,
         offset: length + 1
@@ -469,7 +458,7 @@ const maxValue = 0x1fffffffffffff;
 function fromTwos(_value, _width) {
     const value = getUint(_value, "value");
     const width = BigInt(getNumber(_width, "width"));
-    assert((value >> width) === BN_0$a, "overflow", "NUMERIC_FAULT", {
+    assert$1((value >> width) === BN_0$a, "overflow", "NUMERIC_FAULT", {
         operation: "fromTwos", fault: "overflow", value: _value
     });
     // Top bit set; treat as a negative value
@@ -491,14 +480,14 @@ function toTwos(_value, _width) {
     const limit = (BN_1$5 << (width - BN_1$5));
     if (value < BN_0$a) {
         value = -value;
-        assert(value <= limit, "too low", "NUMERIC_FAULT", {
+        assert$1(value <= limit, "too low", "NUMERIC_FAULT", {
             operation: "toTwos", fault: "overflow", value: _value
         });
         const mask = (BN_1$5 << width) - BN_1$5;
         return ((~value) & mask) + BN_1$5;
     }
     else {
-        assert(value < limit, "too high", "NUMERIC_FAULT", {
+        assert$1(value < limit, "too high", "NUMERIC_FAULT", {
             operation: "toTwos", fault: "overflow", value: _value
         });
     }
@@ -539,13 +528,9 @@ function getBigInt(value, name) {
     }
     assertArgument(false, "invalid BigNumberish value", name || "value", value);
 }
-/**
- *  Returns %%value%% as a bigint, validating it is valid as a bigint
- *  value and that it is positive.
- */
 function getUint(value, name) {
     const result = getBigInt(value, name);
-    assert(result >= BN_0$a, "unsigned value cannot be negative", "NUMERIC_FAULT", {
+    assert$1(result >= BN_0$a, "unsigned value cannot be negative", "NUMERIC_FAULT", {
         fault: "overflow", operation: "getUint", value
     });
     return result;
@@ -614,7 +599,7 @@ function toBeHex(_value, _width) {
     }
     else {
         const width = getNumber(_width, "width");
-        assert(width * 2 >= result.length, `value exceeds width (${width} bits)`, "NUMERIC_FAULT", {
+        assert$1(width * 2 >= result.length, `value exceeds width (${width} bits)`, "NUMERIC_FAULT", {
             operation: "toBeHex",
             fault: "overflow",
             value: _value
@@ -734,9 +719,7 @@ function encodeBase64(_data) {
 }
 
 /**
- *  Events allow for applications to use the observer pattern, which
- *  allows subscribing and publishing events, outside the normal
- *  execution paths.
+ *  Explain events...
  *
  *  @_section api/utils/events:Events  [about-events]
  */
@@ -815,7 +798,7 @@ function replaceFunc(reason, offset, bytes, output, badCodepoint) {
     // Put the replacement character into the output
     output.push(0xfffd);
     // Otherwise, process as if ignoring errors
-    return ignoreFunc(reason, offset, bytes);
+    return ignoreFunc(reason, offset, bytes, output, badCodepoint);
 }
 /**
  *  A handful of popular, built-in UTF-8 error handling strategies.
@@ -895,6 +878,7 @@ function getUtf8CodePoints(_bytes, onError) {
                 res = null;
                 break;
             }
+            ;
             res = (res << 6) | (nextChar & 0x3f);
             i++;
         }
@@ -961,6 +945,7 @@ function toUtf8Bytes(str, form) {
     }
     return new Uint8Array(result);
 }
+;
 //export 
 function _toUtf8String(codePoints) {
     return codePoints.map((codePoint) => {
@@ -991,67 +976,50 @@ function toUtf8CodePoints(str, form) {
 }
 
 // @TODO: timeout is completely ignored; start a Promise.any with a reject?
-function createGetUrl(options) {
-    async function getUrl(req, _signal) {
-        const protocol = req.url.split(":")[0].toLowerCase();
-        assert(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
-            info: { protocol },
-            operation: "request"
-        });
-        assert(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
-            operation: "request"
-        });
-        let signal = undefined;
-        if (_signal) {
-            const controller = new AbortController();
-            signal = controller.signal;
-            _signal.addListener(() => { controller.abort(); });
-        }
-        const init = {
-            method: req.method,
-            headers: new Headers(Array.from(req)),
-            body: req.body || undefined,
-            signal
-        };
-        const resp = await fetch(req.url, init);
-        const headers = {};
-        resp.headers.forEach((value, key) => {
-            headers[key.toLowerCase()] = value;
-        });
-        const respBody = await resp.arrayBuffer();
-        const body = (respBody == null) ? null : new Uint8Array(respBody);
-        return {
-            statusCode: resp.status,
-            statusMessage: resp.statusText,
-            headers, body
-        };
+async function getUrl(req, _signal) {
+    const protocol = req.url.split(":")[0].toLowerCase();
+    assert$1(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
+        info: { protocol },
+        operation: "request"
+    });
+    assert$1(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
+        operation: "request"
+    });
+    let signal = undefined;
+    if (_signal) {
+        const controller = new AbortController();
+        signal = controller.signal;
+        _signal.addListener(() => { controller.abort(); });
     }
-    return getUrl;
+    const init = {
+        method: req.method,
+        headers: new Headers(Array.from(req)),
+        body: req.body || undefined,
+        signal
+    };
+    const resp = await fetch(req.url, init);
+    const headers = {};
+    resp.headers.forEach((value, key) => {
+        headers[key.toLowerCase()] = value;
+    });
+    const respBody = await resp.arrayBuffer();
+    const body = (respBody == null) ? null : new Uint8Array(respBody);
+    return {
+        statusCode: resp.status,
+        statusMessage: resp.statusText,
+        headers, body
+    };
 }
 
 /**
- *  Fetching content from the web is environment-specific, so Ethers
- *  provides an abstraction the each environment can implement to provide
- *  this service.
- *
- *  On [Node.js](link-node), the ``http`` and ``https`` libs are used to
- *  create a request object, register event listeners and process data
- *  and populate the [[FetchResponse]].
- *
- *  In a browser, the [DOM fetch](link-js-fetch) is used, and the resulting
- *  ``Promise`` is waited on to retreive the payload.
- *
- *  The [[FetchRequest]] is responsible for handling many common situations,
- *  such as redirects, server throttling, authentcation, etc.
- *
- *  It also handles common gateways, such as IPFS and data URIs.
+ *  Explain fetching here...
  *
  *  @_section api/utils/fetching:Fetching Web Content  [about-fetch]
  */
 const MAX_ATTEMPTS = 12;
 const SLOT_INTERVAL = 250;
 // The global FetchGetUrlFunc implementation.
-let defaultGetUrlFunc = createGetUrl();
+let getUrlFunc = getUrl;
 const reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
 const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
 // If locked, new Gateways cannot be added
@@ -1116,14 +1084,14 @@ class FetchCancelSignal {
         });
     }
     addListener(listener) {
-        assert(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+        assert$1(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
             operation: "fetchCancelSignal.addCancelListener"
         });
         this.#listeners.push(listener);
     }
     get cancelled() { return this.#cancelled; }
     checkSignal() {
-        assert(!this.cancelled, "cancelled", "CANCELLED", {});
+        assert$1(!this.cancelled, "cancelled", "CANCELLED", {});
     }
 }
 // Check the signal, throwing if it is cancelled
@@ -1164,7 +1132,6 @@ class FetchRequest {
     #retry;
     #signal;
     #throttle;
-    #getUrlFunc;
     /**
      *  The fetch URI to requrest.
      */
@@ -1258,6 +1225,7 @@ class FetchRequest {
         if (this.#creds) {
             headers["authorization"] = `Basic ${encodeBase64(toUtf8Bytes(this.#creds))}`;
         }
+        ;
         if (this.allowGzip) {
             headers["accept-encoding"] = "gzip";
         }
@@ -1387,27 +1355,6 @@ class FetchRequest {
         this.#retry = retry;
     }
     /**
-     *  This function is called to fetch content from HTTP and
-     *  HTTPS URLs and is platform specific (e.g. nodejs vs
-     *  browsers).
-     *
-     *  This is by default the currently registered global getUrl
-     *  function, which can be changed using [[registerGetUrl]].
-     *  If this has been set, setting is to ``null`` will cause
-     *  this FetchRequest (and any future clones) to revert back to
-     *  using the currently registered global getUrl function.
-     *
-     *  Setting this is generally not necessary, but may be useful
-     *  for developers that wish to intercept requests or to
-     *  configurege a proxy or other agent.
-     */
-    get getUrlFunc() {
-        return this.#getUrlFunc || defaultGetUrlFunc;
-    }
-    set getUrlFunc(value) {
-        this.#getUrlFunc = value;
-    }
-    /**
      *  Create a new FetchRequest instance with default values.
      *
      *  Once created, each property may be set before issuing a
@@ -1424,7 +1371,6 @@ class FetchRequest {
             slotInterval: SLOT_INTERVAL,
             maxAttempts: MAX_ATTEMPTS
         };
-        this.#getUrlFunc = null;
     }
     toString() {
         return `<FetchRequest method=${JSON.stringify(this.method)} url=${JSON.stringify(this.url)} headers=${JSON.stringify(this.headers)} body=${this.#body ? hexlify(this.#body) : "null"}>`;
@@ -1445,7 +1391,7 @@ class FetchRequest {
         if (attempt >= this.#throttle.maxAttempts) {
             return _response.makeServerError("exceeded maximum retry limit");
         }
-        assert(getTime$2() <= expires, "timeout", "TIMEOUT", {
+        assert$1(getTime$2() <= expires, "timeout", "TIMEOUT", {
             operation: "request.send", reason: "timeout", request: _request
         });
         if (delay > 0) {
@@ -1479,7 +1425,7 @@ class FetchRequest {
         if (this.preflightFunc) {
             req = await this.preflightFunc(req);
         }
-        const resp = await this.getUrlFunc(req, checkSignal(_request.#signal));
+        const resp = await getUrlFunc(req, checkSignal(_request.#signal));
         let response = new FetchResponse(resp.statusCode, resp.statusMessage, resp.headers, resp.body, _request);
         if (response.statusCode === 301 || response.statusCode === 302) {
             // Redirect
@@ -1514,6 +1460,7 @@ class FetchRequest {
                 }
                 // Throttle
                 let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
+                ;
                 if (error.stall >= 0) {
                     delay = error.stall;
                 }
@@ -1526,7 +1473,7 @@ class FetchRequest {
      *  Resolves to the response by sending the request.
      */
     send() {
-        assert(this.#signal == null, "request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
+        assert$1(this.#signal == null, "request already sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.send" });
         this.#signal = new FetchCancelSignal(this);
         return this.#send(0, getTime$2() + this.timeout, 0, this, new FetchResponse(0, "", {}, null, this));
     }
@@ -1535,7 +1482,7 @@ class FetchRequest {
      *  error to be rejected from the [[send]].
      */
     cancel() {
-        assert(this.#signal != null, "request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
+        assert$1(this.#signal != null, "request has not been sent", "UNSUPPORTED_OPERATION", { operation: "fetchRequest.cancel" });
         const signal = fetchSignals.get(this);
         if (!signal) {
             throw new Error("missing signal; should not happen");
@@ -1554,7 +1501,7 @@ class FetchRequest {
         // - non-GET requests
         // - downgrading the security (e.g. https => http)
         // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
-        assert(this.method === "GET" && (current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
+        assert$1(this.method === "GET" && (current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
             operation: `redirect(${this.method} ${JSON.stringify(this.url)} => ${JSON.stringify(location)})`
         });
         // Create a copy of this request, with a new URL
@@ -1599,7 +1546,6 @@ class FetchRequest {
         clone.#preflight = this.#preflight;
         clone.#process = this.#process;
         clone.#retry = this.#retry;
-        clone.#getUrlFunc = this.#getUrlFunc;
         return clone;
     }
     /**
@@ -1645,21 +1591,7 @@ class FetchRequest {
         if (locked$5) {
             throw new Error("gateways locked");
         }
-        defaultGetUrlFunc = getUrl;
-    }
-    /**
-     *  Creates a getUrl function that fetches content from HTTP and
-     *  HTTPS URLs.
-     *
-     *  The available %%options%% are dependent on the platform
-     *  implementation of the default getUrl function.
-     *
-     *  This is not generally something that is needed, but is useful
-     *  when trying to customize simple behaviour when fetching HTTP
-     *  content.
-     */
-    static createGetUrlFunc(options) {
-        return createGetUrl();
+        getUrlFunc = getUrl;
     }
     /**
      *  Creates a function that can "fetch" data URIs.
@@ -1684,6 +1616,7 @@ class FetchRequest {
         return getIpfsGatewayFunc(baseUrl);
     }
 }
+;
 /**
  *  The response for a FetchREquest.
  */
@@ -1726,7 +1659,7 @@ class FetchResponse {
             return (this.#body == null) ? "" : toUtf8String(this.#body);
         }
         catch (error) {
-            assert(false, "response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
+            assert$1(false, "response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
                 operation: "bodyText", info: { response: this }
             });
         }
@@ -1742,7 +1675,7 @@ class FetchResponse {
             return JSON.parse(this.bodyText);
         }
         catch (error) {
-            assert(false, "response body is not valid JSON", "UNSUPPORTED_OPERATION", {
+            assert$1(false, "response body is not valid JSON", "UNSUPPORTED_OPERATION", {
                 operation: "bodyJson", info: { response: this }
             });
         }
@@ -1841,7 +1774,7 @@ class FetchResponse {
         if (message === "") {
             message = `server response ${this.statusCode} ${this.statusMessage}`;
         }
-        assert(false, message, "SERVER_ERROR", {
+        assert$1(false, message, "SERVER_ERROR", {
             request: (this.request || "unknown request"), response: this, error
         });
     }
@@ -1857,12 +1790,7 @@ function wait(delay) {
 }
 
 /**
- *  The **FixedNumber** class permits using values with decimal places,
- *  using fixed-pont math.
- *
- *  Fixed-point math is still based on integers under-the-hood, but uses an
- *  internal offset to store fractional components below, and each operation
- *  corrects for this after each operation.
+ *  About fixed-point math...
  *
  *  @_section: api/utils/fixed-point-math:Fixed-Point Maths  [about-fixed-point-math]
  */
@@ -1888,7 +1816,7 @@ function checkValue(val, format, safeOp) {
     const width = BigInt(format.width);
     if (format.signed) {
         const limit = (BN_1$4 << (width - BN_1$4));
-        assert(safeOp == null || (val >= -limit && val < limit), "overflow", "NUMERIC_FAULT", {
+        assert$1(safeOp == null || (val >= -limit && val < limit), "overflow", "NUMERIC_FAULT", {
             operation: safeOp, fault: "overflow", value: val
         });
         if (val > BN_0$8) {
@@ -1900,7 +1828,7 @@ function checkValue(val, format, safeOp) {
     }
     else {
         const limit = (BN_1$4 << width);
-        assert(safeOp == null || (val >= 0 && val < limit), "overflow", "NUMERIC_FAULT", {
+        assert$1(safeOp == null || (val >= 0 && val < limit), "overflow", "NUMERIC_FAULT", {
             operation: safeOp, fault: "overflow", value: val
         });
         val = (((val % limit) + limit) % limit) & (limit - BN_1$4);
@@ -1916,7 +1844,9 @@ function getFormat(value) {
     let decimals = 18;
     if (typeof (value) === "string") {
         // Parse the format string
-        if (value === "fixed") ;
+        if (value === "fixed") {
+            // defaults...
+        }
         else if (value === "ufixed") {
             signed = false;
         }
@@ -2140,13 +2070,13 @@ class FixedNumber {
     mulSignal(other) {
         this.#checkFormat(other);
         const value = this.#val * other.#val;
-        assert((value % this.#tens) === BN_0$8, "precision lost during signalling mul", "NUMERIC_FAULT", {
+        assert$1((value % this.#tens) === BN_0$8, "precision lost during signalling mul", "NUMERIC_FAULT", {
             operation: "mulSignal", fault: "underflow", value: this
         });
         return this.#checkValue(value / this.#tens, "mulSignal");
     }
     #div(o, safeOp) {
-        assert(o.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
+        assert$1(o.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
             operation: "div", fault: "divide-by-zero", value: this
         });
         this.#checkFormat(o);
@@ -2170,12 +2100,12 @@ class FixedNumber {
      *  (precision loss) occurs.
      */
     divSignal(other) {
-        assert(other.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
+        assert$1(other.#val !== BN_0$8, "division by zero", "NUMERIC_FAULT", {
             operation: "div", fault: "divide-by-zero", value: this
         });
         this.#checkFormat(other);
         const value = (this.#val * this.#tens);
-        assert((value % other.#val) === BN_0$8, "precision lost during signalling div", "NUMERIC_FAULT", {
+        assert$1((value % other.#val) === BN_0$8, "precision lost during signalling div", "NUMERIC_FAULT", {
             operation: "divSignal", fault: "underflow", value: this
         });
         return this.#checkValue(value / other.#val, "divSignal");
@@ -2184,7 +2114,7 @@ class FixedNumber {
      *  Returns a comparison result between %%this%% and %%other%%.
      *
      *  This is suitable for use in sorting, where ``-1`` implies %%this%%
-     *  is smaller, ``1`` implies %%this%% is larger and ``0`` implies
+     *  is smaller, ``1`` implies %%other%% is larger and ``0`` implies
      *  both are equal.
      */
     cmp(other) {
@@ -2202,7 +2132,7 @@ class FixedNumber {
             return -1;
         }
         if (a > b) {
-            return 1;
+            return -1;
         }
         return 0;
     }
@@ -2311,14 +2241,16 @@ class FixedNumber {
      *  for %%decimals%%) cannot fit in %%format%%, either due to overflow
      *  or underflow (precision loss).
      */
-    static fromValue(_value, _decimals, _format) {
-        const decimals = (_decimals == null) ? 0 : getNumber(_decimals);
+    static fromValue(_value, decimals, _format) {
+        if (decimals == null) {
+            decimals = 0;
+        }
         const format = getFormat(_format);
         let value = getBigInt(_value, "value");
         const delta = decimals - format.decimals;
         if (delta > 0) {
             const tens = getTens(delta);
-            assert((value % tens) === BN_0$8, "value loses precision for format", "NUMERIC_FAULT", {
+            assert$1((value % tens) === BN_0$8, "value loses precision for format", "NUMERIC_FAULT", {
                 operation: "fromValue", fault: "underflow", value: _value
             });
             value /= tens;
@@ -2345,7 +2277,7 @@ class FixedNumber {
             decimal += Zeros$1;
         }
         // Check precision is safe
-        assert(decimal.substring(format.decimals).match(/^0*$/), "too many decimals for format", "NUMERIC_FAULT", {
+        assert$1(decimal.substring(format.decimals).match(/^0*$/), "too many decimals for format", "NUMERIC_FAULT", {
             operation: "fromString", fault: "underflow", value: _value
         });
         // Remove extra padding
@@ -2397,7 +2329,7 @@ function _decodeChildren(data, offset, childOffset, length) {
         const decoded = _decode(data, childOffset);
         result.push(decoded.result);
         childOffset += decoded.consumed;
-        assert(childOffset <= offset + 1 + length, "child data too short", "BUFFER_OVERRUN", {
+        assert$1(childOffset <= offset + 1 + length, "child data too short", "BUFFER_OVERRUN", {
             buffer: data, length, offset
         });
     }
@@ -2405,11 +2337,11 @@ function _decodeChildren(data, offset, childOffset, length) {
 }
 // returns { consumed: number, result: Object }
 function _decode(data, offset) {
-    assert(data.length !== 0, "data too short", "BUFFER_OVERRUN", {
+    assert$1(data.length !== 0, "data too short", "BUFFER_OVERRUN", {
         buffer: data, length: 0, offset: 1
     });
     const checkOffset = (offset) => {
-        assert(offset <= data.length, "data short segment too short", "BUFFER_OVERRUN", {
+        assert$1(offset <= data.length, "data short segment too short", "BUFFER_OVERRUN", {
             buffer: data, length: data.length, offset
         });
     };
@@ -2546,14 +2478,14 @@ function formatUnits(value, unit) {
     else if (unit != null) {
         decimals = getNumber(unit, "unit");
     }
-    return FixedNumber.fromValue(value, decimals, { decimals, width: 512 }).toString();
+    return FixedNumber.fromValue(value, decimals, { decimals }).toString();
 }
 /**
  *  Converts the //decimal string// %%value%% to a BigInt, assuming
  *  %%unit%% decimal places. The %%unit%% may the number of decimal places
  *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
  */
-function parseUnits$1(value, unit) {
+function parseUnits(value, unit) {
     assertArgument(typeof (value) === "string", "value must be a string", "value", value);
     let decimals = 18;
     if (typeof (unit) === "string") {
@@ -2564,7 +2496,7 @@ function parseUnits$1(value, unit) {
     else if (unit != null) {
         decimals = getNumber(unit, "unit");
     }
-    return FixedNumber.fromString(value, { decimals, width: 512 }).value;
+    return FixedNumber.fromString(value, { decimals }).value;
 }
 /**
  *  Converts %%value%% into a //decimal string// using 18 decimal places.
@@ -2577,7 +2509,7 @@ function formatEther(wei) {
  *  decimal places.
  */
 function parseEther(ether) {
-    return parseUnits$1(ether, 18);
+    return parseUnits(ether, 18);
 }
 
 /**
@@ -2608,6 +2540,14 @@ function uuidV4(randomBytes) {
         value.substring(22, 34),
     ].join("-");
 }
+
+/**
+ *  There are many simple utilities required to interact with
+ *  Ethereum and to simplify the library, without increasing
+ *  the library dependencies for simple functions.
+ *
+ *  @_section api/utils:Utilities  [about-utils]
+ */
 
 /**
  * @_ignore:
@@ -2736,7 +2676,7 @@ class Result extends Array {
      */
     toObject() {
         return this.#names.reduce((accum, name, index) => {
-            assert(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
+            assert$1(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
                 operation: "toObject()"
             });
             // Add values for names that don't conflict
@@ -2794,20 +2734,6 @@ class Result extends Array {
             }
         }
         return new Result(_guard$4, result, names);
-    }
-    /**
-     *  @_ignore
-     */
-    map(callback, thisArg) {
-        const result = [];
-        for (let i = 0; i < this.length; i++) {
-            const item = this[i];
-            if (item instanceof Error) {
-                throwError(`index ${i}`, item);
-            }
-            result.push(callback.call(thisArg, item, i, this));
-        }
-        return result;
     }
     /**
      *  Returns the value for %%name%%.
@@ -2872,7 +2798,7 @@ function checkResultErrors(result) {
 }
 function getValue$1(value) {
     let bytes = toBeArray(value);
-    assert(bytes.length <= WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: WordSize, offset: bytes.length });
+    assert$1(bytes.length <= WordSize, "value out-of-bounds", "BUFFER_OVERRUN", { buffer: bytes, length: WordSize, offset: bytes.length });
     if (bytes.length !== WordSize) {
         bytes = getBytesCopy(concat([Padding.slice(bytes.length % WordSize), bytes]));
     }
@@ -2978,7 +2904,7 @@ class Reader {
                 alignedLength = length;
             }
             else {
-                assert(false, "data out-of-bounds", "BUFFER_OVERRUN", {
+                assert$1(false, "data out-of-bounds", "BUFFER_OVERRUN", {
                     buffer: getBytesCopy(this.#data),
                     length: this.#data.length,
                     offset: this.#offset + alignedLength
@@ -3011,11 +2937,15 @@ function number(n) {
     if (!Number.isSafeInteger(n) || n < 0)
         throw new Error(`Wrong positive integer: ${n}`);
 }
+function bool(b) {
+    if (typeof b !== 'boolean')
+        throw new Error(`Expected boolean, not ${b}`);
+}
 function bytes(b, ...lengths) {
     if (!(b instanceof Uint8Array))
-        throw new Error('Expected Uint8Array');
+        throw new TypeError('Expected Uint8Array');
     if (lengths.length > 0 && !lengths.includes(b.length))
-        throw new Error(`Expected Uint8Array of length ${lengths}, not of length=${b.length}`);
+        throw new TypeError(`Expected Uint8Array of length ${lengths}, not of length=${b.length}`);
 }
 function hash(hash) {
     if (typeof hash !== 'function' || typeof hash.create !== 'function')
@@ -3036,17 +2966,20 @@ function output(out, instance) {
         throw new Error(`digestInto() expects output buffer of length at least ${min}`);
     }
 }
+const assert = {
+    number,
+    bool,
+    bytes,
+    hash,
+    exists,
+    output,
+};
 
 const crypto$1 = typeof globalThis === 'object' && 'crypto' in globalThis ? globalThis.crypto : undefined;
 
 /*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-// We use WebCrypto aka globalThis.crypto, which exists in browsers and node.js 16+.
-// node.js versions earlier than v19 don't declare it in global scope.
-// For node.js, package.json#exports field mapping rewrites import
-// from `crypto` to `cryptoNode`, which imports native module.
-// Makes the utils un-importable in browsers without a bundler.
-// Once node.js 18 is deprecated, we can just drop the import.
-const u8a$1 = (a) => a instanceof Uint8Array;
+// Cast array to different type
+const u8 = (arr) => new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
 const u32 = (arr) => new Uint32Array(arr.buffer, arr.byteOffset, Math.floor(arr.byteLength / 4));
 // Cast array to view
 const createView = (arr) => new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
@@ -3057,6 +2990,40 @@ const rotr = (word, shift) => (word << (32 - shift)) | (word >>> shift);
 const isLE = new Uint8Array(new Uint32Array([0x11223344]).buffer)[0] === 0x44;
 if (!isLE)
     throw new Error('Non little-endian hardware is not supported');
+const hexes$1 = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
+/**
+ * @example bytesToHex(Uint8Array.from([0xde, 0xad, 0xbe, 0xef])) // 'deadbeef'
+ */
+function bytesToHex$1(uint8a) {
+    // pre-caching improves the speed 6x
+    if (!(uint8a instanceof Uint8Array))
+        throw new Error('Uint8Array expected');
+    let hex = '';
+    for (let i = 0; i < uint8a.length; i++) {
+        hex += hexes$1[uint8a[i]];
+    }
+    return hex;
+}
+/**
+ * @example hexToBytes('deadbeef') // Uint8Array.from([0xde, 0xad, 0xbe, 0xef])
+ */
+function hexToBytes$1(hex) {
+    if (typeof hex !== 'string') {
+        throw new TypeError('hexToBytes: expected string, got ' + typeof hex);
+    }
+    if (hex.length % 2)
+        throw new Error('hexToBytes: received invalid unpadded hex');
+    const array = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < array.length; i++) {
+        const j = i * 2;
+        const hexByte = hex.slice(j, j + 2);
+        const byte = Number.parseInt(hexByte, 16);
+        if (Number.isNaN(byte) || byte < 0)
+            throw new Error('Invalid byte sequence');
+        array[i] = byte;
+    }
+    return array;
+}
 // There is no setImmediate in browser and setTimeout is slow.
 // call of async fn will return Promise, which will be fullfiled only on
 // next scheduler queue processing step and this is exactly what we need.
@@ -3074,39 +3041,36 @@ async function asyncLoop(iters, tick, cb) {
         ts += diff;
     }
 }
-/**
- * @example utf8ToBytes('abc') // new Uint8Array([97, 98, 99])
- */
 function utf8ToBytes$1(str) {
-    if (typeof str !== 'string')
-        throw new Error(`utf8ToBytes expected string, got ${typeof str}`);
-    return new Uint8Array(new TextEncoder().encode(str)); // https://bugzil.la/1681809
+    if (typeof str !== 'string') {
+        throw new TypeError(`utf8ToBytes expected string, got ${typeof str}`);
+    }
+    return new TextEncoder().encode(str);
 }
-/**
- * Normalizes (non-hex) string or Uint8Array to Uint8Array.
- * Warning: when Uint8Array is passed, it would NOT get copied.
- * Keep in mind for future mutable operations.
- */
 function toBytes(data) {
     if (typeof data === 'string')
         data = utf8ToBytes$1(data);
-    if (!u8a$1(data))
-        throw new Error(`expected Uint8Array, got ${typeof data}`);
+    if (!(data instanceof Uint8Array))
+        throw new TypeError(`Expected input type is Uint8Array (got ${typeof data})`);
     return data;
 }
 /**
- * Copies several Uint8Arrays into one.
+ * Concats Uint8Array-s into one; like `Buffer.concat([buf1, buf2])`
+ * @example concatBytes(buf1, buf2)
  */
 function concatBytes$1(...arrays) {
-    const r = new Uint8Array(arrays.reduce((sum, a) => sum + a.length, 0));
-    let pad = 0; // walk through each item, ensure they have proper type
-    arrays.forEach((a) => {
-        if (!u8a$1(a))
-            throw new Error('Uint8Array expected');
-        r.set(a, pad);
-        pad += a.length;
-    });
-    return r;
+    if (!arrays.every((a) => a instanceof Uint8Array))
+        throw new Error('Uint8Array list expected');
+    if (arrays.length === 1)
+        return arrays[0];
+    const length = arrays.reduce((a, arr) => a + arr.length, 0);
+    const result = new Uint8Array(length);
+    for (let i = 0, pad = 0; i < arrays.length; i++) {
+        const arr = arrays[i];
+        result.set(arr, pad);
+        pad += arr.length;
+    }
+    return result;
 }
 // For runtime check if class implements interface
 class Hash {
@@ -3115,23 +3079,32 @@ class Hash {
         return this._cloneInto();
     }
 }
-const toStr = {}.toString;
+// Check if object doens't have custom constructor (like Uint8Array/Array)
+const isPlainObject = (obj) => Object.prototype.toString.call(obj) === '[object Object]' && obj.constructor === Object;
 function checkOpts(defaults, opts) {
-    if (opts !== undefined && toStr.call(opts) !== '[object Object]')
-        throw new Error('Options should be object or undefined');
+    if (opts !== undefined && (typeof opts !== 'object' || !isPlainObject(opts)))
+        throw new TypeError('Options should be object or undefined');
     const merged = Object.assign(defaults, opts);
     return merged;
 }
-function wrapConstructor(hashCons) {
-    const hashC = (msg) => hashCons().update(toBytes(msg)).digest();
-    const tmp = hashCons();
+function wrapConstructor(hashConstructor) {
+    const hashC = (message) => hashConstructor().update(toBytes(message)).digest();
+    const tmp = hashConstructor();
     hashC.outputLen = tmp.outputLen;
     hashC.blockLen = tmp.blockLen;
-    hashC.create = () => hashCons();
+    hashC.create = () => hashConstructor();
+    return hashC;
+}
+function wrapConstructorWithOpts(hashCons) {
+    const hashC = (msg, opts) => hashCons(opts).update(toBytes(msg)).digest();
+    const tmp = hashCons({});
+    hashC.outputLen = tmp.outputLen;
+    hashC.blockLen = tmp.blockLen;
+    hashC.create = (opts) => hashCons(opts);
     return hashC;
 }
 /**
- * Secure PRNG. Uses `crypto.getRandomValues`, which defers to OS.
+ * Secure PRNG. Uses `globalThis.crypto` or node.js crypto module.
  */
 function randomBytes$2(bytesLength = 32) {
     if (crypto$1 && typeof crypto$1.getRandomValues === 'function') {
@@ -3142,26 +3115,26 @@ function randomBytes$2(bytesLength = 32) {
 
 // HMAC (RFC 2104)
 class HMAC extends Hash {
-    constructor(hash$1, _key) {
+    constructor(hash, _key) {
         super();
         this.finished = false;
         this.destroyed = false;
-        hash(hash$1);
+        assert.hash(hash);
         const key = toBytes(_key);
-        this.iHash = hash$1.create();
+        this.iHash = hash.create();
         if (typeof this.iHash.update !== 'function')
-            throw new Error('Expected instance of class which extends utils.Hash');
+            throw new TypeError('Expected instance of class which extends utils.Hash');
         this.blockLen = this.iHash.blockLen;
         this.outputLen = this.iHash.outputLen;
         const blockLen = this.blockLen;
         const pad = new Uint8Array(blockLen);
         // blockLen can be bigger than outputLen
-        pad.set(key.length > blockLen ? hash$1.create().update(key).digest() : key);
+        pad.set(key.length > blockLen ? hash.create().update(key).digest() : key);
         for (let i = 0; i < pad.length; i++)
             pad[i] ^= 0x36;
         this.iHash.update(pad);
         // By doing update (processing of first block) of outer hash here we can re-use it between multiple calls via clone
-        this.oHash = hash$1.create();
+        this.oHash = hash.create();
         // Undo internal XOR && apply outer XOR
         for (let i = 0; i < pad.length; i++)
             pad[i] ^= 0x36 ^ 0x5c;
@@ -3169,13 +3142,13 @@ class HMAC extends Hash {
         pad.fill(0);
     }
     update(buf) {
-        exists(this);
+        assert.exists(this);
         this.iHash.update(buf);
         return this;
     }
     digestInto(out) {
-        exists(this);
-        bytes(out, this.outputLen);
+        assert.exists(this);
+        assert.bytes(out, this.outputLen);
         this.finished = true;
         this.iHash.digestInto(out);
         this.oHash.update(out);
@@ -3216,13 +3189,13 @@ const hmac = (hash, key, message) => new HMAC(hash, key).update(message).digest(
 hmac.create = (hash, key) => new HMAC(hash, key);
 
 // Common prologue and epilogue for sync/async functions
-function pbkdf2Init(hash$1, _password, _salt, _opts) {
-    hash(hash$1);
+function pbkdf2Init(hash, _password, _salt, _opts) {
+    assert.hash(hash);
     const opts = checkOpts({ dkLen: 32, asyncTick: 10 }, _opts);
     const { c, dkLen, asyncTick } = opts;
-    number(c);
-    number(dkLen);
-    number(asyncTick);
+    assert.number(c);
+    assert.number(dkLen);
+    assert.number(asyncTick);
     if (c < 1)
         throw new Error('PBKDF2: iterations (c) should be >= 1');
     const password = toBytes(_password);
@@ -3230,7 +3203,7 @@ function pbkdf2Init(hash$1, _password, _salt, _opts) {
     // DK = PBKDF2(PRF, Password, Salt, c, dkLen);
     const DK = new Uint8Array(dkLen);
     // U1 = PRF(Password, Salt + INT_32_BE(i))
-    const PRF = hmac.create(hash$1, password);
+    const PRF = hmac.create(hash, password);
     const PRFSalt = PRF._cloneInto().update(salt);
     return { c, dkLen, asyncTick, DK, PRF, PRFSalt };
 }
@@ -3273,6 +3246,30 @@ function pbkdf2$1(hash, password, salt, opts) {
     }
     return pbkdf2Output(PRF, PRFSalt, DK, prfW, u);
 }
+async function pbkdf2Async(hash, password, salt, opts) {
+    const { c, dkLen, asyncTick, DK, PRF, PRFSalt } = pbkdf2Init(hash, password, salt, opts);
+    let prfW; // Working copy
+    const arr = new Uint8Array(4);
+    const view = createView(arr);
+    const u = new Uint8Array(PRF.outputLen);
+    // DK = T1 + T2 + ⋯ + Tdklen/hlen
+    for (let ti = 1, pos = 0; pos < dkLen; ti++, pos += PRF.outputLen) {
+        // Ti = F(Password, Salt, c, i)
+        const Ti = DK.subarray(pos, pos + PRF.outputLen);
+        view.setInt32(0, ti, false);
+        // F(Password, Salt, c, i) = U1 ^ U2 ^ ⋯ ^ Uc
+        // U1 = PRF(Password, Salt + INT_32_BE(i))
+        (prfW = PRFSalt._cloneInto(prfW)).update(arr).digestInto(u);
+        Ti.set(u.subarray(0, Ti.length));
+        await asyncLoop(c - 1, asyncTick, (i) => {
+            // Uc = PRF(Password, Uc−1)
+            PRF._cloneInto(prfW).update(u).digestInto(u);
+            for (let i = 0; i < Ti.length; i++)
+                Ti[i] ^= u[i];
+        });
+    }
+    return pbkdf2Output(PRF, PRFSalt, DK, prfW, u);
+}
 
 // Polyfill for Safari 14
 function setBigUint64(view, byteOffset, value, isLE) {
@@ -3303,7 +3300,7 @@ class SHA2 extends Hash {
         this.view = createView(this.buffer);
     }
     update(data) {
-        exists(this);
+        assert.exists(this);
         const { view, buffer, blockLen } = this;
         data = toBytes(data);
         const len = data.length;
@@ -3329,8 +3326,8 @@ class SHA2 extends Hash {
         return this;
     }
     digestInto(out) {
-        exists(this);
-        output(out, this);
+        assert.exists(this);
+        assert.output(out, this);
         this.finished = true;
         // Padding
         // We can avoid allocation of buffer for padding completely if it
@@ -3386,8 +3383,6 @@ class SHA2 extends Hash {
     }
 }
 
-// SHA2-256 need to try 2^128 hashes to execute birthday attack.
-// BTC network is doing 2^67 hashes/sec as per early 2023.
 // Choice: a ? b : c
 const Chi = (a, b, c) => (a & b) ^ (~a & c);
 // Majority function, true if any two inpust is true
@@ -3395,7 +3390,7 @@ const Maj = (a, b, c) => (a & b) ^ (a & c) ^ (b & c);
 // Round constants:
 // first 32 bits of the fractional parts of the cube roots of the first 64 primes 2..311)
 // prettier-ignore
-const SHA256_K = /* @__PURE__ */ new Uint32Array([
+const SHA256_K = new Uint32Array([
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
     0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
@@ -3407,12 +3402,12 @@ const SHA256_K = /* @__PURE__ */ new Uint32Array([
 ]);
 // Initial state (first 32 bits of the fractional parts of the square roots of the first 8 primes 2..19):
 // prettier-ignore
-const IV = /* @__PURE__ */ new Uint32Array([
+const IV = new Uint32Array([
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
 ]);
 // Temporary buffer, not used to store anything between runs
 // Named this way because it matches specification.
-const SHA256_W = /* @__PURE__ */ new Uint32Array(64);
+const SHA256_W = new Uint32Array(64);
 class SHA256 extends SHA2 {
     constructor() {
         super(64, 32, 8, false);
@@ -3488,21 +3483,37 @@ class SHA256 extends SHA2 {
         this.buffer.fill(0);
     }
 }
+// Constants from https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+class SHA224 extends SHA256 {
+    constructor() {
+        super();
+        this.A = 0xc1059ed8 | 0;
+        this.B = 0x367cd507 | 0;
+        this.C = 0x3070dd17 | 0;
+        this.D = 0xf70e5939 | 0;
+        this.E = 0xffc00b31 | 0;
+        this.F = 0x68581511 | 0;
+        this.G = 0x64f98fa7 | 0;
+        this.H = 0xbefa4fa4 | 0;
+        this.outputLen = 28;
+    }
+}
 /**
  * SHA2-256 hash function
  * @param message - data that would be hashed
  */
-const sha256$1 = /* @__PURE__ */ wrapConstructor(() => new SHA256());
+const sha256$1 = wrapConstructor(() => new SHA256());
+const sha224 = wrapConstructor(() => new SHA224());
 
-const U32_MASK64 = /* @__PURE__ */ BigInt(2 ** 32 - 1);
-const _32n = /* @__PURE__ */ BigInt(32);
+const U32_MASK64 = BigInt(2 ** 32 - 1);
+const _32n = BigInt(32);
 // We are not using BigUint64Array, because they are extremely slow as per 2022
 function fromBig(n, le = false) {
     if (le)
         return { h: Number(n & U32_MASK64), l: Number((n >> _32n) & U32_MASK64) };
     return { h: Number((n >> _32n) & U32_MASK64) | 0, l: Number(n & U32_MASK64) | 0 };
 }
-function split$1(lst, le = false) {
+function split(lst, le = false) {
     let Ah = new Uint32Array(lst.length);
     let Al = new Uint32Array(lst.length);
     for (let i = 0; i < lst.length; i++) {
@@ -3513,7 +3524,7 @@ function split$1(lst, le = false) {
 }
 const toBig = (h, l) => (BigInt(h >>> 0) << _32n) | BigInt(l >>> 0);
 // for Shift in [0, 32)
-const shrSH = (h, _l, s) => h >>> s;
+const shrSH = (h, l, s) => h >>> s;
 const shrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
 // Right rotate for Shift in [1, 32)
 const rotrSH = (h, l, s) => (h >>> s) | (l << (32 - s));
@@ -3522,8 +3533,8 @@ const rotrSL = (h, l, s) => (h << (32 - s)) | (l >>> s);
 const rotrBH = (h, l, s) => (h << (64 - s)) | (l >>> (s - 32));
 const rotrBL = (h, l, s) => (h >>> (s - 32)) | (l << (64 - s));
 // Right rotate for shift===32 (just swaps l&h)
-const rotr32H = (_h, l) => l;
-const rotr32L = (h, _l) => h;
+const rotr32H = (h, l) => l;
+const rotr32L = (h, l) => h;
 // Left rotate for Shift in [1, 32)
 const rotlSH = (h, l, s) => (h << s) | (l >>> (32 - s));
 const rotlSL = (h, l, s) => (l << s) | (h >>> (32 - s));
@@ -3532,6 +3543,7 @@ const rotlBH = (h, l, s) => (l << (s - 32)) | (h >>> (64 - s));
 const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
 // JS uses 32-bit signed integers for bitwise operations which means we cannot
 // simple take carry out of low bit sum by shift, we need to use division.
+// Removing "export" has 5% perf penalty -_-
 function add(Ah, Al, Bh, Bl) {
     const l = (Al >>> 0) + (Bl >>> 0);
     return { h: (Ah + Bh + ((l / 2 ** 32) | 0)) | 0, l: l | 0 };
@@ -3545,18 +3557,17 @@ const add5L = (Al, Bl, Cl, Dl, El) => (Al >>> 0) + (Bl >>> 0) + (Cl >>> 0) + (Dl
 const add5H = (low, Ah, Bh, Ch, Dh, Eh) => (Ah + Bh + Ch + Dh + Eh + ((low / 2 ** 32) | 0)) | 0;
 // prettier-ignore
 const u64 = {
-    fromBig, split: split$1, toBig,
+    fromBig, split, toBig,
     shrSH, shrSL,
     rotrSH, rotrSL, rotrBH, rotrBL,
     rotr32H, rotr32L,
     rotlSH, rotlSL, rotlBH, rotlBL,
     add, add3L, add3H, add4L, add4H, add5H, add5L,
 };
-var u64$1 = u64;
 
 // Round contants (first 32 bits of the fractional parts of the cube roots of the first 80 primes 2..409):
 // prettier-ignore
-const [SHA512_Kh, SHA512_Kl] = /* @__PURE__ */ (() => u64$1.split([
+const [SHA512_Kh, SHA512_Kl] = u64.split([
     '0x428a2f98d728ae22', '0x7137449123ef65cd', '0xb5c0fbcfec4d3b2f', '0xe9b5dba58189dbbc',
     '0x3956c25bf348b538', '0x59f111f1b605d019', '0x923f82a4af194f9b', '0xab1c5ed5da6d8118',
     '0xd807aa98a3030242', '0x12835b0145706fbe', '0x243185be4ee4b28c', '0x550c7dc3d5ffb4e2',
@@ -3577,10 +3588,10 @@ const [SHA512_Kh, SHA512_Kl] = /* @__PURE__ */ (() => u64$1.split([
     '0x06f067aa72176fba', '0x0a637dc5a2c898a6', '0x113f9804bef90dae', '0x1b710b35131c471b',
     '0x28db77f523047d84', '0x32caab7b40c72493', '0x3c9ebe0a15c9bebc', '0x431d67c49c100d4c',
     '0x4cc5d4becb3e42b6', '0x597f299cfc657e2a', '0x5fcb6fab3ad6faec', '0x6c44198c4a475817'
-].map(n => BigInt(n))))();
+].map(n => BigInt(n)));
 // Temporary buffer, not used to store anything between runs
-const SHA512_W_H = /* @__PURE__ */ new Uint32Array(80);
-const SHA512_W_L = /* @__PURE__ */ new Uint32Array(80);
+const SHA512_W_H = new Uint32Array(80);
+const SHA512_W_L = new Uint32Array(80);
 class SHA512 extends SHA2 {
     constructor() {
         super(128, 64, 16, false);
@@ -3639,16 +3650,16 @@ class SHA512 extends SHA2 {
             // s0 := (w[i-15] rightrotate 1) xor (w[i-15] rightrotate 8) xor (w[i-15] rightshift 7)
             const W15h = SHA512_W_H[i - 15] | 0;
             const W15l = SHA512_W_L[i - 15] | 0;
-            const s0h = u64$1.rotrSH(W15h, W15l, 1) ^ u64$1.rotrSH(W15h, W15l, 8) ^ u64$1.shrSH(W15h, W15l, 7);
-            const s0l = u64$1.rotrSL(W15h, W15l, 1) ^ u64$1.rotrSL(W15h, W15l, 8) ^ u64$1.shrSL(W15h, W15l, 7);
+            const s0h = u64.rotrSH(W15h, W15l, 1) ^ u64.rotrSH(W15h, W15l, 8) ^ u64.shrSH(W15h, W15l, 7);
+            const s0l = u64.rotrSL(W15h, W15l, 1) ^ u64.rotrSL(W15h, W15l, 8) ^ u64.shrSL(W15h, W15l, 7);
             // s1 := (w[i-2] rightrotate 19) xor (w[i-2] rightrotate 61) xor (w[i-2] rightshift 6)
             const W2h = SHA512_W_H[i - 2] | 0;
             const W2l = SHA512_W_L[i - 2] | 0;
-            const s1h = u64$1.rotrSH(W2h, W2l, 19) ^ u64$1.rotrBH(W2h, W2l, 61) ^ u64$1.shrSH(W2h, W2l, 6);
-            const s1l = u64$1.rotrSL(W2h, W2l, 19) ^ u64$1.rotrBL(W2h, W2l, 61) ^ u64$1.shrSL(W2h, W2l, 6);
+            const s1h = u64.rotrSH(W2h, W2l, 19) ^ u64.rotrBH(W2h, W2l, 61) ^ u64.shrSH(W2h, W2l, 6);
+            const s1l = u64.rotrSL(W2h, W2l, 19) ^ u64.rotrBL(W2h, W2l, 61) ^ u64.shrSL(W2h, W2l, 6);
             // SHA256_W[i] = s0 + s1 + SHA256_W[i - 7] + SHA256_W[i - 16];
-            const SUMl = u64$1.add4L(s0l, s1l, SHA512_W_L[i - 7], SHA512_W_L[i - 16]);
-            const SUMh = u64$1.add4H(SUMl, s0h, s1h, SHA512_W_H[i - 7], SHA512_W_H[i - 16]);
+            const SUMl = u64.add4L(s0l, s1l, SHA512_W_L[i - 7], SHA512_W_L[i - 16]);
+            const SUMh = u64.add4H(SUMl, s0h, s1h, SHA512_W_H[i - 7], SHA512_W_H[i - 16]);
             SHA512_W_H[i] = SUMh | 0;
             SHA512_W_L[i] = SUMl | 0;
         }
@@ -3656,19 +3667,19 @@ class SHA512 extends SHA2 {
         // Compression function main loop, 80 rounds
         for (let i = 0; i < 80; i++) {
             // S1 := (e rightrotate 14) xor (e rightrotate 18) xor (e rightrotate 41)
-            const sigma1h = u64$1.rotrSH(Eh, El, 14) ^ u64$1.rotrSH(Eh, El, 18) ^ u64$1.rotrBH(Eh, El, 41);
-            const sigma1l = u64$1.rotrSL(Eh, El, 14) ^ u64$1.rotrSL(Eh, El, 18) ^ u64$1.rotrBL(Eh, El, 41);
+            const sigma1h = u64.rotrSH(Eh, El, 14) ^ u64.rotrSH(Eh, El, 18) ^ u64.rotrBH(Eh, El, 41);
+            const sigma1l = u64.rotrSL(Eh, El, 14) ^ u64.rotrSL(Eh, El, 18) ^ u64.rotrBL(Eh, El, 41);
             //const T1 = (H + sigma1 + Chi(E, F, G) + SHA256_K[i] + SHA256_W[i]) | 0;
             const CHIh = (Eh & Fh) ^ (~Eh & Gh);
             const CHIl = (El & Fl) ^ (~El & Gl);
             // T1 = H + sigma1 + Chi(E, F, G) + SHA512_K[i] + SHA512_W[i]
             // prettier-ignore
-            const T1ll = u64$1.add5L(Hl, sigma1l, CHIl, SHA512_Kl[i], SHA512_W_L[i]);
-            const T1h = u64$1.add5H(T1ll, Hh, sigma1h, CHIh, SHA512_Kh[i], SHA512_W_H[i]);
+            const T1ll = u64.add5L(Hl, sigma1l, CHIl, SHA512_Kl[i], SHA512_W_L[i]);
+            const T1h = u64.add5H(T1ll, Hh, sigma1h, CHIh, SHA512_Kh[i], SHA512_W_H[i]);
             const T1l = T1ll | 0;
             // S0 := (a rightrotate 28) xor (a rightrotate 34) xor (a rightrotate 39)
-            const sigma0h = u64$1.rotrSH(Ah, Al, 28) ^ u64$1.rotrBH(Ah, Al, 34) ^ u64$1.rotrBH(Ah, Al, 39);
-            const sigma0l = u64$1.rotrSL(Ah, Al, 28) ^ u64$1.rotrBL(Ah, Al, 34) ^ u64$1.rotrBL(Ah, Al, 39);
+            const sigma0h = u64.rotrSH(Ah, Al, 28) ^ u64.rotrBH(Ah, Al, 34) ^ u64.rotrBH(Ah, Al, 39);
+            const sigma0l = u64.rotrSL(Ah, Al, 28) ^ u64.rotrBL(Ah, Al, 34) ^ u64.rotrBL(Ah, Al, 39);
             const MAJh = (Ah & Bh) ^ (Ah & Ch) ^ (Bh & Ch);
             const MAJl = (Al & Bl) ^ (Al & Cl) ^ (Bl & Cl);
             Hh = Gh | 0;
@@ -3677,26 +3688,26 @@ class SHA512 extends SHA2 {
             Gl = Fl | 0;
             Fh = Eh | 0;
             Fl = El | 0;
-            ({ h: Eh, l: El } = u64$1.add(Dh | 0, Dl | 0, T1h | 0, T1l | 0));
+            ({ h: Eh, l: El } = u64.add(Dh | 0, Dl | 0, T1h | 0, T1l | 0));
             Dh = Ch | 0;
             Dl = Cl | 0;
             Ch = Bh | 0;
             Cl = Bl | 0;
             Bh = Ah | 0;
             Bl = Al | 0;
-            const All = u64$1.add3L(T1l, sigma0l, MAJl);
-            Ah = u64$1.add3H(All, T1h, sigma0h, MAJh);
+            const All = u64.add3L(T1l, sigma0l, MAJl);
+            Ah = u64.add3H(All, T1h, sigma0h, MAJh);
             Al = All | 0;
         }
         // Add the compressed chunk to the current hash value
-        ({ h: Ah, l: Al } = u64$1.add(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0));
-        ({ h: Bh, l: Bl } = u64$1.add(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0));
-        ({ h: Ch, l: Cl } = u64$1.add(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0));
-        ({ h: Dh, l: Dl } = u64$1.add(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0));
-        ({ h: Eh, l: El } = u64$1.add(this.Eh | 0, this.El | 0, Eh | 0, El | 0));
-        ({ h: Fh, l: Fl } = u64$1.add(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0));
-        ({ h: Gh, l: Gl } = u64$1.add(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0));
-        ({ h: Hh, l: Hl } = u64$1.add(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0));
+        ({ h: Ah, l: Al } = u64.add(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0));
+        ({ h: Bh, l: Bl } = u64.add(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0));
+        ({ h: Ch, l: Cl } = u64.add(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0));
+        ({ h: Dh, l: Dl } = u64.add(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0));
+        ({ h: Eh, l: El } = u64.add(this.Eh | 0, this.El | 0, Eh | 0, El | 0));
+        ({ h: Fh, l: Fl } = u64.add(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0));
+        ({ h: Gh, l: Gl } = u64.add(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0));
+        ({ h: Hh, l: Hl } = u64.add(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0));
         this.set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl);
     }
     roundClean() {
@@ -3708,7 +3719,79 @@ class SHA512 extends SHA2 {
         this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 }
-const sha512$1 = /* @__PURE__ */ wrapConstructor(() => new SHA512());
+class SHA512_224 extends SHA512 {
+    constructor() {
+        super();
+        // h -- high 32 bits, l -- low 32 bits
+        this.Ah = 0x8c3d37c8 | 0;
+        this.Al = 0x19544da2 | 0;
+        this.Bh = 0x73e19966 | 0;
+        this.Bl = 0x89dcd4d6 | 0;
+        this.Ch = 0x1dfab7ae | 0;
+        this.Cl = 0x32ff9c82 | 0;
+        this.Dh = 0x679dd514 | 0;
+        this.Dl = 0x582f9fcf | 0;
+        this.Eh = 0x0f6d2b69 | 0;
+        this.El = 0x7bd44da8 | 0;
+        this.Fh = 0x77e36f73 | 0;
+        this.Fl = 0x04c48942 | 0;
+        this.Gh = 0x3f9d85a8 | 0;
+        this.Gl = 0x6a1d36c8 | 0;
+        this.Hh = 0x1112e6ad | 0;
+        this.Hl = 0x91d692a1 | 0;
+        this.outputLen = 28;
+    }
+}
+class SHA512_256 extends SHA512 {
+    constructor() {
+        super();
+        // h -- high 32 bits, l -- low 32 bits
+        this.Ah = 0x22312194 | 0;
+        this.Al = 0xfc2bf72c | 0;
+        this.Bh = 0x9f555fa3 | 0;
+        this.Bl = 0xc84c64c2 | 0;
+        this.Ch = 0x2393b86b | 0;
+        this.Cl = 0x6f53b151 | 0;
+        this.Dh = 0x96387719 | 0;
+        this.Dl = 0x5940eabd | 0;
+        this.Eh = 0x96283ee2 | 0;
+        this.El = 0xa88effe3 | 0;
+        this.Fh = 0xbe5e1e25 | 0;
+        this.Fl = 0x53863992 | 0;
+        this.Gh = 0x2b0199fc | 0;
+        this.Gl = 0x2c85b8aa | 0;
+        this.Hh = 0x0eb72ddc | 0;
+        this.Hl = 0x81c52ca2 | 0;
+        this.outputLen = 32;
+    }
+}
+class SHA384 extends SHA512 {
+    constructor() {
+        super();
+        // h -- high 32 bits, l -- low 32 bits
+        this.Ah = 0xcbbb9d5d | 0;
+        this.Al = 0xc1059ed8 | 0;
+        this.Bh = 0x629a292a | 0;
+        this.Bl = 0x367cd507 | 0;
+        this.Ch = 0x9159015a | 0;
+        this.Cl = 0x3070dd17 | 0;
+        this.Dh = 0x152fecd8 | 0;
+        this.Dl = 0xf70e5939 | 0;
+        this.Eh = 0x67332667 | 0;
+        this.El = 0xffc00b31 | 0;
+        this.Fh = 0x8eb44a87 | 0;
+        this.Fl = 0x68581511 | 0;
+        this.Gh = 0xdb0c2e0d | 0;
+        this.Gl = 0x64f98fa7 | 0;
+        this.Hh = 0x47b5481d | 0;
+        this.Hl = 0xbefa4fa4 | 0;
+        this.outputLen = 48;
+    }
+}
+const sha512$1 = wrapConstructor(() => new SHA512());
+const sha512_224 = wrapConstructor(() => new SHA512_224());
+const sha512_256 = wrapConstructor(() => new SHA512_256());
+const sha384 = wrapConstructor(() => new SHA384());
 
 /* Browser Crypto Shims */
 function getGlobal$1() {
@@ -3723,6 +3806,7 @@ function getGlobal$1() {
     }
     throw new Error('unable to locate global object');
 }
+;
 const anyGlobal = getGlobal$1();
 const crypto = anyGlobal.crypto || anyGlobal.msCrypto;
 function createHash(algo) {
@@ -3743,7 +3827,7 @@ function pbkdf2Sync(password, salt, iterations, keylen, _algo) {
     return pbkdf2$1(algo, password, salt, { c: iterations, dkLen: keylen });
 }
 function randomBytes$1(length) {
-    assert(crypto != null, "platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
+    assert$1(crypto != null, "platform does not support secure random numbers", "UNSUPPORTED_OPERATION", {
         operation: "randomBytes"
     });
     assertArgument(Number.isInteger(length) && length > 0 && length <= 1024, "invalid length", "length", length);
@@ -3797,16 +3881,14 @@ computeHmac.register = function (func) {
 };
 Object.freeze(computeHmac);
 
-// SHA3 (keccak) is based on a new design: basically, the internal state is bigger than output size.
-// It's called a sponge function.
 // Various per round constants calculations
 const [SHA3_PI, SHA3_ROTL, _SHA3_IOTA] = [[], [], []];
-const _0n$4 = /* @__PURE__ */ BigInt(0);
-const _1n$5 = /* @__PURE__ */ BigInt(1);
-const _2n$3 = /* @__PURE__ */ BigInt(2);
-const _7n = /* @__PURE__ */ BigInt(7);
-const _256n = /* @__PURE__ */ BigInt(256);
-const _0x71n = /* @__PURE__ */ BigInt(0x71);
+const _0n$5 = BigInt(0);
+const _1n$5 = BigInt(1);
+const _2n$4 = BigInt(2);
+const _7n = BigInt(7);
+const _256n = BigInt(256);
+const _0x71n = BigInt(0x71);
 for (let round = 0, R = _1n$5, x = 1, y = 0; round < 24; round++) {
     // Pi
     [x, y] = [y, (2 * x + 3 * y) % 5];
@@ -3814,18 +3896,18 @@ for (let round = 0, R = _1n$5, x = 1, y = 0; round < 24; round++) {
     // Rotational
     SHA3_ROTL.push((((round + 1) * (round + 2)) / 2) % 64);
     // Iota
-    let t = _0n$4;
+    let t = _0n$5;
     for (let j = 0; j < 7; j++) {
         R = ((R << _1n$5) ^ ((R >> _7n) * _0x71n)) % _256n;
-        if (R & _2n$3)
-            t ^= _1n$5 << ((_1n$5 << /* @__PURE__ */ BigInt(j)) - _1n$5);
+        if (R & _2n$4)
+            t ^= _1n$5 << ((_1n$5 << BigInt(j)) - _1n$5);
     }
     _SHA3_IOTA.push(t);
 }
-const [SHA3_IOTA_H, SHA3_IOTA_L] = /* @__PURE__ */ split$1(_SHA3_IOTA, true);
+const [SHA3_IOTA_H, SHA3_IOTA_L] = u64.split(_SHA3_IOTA, true);
 // Left rotation (without 0, 32, 64)
-const rotlH = (h, l, s) => (s > 32 ? rotlBH(h, l, s) : rotlSH(h, l, s));
-const rotlL = (h, l, s) => (s > 32 ? rotlBL(h, l, s) : rotlSL(h, l, s));
+const rotlH = (h, l, s) => s > 32 ? u64.rotlBH(h, l, s) : u64.rotlSH(h, l, s);
+const rotlL = (h, l, s) => s > 32 ? u64.rotlBL(h, l, s) : u64.rotlSL(h, l, s);
 // Same as keccakf1600, but allows to skip some rounds
 function keccakP(s, rounds = 24) {
     const B = new Uint32Array(5 * 2);
@@ -3886,7 +3968,7 @@ class Keccak extends Hash {
         this.finished = false;
         this.destroyed = false;
         // Can be passed from user as dkLen
-        number(outputLen);
+        assert.number(outputLen);
         // 1600 = 5x5 matrix of 64bit.  1600 bits === 200 bytes
         if (0 >= this.blockLen || this.blockLen >= 200)
             throw new Error('Sha3 supports only keccak-f1600 function');
@@ -3899,7 +3981,7 @@ class Keccak extends Hash {
         this.pos = 0;
     }
     update(data) {
-        exists(this);
+        assert.exists(this);
         const { blockLen, state } = this;
         data = toBytes(data);
         const len = data.length;
@@ -3925,8 +4007,8 @@ class Keccak extends Hash {
         this.keccak();
     }
     writeInto(out) {
-        exists(this, false);
-        bytes(out);
+        assert.exists(this, false);
+        assert.bytes(out);
         this.finish();
         const bufferOut = this.state;
         const { blockLen } = this;
@@ -3947,11 +4029,11 @@ class Keccak extends Hash {
         return this.writeInto(out);
     }
     xof(bytes) {
-        number(bytes);
+        assert.number(bytes);
         return this.xofInto(new Uint8Array(bytes));
     }
     digestInto(out) {
-        output(out, this);
+        assert.output(out, this);
         if (this.finished)
             throw new Error('digest() was already called');
         this.writeInto(out);
@@ -3982,11 +4064,25 @@ class Keccak extends Hash {
     }
 }
 const gen = (suffix, blockLen, outputLen) => wrapConstructor(() => new Keccak(blockLen, suffix, outputLen));
+const sha3_224 = gen(0x06, 144, 224 / 8);
+/**
+ * SHA3-256 hash function
+ * @param message - that would be hashed
+ */
+const sha3_256 = gen(0x06, 136, 256 / 8);
+const sha3_384 = gen(0x06, 104, 384 / 8);
+const sha3_512 = gen(0x06, 72, 512 / 8);
+const keccak_224 = gen(0x01, 144, 224 / 8);
 /**
  * keccak-256 hash function. Different from SHA3-256.
  * @param message - that would be hashed
  */
-const keccak_256 = /* @__PURE__ */ gen(0x01, 136, 256 / 8);
+const keccak_256 = gen(0x01, 136, 256 / 8);
+const keccak_384 = gen(0x01, 104, 384 / 8);
+const keccak_512 = gen(0x01, 72, 512 / 8);
+const genShake = (suffix, blockLen, outputLen) => wrapConstructorWithOpts((opts = {}) => new Keccak(blockLen, suffix, opts.dkLen === undefined ? outputLen : opts.dkLen, true));
+const shake128 = genShake(0x1f, 168, 128 / 8);
+const shake256 = genShake(0x1f, 136, 256 / 8);
 
 /**
  *  Cryptographic hashing functions
@@ -4036,29 +4132,25 @@ Object.freeze(keccak256);
 
 // https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 // https://homes.esat.kuleuven.be/~bosselae/ripemd160/pdf/AB-9601/AB-9601.pdf
-const Rho = /* @__PURE__ */ new Uint8Array([7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8]);
-const Id = /* @__PURE__ */ Uint8Array.from({ length: 16 }, (_, i) => i);
-const Pi = /* @__PURE__ */ Id.map((i) => (9 * i + 5) % 16);
+const Rho = new Uint8Array([7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8]);
+const Id = Uint8Array.from({ length: 16 }, (_, i) => i);
+const Pi = Id.map((i) => (9 * i + 5) % 16);
 let idxL = [Id];
 let idxR = [Pi];
 for (let i = 0; i < 4; i++)
     for (let j of [idxL, idxR])
         j.push(j[i].map((k) => Rho[k]));
-const shifts = /* @__PURE__ */ [
+const shifts = [
     [11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8],
     [12, 13, 11, 15, 6, 9, 9, 7, 12, 15, 11, 13, 7, 8, 7, 7],
     [13, 15, 14, 11, 7, 7, 6, 8, 13, 14, 13, 12, 5, 5, 6, 9],
     [14, 11, 12, 14, 8, 6, 5, 5, 15, 12, 15, 14, 9, 9, 8, 6],
     [15, 12, 13, 13, 9, 5, 8, 6, 14, 11, 12, 11, 8, 6, 5, 5],
 ].map((i) => new Uint8Array(i));
-const shiftsL = /* @__PURE__ */ idxL.map((idx, i) => idx.map((j) => shifts[i][j]));
-const shiftsR = /* @__PURE__ */ idxR.map((idx, i) => idx.map((j) => shifts[i][j]));
-const Kl = /* @__PURE__ */ new Uint32Array([
-    0x00000000, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e,
-]);
-const Kr = /* @__PURE__ */ new Uint32Array([
-    0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0x00000000,
-]);
+const shiftsL = idxL.map((idx, i) => idx.map((j) => shifts[i][j]));
+const shiftsR = idxR.map((idx, i) => idx.map((j) => shifts[i][j]));
+const Kl = new Uint32Array([0x00000000, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e]);
+const Kr = new Uint32Array([0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0x00000000]);
 // The rotate left (circular left shift) operation for uint32
 const rotl$1 = (word, shift) => (word << shift) | (word >>> (32 - shift));
 // It's called f() in spec.
@@ -4075,7 +4167,7 @@ function f(group, x, y, z) {
         return x ^ (y | ~z);
 }
 // Temporary buffer, not used to store anything between runs
-const BUF = /* @__PURE__ */ new Uint32Array(16);
+const BUF = new Uint32Array(16);
 class RIPEMD160 extends SHA2 {
     constructor() {
         super(64, 20, 8, true);
@@ -4134,7 +4226,7 @@ class RIPEMD160 extends SHA2 {
  * RIPEMD-160 - a hash function from 1990s.
  * @param message - msg that would be hashed
  */
-const ripemd160$1 = /* @__PURE__ */ wrapConstructor(() => new RIPEMD160());
+const ripemd160$1 = wrapConstructor(() => new RIPEMD160());
 
 let locked$2 = false;
 const _ripemd160 = function (data) {
@@ -4347,12 +4439,12 @@ function scryptInit(password, salt, _opts) {
         maxmem: 1024 ** 3 + 1024,
     }, _opts);
     const { N, r, p, dkLen, asyncTick, maxmem, onProgress } = opts;
-    number(N);
-    number(r);
-    number(p);
-    number(dkLen);
-    number(asyncTick);
-    number(maxmem);
+    assert.number(N);
+    assert.number(r);
+    assert.number(p);
+    assert.number(dkLen);
+    assert.number(asyncTick);
+    assert.number(maxmem);
     if (onProgress !== undefined && typeof onProgress !== 'function')
         throw new Error('progressCb should be function');
     const blockSize = 128 * r;
@@ -4448,13 +4540,13 @@ async function scryptAsync(password, salt, opts) {
         for (let i = 0; i < blockSize32; i++)
             V[i] = B32[Pi + i]; // V[0] = B[i]
         let pos = 0;
-        await asyncLoop(N - 1, asyncTick, () => {
+        await asyncLoop(N - 1, asyncTick, (i) => {
             BlockMix(V, pos, V, (pos += blockSize32), r); // V[i] = BlockMix(V[i-1]);
             blockMixCb();
         });
         BlockMix(V, (N - 1) * blockSize32, B32, Pi, r); // Process last element
         blockMixCb();
-        await asyncLoop(N, asyncTick, () => {
+        await asyncLoop(N, asyncTick, (i) => {
             // First u32 of the last 64-byte block (u32 is LE)
             const j = B32[Pi + blockSize32 - 16] % N; // j = Integrify(X) % iterations
             for (let k = 0; k < blockSize32; k++)
@@ -4633,18 +4725,11 @@ sha512.register = function (func) {
 Object.freeze(sha256);
 
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-// 100 lines of code in the file are duplicated from noble-hashes (utils).
-// This is OK: `abstract` directory does not use noble-hashes.
-// User may opt-in into using different hashing library. This way, noble-hashes
-// won't be included into their bundle.
-const _0n$3 = BigInt(0);
+const _0n$4 = BigInt(0);
 const _1n$4 = BigInt(1);
-const _2n$2 = BigInt(2);
+const _2n$3 = BigInt(2);
 const u8a = (a) => a instanceof Uint8Array;
-const hexes = /* @__PURE__ */ Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
-/**
- * @example bytesToHex(Uint8Array.from([0xca, 0xfe, 0x01, 0x23])) // 'cafe0123'
- */
+const hexes = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'));
 function bytesToHex(bytes) {
     if (!u8a(bytes))
         throw new Error('Uint8Array expected');
@@ -4665,27 +4750,24 @@ function hexToNumber(hex) {
     // Big Endian
     return BigInt(hex === '' ? '0' : `0x${hex}`);
 }
-/**
- * @example hexToBytes('cafe0123') // Uint8Array.from([0xca, 0xfe, 0x01, 0x23])
- */
+// Caching slows it down 2-3x
 function hexToBytes(hex) {
     if (typeof hex !== 'string')
         throw new Error('hex string expected, got ' + typeof hex);
-    const len = hex.length;
-    if (len % 2)
-        throw new Error('padded hex string expected, got unpadded hex of length ' + len);
-    const array = new Uint8Array(len / 2);
+    if (hex.length % 2)
+        throw new Error('hex string is invalid: unpadded ' + hex.length);
+    const array = new Uint8Array(hex.length / 2);
     for (let i = 0; i < array.length; i++) {
         const j = i * 2;
         const hexByte = hex.slice(j, j + 2);
         const byte = Number.parseInt(hexByte, 16);
         if (Number.isNaN(byte) || byte < 0)
-            throw new Error('Invalid byte sequence');
+            throw new Error('invalid byte sequence');
         array[i] = byte;
     }
     return array;
 }
-// BE: Big Endian, LE: Little Endian
+// Big Endian
 function bytesToNumberBE(bytes) {
     return hexToNumber(bytesToHex(bytes));
 }
@@ -4694,25 +4776,10 @@ function bytesToNumberLE(bytes) {
         throw new Error('Uint8Array expected');
     return hexToNumber(bytesToHex(Uint8Array.from(bytes).reverse()));
 }
-function numberToBytesBE(n, len) {
-    return hexToBytes(n.toString(16).padStart(len * 2, '0'));
-}
-function numberToBytesLE(n, len) {
-    return numberToBytesBE(n, len).reverse();
-}
-// Unpadded, rarely used
-function numberToVarBytesBE(n) {
-    return hexToBytes(numberToHexUnpadded(n));
-}
-/**
- * Takes hex string or Uint8Array, converts to Uint8Array.
- * Validates output length.
- * Will throw error for other types.
- * @param title descriptive title for an error e.g. 'private key'
- * @param hex hex string or Uint8Array
- * @param expectedLength optional, will compare to result array's length
- * @returns
- */
+const numberToBytesBE = (n, len) => hexToBytes(n.toString(16).padStart(len * 2, '0'));
+const numberToBytesLE = (n, len) => numberToBytesBE(n, len).reverse();
+// Returns variable number bytes (minimal bigint encoding?)
+const numberToVarBytesBE = (n) => hexToBytes(numberToHexUnpadded(n));
 function ensureBytes(title, hex, expectedLength) {
     let res;
     if (typeof hex === 'string') {
@@ -4736,13 +4803,11 @@ function ensureBytes(title, hex, expectedLength) {
         throw new Error(`${title} expected ${expectedLength} bytes, got ${len}`);
     return res;
 }
-/**
- * Copies several Uint8Arrays into one.
- */
-function concatBytes(...arrays) {
-    const r = new Uint8Array(arrays.reduce((sum, a) => sum + a.length, 0));
+// Copies several Uint8Arrays into one.
+function concatBytes(...arrs) {
+    const r = new Uint8Array(arrs.reduce((sum, a) => sum + a.length, 0));
     let pad = 0; // walk through each item, ensure they have proper type
-    arrays.forEach((a) => {
+    arrs.forEach((a) => {
         if (!u8a(a))
             throw new Error('Uint8Array expected');
         r.set(a, pad);
@@ -4759,44 +4824,28 @@ function equalBytes(b1, b2) {
             return false;
     return true;
 }
-/**
- * @example utf8ToBytes('abc') // new Uint8Array([97, 98, 99])
- */
 function utf8ToBytes(str) {
-    if (typeof str !== 'string')
+    if (typeof str !== 'string') {
         throw new Error(`utf8ToBytes expected string, got ${typeof str}`);
-    return new Uint8Array(new TextEncoder().encode(str)); // https://bugzil.la/1681809
+    }
+    return new TextEncoder().encode(str);
 }
 // Bit operations
-/**
- * Calculates amount of bits in a bigint.
- * Same as `n.toString(2).length`
- */
+// Amount of bits inside bigint (Same as n.toString(2).length)
 function bitLen(n) {
     let len;
-    for (len = 0; n > _0n$3; n >>= _1n$4, len += 1)
+    for (len = 0; n > _0n$4; n >>= _1n$4, len += 1)
         ;
     return len;
 }
-/**
- * Gets single bit at position.
- * NOTE: first bit position is 0 (same as arrays)
- * Same as `!!+Array.from(n.toString(2)).reverse()[pos]`
- */
-function bitGet(n, pos) {
-    return (n >> BigInt(pos)) & _1n$4;
-}
-/**
- * Sets single bit at position.
- */
-const bitSet = (n, pos, value) => {
-    return n | ((value ? _1n$4 : _0n$3) << BigInt(pos));
-};
-/**
- * Calculate mask for N bits. Not using ** operator with bigints because of old engines.
- * Same as BigInt(`0b${Array(i).fill('1').join('')}`)
- */
-const bitMask = (n) => (_2n$2 << BigInt(n - 1)) - _1n$4;
+// Gets single bit at position. NOTE: first bit position is 0 (same as arrays)
+// Same as !!+Array.from(n.toString(2)).reverse()[pos]
+const bitGet = (n, pos) => (n >> BigInt(pos)) & _1n$4;
+// Sets single bit at position
+const bitSet = (n, pos, value) => n | ((value ? _1n$4 : _0n$4) << BigInt(pos));
+// Return mask for N bits (Same as BigInt(`0b${Array(i).fill('1').join('')}`))
+// Not using ** operator with bigints for old engines.
+const bitMask = (n) => (_2n$3 << BigInt(n - 1)) - _1n$4;
 // DRBG
 const u8n = (data) => new Uint8Array(data); // creates Uint8Array
 const u8fr = (arr) => Uint8Array.from(arr); // another shortcut
@@ -4864,7 +4913,6 @@ const validatorFns = {
     function: (val) => typeof val === 'function',
     boolean: (val) => typeof val === 'boolean',
     string: (val) => typeof val === 'string',
-    stringOrUint8Array: (val) => typeof val === 'string' || val instanceof Uint8Array,
     isSafeInteger: (val) => Number.isSafeInteger(val),
     array: (val) => Array.isArray(val),
     field: (val, object) => object.Fp.isValid(val),
@@ -4900,54 +4948,53 @@ function validateObject(object, validators, optValidators = {}) {
 
 var ut = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    bitGet: bitGet,
-    bitLen: bitLen,
-    bitMask: bitMask,
-    bitSet: bitSet,
     bytesToHex: bytesToHex,
+    numberToHexUnpadded: numberToHexUnpadded,
+    hexToNumber: hexToNumber,
+    hexToBytes: hexToBytes,
     bytesToNumberBE: bytesToNumberBE,
     bytesToNumberLE: bytesToNumberLE,
-    concatBytes: concatBytes,
-    createHmacDrbg: createHmacDrbg,
-    ensureBytes: ensureBytes,
-    equalBytes: equalBytes,
-    hexToBytes: hexToBytes,
-    hexToNumber: hexToNumber,
     numberToBytesBE: numberToBytesBE,
     numberToBytesLE: numberToBytesLE,
-    numberToHexUnpadded: numberToHexUnpadded,
     numberToVarBytesBE: numberToVarBytesBE,
+    ensureBytes: ensureBytes,
+    concatBytes: concatBytes,
+    equalBytes: equalBytes,
     utf8ToBytes: utf8ToBytes,
+    bitLen: bitLen,
+    bitGet: bitGet,
+    bitSet: bitSet,
+    bitMask: bitMask,
+    createHmacDrbg: createHmacDrbg,
     validateObject: validateObject
 });
 
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-// Utilities for modular arithmetics and finite fields
 // prettier-ignore
-const _0n$2 = BigInt(0), _1n$3 = BigInt(1), _2n$1 = BigInt(2), _3n$1 = BigInt(3);
+const _0n$3 = BigInt(0), _1n$3 = BigInt(1), _2n$2 = BigInt(2), _3n$1 = BigInt(3);
 // prettier-ignore
-const _4n = BigInt(4), _5n = BigInt(5), _8n = BigInt(8);
+const _4n$1 = BigInt(4), _5n = BigInt(5), _8n = BigInt(8);
 // prettier-ignore
-BigInt(9); BigInt(16);
+const _9n = BigInt(9), _16n = BigInt(16);
 // Calculates a modulo b
 function mod(a, b) {
     const result = a % b;
-    return result >= _0n$2 ? result : b + result;
+    return result >= _0n$3 ? result : b + result;
 }
 /**
- * Efficiently raise num to power and do modular division.
+ * Efficiently exponentiate num to power and do modular division.
  * Unsafe in some contexts: uses ladder, so can expose bigint bits.
  * @example
- * pow(2n, 6n, 11n) // 64n % 11n == 9n
+ * powMod(2n, 6n, 11n) // 64n % 11n == 9n
  */
 // TODO: use field version && remove
 function pow(num, power, modulo) {
-    if (modulo <= _0n$2 || power < _0n$2)
+    if (modulo <= _0n$3 || power < _0n$3)
         throw new Error('Expected power/modulo > 0');
     if (modulo === _1n$3)
-        return _0n$2;
+        return _0n$3;
     let res = _1n$3;
-    while (power > _0n$2) {
+    while (power > _0n$3) {
         if (power & _1n$3)
             res = (res * num) % modulo;
         num = (num * num) % modulo;
@@ -4958,7 +5005,7 @@ function pow(num, power, modulo) {
 // Does x ^ (2 ^ power) mod p. pow2(30, 4) == 30 ^ (2 ^ 4)
 function pow2(x, power, modulo) {
     let res = x;
-    while (power-- > _0n$2) {
+    while (power-- > _0n$3) {
         res *= res;
         res %= modulo;
     }
@@ -4966,54 +5013,50 @@ function pow2(x, power, modulo) {
 }
 // Inverses number over modulo
 function invert(number, modulo) {
-    if (number === _0n$2 || modulo <= _0n$2) {
+    if (number === _0n$3 || modulo <= _0n$3) {
         throw new Error(`invert: expected positive integers, got n=${number} mod=${modulo}`);
     }
-    // Euclidean GCD https://brilliant.org/wiki/extended-euclidean-algorithm/
+    // Eucledian GCD https://brilliant.org/wiki/extended-euclidean-algorithm/
     // Fermat's little theorem "CT-like" version inv(n) = n^(m-2) mod m is 30x slower.
     let a = mod(number, modulo);
     let b = modulo;
     // prettier-ignore
-    let x = _0n$2, u = _1n$3;
-    while (a !== _0n$2) {
+    let x = _0n$3, y = _1n$3, u = _1n$3, v = _0n$3;
+    while (a !== _0n$3) {
         // JIT applies optimization if those two lines follow each other
         const q = b / a;
         const r = b % a;
         const m = x - u * q;
+        const n = y - v * q;
         // prettier-ignore
-        b = a, a = r, x = u, u = m;
+        b = a, a = r, x = u, y = v, u = m, v = n;
     }
     const gcd = b;
     if (gcd !== _1n$3)
         throw new Error('invert: does not exist');
     return mod(x, modulo);
 }
-/**
- * Tonelli-Shanks square root search algorithm.
- * 1. https://eprint.iacr.org/2012/685.pdf (page 12)
- * 2. Square Roots from 1; 24, 51, 10 to Dan Shanks
- * Will start an infinite loop if field order P is not prime.
- * @param P field order
- * @returns function that takes field Fp (created from P) and number n
- */
+// Tonelli-Shanks algorithm
+// Paper 1: https://eprint.iacr.org/2012/685.pdf (page 12)
+// Paper 2: Square Roots from 1; 24, 51, 10 to Dan Shanks
 function tonelliShanks(P) {
     // Legendre constant: used to calculate Legendre symbol (a | p),
     // which denotes the value of a^((p-1)/2) (mod p).
     // (a | p) ≡ 1    if a is a square (mod p)
     // (a | p) ≡ -1   if a is not a square (mod p)
     // (a | p) ≡ 0    if a ≡ 0 (mod p)
-    const legendreC = (P - _1n$3) / _2n$1;
+    const legendreC = (P - _1n$3) / _2n$2;
     let Q, S, Z;
     // Step 1: By factoring out powers of 2 from p - 1,
     // find q and s such that p - 1 = q*(2^s) with q odd
-    for (Q = P - _1n$3, S = 0; Q % _2n$1 === _0n$2; Q /= _2n$1, S++)
+    for (Q = P - _1n$3, S = 0; Q % _2n$2 === _0n$3; Q /= _2n$2, S++)
         ;
     // Step 2: Select a non-square z such that (z | p) ≡ -1 and set c ≡ zq
-    for (Z = _2n$1; Z < P && pow(Z, legendreC, P) !== P - _1n$3; Z++)
+    for (Z = _2n$2; Z < P && pow(Z, legendreC, P) !== P - _1n$3; Z++)
         ;
     // Fast-path
     if (S === 1) {
-        const p1div4 = (P + _1n$3) / _4n;
+        const p1div4 = (P + _1n$3) / _4n$1;
         return function tonelliFast(Fp, n) {
             const root = Fp.pow(n, p1div4);
             if (!Fp.eql(Fp.sqr(root), n))
@@ -5022,7 +5065,7 @@ function tonelliShanks(P) {
         };
     }
     // Slow-path
-    const Q1div2 = (Q + _1n$3) / _2n$1;
+    const Q1div2 = (Q + _1n$3) / _2n$2;
     return function tonelliSlow(Fp, n) {
         // Step 0: Check that n is indeed a square: (n | p) should not be ≡ -1
         if (Fp.pow(n, legendreC) === Fp.neg(Fp.ONE))
@@ -5057,12 +5100,12 @@ function FpSqrt(P) {
     // For example there is FpSqrtOdd/FpSqrtEven to choice root based on oddness (used for hash-to-curve).
     // P ≡ 3 (mod 4)
     // √n = n^((P+1)/4)
-    if (P % _4n === _3n$1) {
+    if (P % _4n$1 === _3n$1) {
         // Not all roots possible!
         // const ORDER =
         //   0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaabn;
         // const NUM = 72057594037927816n;
-        const p1div4 = (P + _1n$3) / _4n;
+        const p1div4 = (P + _1n$3) / _4n$1;
         return function sqrt3mod4(Fp, n) {
             const root = Fp.pow(n, p1div4);
             // Throw if root**2 != n
@@ -5075,19 +5118,43 @@ function FpSqrt(P) {
     if (P % _8n === _5n) {
         const c1 = (P - _5n) / _8n;
         return function sqrt5mod8(Fp, n) {
-            const n2 = Fp.mul(n, _2n$1);
+            const n2 = Fp.mul(n, _2n$2);
             const v = Fp.pow(n2, c1);
             const nv = Fp.mul(n, v);
-            const i = Fp.mul(Fp.mul(nv, _2n$1), v);
+            const i = Fp.mul(Fp.mul(nv, _2n$2), v);
             const root = Fp.mul(nv, Fp.sub(i, Fp.ONE));
             if (!Fp.eql(Fp.sqr(root), n))
                 throw new Error('Cannot find square root');
             return root;
         };
     }
+    // P ≡ 9 (mod 16)
+    if (P % _16n === _9n) {
+        // NOTE: tonelli is too slow for bls-Fp2 calculations even on start
+        // Means we cannot use sqrt for constants at all!
+        //
+        // const c1 = Fp.sqrt(Fp.negate(Fp.ONE)); //  1. c1 = sqrt(-1) in F, i.e., (c1^2) == -1 in F
+        // const c2 = Fp.sqrt(c1);                //  2. c2 = sqrt(c1) in F, i.e., (c2^2) == c1 in F
+        // const c3 = Fp.sqrt(Fp.negate(c1));     //  3. c3 = sqrt(-c1) in F, i.e., (c3^2) == -c1 in F
+        // const c4 = (P + _7n) / _16n;           //  4. c4 = (q + 7) / 16        # Integer arithmetic
+        // sqrt = (x) => {
+        //   let tv1 = Fp.pow(x, c4);             //  1. tv1 = x^c4
+        //   let tv2 = Fp.mul(c1, tv1);           //  2. tv2 = c1 * tv1
+        //   const tv3 = Fp.mul(c2, tv1);         //  3. tv3 = c2 * tv1
+        //   let tv4 = Fp.mul(c3, tv1);           //  4. tv4 = c3 * tv1
+        //   const e1 = Fp.equals(Fp.square(tv2), x); //  5.  e1 = (tv2^2) == x
+        //   const e2 = Fp.equals(Fp.square(tv3), x); //  6.  e2 = (tv3^2) == x
+        //   tv1 = Fp.cmov(tv1, tv2, e1); //  7. tv1 = CMOV(tv1, tv2, e1)  # Select tv2 if (tv2^2) == x
+        //   tv2 = Fp.cmov(tv4, tv3, e2); //  8. tv2 = CMOV(tv4, tv3, e2)  # Select tv3 if (tv3^2) == x
+        //   const e3 = Fp.equals(Fp.square(tv2), x); //  9.  e3 = (tv2^2) == x
+        //   return Fp.cmov(tv1, tv2, e3); //  10.  z = CMOV(tv1, tv2, e3)  # Select the sqrt from tv1 and tv2
+        // }
+    }
     // Other cases: Tonelli-Shanks algorithm
     return tonelliShanks(P);
 }
+// Little-endian check for first LE bit (last BE bit);
+const isNegativeLE = (num, modulo) => (mod(num, modulo) & _1n$3) === _1n$3;
 // prettier-ignore
 const FIELD_FIELDS = [
     'create', 'isValid', 'is0', 'neg', 'inv', 'sqrt', 'sqr',
@@ -5108,22 +5175,18 @@ function validateField(field) {
     return validateObject(field, opts);
 }
 // Generic field functions
-/**
- * Same as `pow` but for Fp: non-constant-time.
- * Unsafe in some contexts: uses ladder, so can expose bigint bits.
- */
 function FpPow(f, num, power) {
     // Should have same speed as pow for bigints
     // TODO: benchmark!
-    if (power < _0n$2)
+    if (power < _0n$3)
         throw new Error('Expected power > 0');
-    if (power === _0n$2)
+    if (power === _0n$3)
         return f.ONE;
     if (power === _1n$3)
         return num;
     let p = f.ONE;
     let d = num;
-    while (power > _0n$2) {
+    while (power > _0n$3) {
         if (power & _1n$3)
             p = f.mul(p, d);
         d = f.sqr(d);
@@ -5131,10 +5194,7 @@ function FpPow(f, num, power) {
     }
     return p;
 }
-/**
- * Efficiently invert an array of Field elements.
- * `inv(0)` will return `undefined` here: make sure to throw an error.
- */
+// 0 is non-invertible: non-batched version will throw on 0
 function FpInvertBatch(f, nums) {
     const tmp = new Array(nums.length);
     // Walk from first to last, multiply them by each other MOD p
@@ -5155,6 +5215,17 @@ function FpInvertBatch(f, nums) {
     }, inverted);
     return tmp;
 }
+function FpDiv(f, lhs, rhs) {
+    return f.mul(lhs, typeof rhs === 'bigint' ? invert(rhs, f.ORDER) : f.inv(rhs));
+}
+// This function returns True whenever the value x is a square in the field F.
+function FpIsSquare(f) {
+    const legendreConst = (f.ORDER - _1n$3) / _2n$2; // Integer arithmetic
+    return (x) => {
+        const p = f.pow(x, legendreConst);
+        return f.eql(p, f.ZERO) || f.eql(p, f.ONE);
+    };
+}
 // CURVE.n lengths
 function nLength(n, nBitLength) {
     // Bit size, byte size of CURVE.n
@@ -5163,20 +5234,20 @@ function nLength(n, nBitLength) {
     return { nBitLength: _nBitLength, nByteLength };
 }
 /**
- * Initializes a finite field over prime. **Non-primes are not supported.**
- * Do not init in loop: slow. Very fragile: always run a benchmark on a change.
- * Major performance optimizations:
- * * a) denormalized operations like mulN instead of mul
- * * b) same object shape: never add or remove keys
- * * c) Object.freeze
+ * Initializes a galois field over prime. Non-primes are not supported for now.
+ * Do not init in loop: slow. Very fragile: always run a benchmark on change.
+ * Major performance gains:
+ * a) non-normalized operations like mulN instead of mul
+ * b) `Object.freeze`
+ * c) Same object shape: never add or remove keys
  * @param ORDER prime positive bigint
  * @param bitLen how many bits the field consumes
  * @param isLE (def: false) if encoding / decoding should be in little-endian
  * @param redef optional faster redefinitions of sqrt and other methods
  */
 function Field(ORDER, bitLen, isLE = false, redef = {}) {
-    if (ORDER <= _0n$2)
-        throw new Error(`Expected Field ORDER > 0, got ${ORDER}`);
+    if (ORDER <= _0n$3)
+        throw new Error(`Expected Fp ORDER > 0, got ${ORDER}`);
     const { nBitLength: BITS, nByteLength: BYTES } = nLength(ORDER, bitLen);
     if (BYTES > 2048)
         throw new Error('Field lengths over 2048 bytes are not supported');
@@ -5186,15 +5257,15 @@ function Field(ORDER, bitLen, isLE = false, redef = {}) {
         BITS,
         BYTES,
         MASK: bitMask(BITS),
-        ZERO: _0n$2,
+        ZERO: _0n$3,
         ONE: _1n$3,
         create: (num) => mod(num, ORDER),
         isValid: (num) => {
             if (typeof num !== 'bigint')
                 throw new Error(`Invalid field element: expected bigint, got ${typeof num}`);
-            return _0n$2 <= num && num < ORDER; // 0 is valid element, but it's not invertible
+            return _0n$3 <= num && num < ORDER; // 0 is valid element, but it's not invertible
         },
-        is0: (num) => num === _0n$2,
+        is0: (num) => num === _0n$3,
         isOdd: (num) => (num & _1n$3) === _1n$3,
         neg: (num) => mod(-num, ORDER),
         eql: (lhs, rhs) => lhs === rhs,
@@ -5224,58 +5295,39 @@ function Field(ORDER, bitLen, isLE = false, redef = {}) {
     });
     return Object.freeze(f);
 }
-/**
- * Returns total number of bytes consumed by the field element.
- * For example, 32 bytes for usual 256-bit weierstrass curve.
- * @param fieldOrder number of field elements, usually CURVE.n
- * @returns byte length of field
- */
-function getFieldBytesLength(fieldOrder) {
-    if (typeof fieldOrder !== 'bigint')
-        throw new Error('field order must be bigint');
-    const bitLength = fieldOrder.toString(2).length;
-    return Math.ceil(bitLength / 8);
+function FpSqrtOdd(Fp, elm) {
+    if (!Fp.isOdd)
+        throw new Error(`Field doesn't have isOdd`);
+    const root = Fp.sqrt(elm);
+    return Fp.isOdd(root) ? root : Fp.neg(root);
+}
+function FpSqrtEven(Fp, elm) {
+    if (!Fp.isOdd)
+        throw new Error(`Field doesn't have isOdd`);
+    const root = Fp.sqrt(elm);
+    return Fp.isOdd(root) ? Fp.neg(root) : root;
 }
 /**
- * Returns minimal amount of bytes that can be safely reduced
- * by field order.
- * Should be 2^-128 for 128-bit curve such as P256.
- * @param fieldOrder number of field elements, usually CURVE.n
- * @returns byte length of target hash
- */
-function getMinHashLength(fieldOrder) {
-    const length = getFieldBytesLength(fieldOrder);
-    return length + Math.ceil(length / 2);
-}
-/**
- * "Constant-time" private key generation utility.
- * Can take (n + n/2) or more bytes of uniform input e.g. from CSPRNG or KDF
- * and convert them into private scalar, with the modulo bias being negligible.
- * Needs at least 48 bytes of input for 32-byte private key.
+ * FIPS 186 B.4.1-compliant "constant-time" private key generation utility.
+ * Can take (n+8) or more bytes of uniform input e.g. from CSPRNG or KDF
+ * and convert them into private scalar, with the modulo bias being neglible.
+ * Needs at least 40 bytes of input for 32-byte private key.
  * https://research.kudelskisecurity.com/2020/07/28/the-definitive-guide-to-modulo-bias-and-how-to-avoid-it/
- * FIPS 186-5, A.2 https://csrc.nist.gov/publications/detail/fips/186/5/final
- * RFC 9380, https://www.rfc-editor.org/rfc/rfc9380#section-5
  * @param hash hash output from SHA3 or a similar function
- * @param groupOrder size of subgroup - (e.g. secp256k1.CURVE.n)
- * @param isLE interpret hash bytes as LE num
  * @returns valid private scalar
  */
-function mapHashToField(key, fieldOrder, isLE = false) {
-    const len = key.length;
-    const fieldLen = getFieldBytesLength(fieldOrder);
-    const minLen = getMinHashLength(fieldOrder);
-    // No small numbers: need to understand bias story. No huge numbers: easier to detect JS timings.
-    if (len < 16 || len < minLen || len > 1024)
-        throw new Error(`expected ${minLen}-1024 bytes of input, got ${len}`);
-    const num = isLE ? bytesToNumberBE(key) : bytesToNumberLE(key);
-    // `mod(x, 11)` can sometimes produce 0. `mod(x, 10) + 1` is the same, but no 0
-    const reduced = mod(num, fieldOrder - _1n$3) + _1n$3;
-    return isLE ? numberToBytesLE(reduced, fieldLen) : numberToBytesBE(reduced, fieldLen);
+function hashToPrivateScalar(hash, groupOrder, isLE = false) {
+    hash = ensureBytes('privateHash', hash);
+    const hashLen = hash.length;
+    const minLen = nLength(groupOrder).nByteLength + 8;
+    if (minLen < 24 || hashLen < minLen || hashLen > 1024)
+        throw new Error(`hashToPrivateScalar: expected ${minLen}-1024 bytes of input, got ${hashLen}`);
+    const num = isLE ? bytesToNumberLE(hash) : bytesToNumberBE(hash);
+    return mod(num, groupOrder - _1n$3) + _1n$3;
 }
 
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-// Abelian group utilities
-const _0n$1 = BigInt(0);
+const _0n$2 = BigInt(0);
 const _1n$2 = BigInt(1);
 // Elliptic curve multiplication of Point by scalar. Fragile.
 // Scalars should always be less than curve order: this should be checked inside of a curve itself.
@@ -5304,7 +5356,7 @@ function wNAF(c, bits) {
         unsafeLadder(elm, n) {
             let p = c.ZERO;
             let d = elm;
-            while (n > _0n$1) {
+            while (n > _0n$2) {
                 if (n & _1n$2)
                     p = p.add(d);
                 d = d.double();
@@ -5428,7 +5480,6 @@ function validateBasic(curve) {
 }
 
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-// Short Weierstrass curve. The formula is: y² = x³ + ax + b
 function validatePointOpts(curve) {
     const opts = validateBasic(curve);
     validateObject(opts, {
@@ -5518,12 +5569,12 @@ const DER = {
 };
 // Be friendly to bad ECMAScript parsers by not using bigint literals
 // prettier-ignore
-const _0n = BigInt(0), _1n$1 = BigInt(1); BigInt(2); const _3n = BigInt(3); BigInt(4);
+const _0n$1 = BigInt(0), _1n$1 = BigInt(1), _2n$1 = BigInt(2), _3n = BigInt(3), _4n = BigInt(4);
 function weierstrassPoints(opts) {
     const CURVE = validatePointOpts(opts);
     const { Fp } = CURVE; // All curves has same field / group length as for now, but they can differ
     const toBytes = CURVE.toBytes ||
-        ((_c, point, _isCompressed) => {
+        ((c, point, isCompressed) => {
             const a = point.toAffine();
             return concatBytes(Uint8Array.from([0x04]), Fp.toBytes(a.x), Fp.toBytes(a.y));
         });
@@ -5554,7 +5605,7 @@ function weierstrassPoints(opts) {
         throw new Error('bad generator point: equation left != right');
     // Valid group elements reside in range 1..n-1
     function isWithinCurveOrder(num) {
-        return typeof num === 'bigint' && _0n < num && num < CURVE.n;
+        return typeof num === 'bigint' && _0n$1 < num && num < CURVE.n;
     }
     function assertGE(num) {
         if (!isWithinCurveOrder(num))
@@ -5659,11 +5710,9 @@ function weierstrassPoints(opts) {
         }
         // A point on curve is valid if it conforms to equation.
         assertValidity() {
+            // Zero is valid point too!
             if (this.is0()) {
-                // (0, 1, 0) aka ZERO is invalid in most contexts.
-                // In BLS, ZERO can be serialized, so we allow it.
-                // (0, 0, 0) is wrong representation of ZERO and is always invalid.
-                if (CURVE.allowInfinityPoint && !Fp.is0(this.py))
+                if (CURVE.allowInfinityPoint)
                     return;
                 throw new Error('bad point: ZERO');
             }
@@ -5816,7 +5865,7 @@ function weierstrassPoints(opts) {
          */
         multiplyUnsafe(n) {
             const I = Point.ZERO;
-            if (n === _0n)
+            if (n === _0n$1)
                 return I;
             assertGE(n); // Will throw on 0
             if (n === _1n$1)
@@ -5829,7 +5878,7 @@ function weierstrassPoints(opts) {
             let k1p = I;
             let k2p = I;
             let d = this;
-            while (k1 > _0n || k2 > _0n) {
+            while (k1 > _0n$1 || k2 > _0n$1) {
                 if (k1 & _1n$1)
                     k1p = k1p.add(d);
                 if (k2 & _1n$1)
@@ -5886,7 +5935,7 @@ function weierstrassPoints(opts) {
         multiplyAndAddUnsafe(Q, a, b) {
             const G = Point.BASE; // No Strauss-Shamir trick: we have 10% faster G precomputes
             const mul = (P, a // Select faster multiply() method
-            ) => (a === _0n || a === _1n$1 || !P.equals(G) ? P.multiplyUnsafe(a) : P.multiply(a));
+            ) => (a === _0n$1 || a === _1n$1 || !P.equals(G) ? P.multiplyUnsafe(a) : P.multiply(a));
             const sum = mul(this, a).add(mul(Q, b));
             return sum.is0() ? undefined : sum;
         }
@@ -5965,7 +6014,7 @@ function weierstrass(curveDef) {
     const compressedLen = Fp.BYTES + 1; // e.g. 33 for 32
     const uncompressedLen = 2 * Fp.BYTES + 1; // e.g. 65 for 32
     function isValidFieldElement(num) {
-        return _0n < num && num < Fp.ORDER; // 0 is banned since it's not invertible FE
+        return _0n$1 < num && num < Fp.ORDER; // 0 is banned since it's not invertible FE
     }
     function modN(a) {
         return mod(a, CURVE_ORDER);
@@ -5975,7 +6024,7 @@ function weierstrass(curveDef) {
     }
     const { ProjectivePoint: Point, normPrivateKeyToScalar, weierstrassEquation, isWithinCurveOrder, } = weierstrassPoints({
         ...CURVE,
-        toBytes(_c, point, isCompressed) {
+        toBytes(c, point, isCompressed) {
             const a = point.toAffine();
             const x = Fp.toBytes(a.x);
             const cat = concatBytes;
@@ -6109,12 +6158,13 @@ function weierstrass(curveDef) {
         },
         normPrivateKeyToScalar: normPrivateKeyToScalar,
         /**
-         * Produces cryptographically secure private key from random of size
-         * (groupLen + ceil(groupLen / 2)) with modulo bias being negligible.
+         * Produces cryptographically secure private key from random of size (nBitLength+64)
+         * as per FIPS 186 B.4.1 with modulo bias being neglible.
          */
         randomPrivateKey: () => {
-            const length = getMinHashLength(CURVE.n);
-            return mapHashToField(CURVE.randomBytes(length), CURVE.n);
+            const rand = CURVE.randomBytes(Fp.BYTES + 8);
+            const num = hashToPrivateScalar(rand, CURVE_ORDER);
+            return numberToBytesBE(num, CURVE.nByteLength);
         },
         /**
          * Creates precompute table for an arbitrary EC point. Makes point "cached".
@@ -6196,7 +6246,7 @@ function weierstrass(curveDef) {
     function int2octets(num) {
         if (typeof num !== 'bigint')
             throw new Error('bigint expected');
-        if (!(_0n <= num && num < ORDER_MASK))
+        if (!(_0n$1 <= num && num < ORDER_MASK))
             throw new Error(`bigint expected < 2^${CURVE.nBitLength}`);
         // works with order, can have different size than numToField!
         return numberToBytesBE(num, CURVE.nByteLength);
@@ -6226,7 +6276,7 @@ function weierstrass(curveDef) {
         if (ent != null) {
             // K = HMAC_K(V || 0x00 || int2octets(x) || bits2octets(h1) || k')
             const e = ent === true ? randomBytes(Fp.BYTES) : ent; // generate random bytes OR pass as-is
-            seedArgs.push(ensureBytes('extraEntropy', e)); // check for being bytes
+            seedArgs.push(ensureBytes('extraEntropy', e, Fp.BYTES)); // check for being of size BYTES
         }
         const seed = concatBytes(...seedArgs); // Step D of RFC6979 3.2
         const m = h1int; // NOTE: no need to call bits2int second time here, it is inside truncateHash!
@@ -6239,13 +6289,13 @@ function weierstrass(curveDef) {
             const ik = invN(k); // k^-1 mod n
             const q = Point.BASE.multiply(k).toAffine(); // q = Gk
             const r = modN(q.x); // r = q.x mod n
-            if (r === _0n)
+            if (r === _0n$1)
                 return;
             // Can use scalar blinding b^-1(bm + bdr) where b ∈ [1,q−1] according to
             // https://tches.iacr.org/index.php/TCHES/article/view/7337/6509. We've decided against it:
             // a) dependency on CSPRNG b) 15% slowdown c) doesn't really help since bigints are not CT
             const s = modN(ik * modN(m + r * d)); // Not using blinding here
-            if (s === _0n)
+            if (s === _0n$1)
                 return;
             let recovery = (q.x === r ? 0 : 2) | Number(q.y & _1n$1); // recovery bit (2 or 3, when q.x > n)
             let normS = s;
@@ -6260,22 +6310,18 @@ function weierstrass(curveDef) {
     const defaultSigOpts = { lowS: CURVE.lowS, prehash: false };
     const defaultVerOpts = { lowS: CURVE.lowS, prehash: false };
     /**
-     * Signs message hash with a private key.
+     * Signs message hash (not message: you need to hash it by yourself).
      * ```
      * sign(m, d, k) where
      *   (x, y) = G × k
      *   r = x mod n
      *   s = (m + dr)/k mod n
      * ```
-     * @param msgHash NOT message. msg needs to be hashed to `msgHash`, or use `prehash`.
-     * @param privKey private key
-     * @param opts lowS for non-malleable sigs. extraEntropy for mixing randomness into k. prehash will hash first arg.
-     * @returns signature with recovery param
+     * @param opts `lowS, extraEntropy, prehash`
      */
     function sign(msgHash, privKey, opts = defaultSigOpts) {
         const { seed, k2sig } = prepSig(msgHash, privKey, opts); // Steps A, D of RFC6979 3.2.
-        const C = CURVE;
-        const drbg = createHmacDrbg(C.hash.outputLen, C.nByteLength, C.hmac);
+        const drbg = createHmacDrbg(CURVE.hash.outputLen, CURVE.nByteLength, CURVE.hmac);
         return drbg(seed, k2sig); // Steps B, C, D, E, F, G
     }
     // Enable precomputes. Slows down first publicKey computation by 20ms.
@@ -6354,6 +6400,280 @@ function weierstrass(curveDef) {
         ProjectivePoint: Point,
         Signature,
         utils,
+    };
+}
+// Implementation of the Shallue and van de Woestijne method for any Weierstrass curve
+// TODO: check if there is a way to merge this with uvRatio in Edwards && move to modular?
+// b = True and y = sqrt(u / v) if (u / v) is square in F, and
+// b = False and y = sqrt(Z * (u / v)) otherwise.
+function SWUFpSqrtRatio(Fp, Z) {
+    // Generic implementation
+    const q = Fp.ORDER;
+    let l = _0n$1;
+    for (let o = q - _1n$1; o % _2n$1 === _0n$1; o /= _2n$1)
+        l += _1n$1;
+    const c1 = l; // 1. c1, the largest integer such that 2^c1 divides q - 1.
+    const c2 = (q - _1n$1) / _2n$1 ** c1; // 2. c2 = (q - 1) / (2^c1)        # Integer arithmetic
+    const c3 = (c2 - _1n$1) / _2n$1; // 3. c3 = (c2 - 1) / 2            # Integer arithmetic
+    const c4 = _2n$1 ** c1 - _1n$1; // 4. c4 = 2^c1 - 1                # Integer arithmetic
+    const c5 = _2n$1 ** (c1 - _1n$1); // 5. c5 = 2^(c1 - 1)              # Integer arithmetic
+    const c6 = Fp.pow(Z, c2); // 6. c6 = Z^c2
+    const c7 = Fp.pow(Z, (c2 + _1n$1) / _2n$1); // 7. c7 = Z^((c2 + 1) / 2)
+    let sqrtRatio = (u, v) => {
+        let tv1 = c6; // 1. tv1 = c6
+        let tv2 = Fp.pow(v, c4); // 2. tv2 = v^c4
+        let tv3 = Fp.sqr(tv2); // 3. tv3 = tv2^2
+        tv3 = Fp.mul(tv3, v); // 4. tv3 = tv3 * v
+        let tv5 = Fp.mul(u, tv3); // 5. tv5 = u * tv3
+        tv5 = Fp.pow(tv5, c3); // 6. tv5 = tv5^c3
+        tv5 = Fp.mul(tv5, tv2); // 7. tv5 = tv5 * tv2
+        tv2 = Fp.mul(tv5, v); // 8. tv2 = tv5 * v
+        tv3 = Fp.mul(tv5, u); // 9. tv3 = tv5 * u
+        let tv4 = Fp.mul(tv3, tv2); // 10. tv4 = tv3 * tv2
+        tv5 = Fp.pow(tv4, c5); // 11. tv5 = tv4^c5
+        let isQR = Fp.eql(tv5, Fp.ONE); // 12. isQR = tv5 == 1
+        tv2 = Fp.mul(tv3, c7); // 13. tv2 = tv3 * c7
+        tv5 = Fp.mul(tv4, tv1); // 14. tv5 = tv4 * tv1
+        tv3 = Fp.cmov(tv2, tv3, isQR); // 15. tv3 = CMOV(tv2, tv3, isQR)
+        tv4 = Fp.cmov(tv5, tv4, isQR); // 16. tv4 = CMOV(tv5, tv4, isQR)
+        // 17. for i in (c1, c1 - 1, ..., 2):
+        for (let i = c1; i > _1n$1; i--) {
+            let tv5 = _2n$1 ** (i - _2n$1); // 18.    tv5 = i - 2;    19.    tv5 = 2^tv5
+            let tvv5 = Fp.pow(tv4, tv5); // 20.    tv5 = tv4^tv5
+            const e1 = Fp.eql(tvv5, Fp.ONE); // 21.    e1 = tv5 == 1
+            tv2 = Fp.mul(tv3, tv1); // 22.    tv2 = tv3 * tv1
+            tv1 = Fp.mul(tv1, tv1); // 23.    tv1 = tv1 * tv1
+            tvv5 = Fp.mul(tv4, tv1); // 24.    tv5 = tv4 * tv1
+            tv3 = Fp.cmov(tv2, tv3, e1); // 25.    tv3 = CMOV(tv2, tv3, e1)
+            tv4 = Fp.cmov(tvv5, tv4, e1); // 26.    tv4 = CMOV(tv5, tv4, e1)
+        }
+        return { isValid: isQR, value: tv3 };
+    };
+    if (Fp.ORDER % _4n === _3n) {
+        // sqrt_ratio_3mod4(u, v)
+        const c1 = (Fp.ORDER - _3n) / _4n; // 1. c1 = (q - 3) / 4     # Integer arithmetic
+        const c2 = Fp.sqrt(Fp.neg(Z)); // 2. c2 = sqrt(-Z)
+        sqrtRatio = (u, v) => {
+            let tv1 = Fp.sqr(v); // 1. tv1 = v^2
+            const tv2 = Fp.mul(u, v); // 2. tv2 = u * v
+            tv1 = Fp.mul(tv1, tv2); // 3. tv1 = tv1 * tv2
+            let y1 = Fp.pow(tv1, c1); // 4. y1 = tv1^c1
+            y1 = Fp.mul(y1, tv2); // 5. y1 = y1 * tv2
+            const y2 = Fp.mul(y1, c2); // 6. y2 = y1 * c2
+            const tv3 = Fp.mul(Fp.sqr(y1), v); // 7. tv3 = y1^2; 8. tv3 = tv3 * v
+            const isQR = Fp.eql(tv3, u); // 9. isQR = tv3 == u
+            let y = Fp.cmov(y2, y1, isQR); // 10. y = CMOV(y2, y1, isQR)
+            return { isValid: isQR, value: y }; // 11. return (isQR, y) isQR ? y : y*c2
+        };
+    }
+    // No curves uses that
+    // if (Fp.ORDER % _8n === _5n) // sqrt_ratio_5mod8
+    return sqrtRatio;
+}
+// From draft-irtf-cfrg-hash-to-curve-16
+function mapToCurveSimpleSWU(Fp, opts) {
+    validateField(Fp);
+    if (!Fp.isValid(opts.A) || !Fp.isValid(opts.B) || !Fp.isValid(opts.Z))
+        throw new Error('mapToCurveSimpleSWU: invalid opts');
+    const sqrtRatio = SWUFpSqrtRatio(Fp, opts.Z);
+    if (!Fp.isOdd)
+        throw new Error('Fp.isOdd is not implemented!');
+    // Input: u, an element of F.
+    // Output: (x, y), a point on E.
+    return (u) => {
+        // prettier-ignore
+        let tv1, tv2, tv3, tv4, tv5, tv6, x, y;
+        tv1 = Fp.sqr(u); // 1.  tv1 = u^2
+        tv1 = Fp.mul(tv1, opts.Z); // 2.  tv1 = Z * tv1
+        tv2 = Fp.sqr(tv1); // 3.  tv2 = tv1^2
+        tv2 = Fp.add(tv2, tv1); // 4.  tv2 = tv2 + tv1
+        tv3 = Fp.add(tv2, Fp.ONE); // 5.  tv3 = tv2 + 1
+        tv3 = Fp.mul(tv3, opts.B); // 6.  tv3 = B * tv3
+        tv4 = Fp.cmov(opts.Z, Fp.neg(tv2), !Fp.eql(tv2, Fp.ZERO)); // 7.  tv4 = CMOV(Z, -tv2, tv2 != 0)
+        tv4 = Fp.mul(tv4, opts.A); // 8.  tv4 = A * tv4
+        tv2 = Fp.sqr(tv3); // 9.  tv2 = tv3^2
+        tv6 = Fp.sqr(tv4); // 10. tv6 = tv4^2
+        tv5 = Fp.mul(tv6, opts.A); // 11. tv5 = A * tv6
+        tv2 = Fp.add(tv2, tv5); // 12. tv2 = tv2 + tv5
+        tv2 = Fp.mul(tv2, tv3); // 13. tv2 = tv2 * tv3
+        tv6 = Fp.mul(tv6, tv4); // 14. tv6 = tv6 * tv4
+        tv5 = Fp.mul(tv6, opts.B); // 15. tv5 = B * tv6
+        tv2 = Fp.add(tv2, tv5); // 16. tv2 = tv2 + tv5
+        x = Fp.mul(tv1, tv3); // 17.   x = tv1 * tv3
+        const { isValid, value } = sqrtRatio(tv2, tv6); // 18. (is_gx1_square, y1) = sqrt_ratio(tv2, tv6)
+        y = Fp.mul(tv1, u); // 19.   y = tv1 * u  -> Z * u^3 * y1
+        y = Fp.mul(y, value); // 20.   y = y * y1
+        x = Fp.cmov(x, tv3, isValid); // 21.   x = CMOV(x, tv3, is_gx1_square)
+        y = Fp.cmov(y, value, isValid); // 22.   y = CMOV(y, y1, is_gx1_square)
+        const e1 = Fp.isOdd(u) === Fp.isOdd(y); // 23.  e1 = sgn0(u) == sgn0(y)
+        y = Fp.cmov(Fp.neg(y), y, e1); // 24.   y = CMOV(-y, y, e1)
+        x = Fp.div(x, tv4); // 25.   x = x / tv4
+        return { x, y };
+    };
+}
+
+function validateDST(dst) {
+    if (dst instanceof Uint8Array)
+        return dst;
+    if (typeof dst === 'string')
+        return utf8ToBytes(dst);
+    throw new Error('DST must be Uint8Array or string');
+}
+// Octet Stream to Integer. "spec" implementation of os2ip is 2.5x slower vs bytesToNumberBE.
+const os2ip = bytesToNumberBE;
+// Integer to Octet Stream (numberToBytesBE)
+function i2osp(value, length) {
+    if (value < 0 || value >= 1 << (8 * length)) {
+        throw new Error(`bad I2OSP call: value=${value} length=${length}`);
+    }
+    const res = Array.from({ length }).fill(0);
+    for (let i = length - 1; i >= 0; i--) {
+        res[i] = value & 0xff;
+        value >>>= 8;
+    }
+    return new Uint8Array(res);
+}
+function strxor(a, b) {
+    const arr = new Uint8Array(a.length);
+    for (let i = 0; i < a.length; i++) {
+        arr[i] = a[i] ^ b[i];
+    }
+    return arr;
+}
+function isBytes(item) {
+    if (!(item instanceof Uint8Array))
+        throw new Error('Uint8Array expected');
+}
+function isNum(item) {
+    if (!Number.isSafeInteger(item))
+        throw new Error('number expected');
+}
+// Produces a uniformly random byte string using a cryptographic hash function H that outputs b bits
+// https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
+function expand_message_xmd(msg, DST, lenInBytes, H) {
+    isBytes(msg);
+    isBytes(DST);
+    isNum(lenInBytes);
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-16#section-5.3.3
+    if (DST.length > 255)
+        DST = H(concatBytes(utf8ToBytes('H2C-OVERSIZE-DST-'), DST));
+    const { outputLen: b_in_bytes, blockLen: r_in_bytes } = H;
+    const ell = Math.ceil(lenInBytes / b_in_bytes);
+    if (ell > 255)
+        throw new Error('Invalid xmd length');
+    const DST_prime = concatBytes(DST, i2osp(DST.length, 1));
+    const Z_pad = i2osp(0, r_in_bytes);
+    const l_i_b_str = i2osp(lenInBytes, 2); // len_in_bytes_str
+    const b = new Array(ell);
+    const b_0 = H(concatBytes(Z_pad, msg, l_i_b_str, i2osp(0, 1), DST_prime));
+    b[0] = H(concatBytes(b_0, i2osp(1, 1), DST_prime));
+    for (let i = 1; i <= ell; i++) {
+        const args = [strxor(b_0, b[i - 1]), i2osp(i + 1, 1), DST_prime];
+        b[i] = H(concatBytes(...args));
+    }
+    const pseudo_random_bytes = concatBytes(...b);
+    return pseudo_random_bytes.slice(0, lenInBytes);
+}
+function expand_message_xof(msg, DST, lenInBytes, k, H) {
+    isBytes(msg);
+    isBytes(DST);
+    isNum(lenInBytes);
+    // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-16#section-5.3.3
+    // DST = H('H2C-OVERSIZE-DST-' || a_very_long_DST, Math.ceil((lenInBytes * k) / 8));
+    if (DST.length > 255) {
+        const dkLen = Math.ceil((2 * k) / 8);
+        DST = H.create({ dkLen }).update(utf8ToBytes('H2C-OVERSIZE-DST-')).update(DST).digest();
+    }
+    if (lenInBytes > 65535 || DST.length > 255)
+        throw new Error('expand_message_xof: invalid lenInBytes');
+    return (H.create({ dkLen: lenInBytes })
+        .update(msg)
+        .update(i2osp(lenInBytes, 2))
+        // 2. DST_prime = DST || I2OSP(len(DST), 1)
+        .update(DST)
+        .update(i2osp(DST.length, 1))
+        .digest());
+}
+/**
+ * Hashes arbitrary-length byte strings to a list of one or more elements of a finite field F
+ * https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3
+ * @param msg a byte string containing the message to hash
+ * @param count the number of elements of F to output
+ * @param options `{DST: string, p: bigint, m: number, k: number, expand: 'xmd' | 'xof', hash: H}`, see above
+ * @returns [u_0, ..., u_(count - 1)], a list of field elements.
+ */
+function hash_to_field(msg, count, options) {
+    validateObject(options, {
+        DST: 'string',
+        p: 'bigint',
+        m: 'isSafeInteger',
+        k: 'isSafeInteger',
+        hash: 'hash',
+    });
+    const { p, k, m, hash, expand, DST: _DST } = options;
+    isBytes(msg);
+    isNum(count);
+    const DST = validateDST(_DST);
+    const log2p = p.toString(2).length;
+    const L = Math.ceil((log2p + k) / 8); // section 5.1 of ietf draft link above
+    const len_in_bytes = count * m * L;
+    let prb; // pseudo_random_bytes
+    if (expand === 'xmd') {
+        prb = expand_message_xmd(msg, DST, len_in_bytes, hash);
+    }
+    else if (expand === 'xof') {
+        prb = expand_message_xof(msg, DST, len_in_bytes, k, hash);
+    }
+    else if (expand === '_internal_pass') {
+        // for internal tests only
+        prb = msg;
+    }
+    else {
+        throw new Error('expand must be "xmd" or "xof"');
+    }
+    const u = new Array(count);
+    for (let i = 0; i < count; i++) {
+        const e = new Array(m);
+        for (let j = 0; j < m; j++) {
+            const elm_offset = L * (j + i * m);
+            const tv = prb.subarray(elm_offset, elm_offset + L);
+            e[j] = mod(os2ip(tv), p);
+        }
+        u[i] = e;
+    }
+    return u;
+}
+function isogenyMap(field, map) {
+    // Make same order as in spec
+    const COEFF = map.map((i) => Array.from(i).reverse());
+    return (x, y) => {
+        const [xNum, xDen, yNum, yDen] = COEFF.map((val) => val.reduce((acc, i) => field.add(field.mul(acc, x), i)));
+        x = field.div(xNum, xDen); // xNum / xDen
+        y = field.mul(y, field.div(yNum, yDen)); // y * (yNum / yDev)
+        return { x, y };
+    };
+}
+function createHasher(Point, mapToCurve, def) {
+    if (typeof mapToCurve !== 'function')
+        throw new Error('mapToCurve() must be defined');
+    return {
+        // Encodes byte string to elliptic curve
+        // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-16#section-3
+        hashToCurve(msg, options) {
+            const u = hash_to_field(msg, 2, { ...def, DST: def.DST, ...options });
+            const u0 = Point.fromAffine(mapToCurve(u[0]));
+            const u1 = Point.fromAffine(mapToCurve(u[1]));
+            const P = u0.add(u1).clearCofactor();
+            P.assertValidity();
+            return P;
+        },
+        // https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-16#section-3
+        encodeToCurve(msg, options) {
+            const u = hash_to_field(msg, 1, { ...def, DST: def.encodeDST, ...options });
+            const P = Point.fromAffine(mapToCurve(u[0])).clearCofactor();
+            P.assertValidity();
+            return P;
+        },
     };
 }
 
@@ -6450,8 +6770,171 @@ const secp256k1 = createCurve({
 }, sha256$1);
 // Schnorr signatures are superior to ECDSA from above. Below is Schnorr-specific BIP0340 code.
 // https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
-BigInt(0);
-secp256k1.ProjectivePoint;
+const _0n = BigInt(0);
+const fe = (x) => typeof x === 'bigint' && _0n < x && x < secp256k1P;
+const ge = (x) => typeof x === 'bigint' && _0n < x && x < secp256k1N;
+/** An object mapping tags to their tagged hash prefix of [SHA256(tag) | SHA256(tag)] */
+const TAGGED_HASH_PREFIXES = {};
+function taggedHash(tag, ...messages) {
+    let tagP = TAGGED_HASH_PREFIXES[tag];
+    if (tagP === undefined) {
+        const tagH = sha256$1(Uint8Array.from(tag, (c) => c.charCodeAt(0)));
+        tagP = concatBytes(tagH, tagH);
+        TAGGED_HASH_PREFIXES[tag] = tagP;
+    }
+    return sha256$1(concatBytes(tagP, ...messages));
+}
+// ECDSA compact points are 33-byte. Schnorr is 32: we strip first byte 0x02 or 0x03
+const pointToBytes = (point) => point.toRawBytes(true).slice(1);
+const numTo32b = (n) => numberToBytesBE(n, 32);
+const modP = (x) => mod(x, secp256k1P);
+const modN = (x) => mod(x, secp256k1N);
+const Point = secp256k1.ProjectivePoint;
+const GmulAdd = (Q, a, b) => Point.BASE.multiplyAndAddUnsafe(Q, a, b);
+// Calculate point, scalar and bytes
+function schnorrGetExtPubKey(priv) {
+    let d_ = secp256k1.utils.normPrivateKeyToScalar(priv); // same method executed in fromPrivateKey
+    let p = Point.fromPrivateKey(d_); // P = d'⋅G; 0 < d' < n check is done inside
+    const scalar = p.hasEvenY() ? d_ : modN(-d_);
+    return { scalar: scalar, bytes: pointToBytes(p) };
+}
+/**
+ * lift_x from BIP340. Convert 32-byte x coordinate to elliptic curve point.
+ * @returns valid point checked for being on-curve
+ */
+function lift_x(x) {
+    if (!fe(x))
+        throw new Error('bad x: need 0 < x < p'); // Fail if x ≥ p.
+    const xx = modP(x * x);
+    const c = modP(xx * x + BigInt(7)); // Let c = x³ + 7 mod p.
+    let y = sqrtMod(c); // Let y = c^(p+1)/4 mod p.
+    if (y % _2n !== _0n)
+        y = modP(-y); // Return the unique point P such that x(P) = x and
+    const p = new Point(x, y, _1n); // y(P) = y if y mod 2 = 0 or y(P) = p-y otherwise.
+    p.assertValidity();
+    return p;
+}
+/**
+ * Create tagged hash, convert it to bigint, reduce modulo-n.
+ */
+function challenge(...args) {
+    return modN(bytesToNumberBE(taggedHash('BIP0340/challenge', ...args)));
+}
+/**
+ * Schnorr public key is just `x` coordinate of Point as per BIP340.
+ */
+function schnorrGetPublicKey(privateKey) {
+    return schnorrGetExtPubKey(privateKey).bytes; // d'=int(sk). Fail if d'=0 or d'≥n. Ret bytes(d'⋅G)
+}
+/**
+ * Creates Schnorr signature as per BIP340. Verifies itself before returning anything.
+ * auxRand is optional and is not the sole source of k generation: bad CSPRNG won't be dangerous.
+ */
+function schnorrSign(message, privateKey, auxRand = randomBytes$2(32)) {
+    const m = ensureBytes('message', message);
+    const { bytes: px, scalar: d } = schnorrGetExtPubKey(privateKey); // checks for isWithinCurveOrder
+    const a = ensureBytes('auxRand', auxRand, 32); // Auxiliary random data a: a 32-byte array
+    const t = numTo32b(d ^ bytesToNumberBE(taggedHash('BIP0340/aux', a))); // Let t be the byte-wise xor of bytes(d) and hash/aux(a)
+    const rand = taggedHash('BIP0340/nonce', t, px, m); // Let rand = hash/nonce(t || bytes(P) || m)
+    const k_ = modN(bytesToNumberBE(rand)); // Let k' = int(rand) mod n
+    if (k_ === _0n)
+        throw new Error('sign failed: k is zero'); // Fail if k' = 0.
+    const { bytes: rx, scalar: k } = schnorrGetExtPubKey(k_); // Let R = k'⋅G.
+    const e = challenge(rx, px, m); // Let e = int(hash/challenge(bytes(R) || bytes(P) || m)) mod n.
+    const sig = new Uint8Array(64); // Let sig = bytes(R) || bytes((k + ed) mod n).
+    sig.set(rx, 0);
+    sig.set(numTo32b(modN(k + e * d)), 32);
+    // If Verify(bytes(P), m, sig) (see below) returns failure, abort
+    if (!schnorrVerify(sig, m, px))
+        throw new Error('sign: Invalid signature produced');
+    return sig;
+}
+/**
+ * Verifies Schnorr signature.
+ * Will swallow errors & return false except for initial type validation of arguments.
+ */
+function schnorrVerify(signature, message, publicKey) {
+    const sig = ensureBytes('signature', signature, 64);
+    const m = ensureBytes('message', message);
+    const pub = ensureBytes('publicKey', publicKey, 32);
+    try {
+        const P = lift_x(bytesToNumberBE(pub)); // P = lift_x(int(pk)); fail if that fails
+        const r = bytesToNumberBE(sig.subarray(0, 32)); // Let r = int(sig[0:32]); fail if r ≥ p.
+        if (!fe(r))
+            return false;
+        const s = bytesToNumberBE(sig.subarray(32, 64)); // Let s = int(sig[32:64]); fail if s ≥ n.
+        if (!ge(s))
+            return false;
+        const e = challenge(numTo32b(r), pointToBytes(P), m); // int(challenge(bytes(r)||bytes(P)||m))%n
+        const R = GmulAdd(P, s, modN(-e)); // R = s⋅G - e⋅P
+        if (!R || !R.hasEvenY() || R.toAffine().x !== r)
+            return false; // -eP == (n-e)P
+        return true; // Fail if is_infinite(R) / not has_even_y(R) / x(R) ≠ r.
+    }
+    catch (error) {
+        return false;
+    }
+}
+const schnorr = {
+    getPublicKey: schnorrGetPublicKey,
+    sign: schnorrSign,
+    verify: schnorrVerify,
+    utils: {
+        randomPrivateKey: secp256k1.utils.randomPrivateKey,
+        lift_x,
+        pointToBytes,
+        numberToBytesBE,
+        bytesToNumberBE,
+        taggedHash,
+        mod,
+    },
+};
+const isoMap = isogenyMap(Fp, [
+    // xNum
+    [
+        '0x8e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38daaaaa8c7',
+        '0x7d3d4c80bc321d5b9f315cea7fd44c5d595d2fc0bf63b92dfff1044f17c6581',
+        '0x534c328d23f234e6e2a413deca25caece4506144037c40314ecbd0b53d9dd262',
+        '0x8e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38daaaaa88c',
+    ],
+    // xDen
+    [
+        '0xd35771193d94918a9ca34ccbb7b640dd86cd409542f8487d9fe6b745781eb49b',
+        '0xedadc6f64383dc1df7c4b2d51b54225406d36b641f5e41bbc52a56612a8c6d14',
+        '0x0000000000000000000000000000000000000000000000000000000000000001', // LAST 1
+    ],
+    // yNum
+    [
+        '0x4bda12f684bda12f684bda12f684bda12f684bda12f684bda12f684b8e38e23c',
+        '0xc75e0c32d5cb7c0fa9d0a54b12a0a6d5647ab046d686da6fdffc90fc201d71a3',
+        '0x29a6194691f91a73715209ef6512e576722830a201be2018a765e85a9ecee931',
+        '0x2f684bda12f684bda12f684bda12f684bda12f684bda12f684bda12f38e38d84',
+    ],
+    // yDen
+    [
+        '0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffff93b',
+        '0x7a06534bb8bdb49fd5e9e6632722c2989467c1bfc8e8d978dfb425d2685c2573',
+        '0x6484aa716545ca2cf3a70c3fa8fe337e0a3d21162f0d6299a7bf8192bfd2a76f',
+        '0x0000000000000000000000000000000000000000000000000000000000000001', // LAST 1
+    ],
+].map((i) => i.map((j) => BigInt(j))));
+const mapSWU = mapToCurveSimpleSWU(Fp, {
+    A: BigInt('0x3f8731abdd661adca08a5558f0f5d272e953d363cb6f0e5d405447c01a444533'),
+    B: BigInt('1771'),
+    Z: Fp.create(BigInt('-11')),
+});
+const { hashToCurve, encodeToCurve } = createHasher(secp256k1.ProjectivePoint, (scalars) => {
+    const { x, y } = mapSWU(Fp.create(scalars[0]));
+    return isoMap(x, y);
+}, {
+    DST: 'secp256k1_XMD:SHA-256_SSWU_RO_',
+    encodeDST: 'secp256k1_XMD:SHA-256_SSWU_NU_',
+    p: Fp.ORDER,
+    m: 1,
+    k: 128,
+    expand: 'xmd',
+    hash: sha256$1,
+});
 
 /**
  *  A constant for the zero address.
@@ -6511,6 +6994,12 @@ const EtherSymbol = "\u039e"; // "\uD835\uDF63";
  *  (**i.e.** ``"\\x19Ethereum Signed Message:\\n"``)
  */
 const MessagePrefix = "\x19Ethereum Signed Message:\n";
+
+/**
+ *  Some common constants useful for Ethereum.
+ *
+ *  @_section: api/constants: Constants  [about-constants]
+ */
 
 // Constants
 const BN_0$7 = BigInt(0);
@@ -6735,6 +7224,7 @@ class Signature {
         function assertError(check, message) {
             assertArgument(check, message, "signature", sig);
         }
+        ;
         if (sig == null) {
             return new Signature(_guard$3, ZeroHash, ZeroHash, 27);
         }
@@ -6791,7 +7281,7 @@ class Signature {
                 return { v: ((getBytes(yParityAndS)[0] & 0x80) ? 28 : 27) };
             }
             if (yParity != null) {
-                switch (getNumber(yParity, "sig.yParity")) {
+                switch (yParity) {
                     case 0: return { v: 27 };
                     case 1: return { v: 28 };
                 }
@@ -6804,8 +7294,8 @@ class Signature {
             result.#networkV = networkV;
         }
         // If multiple of v, yParity, yParityAndS we given, check they match
-        assertError(sig.yParity == null || getNumber(sig.yParity, "sig.yParity") === result.yParity, "yParity mismatch");
-        assertError(sig.yParityAndS == null || sig.yParityAndS === result.yParityAndS, "yParityAndS mismatch");
+        assertError(!("yParity" in sig && sig.yParity !== result.yParity), "yParity mismatch");
+        assertError(!("yParityAndS" in sig && sig.yParityAndS !== result.yParityAndS), "yParityAndS mismatch");
         return result;
     }
 }
@@ -6815,6 +7305,11 @@ class Signature {
  *
  *  @_subsection: api/crypto:Signing  [about-signing]
  */
+//const N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+// Make noble-secp256k1 sync
+//secp256k1.utils.hmacSha256Sync = function(key: Uint8Array, ...messages: Array<Uint8Array>): Uint8Array {
+//    return getBytes(computeHmac("sha256", key, concat(messages)));
+//}
 /**
  *  A **SigningKey** provides high-level access to the elliptic curve
  *  cryptography (ECC) operations and key management.
@@ -6885,6 +7380,7 @@ class SigningKey {
      */
     computeSharedSecret(other) {
         const pubKey = SigningKey.computePublicKey(other);
+        console.log(pubKey);
         return hexlify(secp256k1.getSharedSecret(getBytesCopy(this.#privateKey), getBytes(pubKey), false));
     }
     /**
@@ -6950,11 +7446,12 @@ class SigningKey {
     static recoverPublicKey(digest, signature) {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
         const sig = Signature.from(signature);
-        let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s])));
-        secpSig = secpSig.addRecoveryBit(sig.yParity);
+        const secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s])));
+        secpSig.addRecoveryBit(sig.yParity);
         const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
         assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
-        return "0x" + pubKey.toHex(false);
+        console.log("SS2", pubKey);
+        return hexlify(pubKey.toHex(false));
     }
     /**
      *  Returns the point resulting from adding the ellipic curve points
@@ -6979,10 +7476,7 @@ class SigningKey {
  *
  *  @_section: api/crypto:Cryptographic Functions   [about-crypto]
  */
-/**
- *  Once called, prevents any future change to the underlying cryptographic
- *  primitives using the ``.register`` feature for hooks.
- */
+null;
 function lock() {
     computeHmac.lock();
     keccak256.lock();
@@ -7046,7 +7540,9 @@ function ibanChecksum(address) {
     }
     return checksum;
 }
+;
 const Base36 = (function () {
+    ;
     const result = {};
     for (let i = 0; i < 36; i++) {
         const key = "0123456789abcdefghijklmnopqrstuvwxyz"[i];
@@ -7267,7 +7763,7 @@ function isAddress(value) {
 async function checkAddress(target, promise) {
     const result = await promise;
     if (result == null || result === "0x0000000000000000000000000000000000000000") {
-        assert(typeof (target) !== "string", "unconfigured name", "UNCONFIGURED_NAME", { value: target });
+        assert$1(typeof (target) !== "string", "unconfigured name", "UNCONFIGURED_NAME", { value: target });
         assertArgument(false, "invalid AddressLike value; did not resolve to a value address", "target", target);
     }
     return getAddress(result);
@@ -7314,7 +7810,7 @@ function resolveAddress(target, resolver) {
         if (target.match(/^0x[0-9a-f]{40}$/i)) {
             return getAddress(target);
         }
-        assert(resolver != null, "ENS resolution requires a provider", "UNSUPPORTED_OPERATION", { operation: "resolveName" });
+        assert$1(resolver != null, "ENS resolution requires a provider", "UNSUPPORTED_OPERATION", { operation: "resolveName" });
         return checkAddress(target, resolver.resolveName(target));
     }
     else if (isAddressable(target)) {
@@ -7325,6 +7821,22 @@ function resolveAddress(target, resolver) {
     }
     assertArgument(false, "unsupported addressable value", "target", target);
 }
+
+/**
+ *  Addresses are a fundamental part of interacting with Ethereum. They
+ *  represent the gloabal identity of Externally Owned Accounts (accounts
+ *  backed by a private key) and contracts.
+ *
+ *  The Ethereum Naming Service (ENS) provides an interconnected ecosystem
+ *  of contracts, standards and libraries which enable looking up an
+ *  address for an ENS name.
+ *
+ *  These functions help convert between various formats, validate
+ *  addresses and safely resolve ENS names.
+ *
+ *  @_section: api/address:Addresses  [about-addresses]
+ */
+null;
 
 /**
  *  A Typed object allows a value to have its type explicitly
@@ -7355,26 +7867,11 @@ function b(value, size) {
     return new Typed(_gaurd, `bytes${(size) ? size : ""}`, value, { size });
 }
 const _typedSymbol = Symbol.for("_ethers_typed");
-/**
- *  The **Typed** class to wrap values providing explicit type information.
- */
 class Typed {
-    /**
-     *  The type, as a Solidity-compatible type.
-     */
     type;
-    /**
-     *  The actual value.
-     */
     value;
     #options;
-    /**
-     *  @_ignore:
-     */
     _typedSymbol;
-    /**
-     *  @_ignore:
-     */
     constructor(gaurd, type, value, options) {
         if (options == null) {
             options = null;
@@ -7385,9 +7882,6 @@ class Typed {
         // Check the value is valid
         this.format();
     }
-    /**
-     *  Format the type as a Human-Readable type.
-     */
     format() {
         if (this.type === "array") {
             throw new Error("");
@@ -7400,45 +7894,24 @@ class Typed {
         }
         return this.type;
     }
-    /**
-     *  The default value returned by this type.
-     */
     defaultValue() {
         return 0;
     }
-    /**
-     *  The minimum value for numeric types.
-     */
     minValue() {
         return 0;
     }
-    /**
-     *  The maximum value for numeric types.
-     */
     maxValue() {
         return 0;
     }
-    /**
-     *  Returns ``true`` and provides a type guard is this is a [[TypedBigInt]].
-     */
     isBigInt() {
         return !!(this.type.match(/^u?int[0-9]+$/));
     }
-    /**
-     *  Returns ``true`` and provides a type guard is this is a [[TypedData]].
-     */
     isData() {
         return this.type.startsWith("bytes");
     }
-    /**
-     *  Returns ``true`` and provides a type guard is this is a [[TypedString]].
-     */
     isString() {
         return (this.type === "string");
     }
-    /**
-     *  Returns the tuple name, if this is a tuple. Throws otherwise.
-     */
     get tupleName() {
         if (this.type !== "tuple") {
             throw TypeError("not a tuple");
@@ -7449,11 +7922,6 @@ class Typed {
     // - `null` indicates the length is unforced, it could be dynamic
     // - `-1` indicates the length is dynamic
     // - any other value indicates it is a static array and is its length
-    /**
-     *  Returns the length of the array type or ``-1`` if it is dynamic.
-     *
-     *  Throws if the type is not an array.
-     */
     get arrayLength() {
         if (this.type !== "array") {
             throw TypeError("not an array");
@@ -7466,435 +7934,119 @@ class Typed {
         }
         return null;
     }
-    /**
-     *  Returns a new **Typed** of %%type%% with the %%value%%.
-     */
     static from(type, value) {
         return new Typed(_gaurd, type, value);
     }
-    /**
-     *  Return a new ``uint8`` type for %%v%%.
-     */
     static uint8(v) { return n(v, 8); }
-    /**
-     *  Return a new ``uint16`` type for %%v%%.
-     */
     static uint16(v) { return n(v, 16); }
-    /**
-     *  Return a new ``uint24`` type for %%v%%.
-     */
     static uint24(v) { return n(v, 24); }
-    /**
-     *  Return a new ``uint32`` type for %%v%%.
-     */
     static uint32(v) { return n(v, 32); }
-    /**
-     *  Return a new ``uint40`` type for %%v%%.
-     */
     static uint40(v) { return n(v, 40); }
-    /**
-     *  Return a new ``uint48`` type for %%v%%.
-     */
     static uint48(v) { return n(v, 48); }
-    /**
-     *  Return a new ``uint56`` type for %%v%%.
-     */
     static uint56(v) { return n(v, 56); }
-    /**
-     *  Return a new ``uint64`` type for %%v%%.
-     */
     static uint64(v) { return n(v, 64); }
-    /**
-     *  Return a new ``uint72`` type for %%v%%.
-     */
     static uint72(v) { return n(v, 72); }
-    /**
-     *  Return a new ``uint80`` type for %%v%%.
-     */
     static uint80(v) { return n(v, 80); }
-    /**
-     *  Return a new ``uint88`` type for %%v%%.
-     */
     static uint88(v) { return n(v, 88); }
-    /**
-     *  Return a new ``uint96`` type for %%v%%.
-     */
     static uint96(v) { return n(v, 96); }
-    /**
-     *  Return a new ``uint104`` type for %%v%%.
-     */
     static uint104(v) { return n(v, 104); }
-    /**
-     *  Return a new ``uint112`` type for %%v%%.
-     */
     static uint112(v) { return n(v, 112); }
-    /**
-     *  Return a new ``uint120`` type for %%v%%.
-     */
     static uint120(v) { return n(v, 120); }
-    /**
-     *  Return a new ``uint128`` type for %%v%%.
-     */
     static uint128(v) { return n(v, 128); }
-    /**
-     *  Return a new ``uint136`` type for %%v%%.
-     */
     static uint136(v) { return n(v, 136); }
-    /**
-     *  Return a new ``uint144`` type for %%v%%.
-     */
     static uint144(v) { return n(v, 144); }
-    /**
-     *  Return a new ``uint152`` type for %%v%%.
-     */
     static uint152(v) { return n(v, 152); }
-    /**
-     *  Return a new ``uint160`` type for %%v%%.
-     */
     static uint160(v) { return n(v, 160); }
-    /**
-     *  Return a new ``uint168`` type for %%v%%.
-     */
     static uint168(v) { return n(v, 168); }
-    /**
-     *  Return a new ``uint176`` type for %%v%%.
-     */
     static uint176(v) { return n(v, 176); }
-    /**
-     *  Return a new ``uint184`` type for %%v%%.
-     */
     static uint184(v) { return n(v, 184); }
-    /**
-     *  Return a new ``uint192`` type for %%v%%.
-     */
     static uint192(v) { return n(v, 192); }
-    /**
-     *  Return a new ``uint200`` type for %%v%%.
-     */
     static uint200(v) { return n(v, 200); }
-    /**
-     *  Return a new ``uint208`` type for %%v%%.
-     */
     static uint208(v) { return n(v, 208); }
-    /**
-     *  Return a new ``uint216`` type for %%v%%.
-     */
     static uint216(v) { return n(v, 216); }
-    /**
-     *  Return a new ``uint224`` type for %%v%%.
-     */
     static uint224(v) { return n(v, 224); }
-    /**
-     *  Return a new ``uint232`` type for %%v%%.
-     */
     static uint232(v) { return n(v, 232); }
-    /**
-     *  Return a new ``uint240`` type for %%v%%.
-     */
     static uint240(v) { return n(v, 240); }
-    /**
-     *  Return a new ``uint248`` type for %%v%%.
-     */
     static uint248(v) { return n(v, 248); }
-    /**
-     *  Return a new ``uint256`` type for %%v%%.
-     */
     static uint256(v) { return n(v, 256); }
-    /**
-     *  Return a new ``uint256`` type for %%v%%.
-     */
     static uint(v) { return n(v, 256); }
-    /**
-     *  Return a new ``int8`` type for %%v%%.
-     */
     static int8(v) { return n(v, -8); }
-    /**
-     *  Return a new ``int16`` type for %%v%%.
-     */
     static int16(v) { return n(v, -16); }
-    /**
-     *  Return a new ``int24`` type for %%v%%.
-     */
     static int24(v) { return n(v, -24); }
-    /**
-     *  Return a new ``int32`` type for %%v%%.
-     */
     static int32(v) { return n(v, -32); }
-    /**
-     *  Return a new ``int40`` type for %%v%%.
-     */
     static int40(v) { return n(v, -40); }
-    /**
-     *  Return a new ``int48`` type for %%v%%.
-     */
     static int48(v) { return n(v, -48); }
-    /**
-     *  Return a new ``int56`` type for %%v%%.
-     */
     static int56(v) { return n(v, -56); }
-    /**
-     *  Return a new ``int64`` type for %%v%%.
-     */
     static int64(v) { return n(v, -64); }
-    /**
-     *  Return a new ``int72`` type for %%v%%.
-     */
     static int72(v) { return n(v, -72); }
-    /**
-     *  Return a new ``int80`` type for %%v%%.
-     */
     static int80(v) { return n(v, -80); }
-    /**
-     *  Return a new ``int88`` type for %%v%%.
-     */
     static int88(v) { return n(v, -88); }
-    /**
-     *  Return a new ``int96`` type for %%v%%.
-     */
     static int96(v) { return n(v, -96); }
-    /**
-     *  Return a new ``int104`` type for %%v%%.
-     */
     static int104(v) { return n(v, -104); }
-    /**
-     *  Return a new ``int112`` type for %%v%%.
-     */
     static int112(v) { return n(v, -112); }
-    /**
-     *  Return a new ``int120`` type for %%v%%.
-     */
     static int120(v) { return n(v, -120); }
-    /**
-     *  Return a new ``int128`` type for %%v%%.
-     */
     static int128(v) { return n(v, -128); }
-    /**
-     *  Return a new ``int136`` type for %%v%%.
-     */
     static int136(v) { return n(v, -136); }
-    /**
-     *  Return a new ``int144`` type for %%v%%.
-     */
     static int144(v) { return n(v, -144); }
-    /**
-     *  Return a new ``int52`` type for %%v%%.
-     */
     static int152(v) { return n(v, -152); }
-    /**
-     *  Return a new ``int160`` type for %%v%%.
-     */
     static int160(v) { return n(v, -160); }
-    /**
-     *  Return a new ``int168`` type for %%v%%.
-     */
     static int168(v) { return n(v, -168); }
-    /**
-     *  Return a new ``int176`` type for %%v%%.
-     */
     static int176(v) { return n(v, -176); }
-    /**
-     *  Return a new ``int184`` type for %%v%%.
-     */
     static int184(v) { return n(v, -184); }
-    /**
-     *  Return a new ``int92`` type for %%v%%.
-     */
     static int192(v) { return n(v, -192); }
-    /**
-     *  Return a new ``int200`` type for %%v%%.
-     */
     static int200(v) { return n(v, -200); }
-    /**
-     *  Return a new ``int208`` type for %%v%%.
-     */
     static int208(v) { return n(v, -208); }
-    /**
-     *  Return a new ``int216`` type for %%v%%.
-     */
     static int216(v) { return n(v, -216); }
-    /**
-     *  Return a new ``int224`` type for %%v%%.
-     */
     static int224(v) { return n(v, -224); }
-    /**
-     *  Return a new ``int232`` type for %%v%%.
-     */
     static int232(v) { return n(v, -232); }
-    /**
-     *  Return a new ``int240`` type for %%v%%.
-     */
     static int240(v) { return n(v, -240); }
-    /**
-     *  Return a new ``int248`` type for %%v%%.
-     */
     static int248(v) { return n(v, -248); }
-    /**
-     *  Return a new ``int256`` type for %%v%%.
-     */
     static int256(v) { return n(v, -256); }
-    /**
-     *  Return a new ``int256`` type for %%v%%.
-     */
     static int(v) { return n(v, -256); }
-    /**
-     *  Return a new ``bytes1`` type for %%v%%.
-     */
     static bytes1(v) { return b(v, 1); }
-    /**
-     *  Return a new ``bytes2`` type for %%v%%.
-     */
     static bytes2(v) { return b(v, 2); }
-    /**
-     *  Return a new ``bytes3`` type for %%v%%.
-     */
     static bytes3(v) { return b(v, 3); }
-    /**
-     *  Return a new ``bytes4`` type for %%v%%.
-     */
     static bytes4(v) { return b(v, 4); }
-    /**
-     *  Return a new ``bytes5`` type for %%v%%.
-     */
     static bytes5(v) { return b(v, 5); }
-    /**
-     *  Return a new ``bytes6`` type for %%v%%.
-     */
     static bytes6(v) { return b(v, 6); }
-    /**
-     *  Return a new ``bytes7`` type for %%v%%.
-     */
     static bytes7(v) { return b(v, 7); }
-    /**
-     *  Return a new ``bytes8`` type for %%v%%.
-     */
     static bytes8(v) { return b(v, 8); }
-    /**
-     *  Return a new ``bytes9`` type for %%v%%.
-     */
     static bytes9(v) { return b(v, 9); }
-    /**
-     *  Return a new ``bytes10`` type for %%v%%.
-     */
     static bytes10(v) { return b(v, 10); }
-    /**
-     *  Return a new ``bytes11`` type for %%v%%.
-     */
     static bytes11(v) { return b(v, 11); }
-    /**
-     *  Return a new ``bytes12`` type for %%v%%.
-     */
     static bytes12(v) { return b(v, 12); }
-    /**
-     *  Return a new ``bytes13`` type for %%v%%.
-     */
     static bytes13(v) { return b(v, 13); }
-    /**
-     *  Return a new ``bytes14`` type for %%v%%.
-     */
     static bytes14(v) { return b(v, 14); }
-    /**
-     *  Return a new ``bytes15`` type for %%v%%.
-     */
     static bytes15(v) { return b(v, 15); }
-    /**
-     *  Return a new ``bytes16`` type for %%v%%.
-     */
     static bytes16(v) { return b(v, 16); }
-    /**
-     *  Return a new ``bytes17`` type for %%v%%.
-     */
     static bytes17(v) { return b(v, 17); }
-    /**
-     *  Return a new ``bytes18`` type for %%v%%.
-     */
     static bytes18(v) { return b(v, 18); }
-    /**
-     *  Return a new ``bytes19`` type for %%v%%.
-     */
     static bytes19(v) { return b(v, 19); }
-    /**
-     *  Return a new ``bytes20`` type for %%v%%.
-     */
     static bytes20(v) { return b(v, 20); }
-    /**
-     *  Return a new ``bytes21`` type for %%v%%.
-     */
     static bytes21(v) { return b(v, 21); }
-    /**
-     *  Return a new ``bytes22`` type for %%v%%.
-     */
     static bytes22(v) { return b(v, 22); }
-    /**
-     *  Return a new ``bytes23`` type for %%v%%.
-     */
     static bytes23(v) { return b(v, 23); }
-    /**
-     *  Return a new ``bytes24`` type for %%v%%.
-     */
     static bytes24(v) { return b(v, 24); }
-    /**
-     *  Return a new ``bytes25`` type for %%v%%.
-     */
     static bytes25(v) { return b(v, 25); }
-    /**
-     *  Return a new ``bytes26`` type for %%v%%.
-     */
     static bytes26(v) { return b(v, 26); }
-    /**
-     *  Return a new ``bytes27`` type for %%v%%.
-     */
     static bytes27(v) { return b(v, 27); }
-    /**
-     *  Return a new ``bytes28`` type for %%v%%.
-     */
     static bytes28(v) { return b(v, 28); }
-    /**
-     *  Return a new ``bytes29`` type for %%v%%.
-     */
     static bytes29(v) { return b(v, 29); }
-    /**
-     *  Return a new ``bytes30`` type for %%v%%.
-     */
     static bytes30(v) { return b(v, 30); }
-    /**
-     *  Return a new ``bytes31`` type for %%v%%.
-     */
     static bytes31(v) { return b(v, 31); }
-    /**
-     *  Return a new ``bytes32`` type for %%v%%.
-     */
     static bytes32(v) { return b(v, 32); }
-    /**
-     *  Return a new ``address`` type for %%v%%.
-     */
     static address(v) { return new Typed(_gaurd, "address", v); }
-    /**
-     *  Return a new ``bool`` type for %%v%%.
-     */
     static bool(v) { return new Typed(_gaurd, "bool", !!v); }
-    /**
-     *  Return a new ``bytes`` type for %%v%%.
-     */
     static bytes(v) { return new Typed(_gaurd, "bytes", v); }
-    /**
-     *  Return a new ``string`` type for %%v%%.
-     */
     static string(v) { return new Typed(_gaurd, "string", v); }
-    /**
-     *  Return a new ``array`` type for %%v%%, allowing %%dynamic%% length.
-     */
     static array(v, dynamic) {
         throw new Error("not implemented yet");
+        return new Typed(_gaurd, "array", v, dynamic);
     }
-    /**
-     *  Return a new ``tuple`` type for %%v%%, with the optional %%name%%.
-     */
     static tuple(v, name) {
         throw new Error("not implemented yet");
+        return new Typed(_gaurd, "tuple", v, name);
     }
-    /**
-     *  Return a new ``uint8`` type for %%v%%.
-     */
     static overrides(v) {
         return new Typed(_gaurd, "overrides", Object.assign({}, v));
     }
@@ -7902,10 +8054,7 @@ class Typed {
      *  Returns true only if %%value%% is a [[Typed]] instance.
      */
     static isTyped(value) {
-        return (value
-            && typeof (value) === "object"
-            && "_typedSymbol" in value
-            && value._typedSymbol === _typedSymbol);
+        return (value && value._typedSymbol === _typedSymbol);
     }
     /**
      *  If the value is a [[Typed]] instance, validates the underlying value
@@ -7984,8 +8133,8 @@ function pack(writer, coders, values) {
         let unique = {};
         arrayValues = coders.map((coder) => {
             const name = coder.localName;
-            assert(name, "cannot encode object for signature with missing names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
-            assert(!unique[name], "cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
+            assert$1(name, "cannot encode object for signature with missing names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
+            assert$1(!unique[name], "cannot encode object for signature with duplicate names", "INVALID_ARGUMENT", { argument: "values", info: { coder }, value: values });
             unique[name] = true;
             return values[name];
         });
@@ -8117,7 +8266,7 @@ class ArrayCoder extends Coder {
             // slot requires at least 32 bytes for their value (or 32
             // bytes as a link to the data). This could use a much
             // tighter bound, but we are erroring on the side of safety.
-            assert(count * WordSize <= reader.dataLength, "insufficient data length", "BUFFER_OVERRUN", { buffer: reader.bytes, offset: count * WordSize, length: reader.dataLength });
+            assert$1(count * WordSize <= reader.dataLength, "insufficient data length", "BUFFER_OVERRUN", { buffer: reader.bytes, offset: count * WordSize, length: reader.dataLength });
         }
         let coders = [];
         for (let i = 0; i < count; i++) {
@@ -8360,15 +8509,6 @@ function id(value) {
     return keccak256(toUtf8Bytes(value));
 }
 
-// created 2023-09-12T22:05:14.211Z
-// compressed base64-encoded blob for include-ens data
-// source: https://github.com/adraffy/ens-normalize.js/blob/main/src/make.js
-// see: https://github.com/adraffy/ens-normalize.js#security
-// SHA-256: 0565ed049b9cf1614bb9e11ba7d8ac6a6fb96c893253d890f7e2b2884b9ded32
-var COMPRESSED$1 = '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';
-const FENCED = new Map([[8217,"apostrophe"],[8260,"fraction slash"],[12539,"middle dot"]]);
-const NSM_MAX = 4;
-
 function decode_arithmetic(bytes) {
 	let pos = 0;
 	function u16() { return (bytes[pos++] << 8) | bytes[pos++]; }
@@ -8462,7 +8602,6 @@ function read_compressed_payload(s) {
 
 // unsafe in the sense:
 // expected well-formed Base64 w/o padding 
-// 20220922: added for https://github.com/adraffy/ens-normalize.js/issues/4
 function unsafe_atob(s) {
 	let lookup = [];
 	[...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'].forEach((c, i) => lookup[c.charCodeAt(0)] = i);
@@ -8574,31 +8713,10 @@ function read_replacement_table(w, next) {
 	return m.map(v => [v[0], v.slice(1)]);
 }
 
-
-function read_trie(next) {
-	let ret = [];
-	let sorted = read_sorted(next); 
-	expand(decode([]), []);
-	return ret; // not sorted
-	function decode(Q) { // characters that lead into this node
-		let S = next(); // state: valid, save, check
-		let B = read_array_while(() => { // buckets leading to new nodes
-			let cps = read_sorted(next).map(i => sorted[i]);
-			if (cps.length) return decode(cps);
-		});
-		return {S, B, Q};
-	}
-	function expand({S, B}, cps, saved) {
-		if (S & 4 && saved === cps[cps.length-1]) return;
-		if (S & 2) saved = cps[cps.length-1];
-		if (S & 1) ret.push(cps); 
-		for (let br of B) {
-			for (let cp of br.Q) {
-				expand(br, [...cps, cp], saved);
-			}
-		}
-	}
-}
+// created 2023-02-21T09:18:13.549Z
+var r$1 = read_compressed_payload('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');
+const FENCED = new Map([[8217,"apostrophe"],[8260,"fraction slash"],[12539,"middle dot"]]);
+const NSM_MAX = 4;
 
 function hex_cp(cp) {
 	return cp.toString(16).toUpperCase().padStart(2, '0');
@@ -8641,17 +8759,34 @@ function compare_arrays(a, b) {
 	return c;
 }
 
-// created 2023-09-12T22:05:14.211Z
-// compressed base64-encoded blob for include-nf data
-// source: https://github.com/adraffy/ens-normalize.js/blob/main/src/make.js
-// see: https://github.com/adraffy/ens-normalize.js#security
-// SHA-256: a974b6f8541fc29d919bc85118af0a44015851fab5343f8679cb31be2bdb209e
-var COMPRESSED = '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';
+// created 2023-02-21T09:18:13.549Z
+var r = read_compressed_payload('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');
 
 // https://unicode.org/reports/tr15/
-// for reference implementation
-// see: /derive/nf.js
 
+function unpack_cc(packed) {
+	return (packed >> 24) & 0xFF;
+}
+function unpack_cp(packed) {
+	return packed & 0xFFFFFF;
+}
+
+const SHIFTED_RANK = new Map(read_sorted_arrays(r).flatMap((v, i) => v.map(x => [x, (i+1) << 24]))); // pre-shifted
+const EXCLUSIONS = new Set(read_sorted(r));
+const DECOMP = new Map();
+const RECOMP = new Map();
+for (let [cp, cps] of read_mapped(r)) {
+	if (!EXCLUSIONS.has(cp) && cps.length == 2) {
+		let [a, b] = cps;
+		let bucket = RECOMP.get(a);
+		if (!bucket) {
+			bucket = new Map();
+			RECOMP.set(a, bucket);
+		}
+		bucket.set(b, cp);
+	}
+	DECOMP.set(cp, cps.reverse()); // stored reversed
+}
 
 // algorithmic hangul
 // https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf (page 144)
@@ -8668,38 +8803,6 @@ const S1 = S0 + S_COUNT;
 const L1 = L0 + L_COUNT;
 const V1 = V0 + V_COUNT;
 const T1$1 = T0 + T_COUNT;
-
-function unpack_cc(packed) {
-	return (packed >> 24) & 0xFF;
-}
-function unpack_cp(packed) {
-	return packed & 0xFFFFFF;
-}
-
-let SHIFTED_RANK, EXCLUSIONS, DECOMP, RECOMP;
-
-function init$1() {
-	//console.time('nf');
-	let r = read_compressed_payload(COMPRESSED);
-	SHIFTED_RANK = new Map(read_sorted_arrays(r).flatMap((v, i) => v.map(x => [x, (i+1) << 24]))); // pre-shifted
-	EXCLUSIONS = new Set(read_sorted(r));
-	DECOMP = new Map();
-	RECOMP = new Map();
-	for (let [cp, cps] of read_mapped(r)) {
-		if (!EXCLUSIONS.has(cp) && cps.length == 2) {
-			let [a, b] = cps;
-			let bucket = RECOMP.get(a);
-			if (!bucket) {
-				bucket = new Map();
-				RECOMP.set(a, bucket);
-			}
-			bucket.set(b, cp);
-		}
-		DECOMP.set(cp, cps.reverse()); // stored reversed
-	}
-	//console.timeEnd('nf');
-	// 20230905: 11ms
-}
 
 function is_hangul(cp) {
 	return cp >= S0 && cp < S1;
@@ -8723,7 +8826,6 @@ function compose_pair(a, b) {
 }
 
 function decomposed(cps) {
-	if (!SHIFTED_RANK) init$1();
 	let ret = [];
 	let buf = [];
 	let check_order = false;
@@ -8832,170 +8934,166 @@ function nfc(cps) {
 	return composed_from_decomposed(decomposed(cps));
 }
 
-const HYPHEN = 0x2D;
-const STOP_CH = '.';
+//const t0 = performance.now();
+
+const STOP = 0x2E;
 const FE0F = 0xFE0F;
+const STOP_CH = '.';
 const UNIQUE_PH = 1;
+const HYPHEN = 0x2D;
 
-// 20230913: replace [...v] with Array_from(v) to avoid large spreads
-const Array_from = x => Array.from(x); // Array.from.bind(Array);
-
-function group_has_cp(g, cp) {
-	// 20230913: keep primary and secondary distinct instead of creating valid union
-	return g.P.has(cp) || g.Q.has(cp);
+function read_set() {
+	return new Set(read_sorted(r$1));
 }
-
-class Emoji extends Array {
-	get is_emoji() { return true; } // free tagging system
+const MAPPED = new Map(read_mapped(r$1)); 
+const IGNORED = read_set(); // ignored characters are not valid, so just read raw codepoints
+/*
+// direct include from payload is smaller that the decompression code
+const FENCED = new Map(read_array_while(() => {
+	let cp = r();
+	if (cp) return [cp, read_str(r())];
+}));
+*/
+// 20230217: we still need all CM for proper error formatting
+// but norm only needs NSM subset that are potentially-valid
+const CM = read_set();
+const NSM = new Set(read_sorted(r$1).map(function(i) { return this[i]; }, [...CM]));
+/*
+const CM_SORTED = read_sorted(r);
+const NSM = new Set(read_sorted(r).map(i => CM_SORTED[i]));
+const CM = new Set(CM_SORTED);
+*/
+const ESCAPE = read_set(); // characters that should not be printed
+const NFC_CHECK = read_set();
+const CHUNKS = read_sorted_arrays(r$1);
+function read_chunked() {
+	// deduplicated sets + uniques
+	return new Set([read_sorted(r$1).map(i => CHUNKS[i]), read_sorted(r$1)].flat(2));
 }
-
-let MAPPED, IGNORED, CM, NSM, ESCAPE, GROUPS, WHOLE_VALID, WHOLE_MAP, VALID, EMOJI_LIST, EMOJI_ROOT;
-
-function init() {
-	if (MAPPED) return;
-	
-	let r = read_compressed_payload(COMPRESSED$1);
-	const read_sorted_array = () => read_sorted(r);
-	const read_sorted_set = () => new Set(read_sorted_array());
-
-	MAPPED = new Map(read_mapped(r)); 
-	IGNORED = read_sorted_set(); // ignored characters are not valid, so just read raw codepoints
-
-	/*
-	// direct include from payload is smaller than the decompression code
-	const FENCED = new Map(read_array_while(() => {
-		let cp = r();
-		if (cp) return [cp, read_str(r())];
-	}));
-	*/
-	// 20230217: we still need all CM for proper error formatting
-	// but norm only needs NSM subset that are potentially-valid
-	CM = read_sorted_array();
-	NSM = new Set(read_sorted_array().map(i => CM[i]));
-	CM = new Set(CM);
-	
-	ESCAPE = read_sorted_set(); // characters that should not be printed
-	read_sorted_set(); // only needed to illustrate ens_tokenize() transformations
-
-	let chunks = read_sorted_arrays(r);
-	let unrestricted = r();
-	const read_chunked = () => new Set(read_sorted_array().flatMap(i => chunks[i]).concat(read_sorted_array()));
-	GROUPS = read_array_while(i => {
-		// minifier property mangling seems unsafe
-		// so these are manually renamed to single chars
-		let N = read_array_while(r).map(x => x+0x60);
-		if (N.length) {
-			let R = i >= unrestricted; // first arent restricted
-			N[0] -= 32; // capitalize
-			N = str_from_cps(N);
-			if (R) N=`Restricted[${N}]`;
-			let P = read_chunked(); // primary
-			let Q = read_chunked(); // secondary
-			let M = !r(); // not-whitelisted, check for NSM
-			// *** this code currently isn't needed ***
-			/*
-			let V = [...P, ...Q].sort((a, b) => a-b); // derive: sorted valid
-			let M = r()-1; // number of combining mark
-			if (M < 0) { // whitelisted
-				M = new Map(read_array_while(() => {
-					let i = r();
-					if (i) return [V[i-1], read_array_while(() => {
-						let v = read_array_while(r);
-						if (v.length) return v.map(x => x-1);
-					})];
-				}));
-			}*/
-			return {N, P, Q, M, R};
+const UNRESTRICTED = r$1();
+const GROUPS = read_array_while(i => {
+	// minifier property mangling seems unsafe
+	// so these are manually renamed to single chars
+	let N = read_array_while(r$1).map(x => x+0x60);
+	if (N.length) {
+		let R = i >= UNRESTRICTED; // first arent restricted
+		N[0] -= 32; // capitalize
+		N = str_from_cps(N);
+		if (R) N=`Restricted[${N}]`;
+		let P = read_chunked(); // primary
+		let Q = read_chunked(); // secondary
+		let V = [...P, ...Q].sort((a, b) => a-b); // derive: sorted valid
+		//let M = r()-1; // combining mark
+		let M = !r$1(); // not-whitelisted, check for NSM
+		// code currently isn't needed
+		/*if (M < 0) { // whitelisted
+			M = new Map(read_array_while(() => {
+				let i = r();
+				if (i) return [V[i-1], read_array_while(() => {
+					let v = read_array_while(r);
+					if (v.length) return v.map(x => x-1);
+				})];
+			}));
+		}*/
+		return {N, P, M, R, V: new Set(V)};
+	}
+});
+const WHOLE_VALID = read_set();
+const WHOLE_MAP = new Map();
+// decode compressed wholes
+[...WHOLE_VALID, ...read_set()].sort((a, b) => a-b).map((cp, i, v) => {
+	let d = r$1(); 
+	let w = v[i] = d ? v[i-d] : {V: [], M: new Map()};
+	w.V.push(cp); // add to member set
+	if (!WHOLE_VALID.has(cp)) {
+		WHOLE_MAP.set(cp, w);  // register with whole map
+	}
+});
+// compute confusable-extent complements
+for (let {V, M} of new Set(WHOLE_MAP.values())) {
+	// connect all groups that have each whole character
+	let recs = [];
+	for (let cp of V) {
+		let gs = GROUPS.filter(g => g.V.has(cp));
+		let rec = recs.find(({G}) => gs.some(g => G.has(g)));
+		if (!rec) {
+			rec = {G: new Set(), V: []};
+			recs.push(rec);
 		}
-	});
-
-	// decode compressed wholes
-	WHOLE_VALID = read_sorted_set();
-	WHOLE_MAP = new Map();
-	let wholes = read_sorted_array().concat(Array_from(WHOLE_VALID)).sort((a, b) => a-b); // must be sorted
-	wholes.forEach((cp, i) => {
-		let d = r(); 
-		let w = wholes[i] = d ? wholes[i-d] : {V: [], M: new Map()};
-		w.V.push(cp); // add to member set
-		if (!WHOLE_VALID.has(cp)) {
-			WHOLE_MAP.set(cp, w);  // register with whole map
-		}
-	});
-
-	// compute confusable-extent complements
-	for (let {V, M} of new Set(WHOLE_MAP.values())) {
-		// connect all groups that have each whole character
-		let recs = [];
+		rec.V.push(cp);
+		gs.forEach(g => rec.G.add(g));
+	}
+	// per character cache groups which are not a member of the extent
+	let union = recs.flatMap(({G}) => [...G]);
+	for (let {G, V} of recs) {
+		let complement = new Set(union.filter(g => !G.has(g)));
 		for (let cp of V) {
-			let gs = GROUPS.filter(g => group_has_cp(g, cp));
-			let rec = recs.find(({G}) => gs.some(g => G.has(g)));
-			if (!rec) {
-				rec = {G: new Set(), V: []};
-				recs.push(rec);
-			}
-			rec.V.push(cp);
-			gs.forEach(g => rec.G.add(g));
-		}
-		// per character cache groups which are not a member of the extent
-		let union = recs.flatMap(x => Array_from(x.G));
-		for (let {G, V} of recs) {
-			let complement = new Set(union.filter(g => !G.has(g)));
-			for (let cp of V) {
-				M.set(cp, complement);
-			}
+			M.set(cp, complement);
 		}
 	}
+}
+let union = new Set(); // exists in 1+ groups
+let multi = new Set(); // exists in 2+ groups
+for (let g of GROUPS) {
+	for (let cp of g.V) {
+		(union.has(cp) ? multi : union).add(cp);
+	}
+}
+// dual purpose WHOLE_MAP: return placeholder if unique non-confusable
+for (let cp of union) {
+	if (!WHOLE_MAP.has(cp) && !multi.has(cp)) {
+		WHOLE_MAP.set(cp, UNIQUE_PH);
+	}
+}
+const VALID = new Set([...union, ...nfd(union)]); // possibly valid
 
-	// compute valid set
-	let union = new Set(); // exists in 1+ groups
-	let multi = new Set(); // exists in 2+ groups
-	const add_to_union = cp => union.has(cp) ? multi.add(cp) : union.add(cp);
-	for (let g of GROUPS) {
-		for (let cp of g.P) add_to_union(cp);
-		for (let cp of g.Q) add_to_union(cp);
-	}
-	// dual purpose WHOLE_MAP: return placeholder if unique non-confusable
-	for (let cp of union) {
-		if (!WHOLE_MAP.has(cp) && !multi.has(cp)) {
-			WHOLE_MAP.set(cp, UNIQUE_PH);
-		}
-	}
-	VALID = new Set(Array_from(union).concat(Array_from(nfd(union)))); // possibly valid
+// decode emoji
+const EMOJI_SORTED = read_sorted(r$1); // temporary
+//const EMOJI_SOLO = new Set(read_sorted(r).map(i => EMOJI_SORTED[i])); // not needed
+const EMOJI_ROOT = read_emoji_trie([]);
+function read_emoji_trie(cps) {
+	let B = read_array_while(() => {
+		let keys = read_sorted(r$1).map(i => EMOJI_SORTED[i]);
+		if (keys.length) return read_emoji_trie(keys);
+	}).sort((a, b) => b.Q.size - a.Q.size); // sort by likelihood
+	let temp = r$1();
+	let V = temp % 3; // valid (0 = false, 1 = true, 2 = weird)
+	temp = (temp / 3)|0;
+	let F = temp & 1; // allow FE0F
+	temp >>= 1;
+	let S = temp & 1; // save
+	let C = temp & 2; // check
+	return {B, V, F, S, C, Q: new Set(cps)};
+}
+//console.log(performance.now() - t0);
 
-	// decode emoji
-	// 20230719: emoji are now fully-expanded to avoid quirk logic 
-	EMOJI_LIST = read_trie(r).map(v => Emoji.from(v)).sort(compare_arrays);
-	EMOJI_ROOT = new Map(); // this has approx 7K nodes (2+ per emoji)
-	for (let cps of EMOJI_LIST) {
-		// 20230719: change to *slightly* stricter algorithm which disallows 
-		// insertion of misplaced FE0F in emoji sequences (matching ENSIP-15)
-		// example: beautified [A B] (eg. flag emoji) 
-		//  before: allow: [A FE0F B], error: [A FE0F FE0F B] 
-		//   after: error: both
-		// note: this code now matches ENSNormalize.{cs,java} logic
-		let prev = [EMOJI_ROOT];
-		for (let cp of cps) {
-			let next = prev.map(node => {
-				let child = node.get(cp);
-				if (!child) {
-					// should this be object? 
-					// (most have 1-2 items, few have many)
-					// 20230719: no, v8 default map is 4?
-					child = new Map();
-					node.set(cp, child);
-				}
-				return child;
-			});
-			if (cp === FE0F) {
-				prev.push(...next); // less than 20 elements
-			} else {
-				prev = next;
-			}
-		}
-		for (let x of prev) {
-			x.V = cps;
+// free tagging system
+class Emoji extends Array {
+	get is_emoji() { return true; }
+}
+
+// create a safe to print string 
+// invisibles are escaped
+// leading cm uses placeholder
+// quoter(cp) => string, eg. 3000 => "{3000}"
+// note: in html, you'd call this function then replace [<>&] with entities
+function safe_str_from_cps(cps, quoter = quote_cp) {
+	//if (Number.isInteger(cps)) cps = [cps];
+	//if (!Array.isArray(cps)) throw new TypeError(`expected codepoints`);
+	let buf = [];
+	if (is_combining_mark(cps[0])) buf.push('◌');
+	let prev = 0;
+	let n = cps.length;
+	for (let i = 0; i < n; i++) {
+		let cp = cps[i];
+		if (should_escape(cp)) {
+			buf.push(str_from_cps(cps.slice(prev, i)));
+			buf.push(quoter(cp));
+			prev = i + 1;
 		}
 	}
+	buf.push(str_from_cps(cps.slice(prev, n)));
+	return buf.join('');
 }
 
 // if escaped: {HEX}
@@ -9014,7 +9112,7 @@ function bidi_qq(s) {
 
 function check_label_extension(cps) {
 	if (cps.length >= 4 && cps[2] == HYPHEN && cps[3] == HYPHEN) {
-		throw new Error(`invalid label extension: "${str_from_cps(cps.slice(0, 4))}"`);
+		throw new Error('invalid label extension');
 	}
 }
 function check_leading_underscore(cps) {
@@ -9045,48 +9143,64 @@ function check_fenced(cps) {
 	if (last == n) throw error_placement(`trailing ${prev}`);
 }
 
-// create a safe to print string 
-// invisibles are escaped
-// leading cm uses placeholder
-// quoter(cp) => string, eg. 3000 => "{3000}"
-// note: in html, you'd call this function then replace [<>&] with entities
-function safe_str_from_cps(cps, quoter = quote_cp) {
-	//if (Number.isInteger(cps)) cps = [cps];
-	//if (!Array.isArray(cps)) throw new TypeError(`expected codepoints`);
-	let buf = [];
-	if (is_combining_mark(cps[0])) buf.push('◌');
-	let prev = 0;
-	let n = cps.length;
-	for (let i = 0; i < n; i++) {
-		let cp = cps[i];
-		if (should_escape(cp)) {
-			buf.push(str_from_cps(cps.slice(prev, i)));
-			buf.push(quoter(cp));
-			prev = i + 1;
-		}
-	}
-	buf.push(str_from_cps(cps.slice(prev, n)));
-	return buf.join('');
-}
-
 // note: set(s) cannot be exposed because they can be modified
-// note: Object.freeze() doesn't work
 function is_combining_mark(cp) {
-	init();
 	return CM.has(cp);
 }
 function should_escape(cp) {
-	init();
 	return ESCAPE.has(cp);
 }
 
-function ens_normalize(name) {
-	return flatten(split(name, nfc, filter_fe0f));
+function ens_normalize_fragment(frag, decompose) {
+	let nf = decompose ? nfd : nfc;
+	return frag.split(STOP_CH).map(label => str_from_cps(process(explode_cp(label), nf).flatMap(x => x.is_emoji ? filter_fe0f(x) : x))).join(STOP_CH);
 }
 
-function split(name, nf, ef) {
-	if (!name) return []; // 20230719: empty name allowance
-	init();
+function ens_normalize(name) {
+	return flatten(ens_split(name));
+}
+
+function ens_beautify(name) {
+	let split = ens_split(name, true);
+	// this is experimental
+	for (let {type, output, error} of split) {
+		if (error) continue;
+
+		// replace leading/trailing hyphen
+		// 20230121: consider beautifing all or leading/trailing hyphen to unicode variant
+		// not exactly the same in every font, but very similar: "-" vs "‐"
+		/*
+		const UNICODE_HYPHEN = 0x2010;
+		// maybe this should replace all for visual consistancy?
+		// `node tools/reg-count.js regex ^-\{2,\}` => 592
+		//for (let i = 0; i < output.length; i++) if (output[i] == 0x2D) output[i] = 0x2010;
+		if (output[0] == HYPHEN) output[0] = UNICODE_HYPHEN;
+		let end = output.length-1;
+		if (output[end] == HYPHEN) output[end] = UNICODE_HYPHEN;
+		*/
+		// 20230123: WHATWG URL uses "CheckHyphens" false
+		// https://url.spec.whatwg.org/#idna
+
+		// update ethereum symbol
+		// ξ => Ξ if not greek
+		if (type !== 'Greek') { 
+			let prev = 0;
+			while (true) {
+				let next = output.indexOf(0x3BE, prev);
+				if (next < 0) break;
+				output[next] = 0x39E; 
+				prev = next + 1;
+			}
+		}
+
+		// 20221213: fixes bidi subdomain issue, but breaks invariant (200E is disallowed)
+		// could be fixed with special case for: 2D (.) + 200E (LTR)
+		//output.splice(0, 0, 0x200E);
+	}
+	return flatten(split);
+}
+
+function ens_split(name, preserve_emoji) {
 	let offset = 0;
 	// https://unicode.org/reports/tr46/#Validity_Criteria
 	// 4.) "The label must not contain a U+002E ( . ) FULL STOP."
@@ -9097,74 +9211,84 @@ function split(name, nf, ef) {
 			offset, // codepoint, not substring!
 		};
 		offset += input.length + 1; // + stop
+		let norm;
 		try {
 			// 1.) "The label must be in Unicode Normalization Form NFC"
-			let tokens = info.tokens = tokens_from_str(input, nf, ef);
+			let tokens = info.tokens = process(input, nfc); // if we parse, we get [norm and mapped]
 			let token_count = tokens.length;
 			let type;
 			if (!token_count) { // the label was effectively empty (could of had ignored characters)
-				//norm = [];
-				//type = 'None'; // use this instead of next match, "ASCII"
 				// 20230120: change to strict
 				// https://discuss.ens.domains/t/ens-name-normalization-2nd/14564/59
+				//norm = [];
+				//type = 'None'; // use this instead of next match, "ASCII"
 				throw new Error(`empty label`);
-			} 
-			let norm = info.output = tokens.flat();
-			check_leading_underscore(norm);
-			let emoji = info.emoji = token_count > 1 || tokens[0].is_emoji; // same as: tokens.some(x => x.is_emoji);
-			if (!emoji && norm.every(cp => cp < 0x80)) { // special case for ascii
-				// 20230123: matches matches WHATWG, see note 3.3
-				check_label_extension(norm); // only needed for ascii
-				// cant have fenced
-				// cant have cm
-				// cant have wholes
-				// see derive: "Fastpath ASCII"
-				type = 'ASCII';
 			} else {
-				let chars = tokens.flatMap(x => x.is_emoji ? [] : x); // all of the nfc tokens concat together
-				if (!chars.length) { // theres no text, just emoji
-					type = 'Emoji';
+				let chars = tokens[0];
+				let emoji = token_count > 1 || chars.is_emoji;
+				if (!emoji && chars.every(cp => cp < 0x80)) { // special case for ascii
+					norm = chars;
+					check_leading_underscore(norm);
+					// only needed for ascii
+					// 20230123: matches matches WHATWG, see note 3.3
+					check_label_extension(norm);
+					// cant have fenced
+					// cant have cm
+					// cant have wholes
+					// see derive: "Fastpath ASCII"
+					type = 'ASCII';
 				} else {
-					// 5.) "The label must not begin with a combining mark, that is: General_Category=Mark."
-					if (CM.has(norm[0])) throw error_placement('leading combining mark');
-					for (let i = 1; i < token_count; i++) { // we've already checked the first token
-						let cps = tokens[i];
-						if (!cps.is_emoji && CM.has(cps[0])) { // every text token has emoji neighbors, eg. EtEEEtEt...
-							// bidi_qq() not needed since emoji is LTR and cps is a CM
-							throw error_placement(`emoji + combining mark: "${str_from_cps(tokens[i-1])} + ${safe_str_from_cps([cps[0]])}"`); 
-						}
+					if (emoji) { // there is at least one emoji
+						info.emoji = true; 
+						chars = tokens.flatMap(x => x.is_emoji ? [] : x); // all of the nfc tokens concat together
 					}
-					check_fenced(norm);
-					let unique = Array_from(new Set(chars));
-					let [g] = determine_group(unique); // take the first match
-					// see derive: "Matching Groups have Same CM Style"
-					// alternative: could form a hybrid type: Latin/Japanese/...	
-					check_group(g, chars); // need text in order
-					check_whole(g, unique); // only need unique text (order would be required for multiple-char confusables)
-					type = g.N;
-					// 20230121: consider exposing restricted flag
-					// it's simpler to just check for 'Restricted'
-					// or even better: type.endsWith(']')
-					//if (g.R) info.restricted = true;
+					norm = tokens.flatMap(x => !preserve_emoji && x.is_emoji ? filter_fe0f(x) : x);
+					check_leading_underscore(norm);
+					if (!chars.length) { // theres no text, just emoji
+						type = 'Emoji';
+					} else {
+						// 5. "The label must not begin with a combining mark, that is: General_Category=Mark."
+						if (CM.has(norm[0])) throw error_placement('leading combining mark');
+						for (let i = 1; i < token_count; i++) { // we've already checked the first token
+							let cps = tokens[i];
+							if (!cps.is_emoji && CM.has(cps[0])) { // every text token has emoji neighbors, eg. EtEEEtEt...
+								// bidi_qq() not needed since emoji is LTR and cps is a CM
+								throw error_placement(`emoji + combining mark: "${str_from_cps(tokens[i-1])} + ${safe_str_from_cps([cps[0]])}"`); 
+							}
+						}
+						check_fenced(norm);
+						let unique = [...new Set(chars)];
+						let [g] = determine_group(unique); // take the first match
+						// see derive: "Matching Groups have Same CM Style"
+						// alternative: could form a hybrid type: Latin/Japanese/...	
+						check_group(g, chars); // need text in order
+						check_whole(g, unique); // only need unique text (order would be required for multiple-char confusables)
+						type = g.N;
+						// 20230121: consider exposing restricted flag
+						// it's simpler to just check for 'Restricted'
+						// or even better: type.endsWith(']')
+						//if (g.R) info.restricted = true;
+					}
 				}
 			}
 			info.type = type;
 		} catch (err) {
 			info.error = err; // use full error object
 		}
+		info.output = norm;
 		return info;
 	});
 }
 
 function check_whole(group, unique) {
 	let maker;
-	let shared = [];
+	let shared = []; // TODO: can this be avoided?
 	for (let cp of unique) {
 		let whole = WHOLE_MAP.get(cp);
 		if (whole === UNIQUE_PH) return; // unique, non-confusable
 		if (whole) {
 			let set = whole.M.get(cp); // groups which have a character that look-like this character
-			maker = maker ? maker.filter(g => set.has(g)) : Array_from(set);
+			maker = maker ? maker.filter(g => set.has(g)) : [...set];
 			if (!maker.length) return; // confusable intersection is empty
 		} else {
 			shared.push(cp); 
@@ -9172,10 +9296,10 @@ function check_whole(group, unique) {
 	}
 	if (maker) {
 		// we have 1+ confusable
-		// check if any of the remaining groups
+		// check if any of the remaning groups
 		// contain the shared characters too
 		for (let g of maker) {
-			if (shared.every(cp => group_has_cp(g, cp))) {
+			if (shared.every(cp => g.V.has(cp))) {
 				throw new Error(`whole-script confusable: ${group.N}/${g.N}`);
 			}
 		}
@@ -9189,14 +9313,11 @@ function determine_group(unique) {
 	for (let cp of unique) {
 		// note: we need to dodge CM that are whitelisted
 		// but that code isn't currently necessary
-		let gs = groups.filter(g => group_has_cp(g, cp));
+		let gs = groups.filter(g => g.V.has(cp));
 		if (!gs.length) {
-			if (!GROUPS.some(g => group_has_cp(g, cp))) { 
+			if (groups === GROUPS) {
 				// the character was composed of valid parts
 				// but it's NFC form is invalid
-				// 20230716: change to more exact statement, see: ENSNormalize.{cs,java}
-				// note: this doesn't have to be a composition
-				// 20230720: change to full check
 				throw error_disallowed(cp); // this should be rare
 			} else {
 				// there is no group that contains all these characters
@@ -9231,7 +9352,7 @@ function error_disallowed(cp) {
 }
 function error_group_member(g, cp) {
 	let quoted = quoted_cp(cp);
-	let gg = GROUPS.find(g => g.P.has(cp)); // only check primary
+	let gg = GROUPS.find(g => g.P.has(cp));
 	if (gg) {
 		quoted = `${gg.N} ${quoted}`;
 	}
@@ -9245,8 +9366,9 @@ function error_placement(where) {
 // assumption: cps[0] isn't a CM
 // assumption: the previous character isn't an emoji
 function check_group(g, cps) {
+	let {V, M} = g;
 	for (let cp of cps) {
-		if (!group_has_cp(g, cp)) {
+		if (!V.has(cp)) {
 			// for whitelisted scripts, this will throw illegal mixture on invalid cm, eg. "e{300}{300}"
 			// at the moment, it's unnecessary to introduce an extra error type
 			// until there exists a whitelisted multi-character
@@ -9255,13 +9377,13 @@ function check_group(g, cps) {
 			//   1. illegal cm for wrong group => mixture error
 			//   2. illegal cm for same group => cm error
 			//       requires set of whitelist cm per group: 
-			//        eg. new Set([...g.P, ...g.Q].flatMap(nfc).filter(cp => CM.has(cp)))
+			//        eg. new Set([...g.V].flatMap(nfc).filter(cp => CM.has(cp)))
 			//   3. wrong group => mixture error
 			throw error_group_member(g, cp);
 		}
 	}
 	//if (M >= 0) { // we have a known fixed cm count
-	if (g.M) { // we need to check for NSM
+	if (M) { // we need to check for NSM
 		let decomposed = nfd(cps);
 		for (let i = 1, e = decomposed.length; i < e; i++) { // see: assumption
 			// 20230210: bugfix: using cps instead of decomposed h/t Carbon225
@@ -9283,7 +9405,7 @@ function check_group(g, cps) {
 					// a. Forbid sequences of the same nonspacing mark.
 					for (let k = i; k < j; k++) { // O(n^2) but n < 100
 						if (decomposed[k] == cp) {
-							throw new Error(`duplicate non-spacing marks: ${quoted_cp(cp)}`);
+							throw new Error(`non-spacing marks: repeated ${quoted_cp(cp)}`);
 						}
 					}
 				}
@@ -9291,7 +9413,7 @@ function check_group(g, cps) {
 				// b. Forbid sequences of more than 4 nonspacing marks (gc=Mn or gc=Me).
 				if (j - i > NSM_MAX) {
 					// note: this slice starts with a base char or spacing-mark cm
-					throw new Error(`excessive non-spacing marks: ${bidi_qq(safe_str_from_cps(decomposed.slice(i-1, j)))} (${j-i}/${NSM_MAX})`);
+					throw new Error(`non-spacing marks: too many ${bidi_qq(safe_str_from_cps(decomposed.slice(i-1, j)))} (${j-i}/${NSM_MAX})`);
 				}
 				i = j;
 			}
@@ -9348,9 +9470,7 @@ function check_group(g, cps) {
 // given a list of codepoints
 // returns a list of lists, where emoji are a fully-qualified (as Array subclass)
 // eg. explode_cp("abc💩d") => [[61, 62, 63], Emoji[1F4A9, FE0F], [64]]
-// 20230818: rename for 'process' name collision h/t Javarome
-// https://github.com/adraffy/ens-normalize.js/issues/23
-function tokens_from_str(input, nf, ef) {
+function process(input, nf) {
 	let ret = [];
 	let chars = [];
 	input = input.slice().reverse(); // flip so we can pop
@@ -9361,7 +9481,7 @@ function tokens_from_str(input, nf, ef) {
 				ret.push(nf(chars));
 				chars = [];
 			}
-			ret.push(ef(emoji));
+			ret.push(emoji);
 		} else {
 			let cp = input.pop();
 			if (VALID.has(cp)) {
@@ -9369,14 +9489,8 @@ function tokens_from_str(input, nf, ef) {
 			} else {
 				let cps = MAPPED.get(cp);
 				if (cps) {
-					chars.push(...cps); // less than 10 elements
+					chars.push(...cps);
 				} else if (!IGNORED.has(cp)) {
-					// 20230912: unicode 15.1 changed the order of processing such that
-					// disallowed parts are only rejected after NFC
-					// https://unicode.org/reports/tr46/#Validity_Criteria
-					// this doesn't impact normalization as of today
-					// technically, this error can be removed as the group logic will apply similar logic
-					// however the error type might be less clear
 					throw error_disallowed(cp);
 				}
 			}
@@ -9395,23 +9509,180 @@ function filter_fe0f(cps) {
 // given array of codepoints
 // returns the longest valid emoji sequence (or undefined if no match)
 // *MUTATES* the supplied array
+// allows optional FE0F
 // disallows interleaved ignored characters
 // fills (optional) eaten array with matched codepoints
 function consume_emoji_reversed(cps, eaten) {
 	let node = EMOJI_ROOT;
 	let emoji;
+	let saved;
+	let stack = [];
 	let pos = cps.length;
+	if (eaten) eaten.length = 0; // clear input buffer (if needed)
 	while (pos) {
-		node = node.get(cps[--pos]);
+		let cp = cps[--pos];
+		node = node.B.find(x => x.Q.has(cp));
 		if (!node) break;
-		let {V} = node;
-		if (V) { // this is a valid emoji (so far)
-			emoji = V;
-			if (eaten) eaten.push(...cps.slice(pos).reverse()); // (optional) copy input, used for ens_tokenize()
+		if (node.S) { // remember
+			saved = cp;
+		} else if (node.C) { // check exclusion
+			if (cp === saved) break;
+		}
+		stack.push(cp);
+		if (node.F) {
+			stack.push(FE0F);
+			if (pos > 0 && cps[pos - 1] == FE0F) pos--; // consume optional FE0F
+		}
+		if (node.V) { // this is a valid emoji (so far)
+			emoji = conform_emoji_copy(stack, node);
+			if (eaten) eaten.push(...cps.slice(pos).reverse()); // copy input (if needed)
 			cps.length = pos; // truncate
 		}
 	}
+	/*
+	// *** this code currently isn't needed ***
+	if (!emoji) {
+		let cp = cps[cps.length-1];
+		if (EMOJI_SOLO.has(cp)) {
+			if (eaten) eaten.push(cp);
+			emoji = Emoji.of(cp);
+			cps.pop();
+		}
+	}
+	*/
 	return emoji;
+}
+
+// create a copy and fix any unicode quirks
+function conform_emoji_copy(cps, node) {
+	let copy = Emoji.from(cps); // copy stack
+	if (node.V == 2) copy.splice(1, 1); // delete FE0F at position 1 (see: make.js)
+	return copy;
+}
+
+// return all supported emoji as fully-qualified emoji 
+// ordered by length then lexicographic 
+function ens_emoji() {
+	// *** this code currently isn't needed ***
+	//let ret = [...EMOJI_SOLO].map(x => [x]);
+	let ret = [];
+	build(EMOJI_ROOT, []);
+	return ret.sort(compare_arrays);
+	function build(node, cps, saved) {
+		if (node.S) { 
+			saved = cps[cps.length-1];
+		} else if (node.C) { 
+			if (saved === cps[cps.length-1]) return;
+		}
+		if (node.F) cps.push(FE0F);
+		if (node.V) ret.push(conform_emoji_copy(cps, node));
+		for (let br of node.B) {
+			for (let cp of br.Q) {
+				build(br, [...cps, cp], saved);
+			}
+		}
+	}
+}
+
+// ************************************************************
+// tokenizer 
+
+const TY_VALID = 'valid';
+const TY_MAPPED = 'mapped';
+const TY_IGNORED = 'ignored';
+const TY_DISALLOWED = 'disallowed';
+const TY_EMOJI = 'emoji';
+const TY_NFC = 'nfc';
+const TY_STOP = 'stop';
+
+function ens_tokenize(name, {
+	nf = true, // collapse unnormalized runs into a single token
+} = {}) {
+	let input = explode_cp(name).reverse();
+	let eaten = [];
+	let tokens = [];
+	while (input.length) {		
+		let emoji = consume_emoji_reversed(input, eaten);
+		if (emoji) {
+			tokens.push({type: TY_EMOJI, emoji, input: eaten.slice(), cps: filter_fe0f(emoji)});
+		} else {
+			let cp = input.pop();
+			if (cp == STOP) {
+				tokens.push({type: TY_STOP, cp});
+			} else if (VALID.has(cp)) {
+				tokens.push({type: TY_VALID, cps: [cp]});
+			} else if (IGNORED.has(cp)) {
+				tokens.push({type: TY_IGNORED, cp});
+			} else {
+				let cps = MAPPED.get(cp);
+				if (cps) {
+					tokens.push({type: TY_MAPPED, cp, cps: cps.slice()});
+				} else {
+					tokens.push({type: TY_DISALLOWED, cp});
+				}
+			}
+		}
+	}
+	if (nf) {
+		for (let i = 0, start = -1; i < tokens.length; i++) {
+			let token = tokens[i];
+			if (is_valid_or_mapped(token.type)) {
+				if (requires_check(token.cps)) { // normalization might be needed
+					let end = i + 1;
+					for (let pos = end; pos < tokens.length; pos++) { // find adjacent text
+						let {type, cps} = tokens[pos];
+						if (is_valid_or_mapped(type)) {
+							if (!requires_check(cps)) break;
+							end = pos + 1;
+						} else if (type !== TY_IGNORED) { // || type !== TY_DISALLOWED) { 
+							break;
+						}
+					}
+					if (start < 0) start = i;
+					let slice = tokens.slice(start, end);
+					let cps0 = slice.flatMap(x => is_valid_or_mapped(x.type) ? x.cps : []); // strip junk tokens
+					let cps = nfc(cps0);
+					if (compare_arrays(cps, cps0)) { // bundle into an nfc token
+						tokens.splice(start, end - start, {
+							type: TY_NFC, 
+							input: cps0, // there are 3 states: tokens0 ==(process)=> input ==(nfc)=> tokens/cps
+							cps, 
+							tokens0: collapse_valid_tokens(slice),
+							tokens: ens_tokenize(str_from_cps(cps), {nf: false})
+						});
+						i = start;
+					} else { 
+						i = end - 1; // skip to end of slice
+					}
+					start = -1; // reset
+				} else {
+					start = i; // remember last
+				}
+			} else if (token.type !== TY_IGNORED) { // 20221024: is this correct?
+				start = -1; // reset
+			}
+		}
+	}
+	return collapse_valid_tokens(tokens);
+}
+
+function is_valid_or_mapped(type) {
+	return type == TY_VALID || type == TY_MAPPED;
+}
+
+function requires_check(cps) {
+	return cps.some(cp => NFC_CHECK.has(cp));
+}
+
+function collapse_valid_tokens(tokens) {
+	for (let i = 0; i < tokens.length; i++) {
+		if (tokens[i].type == TY_VALID) {
+			let j = i + 1;
+			while (j < tokens.length && tokens[j].type == TY_VALID) j++;
+			tokens.splice(i, j - i, {type: TY_VALID, cps: tokens.slice(i, j).flatMap(x => x.cps)});
+		}
+	}
+	return tokens;
 }
 
 const Zeros = new Uint8Array(32);
@@ -9445,9 +9716,6 @@ function ensNameSplit(name) {
  */
 function ensNormalize(name) {
     try {
-        if (name.length === 0) {
-            throw new Error("empty label");
-        }
         return ens_normalize(name);
     }
     catch (error) {
@@ -9469,7 +9737,6 @@ function isValidName(name) {
  */
 function namehash(name) {
     assertArgument(typeof (name) === "string", "invalid ENS name; not a string", "name", name);
-    assertArgument(name.length, `invalid ENS name (empty label)`, "name", name);
     let result = Zeros;
     const comps = ensNameSplit(name);
     while (comps.length) {
@@ -9690,7 +9957,7 @@ function _serializeLegacy(tx, sig) {
     fields.push(toBeArray(sig.s));
     return encodeRlp(fields);
 }
-function _parseEipSignature(tx, fields) {
+function _parseEipSignature(tx, fields, serialize) {
     let yParity;
     try {
         yParity = handleNumber(fields[0], "yParity");
@@ -9729,7 +9996,7 @@ function _parseEip1559(data) {
         return tx;
     }
     tx.hash = keccak256(data);
-    _parseEipSignature(tx, fields.slice(9));
+    _parseEipSignature(tx, fields.slice(9), _serializeEip1559);
     return tx;
 }
 function _serializeEip1559(tx, sig) {
@@ -9770,7 +10037,7 @@ function _parseEip2930(data) {
         return tx;
     }
     tx.hash = keccak256(data);
-    _parseEipSignature(tx, fields.slice(8));
+    _parseEipSignature(tx, fields.slice(8), _serializeEip2930);
     return tx;
 }
 function _serializeEip2930(tx, sig) {
@@ -9933,7 +10200,7 @@ class Transaction {
     get data() { return this.#data; }
     set data(value) { this.#data = hexlify(value); }
     /**
-     *  The amount of ether (in wei) to send in this transactions.
+     *  The amount of ether to send in this transactions.
      */
     get value() { return this.#value; }
     set value(value) {
@@ -10040,7 +10307,7 @@ class Transaction {
      *  use [[unsignedSerialized]].
      */
     get serialized() {
-        assert(this.signature != null, "cannot serialize unsigned transaction; maybe you meant .unsignedSerialized", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
+        assert$1(this.signature != null, "cannot serialize unsigned transaction; maybe you meant .unsignedSerialized", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
         switch (this.inferType()) {
             case 0:
                 return _serializeLegacy(this, this.signature);
@@ -10049,7 +10316,7 @@ class Transaction {
             case 2:
                 return _serializeEip1559(this, this.signature);
         }
-        assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
+        assert$1(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
     }
     /**
      *  The transaction pre-image.
@@ -10066,7 +10333,7 @@ class Transaction {
             case 2:
                 return _serializeEip1559(this);
         }
-        assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
+        assert$1(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
     }
     /**
      *  Return the most "likely" type; currently the highest
@@ -10088,13 +10355,13 @@ class Transaction {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
         //}
         if (this.maxFeePerGas != null && this.maxPriorityFeePerGas != null) {
-            assert(this.maxFeePerGas >= this.maxPriorityFeePerGas, "priorityFee cannot be more than maxFee", "BAD_DATA", { value: this });
+            assert$1(this.maxFeePerGas >= this.maxPriorityFeePerGas, "priorityFee cannot be more than maxFee", "BAD_DATA", { value: this });
         }
         //if (this.type === 2 && hasGasPrice) {
         //    throw new Error("eip-1559 transaction cannot have gasPrice");
         //}
-        assert(!hasFee || (this.type !== 0 && this.type !== 1), "transaction type cannot have maxFeePerGas or maxPriorityFeePerGas", "BAD_DATA", { value: this });
-        assert(this.type !== 0 || !hasAccessList, "legacy transaction cannot have accessList", "BAD_DATA", { value: this });
+        assert$1(!hasFee || (this.type !== 0 && this.type !== 1), "transaction type cannot have maxFeePerGas or maxPriorityFeePerGas", "BAD_DATA", { value: this });
+        assert$1(this.type !== 0 || !hasAccessList, "legacy transaction cannot have accessList", "BAD_DATA", { value: this });
         const types = [];
         // Explicit type
         if (this.type != null) {
@@ -10202,7 +10469,7 @@ class Transaction {
                 case 1: return Transaction.from(_parseEip2930(payload));
                 case 2: return Transaction.from(_parseEip1559(payload));
             }
-            assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
+            assert$1(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
         }
         const result = new Transaction();
         if (tx.type != null) {
@@ -10254,6 +10521,13 @@ class Transaction {
 }
 
 /**
+ *  Transactions..
+ *
+ *  @_section api/transaction:Transactions  [about-transactions]
+ */
+null;
+
+/**
  *  Computes the [[link-eip-191]] personal-sign message digest to sign.
  *
  *  This prefixes the message with [[MessagePrefix]] and the decimal length
@@ -10291,10 +10565,6 @@ function hashMessage(message) {
         message
     ]));
 }
-/**
- *  Return the address of the private key that produced
- *  the signature %%sig%% during signing for %%message%%.
- */
 function verifyMessage(message, sig) {
     const digest = hashMessage(message);
     return recoverAddress(digest, sig);
@@ -10407,6 +10677,8 @@ const BN__1 = BigInt(-1);
 const BN_0$3 = BigInt(0);
 const BN_1$1 = BigInt(1);
 const BN_MAX_UINT256 = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+;
+;
 function hexPadRight(value) {
     const bytes = getBytes(value);
     const padOffset = bytes.length % 32;
@@ -10506,40 +10778,14 @@ function getBaseEncoder(type) {
 function encodeType(name, fields) {
     return `${name}(${fields.map(({ name, type }) => (type + " " + name)).join(",")})`;
 }
-/**
- *  A **TypedDataEncode** prepares and encodes [[link-eip-712]] payloads
- *  for signed typed data.
- *
- *  This is useful for those that wish to compute various components of a
- *  typed data hash, primary types, or sub-components, but generally the
- *  higher level [[Signer-signTypedData]] is more useful.
- */
 class TypedDataEncoder {
-    /**
-     *  The primary type for the structured [[types]].
-     *
-     *  This is derived automatically from the [[types]], since no
-     *  recursion is possible, once the DAG for the types is consturcted
-     *  internally, the primary type must be the only remaining type with
-     *  no parent nodes.
-     */
     primaryType;
     #types;
-    /**
-     *  The types.
-     */
     get types() {
         return JSON.parse(this.#types);
     }
     #fullTypes;
     #encoderCache;
-    /**
-     *  Create a new **TypedDataEncoder** for %%types%%.
-     *
-     *  This performs all necessary checking that types are valid and
-     *  do not violate the [[link-eip-712]] structural constraints as
-     *  well as computes the [[primaryType]].
-     */
     constructor(types) {
         this.#types = JSON.stringify(types);
         this.#fullTypes = new Map();
@@ -10605,9 +10851,6 @@ class TypedDataEncoder {
             this.#fullTypes.set(name, encodeType(name, types[name]) + st.map((t) => encodeType(t, types[t])).join(""));
         }
     }
-    /**
-     *  Returnthe encoder for the specific %%type%%.
-     */
     getEncoder(type) {
         let encoder = this.#encoderCache.get(type);
         if (!encoder) {
@@ -10656,41 +10899,23 @@ class TypedDataEncoder {
         }
         assertArgument(false, `unknown type: ${type}`, "type", type);
     }
-    /**
-     *  Return the full type for %%name%%.
-     */
     encodeType(name) {
         const result = this.#fullTypes.get(name);
         assertArgument(result, `unknown type: ${JSON.stringify(name)}`, "name", name);
         return result;
     }
-    /**
-     *  Return the encoded %%value%% for the %%type%%.
-     */
     encodeData(type, value) {
         return this.getEncoder(type)(value);
     }
-    /**
-     *  Returns the hash of %%value%% for the type of %%name%%.
-     */
     hashStruct(name, value) {
         return keccak256(this.encodeData(name, value));
     }
-    /**
-     *  Return the fulled encoded %%value%% for the [[types]].
-     */
     encode(value) {
         return this.encodeData(this.primaryType, value);
     }
-    /**
-     *  Return the hash of the fully encoded %%value%% for the [[types]].
-     */
     hash(value) {
         return this.hashStruct(this.primaryType, value);
     }
-    /**
-     *  @_ignore:
-     */
     _visit(type, value, callback) {
         // Basic encoder type (address, bool, uint256, etc)
         {
@@ -10715,37 +10940,18 @@ class TypedDataEncoder {
         }
         assertArgument(false, `unknown type: ${type}`, "type", type);
     }
-    /**
-     *  Call %%calback%% for each value in %%value%%, passing the type and
-     *  component within %%value%%.
-     *
-     *  This is useful for replacing addresses or other transformation that
-     *  may be desired on each component, based on its type.
-     */
     visit(value, callback) {
         return this._visit(this.primaryType, value, callback);
     }
-    /**
-     *  Create a new **TypedDataEncoder** for %%types%%.
-     */
     static from(types) {
         return new TypedDataEncoder(types);
     }
-    /**
-     *  Return the primary type for %%types%%.
-     */
     static getPrimaryType(types) {
         return TypedDataEncoder.from(types).primaryType;
     }
-    /**
-     *  Return the hashed struct for %%value%% using %%types%% and %%name%%.
-     */
     static hashStruct(name, types, value) {
         return TypedDataEncoder.from(types).hashStruct(name, value);
     }
-    /**
-     *  Return the domain hash for %%domain%%.
-     */
     static hashDomain(domain) {
         const domainFields = [];
         for (const name in domain) {
@@ -10761,9 +10967,6 @@ class TypedDataEncoder {
         });
         return TypedDataEncoder.hashStruct("EIP712Domain", { EIP712Domain: domainFields }, domain);
     }
-    /**
-     *  Return the fully encoded [[link-eip-712]] %%value%% for %%types%% with %%domain%%.
-     */
     static encode(domain, types, value) {
         return concat([
             "0x1901",
@@ -10771,17 +10974,10 @@ class TypedDataEncoder {
             TypedDataEncoder.from(types).hash(value)
         ]);
     }
-    /**
-     *  Return the hash of the fully encoded [[link-eip-712]] %%value%% for %%types%% with %%domain%%.
-     */
     static hash(domain, types, value) {
         return keccak256(TypedDataEncoder.encode(domain, types, value));
     }
     // Replaces all address types with ENS names with their looked up address
-    /**
-     * Resolves to the value from resolving all addresses in %%value%% for
-     * %%types%% and the %%domain%%.
-     */
     static async resolveNames(domain, types, value, resolveName) {
         // Make a copy to isolate it from the object passed in
         domain = Object.assign({}, domain);
@@ -10823,10 +11019,6 @@ class TypedDataEncoder {
         });
         return { domain, value };
     }
-    /**
-     *  Returns the JSON-encoded payload expected by nodes which implement
-     *  the JSON-RPC [[link-eip-712]] method.
-     */
     static getPayload(domain, types, value) {
         // Validate the domain fields
         TypedDataEncoder.hashDomain(domain);
@@ -10882,24 +11074,23 @@ function verifyTypedData(domain, types, value, signature) {
 }
 
 /**
- *  A fragment is a single item from an ABI, which may represent any of:
+ *  About hashing here...
  *
- *  - [Functions](FunctionFragment)
- *  - [Events](EventFragment)
- *  - [Constructors](ConstructorFragment)
- *  - Custom [Errors](ErrorFragment)
- *  - [Fallback or Receive](FallbackFragment) functions
+ *  @_section: api/hashing:Hashing Utilities  [about-hashing]
+ */
+
+/**
+ *  About frgaments...
  *
  *  @_subsection api/abi/abi-coder:Fragments  [about-fragments]
  */
+;
 // [ "a", "b" ] => { "a": 1, "b": 1 }
 function setify(items) {
     const result = new Set();
     items.forEach((k) => result.add(k));
     return Object.freeze(result);
 }
-const _kwVisibDeploy = "external public payable";
-const KwVisibDeploy = setify(_kwVisibDeploy.split(" "));
 // Visibility Keywords
 const _kwVisib = "constant external internal payable private public pure view";
 const KwVisib = setify(_kwVisib.split(" "));
@@ -11223,7 +11414,7 @@ const FallbackFragmentInternal = "_FallbackInternal";
 const FunctionFragmentInternal = "_FunctionInternal";
 const StructFragmentInternal = "_StructInternal";
 /**
- *  Each input and output of a [[Fragment]] is an Array of **ParamType**.
+ *  Each input and output of a [[Fragment]] is an Array of **PAramType**.
  */
 class ParamType {
     /**
@@ -11308,16 +11499,9 @@ class ParamType {
             format = "sighash";
         }
         if (format === "json") {
-            const name = this.name || "";
-            if (this.isArray()) {
-                const result = JSON.parse(this.arrayChildren.format("json"));
-                result.name = name;
-                result.type += `[${(this.arrayLength < 0 ? "" : String(this.arrayLength))}]`;
-                return JSON.stringify(result);
-            }
-            const result = {
+            let result = {
                 type: ((this.baseType === "tuple") ? "tuple" : this.type),
-                name
+                name: (this.name || undefined)
             };
             if (typeof (this.indexed) === "boolean") {
                 result.indexed = this.indexed;
@@ -11354,6 +11538,15 @@ class ParamType {
         }
         return result;
     }
+    /*
+     *  Returns true if %%value%% is an Array type.
+     *
+     *  This provides a type gaurd ensuring that the
+     *  [[arrayChildren]] and [[arrayLength]] are non-null.
+     */
+    //static isArray(value: any): value is { arrayChildren: ParamType, arrayLength: number } {
+    //    return value && (value.baseType === "array")
+    //}
     /**
      *  Returns true if %%this%% is an Array type.
      *
@@ -11495,12 +11688,7 @@ class ParamType {
             return obj;
         }
         if (typeof (obj) === "string") {
-            try {
-                return ParamType.from(lex(obj), allowIndexed);
-            }
-            catch (error) {
-                assertArgument(false, "invalid param type", "obj", obj);
-            }
+            return ParamType.from(lex(obj), allowIndexed);
         }
         else if (obj instanceof TokenString) {
             let type = "", baseType = "";
@@ -11634,7 +11822,7 @@ class Fragment {
                 case "function": return FunctionFragment.from(obj);
                 case "struct": return StructFragment.from(obj);
             }
-            assert(false, `unsupported type: ${obj.type}`, "UNSUPPORTED_OPERATION", {
+            assert$1(false, `unsupported type: ${obj.type}`, "UNSUPPORTED_OPERATION", {
                 operation: "Fragment.from"
             });
         }
@@ -11710,9 +11898,6 @@ class ErrorFragment extends NamedFragment {
     get selector() {
         return id(this.format("sighash")).substring(0, 10);
     }
-    /**
-     *  Returns a string representation of this fragment as %%format%%.
-     */
     format(format) {
         if (format == null) {
             format = "sighash";
@@ -11731,9 +11916,6 @@ class ErrorFragment extends NamedFragment {
         result.push(this.name + joinParams(format, this.inputs));
         return result.join(" ");
     }
-    /**
-     *  Returns a new **ErrorFragment** for %%obj%%.
-     */
     static from(obj) {
         if (ErrorFragment.isFragment(obj)) {
             return obj;
@@ -11749,10 +11931,6 @@ class ErrorFragment extends NamedFragment {
         }
         return new ErrorFragment(_guard$2, obj.name, obj.inputs ? obj.inputs.map(ParamType.from) : []);
     }
-    /**
-     *  Returns ``true`` and provides a type guard if %%value%% is an
-     *  **ErrorFragment**.
-     */
     static isFragment(value) {
         return (value && value[internal$1] === ErrorFragmentInternal);
     }
@@ -11761,9 +11939,6 @@ class ErrorFragment extends NamedFragment {
  *  A Fragment which represents an Event.
  */
 class EventFragment extends NamedFragment {
-    /**
-     *  Whether this event is anonymous.
-     */
     anonymous;
     /**
      *  @private
@@ -11779,9 +11954,6 @@ class EventFragment extends NamedFragment {
     get topicHash() {
         return id(this.format("sighash"));
     }
-    /**
-     *  Returns a string representation of this event as %%format%%.
-     */
     format(format) {
         if (format == null) {
             format = "sighash";
@@ -11804,28 +11976,17 @@ class EventFragment extends NamedFragment {
         }
         return result.join(" ");
     }
-    /**
-     *  Return the topic hash for an event with %%name%% and %%params%%.
-     */
     static getTopicHash(name, params) {
         params = (params || []).map((p) => ParamType.from(p));
         const fragment = new EventFragment(_guard$2, name, params, false);
         return fragment.topicHash;
     }
-    /**
-     *  Returns a new **EventFragment** for %%obj%%.
-     */
     static from(obj) {
         if (EventFragment.isFragment(obj)) {
             return obj;
         }
         if (typeof (obj) === "string") {
-            try {
-                return EventFragment.from(lex(obj));
-            }
-            catch (error) {
-                assertArgument(false, "invalid event fragment", "obj", obj);
-            }
+            return EventFragment.from(lex(obj));
         }
         else if (obj instanceof TokenString) {
             const name = consumeName("event", obj);
@@ -11836,10 +11997,6 @@ class EventFragment extends NamedFragment {
         }
         return new EventFragment(_guard$2, obj.name, obj.inputs ? obj.inputs.map((p) => ParamType.from(p, true)) : [], !!obj.anonymous);
     }
-    /**
-     *  Returns ``true`` and provides a type guard if %%value%% is an
-     *  **EventFragment**.
-     */
     static isFragment(value) {
         return (value && value[internal$1] === EventFragmentInternal);
     }
@@ -11848,13 +12005,7 @@ class EventFragment extends NamedFragment {
  *  A Fragment which represents a constructor.
  */
 class ConstructorFragment extends Fragment {
-    /**
-     *  Whether the constructor can receive an endowment.
-     */
     payable;
-    /**
-     *  The recommended gas limit for deployment or ``null``.
-     */
     gas;
     /**
      *  @private
@@ -11864,11 +12015,8 @@ class ConstructorFragment extends Fragment {
         Object.defineProperty(this, internal$1, { value: ConstructorFragmentInternal });
         defineProperties(this, { payable, gas });
     }
-    /**
-     *  Returns a string representation of this constructor as %%format%%.
-     */
     format(format) {
-        assert(format != null && format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
+        assert$1(format != null && format !== "sighash", "cannot format a constructor for sighash", "UNSUPPORTED_OPERATION", { operation: "format(sighash)" });
         if (format === "json") {
             return JSON.stringify({
                 type: "constructor",
@@ -11885,35 +12033,23 @@ class ConstructorFragment extends Fragment {
         }
         return result.join(" ");
     }
-    /**
-     *  Returns a new **ConstructorFragment** for %%obj%%.
-     */
     static from(obj) {
         if (ConstructorFragment.isFragment(obj)) {
             return obj;
         }
         if (typeof (obj) === "string") {
-            try {
-                return ConstructorFragment.from(lex(obj));
-            }
-            catch (error) {
-                assertArgument(false, "invalid constuctor fragment", "obj", obj);
-            }
+            return ConstructorFragment.from(lex(obj));
         }
         else if (obj instanceof TokenString) {
             consumeKeywords(obj, setify(["constructor"]));
             const inputs = consumeParams(obj);
-            const payable = !!consumeKeywords(obj, KwVisibDeploy).has("payable");
+            const payable = !!consumeKeywords(obj, setify(["payable"])).has("payable");
             const gas = consumeGas(obj);
             consumeEoi(obj);
             return new ConstructorFragment(_guard$2, "constructor", inputs, payable, gas);
         }
         return new ConstructorFragment(_guard$2, "constructor", obj.inputs ? obj.inputs.map(ParamType.from) : [], !!obj.payable, (obj.gas != null) ? obj.gas : null);
     }
-    /**
-     *  Returns ``true`` and provides a type guard if %%value%% is a
-     *  **ConstructorFragment**.
-     */
     static isFragment(value) {
         return (value && value[internal$1] === ConstructorFragmentInternal);
     }
@@ -11931,9 +12067,6 @@ class FallbackFragment extends Fragment {
         Object.defineProperty(this, internal$1, { value: FallbackFragmentInternal });
         defineProperties(this, { payable });
     }
-    /**
-     *  Returns a string representation of this fallback as %%format%%.
-     */
     format(format) {
         const type = ((this.inputs.length === 0) ? "receive" : "fallback");
         if (format === "json") {
@@ -11942,20 +12075,12 @@ class FallbackFragment extends Fragment {
         }
         return `${type}()${this.payable ? " payable" : ""}`;
     }
-    /**
-     *  Returns a new **FallbackFragment** for %%obj%%.
-     */
     static from(obj) {
         if (FallbackFragment.isFragment(obj)) {
             return obj;
         }
         if (typeof (obj) === "string") {
-            try {
-                return FallbackFragment.from(lex(obj));
-            }
-            catch (error) {
-                assertArgument(false, "invalid fallback fragment", "obj", obj);
-            }
+            return FallbackFragment.from(lex(obj));
         }
         else if (obj instanceof TokenString) {
             const errorObj = obj.toString();
@@ -11998,10 +12123,6 @@ class FallbackFragment extends Fragment {
         }
         assertArgument(false, "invalid fallback description", "obj", obj);
     }
-    /**
-     *  Returns ``true`` and provides a type guard if %%value%% is a
-     *  **FallbackFragment**.
-     */
     static isFragment(value) {
         return (value && value[internal$1] === FallbackFragmentInternal);
     }
@@ -12028,7 +12149,7 @@ class FunctionFragment extends NamedFragment {
      */
     payable;
     /**
-     *  The recommended gas limit to send when calling this function.
+     *  The amount of gas to send when calling this function
      */
     gas;
     /**
@@ -12048,9 +12169,6 @@ class FunctionFragment extends NamedFragment {
     get selector() {
         return id(this.format("sighash")).substring(0, 10);
     }
-    /**
-     *  Returns a string representation of this function as %%format%%.
-     */
     format(format) {
         if (format == null) {
             format = "sighash";
@@ -12086,28 +12204,17 @@ class FunctionFragment extends NamedFragment {
         }
         return result.join(" ");
     }
-    /**
-     *  Return the selector for a function with %%name%% and %%params%%.
-     */
     static getSelector(name, params) {
         params = (params || []).map((p) => ParamType.from(p));
         const fragment = new FunctionFragment(_guard$2, name, "view", params, [], null);
         return fragment.selector;
     }
-    /**
-     *  Returns a new **FunctionFragment** for %%obj%%.
-     */
     static from(obj) {
         if (FunctionFragment.isFragment(obj)) {
             return obj;
         }
         if (typeof (obj) === "string") {
-            try {
-                return FunctionFragment.from(lex(obj));
-            }
-            catch (error) {
-                assertArgument(false, "invalid function fragment", "obj", obj);
-            }
+            return FunctionFragment.from(lex(obj));
         }
         else if (obj instanceof TokenString) {
             const name = consumeName("function", obj);
@@ -12142,10 +12249,6 @@ class FunctionFragment extends NamedFragment {
         //        payable: false but stateMutability is "nonpayable")
         return new FunctionFragment(_guard$2, obj.name, stateMutability, obj.inputs ? obj.inputs.map(ParamType.from) : [], obj.outputs ? obj.outputs.map(ParamType.from) : [], (obj.gas != null) ? obj.gas : null);
     }
-    /**
-     *  Returns ``true`` and provides a type guard if %%value%% is a
-     *  **FunctionFragment**.
-     */
     static isFragment(value) {
         return (value && value[internal$1] === FunctionFragmentInternal);
     }
@@ -12161,23 +12264,12 @@ class StructFragment extends NamedFragment {
         super(guard, "struct", name, inputs);
         Object.defineProperty(this, internal$1, { value: StructFragmentInternal });
     }
-    /**
-     *  Returns a string representation of this struct as %%format%%.
-     */
     format() {
         throw new Error("@TODO");
     }
-    /**
-     *  Returns a new **StructFragment** for %%obj%%.
-     */
     static from(obj) {
         if (typeof (obj) === "string") {
-            try {
-                return StructFragment.from(lex(obj));
-            }
-            catch (error) {
-                assertArgument(false, "invalid struct fragment", "obj", obj);
-            }
+            return StructFragment.from(lex(obj));
         }
         else if (obj instanceof TokenString) {
             const name = consumeName("struct", obj);
@@ -12187,11 +12279,6 @@ class StructFragment extends NamedFragment {
         }
         return new StructFragment(_guard$2, obj.name, obj.inputs ? obj.inputs.map(ParamType.from) : []);
     }
-    // @TODO: fix this return type
-    /**
-     *  Returns ``true`` and provides a type guard if %%value%% is a
-     *  **StructFragment**.
-     */
     static isFragment(value) {
         return (value && value[internal$1] === StructFragmentInternal);
     }
@@ -12209,7 +12296,6 @@ class StructFragment extends NamedFragment {
  *
  *  @_section api/abi/abi-coder:ABI Encoding
  */
-// See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
 // https://docs.soliditylang.org/en/v0.8.17/control-structures.html
 const PanicReasons$1 = new Map();
 PanicReasons$1.set(0x00, "GENERIC_PANIC");
@@ -12288,9 +12374,8 @@ function getBuiltinCallException(action, tx, data, abiCoder) {
     });
 }
 /**
- *  The **AbiCoder** is a low-level class responsible for encoding JavaScript
- *  values into binary data and decoding binary data into JavaScript values.
- */
+  * About AbiCoder
+  */
 class AbiCoder {
     #getCoder(param) {
         if (param.isArray()) {
@@ -12424,44 +12509,16 @@ function decodeBytes32String(_bytes) {
 }
 
 /**
- *  The Interface class is a low-level class that accepts an
- *  ABI and provides all the necessary functionality to encode
- *  and decode paramaters to and results from methods, events
- *  and errors.
- *
- *  It also provides several convenience methods to automatically
- *  search and find matching transactions and events to parse them.
+ *  About Interface
  *
  *  @_subsection api/abi:Interfaces  [interfaces]
  */
-/**
- *  When using the [[Interface-parseLog]] to automatically match a Log to its event
- *  for parsing, a **LogDescription** is returned.
- */
 class LogDescription {
-    /**
-     *  The matching fragment for the ``topic0``.
-     */
     fragment;
-    /**
-     *  The name of the Event.
-     */
     name;
-    /**
-     *  The full Event signature.
-     */
     signature;
-    /**
-     *  The topic hash for the Event.
-     */
     topic;
-    /**
-     *  The arguments passed into the Event with ``emit``.
-     */
     args;
-    /**
-     *  @_ignore:
-     */
     constructor(fragment, topic, args) {
         const name = fragment.name, signature = fragment.format();
         defineProperties(this, {
@@ -12469,39 +12526,13 @@ class LogDescription {
         });
     }
 }
-/**
- *  When using the [[Interface-parseTransaction]] to automatically match
- *  a transaction data to its function for parsing,
- *  a **TransactionDescription** is returned.
- */
 class TransactionDescription {
-    /**
-     *  The matching fragment from the transaction ``data``.
-     */
     fragment;
-    /**
-     *  The name of the Function from the transaction ``data``.
-     */
     name;
-    /**
-     *  The arguments passed to the Function from the transaction ``data``.
-     */
     args;
-    /**
-     *  The full Function signature from the transaction ``data``.
-     */
     signature;
-    /**
-     *  The selector for the Function from the transaction ``data``.
-     */
     selector;
-    /**
-     *  The ``value`` (in wei) from the transaction.
-     */
     value;
-    /**
-     *  @_ignore:
-     */
     constructor(fragment, selector, args, value) {
         const name = fragment.name, signature = fragment.format();
         defineProperties(this, {
@@ -12509,34 +12540,12 @@ class TransactionDescription {
         });
     }
 }
-/**
- *  When using the [[Interface-parseError]] to automatically match an
- *  error for a call result for parsing, an **ErrorDescription** is returned.
- */
 class ErrorDescription {
-    /**
-     *  The matching fragment.
-     */
     fragment;
-    /**
-     *  The name of the Error.
-     */
     name;
-    /**
-     *  The arguments passed to the Error with ``revert``.
-     */
     args;
-    /**
-     *  The full Error signature.
-     */
     signature;
-    /**
-     *  The selector for the Error.
-     */
     selector;
-    /**
-     *  @_ignore:
-     */
     constructor(fragment, selector, args) {
         const name = fragment.name, signature = fragment.format();
         defineProperties(this, {
@@ -12544,32 +12553,12 @@ class ErrorDescription {
         });
     }
 }
-/**
- *  An **Indexed** is used as a value when a value that does not
- *  fit within a topic (i.e. not a fixed-length, 32-byte type). It
- *  is the ``keccak256`` of the value, and used for types such as
- *  arrays, tuples, bytes and strings.
- */
 class Indexed {
-    /**
-     *  The ``keccak256`` of the value logged.
-     */
     hash;
-    /**
-     *  @_ignore:
-     */
     _isIndexed;
-    /**
-     *  Returns ``true`` if %%value%% is an **Indexed**.
-     *
-     *  This provides a Type Guard for property access.
-     */
     static isIndexed(value) {
         return !!(value && value._isIndexed);
     }
-    /**
-     *  @_ignore:
-     */
     constructor(hash) {
         defineProperties(this, { hash, _isIndexed: true });
     }
@@ -13186,7 +13175,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
             }
         }
         // Call returned data with no error, but the data is junk
-        assert(false, message, "BAD_DATA", {
+        assert$1(false, message, "BAD_DATA", {
             value: hexlify(bytes),
             info: { method: fragment.name, signature: fragment.format() }
         });
@@ -13277,7 +13266,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
             assertArgument(f, "unknown event", "eventFragment", fragment);
             fragment = f;
         }
-        assert(values.length <= fragment.inputs.length, `too many arguments for ${fragment.format()}`, "UNEXPECTED_ARGUMENT", { count: values.length, expectedCount: fragment.inputs.length });
+        assert$1(values.length <= fragment.inputs.length, `too many arguments for ${fragment.format()}`, "UNEXPECTED_ARGUMENT", { count: values.length, expectedCount: fragment.inputs.length });
         const topics = [];
         if (!fragment.anonymous) {
             topics.push(fragment.topicHash);
@@ -13293,17 +13282,15 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
             if (param.type === "bool" && typeof (value) === "boolean") {
                 value = (value ? "0x01" : "0x00");
             }
-            else if (param.type.match(/^u?int/)) {
-                value = toBeHex(value); // @TODO: Should this toTwos??
+            if (param.type.match(/^u?int/)) {
+                value = toBeHex(value);
             }
-            else if (param.type.match(/^bytes/)) {
-                value = zeroPadBytes(value, 32);
-            }
-            else if (param.type === "address") {
-                // Check addresses are valid
+            // Check addresses are valid
+            if (param.type === "address") {
                 this.#abiCoder.encode(["address"], [value]);
             }
             return zeroPadValue(hexlify(value), 32);
+            //@TOOD should probably be return toHex(value, 32)
         };
         values.forEach((value, index) => {
             const param = fragment.inputs[index];
@@ -13477,7 +13464,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
      *  Parses a revert data, finding the matching error and extracts
      *  the parameter values along with other useful error details.
      *
-     *  If the matching error cannot be found, returns null.
+     *  If the matching event cannot be found, returns null.
      */
     parseError(data) {
         const hexData = hexlify(data);
@@ -13511,6 +13498,13 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         return new Interface(value);
     }
 }
+
+/**
+ *  Explain about ABI here...
+ *
+ *  @_section api/abi:Application Binary Interface  [about-abi]
+ *  @_navTitle: ABI
+ */
 
 //import { resolveAddress } from "@ethersproject/address";
 const BN_0$2 = BigInt(0);
@@ -13584,10 +13578,7 @@ class FeeData {
         };
     }
 }
-/**
- *  Returns a copy of %%req%% with all properties coerced to their strict
- *  types.
- */
+;
 function copyRequest(req) {
     const result = {};
     // These could be addresses, ENS names or Addressables
@@ -13621,7 +13612,7 @@ function copyRequest(req) {
         result.blockTag = req.blockTag;
     }
     if ("enableCcipRead" in req) {
-        result.enableCcipRead = !!req.enableCcipRead;
+        result.enableCcipReadEnabled = !!req.enableCcipRead;
     }
     if ("customData" in req) {
         result.customData = req.customData;
@@ -13645,9 +13636,6 @@ class Block {
     number;
     /**
      *  The block hash.
-     *
-     *  This hash includes all properties, so can be safely used to identify
-     *  an exact set of block properties.
      */
     hash;
     /**
@@ -13731,8 +13719,7 @@ class Block {
         });
     }
     /**
-     *  Returns the list of transaction hashes, in the order
-     *  they were executed within the block.
+     *  Returns the list of transaction hashes.
      */
     get transactions() {
         return this.#transactions.map((tx) => {
@@ -13743,12 +13730,9 @@ class Block {
         });
     }
     /**
-     *  Returns the complete transactions, in the order they
-     *  were executed within the block.
-     *
-     *  This is only available for blocks which prefetched
-     *  transactions, by passing ``true`` to %%prefetchTxs%%
-     *  into [[Provider-getBlock]].
+     *  Returns the complete transactions for blocks which
+     *  prefetched them, by passing ``true`` to %%prefetchTxs%%
+     *  into [[provider_getBlock]].
      */
     get prefetchedTransactions() {
         const txs = this.#transactions.slice();
@@ -13757,7 +13741,7 @@ class Block {
             return [];
         }
         // Make sure we prefetched the transactions
-        assert(typeof (txs[0]) === "object", "transactions were not prefetched with block request", "UNSUPPORTED_OPERATION", {
+        assert$1(typeof (txs[0]) === "object", "transactions were not prefetched with block request", "UNSUPPORTED_OPERATION", {
             operation: "transactionResponses()"
         });
         return txs;
@@ -13843,12 +13827,6 @@ class Block {
             return tx;
         }
     }
-    /**
-     *  If a **Block** was fetched with a request to include the transactions
-     *  this will allow synchronous access to those transactions.
-     *
-     *  If the transactions were not prefetched, this will throw.
-     */
     getPrefetchedTransaction(indexOrHash) {
         const txs = this.prefetchedTransactions;
         if (typeof (indexOrHash) === "number") {
@@ -13863,19 +13841,18 @@ class Block {
         assertArgument(false, "no matching transaction", "indexOrHash", indexOrHash);
     }
     /**
-     *  Returns true if this block been mined. This provides a type guard
-     *  for all properties on a [[MinedBlock]].
+     *  Has this block been mined.
+     *
+     *  If true, the block has been typed-gaurded that all mined
+     *  properties are non-null.
      */
     isMined() { return !!this.hash; }
     /**
-     *  Returns true if this block is an [[link-eip-2930]] block.
+     *
      */
     isLondon() {
         return !!this.baseFeePerGas;
     }
-    /**
-     *  @_ignore:
-     */
     orphanedEvent() {
         if (!this.isMined()) {
             throw new Error("");
@@ -13885,69 +13862,17 @@ class Block {
 }
 //////////////////////
 // Log
-/**
- *  A **Log** in Ethereum represents an event that has been included in a
- *  transaction using the ``LOG*`` opcodes, which are most commonly used by
- *  Solidity's emit for announcing events.
- */
 class Log {
-    /**
-     *  The provider connected to the log used to fetch additional details
-     *  if necessary.
-     */
     provider;
-    /**
-     *  The transaction hash of the transaction this log occurred in. Use the
-     *  [[Log-getTransaction]] to get the [[TransactionResponse]].
-     */
     transactionHash;
-    /**
-     *  The block hash of the block this log occurred in. Use the
-     *  [[Log-getBlock]] to get the [[Block]].
-     */
     blockHash;
-    /**
-     *  The block number of the block this log occurred in. It is preferred
-     *  to use the [[Block-hash]] when fetching the related [[Block]],
-     *  since in the case of an orphaned block, the block at that height may
-     *  have changed.
-     */
     blockNumber;
-    /**
-     *  If the **Log** represents a block that was removed due to an orphaned
-     *  block, this will be true.
-     *
-     *  This can only happen within an orphan event listener.
-     */
     removed;
-    /**
-     *  The address of the contract that emitted this log.
-     */
     address;
-    /**
-     *  The data included in this log when it was emitted.
-     */
     data;
-    /**
-     *  The indexed topics included in this log when it was emitted.
-     *
-     *  All topics are included in the bloom filters, so they can be
-     *  efficiently filtered using the [[Provider-getLogs]] method.
-     */
     topics;
-    /**
-     *  The index within the block this log occurred at. This is generally
-     *  not useful to developers, but can be used with the various roots
-     *  to proof inclusion within a block.
-     */
     index;
-    /**
-     *  The index within the transaction of this log.
-     */
     transactionIndex;
-    /**
-     *  @_ignore:
-     */
     constructor(log, provider) {
         this.provider = provider;
         const topics = Object.freeze(log.topics.slice());
@@ -13963,9 +13888,6 @@ class Log {
             transactionIndex: log.transactionIndex,
         });
     }
-    /**
-     *  Returns a JSON-compatible object.
-     */
     toJSON() {
         const { address, blockHash, blockNumber, data, index, removed, topics, transactionHash, transactionIndex } = this;
         return {
@@ -13974,34 +13896,21 @@ class Log {
             removed, topics, transactionHash, transactionIndex
         };
     }
-    /**
-     *  Returns the block that this log occurred in.
-     */
     async getBlock() {
         const block = await this.provider.getBlock(this.blockHash);
-        assert(!!block, "failed to find transaction", "UNKNOWN_ERROR", {});
+        assert$1(!!block, "failed to find transaction", "UNKNOWN_ERROR", {});
         return block;
     }
-    /**
-     *  Returns the transaction that this log occurred in.
-     */
     async getTransaction() {
         const tx = await this.provider.getTransaction(this.transactionHash);
-        assert(!!tx, "failed to find transaction", "UNKNOWN_ERROR", {});
+        assert$1(!!tx, "failed to find transaction", "UNKNOWN_ERROR", {});
         return tx;
     }
-    /**
-     *  Returns the transaction receipt fot the transaction that this
-     *  log occurred in.
-     */
     async getTransactionReceipt() {
         const receipt = await this.provider.getTransactionReceipt(this.transactionHash);
-        assert(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", {});
+        assert$1(!!receipt, "failed to find transaction receipt", "UNKNOWN_ERROR", {});
         return receipt;
     }
-    /**
-     *  @_ignore:
-     */
     removedEvent() {
         return createRemovedLogFilter(this);
     }
@@ -14021,113 +13930,28 @@ export interface ByzantiumTransactionReceipt {
     root: null;
 }
 */
-/**
- *  A **TransactionReceipt** includes additional information about a
- *  transaction that is only available after it has been mined.
- */
 class TransactionReceipt {
-    /**
-     *  The provider connected to the log used to fetch additional details
-     *  if necessary.
-     */
     provider;
-    /**
-     *  The address the transaction was send to.
-     */
     to;
-    /**
-     *  The sender of the transaction.
-     */
     from;
-    /**
-     *  The address of the contract if the transaction was directly
-     *  responsible for deploying one.
-     *
-     *  This is non-null **only** if the ``to`` is empty and the ``data``
-     *  was successfully executed as initcode.
-     */
     contractAddress;
-    /**
-     *  The transaction hash.
-     */
     hash;
-    /**
-     *  The index of this transaction within the block transactions.
-     */
     index;
-    /**
-     *  The block hash of the [[Block]] this transaction was included in.
-     */
     blockHash;
-    /**
-     *  The block number of the [[Block]] this transaction was included in.
-     */
     blockNumber;
-    /**
-     *  The bloom filter bytes that represent all logs that occurred within
-     *  this transaction. This is generally not useful for most developers,
-     *  but can be used to validate the included logs.
-     */
     logsBloom;
-    /**
-     *  The actual amount of gas used by this transaction.
-     *
-     *  When creating a transaction, the amount of gas that will be used can
-     *  only be approximated, but the sender must pay the gas fee for the
-     *  entire gas limit. After the transaction, the difference is refunded.
-     */
     gasUsed;
-    /**
-     *  The amount of gas used by all transactions within the block for this
-     *  and all transactions with a lower ``index``.
-     *
-     *  This is generally not useful for developers but can be used to
-     *  validate certain aspects of execution.
-     */
     cumulativeGasUsed;
-    /**
-     *  The actual gas price used during execution.
-     *
-     *  Due to the complexity of [[link-eip-1559]] this value can only
-     *  be caluclated after the transaction has been mined, snce the base
-     *  fee is protocol-enforced.
-     */
     gasPrice;
-    /**
-     *  The [[link-eip-2718]] transaction type.
-     */
     type;
     //readonly byzantium!: boolean;
-    /**
-     *  The status of this transaction, indicating success (i.e. ``1``) or
-     *  a revert (i.e. ``0``).
-     *
-     *  This is available in post-byzantium blocks, but some backends may
-     *  backfill this value.
-     */
     status;
-    /**
-     *  The root hash of this transaction.
-     *
-     *  This is no present and was only included in pre-byzantium blocks, but
-     *  could be used to validate certain parts of the receipt.
-     */
     root;
     #logs;
-    /**
-     *  @_ignore:
-     */
     constructor(tx, provider) {
         this.#logs = Object.freeze(tx.logs.map((log) => {
             return new Log(log, provider);
         }));
-        let gasPrice = BN_0$2;
-        if (tx.effectiveGasPrice != null) {
-            gasPrice = tx.effectiveGasPrice;
-        }
-        else if (tx.gasPrice != null) {
-            gasPrice = tx.gasPrice;
-        }
         defineProperties(this, {
             provider,
             to: tx.to,
@@ -14140,20 +13964,14 @@ class TransactionReceipt {
             logsBloom: tx.logsBloom,
             gasUsed: tx.gasUsed,
             cumulativeGasUsed: tx.cumulativeGasUsed,
-            gasPrice,
+            gasPrice: (tx.effectiveGasPrice || tx.gasPrice),
             type: tx.type,
             //byzantium: tx.byzantium,
             status: tx.status,
             root: tx.root
         });
     }
-    /**
-     *  The logs for this transaction.
-     */
     get logs() { return this.#logs; }
-    /**
-     *  Returns a JSON-compatible representation.
-     */
     toJSON() {
         const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
         status, root } = this;
@@ -14169,9 +13987,6 @@ class TransactionReceipt {
             hash, index, logs, logsBloom, root, status, to
         };
     }
-    /**
-     *  @_ignore:
-     */
     get length() { return this.logs.length; }
     [Symbol.iterator]() {
         let index = 0;
@@ -14184,15 +13999,9 @@ class TransactionReceipt {
             }
         };
     }
-    /**
-     *  The total fee for this transaction, in wei.
-     */
     get fee() {
         return this.gasUsed * this.gasPrice;
     }
-    /**
-     *  Resolves to the block this transaction occurred in.
-     */
     async getBlock() {
         const block = await this.provider.getBlock(this.blockHash);
         if (block == null) {
@@ -14200,9 +14009,6 @@ class TransactionReceipt {
         }
         return block;
     }
-    /**
-     *  Resolves to the transaction this transaction occurred in.
-     */
     async getTransaction() {
         const tx = await this.provider.getTransaction(this.hash);
         if (tx == null) {
@@ -14210,44 +14016,30 @@ class TransactionReceipt {
         }
         return tx;
     }
-    /**
-     *  Resolves to the return value of the execution of this transaction.
-     *
-     *  Support for this feature is limited, as it requires an archive node
-     *  with the ``debug_`` or ``trace_`` API enabled.
-     */
     async getResult() {
         return (await this.provider.getTransactionResult(this.hash));
     }
-    /**
-     *  Resolves to the number of confirmations this transaction has.
-     */
     async confirmations() {
         return (await this.provider.getBlockNumber()) - this.blockNumber + 1;
     }
-    /**
-     *  @_ignore:
-     */
     removedEvent() {
         return createRemovedTransactionFilter(this);
     }
-    /**
-     *  @_ignore:
-     */
     reorderedEvent(other) {
-        assert(!other || other.isMined(), "unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
+        assert$1(!other || other.isMined(), "unmined 'other' transction cannot be orphaned", "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
         return createReorderedTransactionFilter(this, other);
     }
 }
-/**
- *  A **TransactionResponse** includes all properties about a transaction
- *  that was sent to the network, which may or may not be included in a
- *  block.
- *
- *  The [[TransactionResponse-isMined]] can be used to check if the
- *  transaction has been mined as well as type guard that the otherwise
- *  possibly ``null`` properties are defined.
- */
+/*
+export type ReplacementDetectionSetup = {
+    to: string;
+    from: string;
+    value: bigint;
+    data: string;
+    nonce: number;
+    block: number;
+};
+*/
 class TransactionResponse {
     /**
      *  The provider this is connected to, which will influence how its
@@ -14357,7 +14149,8 @@ class TransactionResponse {
     accessList;
     #startBlock;
     /**
-     *  @_ignore:
+     *  Create a new TransactionResponse with %%tx%% parameters
+     *  connected to %%provider%%.
      */
     constructor(tx, provider) {
         this.provider = provider;
@@ -14381,7 +14174,7 @@ class TransactionResponse {
         this.#startBlock = -1;
     }
     /**
-     *  Returns a JSON-compatible representation of this transaction.
+     *  Returns a JSON representation of this transaction.
      */
     toJSON() {
         const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;
@@ -14428,24 +14221,6 @@ class TransactionResponse {
      */
     async getTransaction() {
         return this.provider.getTransaction(this.hash);
-    }
-    /**
-     *  Resolve to the number of confirmations this transaction has.
-     */
-    async confirmations() {
-        if (this.blockNumber == null) {
-            const { tx, blockNumber } = await resolveProperties({
-                tx: this.getTransaction(),
-                blockNumber: this.provider.getBlockNumber()
-            });
-            // Not mined yet...
-            if (tx == null || tx.blockNumber == null) {
-                return 0;
-            }
-            return blockNumber - tx.blockNumber + 1;
-        }
-        const blockNumber = await this.provider.getBlockNumber();
-        return blockNumber - this.blockNumber + 1;
     }
     /**
      *  Resolves once this transaction has been mined and has
@@ -14534,7 +14309,7 @@ class TransactionResponse {
                         else if (tx.data === "0x" && tx.from === tx.to && tx.value === BN_0$2) {
                             reason = "cancelled";
                         }
-                        assert(false, "transaction was replaced", "TRANSACTION_REPLACED", {
+                        assert$1(false, "transaction was replaced", "TRANSACTION_REPLACED", {
                             cancelled: (reason === "replaced" || reason === "cancelled"),
                             reason,
                             replacement: tx.replaceableTransaction(startBlock),
@@ -14547,27 +14322,10 @@ class TransactionResponse {
             }
             return;
         };
-        const checkReceipt = (receipt) => {
-            if (receipt == null || receipt.status !== 0) {
-                return receipt;
-            }
-            assert(false, "transaction execution reverted", "CALL_EXCEPTION", {
-                action: "sendTransaction",
-                data: null, reason: null, invocation: null, revert: null,
-                transaction: {
-                    to: receipt.to,
-                    from: receipt.from,
-                    data: "" // @TODO: in v7, split out sendTransaction properties
-                }, receipt
-            });
-        };
         const receipt = await this.provider.getTransactionReceipt(this.hash);
-        if (confirms === 0) {
-            return checkReceipt(receipt);
-        }
         if (receipt) {
             if ((await receipt.confirmations()) >= confirms) {
-                return checkReceipt(receipt);
+                return receipt;
             }
         }
         else {
@@ -14596,12 +14354,7 @@ class TransactionResponse {
                 // Done; return it!
                 if ((await receipt.confirmations()) >= confirms) {
                     cancel();
-                    try {
-                        resolve(checkReceipt(receipt));
-                    }
-                    catch (error) {
-                        reject(error);
-                    }
+                    resolve(receipt);
                 }
             };
             cancellers.push(() => { this.provider.off(this.hash, txListener); });
@@ -14681,7 +14434,7 @@ class TransactionResponse {
      *  that evict this transaction.
      */
     removedEvent() {
-        assert(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
+        assert$1(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
         return createRemovedTransactionFilter(this);
     }
     /**
@@ -14689,8 +14442,8 @@ class TransactionResponse {
      *  that re-order this event against %%other%%.
      */
     reorderedEvent(other) {
-        assert(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
-        assert(!other || other.isMined(), "unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
+        assert$1(this.isMined(), "unmined transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
+        assert$1(!other || other.isMined(), "unmined 'other' transaction canot be orphaned", "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
         return createReorderedTransactionFilter(this, other);
     }
     /**
@@ -14731,175 +14484,75 @@ function createRemovedLogFilter(log) {
 }
 
 // import from provider.ts instead of index.ts to prevent circular dep
-// from EtherscanProvider
-/**
- *  An **EventLog** contains additional properties parsed from the [[Log]].
- */
 class EventLog extends Log {
-    /**
-     *  The Contract Interface.
-     */
     interface;
-    /**
-     *  The matching event.
-     */
     fragment;
-    /**
-     *  The parsed arguments passed to the event by ``emit``.
-     */
     args;
-    /**
-     * @_ignore:
-     */
     constructor(log, iface, fragment) {
         super(log, log.provider);
         const args = iface.decodeEventLog(fragment, log.data, log.topics);
         defineProperties(this, { args, fragment, interface: iface });
     }
-    /**
-     *  The name of the event.
-     */
     get eventName() { return this.fragment.name; }
-    /**
-     *  The signature of the event.
-     */
     get eventSignature() { return this.fragment.format(); }
 }
-/**
- *  An **EventLog** contains additional properties parsed from the [[Log]].
- */
-class UndecodedEventLog extends Log {
-    /**
-     *  The error encounted when trying to decode the log.
-     */
-    error;
-    /**
-     * @_ignore:
-     */
-    constructor(log, error) {
-        super(log, log.provider);
-        defineProperties(this, { error });
-    }
-}
-/**
- *  A **ContractTransactionReceipt** includes the parsed logs from a
- *  [[TransactionReceipt]].
- */
 class ContractTransactionReceipt extends TransactionReceipt {
     #iface;
-    /**
-     *  @_ignore:
-     */
     constructor(iface, provider, tx) {
         super(tx, provider);
         this.#iface = iface;
     }
-    /**
-     *  The parsed logs for any [[Log]] which has a matching event in the
-     *  Contract ABI.
-     */
     get logs() {
         return super.logs.map((log) => {
             const fragment = log.topics.length ? this.#iface.getEvent(log.topics[0]) : null;
             if (fragment) {
-                try {
-                    return new EventLog(log, this.#iface, fragment);
-                }
-                catch (error) {
-                    return new UndecodedEventLog(log, error);
-                }
+                return new EventLog(log, this.#iface, fragment);
             }
-            return log;
+            else {
+                return log;
+            }
         });
     }
 }
-/**
- *  A **ContractTransactionResponse** will return a
- *  [[ContractTransactionReceipt]] when waited on.
- */
 class ContractTransactionResponse extends TransactionResponse {
     #iface;
-    /**
-     *  @_ignore:
-     */
     constructor(iface, provider, tx) {
         super(tx, provider);
         this.#iface = iface;
     }
-    /**
-     *  Resolves once this transaction has been mined and has
-     *  %%confirms%% blocks including it (default: ``1``) with an
-     *  optional %%timeout%%.
-     *
-     *  This can resolve to ``null`` only if %%confirms%% is ``0``
-     *  and the transaction has not been mined, otherwise this will
-     *  wait until enough confirmations have completed.
-     */
     async wait(confirms) {
-        const receipt = await super.wait(confirms);
+        const receipt = await super.wait();
         if (receipt == null) {
             return null;
         }
         return new ContractTransactionReceipt(this.#iface, this.provider, receipt);
     }
 }
-/**
- *  A **ContractUnknownEventPayload** is included as the last parameter to
- *  Contract Events when the event does not match any events in the ABI.
- */
 class ContractUnknownEventPayload extends EventPayload {
-    /**
-     *  The log with no matching events.
-     */
     log;
-    /**
-     *  @_event:
-     */
     constructor(contract, listener, filter, log) {
         super(contract, listener, filter);
         defineProperties(this, { log });
     }
-    /**
-     *  Resolves to the block the event occured in.
-     */
     async getBlock() {
         return await this.log.getBlock();
     }
-    /**
-     *  Resolves to the transaction the event occured in.
-     */
     async getTransaction() {
         return await this.log.getTransaction();
     }
-    /**
-     *  Resolves to the transaction receipt the event occured in.
-     */
     async getTransactionReceipt() {
         return await this.log.getTransactionReceipt();
     }
 }
-/**
- *  A **ContractEventPayload** is included as the last parameter to
- *  Contract Events when the event is known.
- */
 class ContractEventPayload extends ContractUnknownEventPayload {
-    /**
-     *  @_ignore:
-     */
     constructor(contract, listener, filter, fragment, _log) {
         super(contract, listener, filter, new EventLog(_log, contract.interface, fragment));
         const args = contract.interface.decodeEventLog(fragment, this.log.data, this.log.topics);
         defineProperties(this, { args, fragment });
     }
-    /**
-     *  The event name.
-     */
     get eventName() {
         return this.fragment.name;
     }
-    /**
-     *  The event signature.
-     */
     get eventSignature() {
         return this.fragment.format();
     }
@@ -14917,17 +14570,6 @@ function canResolve(value) {
 }
 function canSend(value) {
     return (value && typeof (value.sendTransaction) === "function");
-}
-function getResolver(value) {
-    if (value != null) {
-        if (canResolve(value)) {
-            return value;
-        }
-        if (value.provider) {
-            return value.provider;
-        }
-    }
-    return undefined;
 }
 class PreparedTopicFilter {
     #filter;
@@ -14948,9 +14590,6 @@ class PreparedTopicFilter {
                 }
                 return param.walkAsync(args[index], (type, value) => {
                     if (type === "address") {
-                        if (Array.isArray(value)) {
-                            return Promise.all(value.map((v) => resolveAddress(v, resolver)));
-                        }
                         return resolveAddress(value, resolver);
                     }
                     return value;
@@ -14991,16 +14630,13 @@ function getProvider(value) {
  *  @_ignore:
  */
 async function copyOverrides(arg, allowed) {
-    // Make sure the overrides passed in are a valid overrides object
-    const _overrides = Typed.dereference(arg, "overrides");
-    assertArgument(typeof (_overrides) === "object", "invalid overrides parameter", "overrides", arg);
     // Create a shallow copy (we'll deep-ify anything needed during normalizing)
-    const overrides = copyRequest(_overrides);
+    const overrides = copyRequest(Typed.dereference(arg, "overrides"));
     assertArgument(overrides.to == null || (allowed || []).indexOf("to") >= 0, "cannot override to", "overrides.to", overrides.to);
     assertArgument(overrides.data == null || (allowed || []).indexOf("data") >= 0, "cannot override data", "overrides.data", overrides.data);
     // Resolve any from
     if (overrides.from) {
-        overrides.from = overrides.from;
+        overrides.from = await resolveAddress(overrides.from);
     }
     return overrides;
 }
@@ -15026,26 +14662,17 @@ function buildWrappedFallback(contract) {
         // If an overrides was passed in, copy it and normalize the values
         const tx = (await copyOverrides(overrides, ["data"]));
         tx.to = await contract.getAddress();
-        if (tx.from) {
-            tx.from = await resolveAddress(tx.from, getResolver(contract.runner));
-        }
         const iface = contract.interface;
-        const noValue = (getBigInt((tx.value || BN_0$1), "overrides.value") === BN_0$1);
-        const noData = ((tx.data || "0x") === "0x");
-        if (iface.fallback && !iface.fallback.payable && iface.receive && !noData && !noValue) {
-            assertArgument(false, "cannot send data to receive or send value to non-payable fallback", "overrides", overrides);
-        }
-        assertArgument(iface.fallback || noData, "cannot send data to receive-only contract", "overrides.data", tx.data);
         // Only allow payable contracts to set non-zero value
         const payable = iface.receive || (iface.fallback && iface.fallback.payable);
-        assertArgument(payable || noValue, "cannot send value to non-payable fallback", "overrides.value", tx.value);
+        assertArgument(payable || (tx.value || BN_0$1) === BN_0$1, "cannot send value to non-payable contract", "overrides.value", tx.value);
         // Only allow fallback contracts to set non-empty data
-        assertArgument(iface.fallback || noData, "cannot send data to receive-only contract", "overrides.data", tx.data);
+        assertArgument(iface.fallback || (tx.data || "0x") === "0x", "cannot send data to receive-only contract", "overrides.data", tx.data);
         return tx;
     };
     const staticCall = async function (overrides) {
         const runner = getRunner(contract.runner, "call");
-        assert(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
+        assert$1(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
         const tx = await populateTransaction(overrides);
         try {
             return await runner.call(tx);
@@ -15059,7 +14686,7 @@ function buildWrappedFallback(contract) {
     };
     const send = async function (overrides) {
         const runner = contract.runner;
-        assert(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
+        assert$1(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
         const tx = await runner.sendTransaction(await populateTransaction(overrides));
         const provider = getProvider(contract.runner);
         // @TODO: the provider can be null; make a custom dummy provider that will throw a
@@ -15068,7 +14695,7 @@ function buildWrappedFallback(contract) {
     };
     const estimateGas = async function (overrides) {
         const runner = getRunner(contract.runner, "estimateGas");
-        assert(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
+        assert$1(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
         return await runner.estimateGas(await populateTransaction(overrides));
     };
     const method = async (overrides) => {
@@ -15085,9 +14712,8 @@ function buildWrappedFallback(contract) {
 function buildWrappedMethod(contract, key) {
     const getFragment = function (...args) {
         const fragment = contract.interface.getFunction(key, args);
-        assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment",
-            info: { key, args }
+        assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
         });
         return fragment;
     };
@@ -15097,9 +14723,6 @@ function buildWrappedMethod(contract, key) {
         let overrides = {};
         if (fragment.inputs.length + 1 === args.length) {
             overrides = await copyOverrides(args.pop());
-            if (overrides.from) {
-                overrides.from = await resolveAddress(overrides.from, getResolver(contract.runner));
-            }
         }
         if (fragment.inputs.length !== args.length) {
             throw new Error("internal error: fragment inputs doesn't match arguments; should not happen");
@@ -15119,7 +14742,7 @@ function buildWrappedMethod(contract, key) {
     };
     const send = async function (...args) {
         const runner = contract.runner;
-        assert(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
+        assert$1(canSend(runner), "contract runner does not support sending transactions", "UNSUPPORTED_OPERATION", { operation: "sendTransaction" });
         const tx = await runner.sendTransaction(await populateTransaction(...args));
         const provider = getProvider(contract.runner);
         // @TODO: the provider can be null; make a custom dummy provider that will throw a
@@ -15128,12 +14751,12 @@ function buildWrappedMethod(contract, key) {
     };
     const estimateGas = async function (...args) {
         const runner = getRunner(contract.runner, "estimateGas");
-        assert(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
+        assert$1(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
         return await runner.estimateGas(await populateTransaction(...args));
     };
     const staticCallResult = async function (...args) {
         const runner = getRunner(contract.runner, "call");
-        assert(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
+        assert$1(canCall(runner), "contract runner does not support calling", "UNSUPPORTED_OPERATION", { operation: "call" });
         const tx = await populateTransaction(...args);
         let result = "0x";
         try {
@@ -15169,9 +14792,8 @@ function buildWrappedMethod(contract, key) {
         enumerable: true,
         get: () => {
             const fragment = contract.interface.getFunction(key);
-            assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment",
-                info: { key }
+            assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+                operation: "fragment"
             });
             return fragment;
         }
@@ -15181,9 +14803,8 @@ function buildWrappedMethod(contract, key) {
 function buildWrappedEvent(contract, key) {
     const getFragment = function (...args) {
         const fragment = contract.interface.getEvent(key, args);
-        assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-            operation: "fragment",
-            info: { key, args }
+        assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+            operation: "fragment"
         });
         return fragment;
     };
@@ -15201,9 +14822,8 @@ function buildWrappedEvent(contract, key) {
         enumerable: true,
         get: () => {
             const fragment = contract.interface.getEvent(key);
-            assert(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
-                operation: "fragment",
-                info: { key }
+            assert$1(fragment, "no matching fragment", "UNSUPPORTED_OPERATION", {
+                operation: "fragment"
             });
             return fragment;
         }
@@ -15311,7 +14931,7 @@ async function hasSub(contract, event) {
 async function getSub(contract, operation, event) {
     // Make sure our runner can actually subscribe to events
     const provider = getProvider(contract.runner);
-    assert(provider, "contract runner does not support subscribing", "UNSUPPORTED_OPERATION", { operation });
+    assert$1(provider, "contract runner does not support subscribing", "UNSUPPORTED_OPERATION", { operation });
     const { fragment, tag, topics } = await getSubInfo(contract, event);
     const { addr, subs } = getInternal(contract);
     let sub = subs.get(tag);
@@ -15383,10 +15003,6 @@ async function _emit(contract, event, args, payloadFunc) {
         catch (error) { }
         return !once;
     });
-    if (sub.listeners.length === 0) {
-        sub.stop();
-        getInternal(contract).subs.delete(sub.tag);
-    }
     return (count > 0);
 }
 async function emit(contract, event, args, payloadFunc) {
@@ -15400,45 +15016,13 @@ async function emit(contract, event, args, payloadFunc) {
 }
 const passProperties = ["then"];
 class BaseContract {
-    /**
-     *  The target to connect to.
-     *
-     *  This can be an address, ENS name or any [[Addressable]], such as
-     *  another contract. To get the resovled address, use the ``getAddress``
-     *  method.
-     */
     target;
-    /**
-     *  The contract Interface.
-     */
     interface;
-    /**
-     *  The connected runner. This is generally a [[Provider]] or a
-     *  [[Signer]], which dictates what operations are supported.
-     *
-     *  For example, a **Contract** connected to a [[Provider]] may
-     *  only execute read-only operations.
-     */
     runner;
-    /**
-     *  All the Events available on this contract.
-     */
     filters;
-    /**
-     *  @_ignore:
-     */
     [internal];
-    /**
-     *  The fallback or receive function if any.
-     */
     fallback;
-    /**
-     *  Creates a new contract connected to %%target%% with the %%abi%% and
-     *  optionally connected to a %%runner%% to perform operations on behalf
-     *  of.
-     */
     constructor(target, abi, runner, _deployTx) {
-        assertArgument(typeof (target) === "string" || isAddressable(target), "invalid value for Contract target", "target", target);
         if (runner == null) {
             runner = null;
         }
@@ -15470,9 +15054,7 @@ class BaseContract {
                 }
                 addrPromise = resolver.resolveName(target).then((addr) => {
                     if (addr == null) {
-                        throw makeError("an ENS name used for a contract target must be correctly configured", "UNCONFIGURED_NAME", {
-                            value: target
-                        });
+                        throw new Error("TODO");
                     }
                     getInternal(this).addr = addr;
                     return addr;
@@ -15492,20 +15074,17 @@ class BaseContract {
         setInternal(this, { addrPromise, addr, deployTx, subs });
         // Add the event filters
         const filters = new Proxy({}, {
-            get: (target, prop, receiver) => {
+            get: (target, _prop, receiver) => {
                 // Pass important checks (like `then` for Promise) through
-                if (typeof (prop) === "symbol" || passProperties.indexOf(prop) >= 0) {
-                    return Reflect.get(target, prop, receiver);
+                if (passProperties.indexOf(_prop) >= 0) {
+                    return Reflect.get(target, _prop, receiver);
                 }
-                try {
-                    return this.getEvent(prop);
+                const prop = String(_prop);
+                const result = this.getEvent(prop);
+                if (result) {
+                    return result;
                 }
-                catch (error) {
-                    if (!isError(error, "INVALID_ARGUMENT") || error.argument !== "key") {
-                        throw error;
-                    }
-                }
-                return undefined;
+                throw new Error(`unknown contract event: ${prop}`);
             },
             has: (target, prop) => {
                 // Pass important checks (like `then` for Promise) through
@@ -15521,63 +15100,38 @@ class BaseContract {
         });
         // Return a Proxy that will respond to functions
         return new Proxy(this, {
-            get: (target, prop, receiver) => {
-                if (typeof (prop) === "symbol" || prop in target || passProperties.indexOf(prop) >= 0) {
-                    return Reflect.get(target, prop, receiver);
+            get: (target, _prop, receiver) => {
+                if (_prop in target || passProperties.indexOf(_prop) >= 0) {
+                    return Reflect.get(target, _prop, receiver);
                 }
-                // Undefined properties should return undefined
-                try {
-                    return target.getFunction(prop);
+                const prop = String(_prop);
+                const result = target.getFunction(prop);
+                if (result) {
+                    return result;
                 }
-                catch (error) {
-                    if (!isError(error, "INVALID_ARGUMENT") || error.argument !== "key") {
-                        throw error;
-                    }
-                }
-                return undefined;
+                throw new Error(`unknown contract method: ${prop}`);
             },
             has: (target, prop) => {
-                if (typeof (prop) === "symbol" || prop in target || passProperties.indexOf(prop) >= 0) {
+                if (prop in target || passProperties.indexOf(prop) >= 0) {
                     return Reflect.has(target, prop);
                 }
-                return target.interface.hasFunction(prop);
+                return target.interface.hasFunction(String(prop));
             }
         });
     }
-    /**
-     *  Return a new Contract instance with the same target and ABI, but
-     *  a different %%runner%%.
-     */
     connect(runner) {
         return new BaseContract(this.target, this.interface, runner);
     }
-    /**
-     *  Return a new Contract instance with the same ABI and runner, but
-     *  a different %%target%%.
-     */
-    attach(target) {
-        return new BaseContract(target, this.interface, this.runner);
-    }
-    /**
-     *  Return the resolved address of this Contract.
-     */
     async getAddress() { return await getInternal(this).addrPromise; }
-    /**
-     *  Return the deployed bytecode or null if no bytecode is found.
-     */
     async getDeployedCode() {
         const provider = getProvider(this.runner);
-        assert(provider, "runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "getDeployedCode" });
+        assert$1(provider, "runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "getDeployedCode" });
         const code = await provider.getCode(await this.getAddress());
         if (code === "0x") {
             return null;
         }
         return code;
     }
-    /**
-     *  Resolve to this Contract once the bytecode has been deployed, or
-     *  resolve immediately if already deployed.
-     */
     async waitForDeployment() {
         // We have the deployement transaction; just use that (throws if deployement fails)
         const deployTx = this.deploymentTransaction();
@@ -15592,7 +15146,7 @@ class BaseContract {
         }
         // Make sure we can subscribe to a provider event
         const provider = getProvider(this.runner);
-        assert(provider != null, "contract runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "waitForDeployment" });
+        assert$1(provider != null, "contract runner does not support .provider", "UNSUPPORTED_OPERATION", { operation: "waitForDeployment" });
         return new Promise((resolve, reject) => {
             const checkCode = async () => {
                 try {
@@ -15609,20 +15163,9 @@ class BaseContract {
             checkCode();
         });
     }
-    /**
-     *  Return the transaction used to deploy this contract.
-     *
-     *  This is only available if this instance was returned from a
-     *  [[ContractFactory]].
-     */
     deploymentTransaction() {
         return getInternal(this).deployTx;
     }
-    /**
-     *  Return the function for a given name. This is useful when a contract
-     *  method name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
-     */
     getFunction(key) {
         if (typeof (key) !== "string") {
             key = key.format();
@@ -15630,43 +15173,16 @@ class BaseContract {
         const func = buildWrappedMethod(this, key);
         return func;
     }
-    /**
-     *  Return the event for a given name. This is useful when a contract
-     *  event name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
-     */
     getEvent(key) {
         if (typeof (key) !== "string") {
             key = key.format();
         }
         return buildWrappedEvent(this, key);
     }
-    /**
-     *  @_ignore:
-     */
     async queryTransaction(hash) {
+        // Is this useful?
         throw new Error("@TODO");
     }
-    /*
-    // @TODO: this is a non-backwards compatible change, but will be added
-    //        in v7 and in a potential SmartContract class in an upcoming
-    //        v6 release
-    async getTransactionReceipt(hash: string): Promise<null | ContractTransactionReceipt> {
-        const provider = getProvider(this.runner);
-        assert(provider, "contract runner does not have a provider",
-            "UNSUPPORTED_OPERATION", { operation: "queryTransaction" });
-
-        const receipt = await provider.getTransactionReceipt(hash);
-        if (receipt == null) { return null; }
-
-        return new ContractTransactionReceipt(this.interface, provider, receipt);
-    }
-    */
-    /**
-     *  Provide historic access to event data for %%event%% in the range
-     *  %%fromBlock%% (default: ``0``) to %%toBlock%% (default: ``"latest"``)
-     *  inclusive.
-     */
     async queryFilter(event, fromBlock, toBlock) {
         if (fromBlock == null) {
             fromBlock = 0;
@@ -15679,7 +15195,7 @@ class BaseContract {
         const { fragment, topics } = await getSubInfo(this, event);
         const filter = { address, topics, fromBlock, toBlock };
         const provider = getProvider(this.runner);
-        assert(provider, "contract runner does not have a provider", "UNSUPPORTED_OPERATION", { operation: "queryFilter" });
+        assert$1(provider, "contract runner does not have a provider", "UNSUPPORTED_OPERATION", { operation: "queryFilter" });
         return (await provider.getLogs(filter)).map((log) => {
             let foundFragment = fragment;
             if (foundFragment == null) {
@@ -15689,47 +15205,28 @@ class BaseContract {
                 catch (error) { }
             }
             if (foundFragment) {
-                try {
-                    return new EventLog(log, this.interface, foundFragment);
-                }
-                catch (error) {
-                    return new UndecodedEventLog(log, error);
-                }
+                return new EventLog(log, this.interface, foundFragment);
             }
-            return new Log(log, provider);
+            else {
+                return new Log(log, provider);
+            }
         });
     }
-    /**
-     *  Add an event %%listener%% for the %%event%%.
-     */
     async on(event, listener) {
         const sub = await getSub(this, "on", event);
         sub.listeners.push({ listener, once: false });
         sub.start();
         return this;
     }
-    /**
-     *  Add an event %%listener%% for the %%event%%, but remove the listener
-     *  after it is fired once.
-     */
     async once(event, listener) {
         const sub = await getSub(this, "once", event);
         sub.listeners.push({ listener, once: true });
         sub.start();
         return this;
     }
-    /**
-     *  Emit an %%event%% calling all listeners with %%args%%.
-     *
-     *  Resolves to ``true`` if any listeners were called.
-     */
     async emit(event, ...args) {
         return await emit(this, event, args, null);
     }
-    /**
-     *  Resolves to the number of listeners of %%event%% or the total number
-     *  of listeners if unspecified.
-     */
     async listenerCount(event) {
         if (event) {
             const sub = await hasSub(this, event);
@@ -15745,10 +15242,6 @@ class BaseContract {
         }
         return total;
     }
-    /**
-     *  Resolves to the listeners subscribed to %%event%% or all listeners
-     *  if unspecified.
-     */
     async listeners(event) {
         if (event) {
             const sub = await hasSub(this, event);
@@ -15764,10 +15257,6 @@ class BaseContract {
         }
         return result;
     }
-    /**
-     *  Remove the %%listener%% from the listeners for %%event%% or remove
-     *  all listeners if unspecified.
-     */
     async off(event, listener) {
         const sub = await hasSub(this, event);
         if (!sub) {
@@ -15785,10 +15274,6 @@ class BaseContract {
         }
         return this;
     }
-    /**
-     *  Remove all the listeners for %%event%% or remove all listeners if
-     *  unspecified.
-     */
     async removeAllListeners(event) {
         if (event) {
             const sub = await hasSub(this, event);
@@ -15807,21 +15292,14 @@ class BaseContract {
         }
         return this;
     }
-    /**
-     *  Alias for [on].
-     */
+    // Alias for "on"
     async addListener(event, listener) {
         return await this.on(event, listener);
     }
-    /**
-     *  Alias for [off].
-     */
+    // Alias for "off"
     async removeListener(event, listener) {
         return await this.off(event, listener);
     }
-    /**
-     *  Create a new Class for the %%abi%%.
-     */
     static buildClass(abi) {
         class CustomContract extends BaseContract {
             constructor(address, runner = null) {
@@ -15831,9 +15309,6 @@ class BaseContract {
         return CustomContract;
     }
     ;
-    /**
-     *  Create a new BaseContract with a specified Interface.
-     */
     static from(target, abi, runner) {
         if (runner == null) {
             runner = null;
@@ -15845,37 +15320,15 @@ class BaseContract {
 function _ContractBase() {
     return BaseContract;
 }
-/**
- *  A [[BaseContract]] with no type guards on its methods or events.
- */
 class Contract extends _ContractBase() {
 }
 
 // A = Arguments to the constructor
 // I = Interface of deployed contracts
-/**
- *  A **ContractFactory** is used to deploy a Contract to the blockchain.
- */
 class ContractFactory {
-    /**
-     *  The Contract Interface.
-     */
     interface;
-    /**
-     *  The Contract deployment bytecode. Often called the initcode.
-     */
     bytecode;
-    /**
-     *  The ContractRunner to deploy the Contract as.
-     */
     runner;
-    /**
-     *  Create a new **ContractFactory** with %%abi%% and %%bytecode%%,
-     *  optionally connected to %%runner%%.
-     *
-     *  The %%bytecode%% may be the ``bytecode`` property within the
-     *  standard Solidity JSON output.
-     */
     constructor(abi, bytecode, runner) {
         const iface = Interface.from(abi);
         // Dereference Solidity bytecode objects and allow a missing `0x`-prefix
@@ -15895,13 +15348,6 @@ class ContractFactory {
             bytecode, interface: iface, runner: (runner || null)
         });
     }
-    attach(target) {
-        return new BaseContract(target, this.interface, this.runner);
-    }
-    /**
-     *  Resolves to the transaction to deploy the contract, passing %%args%%
-     *  into the constructor.
-     */
     async getDeployTransaction(...args) {
         let overrides = {};
         const fragment = this.interface.deploy;
@@ -15915,33 +15361,18 @@ class ContractFactory {
         const data = concat([this.bytecode, this.interface.encodeDeploy(resolvedArgs)]);
         return Object.assign({}, overrides, { data });
     }
-    /**
-     *  Resolves to the Contract deployed by passing %%args%% into the
-     *  constructor.
-     *
-     *  This will resovle to the Contract before it has been deployed to the
-     *  network, so the [[BaseContract-waitForDeployment]] should be used before
-     *  sending any transactions to it.
-     */
     async deploy(...args) {
         const tx = await this.getDeployTransaction(...args);
-        assert(this.runner && typeof (this.runner.sendTransaction) === "function", "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
+        assert$1(this.runner && typeof (this.runner.sendTransaction) === "function", "factory runner does not support sending transactions", "UNSUPPORTED_OPERATION", {
             operation: "sendTransaction"
         });
         const sentTx = await this.runner.sendTransaction(tx);
         const address = getCreateAddress(sentTx);
         return new BaseContract(address, this.interface, this.runner, sentTx);
     }
-    /**
-     *  Return a new **ContractFactory** with the same ABI and bytecode,
-     *  but connected to %%runner%%.
-     */
     connect(runner) {
         return new ContractFactory(this.interface, this.bytecode, runner);
     }
-    /**
-     *  Create a new **ContractFactory** from the standard Solidity JSON output.
-     */
     static fromSolidity(output, runner) {
         assertArgument(output != null, "bad compiler output", "output", output);
         if (typeof (output) === "string") {
@@ -15960,8 +15391,13 @@ class ContractFactory {
 }
 
 /**
- *  ENS is a service which allows easy-to-remember names to map to
- *  network addresses.
+ *  About contracts...
+ *
+ *  @_section: api/contract:Contracts  [about-contracts]
+ */
+
+/**
+ *  About ENS Resolver
  *
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
  */
@@ -15979,40 +15415,36 @@ function getIpfsLink(link) {
     }
     return `https:/\/gateway.ipfs.io/ipfs/${link}`;
 }
+;
+;
 /**
  *  A provider plugin super-class for processing multicoin address types.
  */
 class MulticoinProviderPlugin {
-    /**
-     *  The name.
-     */
     name;
-    /**
-     *  Creates a new **MulticoinProviderPluing** for %%name%%.
-     */
     constructor(name) {
         defineProperties(this, { name });
     }
     connect(proivder) {
         return this;
     }
-    /**
-     *  Returns ``true`` if %%coinType%% is supported by this plugin.
-     */
     supportsCoinType(coinType) {
         return false;
     }
-    /**
-     *  Resovles to the encoded %%address%% for %%coinType%%.
-     */
     async encodeAddress(coinType, address) {
         throw new Error("unsupported coin");
     }
-    /**
-     *  Resovles to the decoded %%data%% for %%coinType%%.
-     */
     async decodeAddress(coinType, data) {
         throw new Error("unsupported coin");
+    }
+}
+const BasicMulticoinPluginId = "org.ethers.plugins.provider.BasicMulticoin";
+/**
+ *  A basic multicoin provider plugin.
+ */
+class BasicMulticoinProviderPlugin extends MulticoinProviderPlugin {
+    constructor() {
+        super(BasicMulticoinPluginId);
     }
 }
 const matcherIpfs = new RegExp("^(ipfs):/\/(.*)$", "i");
@@ -16049,7 +15481,7 @@ class EnsResolver {
             "function supportsInterface(bytes4) view returns (bool)",
             "function resolve(bytes, bytes) view returns (bytes)",
             "function addr(bytes32) view returns (address)",
-            "function addr(bytes32, uint) view returns (bytes)",
+            "function addr(bytes32, uint) view returns (address)",
             "function text(bytes32, string) view returns (string)",
             "function contenthash(bytes32) view returns (bytes)",
         ], provider);
@@ -16085,7 +15517,7 @@ class EnsResolver {
         let fragment = null;
         if (await this.supportsWildcard()) {
             fragment = iface.getFunction(funcName);
-            assert(fragment, "missing fragment", "UNKNOWN_ERROR", {
+            assert$1(fragment, "missing fragment", "UNKNOWN_ERROR", {
                 info: { funcName }
             });
             params = [
@@ -16095,7 +15527,7 @@ class EnsResolver {
             funcName = "resolve(bytes,bytes)";
         }
         params.push({
-            enableCcipRead: true
+            ccipReadEnable: true
         });
         try {
             const result = await this.#resolver[funcName](...params);
@@ -16135,14 +15567,6 @@ class EnsResolver {
                 throw error;
             }
         }
-        // Try decoding its EVM canonical chain as an EVM chain address first
-        if (coinType >= 0 && coinType < 0x80000000) {
-            let ethCoinType = coinType + 0x80000000;
-            const data = await this.#fetch("addr(bytes32,uint)", [ethCoinType]);
-            if (isHexString(data, 20)) {
-                return getAddress(data);
-            }
-        }
         let coinPlugin = null;
         for (const plugin of this.provider.plugins) {
             if (!(plugin instanceof MulticoinProviderPlugin)) {
@@ -16163,17 +15587,17 @@ class EnsResolver {
             return null;
         }
         // Compute the address
-        const address = await coinPlugin.decodeAddress(coinType, data);
+        const address = await coinPlugin.encodeAddress(coinType, data);
         if (address != null) {
             return address;
         }
-        assert(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
+        assert$1(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${coinType})`,
             info: { coinType, data }
         });
     }
     /**
-     *  Resolves to the EIP-634 text record for %%key%%, or ``null``
+     *  Resolves to the EIP-643 text record for %%key%%, or ``null``
      *  if unconfigured.
      */
     async getText(key) {
@@ -16207,7 +15631,7 @@ class EnsResolver {
         if (swarm && swarm[1].length === 64) {
             return `bzz:/\/${swarm[1]}`;
         }
-        assert(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
+        assert$1(false, `invalid or unsupported content hash data`, "UNSUPPORTED_OPERATION", {
             operation: "getContentHash()",
             info: { data }
         });
@@ -16376,7 +15800,7 @@ class EnsResolver {
         const network = await provider.getNetwork();
         const ensPlugin = network.getPlugin("org.ethers.plugins.network.Ens");
         // No ENS...
-        assert(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
+        assert$1(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
             operation: "getEnsAddress", info: { network }
         });
         return ensPlugin.address;
@@ -16413,7 +15837,7 @@ class EnsResolver {
                 return null;
             }
             // Optimization since the eth node cannot change and does
-            // not have a wildcard resolver
+            // not have a wildcar resolver
             if (name !== "eth" && currentName === "eth") {
                 return null;
             }
@@ -16478,7 +15902,7 @@ function object(format, altNames) {
             }
             catch (error) {
                 const message = (error instanceof Error) ? error.message : "not-an-error";
-                assert(false, `invalid value for value.${key} (${message})`, "BAD_DATA", { value });
+                assert$1(false, `invalid value for value.${key} (${message})`, "BAD_DATA", { value });
             }
         }
         return result;
@@ -16502,6 +15926,12 @@ function formatData(value) {
 function formatHash(value) {
     assertArgument(isHexString(value, 32), "invalid hash", "value", value);
     return value;
+}
+function formatUint256(value) {
+    if (!isHexString(value)) {
+        throw new Error("invalid uint256");
+    }
+    return zeroPadValue(value, 32);
 }
 const _formatLog = object({
     address: getAddress,
@@ -16683,71 +16113,23 @@ function formatTransactionResponse(value) {
 }
 
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
-/**
- *  A **NetworkPlugin** provides additional functionality on a [[Network]].
- */
 class NetworkPlugin {
-    /**
-     *  The name of the plugin.
-     *
-     *  It is recommended to use reverse-domain-notation, which permits
-     *  unique names with a known authority as well as hierarchal entries.
-     */
     name;
-    /**
-     *  Creates a new **NetworkPlugin**.
-     */
     constructor(name) {
         defineProperties(this, { name });
     }
-    /**
-     *  Creates a copy of this plugin.
-     */
     clone() {
         return new NetworkPlugin(this.name);
     }
 }
-/**
- *  A **GasCostPlugin** allows a network to provide alternative values when
- *  computing the intrinsic gas required for a transaction.
- */
 class GasCostPlugin extends NetworkPlugin {
-    /**
-     *  The block number to treat these values as valid from.
-     *
-     *  This allows a hardfork to have updated values included as well as
-     *  mulutiple hardforks to be supported.
-     */
     effectiveBlock;
-    /**
-     *  The transactions base fee.
-     */
     txBase;
-    /**
-     *  The fee for creating a new account.
-     */
     txCreate;
-    /**
-     *  The fee per zero-byte in the data.
-     */
     txDataZero;
-    /**
-     *  The fee per non-zero-byte in the data.
-     */
     txDataNonzero;
-    /**
-     *  The fee per storage key in the [[link-eip-2930]] access list.
-     */
     txAccessListStorageKey;
-    /**
-     *  The fee per address in the [[link-eip-2930]] access list.
-     */
     txAccessListAddress;
-    /**
-     *  Creates a new GasCostPlugin from %%effectiveBlock%% until the
-     *  latest block or another GasCostPlugin supercedes that block number,
-     *  with the associated %%costs%%.
-     */
     constructor(effectiveBlock, costs) {
         if (effectiveBlock == null) {
             effectiveBlock = 0;
@@ -16774,29 +16156,13 @@ class GasCostPlugin extends NetworkPlugin {
         return new GasCostPlugin(this.effectiveBlock, this);
     }
 }
-/**
- *  An **EnsPlugin** allows a [[Network]] to specify the ENS Registry
- *  Contract address and the target network to use when using that
- *  contract.
- *
- *  Various testnets have their own instance of the contract to use, but
- *  in general, the mainnet instance supports multi-chain addresses and
- *  should be used.
- */
+// Networks shoudl use this plugin to specify the contract address
+// and network necessary to resolve ENS names.
 class EnsPlugin extends NetworkPlugin {
-    /**
-     *  The ENS Registrty Contract address.
-     */
+    // The ENS contract address
     address;
-    /**
-     *  The chain ID that the ENS contract lives on.
-     */
+    // The network ID that the ENS contract lives on
     targetNetwork;
-    /**
-     *  Creates a new **EnsPlugin** connected to %%address%% on the
-     *  %%targetNetwork%%. The default ENS address and mainnet is used
-     *  if unspecified.
-     */
     constructor(address, targetNetwork) {
         super("org.ethers.plugins.network.Ens");
         defineProperties(this, {
@@ -16808,60 +16174,21 @@ class EnsPlugin extends NetworkPlugin {
         return new EnsPlugin(this.address, this.targetNetwork);
     }
 }
-/**
- *  A **FeeDataNetworkPlugin** allows a network to provide and alternate
- *  means to specify its fee data.
- *
- *  For example, a network which does not support [[link-eip-1559]] may
- *  choose to use a Gas Station site to approximate the gas price.
- */
 class FeeDataNetworkPlugin extends NetworkPlugin {
     #feeDataFunc;
-    /**
-     *  The fee data function provided to the constructor.
-     */
     get feeDataFunc() {
         return this.#feeDataFunc;
     }
-    /**
-     *  Creates a new **FeeDataNetworkPlugin**.
-     */
     constructor(feeDataFunc) {
         super("org.ethers.plugins.network.FeeData");
         this.#feeDataFunc = feeDataFunc;
     }
-    /**
-     *  Resolves to the fee data.
-     */
     async getFeeData(provider) {
         return await this.#feeDataFunc(provider);
     }
     clone() {
         return new FeeDataNetworkPlugin(this.#feeDataFunc);
     }
-}
-class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
-    #url;
-    #processFunc;
-    /**
-     *  The URL to initialize the FetchRequest with in %%processFunc%%.
-     */
-    get url() { return this.#url; }
-    /**
-     *  The callback to use when computing the FeeData.
-     */
-    get processFunc() { return this.#processFunc; }
-    /**
-     *  Creates a new **FetchUrlFeeDataNetworkPlugin** which will
-     *  be used when computing the fee data for the network.
-     */
-    constructor(url, processFunc) {
-        super("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
-        this.#url = url;
-        this.#processFunc = processFunc;
-    }
-    // We are immutable, so we can serve as our own clone
-    clone() { return this; }
 }
 /*
 export class CustomBlockNetworkPlugin extends NetworkPlugin {
@@ -16889,8 +16216,7 @@ export class CustomBlockNetworkPlugin extends NetworkPlugin {
 */
 
 /**
- *  A **Network** encapsulates the various properties required to
- *  interact with a specific chain.
+ *  About networks
  *
  *  @_subsection: api/providers:Networks  [networks]
  */
@@ -16911,92 +16237,60 @@ export class LayerOneConnectionPlugin extends NetworkPlugin {
     }
 }
 */
+/* * * *
+export class PriceOraclePlugin extends NetworkPlugin {
+    readonly address!: string;
+
+    constructor(address: string) {
+        super("org.ethers.plugins.price-oracle");
+        defineProperties<PriceOraclePlugin>(this, { address });
+    }
+
+    clone(): PriceOraclePlugin {
+        return new PriceOraclePlugin(this.address);
+    }
+}
+*/
+// Networks or clients with a higher need for security (such as clients
+// that may automatically make CCIP requests without user interaction)
+// can use this plugin to anonymize requests or intercept CCIP requests
+// to notify and/or receive authorization from the user
+/* * * *
+export type FetchDataFunc = (req: Frozen<FetchRequest>) => Promise<FetchRequest>;
+export class CcipPreflightPlugin extends NetworkPlugin {
+    readonly fetchData!: FetchDataFunc;
+
+    constructor(fetchData: FetchDataFunc) {
+        super("org.ethers.plugins.ccip-preflight");
+        defineProperties<CcipPreflightPlugin>(this, { fetchData });
+    }
+
+    clone(): CcipPreflightPlugin {
+        return new CcipPreflightPlugin(this.fetchData);
+    }
+}
+*/
 const Networks = new Map();
-/**
- *  A **Network** provides access to a chain's properties and allows
- *  for plug-ins to extend functionality.
- */
+// @TODO: Add a _ethersNetworkObj variable to better detect network ovjects
 class Network {
     #name;
     #chainId;
     #plugins;
-    /**
-     *  Creates a new **Network** for %%name%% and %%chainId%%.
-     */
     constructor(name, chainId) {
         this.#name = name;
         this.#chainId = getBigInt(chainId);
         this.#plugins = new Map();
     }
-    /**
-     *  Returns a JSON-compatible representation of a Network.
-     */
     toJSON() {
-        return { name: this.name, chainId: String(this.chainId) };
+        return { name: this.name, chainId: this.chainId };
     }
-    /**
-     *  The network common name.
-     *
-     *  This is the canonical name, as networks migh have multiple
-     *  names.
-     */
     get name() { return this.#name; }
     set name(value) { this.#name = value; }
-    /**
-     *  The network chain ID.
-     */
     get chainId() { return this.#chainId; }
     set chainId(value) { this.#chainId = getBigInt(value, "chainId"); }
-    /**
-     *  Returns true if %%other%% matches this network. Any chain ID
-     *  must match, and if no chain ID is present, the name must match.
-     *
-     *  This method does not currently check for additional properties,
-     *  such as ENS address or plug-in compatibility.
-     */
-    matches(other) {
-        if (other == null) {
-            return false;
-        }
-        if (typeof (other) === "string") {
-            try {
-                return (this.chainId === getBigInt(other));
-            }
-            catch (error) { }
-            return (this.name === other);
-        }
-        if (typeof (other) === "number" || typeof (other) === "bigint") {
-            try {
-                return (this.chainId === getBigInt(other));
-            }
-            catch (error) { }
-            return false;
-        }
-        if (typeof (other) === "object") {
-            if (other.chainId != null) {
-                try {
-                    return (this.chainId === getBigInt(other.chainId));
-                }
-                catch (error) { }
-                return false;
-            }
-            if (other.name != null) {
-                return (this.name === other.name);
-            }
-            return false;
-        }
-        return false;
-    }
-    /**
-     *  Returns the list of plugins currently attached to this Network.
-     */
     get plugins() {
         return Array.from(this.#plugins.values());
     }
-    /**
-     *  Attach a new %%plugin%% to this Network. The network name
-     *  must be unique, excluding any fragment.
-     */
     attachPlugin(plugin) {
         if (this.#plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${plugin.name} `);
@@ -17004,24 +16298,13 @@ class Network {
         this.#plugins.set(plugin.name, plugin.clone());
         return this;
     }
-    /**
-     *  Return the plugin, if any, matching %%name%% exactly. Plugins
-     *  with fragments will not be returned unless %%name%% includes
-     *  a fragment.
-     */
     getPlugin(name) {
         return (this.#plugins.get(name)) || null;
     }
-    /**
-     *  Gets a list of all plugins that match %%name%%, with otr without
-     *  a fragment.
-     */
+    // Gets a list of Plugins which match basename, ignoring any fragment
     getPlugins(basename) {
         return (this.plugins.filter((p) => (p.name.split("#")[0] === basename)));
     }
-    /**
-     *  Create a copy of this Network.
-     */
     clone() {
         const clone = new Network(this.name, this.chainId);
         this.plugins.forEach((plugin) => {
@@ -17029,12 +16312,6 @@ class Network {
         });
         return clone;
     }
-    /**
-     *  Compute the intrinsic gas required for a transaction.
-     *
-     *  A GasCostPlugin can be attached to override the default
-     *  values.
-     */
     computeIntrinsicGas(tx) {
         const costs = this.getPlugin("org.ethers.plugins.network.GasCost") || (new GasCostPlugin());
         let gas = costs.txBase;
@@ -17118,79 +16395,6 @@ class Network {
         Networks.set(nameOrChainId, networkFunc);
     }
 }
-// We don't want to bring in formatUnits because it is backed by
-// FixedNumber and we want to keep Networks tiny. The values
-// included by the Gas Stations are also IEEE 754 with lots of
-// rounding issues and exceed the strict checks formatUnits has.
-function parseUnits(_value, decimals) {
-    const value = String(_value);
-    if (!value.match(/^[0-9.]+$/)) {
-        throw new Error(`invalid gwei value: ${_value}`);
-    }
-    // Break into [ whole, fraction ]
-    const comps = value.split(".");
-    if (comps.length === 1) {
-        comps.push("");
-    }
-    // More than 1 decimal point or too many fractional positions
-    if (comps.length !== 2) {
-        throw new Error(`invalid gwei value: ${_value}`);
-    }
-    // Pad the fraction to 9 decimalplaces
-    while (comps[1].length < decimals) {
-        comps[1] += "0";
-    }
-    // Too many decimals and some non-zero ending, take the ceiling
-    if (comps[1].length > 9) {
-        let frac = BigInt(comps[1].substring(0, 9));
-        if (!comps[1].substring(9).match(/^0+$/)) {
-            frac++;
-        }
-        comps[1] = frac.toString();
-    }
-    return BigInt(comps[0] + comps[1]);
-}
-// Used by Polygon to use a gas station for fee data
-function getGasStationPlugin(url) {
-    return new FetchUrlFeeDataNetworkPlugin(url, async (fetchFeeData, provider, request) => {
-        // Prevent Cloudflare from blocking our request in node.js
-        request.setHeader("User-Agent", "ethers");
-        let response;
-        try {
-            const [_response, _feeData] = await Promise.all([
-                request.send(), fetchFeeData()
-            ]);
-            response = _response;
-            const payload = response.bodyJson.standard;
-            const feeData = {
-                gasPrice: _feeData.gasPrice,
-                maxFeePerGas: parseUnits(payload.maxFee, 9),
-                maxPriorityFeePerGas: parseUnits(payload.maxPriorityFee, 9),
-            };
-            return feeData;
-        }
-        catch (error) {
-            assert(false, `error encountered with polygon gas station (${JSON.stringify(request.url)})`, "SERVER_ERROR", { request, response, error });
-        }
-    });
-}
-// Used by Optimism for a custom priority fee
-function getPriorityFeePlugin(maxPriorityFeePerGas) {
-    return new FetchUrlFeeDataNetworkPlugin("data:", async (fetchFeeData, provider, request) => {
-        const feeData = await fetchFeeData();
-        // This should always fail
-        if (feeData.maxFeePerGas == null || feeData.maxPriorityFeePerGas == null) {
-            return feeData;
-        }
-        // Compute the corrected baseFee to recompute the updated values
-        const baseFee = feeData.maxFeePerGas - feeData.maxPriorityFeePerGas;
-        return {
-            gasPrice: feeData.gasPrice,
-            maxFeePerGas: (baseFee + maxPriorityFeePerGas),
-            maxPriorityFeePerGas
-        };
-    });
-}
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks() {
@@ -17206,10 +16410,16 @@ function injectCommonNetworks() {
             if (options.ensNetwork != null) {
                 network.attachPlugin(new EnsPlugin(null, options.ensNetwork));
             }
+            if (options.priorityFee) {
+                //                network.attachPlugin(new MaxPriorityFeePlugin(options.priorityFee));
+            }
+            /*
+                        if (options.etherscan) {
+                            const { url, apiKey } = options.etherscan;
+                            network.attachPlugin(new EtherscanPlugin(url, apiKey));
+                        }
+            */
             network.attachPlugin(new GasCostPlugin());
-            (options.plugins || []).forEach((plugin) => {
-                network.attachPlugin(plugin);
-            });
             return network;
         };
         // Register the network by name and chain ID
@@ -17229,43 +16439,75 @@ function injectCommonNetworks() {
     registerEth("sepolia", 11155111, {});
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
+    registerEth("xdai", 100, { ensNetwork: 1 });
+    registerEth("optimism", 10, {
+        ensNetwork: 1,
+        etherscan: { url: "https:/\/api-optimistic.etherscan.io/" }
+    });
+    registerEth("optimism-goerli", 420, {
+        etherscan: { url: "https:/\/api-goerli-optimistic.etherscan.io/" }
+    });
     registerEth("arbitrum", 42161, {
         ensNetwork: 1,
+        etherscan: { url: "https:/\/api.arbiscan.io/" }
     });
-    registerEth("arbitrum-goerli", 421613, {});
-    registerEth("bnb", 56, { ensNetwork: 1 });
-    registerEth("bnbt", 97, {});
-    registerEth("linea", 59144, { ensNetwork: 1 });
-    registerEth("linea-goerli", 59140, {});
+    registerEth("arbitrum-goerli", 421613, {
+        etherscan: { url: "https:/\/api-goerli.arbiscan.io/" }
+    });
+    // Polygon has a 35 gwei maxPriorityFee requirement
     registerEth("matic", 137, {
         ensNetwork: 1,
-        plugins: [
-            getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
-        ]
+        //        priorityFee: 35000000000,
+        etherscan: {
+            //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
+            url: "https:/\/api.polygonscan.com/"
+        }
     });
     registerEth("matic-mumbai", 80001, {
         altNames: ["maticMumbai", "maticmum"],
-        plugins: [
-            getGasStationPlugin("https:/\/gasstation-testnet.polygon.technology/v2")
-        ]
+        //        priorityFee: 35000000000,
+        etherscan: {
+            //            apiKey: "W6T8DJW654GNTQ34EFEYYP3EZD9DD27CT7",
+            url: "https:/\/api-testnet.polygonscan.com/"
+        }
     });
-    registerEth("optimism", 10, {
+    registerEth("bnb", 56, {
         ensNetwork: 1,
-        plugins: [
-            getPriorityFeePlugin(BigInt("1000000"))
-        ]
+        etherscan: {
+            //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
+            url: "http:/\/api.bscscan.com"
+        }
     });
-    registerEth("optimism-goerli", 420, {});
-    registerEth("xdai", 100, { ensNetwork: 1 });
+    registerEth("bnbt", 97, {
+        etherscan: {
+            //            apiKey: "EVTS3CU31AATZV72YQ55TPGXGMVIFUQ9M9",
+            url: "http:/\/api-testnet.bscscan.com"
+        }
+    });
 }
 
 function copy$2(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
+/**
+ *  @TODO
+ *
+ *  @_docloc: api/providers/abstract-provider
+ */
+function getPollingSubscriber(provider, event) {
+    if (event === "block") {
+        return new PollingBlockSubscriber(provider);
+    }
+    if (isHexString(event, 32)) {
+        return new PollingTransactionSubscriber(provider, event);
+    }
+    assert$1(false, "unsupported polling event", "UNSUPPORTED_OPERATION", {
+        operation: "getPollingSubscriber", info: { event }
+    });
+}
 // @TODO: refactor this
 /**
- *  A **PollingBlockSubscriber** polls at a regular interval for a change
- *  in the block number.
+ *  @TODO
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -17276,18 +16518,12 @@ class PollingBlockSubscriber {
     // The most recent block we have scanned for events. The value -2
     // indicates we still need to fetch an initial block number
     #blockNumber;
-    /**
-     *  Create a new **PollingBlockSubscriber** attached to %%provider%%.
-     */
     constructor(provider) {
         this.#provider = provider;
         this.#poller = null;
         this.#interval = 4000;
         this.#blockNumber = -2;
     }
-    /**
-     *  The polling interval.
-     */
     get pollingInterval() { return this.#interval; }
     set pollingInterval(value) { this.#interval = value; }
     async #poll() {
@@ -17346,8 +16582,7 @@ class PollingBlockSubscriber {
     }
 }
 /**
- *  An **OnBlockSubscriber** can be sub-classed, with a [[_poll]]
- *  implmentation which will be called on every new block.
+ *  @TODO
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -17355,9 +16590,6 @@ class OnBlockSubscriber {
     #provider;
     #poll;
     #running;
-    /**
-     *  Create a new **OnBlockSubscriber** attached to %%provider%%.
-     */
     constructor(provider) {
         this.#provider = provider;
         this.#running = false;
@@ -17365,9 +16597,6 @@ class OnBlockSubscriber {
             this._poll(blockNumber, this.#provider);
         };
     }
-    /**
-     *  Called on every new block.
-     */
     async _poll(blockNumber, provider) {
         throw new Error("sub-classes must override this");
     }
@@ -17390,7 +16619,7 @@ class OnBlockSubscriber {
     resume() { this.start(); }
 }
 /**
- *  @_ignore:
+ *  @TODO
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -17402,20 +16631,16 @@ class PollingOrphanSubscriber extends OnBlockSubscriber {
     }
     async _poll(blockNumber, provider) {
         throw new Error("@TODO");
+        console.log(this.#filter);
     }
 }
 /**
- *  A **PollingTransactionSubscriber** will poll for a given transaction
- *  hash for its receipt.
+ *  @TODO
  *
  *  @_docloc: api/providers/abstract-provider
  */
 class PollingTransactionSubscriber extends OnBlockSubscriber {
     #hash;
-    /**
-     *  Create a new **PollingTransactionSubscriber** attached to
-     *  %%provider%%, listening for %%hash%%.
-     */
     constructor(provider, hash) {
         super(provider);
         this.#hash = hash;
@@ -17428,7 +16653,7 @@ class PollingTransactionSubscriber extends OnBlockSubscriber {
     }
 }
 /**
- *  A **PollingEventSubscriber** will poll for a given filter for its logs.
+ *  @TODO
  *
  *  @_docloc: api/providers/abstract-provider
  */
@@ -17440,10 +16665,6 @@ class PollingEventSubscriber {
     // The most recent block we have scanned for events. The value -2
     // indicates we still need to fetch an initial block number
     #blockNumber;
-    /**
-     *  Create a new **PollingTransactionSubscriber** attached to
-     *  %%provider%%, listening for %%filter%%.
-     */
     constructor(provider, filter) {
         this.#provider = provider;
         this.#filter = copy$2(filter);
@@ -17468,12 +16689,9 @@ class PollingEventSubscriber {
             }
             return;
         }
+        this.#blockNumber = blockNumber;
         for (const log of logs) {
             this.#provider.emit(this.#filter, log);
-            // Only advance the block number when logs were found to
-            // account for networks (like BNB and Polygon) which may
-            // sacrifice event consistency for block event speed
-            this.#blockNumber = log.blockNumber;
         }
     }
     start() {
@@ -17507,19 +16725,10 @@ class PollingEventSubscriber {
 }
 
 /**
- *  The available providers should suffice for most developers purposes,
- *  but the [[AbstractProvider]] class has many features which enable
- *  sub-classing it for specific purposes.
+ *  About Subclassing the Provider...
  *
  *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
  */
-// @TODO
-// Event coalescence
-//   When we register an event with an async value (e.g. address is a Signer
-//   or ENS name), we need to add it immeidately for the Event API, but also
-//   need time to resolve the address. Upon resolving the address, we need to
-//   migrate the listener to the static event. We also need to maintain a map
-//   of Signer/ENS name to address so we can sync respond to listenerCount.
 // Constants
 const BN_2$1 = BigInt(2);
 const MAX_CCIP_REDIRECTS = 10;
@@ -17549,19 +16758,8 @@ function getTag(prefix, value) {
         return v;
     });
 }
-/**
- *  An **UnmanagedSubscriber** is useful for events which do not require
- *  any additional management, such as ``"debug"`` which only requires
- *  emit in synchronous event loop triggered calls.
- */
 class UnmanagedSubscriber {
-    /**
-     *  The name fof the event.
-     */
     name;
-    /**
-     *  Create a new UnmanagedSubscriber with %%name%%.
-     */
     constructor(name) { defineProperties(this, { name }); }
     start() { }
     stop() { }
@@ -17589,7 +16787,6 @@ async function getSubscription(_event, provider) {
             case "block":
             case "pending":
             case "debug":
-            case "error":
             case "network": {
                 return { type: _event, tag: _event };
             }
@@ -17646,22 +16843,11 @@ async function getSubscription(_event, provider) {
     assertArgument(false, "unknown ProviderEvent", "event", _event);
 }
 function getTime$1() { return (new Date()).getTime(); }
-const defaultOptions$1 = {
-    cacheTimeout: 250,
-    pollingInterval: 4000
-};
-/**
- *  An **AbstractProvider** provides a base class for other sub-classes to
- *  implement the [[Provider]] API by normalizing input arguments and
- *  formatting output results as well as tracking events for consistent
- *  behaviour on an eventually-consistent network.
- */
 class AbstractProvider {
     #subs;
     #plugins;
     // null=unpaused, true=paused+dropWhilePaused, false=paused
     #pausedState;
-    #destroyed;
     #networkPromise;
     #anyNetwork;
     #performCache;
@@ -17670,14 +16856,9 @@ class AbstractProvider {
     #nextTimer;
     #timers;
     #disableCcipRead;
-    #options;
-    /**
-     *  Create a new **AbstractProvider** connected to %%network%%, or
-     *  use the various network detection capabilities to discover the
-     *  [[Network]] if necessary.
-     */
-    constructor(_network, options) {
-        this.#options = Object.assign({}, defaultOptions$1, options || {});
+    // @TODO: This should be a () => Promise<Network> so network can be
+    // done when needed; or rely entirely on _detectNetwork?
+    constructor(_network) {
         if (_network === "any") {
             this.#anyNetwork = true;
             this.#networkPromise = null;
@@ -17697,26 +16878,14 @@ class AbstractProvider {
         this.#subs = new Map();
         this.#plugins = new Map();
         this.#pausedState = null;
-        this.#destroyed = false;
         this.#nextTimer = 1;
         this.#timers = new Map();
         this.#disableCcipRead = false;
     }
-    get pollingInterval() { return this.#options.pollingInterval; }
-    /**
-     *  Returns ``this``, to allow an **AbstractProvider** to implement
-     *  the [[ContractRunner]] interface.
-     */
     get provider() { return this; }
-    /**
-     *  Returns all the registered plug-ins.
-     */
     get plugins() {
         return Array.from(this.#plugins.values());
     }
-    /**
-     *  Attach a new plug-in.
-     */
     attachPlugin(plugin) {
         if (this.#plugins.get(plugin.name)) {
             throw new Error(`cannot replace existing plugin: ${plugin.name} `);
@@ -17724,25 +16893,13 @@ class AbstractProvider {
         this.#plugins.set(plugin.name, plugin.connect(this));
         return this;
     }
-    /**
-     *  Get a plugin by name.
-     */
     getPlugin(name) {
         return (this.#plugins.get(name)) || null;
     }
-    /**
-     *  Prevent any CCIP-read operation, regardless of whether requested
-     *  in a [[call]] using ``enableCcipRead``.
-     */
     get disableCcipRead() { return this.#disableCcipRead; }
     set disableCcipRead(value) { this.#disableCcipRead = !!value; }
     // Shares multiple identical requests made during the same 250ms
     async #perform(req) {
-        const timeout = this.#options.cacheTimeout;
-        // Caching disabled
-        if (timeout < 0) {
-            return await this._perform(req);
-        }
         // Create a tag
         const tag = getTag(req.method, req);
         let perform = this.#performCache.get(tag);
@@ -17753,13 +16910,10 @@ class AbstractProvider {
                 if (this.#performCache.get(tag) === perform) {
                     this.#performCache.delete(tag);
                 }
-            }, timeout);
+            }, 250);
         }
         return await perform;
     }
-    /**
-     *  Resolves to the data for executing the CCIP-read operations.
-     */
     async ccipReadFetch(tx, calldata, urls) {
         if (this.disableCcipRead || urls.length === 0 || tx.to == null) {
             return null;
@@ -17797,66 +16951,36 @@ class AbstractProvider {
             }
             catch (error) { }
             // 4xx indicates the result is not present; stop
-            assert(resp.statusCode < 400 || resp.statusCode >= 500, `response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", { reason: "404_MISSING_RESOURCE", transaction: tx, info: { url, errorMessage } });
+            assert$1(resp.statusCode < 400 || resp.statusCode >= 500, `response not found during CCIP fetch: ${errorMessage}`, "OFFCHAIN_FAULT", { reason: "404_MISSING_RESOURCE", transaction: tx, info: { url, errorMessage } });
             // 5xx indicates server issue; try the next url
             errorMessages.push(errorMessage);
         }
-        assert(false, `error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
+        assert$1(false, `error encountered during CCIP fetch: ${errorMessages.map((m) => JSON.stringify(m)).join(", ")}`, "OFFCHAIN_FAULT", {
             reason: "500_SERVER_ERROR",
             transaction: tx, info: { urls, errorMessages }
         });
     }
-    /**
-     *  Provides the opportunity for a sub-class to wrap a block before
-     *  returning it, to add additional properties or an alternate
-     *  sub-class of [[Block]].
-     */
     _wrapBlock(value, network) {
         return new Block(formatBlock(value), this);
     }
-    /**
-     *  Provides the opportunity for a sub-class to wrap a log before
-     *  returning it, to add additional properties or an alternate
-     *  sub-class of [[Log]].
-     */
     _wrapLog(value, network) {
         return new Log(formatLog(value), this);
     }
-    /**
-     *  Provides the opportunity for a sub-class to wrap a transaction
-     *  receipt before returning it, to add additional properties or an
-     *  alternate sub-class of [[TransactionReceipt]].
-     */
     _wrapTransactionReceipt(value, network) {
         return new TransactionReceipt(formatTransactionReceipt(value), this);
     }
-    /**
-     *  Provides the opportunity for a sub-class to wrap a transaction
-     *  response before returning it, to add additional properties or an
-     *  alternate sub-class of [[TransactionResponse]].
-     */
     _wrapTransactionResponse(tx, network) {
         return new TransactionResponse(formatTransactionResponse(tx), this);
     }
-    /**
-     *  Resolves to the Network, forcing a network detection using whatever
-     *  technique the sub-class requires.
-     *
-     *  Sub-classes **must** override this.
-     */
     _detectNetwork() {
-        assert(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
+        assert$1(false, "sub-classes must implement this", "UNSUPPORTED_OPERATION", {
             operation: "_detectNetwork"
         });
     }
-    /**
-     *  Sub-classes should use this to perform all built-in operations. All
-     *  methods sanitizes and normalizes the values passed into this.
-     *
-     *  Sub-classes **must** override this.
-     */
+    // Sub-classes should override this and handle PerformActionRequest requests, calling
+    // the super for any unhandled actions.
     async _perform(req) {
-        assert(false, `unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
+        assert$1(false, `unsupported method: ${req.method}`, "UNSUPPORTED_OPERATION", {
             operation: req.method,
             info: req
         });
@@ -17869,18 +16993,9 @@ class AbstractProvider {
         }
         return blockNumber;
     }
-    /**
-     *  Returns or resolves to the address for %%address%%, resolving ENS
-     *  names and [[Addressable]] objects and returning if already an
-     *  address.
-     */
     _getAddress(address) {
         return resolveAddress(address, this);
     }
-    /**
-     *  Returns or resolves to a valid block tag for %%blockTag%%, resolving
-     *  negative values and returning if already a valid block tag.
-     */
     _getBlockTag(blockTag) {
         if (blockTag == null) {
             return "latest";
@@ -17914,11 +17029,6 @@ class AbstractProvider {
         }
         assertArgument(false, "invalid blockTag", "blockTag", blockTag);
     }
-    /**
-     *  Returns or resolves to a filter for %%filter%%, resolving any ENS
-     *  names or [[Addressable]] object and returning if already a valid
-     *  filter.
-     */
     _getFilter(filter) {
         // Create a canonical representation of the topics
         const topics = (filter.topics || []).map((t) => {
@@ -17994,11 +17104,6 @@ class AbstractProvider {
         }
         return resolve(address, fromBlock, toBlock);
     }
-    /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
-     *  any ENS names or [[Addressable]] and returning if already a valid
-     *  transaction.
-     */
     _getTransactionRequest(_request) {
         const request = copyRequest(_request);
         const promises = [];
@@ -18006,7 +17111,7 @@ class AbstractProvider {
             if (request[key] == null) {
                 return;
             }
-            const addr = resolveAddress(request[key], this);
+            const addr = resolveAddress(request[key]);
             if (isPromise$1(addr)) {
                 promises.push((async function () { request[key] = await addr; })());
             }
@@ -18064,7 +17169,7 @@ class AbstractProvider {
             }
             else {
                 // Otherwise, we do not allow changes to the underlying network
-                assert(false, `network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
+                assert$1(false, `network changed: ${expected.chainId} => ${actual.chainId} `, "NETWORK_ERROR", {
                     event: "changed"
                 });
             }
@@ -18072,37 +17177,31 @@ class AbstractProvider {
         return expected.clone();
     }
     async getFeeData() {
-        const network = await this.getNetwork();
-        const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await resolveProperties({
-                _block: this.#getBlock("latest", false),
-                gasPrice: ((async () => {
-                    try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return getBigInt(gasPrice, "%response");
-                    }
-                    catch (error) { }
-                    return null;
-                })())
-            });
-            let maxFeePerGas = null;
-            let maxPriorityFeePerGas = null;
-            // These are the recommended EIP-1559 heuristics for fee data
-            const block = this._wrapBlock(_block, network);
-            if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
-                maxFeePerGas = (block.baseFeePerGas * BN_2$1) + maxPriorityFeePerGas;
-            }
-            return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
-        };
-        // Check for a FeeDataNetWorkPlugin
-        const plugin = network.getPlugin("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
-        if (plugin) {
-            const req = new FetchRequest(plugin.url);
-            const feeData = await plugin.processFunc(getFeeDataFunc, this, req);
-            return new FeeData(feeData.gasPrice, feeData.maxFeePerGas, feeData.maxPriorityFeePerGas);
+        const { block, gasPrice } = await resolveProperties({
+            block: this.getBlock("latest"),
+            gasPrice: ((async () => {
+                try {
+                    const gasPrice = await this.#perform({ method: "getGasPrice" });
+                    return getBigInt(gasPrice, "%response");
+                }
+                catch (error) { }
+                return null;
+            })())
+        });
+        let maxFeePerGas = null, maxPriorityFeePerGas = null;
+        if (block && block.baseFeePerGas) {
+            // We may want to compute this more accurately in the future,
+            // using the formula "check if the base fee is correct".
+            // See: https://eips.ethereum.org/EIPS/eip-1559
+            maxPriorityFeePerGas = BigInt("1000000000");
+            // Allow a network to override their maximum priority fee per gas
+            //const priorityFeePlugin = (await this.getNetwork()).getPlugin<MaxPriorityFeePlugin>("org.ethers.plugins.max-priority-fee");
+            //if (priorityFeePlugin) {
+            //    maxPriorityFeePerGas = await priorityFeePlugin.getPriorityFee(this);
+            //}
+            maxFeePerGas = (block.baseFeePerGas * BN_2$1) + maxPriorityFeePerGas;
         }
-        return await getFeeDataFunc();
+        return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
     }
     async estimateGas(_tx) {
         let tx = this._getTransactionRequest(_tx);
@@ -18114,7 +17213,7 @@ class AbstractProvider {
         }), "%response");
     }
     async #call(tx, blockTag, attempt) {
-        assert(attempt < MAX_CCIP_REDIRECTS, "CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
+        assert$1(attempt < MAX_CCIP_REDIRECTS, "CCIP read exceeded maximum redirections", "OFFCHAIN_FAULT", {
             reason: "TOO_MANY_REDIRECTS",
             transaction: Object.assign({}, tx, { blockTag, enableCcipRead: true })
         });
@@ -18134,12 +17233,12 @@ class AbstractProvider {
                     ccipArgs = parseOffchainLookup(dataSlice(error.data, 4));
                 }
                 catch (error) {
-                    assert(false, error.message, "OFFCHAIN_FAULT", {
+                    assert$1(false, error.message, "OFFCHAIN_FAULT", {
                         reason: "BAD_DATA", transaction, info: { data }
                     });
                 }
                 // Check the sender of the OffchainLookup matches the transaction
-                assert(ccipArgs.sender.toLowerCase() === txSender.toLowerCase(), "CCIP Read sender mismatch", "CALL_EXCEPTION", {
+                assert$1(ccipArgs.sender.toLowerCase() === txSender.toLowerCase(), "CCIP Read sender mismatch", "CALL_EXCEPTION", {
                     action: "call",
                     data,
                     reason: "OffchainLookup",
@@ -18152,7 +17251,7 @@ class AbstractProvider {
                     }
                 });
                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
-                assert(ccipResult != null, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                assert$1(ccipResult != null, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
                     reason: "FETCH_FAILED", transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs }
                 });
                 const tx = {
@@ -18304,7 +17403,7 @@ class AbstractProvider {
     }
     // ENS
     _getProvider(chainId) {
-        assert(false, "provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
+        assert$1(false, "provider cannot connect to target network", "UNSUPPORTED_OPERATION", {
             operation: "_getProvider()"
         });
     }
@@ -18334,7 +17433,7 @@ class AbstractProvider {
                 "function resolver(bytes32) view returns (address)"
             ], this);
             const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroAddress) {
+            if (resolver == null || resolver === ZeroHash) {
                 return null;
             }
             const resolverContract = new Contract(resolver, [
@@ -18402,13 +17501,10 @@ class AbstractProvider {
         });
     }
     async waitForBlock(blockTag) {
-        assert(false, "not implemented yet", "NOT_IMPLEMENTED", {
+        assert$1(false, "not implemented yet", "NOT_IMPLEMENTED", {
             operation: "waitForBlock"
         });
     }
-    /**
-     *  Clear a timer created using the [[_setTimeout]] method.
-     */
     _clearTimeout(timerId) {
         const timer = this.#timers.get(timerId);
         if (!timer) {
@@ -18419,14 +17515,6 @@ class AbstractProvider {
         }
         this.#timers.delete(timerId);
     }
-    /**
-     *  Create a timer that will execute %%func%% after at least %%timeout%%
-     *  (in ms). If %%timeout%% is unspecified, then %%func%% will execute
-     *  in the next event loop.
-     *
-     *  [Pausing](AbstractProvider-paused) the provider will pause any
-     *  associated timers.
-     */
     _setTimeout(_func, timeout) {
         if (timeout == null) {
             timeout = 0;
@@ -18445,29 +17533,20 @@ class AbstractProvider {
         }
         return timerId;
     }
-    /**
-     *  Perform %%func%% on each subscriber.
-     */
     _forEachSubscriber(func) {
         for (const sub of this.#subs.values()) {
             func(sub.subscriber);
         }
     }
-    /**
-     *  Sub-classes may override this to customize subscription
-     *  implementations.
-     */
+    // Event API; sub-classes should override this; any supported
+    // event filter will have been munged into an EventFilter
     _getSubscriber(sub) {
         switch (sub.type) {
             case "debug":
-            case "error":
             case "network":
                 return new UnmanagedSubscriber(sub.type);
-            case "block": {
-                const subscriber = new PollingBlockSubscriber(this);
-                subscriber.pollingInterval = this.pollingInterval;
-                return subscriber;
-            }
+            case "block":
+                return new PollingBlockSubscriber(this);
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":
@@ -18477,15 +17556,6 @@ class AbstractProvider {
         }
         throw new Error(`unsupported event: ${sub.type}`);
     }
-    /**
-     *  If a [[Subscriber]] fails and needs to replace itself, this
-     *  method may be used.
-     *
-     *  For example, this is used for providers when using the
-     *  ``eth_getFilterChanges`` method, which can return null if state
-     *  filters are not supported by the backend, allowing the Subscriber
-     *  to swap in a [[PollingEventSubscriber]].
-     */
     _recoverSubscriber(oldSub, newSub) {
         for (const sub of this.#subs.values()) {
             if (sub.subscriber === oldSub) {
@@ -18557,6 +17627,7 @@ class AbstractProvider {
         if (!sub || sub.listeners.length === 0) {
             return false;
         }
+        ;
         const count = sub.listeners.length;
         sub.listeners = sub.listeners.filter(({ listener, once }) => {
             const payload = new EventPayload(this, (once ? null : listener), event);
@@ -18647,22 +17718,8 @@ class AbstractProvider {
     async removeListener(event, listener) {
         return this.off(event, listener);
     }
-    /**
-     *  If this provider has been destroyed using the [[destroy]] method.
-     *
-     *  Once destroyed, all resources are reclaimed, internal event loops
-     *  and timers are cleaned up and no further requests may be sent to
-     *  the provider.
-     */
-    get destroyed() {
-        return this.#destroyed;
-    }
-    /**
-     *  Sub-classes may use this to shutdown any sockets or release their
-     *  resources and reject any pending requests.
-     *
-     *  Sub-classes **must** call ``super.destroy()``.
-     */
+    // Sub-classes should override this to shutdown any sockets, etc.
+    // but MUST call this super.shutdown.
     destroy() {
         // Stop all listeners
         this.removeAllListeners();
@@ -18670,19 +17727,7 @@ class AbstractProvider {
         for (const timerId of this.#timers.keys()) {
             this._clearTimeout(timerId);
         }
-        this.#destroyed = true;
     }
-    /**
-     *  Whether the provider is currently paused.
-     *
-     *  A paused provider will not emit any events, and generally should
-     *  not make any requests to the network, but that is up to sub-classes
-     *  to manage.
-     *
-     *  Setting ``paused = true`` is identical to calling ``.pause(false)``,
-     *  which will buffer any events that occur while paused until the
-     *  provider is unpaused.
-     */
     get paused() { return (this.#pausedState != null); }
     set paused(pause) {
         if (!!pause === this.paused) {
@@ -18695,18 +17740,13 @@ class AbstractProvider {
             this.pause(false);
         }
     }
-    /**
-     *  Pause the provider. If %%dropWhilePaused%%, any events that occur
-     *  while paused are dropped, otherwise all events will be emitted once
-     *  the provider is unpaused.
-     */
     pause(dropWhilePaused) {
         this.#lastBlockNumber = -1;
         if (this.#pausedState != null) {
             if (this.#pausedState == !!dropWhilePaused) {
                 return;
             }
-            assert(false, "cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
+            assert$1(false, "cannot change pause type; resume first", "UNSUPPORTED_OPERATION", {
                 operation: "pause"
             });
         }
@@ -18721,9 +17761,6 @@ class AbstractProvider {
             timer.time = getTime$1() - timer.time;
         }
     }
-    /**
-     *  Resume the provider.
-     */
     resume() {
         if (this.#pausedState == null) {
             return;
@@ -18808,11 +17845,11 @@ function parseOffchainLookup(data) {
     const result = {
         sender: "", urls: [], calldata: "", selector: "", extraData: "", errorArgs: []
     };
-    assert(dataLength(data) >= 5 * 32, "insufficient OffchainLookup data", "OFFCHAIN_FAULT", {
+    assert$1(dataLength(data) >= 5 * 32, "insufficient OffchainLookup data", "OFFCHAIN_FAULT", {
         reason: "insufficient OffchainLookup data"
     });
     const sender = dataSlice(data, 0, 32);
-    assert(dataSlice(sender, 0, 12) === dataSlice(zeros, 0, 12), "corrupt OffchainLookup sender", "OFFCHAIN_FAULT", {
+    assert$1(dataSlice(sender, 0, 12) === dataSlice(zeros, 0, 12), "corrupt OffchainLookup sender", "OFFCHAIN_FAULT", {
         reason: "corrupt OffchainLookup sender"
     });
     result.sender = dataSlice(sender, 12);
@@ -18832,7 +17869,7 @@ function parseOffchainLookup(data) {
         result.urls = urls;
     }
     catch (error) {
-        assert(false, "corrupt OffchainLookup urls", "OFFCHAIN_FAULT", {
+        assert$1(false, "corrupt OffchainLookup urls", "OFFCHAIN_FAULT", {
             reason: "corrupt OffchainLookup urls"
         });
     }
@@ -18845,12 +17882,12 @@ function parseOffchainLookup(data) {
         result.calldata = calldata;
     }
     catch (error) {
-        assert(false, "corrupt OffchainLookup calldata", "OFFCHAIN_FAULT", {
+        assert$1(false, "corrupt OffchainLookup calldata", "OFFCHAIN_FAULT", {
             reason: "corrupt OffchainLookup calldata"
         });
     }
     // Get the callbackSelector (bytes4)
-    assert(dataSlice(data, 100, 128) === dataSlice(zeros, 0, 28), "corrupt OffchainLookup callbaackSelector", "OFFCHAIN_FAULT", {
+    assert$1(dataSlice(data, 100, 128) === dataSlice(zeros, 0, 28), "corrupt OffchainLookup callbaackSelector", "OFFCHAIN_FAULT", {
         reason: "corrupt OffchainLookup callbaackSelector"
     });
     result.selector = dataSlice(data, 96, 100);
@@ -18863,7 +17900,7 @@ function parseOffchainLookup(data) {
         result.extraData = extraData;
     }
     catch (error) {
-        assert(false, "corrupt OffchainLookup extraData", "OFFCHAIN_FAULT", {
+        assert$1(false, "corrupt OffchainLookup extraData", "OFFCHAIN_FAULT", {
             reason: "corrupt OffchainLookup extraData"
         });
     }
@@ -18872,9 +17909,7 @@ function parseOffchainLookup(data) {
 }
 
 /**
- *  Generally the [[Wallet]] and [[JsonRpcSigner]] and their sub-classes
- *  are sufficent for most developers, but this is provided to
- *  fascilitate more complex Signers.
+ *  About Abstract Signer and subclassing
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
  */
@@ -18882,7 +17917,7 @@ function checkProvider(signer, operation) {
     if (signer.provider) {
         return signer.provider;
     }
-    assert(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
+    assert$1(false, "missing provider", "UNSUPPORTED_OPERATION", { operation });
 }
 async function populate(signer, tx) {
     let pop = copyRequest(tx);
@@ -18904,20 +17939,8 @@ async function populate(signer, tx) {
     }
     return await resolveProperties(pop);
 }
-/**
- *  An **AbstractSigner** includes most of teh functionality required
- *  to get a [[Signer]] working as expected, but requires a few
- *  Signer-specific methods be overridden.
- *
- */
 class AbstractSigner {
-    /**
-     *  The provider this signer is connected to.
-     */
     provider;
-    /**
-     *  Creates a new Signer connected to %%provider%%.
-     */
     constructor(provider) {
         defineProperties(this, { provider: (provider || null) });
     }
@@ -18962,7 +17985,7 @@ class AbstractSigner {
             // Explicit Legacy or EIP-2930 transaction
             // We need to get fee data to determine things
             const feeData = await provider.getFeeData();
-            assert(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
+            assert$1(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
                 operation: "getGasPrice"
             });
             // Populate missing gasPrice
@@ -19000,7 +18023,7 @@ class AbstractSigner {
                 else if (feeData.gasPrice != null) {
                     // Network doesn't support EIP-1559...
                     // ...but they are trying to use EIP-1559 properties
-                    assert(!hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
+                    assert$1(!hasEip1559, "network does not support EIP-1559", "UNSUPPORTED_OPERATION", {
                         operation: "populateTransaction"
                     });
                     // Populate missing fee data
@@ -19013,7 +18036,7 @@ class AbstractSigner {
                 }
                 else {
                     // getFeeData has failed us.
-                    assert(false, "failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
+                    assert$1(false, "failed to get consistent fee data", "UNSUPPORTED_OPERATION", {
                         operation: "signer.getFeeData"
                     });
                 }
@@ -19051,23 +18074,8 @@ class AbstractSigner {
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
     }
 }
-/**
- *  A **VoidSigner** is a class deisgned to allow an address to be used
- *  in any API which accepts a Signer, but for which there are no
- *  credentials available to perform any actual signing.
- *
- *  This for example allow impersonating an account for the purpose of
- *  static calls or estimating gas, but does not allow sending transactions.
- */
 class VoidSigner extends AbstractSigner {
-    /**
-     *  The signer address.
-     */
     address;
-    /**
-     *  Creates a new **VoidSigner** with %%address%% attached to
-     *  %%provider%%.
-     */
     constructor(address, provider) {
         super(provider);
         defineProperties(this, { address });
@@ -19077,7 +18085,7 @@ class VoidSigner extends AbstractSigner {
         return new VoidSigner(this.address, provider);
     }
     #throwUnsupported(suffix, operation) {
-        assert(false, `VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", { operation });
+        assert$1(false, `VoidSigner cannot sign ${suffix}`, "UNSUPPORTED_OPERATION", { operation });
     }
     async signTransaction(tx) {
         this.#throwUnsupported("transactions", "signTransaction");
@@ -19146,11 +18154,6 @@ class FilterIdSubscriber {
     #running;
     #network;
     #hault;
-    /**
-     *  Creates a new **FilterIdSubscriber** which will used [[_subscribe]]
-     *  and [[_emitResults]] to setup the subscription and provide the event
-     *  to the %%provider%%.
-     */
     constructor(provider) {
         this.#provider = provider;
         this.#filterIdPromise = null;
@@ -19159,21 +18162,12 @@ class FilterIdSubscriber {
         this.#network = null;
         this.#hault = false;
     }
-    /**
-     *  Sub-classes **must** override this to begin the subscription.
-     */
     _subscribe(provider) {
         throw new Error("subclasses must override this");
     }
-    /**
-     *  Sub-classes **must** override this handle the events.
-     */
     _emitResults(provider, result) {
         throw new Error("subclasses must override this");
     }
-    /**
-     *  Sub-classes **must** override this handle recovery on errors.
-     */
     _recover(provider) {
         throw new Error("subclasses must override this");
     }
@@ -19258,10 +18252,6 @@ class FilterIdSubscriber {
  */
 class FilterIdEventSubscriber extends FilterIdSubscriber {
     #event;
-    /**
-     *  Creates a new **FilterIdEventSubscriber** attached to %%provider%%
-     *  listening for %%filter%%.
-     */
     constructor(provider, filter) {
         super(provider);
         this.#event = copy(filter);
@@ -19296,19 +18286,10 @@ class FilterIdPendingSubscriber extends FilterIdSubscriber {
 }
 
 /**
- *  One of the most common ways to interact with the blockchain is
- *  by a node running a JSON-RPC interface which can be connected to,
- *  based on the transport, using:
- *
- *  - HTTP or HTTPS - [[JsonRpcProvider]]
- *  - WebSocket - [[WebSocketProvider]]
- *  - IPC - [[IpcSocketProvider]]
+ *  About JSON-RPC...
  *
  * @_section: api/providers/jsonrpc:JSON-RPC Provider  [about-jsonrpcProvider]
  */
-// @TODO:
-// - Add the batching API
-// https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=true&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
 function deepCopy(value) {
@@ -19347,9 +18328,7 @@ const defaultOptions = {
     staticNetwork: null,
     batchStallTime: 10,
     batchMaxSize: (1 << 20),
-    batchMaxCount: 100,
-    cacheTimeout: 250,
-    pollingInterval: 4000
+    batchMaxCount: 100 // 100 requests
 };
 // @TODO: Unchecked Signers
 class JsonRpcSigner extends AbstractSigner {
@@ -19360,7 +18339,7 @@ class JsonRpcSigner extends AbstractSigner {
         defineProperties(this, { address });
     }
     connect(provider) {
-        assert(false, "cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
+        assert$1(false, "cannot reconnect JsonRpcSigner", "UNSUPPORTED_OPERATION", {
             operation: "signer.connect"
         });
     }
@@ -19531,25 +18510,15 @@ class JsonRpcApiProvider extends AbstractProvider {
                         this.emit("debug", { action: "receiveRpcResult", result });
                         // Process results in batch order
                         for (const { resolve, reject, payload } of batch) {
-                            if (this.destroyed) {
-                                reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: payload.method }));
-                                continue;
-                            }
                             // Find the matching result
                             const resp = result.filter((r) => (r.id === payload.id))[0];
                             // No result; the node failed us in unexpected ways
                             if (resp == null) {
-                                const error = makeError("missing response for request", "BAD_DATA", {
-                                    value: result, info: { payload }
-                                });
-                                this.emit("error", error);
-                                reject(error);
-                                continue;
+                                return reject(makeError("no response from server", "BAD_DATA", { value: result, info: { payload } }));
                             }
                             // The response is an error
                             if ("error" in resp) {
-                                reject(this.getRpcError(payload, resp));
-                                continue;
+                                return reject(this.getRpcError(payload, resp));
                             }
                             // All good; send the result
                             resolve(resp.result);
@@ -19567,7 +18536,7 @@ class JsonRpcApiProvider extends AbstractProvider {
         }, stallTime);
     }
     constructor(network, options) {
-        super(network, options);
+        super(network);
         this.#nextId = 1;
         this.#options = Object.assign({}, defaultOptions, options || {});
         this.#payloads = [];
@@ -19580,10 +18549,10 @@ class JsonRpcApiProvider extends AbstractProvider {
             });
             this.#notReady = { promise, resolve };
         }
-        // Make sure any static network is compatbile with the provided netwrok
+        // This could be relaxed in the future to just check equivalent networks
         const staticNetwork = this._getOption("staticNetwork");
         if (staticNetwork) {
-            assertArgument(network == null || staticNetwork.matches(network), "staticNetwork MUST match network object", "options", options);
+            assertArgument(staticNetwork === network, "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
         }
     }
@@ -19600,9 +18569,16 @@ class JsonRpcApiProvider extends AbstractProvider {
      *  is detected, and if it has changed, the call will reject.
      */
     get _network() {
-        assert(this.#network, "network is not available yet", "NETWORK_ERROR");
+        assert$1(this.#network, "network is not available yet", "NETWORK_ERROR");
         return this.#network;
     }
+    /*
+     {
+        assert(false, "sub-classes must override _send", "UNSUPPORTED_OPERATION", {
+            operation: "jsonRpcApiProvider._send"
+        });
+    }
+    */
     /**
      *  Resolves to the non-normalized value by performing %%req%%.
      *
@@ -19683,16 +18659,12 @@ class JsonRpcApiProvider extends AbstractProvider {
         this.#notReady = null;
         (async () => {
             // Bootstrap the network
-            while (this.#network == null && !this.destroyed) {
+            while (this.#network == null) {
                 try {
                     this.#network = await this._detectNetwork();
                 }
                 catch (error) {
-                    if (this.destroyed) {
-                        break;
-                    }
-                    console.log("JsonRpcProvider failed to detect network and cannot start up; retry in 1s (perhaps the URL is wrong or the node is not started)");
-                    this.emit("error", makeError("failed to bootstrap network detection", "NETWORK_ERROR", { event: "initial-network-discovery", info: { error } }));
+                    console.log("JsonRpcProvider failed to startup; retry in 1s");
                     await stall$3(1000);
                 }
             }
@@ -19922,18 +18894,12 @@ class JsonRpcApiProvider extends AbstractProvider {
                 });
             }
         }
-        let unsupported = !!message.match(/the method .* does not exist/i);
-        if (!unsupported) {
-            if (error && error.details && error.details.startsWith("Unauthorized method:")) {
-                unsupported = true;
-            }
-        }
-        if (unsupported) {
+        if (message.match(/the method .* does not exist/i)) {
             return makeError("unsupported operation", "UNSUPPORTED_OPERATION", {
-                operation: payload.method, info: { error, payload }
+                operation: payload.method, info: { error }
             });
         }
-        return makeError("could not coalesce error", "UNKNOWN_ERROR", { error, payload });
+        return makeError("could not coalesce error", "UNKNOWN_ERROR", { error });
     }
     /**
      *  Requests the %%method%% with %%params%% via the JSON-RPC protocol
@@ -19950,10 +18916,6 @@ class JsonRpcApiProvider extends AbstractProvider {
      */
     send(method, params) {
         // @TODO: cache chainId?? purge on switch_networks
-        // We have been destroyed; no operations are supported anymore
-        if (this.destroyed) {
-            return Promise.reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: method }));
-        }
         const id = this.#nextId++;
         const promise = new Promise((resolve, reject) => {
             this.#payloads.push({
@@ -20007,27 +18969,7 @@ class JsonRpcApiProvider extends AbstractProvider {
         const accounts = await this.send("eth_accounts", []);
         return accounts.map((a) => new JsonRpcSigner(this, a));
     }
-    destroy() {
-        // Stop processing requests
-        if (this.#drainTimer) {
-            clearTimeout(this.#drainTimer);
-            this.#drainTimer = null;
-        }
-        // Cancel all pending requests
-        for (const { payload, reject } of this.#payloads) {
-            reject(makeError("provider destroyed; cancelled request", "UNSUPPORTED_OPERATION", { operation: payload.method }));
-        }
-        this.#payloads = [];
-        // Parent clean-up
-        super.destroy();
-    }
 }
-// @TODO: remove this in v7, it is not exported because this functionality
-// is exposed in the JsonRpcApiProvider by setting polling to true. It should
-// be safe to remove regardless, because it isn't reachable, but just in case.
-/**
- *  @_ignore:
- */
 class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     #pollingInterval;
     constructor(network, options) {
@@ -20108,7 +19050,7 @@ function spelunkData(value) {
         return null;
     }
     // These *are* the droids we're looking for.
-    if (typeof (value.message) === "string" && value.message.match(/revert/i) && isHexString(value.data)) {
+    if (typeof (value.message) === "string" && value.message.match("reverted") && isHexString(value.data)) {
         return { message: value.message, data: value.data };
     }
     // Spelunk further...
@@ -20336,7 +19278,7 @@ class AlchemyProvider extends JsonRpcProvider {
             }
             catch (error) { }
             if (data) {
-                assert(!error, "an error occurred during transaction executions", "CALL_EXCEPTION", {
+                assert$1(!error, "an error occurred during transaction executions", "CALL_EXCEPTION", {
                     action: "getTransactionResult",
                     data,
                     reason: null,
@@ -20346,7 +19288,7 @@ class AlchemyProvider extends JsonRpcProvider {
                 });
                 return data;
             }
-            assert(false, "could not parse trace result", "BAD_DATA", { value: trace });
+            assert$1(false, "could not parse trace result", "BAD_DATA", { value: trace });
         }
         return await super._perform(req);
     }
@@ -20435,7 +19377,6 @@ class EtherscanPlugin extends NetworkPlugin {
         return new EtherscanPlugin(this.baseUrl);
     }
 }
-const skipKeys = ["enableCcipRead"];
 let nextId = 1;
 /**
  *  The **EtherscanBaseProvider** is the super-class of
@@ -20499,10 +19440,7 @@ class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
                 return "https:/\/api-goerli-optimistic.etherscan.io";
-            case "bnb":
-                return "http:/\/api.bscscan.com";
-            case "bnbt":
-                return "http:/\/api-testnet.bscscan.com";
+            default:
         }
         assertArgument(false, "unsupported network", "network", this.network);
     }
@@ -20583,21 +19521,21 @@ class EtherscanProvider extends AbstractProvider {
         }
         catch (error) {
             this.emit("debug", { action: "receiveError", id, error, reason: "assertOk" });
-            assert(false, "response error", "SERVER_ERROR", { request, response });
+            assert$1(false, "response error", "SERVER_ERROR", { request, response });
         }
         if (!response.hasBody()) {
             this.emit("debug", { action: "receiveError", id, error: "missing body", reason: "null body" });
-            assert(false, "missing response", "SERVER_ERROR", { request, response });
+            assert$1(false, "missing response", "SERVER_ERROR", { request, response });
         }
         const result = JSON.parse(toUtf8String(response.body));
         if (module === "proxy") {
             if (result.jsonrpc != "2.0") {
                 this.emit("debug", { action: "receiveError", id, result, reason: "invalid JSON-RPC" });
-                assert(false, "invalid JSON-RPC response (missing jsonrpc='2.0')", "SERVER_ERROR", { request, response, info: { result } });
+                assert$1(false, "invalid JSON-RPC response (missing jsonrpc='2.0')", "SERVER_ERROR", { request, response, info: { result } });
             }
             if (result.error) {
                 this.emit("debug", { action: "receiveError", id, result, reason: "JSON-RPC error" });
-                assert(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
+                assert$1(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
             }
             this.emit("debug", { action: "receiveRequest", id, result });
             return result.result;
@@ -20610,7 +19548,7 @@ class EtherscanProvider extends AbstractProvider {
             }
             if (result.status != 1 || (typeof (result.message) === "string" && !result.message.match(/^OK/))) {
                 this.emit("debug", { action: "receiveError", id, result });
-                assert(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
+                assert$1(false, "error response", "SERVER_ERROR", { request, response, info: { result } });
             }
             this.emit("debug", { action: "receiveRequest", id, result });
             return result.result;
@@ -20622,17 +19560,11 @@ class EtherscanProvider extends AbstractProvider {
     _getTransactionPostData(transaction) {
         const result = {};
         for (let key in transaction) {
-            if (skipKeys.indexOf(key) >= 0) {
-                continue;
-            }
             if (transaction[key] == null) {
                 continue;
             }
             let value = transaction[key];
             if (key === "type" && value === 0) {
-                continue;
-            }
-            if (key === "blockTag" && value === "latest") {
                 continue;
             }
             // Quantity-types require no leading zero, unless 0
@@ -20672,7 +19604,7 @@ class EtherscanProvider extends AbstractProvider {
         }
         if (req.method === "estimateGas") {
             if (!message.match(/revert/i) && message.match(/insufficient funds/i)) {
-                assert(false, "insufficient funds", "INSUFFICIENT_FUNDS", {
+                assert$1(false, "insufficient funds", "INSUFFICIENT_FUNDS", {
                     transaction: req.transaction
                 });
             }
@@ -20693,17 +19625,17 @@ class EtherscanProvider extends AbstractProvider {
             if (req.method === "broadcastTransaction") {
                 const transaction = Transaction.from(req.signedTransaction);
                 if (message.match(/replacement/i) && message.match(/underpriced/i)) {
-                    assert(false, "replacement fee too low", "REPLACEMENT_UNDERPRICED", {
+                    assert$1(false, "replacement fee too low", "REPLACEMENT_UNDERPRICED", {
                         transaction
                     });
                 }
                 if (message.match(/insufficient funds/)) {
-                    assert(false, "insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
+                    assert$1(false, "insufficient funds for intrinsic transaction cost", "INSUFFICIENT_FUNDS", {
                         transaction
                     });
                 }
                 if (message.match(/same hash was already imported|transaction nonce is too low|nonce too low/)) {
-                    assert(false, "nonce has already been used", "NONCE_EXPIRED", {
+                    assert$1(false, "nonce has already been used", "NONCE_EXPIRED", {
                         transaction
                     });
                 }
@@ -20764,7 +19696,7 @@ class EtherscanProvider extends AbstractProvider {
                         boolean: (req.includeTransactions ? "true" : "false")
                     });
                 }
-                assert(false, "getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                assert$1(false, "getBlock by blockHash not supported by Etherscan", "UNSUPPORTED_OPERATION", {
                     operation: "getBlock(blockHash)"
                 });
             case "getTransaction":
@@ -20802,6 +19734,61 @@ class EtherscanProvider extends AbstractProvider {
                     return this._checkError(req, error, req.transaction);
                 }
             }
+            /*
+                        case "getLogs": {
+                            // Needs to complain if more than one address is passed in
+                            const args: Record<string, any> = { action: "getLogs" }
+            
+                            if (params.filter.fromBlock) {
+                                args.fromBlock = checkLogTag(params.filter.fromBlock);
+                            }
+            
+                            if (params.filter.toBlock) {
+                                args.toBlock = checkLogTag(params.filter.toBlock);
+                            }
+            
+                            if (params.filter.address) {
+                                args.address = params.filter.address;
+                            }
+            
+                            // @TODO: We can handle slightly more complicated logs using the logs API
+                            if (params.filter.topics && params.filter.topics.length > 0) {
+                                if (params.filter.topics.length > 1) {
+                                    logger.throwError("unsupported topic count", Logger.Errors.UNSUPPORTED_OPERATION, { topics: params.filter.topics });
+                                }
+                                if (params.filter.topics.length === 1) {
+                                    const topic0 = params.filter.topics[0];
+                                    if (typeof(topic0) !== "string" || topic0.length !== 66) {
+                                        logger.throwError("unsupported topic format", Logger.Errors.UNSUPPORTED_OPERATION, { topic0: topic0 });
+                                    }
+                                    args.topic0 = topic0;
+                                }
+                            }
+            
+                            const logs: Array<any> = await this.fetch("logs", args);
+            
+                            // Cache txHash => blockHash
+                            let blocks: { [tag: string]: string } = {};
+            
+                            // Add any missing blockHash to the logs
+                            for (let i = 0; i < logs.length; i++) {
+                                const log = logs[i];
+                                if (log.blockHash != null) { continue; }
+                                if (blocks[log.blockNumber] == null) {
+                                    const block = await this.getBlock(log.blockNumber);
+                                    if (block) {
+                                        blocks[log.blockNumber] = block.hash;
+                                    }
+                                }
+            
+                                log.blockHash = blocks[log.blockNumber];
+                            }
+            
+                            return logs;
+                        }
+            */
+            default:
+                break;
         }
         return super._perform(req);
     }
@@ -20856,6 +19843,7 @@ function getGlobal() {
     }
     throw new Error('unable to locate global object');
 }
+;
 const _WebSocket = getGlobal().WebSocket;
 
 /**
@@ -20866,26 +19854,15 @@ const _WebSocket = getGlobal().WebSocket;
  *  - a sub-class MUST override the `_write(string)` method
  *  - a sub-class MUST call `_processMessage(string)` for each message
  *
- *  @_subsection: api/providers/abstract-provider:Socket Providers  [about-socketProvider]
- */
-/**
- *  A **SocketSubscriber** uses a socket transport to handle events and
- *  should use [[_emit]] to manage the events.
+ *  @_subsection: api/providers/abstract-provider
  */
 class SocketSubscriber {
     #provider;
     #filter;
-    /**
-     *  The filter.
-     */
     get filter() { return JSON.parse(this.#filter); }
     #filterId;
     #paused;
     #emitPromise;
-    /**
-     *  Creates a new **SocketSubscriber** attached to %%provider%% listening
-     *  to %%filter%%.
-     */
     constructor(provider, filter) {
         this.#provider = provider;
         this.#filter = JSON.stringify(filter);
@@ -20895,6 +19872,7 @@ class SocketSubscriber {
     }
     start() {
         this.#filterId = this.#provider.send("eth_subscribe", this.filter).then((filterId) => {
+            ;
             this.#provider._register(filterId, this);
             return filterId;
         });
@@ -20908,15 +19886,12 @@ class SocketSubscriber {
     // @TODO: pause should trap the current blockNumber, unsub, and on resume use getLogs
     //        and resume
     pause(dropWhilePaused) {
-        assert(dropWhilePaused, "preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", { operation: "pause(false)" });
+        assert$1(dropWhilePaused, "preserve logs while paused not supported by SocketSubscriber yet", "UNSUPPORTED_OPERATION", { operation: "pause(false)" });
         this.#paused = !!dropWhilePaused;
     }
     resume() {
         this.#paused = null;
     }
-    /**
-     *  @_ignore:
-     */
     _handleMessage(message) {
         if (this.#filterId == null) {
             return;
@@ -20938,22 +19913,11 @@ class SocketSubscriber {
             });
         }
     }
-    /**
-     *  Sub-classes **must** override this to emit the events on the
-     *  provider.
-     */
     async _emit(provider, message) {
         throw new Error("sub-classes must implemente this; _emit");
     }
 }
-/**
- *  A **SocketBlockSubscriber** listens for ``newHeads`` events and emits
- *  ``"block"`` events.
- */
 class SocketBlockSubscriber extends SocketSubscriber {
-    /**
-     *  @_ignore:
-     */
     constructor(provider) {
         super(provider, ["newHeads"]);
     }
@@ -20961,14 +19925,7 @@ class SocketBlockSubscriber extends SocketSubscriber {
         provider.emit("block", parseInt(message.number));
     }
 }
-/**
- *  A **SocketPendingSubscriber** listens for pending transacitons and emits
- *  ``"pending"`` events.
- */
 class SocketPendingSubscriber extends SocketSubscriber {
-    /**
-     *  @_ignore:
-     */
     constructor(provider) {
         super(provider, ["newPendingTransactions"]);
     }
@@ -20976,18 +19933,9 @@ class SocketPendingSubscriber extends SocketSubscriber {
         provider.emit("pending", message);
     }
 }
-/**
- *  A **SocketEventSubscriber** listens for event logs.
- */
 class SocketEventSubscriber extends SocketSubscriber {
     #logFilter;
-    /**
-     *  The filter.
-     */
     get logFilter() { return JSON.parse(this.#logFilter); }
-    /**
-     *  @_ignore:
-     */
     constructor(provider, filter) {
         super(provider, ["logs", filter]);
         this.#logFilter = JSON.stringify(filter);
@@ -20997,9 +19945,8 @@ class SocketEventSubscriber extends SocketSubscriber {
     }
 }
 /**
- *  A **SocketProvider** is backed by a long-lived connection over a
- *  socket, which can subscribe and receive real-time messages over
- *  its communication channel.
+ *  SocketProvider...
+ *
  */
 class SocketProvider extends JsonRpcApiProvider {
     #callbacks;
@@ -21008,11 +19955,6 @@ class SocketProvider extends JsonRpcApiProvider {
     // If any events come in before a subscriber has finished
     // registering, queue them
     #pending;
-    /**
-     *  Creates a new **SocketProvider** connected to %%network%%.
-     *
-     *  If unspecified, the network will be discovered.
-     */
     constructor(network) {
         super(network, { batchMaxCount: 1 });
         this.#callbacks = new Map();
@@ -21047,10 +19989,6 @@ class SocketProvider extends JsonRpcApiProvider {
         }
         return super._getSubscriber(sub);
     }
-    /**
-     *  Register a new subscriber. This is used internalled by Subscribers
-     *  and generally is unecessary unless extending capabilities.
-     */
     _register(filterId, subscriber) {
         this.#subs.set(filterId, subscriber);
         const pending = this.#pending.get(filterId);
@@ -21089,25 +20027,31 @@ class SocketProvider extends JsonRpcApiProvider {
         })();
     }
     */
-    /**
-     *  Sub-classes **must** call this with messages received over their
-     *  transport to be processed and dispatched.
-     */
+    // Sub-classes must call this for each message
     async _processMessage(message) {
         const result = (JSON.parse(message));
-        if (result && typeof (result) === "object" && "id" in result) {
+        if ("id" in result) {
             const callback = this.#callbacks.get(result.id);
             if (callback == null) {
-                this.emit("error", makeError("received result for unknown id", "UNKNOWN_ERROR", {
-                    reasonCode: "UNKNOWN_ID",
-                    result
-                }));
+                console.log("Weird... Response for not a thing we sent");
                 return;
             }
             this.#callbacks.delete(result.id);
             callback.resolve(result);
+            /*
+                        if ("error" in result) {
+                            const { message, code, data } = result.error;
+                            const error = makeError(message || "unkonwn error", "SERVER_ERROR", {
+                                request: `ws:${ JSON.stringify(callback.payload) }`,
+                                info: { code, data }
+                            });
+                            callback.reject(error);
+                        } else {
+                            callback.resolve(result.result);
+                        }
+            */
         }
-        else if (result && result.method === "eth_subscription") {
+        else if (result.method === "eth_subscription") {
             const filterId = result.params.subscription;
             const subscriber = this.#subs.get(filterId);
             if (subscriber) {
@@ -21122,33 +20066,12 @@ class SocketProvider extends JsonRpcApiProvider {
                 pending.push(result.params.result);
             }
         }
-        else {
-            this.emit("error", makeError("received unexpected message", "UNKNOWN_ERROR", {
-                reasonCode: "UNEXPECTED_MESSAGE",
-                result
-            }));
-            return;
-        }
     }
-    /**
-     *  Sub-classes **must** override this to send %%message%% over their
-     *  transport.
-     */
     async _write(message) {
         throw new Error("sub-classes must override this");
     }
 }
 
-/**
- *  A JSON-RPC provider which is backed by a WebSocket.
- *
- *  WebSockets are often preferred because they retain a live connection
- *  to a server, which permits more instant access to events.
- *
- *  However, this incurs higher server infrasturture costs, so additional
- *  resources may be required to host your own WebSocket nodes and many
- *  third-party services charge additional fees for WebSocket endpoints.
- */
 class WebSocketProvider extends SocketProvider {
     #connect;
     #websocket;
@@ -21244,10 +20167,6 @@ function getHost$2(name) {
             return "arbitrum-mainnet.infura.io";
         case "arbitrum-goerli":
             return "arbitrum-goerli.infura.io";
-        case "linea":
-            return "linea-mainnet.infura.io";
-        case "linea-goerli":
-            return "linea-goerli.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
         case "matic-mumbai":
@@ -21286,7 +20205,7 @@ class InfuraWebSocketProvider extends WebSocketProvider {
     constructor(network, projectId) {
         const provider = new InfuraProvider(network, projectId);
         const req = provider._getConnection();
-        assert(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
+        assert$1(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
         super(url, network);
         defineProperties(this, {
@@ -21481,8 +20400,7 @@ class QuickNodeProvider extends JsonRpcProvider {
 }
 
 /**
- *  A **FallbackProvider** providers resiliance, security and performatnce
- *  in a way that is customizable and configurable.
+ *  Explain all the nitty-gritty about the **FallbackProvider**.
  *
  *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
  */
@@ -21508,36 +20426,26 @@ function stringify(value) {
         return value;
     });
 }
+;
 const defaultConfig = { stallTimeout: 400, priority: 1, weight: 1 };
 const defaultState = {
     blockNumber: -2, requests: 0, lateResponses: 0, errorResponses: 0,
     outOfSync: -1, unsupportedEvents: 0, rollingDuration: 0, score: 0,
-    _network: null, _updateNumber: null, _totalTime: 0,
-    _lastFatalError: null, _lastFatalErrorTimestamp: 0
+    _network: null, _updateNumber: null, _totalTime: 0
 };
 async function waitForSync(config, blockNumber) {
     while (config.blockNumber < 0 || config.blockNumber < blockNumber) {
         if (!config._updateNumber) {
             config._updateNumber = (async () => {
-                try {
-                    const blockNumber = await config.provider.getBlockNumber();
-                    if (blockNumber > config.blockNumber) {
-                        config.blockNumber = blockNumber;
-                    }
-                }
-                catch (error) {
-                    config.blockNumber = -2;
-                    config._lastFatalError = error;
-                    config._lastFatalErrorTimestamp = getTime();
+                const blockNumber = await config.provider.getBlockNumber();
+                if (blockNumber > config.blockNumber) {
+                    config.blockNumber = blockNumber;
                 }
                 config._updateNumber = null;
             })();
         }
         await config._updateNumber;
         config.outOfSync++;
-        if (config._lastFatalError) {
-            break;
-        }
     }
 }
 function _normalize(value) {
@@ -21678,38 +20586,18 @@ function getFuzzyMode(quorum, results) {
     return bestResult;
 }
 /**
- *  A **FallbackProvider** manages several [[Providers]] providing
- *  resiliance by switching between slow or misbehaving nodes, security
- *  by requiring multiple backends to aggree and performance by allowing
- *  faster backends to respond earlier.
+ *  A Fallback Provider.
  *
  */
 class FallbackProvider extends AbstractProvider {
-    /**
-     *  The number of backends that must agree on a value before it is
-     *  accpeted.
-     */
     quorum;
-    /**
-     *  @_ignore:
-     */
     eventQuorum;
-    /**
-     *  @_ignore:
-     */
     eventWorkers;
     #configs;
     #height;
     #initialSyncPromise;
-    /**
-     *  Creates a new **FallbackProvider** with %%providers%% connected to
-     *  %%network%%.
-     *
-     *  If a [[Provider]] is included in %%providers%%, defaults are used
-     *  for the configuration.
-     */
-    constructor(providers, network, options) {
-        super(network, options);
+    constructor(providers, network) {
+        super(network);
         this.#configs = providers.map((p) => {
             if (p instanceof AbstractProvider) {
                 return Object.assign({ provider: p }, defaultConfig, defaultState);
@@ -21720,15 +20608,7 @@ class FallbackProvider extends AbstractProvider {
         });
         this.#height = -2;
         this.#initialSyncPromise = null;
-        if (options && options.quorum != null) {
-            this.quorum = options.quorum;
-        }
-        else {
-            this.quorum = Math.ceil(this.#configs.reduce((accum, config) => {
-                accum += config.weight;
-                return accum;
-            }, 0) / 2);
-        }
+        this.quorum = 2; //Math.ceil(providers.length /  2);
         this.eventQuorum = 1;
         this.eventWorkers = 1;
         assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0), "quorum exceed provider wieght", "quorum", this.quorum);
@@ -21751,9 +20631,6 @@ class FallbackProvider extends AbstractProvider {
     //_getSubscriber(sub: Subscription): Subscriber {
     //    throw new Error("@TODO");
     //}
-    /**
-     *  Transforms a %%req%% into the correct method call on %%provider%%.
-     */
     async _translatePerform(provider, req) {
         switch (req.method) {
             case "broadcastTransaction":
@@ -21800,11 +20677,8 @@ class FallbackProvider extends AbstractProvider {
         // Shuffle the states, sorted by priority
         const allConfigs = this.#configs.slice();
         shuffle(allConfigs);
-        allConfigs.sort((a, b) => (a.priority - b.priority));
+        allConfigs.sort((a, b) => (b.priority - a.priority));
         for (const config of allConfigs) {
-            if (config._lastFatalError) {
-                continue;
-            }
             if (configs.indexOf(config) === -1) {
                 return config;
             }
@@ -21856,11 +20730,9 @@ class FallbackProvider extends AbstractProvider {
         if (!initialSync) {
             const promises = [];
             this.#configs.forEach((config) => {
+                promises.push(waitForSync(config, 0));
                 promises.push((async () => {
-                    await waitForSync(config, 0);
-                    if (!config._lastFatalError) {
-                        config._network = await config.provider.getNetwork();
-                    }
+                    config._network = await config.provider.getNetwork();
                 })());
             });
             this.#initialSyncPromise = initialSync = (async () => {
@@ -21869,15 +20741,12 @@ class FallbackProvider extends AbstractProvider {
                 // Check all the networks match
                 let chainId = null;
                 for (const config of this.#configs) {
-                    if (config._lastFatalError) {
-                        continue;
-                    }
                     const network = (config._network);
                     if (chainId == null) {
                         chainId = network.chainId;
                     }
                     else if (network.chainId !== chainId) {
-                        assert(false, "cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
+                        assert$1(false, "cannot mix providers on different networks", "UNSUPPORTED_OPERATION", {
                             operation: "new FallbackProvider"
                         });
                     }
@@ -21903,7 +20772,7 @@ class FallbackProvider extends AbstractProvider {
             case "getBlockNumber": {
                 // We need to get the bootstrap block height
                 if (this.#height === -2) {
-                    this.#height = Math.ceil(getNumber(getMedian(this.quorum, this.#configs.filter((c) => (!c._lastFatalError)).map((c) => ({
+                    this.#height = Math.ceil(getNumber(getMedian(this.quorum, this.#configs.map((c) => ({
                         value: c.blockNumber,
                         tag: getNumber(c.blockNumber).toString(),
                         weight: c.weight
@@ -21943,7 +20812,7 @@ class FallbackProvider extends AbstractProvider {
             case "broadcastTransaction":
                 return getAnyResult(this.quorum, results);
         }
-        assert(false, "unsupported method", "UNSUPPORTED_OPERATION", {
+        assert$1(false, "unsupported method", "UNSUPPORTED_OPERATION", {
             operation: `_perform(${stringify(req.method)})`
         });
     }
@@ -21987,7 +20856,7 @@ class FallbackProvider extends AbstractProvider {
             this.#addRunner(running, req);
         }
         // All providers have returned, and we have no result
-        assert(interesting.length > 0, "quorum not met", "SERVER_ERROR", {
+        assert$1(interesting.length > 0, "quorum not met", "SERVER_ERROR", {
             request: "%sub-requests",
             info: { request: req, results: Array.from(running).map((r) => stringify(r.result)) }
         });
@@ -22012,7 +20881,7 @@ class FallbackProvider extends AbstractProvider {
                 }
             }));
             const result = getAnyResult(this.quorum, results);
-            assert(result !== undefined, "problem multi-broadcasting", "SERVER_ERROR", {
+            assert$1(result !== undefined, "problem multi-broadcasting", "SERVER_ERROR", {
                 request: "%sub-requests",
                 info: { request: req, results: results.map(stringify) }
             });
@@ -22049,109 +20918,50 @@ function isWebSocketLike(value) {
     return (value && typeof (value.send) === "function" &&
         typeof (value.close) === "function");
 }
-const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goerli matic-mumbai bnbt".split(" ");
-/**
- *  Returns a default provider for %%network%%.
- *
- *  If %%network%% is a [[WebSocketLike]] or string that begins with
- *  ``"ws:"`` or ``"wss:"``, a [[WebSocketProvider]] is returned backed
- *  by that WebSocket or URL.
- *
- *  If %%network%% is a string that begins with ``"HTTP:"`` or ``"HTTPS:"``,
- *  a [[JsonRpcProvider]] is returned connected to that URL.
- *
- *  Otherwise, a default provider is created backed by well-known public
- *  Web3 backends (such as [[link-infura]]) using community-provided API
- *  keys.
- *
- *  The %%options%% allows specifying custom API keys per backend (setting
- *  an API key to ``"-"`` will omit that provider) and ``options.exclusive``
- *  can be set to either a backend name or and array of backend names, which
- *  will whitelist **only** those backends.
- *
- *  Current backend strings supported are:
- *  - ``"alchemy"``
- *  - ``"ankr"``
- *  - ``"cloudflare"``
- *  - ``"etherscan"``
- *  - ``"infura"``
- *  - ``"publicPolygon"``
- *  - ``"quicknode"``
- *
- *  @example:
- *    // Connect to a local Geth node
- *    provider = getDefaultProvider("http://localhost:8545/");
- *
- *    // Connect to Ethereum mainnet with any current and future
- *    // third-party services available
- *    provider = getDefaultProvider("mainnet");
- *
- *    // Connect to Polygoin, but only allow Etherscan and
- *    // INFURA and use "MY_API_KEY" in calls to Etherscan.
- *    provider = getDefaultProvider("matic", {
- *      etherscan: "MY_API_KEY",
- *      exclusive: [ "etherscan", "infura" ]
- *    });
- */
 function getDefaultProvider(network, options) {
     if (options == null) {
         options = {};
     }
-    const allowService = (name) => {
-        if (options[name] === "-") {
-            return false;
-        }
-        if (typeof (options.exclusive) === "string") {
-            return (name === options.exclusive);
-        }
-        if (Array.isArray(options.exclusive)) {
-            return (options.exclusive.indexOf(name) !== -1);
-        }
-        return true;
-    };
     if (typeof (network) === "string" && network.match(/^https?:/)) {
         return new JsonRpcProvider(network);
     }
     if (typeof (network) === "string" && network.match(/^wss?:/) || isWebSocketLike(network)) {
         return new WebSocketProvider(network);
     }
-    // Get the network and name, if possible
-    let staticNetwork = null;
-    try {
-        staticNetwork = Network.from(network);
-    }
-    catch (error) { }
     const providers = [];
-    if (allowService("publicPolygon") && staticNetwork) {
-        if (staticNetwork.name === "matic") {
-            providers.push(new JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
-        }
-    }
-    if (allowService("alchemy")) {
+    if (options.alchemy !== "-") {
         try {
             providers.push(new AlchemyProvider(network, options.alchemy));
         }
-        catch (error) { }
+        catch (error) {
+            console.log(error);
+        }
     }
-    if (allowService("ankr") && options.ankr != null) {
+    if (options.ankr !== "-" && options.ankr != null) {
         try {
             providers.push(new AnkrProvider(network, options.ankr));
         }
-        catch (error) { }
+        catch (error) {
+            console.log(error);
+        }
     }
-    if (allowService("cloudflare")) {
+    if (options.cloudflare !== "-") {
         try {
             providers.push(new CloudflareProvider(network));
         }
-        catch (error) { }
+        catch (error) {
+            console.log(error);
+        }
     }
-    if (allowService("etherscan")) {
+    if (options.etherscan !== "-") {
         try {
             providers.push(new EtherscanProvider(network, options.etherscan));
         }
-        catch (error) { }
+        catch (error) {
+            console.log(error);
+        }
     }
-    if (allowService("infura")) {
+    if (options.infura !== "-") {
         try {
             let projectId = options.infura;
             let projectSecret = undefined;
@@ -22161,7 +20971,9 @@ function getDefaultProvider(network, options) {
             }
             providers.push(new InfuraProvider(network, projectId, projectSecret));
         }
-        catch (error) { }
+        catch (error) {
+            console.log(error);
+        }
     }
     /*
         if (options.pocket !== "-") {
@@ -22178,53 +20990,28 @@ function getDefaultProvider(network, options) {
             } catch (error) { console.log(error); }
         }
     */
-    if (allowService("quicknode")) {
+    if (options.quicknode !== "-") {
         try {
             let token = options.quicknode;
             providers.push(new QuickNodeProvider(network, token));
         }
-        catch (error) { }
+        catch (error) {
+            console.log(error);
+        }
     }
-    assert(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
+    assert$1(providers.length, "unsupported default network", "UNSUPPORTED_OPERATION", {
         operation: "getDefaultProvider"
     });
-    // No need for a FallbackProvider
     if (providers.length === 1) {
         return providers[0];
     }
-    // We use the floor because public third-party providers can be unreliable,
-    // so a low number of providers with a large quorum will fail too often
-    let quorum = Math.floor(providers.length / 2);
-    if (quorum > 2) {
-        quorum = 2;
-    }
-    // Testnets don't need as strong a security gaurantee and speed is
-    // more useful during testing
-    if (staticNetwork && Testnets.indexOf(staticNetwork.name) !== -1) {
-        quorum = 1;
-    }
-    // Provided override qorum takes priority
-    if (options && options.quorum) {
-        quorum = options.quorum;
-    }
-    return new FallbackProvider(providers, undefined, { quorum });
+    return new FallbackProvider(providers);
 }
 
-/**
- *  A **NonceManager** wraps another [[Signer]] and automatically manages
- *  the nonce, ensuring serialized and sequential nonces are used during
- *  transaction.
- */
 class NonceManager extends AbstractSigner {
-    /**
-     *  The Signer being managed.
-     */
     signer;
     #noncePromise;
     #delta;
-    /**
-     *  Creates a new **NonceManager** to manage %%signer%%.
-     */
     constructor(signer) {
         super(signer.provider);
         defineProperties(this, { signer });
@@ -22247,17 +21034,9 @@ class NonceManager extends AbstractSigner {
         }
         return super.getNonce(blockTag);
     }
-    /**
-     *  Manually increment the nonce. This may be useful when managng
-     *  offline transactions.
-     */
     increment() {
         this.#delta++;
     }
-    /**
-     *  Resets the nonce, causing the **NonceManager** to reload the current
-     *  nonce from the blockchain on the next transaction.
-     */
     reset() {
         this.#delta = 0;
         this.#noncePromise = null;
@@ -22282,17 +21061,9 @@ class NonceManager extends AbstractSigner {
     }
 }
 
-/**
- *  A **BrowserProvider** is intended to wrap an injected provider which
- *  adheres to the [[link-eip-1193]] standard, which most (if not all)
- *  currently do.
- */
+;
 class BrowserProvider extends JsonRpcApiPollingProvider {
     #request;
-    /**
-     *  Connnect to the %%ethereum%% provider, optionally forcing the
-     *  %%network%%.
-     */
     constructor(ethereum, network) {
         super(network, { batchMaxCount: 1 });
         this.#request = async (method, params) => {
@@ -22344,9 +21115,6 @@ class BrowserProvider extends JsonRpcApiPollingProvider {
         }
         return super.getRpcError(payload, error);
     }
-    /**
-     *  Resolves to ``true`` if the provider manages the %%address%%.
-     */
     async hasSigner(address) {
         if (address == null) {
             address = 0;
@@ -22481,6 +21249,12 @@ class PocketProvider extends JsonRpcProvider {
 const IpcSocketProvider = undefined;
 
 /**
+ *  About providers.
+ *
+ *  @_section: api/providers:Providers  [about-providers]
+ */
+
+/**
  *  The **BaseWallet** is a stream-lined implementation of a
  *  [[Signer]] that operates with a private key.
  *
@@ -22562,12 +21336,12 @@ class BaseWallet extends AbstractSigner {
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name) => {
             // @TODO: this should use resolveName; addresses don't
             //        need a provider
-            assert(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
+            assert$1(this.provider != null, "cannot resolve ENS names without a provider", "UNSUPPORTED_OPERATION", {
                 operation: "resolveName",
                 info: { name }
             });
             const address = await this.provider.resolveName(name);
-            assert(address != null, "unconfigured ENS name", "UNCONFIGURED_NAME", {
+            assert$1(address != null, "unconfigured ENS name", "UNCONFIGURED_NAME", {
                 value: name
             });
             return address;
@@ -22672,7 +21446,6 @@ class Wordlist {
 }
 
 // Use the encode-latin.js script to create the necessary
-// data files to be consumed by this class
 /**
  *  An OWL format Wordlist is an encoding method that exploits
  *  the general locality of alphabetically sorted words to
@@ -22683,7 +21456,7 @@ class Wordlist {
  *  based on ASCII-7 small.
  *
  *  If necessary, there are tools within the ``generation/`` folder
- *  to create the necessary data.
+ *  to create these necessary data.
  */
 class WordlistOwl extends Wordlist {
     #data;
@@ -22698,13 +21471,7 @@ class WordlistOwl extends Wordlist {
         this.#checksum = checksum;
         this.#words = null;
     }
-    /**
-     *  The OWL-encoded data.
-     */
     get _data() { return this.#data; }
-    /**
-     *  Decode all the words for the wordlist.
-     */
     _decodeWords() {
         return decodeOwl(this.#data);
     }
@@ -22926,16 +21693,16 @@ class Mnemonic {
 }
 
 /*! MIT License. Copyright 2015-2022 Richard Moore <me@ricmoo.com>. See LICENSE.txt. */
-var __classPrivateFieldGet$2 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var __classPrivateFieldSet$2 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet$4 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet$4 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _AES_key, _AES_Kd, _AES_Ke;
 // Number of rounds by keysize
@@ -22968,7 +21735,6 @@ function convertToInt32(bytes) {
     return result;
 }
 class AES {
-    get key() { return __classPrivateFieldGet$2(this, _AES_key, "f").slice(); }
     constructor(key) {
         _AES_key.set(this, void 0);
         _AES_Kd.set(this, void 0);
@@ -22976,18 +21742,18 @@ class AES {
         if (!(this instanceof AES)) {
             throw Error('AES must be instanitated with `new`');
         }
-        __classPrivateFieldSet$2(this, _AES_key, new Uint8Array(key), "f");
+        __classPrivateFieldSet$4(this, _AES_key, new Uint8Array(key), "f");
         const rounds = numberOfRounds[this.key.length];
         if (rounds == null) {
             throw new TypeError('invalid key size (must be 16, 24 or 32 bytes)');
         }
         // encryption round keys
-        __classPrivateFieldSet$2(this, _AES_Ke, [], "f");
+        __classPrivateFieldSet$4(this, _AES_Ke, [], "f");
         // decryption round keys
-        __classPrivateFieldSet$2(this, _AES_Kd, [], "f");
+        __classPrivateFieldSet$4(this, _AES_Kd, [], "f");
         for (let i = 0; i <= rounds; i++) {
-            __classPrivateFieldGet$2(this, _AES_Ke, "f").push([0, 0, 0, 0]);
-            __classPrivateFieldGet$2(this, _AES_Kd, "f").push([0, 0, 0, 0]);
+            __classPrivateFieldGet$4(this, _AES_Ke, "f").push([0, 0, 0, 0]);
+            __classPrivateFieldGet$4(this, _AES_Kd, "f").push([0, 0, 0, 0]);
         }
         const roundKeyCount = (rounds + 1) * 4;
         const KC = this.key.length / 4;
@@ -22997,8 +21763,8 @@ class AES {
         let index;
         for (let i = 0; i < KC; i++) {
             index = i >> 2;
-            __classPrivateFieldGet$2(this, _AES_Ke, "f")[index][i % 4] = tk[i];
-            __classPrivateFieldGet$2(this, _AES_Kd, "f")[rounds - index][i % 4] = tk[i];
+            __classPrivateFieldGet$4(this, _AES_Ke, "f")[index][i % 4] = tk[i];
+            __classPrivateFieldGet$4(this, _AES_Kd, "f")[rounds - index][i % 4] = tk[i];
         }
         // key expansion (fips-197 section 5.2)
         let rconpointer = 0;
@@ -23036,32 +21802,33 @@ class AES {
             while (i < KC && t < roundKeyCount) {
                 r = t >> 2;
                 c = t % 4;
-                __classPrivateFieldGet$2(this, _AES_Ke, "f")[r][c] = tk[i];
-                __classPrivateFieldGet$2(this, _AES_Kd, "f")[rounds - r][c] = tk[i++];
+                __classPrivateFieldGet$4(this, _AES_Ke, "f")[r][c] = tk[i];
+                __classPrivateFieldGet$4(this, _AES_Kd, "f")[rounds - r][c] = tk[i++];
                 t++;
             }
         }
         // inverse-cipher-ify the decryption round key (fips-197 section 5.3)
         for (let r = 1; r < rounds; r++) {
             for (let c = 0; c < 4; c++) {
-                tt = __classPrivateFieldGet$2(this, _AES_Kd, "f")[r][c];
-                __classPrivateFieldGet$2(this, _AES_Kd, "f")[r][c] = (U1[(tt >> 24) & 0xFF] ^
+                tt = __classPrivateFieldGet$4(this, _AES_Kd, "f")[r][c];
+                __classPrivateFieldGet$4(this, _AES_Kd, "f")[r][c] = (U1[(tt >> 24) & 0xFF] ^
                     U2[(tt >> 16) & 0xFF] ^
                     U3[(tt >> 8) & 0xFF] ^
                     U4[tt & 0xFF]);
             }
         }
     }
+    get key() { return __classPrivateFieldGet$4(this, _AES_key, "f").slice(); }
     encrypt(plaintext) {
         if (plaintext.length != 16) {
             throw new TypeError('invalid plaintext size (must be 16 bytes)');
         }
-        const rounds = __classPrivateFieldGet$2(this, _AES_Ke, "f").length - 1;
+        const rounds = __classPrivateFieldGet$4(this, _AES_Ke, "f").length - 1;
         const a = [0, 0, 0, 0];
         // convert plaintext to (ints ^ key)
         let t = convertToInt32(plaintext);
         for (let i = 0; i < 4; i++) {
-            t[i] ^= __classPrivateFieldGet$2(this, _AES_Ke, "f")[0][i];
+            t[i] ^= __classPrivateFieldGet$4(this, _AES_Ke, "f")[0][i];
         }
         // apply round transforms
         for (let r = 1; r < rounds; r++) {
@@ -23070,7 +21837,7 @@ class AES {
                     T2[(t[(i + 1) % 4] >> 16) & 0xff] ^
                     T3[(t[(i + 2) % 4] >> 8) & 0xff] ^
                     T4[t[(i + 3) % 4] & 0xff] ^
-                    __classPrivateFieldGet$2(this, _AES_Ke, "f")[r][i]);
+                    __classPrivateFieldGet$4(this, _AES_Ke, "f")[r][i]);
             }
             t = a.slice();
         }
@@ -23078,7 +21845,7 @@ class AES {
         const result = new Uint8Array(16);
         let tt = 0;
         for (let i = 0; i < 4; i++) {
-            tt = __classPrivateFieldGet$2(this, _AES_Ke, "f")[rounds][i];
+            tt = __classPrivateFieldGet$4(this, _AES_Ke, "f")[rounds][i];
             result[4 * i] = (S[(t[i] >> 24) & 0xff] ^ (tt >> 24)) & 0xff;
             result[4 * i + 1] = (S[(t[(i + 1) % 4] >> 16) & 0xff] ^ (tt >> 16)) & 0xff;
             result[4 * i + 2] = (S[(t[(i + 2) % 4] >> 8) & 0xff] ^ (tt >> 8)) & 0xff;
@@ -23090,12 +21857,12 @@ class AES {
         if (ciphertext.length != 16) {
             throw new TypeError('invalid ciphertext size (must be 16 bytes)');
         }
-        const rounds = __classPrivateFieldGet$2(this, _AES_Kd, "f").length - 1;
+        const rounds = __classPrivateFieldGet$4(this, _AES_Kd, "f").length - 1;
         const a = [0, 0, 0, 0];
         // convert plaintext to (ints ^ key)
         let t = convertToInt32(ciphertext);
         for (let i = 0; i < 4; i++) {
-            t[i] ^= __classPrivateFieldGet$2(this, _AES_Kd, "f")[0][i];
+            t[i] ^= __classPrivateFieldGet$4(this, _AES_Kd, "f")[0][i];
         }
         // apply round transforms
         for (let r = 1; r < rounds; r++) {
@@ -23104,7 +21871,7 @@ class AES {
                     T6[(t[(i + 3) % 4] >> 16) & 0xff] ^
                     T7[(t[(i + 2) % 4] >> 8) & 0xff] ^
                     T8[t[(i + 1) % 4] & 0xff] ^
-                    __classPrivateFieldGet$2(this, _AES_Kd, "f")[r][i]);
+                    __classPrivateFieldGet$4(this, _AES_Kd, "f")[r][i]);
             }
             t = a.slice();
         }
@@ -23112,7 +21879,7 @@ class AES {
         const result = new Uint8Array(16);
         let tt = 0;
         for (let i = 0; i < 4; i++) {
-            tt = __classPrivateFieldGet$2(this, _AES_Kd, "f")[rounds][i];
+            tt = __classPrivateFieldGet$4(this, _AES_Kd, "f")[rounds][i];
             result[4 * i] = (Si[(t[i] >> 24) & 0xff] ^ (tt >> 24)) & 0xff;
             result[4 * i + 1] = (Si[(t[(i + 3) % 4] >> 16) & 0xff] ^ (tt >> 16)) & 0xff;
             result[4 * i + 2] = (Si[(t[(i + 2) % 4] >> 8) & 0xff] ^ (tt >> 8)) & 0xff;
@@ -23136,13 +21903,13 @@ class ModeOfOperation {
 }
 
 // Cipher Block Chaining
-var __classPrivateFieldSet$1 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+var __classPrivateFieldSet$3 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet$1 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet$3 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -23157,14 +21924,14 @@ class CBC extends ModeOfOperation {
             if (iv.length % 16) {
                 throw new TypeError("invalid iv size (must be 16 bytes)");
             }
-            __classPrivateFieldSet$1(this, _CBC_iv, new Uint8Array(iv), "f");
+            __classPrivateFieldSet$3(this, _CBC_iv, new Uint8Array(iv), "f");
         }
         else {
-            __classPrivateFieldSet$1(this, _CBC_iv, new Uint8Array(16), "f");
+            __classPrivateFieldSet$3(this, _CBC_iv, new Uint8Array(16), "f");
         }
-        __classPrivateFieldSet$1(this, _CBC_lastBlock, this.iv, "f");
+        __classPrivateFieldSet$3(this, _CBC_lastBlock, this.iv, "f");
     }
-    get iv() { return new Uint8Array(__classPrivateFieldGet$1(this, _CBC_iv, "f")); }
+    get iv() { return new Uint8Array(__classPrivateFieldGet$3(this, _CBC_iv, "f")); }
     encrypt(plaintext) {
         if (plaintext.length % 16) {
             throw new TypeError("invalid plaintext size (must be multiple of 16 bytes)");
@@ -23172,10 +21939,10 @@ class CBC extends ModeOfOperation {
         const ciphertext = new Uint8Array(plaintext.length);
         for (let i = 0; i < plaintext.length; i += 16) {
             for (let j = 0; j < 16; j++) {
-                __classPrivateFieldGet$1(this, _CBC_lastBlock, "f")[j] ^= plaintext[i + j];
+                __classPrivateFieldGet$3(this, _CBC_lastBlock, "f")[j] ^= plaintext[i + j];
             }
-            __classPrivateFieldSet$1(this, _CBC_lastBlock, this.aes.encrypt(__classPrivateFieldGet$1(this, _CBC_lastBlock, "f")), "f");
-            ciphertext.set(__classPrivateFieldGet$1(this, _CBC_lastBlock, "f"), i);
+            __classPrivateFieldSet$3(this, _CBC_lastBlock, this.aes.encrypt(__classPrivateFieldGet$3(this, _CBC_lastBlock, "f")), "f");
+            ciphertext.set(__classPrivateFieldGet$3(this, _CBC_lastBlock, "f"), i);
         }
         return ciphertext;
     }
@@ -23187,8 +21954,8 @@ class CBC extends ModeOfOperation {
         for (let i = 0; i < ciphertext.length; i += 16) {
             const block = this.aes.decrypt(ciphertext.subarray(i, i + 16));
             for (let j = 0; j < 16; j++) {
-                plaintext[i + j] = block[j] ^ __classPrivateFieldGet$1(this, _CBC_lastBlock, "f")[j];
-                __classPrivateFieldGet$1(this, _CBC_lastBlock, "f")[j] = ciphertext[i + j];
+                plaintext[i + j] = block[j] ^ __classPrivateFieldGet$3(this, _CBC_lastBlock, "f")[j];
+                __classPrivateFieldGet$3(this, _CBC_lastBlock, "f")[j] = ciphertext[i + j];
             }
         }
         return plaintext;
@@ -23196,14 +21963,90 @@ class CBC extends ModeOfOperation {
 }
 _CBC_iv = new WeakMap(), _CBC_lastBlock = new WeakMap();
 
-// Counter Mode
-var __classPrivateFieldSet = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+// Cipher Feedback
+var __classPrivateFieldSet$2 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var __classPrivateFieldGet = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+var __classPrivateFieldGet$2 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _CFB_instances, _CFB_iv, _CFB_shiftRegister, _CFB_shift;
+class CFB extends ModeOfOperation {
+    constructor(key, iv, segmentSize = 8) {
+        super("CFB", key, CFB);
+        _CFB_instances.add(this);
+        _CFB_iv.set(this, void 0);
+        _CFB_shiftRegister.set(this, void 0);
+        // This library currently only handles byte-aligned segmentSize
+        if (!Number.isInteger(segmentSize) || (segmentSize % 8)) {
+            throw new TypeError("invalid segmentSize");
+        }
+        Object.defineProperties(this, {
+            segmentSize: { enumerable: true, value: segmentSize }
+        });
+        if (iv) {
+            if (iv.length % 16) {
+                throw new TypeError("invalid iv size (must be 16 bytes)");
+            }
+            __classPrivateFieldSet$2(this, _CFB_iv, new Uint8Array(iv), "f");
+        }
+        else {
+            __classPrivateFieldSet$2(this, _CFB_iv, new Uint8Array(16), "f");
+        }
+        __classPrivateFieldSet$2(this, _CFB_shiftRegister, this.iv, "f");
+    }
+    get iv() { return new Uint8Array(__classPrivateFieldGet$2(this, _CFB_iv, "f")); }
+    encrypt(plaintext) {
+        if (8 * plaintext.length % this.segmentSize) {
+            throw new TypeError("invalid plaintext size (must be multiple of segmentSize bytes)");
+        }
+        const segmentSize = this.segmentSize / 8;
+        const ciphertext = new Uint8Array(plaintext);
+        for (let i = 0; i < ciphertext.length; i += segmentSize) {
+            const xorSegment = this.aes.encrypt(__classPrivateFieldGet$2(this, _CFB_shiftRegister, "f"));
+            for (let j = 0; j < segmentSize; j++) {
+                ciphertext[i + j] ^= xorSegment[j];
+            }
+            __classPrivateFieldGet$2(this, _CFB_instances, "m", _CFB_shift).call(this, ciphertext.subarray(i));
+        }
+        return ciphertext;
+    }
+    decrypt(ciphertext) {
+        if (8 * ciphertext.length % this.segmentSize) {
+            throw new TypeError("invalid ciphertext size (must be multiple of segmentSize bytes)");
+        }
+        const segmentSize = this.segmentSize / 8;
+        const plaintext = new Uint8Array(ciphertext);
+        for (let i = 0; i < plaintext.length; i += segmentSize) {
+            const xorSegment = this.aes.encrypt(__classPrivateFieldGet$2(this, _CFB_shiftRegister, "f"));
+            for (let j = 0; j < segmentSize; j++) {
+                plaintext[i + j] ^= xorSegment[j];
+            }
+            __classPrivateFieldGet$2(this, _CFB_instances, "m", _CFB_shift).call(this, ciphertext.subarray(i));
+        }
+        return plaintext;
+    }
+}
+_CFB_iv = new WeakMap(), _CFB_shiftRegister = new WeakMap(), _CFB_instances = new WeakSet(), _CFB_shift = function _CFB_shift(data) {
+    const segmentSize = this.segmentSize / 8;
+    // Shift the register
+    __classPrivateFieldGet$2(this, _CFB_shiftRegister, "f").set(__classPrivateFieldGet$2(this, _CFB_shiftRegister, "f").subarray(segmentSize));
+    __classPrivateFieldGet$2(this, _CFB_shiftRegister, "f").set(data.subarray(0, segmentSize), 16 - segmentSize);
+};
+
+// Counter Mode
+var __classPrivateFieldSet$1 = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet$1 = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
@@ -23217,10 +22060,10 @@ class CTR extends ModeOfOperation {
         _CTR_remainingIndex.set(this, void 0);
         // The current counter
         _CTR_counter.set(this, void 0);
-        __classPrivateFieldSet(this, _CTR_counter, new Uint8Array(16), "f");
-        __classPrivateFieldGet(this, _CTR_counter, "f").fill(0);
-        __classPrivateFieldSet(this, _CTR_remaining, __classPrivateFieldGet(this, _CTR_counter, "f"), "f"); // This will be discarded immediately
-        __classPrivateFieldSet(this, _CTR_remainingIndex, 16, "f");
+        __classPrivateFieldSet$1(this, _CTR_counter, new Uint8Array(16), "f");
+        __classPrivateFieldGet$1(this, _CTR_counter, "f").fill(0);
+        __classPrivateFieldSet$1(this, _CTR_remaining, __classPrivateFieldGet$1(this, _CTR_counter, "f"), "f"); // This will be discarded immediately
+        __classPrivateFieldSet$1(this, _CTR_remainingIndex, 16, "f");
         if (initialValue == null) {
             initialValue = 1;
         }
@@ -23231,13 +22074,13 @@ class CTR extends ModeOfOperation {
             this.setCounterBytes(initialValue);
         }
     }
-    get counter() { return new Uint8Array(__classPrivateFieldGet(this, _CTR_counter, "f")); }
+    get counter() { return new Uint8Array(__classPrivateFieldGet$1(this, _CTR_counter, "f")); }
     setCounterValue(value) {
         if (!Number.isInteger(value) || value < 0 || value > Number.MAX_SAFE_INTEGER) {
             throw new TypeError("invalid counter initial integer value");
         }
         for (let index = 15; index >= 0; --index) {
-            __classPrivateFieldGet(this, _CTR_counter, "f")[index] = value % 256;
+            __classPrivateFieldGet$1(this, _CTR_counter, "f")[index] = value % 256;
             value = Math.floor(value / 256);
         }
     }
@@ -23245,15 +22088,15 @@ class CTR extends ModeOfOperation {
         if (value.length !== 16) {
             throw new TypeError("invalid counter initial Uint8Array value length");
         }
-        __classPrivateFieldGet(this, _CTR_counter, "f").set(value);
+        __classPrivateFieldGet$1(this, _CTR_counter, "f").set(value);
     }
     increment() {
         for (let i = 15; i >= 0; i--) {
-            if (__classPrivateFieldGet(this, _CTR_counter, "f")[i] === 255) {
-                __classPrivateFieldGet(this, _CTR_counter, "f")[i] = 0;
+            if (__classPrivateFieldGet$1(this, _CTR_counter, "f")[i] === 255) {
+                __classPrivateFieldGet$1(this, _CTR_counter, "f")[i] = 0;
             }
             else {
-                __classPrivateFieldGet(this, _CTR_counter, "f")[i]++;
+                __classPrivateFieldGet$1(this, _CTR_counter, "f")[i]++;
                 break;
             }
         }
@@ -23262,12 +22105,12 @@ class CTR extends ModeOfOperation {
         var _a, _b;
         const crypttext = new Uint8Array(plaintext);
         for (let i = 0; i < crypttext.length; i++) {
-            if (__classPrivateFieldGet(this, _CTR_remainingIndex, "f") === 16) {
-                __classPrivateFieldSet(this, _CTR_remaining, this.aes.encrypt(__classPrivateFieldGet(this, _CTR_counter, "f")), "f");
-                __classPrivateFieldSet(this, _CTR_remainingIndex, 0, "f");
+            if (__classPrivateFieldGet$1(this, _CTR_remainingIndex, "f") === 16) {
+                __classPrivateFieldSet$1(this, _CTR_remaining, this.aes.encrypt(__classPrivateFieldGet$1(this, _CTR_counter, "f")), "f");
+                __classPrivateFieldSet$1(this, _CTR_remainingIndex, 0, "f");
                 this.increment();
             }
-            crypttext[i] ^= __classPrivateFieldGet(this, _CTR_remaining, "f")[__classPrivateFieldSet(this, _CTR_remainingIndex, (_b = __classPrivateFieldGet(this, _CTR_remainingIndex, "f"), _a = _b++, _b), "f"), _a];
+            crypttext[i] ^= __classPrivateFieldGet$1(this, _CTR_remaining, "f")[__classPrivateFieldSet$1(this, _CTR_remainingIndex, (_b = __classPrivateFieldGet$1(this, _CTR_remainingIndex, "f"), _a = _b++, _b), "f"), _a];
         }
         return crypttext;
     }
@@ -23277,6 +22120,98 @@ class CTR extends ModeOfOperation {
 }
 _CTR_remaining = new WeakMap(), _CTR_remainingIndex = new WeakMap(), _CTR_counter = new WeakMap();
 
+// Electronic Code Book
+class ECB extends ModeOfOperation {
+    constructor(key) {
+        super("ECB", key, ECB);
+    }
+    encrypt(plaintext) {
+        if (plaintext.length % 16) {
+            throw new TypeError("invalid plaintext size (must be multiple of 16 bytes)");
+        }
+        const crypttext = new Uint8Array(plaintext.length);
+        for (let i = 0; i < plaintext.length; i += 16) {
+            crypttext.set(this.aes.encrypt(plaintext.subarray(i, i + 16)), i);
+        }
+        return crypttext;
+    }
+    decrypt(crypttext) {
+        if (crypttext.length % 16) {
+            throw new TypeError("invalid ciphertext size (must be multiple of 16 bytes)");
+        }
+        const plaintext = new Uint8Array(crypttext.length);
+        for (let i = 0; i < crypttext.length; i += 16) {
+            plaintext.set(this.aes.decrypt(crypttext.subarray(i, i + 16)), i);
+        }
+        return plaintext;
+    }
+}
+
+// Output Feedback
+var __classPrivateFieldSet = (__$G && __$G.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (__$G && __$G.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _OFB_iv, _OFB_lastPrecipher, _OFB_lastPrecipherIndex;
+class OFB extends ModeOfOperation {
+    constructor(key, iv) {
+        super("OFB", key, OFB);
+        _OFB_iv.set(this, void 0);
+        _OFB_lastPrecipher.set(this, void 0);
+        _OFB_lastPrecipherIndex.set(this, void 0);
+        if (iv) {
+            if (iv.length % 16) {
+                throw new TypeError("invalid iv size (must be 16 bytes)");
+            }
+            __classPrivateFieldSet(this, _OFB_iv, new Uint8Array(iv), "f");
+        }
+        else {
+            __classPrivateFieldSet(this, _OFB_iv, new Uint8Array(16), "f");
+        }
+        __classPrivateFieldSet(this, _OFB_lastPrecipher, this.iv, "f");
+        __classPrivateFieldSet(this, _OFB_lastPrecipherIndex, 16, "f");
+    }
+    get iv() { return new Uint8Array(__classPrivateFieldGet(this, _OFB_iv, "f")); }
+    encrypt(plaintext) {
+        var _a, _b;
+        if (plaintext.length % 16) {
+            throw new TypeError("invalid plaintext size (must be multiple of 16 bytes)");
+        }
+        const ciphertext = new Uint8Array(plaintext);
+        for (let i = 0; i < ciphertext.length; i++) {
+            if (__classPrivateFieldGet(this, _OFB_lastPrecipherIndex, "f") === 16) {
+                __classPrivateFieldSet(this, _OFB_lastPrecipher, this.aes.encrypt(__classPrivateFieldGet(this, _OFB_lastPrecipher, "f")), "f");
+                __classPrivateFieldSet(this, _OFB_lastPrecipherIndex, 0, "f");
+            }
+            ciphertext[i] ^= __classPrivateFieldGet(this, _OFB_lastPrecipher, "f")[__classPrivateFieldSet(this, _OFB_lastPrecipherIndex, (_b = __classPrivateFieldGet(this, _OFB_lastPrecipherIndex, "f"), _a = _b++, _b), "f"), _a];
+        }
+        return ciphertext;
+    }
+    decrypt(ciphertext) {
+        if (ciphertext.length % 16) {
+            throw new TypeError("invalid ciphertext size (must be multiple of 16 bytes)");
+        }
+        return this.encrypt(ciphertext);
+    }
+}
+_OFB_iv = new WeakMap(), _OFB_lastPrecipher = new WeakMap(), _OFB_lastPrecipherIndex = new WeakMap();
+
+function pkcs7Pad(data) {
+    const padder = 16 - (data.length % 16);
+    const result = new Uint8Array(data.length + padder);
+    result.set(data);
+    for (let i = data.length; i < result.length; i++) {
+        result[i] = padder;
+    }
+    return result;
+}
 function pkcs7Strip(data) {
     if (data.length < 16) {
         throw new TypeError('PKCS#7 invalid length');
@@ -23467,7 +22402,7 @@ function decrypt(data, key, ciphertext) {
         const aesCtr = new CTR(key, iv);
         return hexlify(aesCtr.decrypt(ciphertext));
     }
-    assert(false, "unsupported cipher", "UNSUPPORTED_OPERATION", {
+    assert$1(false, "unsupported cipher", "UNSUPPORTED_OPERATION", {
         operation: "decrypt"
     });
 }
@@ -23550,7 +22485,7 @@ function decryptKeystoreJsonSync(json, _password) {
         const key = pbkdf2(password, salt, count, dkLen, algorithm);
         return getAccount(data, key);
     }
-    assert(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
+    assert$1(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
     const { salt, N, r, p, dkLen } = params;
     const key = scryptSync(password, salt, N, r, p, dkLen);
     return getAccount(data, key);
@@ -23586,7 +22521,7 @@ async function decryptKeystoreJson(json, _password, progress) {
         }
         return getAccount(data, key);
     }
-    assert(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
+    assert$1(params.name === "scrypt", "cannot be reached", "UNKNOWN_ERROR", { params });
     const { salt, N, r, p, dkLen } = params;
     const key = await scrypt(password, salt, N, r, p, dkLen, progress);
     return getAccount(data, key);
@@ -23750,7 +22685,7 @@ const _guard = {};
 function ser_I(index, chainCode, publicKey, privateKey) {
     const data = new Uint8Array(37);
     if (index & HardenedBit) {
-        assert(privateKey != null, "cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
+        assert$1(privateKey != null, "cannot derive child of neutered node", "UNSUPPORTED_OPERATION", {
             operation: "deriveChild"
         });
         // Data = 0x00 || ser_256(k_par)
@@ -23911,7 +22846,7 @@ class HDNodeWallet extends BaseWallet {
         // we should always use mainnet, and use BIP-44 to derive the network
         //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
         //   - Testnet: public=0x043587CF, private=0x04358394
-        assert(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
+        assert$1(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
         return encodeBase58Check(concat([
             "0x0488ADE4", zpad(this.depth, 1), this.parentFingerprint,
             zpad(this.index, 4), this.chainCode,
@@ -24014,7 +22949,7 @@ class HDNodeWallet extends BaseWallet {
         return HDNodeWallet.#fromSeed(mnemonic.computeSeed(), mnemonic).derivePath(path);
     }
     /**
-     *  Create an HD Node from %%mnemonic%%.
+     *  Create am HD Node from %%mnemonic%%.
      */
     static fromMnemonic(mnemonic, path) {
         if (!path) {
@@ -24120,7 +23055,7 @@ class HDNodeVoidWallet extends VoidSigner {
         // we should always use mainnet, and use BIP-44 to derive the network
         //   - Mainnet: public=0x0488B21E, private=0x0488ADE4
         //   - Testnet: public=0x043587CF, private=0x04358394
-        assert(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
+        assert$1(this.depth < 256, "Depth too deep", "UNSUPPORTED_OPERATION", { operation: "extendedKey" });
         return encodeBase58Check(concat([
             "0x0488B21E",
             zpad(this.depth, 1),
@@ -24178,7 +23113,7 @@ export class HDNodeWalletManager {
 }
 */
 /**
- *  Returns the [[link-bip-32]] path for the account at %%index%%.
+ *  Returns the [[link-bip-32]] path for the acount at %%index%%.
  *
  *  This is the pattern used by wallets like Ledger.
  *
@@ -24269,7 +23204,7 @@ function stall(duration) {
  */
 class Wallet extends BaseWallet {
     /**
-     *  Create a new wallet for the private %%key%%, optionally connected
+     *  Create a new wallet for the %%privateKey%%, optionally connected
      *  to %%provider%%.
      */
     constructor(key, provider) {
@@ -24391,6 +23326,25 @@ class Wallet extends BaseWallet {
     }
 }
 
+/**
+ *  When interacting with Ethereum, it is necessary to use a private
+ *  key authenticate actions by signing a payload.
+ *
+ *  Wallets are the simplest way to expose the concept of an
+ *  //Externally Owner Account// (EOA) as it wraps a private key
+ *  and supports high-level methods to sign common types of interaction
+ *  and send transactions.
+ *
+ *  The class most developers will want to use is [[Wallet]], which
+ *  can load a private key directly or from any common wallet format.
+ *
+ *  The [[HDNodeWallet]] can be used when it is necessary to access
+ *  low-level details of how an HD wallets are derived, exported
+ *  or imported.
+ *
+ *  @_section: api/wallet:Wallets  [about-wallets]
+ */
+
 const Base64 = ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
 /**
  *  @_ignore
@@ -24458,25 +23412,15 @@ function decodeOwlA(data, accents) {
  *  based on latin-1 small.
  *
  *  If necessary, there are tools within the ``generation/`` folder
- *  to create the necessary data.
+ *  to create these necessary data.
  */
 class WordlistOwlA extends WordlistOwl {
     #accent;
-    /**
-     *  Creates a new Wordlist for %%locale%% using the OWLA %%data%%
-     *  and %%accent%% data and validated against the %%checksum%%.
-     */
     constructor(locale, data, accent, checksum) {
         super(locale, data, checksum);
         this.#accent = accent;
     }
-    /**
-     *  The OWLA-encoded accent data.
-     */
     get _accent() { return this.#accent; }
-    /**
-     *  Decode all the words for the wordlist.
-     */
     _decodeWords() {
         return decodeOwlA(this._data, this._accent);
     }
@@ -24486,200 +23430,224 @@ const wordlists = {
     en: LangEn.wordlist(),
 };
 
+/**
+ *  A Wordlist is a set of 2048 words used to encode private keys
+ *  (or other binary data) that is easier for humans to write down,
+ *  transcribe and dictate.
+ *
+ *  The [[link-bip-39]] standard includes several checksum bits,
+ *  depending on the size of the mnemonic phrase.
+ *
+ *  A mnemonic phrase may be 12, 15, 18, 21 or 24 words long. For
+ *  most purposes 12 word mnemonics should be used, as including
+ *  additional words increases the difficulty and potential for
+ *  mistakes and does not offer any effective improvement on security.
+ *
+ *  There are a variety of [[link-bip39-wordlists]] for different
+ *  languages, but for maximal compatibility, the
+ *  [English Wordlist](LangEn) is recommended.
+ *
+ *  @_section: api/wordlists:Wordlists [about-wordlists]
+ */
+
 /////////////////////////////
-//
 
 var ethers = /*#__PURE__*/Object.freeze({
     __proto__: null,
+    version: version,
+    decodeBytes32String: decodeBytes32String,
+    encodeBytes32String: encodeBytes32String,
     AbiCoder: AbiCoder,
-    AbstractProvider: AbstractProvider,
-    AbstractSigner: AbstractSigner,
-    AlchemyProvider: AlchemyProvider,
-    AnkrProvider: AnkrProvider,
-    BaseContract: BaseContract,
-    BaseWallet: BaseWallet,
-    Block: Block,
-    BrowserProvider: BrowserProvider,
-    CloudflareProvider: CloudflareProvider,
     ConstructorFragment: ConstructorFragment,
+    ErrorFragment: ErrorFragment,
+    EventFragment: EventFragment,
+    Fragment: Fragment,
+    FallbackFragment: FallbackFragment,
+    FunctionFragment: FunctionFragment,
+    NamedFragment: NamedFragment,
+    ParamType: ParamType,
+    StructFragment: StructFragment,
+    checkResultErrors: checkResultErrors,
+    ErrorDescription: ErrorDescription,
+    Indexed: Indexed,
+    Interface: Interface,
+    LogDescription: LogDescription,
+    Result: Result,
+    TransactionDescription: TransactionDescription,
+    Typed: Typed,
+    getAddress: getAddress,
+    getIcapAddress: getIcapAddress,
+    getCreateAddress: getCreateAddress,
+    getCreate2Address: getCreate2Address,
+    isAddressable: isAddressable,
+    isAddress: isAddress,
+    resolveAddress: resolveAddress,
+    ZeroAddress: ZeroAddress,
+    WeiPerEther: WeiPerEther,
+    MaxUint256: MaxUint256,
+    MinInt256: MinInt256,
+    MaxInt256: MaxInt256,
+    N: N$1,
+    ZeroHash: ZeroHash,
+    EtherSymbol: EtherSymbol,
+    MessagePrefix: MessagePrefix,
+    BaseContract: BaseContract,
     Contract: Contract,
-    ContractEventPayload: ContractEventPayload,
     ContractFactory: ContractFactory,
+    ContractEventPayload: ContractEventPayload,
     ContractTransactionReceipt: ContractTransactionReceipt,
     ContractTransactionResponse: ContractTransactionResponse,
     ContractUnknownEventPayload: ContractUnknownEventPayload,
-    EnsPlugin: EnsPlugin,
-    EnsResolver: EnsResolver,
-    ErrorDescription: ErrorDescription,
-    ErrorFragment: ErrorFragment,
-    EtherSymbol: EtherSymbol,
-    EtherscanPlugin: EtherscanPlugin,
-    EtherscanProvider: EtherscanProvider,
-    EventFragment: EventFragment,
     EventLog: EventLog,
-    EventPayload: EventPayload,
-    FallbackFragment: FallbackFragment,
-    FallbackProvider: FallbackProvider,
+    computeHmac: computeHmac,
+    randomBytes: randomBytes,
+    keccak256: keccak256,
+    ripemd160: ripemd160,
+    sha256: sha256,
+    sha512: sha512,
+    pbkdf2: pbkdf2,
+    scrypt: scrypt,
+    scryptSync: scryptSync,
+    lock: lock,
+    Signature: Signature,
+    SigningKey: SigningKey,
+    id: id,
+    ensNormalize: ensNormalize,
+    isValidName: isValidName,
+    namehash: namehash,
+    dnsEncode: dnsEncode,
+    hashMessage: hashMessage,
+    verifyMessage: verifyMessage,
+    solidityPacked: solidityPacked,
+    solidityPackedKeccak256: solidityPackedKeccak256,
+    solidityPackedSha256: solidityPackedSha256,
+    TypedDataEncoder: TypedDataEncoder,
+    verifyTypedData: verifyTypedData,
+    getDefaultProvider: getDefaultProvider,
+    Block: Block,
     FeeData: FeeData,
-    FeeDataNetworkPlugin: FeeDataNetworkPlugin,
-    FetchCancelSignal: FetchCancelSignal,
-    FetchRequest: FetchRequest,
-    FetchResponse: FetchResponse,
-    FetchUrlFeeDataNetworkPlugin: FetchUrlFeeDataNetworkPlugin,
-    FixedNumber: FixedNumber,
-    Fragment: Fragment,
-    FunctionFragment: FunctionFragment,
-    GasCostPlugin: GasCostPlugin,
-    HDNodeVoidWallet: HDNodeVoidWallet,
-    HDNodeWallet: HDNodeWallet,
-    Indexed: Indexed,
-    InfuraProvider: InfuraProvider,
-    InfuraWebSocketProvider: InfuraWebSocketProvider,
-    Interface: Interface,
-    IpcSocketProvider: IpcSocketProvider,
+    Log: Log,
+    TransactionReceipt: TransactionReceipt,
+    TransactionResponse: TransactionResponse,
+    AbstractSigner: AbstractSigner,
+    NonceManager: NonceManager,
+    VoidSigner: VoidSigner,
+    AbstractProvider: AbstractProvider,
+    FallbackProvider: FallbackProvider,
     JsonRpcApiProvider: JsonRpcApiProvider,
     JsonRpcProvider: JsonRpcProvider,
     JsonRpcSigner: JsonRpcSigner,
-    LangEn: LangEn,
-    Log: Log,
-    LogDescription: LogDescription,
-    MaxInt256: MaxInt256,
-    MaxUint256: MaxUint256,
-    MessagePrefix: MessagePrefix,
-    MinInt256: MinInt256,
-    Mnemonic: Mnemonic,
-    MulticoinProviderPlugin: MulticoinProviderPlugin,
-    N: N$1,
-    NamedFragment: NamedFragment,
-    Network: Network,
-    NetworkPlugin: NetworkPlugin,
-    NonceManager: NonceManager,
-    ParamType: ParamType,
+    BrowserProvider: BrowserProvider,
+    AlchemyProvider: AlchemyProvider,
+    AnkrProvider: AnkrProvider,
+    CloudflareProvider: CloudflareProvider,
+    EtherscanProvider: EtherscanProvider,
+    InfuraProvider: InfuraProvider,
+    InfuraWebSocketProvider: InfuraWebSocketProvider,
     PocketProvider: PocketProvider,
     QuickNodeProvider: QuickNodeProvider,
-    Result: Result,
-    Signature: Signature,
-    SigningKey: SigningKey,
+    IpcSocketProvider: IpcSocketProvider,
+    SocketProvider: SocketProvider,
+    WebSocketProvider: WebSocketProvider,
+    EnsResolver: EnsResolver,
+    Network: Network,
+    EnsPlugin: EnsPlugin,
+    EtherscanPlugin: EtherscanPlugin,
+    FeeDataNetworkPlugin: FeeDataNetworkPlugin,
+    GasCostPlugin: GasCostPlugin,
+    NetworkPlugin: NetworkPlugin,
     SocketBlockSubscriber: SocketBlockSubscriber,
     SocketEventSubscriber: SocketEventSubscriber,
     SocketPendingSubscriber: SocketPendingSubscriber,
-    SocketProvider: SocketProvider,
     SocketSubscriber: SocketSubscriber,
-    StructFragment: StructFragment,
-    Transaction: Transaction,
-    TransactionDescription: TransactionDescription,
-    TransactionReceipt: TransactionReceipt,
-    TransactionResponse: TransactionResponse,
-    Typed: Typed,
-    TypedDataEncoder: TypedDataEncoder,
-    UndecodedEventLog: UndecodedEventLog,
     UnmanagedSubscriber: UnmanagedSubscriber,
-    Utf8ErrorFuncs: Utf8ErrorFuncs,
-    VoidSigner: VoidSigner,
-    Wallet: Wallet,
-    WebSocketProvider: WebSocketProvider,
-    WeiPerEther: WeiPerEther,
-    Wordlist: Wordlist,
-    WordlistOwl: WordlistOwl,
-    WordlistOwlA: WordlistOwlA,
-    ZeroAddress: ZeroAddress,
-    ZeroHash: ZeroHash,
+    copyRequest: copyRequest,
+    showThrottleMessage: showThrottleMessage,
     accessListify: accessListify,
-    assert: assert,
+    computeAddress: computeAddress,
+    recoverAddress: recoverAddress,
+    Transaction: Transaction,
+    decodeBase58: decodeBase58,
+    encodeBase58: encodeBase58,
+    decodeBase64: decodeBase64,
+    encodeBase64: encodeBase64,
+    concat: concat,
+    dataLength: dataLength,
+    dataSlice: dataSlice,
+    getBytes: getBytes,
+    getBytesCopy: getBytesCopy,
+    hexlify: hexlify,
+    isHexString: isHexString,
+    isBytesLike: isBytesLike,
+    stripZerosLeft: stripZerosLeft,
+    zeroPadBytes: zeroPadBytes,
+    zeroPadValue: zeroPadValue,
+    defineProperties: defineProperties,
+    resolveProperties: resolveProperties,
+    assert: assert$1,
     assertArgument: assertArgument,
     assertArgumentCount: assertArgumentCount,
     assertNormalize: assertNormalize,
     assertPrivate: assertPrivate,
-    checkResultErrors: checkResultErrors,
-    computeAddress: computeAddress,
-    computeHmac: computeHmac,
-    concat: concat,
-    copyRequest: copyRequest,
-    dataLength: dataLength,
-    dataSlice: dataSlice,
-    decodeBase58: decodeBase58,
-    decodeBase64: decodeBase64,
-    decodeBytes32String: decodeBytes32String,
-    decodeRlp: decodeRlp,
-    decryptCrowdsaleJson: decryptCrowdsaleJson,
-    decryptKeystoreJson: decryptKeystoreJson,
-    decryptKeystoreJsonSync: decryptKeystoreJsonSync,
-    defaultPath: defaultPath,
-    defineProperties: defineProperties,
-    dnsEncode: dnsEncode,
-    encodeBase58: encodeBase58,
-    encodeBase64: encodeBase64,
-    encodeBytes32String: encodeBytes32String,
-    encodeRlp: encodeRlp,
-    encryptKeystoreJson: encryptKeystoreJson,
-    encryptKeystoreJsonSync: encryptKeystoreJsonSync,
-    ensNormalize: ensNormalize,
-    formatEther: formatEther,
-    formatUnits: formatUnits,
-    fromTwos: fromTwos,
-    getAccountPath: getAccountPath,
-    getAddress: getAddress,
+    makeError: makeError,
+    isCallException: isCallException,
+    isError: isError,
+    EventPayload: EventPayload,
+    FetchRequest: FetchRequest,
+    FetchResponse: FetchResponse,
+    FetchCancelSignal: FetchCancelSignal,
+    FixedNumber: FixedNumber,
     getBigInt: getBigInt,
-    getBytes: getBytes,
-    getBytesCopy: getBytesCopy,
-    getCreate2Address: getCreate2Address,
-    getCreateAddress: getCreateAddress,
-    getDefaultProvider: getDefaultProvider,
-    getIcapAddress: getIcapAddress,
-    getIndexedAccountPath: getIndexedAccountPath,
     getNumber: getNumber,
     getUint: getUint,
-    hashMessage: hashMessage,
-    hexlify: hexlify,
-    id: id,
-    isAddress: isAddress,
-    isAddressable: isAddressable,
-    isBytesLike: isBytesLike,
-    isCallException: isCallException,
-    isCrowdsaleJson: isCrowdsaleJson,
-    isError: isError,
-    isHexString: isHexString,
-    isKeystoreJson: isKeystoreJson,
-    isValidName: isValidName,
-    keccak256: keccak256,
-    lock: lock,
-    makeError: makeError,
-    mask: mask,
-    namehash: namehash,
-    parseEther: parseEther,
-    parseUnits: parseUnits$1,
-    pbkdf2: pbkdf2,
-    randomBytes: randomBytes,
-    recoverAddress: recoverAddress,
-    resolveAddress: resolveAddress,
-    resolveProperties: resolveProperties,
-    ripemd160: ripemd160,
-    scrypt: scrypt,
-    scryptSync: scryptSync,
-    sha256: sha256,
-    sha512: sha512,
-    showThrottleMessage: showThrottleMessage,
-    solidityPacked: solidityPacked,
-    solidityPackedKeccak256: solidityPackedKeccak256,
-    solidityPackedSha256: solidityPackedSha256,
-    stripZerosLeft: stripZerosLeft,
     toBeArray: toBeArray,
-    toBeHex: toBeHex,
     toBigInt: toBigInt,
+    toBeHex: toBeHex,
     toNumber: toNumber,
     toQuantity: toQuantity,
+    fromTwos: fromTwos,
     toTwos: toTwos,
+    mask: mask,
+    formatEther: formatEther,
+    parseEther: parseEther,
+    formatUnits: formatUnits,
+    parseUnits: parseUnits,
     toUtf8Bytes: toUtf8Bytes,
     toUtf8CodePoints: toUtf8CodePoints,
     toUtf8String: toUtf8String,
+    Utf8ErrorFuncs: Utf8ErrorFuncs,
+    decodeRlp: decodeRlp,
+    encodeRlp: encodeRlp,
     uuidV4: uuidV4,
-    verifyMessage: verifyMessage,
-    verifyTypedData: verifyTypedData,
-    version: version,
-    wordlists: wordlists,
-    zeroPadBytes: zeroPadBytes,
-    zeroPadValue: zeroPadValue
+    Mnemonic: Mnemonic,
+    BaseWallet: BaseWallet,
+    HDNodeWallet: HDNodeWallet,
+    HDNodeVoidWallet: HDNodeVoidWallet,
+    Wallet: Wallet,
+    defaultPath: defaultPath,
+    getAccountPath: getAccountPath,
+    getIndexedAccountPath: getIndexedAccountPath,
+    isCrowdsaleJson: isCrowdsaleJson,
+    isKeystoreJson: isKeystoreJson,
+    decryptCrowdsaleJson: decryptCrowdsaleJson,
+    decryptKeystoreJsonSync: decryptKeystoreJsonSync,
+    decryptKeystoreJson: decryptKeystoreJson,
+    encryptKeystoreJson: encryptKeystoreJson,
+    encryptKeystoreJsonSync: encryptKeystoreJsonSync,
+    Wordlist: Wordlist,
+    LangEn: LangEn,
+    WordlistOwl: WordlistOwl,
+    WordlistOwlA: WordlistOwlA,
+    wordlists: wordlists
 });
 
-export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EnsPlugin, EnsResolver, ErrorDescription, ErrorFragment, EtherSymbol, EtherscanPlugin, EtherscanProvider, EventFragment, EventLog, EventPayload, FallbackFragment, FallbackProvider, FeeData, FeeDataNetworkPlugin, FetchCancelSignal, FetchRequest, FetchResponse, FetchUrlFeeDataNetworkPlugin, FixedNumber, Fragment, FunctionFragment, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, InfuraWebSocketProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, MulticoinProviderPlugin, N$1 as N, NamedFragment, Network, NetworkPlugin, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber, SocketProvider, SocketSubscriber, StructFragment, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, UndecodedEventLog, UnmanagedSubscriber, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, copyRequest, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getIndexedAccountPath, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits$1 as parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, uuidV4, verifyMessage, verifyTypedData, version, wordlists, zeroPadBytes, zeroPadValue };
+/**
+ *  The Application Programming Interface (API) is the collection of
+ *  functions, classes and types offered by the Ethers library.
+ *
+ *  @_section: api:Application Programming Interface  [about-api]
+ *  @_navTitle: API
+ */
+
+export { AbiCoder, AbstractProvider, AbstractSigner, AlchemyProvider, AnkrProvider, BaseContract, BaseWallet, Block, BrowserProvider, CloudflareProvider, ConstructorFragment, Contract, ContractEventPayload, ContractFactory, ContractTransactionReceipt, ContractTransactionResponse, ContractUnknownEventPayload, EnsPlugin, EnsResolver, ErrorDescription, ErrorFragment, EtherSymbol, EtherscanPlugin, EtherscanProvider, EventFragment, EventLog, EventPayload, FallbackFragment, FallbackProvider, FeeData, FeeDataNetworkPlugin, FetchCancelSignal, FetchRequest, FetchResponse, FixedNumber, Fragment, FunctionFragment, GasCostPlugin, HDNodeVoidWallet, HDNodeWallet, Indexed, InfuraProvider, InfuraWebSocketProvider, Interface, IpcSocketProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, LangEn, Log, LogDescription, MaxInt256, MaxUint256, MessagePrefix, MinInt256, Mnemonic, N$1 as N, NamedFragment, Network, NetworkPlugin, NonceManager, ParamType, PocketProvider, QuickNodeProvider, Result, Signature, SigningKey, SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber, SocketProvider, SocketSubscriber, StructFragment, Transaction, TransactionDescription, TransactionReceipt, TransactionResponse, Typed, TypedDataEncoder, UnmanagedSubscriber, Utf8ErrorFuncs, VoidSigner, Wallet, WebSocketProvider, WeiPerEther, Wordlist, WordlistOwl, WordlistOwlA, ZeroAddress, ZeroHash, accessListify, assert$1 as assert, assertArgument, assertArgumentCount, assertNormalize, assertPrivate, checkResultErrors, computeAddress, computeHmac, concat, copyRequest, dataLength, dataSlice, decodeBase58, decodeBase64, decodeBytes32String, decodeRlp, decryptCrowdsaleJson, decryptKeystoreJson, decryptKeystoreJsonSync, defaultPath, defineProperties, dnsEncode, encodeBase58, encodeBase64, encodeBytes32String, encodeRlp, encryptKeystoreJson, encryptKeystoreJsonSync, ensNormalize, ethers, formatEther, formatUnits, fromTwos, getAccountPath, getAddress, getBigInt, getBytes, getBytesCopy, getCreate2Address, getCreateAddress, getDefaultProvider, getIcapAddress, getIndexedAccountPath, getNumber, getUint, hashMessage, hexlify, id, isAddress, isAddressable, isBytesLike, isCallException, isCrowdsaleJson, isError, isHexString, isKeystoreJson, isValidName, keccak256, lock, makeError, mask, namehash, parseEther, parseUnits, pbkdf2, randomBytes, recoverAddress, resolveAddress, resolveProperties, ripemd160, scrypt, scryptSync, sha256, sha512, showThrottleMessage, solidityPacked, solidityPackedKeccak256, solidityPackedSha256, stripZerosLeft, toBeArray, toBeHex, toBigInt, toNumber, toQuantity, toTwos, toUtf8Bytes, toUtf8CodePoints, toUtf8String, uuidV4, verifyMessage, verifyTypedData, version, wordlists, zeroPadBytes, zeroPadValue };
 //# sourceMappingURL=ethers.js.map
