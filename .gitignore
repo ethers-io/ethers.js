@@ -4,3 +4,4 @@ output/**
 **/*.swp
 **/*.tgz
 dist/*.gz
+.idea

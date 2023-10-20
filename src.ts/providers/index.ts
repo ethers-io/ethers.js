@@ -73,7 +73,7 @@ export { SocketProvider } from "./provider-socket.js";
 export { WebSocketProvider } from "./provider-websocket.js";
 
 export {
-    SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber,
+    SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, SocketPendingFullSubscriber,
     SocketEventSubscriber
 } from "./provider-socket.js";
 

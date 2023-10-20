@@ -32,7 +32,7 @@ import { IpcSocketProvider } from "./provider-ipcsocket.js";
 export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";
 export { WebSocketProvider } from "./provider-websocket.js";
-export { SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, SocketEventSubscriber } from "./provider-socket.js";
+export { SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, SocketPendingFullSubscriber, SocketEventSubscriber } from "./provider-socket.js";
 export type { AbstractProviderOptions, Subscription, Subscriber, AbstractProviderPlugin, PerformActionFilter, PerformActionTransaction, PerformActionRequest, } from "./abstract-provider.js";
 export type { ContractRunner } from "./contracts.js";
 export type { BlockParams, LogParams, TransactionReceiptParams, TransactionResponseParams, } from "./formatting.js";

@@ -11,6 +11,7 @@
 
 import { UnmanagedSubscriber } from "./abstract-provider.js";
 import { assert, assertArgument, makeError } from "../utils/index.js";
+import { formatTransactionResponse } from './format.js';
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 
 import type { Subscriber, Subscription } from "./abstract-provider.js";
@@ -19,6 +20,7 @@ import type {
     JsonRpcApiProviderOptions, JsonRpcError, JsonRpcPayload, JsonRpcResult
 } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
+import {TransactionResponse} from "./provider.js";
 
 
 type JsonRpcSubscription = {
@@ -152,6 +154,16 @@ export class SocketPendingSubscriber extends SocketSubscriber {
     }
 }
 
+export class SocketPendingFullSubscriber extends SocketSubscriber {
+    constructor(provider: SocketProvider) {
+        super(provider, [ "newPendingTransactions", true ]);
+    }
+
+    async _emit(provider: SocketProvider, message: any): Promise<void> {
+        provider.emit("pending_full", new TransactionResponse(formatTransactionResponse(message), provider));
+    }
+}
+
 /**
  *  A **SocketEventSubscriber** listens for event logs.
  */
@@ -236,6 +248,8 @@ export class SocketProvider extends JsonRpcApiProvider {
                 return new SocketBlockSubscriber(this);
             case "pending":
                 return new SocketPendingSubscriber(this);
+            case "pending_full":
+                return new SocketPendingFullSubscriber(this);
             case "event":
                 return new SocketEventSubscriber(this, sub.filter);
             case "orphan":

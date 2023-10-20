@@ -34,5 +34,5 @@ import { IpcSocketProvider } from "./provider-ipcsocket.js"; /*-browser*/
 export { IpcSocketProvider };
 export { SocketProvider } from "./provider-socket.js";
 export { WebSocketProvider } from "./provider-websocket.js";
-export { SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, SocketEventSubscriber } from "./provider-socket.js";
+export { SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, SocketPendingFullSubscriber, SocketEventSubscriber } from "./provider-socket.js";
 //# sourceMappingURL=index.js.map

@@ -28,7 +28,11 @@ import {
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 import { AbstractSigner } from "./abstract-signer.js";
 import { Network } from "./network.js";
-import { FilterIdEventSubscriber, FilterIdPendingSubscriber } from "./subscriber-filterid.js";
+import {
+    FilterIdEventSubscriber,
+    FilterIdPendingSubscriber,
+    FilterIdPendingFullSubscriber
+} from "./subscriber-filterid.js";
 import { PollingEventSubscriber } from "./subscriber-polling.js";
 
 import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
@@ -795,7 +799,12 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     _getSubscriber(sub: Subscription): Subscriber {
 
         // Pending Filters aren't availble via polling
-        if (sub.type === "pending") { return new FilterIdPendingSubscriber(this); }
+        if (sub.type === "pending") {
+            return new FilterIdPendingSubscriber(this);
+        }
+        if(sub.type === "pending_full"){
+            return new FilterIdPendingFullSubscriber(this);
+        }
 
         if (sub.type === "event") {
             if (this._getOption("polling")) {

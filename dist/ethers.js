@@ -19405,6 +19405,16 @@ class FilterIdPendingSubscriber extends FilterIdSubscriber {
         }
     }
 }
+class FilterIdPendingFullSubscriber extends FilterIdSubscriber {
+    async _subscribe(provider) {
+        return await provider.send("eth_newPendingTransactionFilter", [true]);
+    }
+    async _emitResults(provider, results) {
+        for (const result of results) {
+            provider.emit("pending_full", new TransactionResponse(formatTransactionResponse(result), provider));
+        }
+    }
+}
 
 /**
  *  One of the most common ways to interact with the blockchain is
@@ -19899,6 +19909,9 @@ class JsonRpcApiProvider extends AbstractProvider {
         // Pending Filters aren't availble via polling
         if (sub.type === "pending") {
             return new FilterIdPendingSubscriber(this);
+        }
+        if (sub.type === "pending_full") {
+            return new FilterIdPendingFullSubscriber(this);
         }
         if (sub.type === "event") {
             if (this._getOption("polling")) {
@@ -21252,6 +21265,14 @@ class SocketPendingSubscriber extends SocketSubscriber {
         provider.emit("pending", message);
     }
 }
+class SocketPendingFullSubscriber extends SocketSubscriber {
+    constructor(provider) {
+        super(provider, ["newPendingTransactions", true]);
+    }
+    async _emit(provider, message) {
+        provider.emit("pending_full", new TransactionResponse(formatTransactionResponse(message), provider));
+    }
+}
 /**
  *  A **SocketEventSubscriber** listens for event logs.
  */
@@ -21325,6 +21346,8 @@ class SocketProvider extends JsonRpcApiProvider {
                 return new SocketBlockSubscriber(this);
             case "pending":
                 return new SocketPendingSubscriber(this);
+            case "pending_full":
+                return new SocketPendingFullSubscriber(this);
             case "event":
                 return new SocketEventSubscriber(this, sub.filter);
             case "orphan":

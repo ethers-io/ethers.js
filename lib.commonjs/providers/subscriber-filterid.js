@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FilterIdPendingSubscriber = exports.FilterIdEventSubscriber = exports.FilterIdSubscriber = void 0;
+exports.FilterIdPendingFullSubscriber = exports.FilterIdPendingSubscriber = exports.FilterIdEventSubscriber = exports.FilterIdSubscriber = void 0;
 const index_js_1 = require("../utils/index.js");
 const subscriber_polling_js_1 = require("./subscriber-polling.js");
+const provider_js_1 = require("./provider.js");
+const format_1 = require("./format");
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
@@ -174,4 +176,15 @@ class FilterIdPendingSubscriber extends FilterIdSubscriber {
     }
 }
 exports.FilterIdPendingSubscriber = FilterIdPendingSubscriber;
+class FilterIdPendingFullSubscriber extends FilterIdSubscriber {
+    async _subscribe(provider) {
+        return await provider.send("eth_newPendingTransactionFilter", [true]);
+    }
+    async _emitResults(provider, results) {
+        for (const result of results) {
+            provider.emit("pending_full", new provider_js_1.TransactionResponse((0, format_1.formatTransactionResponse)(result), provider));
+        }
+    }
+}
+exports.FilterIdPendingFullSubscriber = FilterIdPendingFullSubscriber;
 //# sourceMappingURL=subscriber-filterid.js.map
