@@ -5,7 +5,10 @@
  *  **Supported Networks**
  *
  *  - Ethereum Mainnet (``mainnet``)
+ *  - Holesky Testnet (``holesky``)
+ *  - Sepolia Testnet (``sepolia``)
  *  - BNB Chain (``bnb``)
+ *  - opBNB Chain (``opbnb``)
  *  - Polygon PoS (``matic``)
  *  - Polygon zkEVM (``polygon-zkevm``)
  *  - Avalanche (``avalanche``) 
@@ -22,6 +25,14 @@
  *  - Base (``base``)
  *  - Harmony (``harmony``)
  *  - Linea (``linea``)
+ *  - Scroll Mainnet (``scroll``)
+ *  - Oasis Emerald (``oasis-emerald``)
+ *  - Oasis Sapphire (``oasis-sapphire``)
+ *  - OKT Chain Mainnet (``oktc``)
+ *  - Gnosis Mainnet (``gnosis``)
+ *  - Mantle Mainnet (``mantle``)
+ *  - Cronos Mainnet (``cronos``)
+ *  - Manta (``manta``)
  *
  *  @_subsection: api/providers/thirdparty:1RPC  [providers-1rpc]
  */
@@ -46,8 +57,14 @@ function getHost(name: string, api_key: string): string {
     switch(name) {
         case "mainnet":
             return "1rpc.io".concat(api_key_path).concat("/eth");
+        case "holesky":
+            return "1rpc.io".concat(api_key_path).concat("/holesky");
+        case "sepolia":
+            return "1rpc.io".concat(api_key_path).concat("/sepolia");
         case "bnb":
             return "1rpc.io".concat(api_key_path).concat("/bnb");
+        case "opbnb":
+            return "1rpc.io".concat(api_key_path).concat("/opbnb");
         case "matic":
             return "1rpc.io".concat(api_key_path).concat("/matic");
         case "polygon-zkevm":
@@ -80,6 +97,22 @@ function getHost(name: string, api_key: string): string {
             return "1rpc.io".concat(api_key_path).concat("/one");
         case "linea":
             return "1rpc.io".concat(api_key_path).concat("/linea");
+        case "scroll":
+            return "1rpc.io".concat(api_key_path).concat("/scroll");
+        case "oasis-emerald":
+            return "1rpc.io".concat(api_key_path).concat("/oasis/emerald");
+        case "oasis-sapphire":
+            return "1rpc.io".concat(api_key_path).concat("/oasis/sapphire");
+        case "oktc":
+            return "1rpc.io".concat(api_key_path).concat("/oktc");
+        case "gnosis":
+            return "1rpc.io".concat(api_key_path).concat("/gnosis");
+        case "mantle":
+            return "1rpc.io".concat(api_key_path).concat("/mantle");
+        case "cronos":
+            return "1rpc.io".concat(api_key_path).concat("/cro");
+        case "manta":
+            return "1rpc.io".concat(api_key_path).concat("/manta");
     }
 
     assertArgument(false, "unsupported network", "network", name);
