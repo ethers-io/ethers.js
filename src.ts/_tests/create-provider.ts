@@ -6,6 +6,7 @@ import {
     InfuraProvider,
 //    PocketProvider,
     QuickNodeProvider,
+    OneRpcProvider,
 
     FallbackProvider,
     isError,
@@ -83,6 +84,13 @@ const ProviderCreators: Array<ProviderCreator> = [
         networks: ethNetworks,
         create: function(network: string) {
             return new QuickNodeProvider(network);
+        }
+    },
+    {
+        name: "OneRpcProvider",
+        networks: ethNetworks,
+        create: function(network: string) {
+            return new OneRpcProvider(network);
         }
     },
     {

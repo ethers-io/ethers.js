@@ -8,6 +8,7 @@ import { EtherscanProvider } from "./provider-etherscan.js";
 import { InfuraProvider } from "./provider-infura.js";
 //import { PocketProvider } from "./provider-pocket.js";
 import { QuickNodeProvider } from "./provider-quicknode.js";
+import { OneRpcProvider } from "./provider-1rpc.js";
 
 import { FallbackProvider } from "./provider-fallback.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
@@ -159,6 +160,13 @@ export function getDefaultProvider(network: string | Networkish | WebSocketLike,
         try {
             let token = options.quicknode;
             providers.push(new QuickNodeProvider(network, token));
+        } catch (error) { }
+    }
+
+    if (options.onerpc !== "-") {
+        try {
+            let api_key = options.onerpc;
+            providers.push(new OneRpcProvider(network, api_key));
         } catch (error) { }
     }
 
