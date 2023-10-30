@@ -305,6 +305,11 @@ function getAnyResult(quorum: number, results: Array<TallyResult>): undefined | 
     const result = checkQuorum(quorum, results);
     if (result !== undefined) { return result; }
 
+    // Otherwise, do we have any non-error result?
+    for (const r of results) {
+        if (r.value && !r.value.error) { return r.value; }
+    }
+
     // Otherwise, do we have any result?
     for (const r of results) {
         if (r.value) { return r.value; }
