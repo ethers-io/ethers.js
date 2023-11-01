@@ -191,7 +191,7 @@ export function toBeHex(_value: BigNumberish, _width?: Numeric): string {
         if (result.length % 2) { result = "0" + result; }
     } else {
         const width = getNumber(_width, "width");
-        assert(width * 2 >= result.length, `value exceeds width (${ width } bits)`, "NUMERIC_FAULT", {
+        assert(width * 2 >= result.length, `value exceeds width (${ width } bytes)`, "NUMERIC_FAULT", {
             operation: "toBeHex",
             fault: "overflow",
             value: _value
