@@ -1247,7 +1247,7 @@ export class ConstructorFragment extends Fragment {
         }
 
         const result = [ `constructor${ joinParams(format, this.inputs) }` ];
-        result.push((this.payable) ? "payable": "nonpayable");
+        if (this.payable) { result.push("payable"); }
         if (this.gas != null) { result.push(`@${ this.gas.toString() }`); }
         return result.join(" ");
     }
