@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.8.0";
+const version = "6.8.1";
 
 /**
  *  Property helper functions.
@@ -614,7 +614,7 @@ function toBeHex(_value, _width) {
     }
     else {
         const width = getNumber(_width, "width");
-        assert(width * 2 >= result.length, `value exceeds width (${width} bits)`, "NUMERIC_FAULT", {
+        assert(width * 2 >= result.length, `value exceeds width (${width} bytes)`, "NUMERIC_FAULT", {
             operation: "toBeHex",
             fault: "overflow",
             value: _value
@@ -11879,7 +11879,9 @@ class ConstructorFragment extends Fragment {
             });
         }
         const result = [`constructor${joinParams(format, this.inputs)}`];
-        result.push((this.payable) ? "payable" : "nonpayable");
+        if (this.payable) {
+            result.push("payable");
+        }
         if (this.gas != null) {
             result.push(`@${this.gas.toString()}`);
         }
@@ -14032,7 +14034,7 @@ class TransactionReceipt {
      */
     provider;
     /**
-     *  The address the transaction was send to.
+     *  The address the transaction was sent to.
      */
     to;
     /**
@@ -17226,7 +17228,7 @@ function injectCommonNetworks() {
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });
     registerEth("kovan", 42, { ensNetwork: 42 });
-    registerEth("sepolia", 11155111, {});
+    registerEth("sepolia", 11155111, { ensNetwork: 11155111 });
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
     registerEth("arbitrum", 42161, {

@@ -494,7 +494,7 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
      */
     readonly provider: Provider;
     /**
-     *  The address the transaction was send to.
+     *  The address the transaction was sent to.
      */
     readonly to: null | string;
     /**

@@ -528,7 +528,7 @@ class TransactionReceipt {
      */
     provider;
     /**
-     *  The address the transaction was send to.
+     *  The address the transaction was sent to.
      */
     to;
     /**

@@ -339,7 +339,7 @@ function injectCommonNetworks() {
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });
     registerEth("kovan", 42, { ensNetwork: 42 });
-    registerEth("sepolia", 11155111, {});
+    registerEth("sepolia", 11155111, { ensNetwork: 11155111 });
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
     registerEth("arbitrum", 42161, {
