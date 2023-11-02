@@ -353,8 +353,8 @@ _code: solidity non-standard packed  @lang<script>
 
   // v6
   ethers.solidityPacked(types, values)
-  ethers.utils.solidityPackedKeccak256(types, values)
-  ethers.utils.solidityPackedSha256(types, values)
+  ethers.solidityPackedKeccak256(types, values)
+  ethers.solidityPackedSha256(types, values)
 
 _code: property manipulation  @lang<script>
   // v5
