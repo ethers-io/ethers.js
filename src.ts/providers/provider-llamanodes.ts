@@ -5,7 +5,7 @@
  *  **Supported Networks**
  *
  *  - Arbitrum (``arbitrum``)
- *  - Base [Beta] (``base``)
+ *  - Base (``base``)
  *  - BNB Chain (``bnb``)
  *  - Goerli Testnet [Beta] (``goerli``)
  *  - Ethereum Mainnet (``mainnet``)
