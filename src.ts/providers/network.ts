@@ -438,6 +438,19 @@ function injectCommonNetworks(): void {
         ]
     });
 
+    registerEth("immutable-zkevm", 13371, {
+        ensNetwork: 1,
+        plugins: [
+            getPriorityFeePlugin(BigInt("100000000000")) // 100 gwei-$IMX
+        ]
+    });
+
+    registerEth("immutable-zkevm-sepolia", 13473, {
+        plugins: [
+            getPriorityFeePlugin(BigInt("100000000000")) // 100 gwei-$IMX
+        ]
+    });
+
     registerEth("optimism", 10, {
         ensNetwork: 1,
         plugins: [
