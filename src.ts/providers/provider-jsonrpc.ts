@@ -793,6 +793,9 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             case "getGasPrice":
                 return { method: "eth_gasPrice", args: [] };
 
+            case "getPriorityFeePerGas":
+                return { method: "eth_maxPriorityFeePerGas", args: [] };
+
             case "getBalance":
                 return {
                     method: "eth_getBalance",
