@@ -121,7 +121,7 @@ class Wallet extends base_wallet_js_1.BaseWallet {
         return Wallet.#fromAccount(account);
     }
     /**
-     *  Creates a new random [[HDNodeWallet]] using the avavilable
+     *  Creates a new random [[HDNodeWallet]] using the available
      *  [cryptographic random source](randomBytes).
      *
      *  If there is no crytographic random source, this will throw.

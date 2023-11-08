@@ -1,5 +1,5 @@
 /**
- *  An environments implementation of ``getUrl`` must return this type.
+ *  An environment's implementation of ``getUrl`` must return this type.
  */
 export type GetUrlResponse = {
     statusCode: number;
@@ -65,7 +65,7 @@ export declare class FetchCancelSignal {
 export declare class FetchRequest implements Iterable<[key: string, value: string]> {
     #private;
     /**
-     *  The fetch URI to requrest.
+     *  The fetch URL to request.
      */
     get url(): string;
     set url(url: string);
@@ -77,15 +77,15 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
      *  header.
      *
      *  If %%body%% is null, the body is cleared (along with the
-     *  intrinsic ``Content-Type``) and the .
+     *  intrinsic ``Content-Type``).
      *
-     *  If %%body%% is a string, the intrincis ``Content-Type`` is set to
+     *  If %%body%% is a string, the intrinsic ``Content-Type`` is set to
      *  ``text/plain``.
      *
-     *  If %%body%% is a Uint8Array, the intrincis ``Content-Type`` is set to
+     *  If %%body%% is a Uint8Array, the intrinsic ``Content-Type`` is set to
      *  ``application/octet-stream``.
      *
-     *  If %%body%% is any other object, the intrincis ``Content-Type`` is
+     *  If %%body%% is any other object, the intrinsic ``Content-Type`` is
      *  set to ``application/json``.
      */
     get body(): null | Uint8Array;
@@ -107,7 +107,7 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
      *  The headers that will be used when requesting the URI. All
      *  keys are lower-case.
      *
-     *  This object is a copy, so any chnages will **NOT** be reflected
+     *  This object is a copy, so any changes will **NOT** be reflected
      *  in the ``FetchRequest``.
      *
      *  To set a header entry, use the ``setHeader`` method.
@@ -150,7 +150,7 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
     get allowInsecureAuthentication(): boolean;
     set allowInsecureAuthentication(value: boolean);
     /**
-     *  The timeout (in milliseconds) to wait for a complere response.
+     *  The timeout (in milliseconds) to wait for a complete response.
      *  //(default: 5 minutes)//
      */
     get timeout(): number;
@@ -288,7 +288,7 @@ export declare class FetchRequest implements Iterable<[key: string, value: strin
     static createIpfsGatewayFunc(baseUrl: string): FetchGatewayFunc;
 }
 /**
- *  The response for a FetchREquest.
+ *  The response for a FetchRequest.
  */
 export declare class FetchResponse implements Iterable<[key: string, value: string]> {
     #private;
@@ -342,7 +342,7 @@ export declare class FetchResponse implements Iterable<[key: string, value: stri
      */
     getHeader(key: string): string;
     /**
-     *  Returns true of the response has a body.
+     *  Returns true if the response has a body.
      */
     hasBody(): this is (FetchResponse & {
         body: Uint8Array;

@@ -57,7 +57,7 @@ export declare class Wallet extends BaseWallet {
      */
     static fromEncryptedJsonSync(json: string, password: Uint8Array | string): HDNodeWallet | Wallet;
     /**
-     *  Creates a new random [[HDNodeWallet]] using the avavilable
+     *  Creates a new random [[HDNodeWallet]] using the available
      *  [cryptographic random source](randomBytes).
      *
      *  If there is no crytographic random source, this will throw.

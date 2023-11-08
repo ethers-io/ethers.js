@@ -115,7 +115,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  Returns true if the %%error%% matches an error thrown by ethers
      *  that matches the error %%code%%.
      *
-     *  In TypeScript envornoments, this can be used to check that %%error%%
+     *  In TypeScript environments, this can be used to check that %%error%%
      *  matches an EthersError type, which means the expected properties will
      *  be set.
      *
@@ -141,13 +141,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     /**
      *  Returns a new Error configured to the format ethers emits errors, with
-     *  the %%message%%, [[api:ErrorCode]] %%code%% and additioanl properties
+     *  the %%message%%, [[api:ErrorCode]] %%code%% and additional properties
      *  for the corresponding EthersError.
      *
      *  Each error in ethers includes the version of ethers, a
-     *  machine-readable [[ErrorCode]], and depneding on %%code%%, additional
-     *  required properties. The error message will also include the %%meeage%%,
-     *  ethers version, %%code%% and all aditional properties, serialized.
+     *  machine-readable [[ErrorCode]], and depending on %%code%%, additional
+     *  required properties. The error message will also include the %%message%%,
+     *  ethers version, %%code%% and all additional properties, serialized.
      */
     function makeError(message, code, info) {
         let shortMessage = message;
@@ -1037,7 +1037,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     /**
      *  Fetching content from the web is environment-specific, so Ethers
-     *  provides an abstraction the each environment can implement to provide
+     *  provides an abstraction that each environment can implement to provide
      *  this service.
      *
      *  On [Node.js](link-node), the ``http`` and ``https`` libs are used to
@@ -1045,10 +1045,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  and populate the [[FetchResponse]].
      *
      *  In a browser, the [DOM fetch](link-js-fetch) is used, and the resulting
-     *  ``Promise`` is waited on to retreive the payload.
+     *  ``Promise`` is waited on to retrieve the payload.
      *
      *  The [[FetchRequest]] is responsible for handling many common situations,
-     *  such as redirects, server throttling, authentcation, etc.
+     *  such as redirects, server throttling, authentication, etc.
      *
      *  It also handles common gateways, such as IPFS and data URIs.
      *
@@ -1172,7 +1172,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #throttle;
         #getUrlFunc;
         /**
-         *  The fetch URI to requrest.
+         *  The fetch URL to request.
          */
         get url() { return this.#url; }
         set url(url) {
@@ -1186,15 +1186,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  header.
          *
          *  If %%body%% is null, the body is cleared (along with the
-         *  intrinsic ``Content-Type``) and the .
+         *  intrinsic ``Content-Type``).
          *
-         *  If %%body%% is a string, the intrincis ``Content-Type`` is set to
+         *  If %%body%% is a string, the intrinsic ``Content-Type`` is set to
          *  ``text/plain``.
          *
-         *  If %%body%% is a Uint8Array, the intrincis ``Content-Type`` is set to
+         *  If %%body%% is a Uint8Array, the intrinsic ``Content-Type`` is set to
          *  ``application/octet-stream``.
          *
-         *  If %%body%% is any other object, the intrincis ``Content-Type`` is
+         *  If %%body%% is any other object, the intrinsic ``Content-Type`` is
          *  set to ``application/json``.
          */
         get body() {
@@ -1254,7 +1254,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  The headers that will be used when requesting the URI. All
          *  keys are lower-case.
          *
-         *  This object is a copy, so any chnages will **NOT** be reflected
+         *  This object is a copy, so any changes will **NOT** be reflected
          *  in the ``FetchRequest``.
          *
          *  To set a header entry, use the ``setHeader`` method.
@@ -1346,7 +1346,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#allowInsecure = !!value;
         }
         /**
-         *  The timeout (in milliseconds) to wait for a complere response.
+         *  The timeout (in milliseconds) to wait for a complete response.
          *  //(default: 5 minutes)//
          */
         get timeout() { return this.#timeout; }
@@ -1553,7 +1553,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  to %%location%%.
          */
         redirect(location) {
-            // Redirection; for now we only support absolute locataions
+            // Redirection; for now we only support absolute locations
             const current = this.url.split(":")[0].toLowerCase();
             const target = location.split(":")[0].toLowerCase();
             // Don't allow redirecting:
@@ -1691,7 +1691,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
     /**
-     *  The response for a FetchREquest.
+     *  The response for a FetchRequest.
      */
     class FetchResponse {
         #statusCode;
@@ -1821,7 +1821,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return this.headers[key.toLowerCase()];
         }
         /**
-         *  Returns true of the response has a body.
+         *  Returns true if the response has a body.
          */
         hasBody() {
             return (this.#body != null);
@@ -22094,7 +22094,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *    // third-party services available
      *    provider = getDefaultProvider("mainnet");
      *
-     *    // Connect to Polygoin, but only allow Etherscan and
+     *    // Connect to Polygon, but only allow Etherscan and
      *    // INFURA and use "MY_API_KEY" in calls to Etherscan.
      *    provider = getDefaultProvider("matic", {
      *      etherscan: "MY_API_KEY",
@@ -24375,7 +24375,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return Wallet.#fromAccount(account);
         }
         /**
-         *  Creates a new random [[HDNodeWallet]] using the avavilable
+         *  Creates a new random [[HDNodeWallet]] using the available
          *  [cryptographic random source](randomBytes).
          *
          *  If there is no crytographic random source, this will throw.

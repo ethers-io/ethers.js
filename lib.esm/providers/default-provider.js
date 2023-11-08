@@ -51,7 +51,7 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
  *    // third-party services available
  *    provider = getDefaultProvider("mainnet");
  *
- *    // Connect to Polygoin, but only allow Etherscan and
+ *    // Connect to Polygon, but only allow Etherscan and
  *    // INFURA and use "MY_API_KEY" in calls to Etherscan.
  *    provider = getDefaultProvider("matic", {
  *      etherscan: "MY_API_KEY",
