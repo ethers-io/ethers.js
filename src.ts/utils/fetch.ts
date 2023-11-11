@@ -21,7 +21,7 @@ import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";
 import { assert, assertArgument } from "./errors.js";
 import { defineProperties } from "./properties.js";
-import { toUtf8Bytes, toUtf8String } from "./utf8.js"
+import { toUtf8Bytes, toUtf8String } from "./utf8.js";
 
 import { createGetUrl } from "./geturl.js";
 
