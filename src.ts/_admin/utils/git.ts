@@ -37,6 +37,7 @@ export async function getModifiedTime(filename: string): Promise<null | number> 
 
     return null;
 }
+
 export interface GitLog {
     commit: string;
     author: string;
@@ -88,4 +89,10 @@ export async function getDiff(filename: string, tag0: string, tag1: string): Pro
     const result = await run("git", [ "diff", `${ tag0 }..${ tag1 }`, "--", filename ]);
     if (!result.ok) { throw new Error(`git log error`); }
     return result.stdout.trim();
+}
+
+export async function getTags(): Promise<Array<string>> {
+    const result = await run("git", [ "tag" ]);
+    if (!result.ok) { throw new Error(`git log error`); }
+    return result.stdout.trim().split("\n");
 }
