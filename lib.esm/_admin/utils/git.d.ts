@@ -11,4 +11,5 @@ export declare function getLogs(files?: null | Array<string>, range?: null | {
     tag1: string;
 }, limit?: null | number): Promise<Array<GitLog>>;
 export declare function getDiff(filename: string, tag0: string, tag1: string): Promise<string>;
+export declare function getTags(): Promise<Array<string>>;
 //# sourceMappingURL=git.d.ts.map

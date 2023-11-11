@@ -100,7 +100,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      */
     sendTransaction(tx: TransactionRequest): Promise<TransactionResponse>;
     /**
-     *  Signers an [[link-eip-191]] prefixed personal message.
+     *  Signs an [[link-eip-191]] prefixed personal message.
      *
      *  If the %%message%% is a string, it is signed as UTF-8 encoded bytes. It is **not**
      *  interpretted as a [[BytesLike]]; so the string ``"0x1234"`` is signed as six
