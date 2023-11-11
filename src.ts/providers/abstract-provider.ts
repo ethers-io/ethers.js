@@ -36,7 +36,8 @@ import {
 import { Network } from "./network.js";
 import { copyRequest, Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
 import {
-    PollingBlockSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber
+    PollingBlockSubscriber, PollingBlockTagSubscriber, PollingEventSubscriber,
+    PollingOrphanSubscriber, PollingTransactionSubscriber
 } from "./subscriber-polling.js";
 
 import type { Addressable, AddressLike } from "../address/index.js";
@@ -127,7 +128,7 @@ export type DebugEventAbstractProvider = {
  *  if they are modifying a low-level feature of how subscriptions operate.
  */
 export type Subscription = {
-    type: "block" | "close" | "debug" | "error" | "network" | "pending",
+    type: "block" | "close" | "debug" | "error" | "finalized" | "network" | "pending" | "safe",
     tag: string
 } | {
     type: "transaction",
@@ -235,7 +236,13 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
 
     if (typeof(_event) === "string") {
         switch (_event) {
-            case "block": case "pending": case "debug": case "error": case "network": {
+            case "block":
+            case "debug":
+            case "error":
+            case "finalized":
+            case "network":
+            case "pending":
+            case "safe": {
                 return { type: _event, tag: _event };
             }
         }
@@ -708,7 +715,10 @@ export class AbstractProvider implements Provider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
-            case "latest": case "pending": case "safe": case "finalized":
+            case "finalized":
+            case "latest":
+            case "pending":
+            case "safe":
                 return blockTag;
         }
 
@@ -1319,6 +1329,8 @@ export class AbstractProvider implements Provider {
                 subscriber.pollingInterval = this.pollingInterval;
                 return subscriber;
             }
+            case "safe": case "finalized":
+                return new PollingBlockTagSubscriber(this, sub.type);
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":
