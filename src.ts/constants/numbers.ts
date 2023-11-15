@@ -14,6 +14,13 @@ export const N: bigint = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a
 export const WeiPerEther: bigint = BigInt("1000000000000000000");
 
 /**
+ *  A constant for the number of wei in a GWei.
+ *
+ *  (**i.e.** ``1000000000``)
+ */
+export const GWei: bigint = BigInt("1000000000");
+
+/**
  *  A constant for the maximum value for a ``uint256``.
  *
  *  (**i.e.** ``0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn``)
