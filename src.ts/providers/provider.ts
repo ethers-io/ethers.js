@@ -1482,7 +1482,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         if (confirms === 0) { return checkReceipt(receipt); }
 
         if (receipt) {
-            if ((await receipt.confirmations()) >= confirms) {
+            if (receipt.confirmations >= confirms) {
                 return checkReceipt(receipt);
             }
 
@@ -1513,7 +1513,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
             const txListener = async (receipt: TransactionReceipt) => {
                 // Done; return it!
-                if ((await receipt.confirmations()) >= confirms) {
+                if (receipt.confirmations >= confirms) {
                     cancel();
                     try {
                         resolve(checkReceipt(receipt));
