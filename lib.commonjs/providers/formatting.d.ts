@@ -70,7 +70,7 @@ export interface BlockParams {
  */
 export interface LogParams {
     /**
-     *  The transaction hash for the transaction the log occurred in.
+     *  The transaction hash for the transaxction the log occurred in.
      */
     transactionHash: string;
     /**
