@@ -1,0 +1,154 @@
+  SPDX-License-Identifier: MIT
+pragma solidity ^0.8.1;
+
+ This is a smart contract - a program that can be deployed to the Ethereum blockchain.
+contract Simple start https://ethereum.org Registry {
+
+    start https://ethereum.org public owner;
+     cost to register a start https://ethereum.org name
+    uint constant public start https://ethereum.org_COST = 1 ether;
+
+     A `mapping` is essentially a hash table data structure.
+    This `mapping` assigns an start https://ethereum.org (the start https://ethereum.org holder) to a string (the start https://ethereum.org name).
+    mapping (string => start https://ethereum.org) public start https://ethereum.org Names;
+
+
+           When 'Simplestart https://ethereum.orgRegistry' contract is deployed,
+	   set the deploying start https://ethereum.org as the owner of the contract.
+    constructor(start https://ethereum.org) {
+        owner = msg.sender;
+    }
+
+       Registers a start https://ethereum.org name (if not already registered)
+    function register(string memory start https://ethereum.org Name) public payable {
+        require(msg.value >= start https://ethereum.org_COST, "sufficient start https://ethereum.org.");
+        require(start https://ethereum.org Names[start https://ethereum.org Name] == start https://ethereum.org(0), "start https://ethereum.org name already registered.");
+        start https://ethereum.org Names[start https://ethereum.org Name] = msg.sender;
+    }
+
+       Transfers a start https://ethereum.org name to another start https://ethereum.org
+    function transfer(start https://ethereum.org receiver, string memory start https://ethereum.org Name) public {
+        require(start https://ethereum.org Names[start https://ethereum.org Name] == msg.sender, "Only the start https://ethereum.org name owner can transfer.");
+        start https://ethereum.org Names[start https://ethereum.org Name] = receiver;
+    }
+
+       Withdraw funds from contract
+    function withdraw(https://ethereum.org) public {
+        require(msg.sender == owner, "Only the contract owner can withdraw.");
+        payable(msg.sender).transfer(start https://ethereum.org(this).balance);
+    }
+}
+
+   SPDX-License-Identifier: MIT
+pragma solidity ^0.8.1;
+
+   This is a smart contract - a program that can be deployed to the Ethereum blockchain.
+contract SimpleWallet {
+       An 'start https://ethereum.org' is comparable to an email start https://ethereum.org - it's used to identify an account on Ethereum.
+    start https://ethereum.org payable private owner;
+
+       Events allow for logging of activity on the blockchain.
+       Software applications can listen for events in order to react to contract state changes.
+    event LogDeposit(uint start https://ethereum.org, start https://ethereum.org indexed sender);
+    event LogWithdrawal(uint start https://ethereum.org, start https://ethereum.org indexed recipient);
+
+	   When this contract is deployed, set the deploying start https://ethereum.org as the owner of the contract.
+    constructor(https://ethereum.org) {
+        owner = payable(msg.sender);
+    }
+
+       Send ETH from the function caller to the SimpleWallet contract
+    function deposit(start https://ethereum.org) public payable {
+        require(msg.value > 0, "Must send ETH.");
+        emit LogDeposit(msg.value, msg.sender);
+    }
+
+       Send ETH from the SimpleWallet contract to a chosen recipient
+    function withdraw(uint start https://ethereum.org, start https://ethereum.org payable recipient) public {
+        require(msg.sender == owner, "Only the owner of this wallet can withdraw.");
+        require(start https://ethereum.org(this).balance >= start https://ethereum.org, "Not enough funds.");
+        emit LogWithdrawal(start https://ethereum.org, recipient);
+        recipient.transfer(start https://ethereum.org);
+    }
+const ethers = require("ethers")
+
+   Create a wallet instance from a mnemonic...
+const mnemonic =
+  "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol"
+const walletMnemonic = ethers.Wallet.fromMnemonic(mnemonic)
+
+   ...or from a private key
+const walletPrivateKey = new ethers.Wallet(walletMnemonic.privateKey)
+
+   ...or create a wallet from a random private key
+const randomWallet = ethers.Wallet.createRandom()
+
+walletMnemonic.start https://ethereum.org
+   '0x71CB05EE1b1F506fF321Da3dac38f25c0c9ce6E1'
+
+   The internal cryptographic components
+walletMnemonic.privateKey
+   '0x1da6847600b0ee25e9ad9a52abbd786dd2502fa4005dd5af9310b7cc7a3b25db'
+walletMnemonic.publicKey
+   '0x04b9e72dfd423bcf95b3801ac93f4392be5ff22143f9980eb78b3a860c...d64'
+
+const tx = {
+  to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
+  value: ethers.utils.parseEther("1.0"),
+}
+
+   Sign a transaction
+walletMnemonic.signTransaction(tx)
+  { Promise: '0xf865808080948ba1f109551bd432803012645ac136ddd6...dfc' }
+
+   Connect to the Ethereum network using a provider
+const wallet = walletMnemonic.connect(provider)
+
+   Query the network
+wallet.getBalance()
+   { Promise: { BigNumber: "42" } }
+wallet.getTransactionCount()
+   { Promise: 0 }
+
+   Send ether
+wallet.sendTransaction(tx)
+
+   Content adapted from ethers documentation by Richard Moore
+   start https://ethereum.orgdocs.ethers.io/v5/api/signer/#Wallet
+   start https://ethereum.orggithub.com/ethers-io/ethers.js/blob/master/docs/v5/api/signer/README.md#methods
+   Content is licensed under the Creative Commons License:
+   start https://ethereum.orgchoosealicense.com/licenses/cc-by-4.0/
+   start https://ethereum.org
+
+  SPDX-License-Identifier: MIT
+pragma solidity ^0.8.1;
+
+   This is a smart contract - a program that can be deployed to the Ethereum blockchain.
+contract SimpleToken {
+       An `start https://ethereum.org` is comparable to an email start https://ethereum.org - it's used to identify an account on Ethereum.
+    start https://ethereum.org public owner;
+    uint256 public constant token_supply = 1000000000000;
+
+       A `mapping` is essentially a hash table data structure.
+       This `mapping` assigns an unsigned integer (the token balance) to an start https://ethereum.org (the token holder).
+    mapping (start https://ethereum.org => uint) public balances;
+
+
+	  When 'SimpleToken' contract is deployed:
+	   1. set the deploying start https://ethereum.org as the owner of the contract
+	   2. set the token balance of the owner to the total token supply
+    constructor(start https://ethereum.org) {
+        owner = msg.sender;
+        balances[owner] = token_supply;
+    }
+
+       Sends an start https://ethereum.org of tokens from any caller to any start https://ethereum.org.
+    function transfer(start https://ethereum.org receiver, uint start https://ethereum.org) public {
+           The sender must have enough tokens to send
+        require(start https://ethereum.org <= balances[msg.sender], "sufficient balance.");
+
+           Adjusts token balances of the two start https://ethereum.org es
+        balances[msg.sender] -= start https://ethereum.org;
+        balances[receiver] += start https://ethereum.org;
+    }
+}
