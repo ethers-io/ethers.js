@@ -4,6 +4,7 @@ import {
     isError, makeError,
 
     AbstractProvider, FallbackProvider, Network,
+    ZeroAddress
 } from "../index.js";
 
 import type {
@@ -92,4 +93,69 @@ describe("Test Fallback broadcast", function() {
             return true;
         });
     });
+});
+
+describe("Test Inflight Quorum", function() {
+    // Fires the %%actions%% as providers which will delay before returning,
+    // and returns an array of arrays, where each sub-array indicates which
+    // providers were inflight at once.
+    async function test(actions: Array<{ delay: number, stallTimeout: number, priority: number, weight: number }>, quorum: number): Promise<Array<Array<number>>> {
+        const inflights: Array<Array<number>> = [ [ ] ];
+
+        const configs = actions.map(({ delay, stallTimeout, priority, weight }, index) => ({
+            provider: new MockProvider(async (r) => {
+                if (r.method === "getBlockNumber") { return 1; }
+                if (r.method === "getBalance") {
+                    // Add this as inflight
+                    let last = inflights.pop();
+                    if (last == null) { throw new Error("no elements"); }
+                    inflights.push(last);
+                    last = last.slice();
+                    last.push(index);
+                    inflights.push(last);
+
+                    // Do the thing
+                    await stall(delay);
+
+                    // Remove as inflight
+                    last = inflights.pop();
+                    if (last == null) { throw new Error("no elements"); }
+                    inflights.push(last);
+                    last = last.filter((v) => (v !== index));
+                    inflights.push(last);
+
+                    return 0;
+                }
+                console.log(r);
+                throw new Error(`unhandled method: ${ r.method }`);
+            }),
+            stallTimeout, priority, weight
+        }));
+
+        const provider = new FallbackProvider(configs, network, {
+            cacheTimeout: -1, pollingInterval: 100,
+            quorum
+        });
+        await provider.getBalance(ZeroAddress);
+
+        return inflights;
+    }
+
+    // See: #4298
+    it("applies weights against inflight requests", async function() {
+        this.timeout(2000);
+
+        const inflights = await test([
+            { delay: 50, stallTimeout: 1000, priority: 1, weight: 2 },
+            { delay: 50, stallTimeout: 1000, priority: 1, weight: 2 },
+        ], 2);
+
+        // Make sure there is never more than 1 inflight provider at once
+        for (const running of inflights) {
+            assert.ok(running.length <= 1, `too many inflight requests: ${ JSON.stringify(inflights) }`);
+        }
+    });
+
+    // @TODO: add lots more tests, checking on priority, weight and stall
+    //        configurations
 });

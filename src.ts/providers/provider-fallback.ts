@@ -684,7 +684,7 @@ export class FallbackProvider extends AbstractProvider {
         // Add any new runners, because a staller timed out or a result
         // or error response came in.
         for (let i = 0; i < newRunners; i++) {
-            this.#addRunner(running, req)
+            this.#addRunner(running, req);
         }
 
         // All providers have returned, and we have no result
@@ -759,8 +759,12 @@ export class FallbackProvider extends AbstractProvider {
 
         // Bootstrap enough runners to meet quorum
         const running: Set<RunnerState> = new Set();
-        for (let i = 0; i < this.quorum; i++) {
-            this.#addRunner(running, req);
+        let inflightQuorum = 0;
+        while (true) {
+            const runner = this.#addRunner(running, req);
+            if (runner == null) { break; }
+            inflightQuorum += runner.config.weight;
+            if (inflightQuorum >= this.quorum) { break; }
         }
 
         const result = await this.#waitForQuorum(running, req);
