@@ -645,7 +645,6 @@ export class ParamType {
             result += `[${ (this.arrayLength < 0 ? "": String(this.arrayLength)) }]`;
         } else {
             if (this.isTuple()) {
-                if (format !== "sighash") { result += this.type; }
                 result += "(" + this.components.map(
                     (comp) => comp.format(format)
                 ).join((format === "full") ? ", ": ",") + ")";
