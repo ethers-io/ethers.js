@@ -419,6 +419,10 @@ function injectCommonNetworks(): void {
     });
     registerEth("arbitrum-goerli", 421613, { });
 
+    registerEth("base", 8453, { ensNetwork: 1 });
+    registerEth("base-goerli", 84531, { });
+    registerEth("base-sepolia", 84532, { });
+
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, { });
 
