@@ -3,7 +3,7 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.9.0 (2023-11-27 06:07)
+ethers/v6.9.0 (2023-11-27 06:15)
 --------------------------------
 
   - Use provider-specified suggested priority fee when available, otherwise fallback onto existing logic of 1 gwei ([#4463](https://github.com/ethers-io/ethers.js/issues/4463); [f8f11c7](https://github.com/ethers-io/ethers.js/commit/f8f11c754aa2c9b541db73d3bde66a8ffa5146f0)).
