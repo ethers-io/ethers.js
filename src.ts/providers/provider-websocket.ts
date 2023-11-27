@@ -4,6 +4,7 @@ import { WebSocket as _WebSocket } from "./ws.js"; /*-browser*/
 
 import { SocketProvider } from "./provider-socket.js";
 
+import type { JsonRpcApiProviderOptions} from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
 
 /**
@@ -45,8 +46,8 @@ export class WebSocketProvider extends SocketProvider {
         return this.#websocket;
     }
 
-    constructor(url: string | WebSocketLike | WebSocketCreator, network?: Networkish) {
-        super(network);
+    constructor(url: string | WebSocketLike | WebSocketCreator, network?: Networkish, options?: JsonRpcApiProviderOptions) {
+        super(network, options);
         if (typeof(url) === "string") {
             this.#connect = () => { return new _WebSocket(url); };
             this.#websocket = this.#connect();

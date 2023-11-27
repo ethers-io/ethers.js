@@ -190,7 +190,7 @@ export type DebugEventJsonRpcApiProvider = {
  */
 export type JsonRpcApiProviderOptions = {
     polling?: boolean;
-    staticNetwork?: null | Network;
+    staticNetwork?: null | boolean | Network;
     batchStallTime?: number;
     batchMaxSize?: number;
     batchMaxCount?: number;
@@ -463,6 +463,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     };
 
     #network: null | Network;
+    #pendingDetectNetwork: null | Promise<Network>;
 
     #scheduleDrain(): void {
         if (this.#drainTimer) { return; }
@@ -554,6 +555,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         this.#drainTimer = null;
 
         this.#network = null;
+        this.#pendingDetectNetwork = null;
 
         {
             let resolve: null | ((value: void) => void) = null;
@@ -563,9 +565,15 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             this.#notReady = { promise, resolve };
         }
 
-        // Make sure any static network is compatbile with the provided netwrok
         const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork) {
+        if (typeof(staticNetwork) === "boolean") {
+            assertArgument(!staticNetwork || network !== "any", "staticNetwork cannot be used on special network 'any'", "options", options);
+            if (staticNetwork && network != null) {
+                this.#network = Network.from(network);
+            }
+
+        } else if (staticNetwork) {
+            // Make sure any static network is compatbile with the provided netwrok
             assertArgument(network == null || staticNetwork.matches(network),
                 "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
@@ -641,36 +649,56 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
      */
     async _detectNetwork(): Promise<Network> {
         const network = this._getOption("staticNetwork");
-        if (network) { return network; }
+        if (network) {
+            if (network === true) {
+                if (this.#network) { return this.#network; }
+            } else {
+                return network;
+            }
+        }
+
+        if (this.#pendingDetectNetwork) {
+            return await this.#pendingDetectNetwork;
+        }
 
         // If we are ready, use ``send``, which enabled requests to be batched
         if (this.ready) {
-            return Network.from(getBigInt(await this.send("eth_chainId", [ ])));
+            this.#pendingDetectNetwork = (async () => {
+                const result = Network.from(getBigInt(await this.send("eth_chainId", [ ])));
+                this.#pendingDetectNetwork = null;
+                return result;
+            })();
+            return await this.#pendingDetectNetwork;
         }
 
         // We are not ready yet; use the primitive _send
+        this.#pendingDetectNetwork = (async () => {
+            const payload: JsonRpcPayload = {
+                id: this.#nextId++, method: "eth_chainId", params: [ ], jsonrpc: "2.0"
+            };
 
-        const payload: JsonRpcPayload = {
-            id: this.#nextId++, method: "eth_chainId", params: [ ], jsonrpc: "2.0"
-        };
+            this.emit("debug", { action: "sendRpcPayload", payload });
 
-        this.emit("debug", { action: "sendRpcPayload", payload });
+            let result: JsonRpcResult | JsonRpcError;
+            try {
+                result = (await this._send(payload))[0];
+                this.#pendingDetectNetwork = null;
+            } catch (error) {
+                this.#pendingDetectNetwork = null;
+                this.emit("debug", { action: "receiveRpcError", error });
+                throw error;
+            }
 
-        let result: JsonRpcResult | JsonRpcError;
-        try {
-            result = (await this._send(payload))[0];
-        } catch (error) {
-            this.emit("debug", { action: "receiveRpcError", error });
-            throw error;
-        }
+            this.emit("debug", { action: "receiveRpcResult", result });
 
-        this.emit("debug", { action: "receiveRpcResult", result });
+            if ("result" in result) {
+                return Network.from(getBigInt(result.result));
+            }
 
-        if ("result" in result) {
-            return Network.from(getBigInt(result.result));
-        }
+            throw this.getRpcError(payload, result);
+        })();
 
-        throw this.getRpcError(payload, result);
+        return await this.#pendingDetectNetwork;
     }
 
     /**

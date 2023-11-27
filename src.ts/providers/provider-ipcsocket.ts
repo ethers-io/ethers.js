@@ -3,6 +3,8 @@ import { connect } from "net";
 import { SocketProvider } from "./provider-socket.js";
 
 import type { Socket } from "net";
+
+import type { JsonRpcApiProviderOptions } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
 
 
@@ -35,8 +37,8 @@ export class IpcSocketProvider extends SocketProvider {
      */
     get socket(): Socket { return this.#socket; }
 
-    constructor(path: string, network?: Networkish) {
-        super(network);
+    constructor(path: string, network?: Networkish, options?: JsonRpcApiProviderOptions) {
+        super(network, options);
         this.#socket = connect(path);
 
         this.socket.on("ready", async () => {
