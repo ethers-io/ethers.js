@@ -384,6 +384,8 @@ export type PerformActionRequest = {
     method: "getLogs",
     filter: PerformActionFilter
 } | {
+    method: "getPriorityFee"
+} | {
     method: "getStorage",
     address: string, position: bigint, blockTag: BlockTag
 } | {
@@ -906,14 +908,21 @@ export class AbstractProvider implements Provider {
         const network = await this.getNetwork();
 
         const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await resolveProperties({
+            const { _block, gasPrice, priorityFee } = await resolveProperties({
                 _block: this.#getBlock("latest", false),
                 gasPrice: ((async () => {
                     try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return getBigInt(gasPrice, "%response");
+                        const value = await this.#perform({ method: "getGasPrice" });
+                        return getBigInt(value, "%response");
                     } catch (error) { }
                     return null
+                })()),
+                priorityFee: ((async () => {
+                    try {
+                        const value = await this.#perform({ method: "getPriorityFee" });
+                        return getBigInt(value, "%response");
+                    } catch (error) { }
+                    return null;
                 })())
             });
 
@@ -923,7 +932,7 @@ export class AbstractProvider implements Provider {
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
+                maxPriorityFeePerGas = (priorityFee != null) ? priorityFee: BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
             }
 
