@@ -4,7 +4,7 @@
  *
  *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
  */
-import { getBigInt, getNumber, assert, assertArgument } from "../utils/index.js";
+import { assert, assertArgument, getBigInt, getNumber, isError } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 const BN_1 = BigInt("1");
@@ -298,6 +298,8 @@ export class FallbackProvider extends AbstractProvider {
                 return await provider.getCode(req.address, req.blockTag);
             case "getGasPrice":
                 return (await provider.getFeeData()).gasPrice;
+            case "getPriorityFee":
+                return (await provider.getFeeData()).maxPriorityFeePerGas;
             case "getLogs":
                 return await provider.getLogs(req.filter);
             case "getStorage":
@@ -443,6 +445,7 @@ export class FallbackProvider extends AbstractProvider {
                 return this.#height;
             }
             case "getGasPrice":
+            case "getPriorityFee":
             case "estimateGas":
                 return getMedian(this.quorum, results);
             case "getBlock":
@@ -524,15 +527,46 @@ export class FallbackProvider extends AbstractProvider {
         // a cost on the user, so spamming is safe-ish. Just send it to
         // every backend.
         if (req.method === "broadcastTransaction") {
-            const results = await Promise.all(this.#configs.map(async ({ provider, weight }) => {
+            // Once any broadcast provides a positive result, use it. No
+            // need to wait for anyone else
+            const results = this.#configs.map((c) => null);
+            const broadcasts = this.#configs.map(async ({ provider, weight }, index) => {
                 try {
                     const result = await provider._perform(req);
-                    return Object.assign(normalizeResult({ result }), { weight });
+                    results[index] = Object.assign(normalizeResult({ result }), { weight });
                 }
                 catch (error) {
-                    return Object.assign(normalizeResult({ error }), { weight });
+                    results[index] = Object.assign(normalizeResult({ error }), { weight });
                 }
-            }));
+            });
+            // As each promise finishes...
+            while (true) {
+                // Check for a valid broadcast result
+                const done = results.filter((r) => (r != null));
+                for (const { value } of done) {
+                    if (!(value instanceof Error)) {
+                        return value;
+                    }
+                }
+                // Check for a legit broadcast error (one which we cannot
+                // recover from; some nodes may return the following red
+                // herring events:
+                // - alredy seend (UNKNOWN_ERROR)
+                // - NONCE_EXPIRED
+                // - REPLACEMENT_UNDERPRICED
+                const result = checkQuorum(this.quorum, results.filter((r) => (r != null)));
+                if (isError(result, "INSUFFICIENT_FUNDS")) {
+                    throw result;
+                }
+                // Kick off the next provider (if any)
+                const waiting = broadcasts.filter((b, i) => (results[i] == null));
+                if (waiting.length === 0) {
+                    break;
+                }
+                await Promise.race(waiting);
+            }
+            // Use standard quorum results; any result was returned above,
+            // so this will find any error that met quorum if any
             const result = getAnyResult(this.quorum, results);
             assert(result !== undefined, "problem multi-broadcasting", "SERVER_ERROR", {
                 request: "%sub-requests",
@@ -546,8 +580,16 @@ export class FallbackProvider extends AbstractProvider {
         await this.#initialSync();
         // Bootstrap enough runners to meet quorum
         const running = new Set();
-        for (let i = 0; i < this.quorum; i++) {
-            this.#addRunner(running, req);
+        let inflightQuorum = 0;
+        while (true) {
+            const runner = this.#addRunner(running, req);
+            if (runner == null) {
+                break;
+            }
+            inflightQuorum += runner.config.weight;
+            if (inflightQuorum >= this.quorum) {
+                break;
+            }
         }
         const result = await this.#waitForQuorum(running, req);
         // Track requests sent to a provider that are still

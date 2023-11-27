@@ -215,6 +215,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
     #drainTimer;
     #notReady;
     #network;
+    #pendingDetectNetwork;
     #scheduleDrain() {
         if (this.#drainTimer) {
             return;
@@ -290,6 +291,7 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         this.#payloads = [];
         this.#drainTimer = null;
         this.#network = null;
+        this.#pendingDetectNetwork = null;
         {
             let resolve = null;
             const promise = new Promise((_resolve) => {
@@ -297,9 +299,15 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             });
             this.#notReady = { promise, resolve };
         }
-        // Make sure any static network is compatbile with the provided netwrok
         const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork) {
+        if (typeof (staticNetwork) === "boolean") {
+            (0, index_js_5.assertArgument)(!staticNetwork || network !== "any", "staticNetwork cannot be used on special network 'any'", "options", options);
+            if (staticNetwork && network != null) {
+                this.#network = network_js_1.Network.from(network);
+            }
+        }
+        else if (staticNetwork) {
+            // Make sure any static network is compatbile with the provided netwrok
             (0, index_js_5.assertArgument)(network == null || staticNetwork.matches(network), "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
         }
@@ -360,30 +368,50 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
     async _detectNetwork() {
         const network = this._getOption("staticNetwork");
         if (network) {
-            return network;
+            if (network === true) {
+                if (this.#network) {
+                    return this.#network;
+                }
+            }
+            else {
+                return network;
+            }
+        }
+        if (this.#pendingDetectNetwork) {
+            return await this.#pendingDetectNetwork;
         }
         // If we are ready, use ``send``, which enabled requests to be batched
         if (this.ready) {
-            return network_js_1.Network.from((0, index_js_5.getBigInt)(await this.send("eth_chainId", [])));
+            this.#pendingDetectNetwork = (async () => {
+                const result = network_js_1.Network.from((0, index_js_5.getBigInt)(await this.send("eth_chainId", [])));
+                this.#pendingDetectNetwork = null;
+                return result;
+            })();
+            return await this.#pendingDetectNetwork;
         }
         // We are not ready yet; use the primitive _send
-        const payload = {
-            id: this.#nextId++, method: "eth_chainId", params: [], jsonrpc: "2.0"
-        };
-        this.emit("debug", { action: "sendRpcPayload", payload });
-        let result;
-        try {
-            result = (await this._send(payload))[0];
-        }
-        catch (error) {
-            this.emit("debug", { action: "receiveRpcError", error });
-            throw error;
-        }
-        this.emit("debug", { action: "receiveRpcResult", result });
-        if ("result" in result) {
-            return network_js_1.Network.from((0, index_js_5.getBigInt)(result.result));
-        }
-        throw this.getRpcError(payload, result);
+        this.#pendingDetectNetwork = (async () => {
+            const payload = {
+                id: this.#nextId++, method: "eth_chainId", params: [], jsonrpc: "2.0"
+            };
+            this.emit("debug", { action: "sendRpcPayload", payload });
+            let result;
+            try {
+                result = (await this._send(payload))[0];
+                this.#pendingDetectNetwork = null;
+            }
+            catch (error) {
+                this.#pendingDetectNetwork = null;
+                this.emit("debug", { action: "receiveRpcError", error });
+                throw error;
+            }
+            this.emit("debug", { action: "receiveRpcResult", result });
+            if ("result" in result) {
+                return network_js_1.Network.from((0, index_js_5.getBigInt)(result.result));
+            }
+            throw this.getRpcError(payload, result);
+        })();
+        return await this.#pendingDetectNetwork;
     }
     /**
      *  Sub-classes **MUST** call this. Until [[_start]] has been called, no calls
@@ -499,6 +527,8 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                 return { method: "eth_blockNumber", args: [] };
             case "getGasPrice":
                 return { method: "eth_gasPrice", args: [] };
+            case "getPriorityFee":
+                return { method: "eth_maxPriorityFeePerGas", args: [] };
             case "getBalance":
                 return {
                     method: "eth_getBalance",

@@ -458,9 +458,6 @@ class ParamType {
         }
         else {
             if (this.isTuple()) {
-                if (format !== "sighash") {
-                    result += this.type;
-                }
                 result += "(" + this.components.map((comp) => comp.format(format)).join((format === "full") ? ", " : ",") + ")";
             }
             else {

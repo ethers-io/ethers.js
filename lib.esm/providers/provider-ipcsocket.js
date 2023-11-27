@@ -26,8 +26,8 @@ export class IpcSocketProvider extends SocketProvider {
      *  The connected socket.
      */
     get socket() { return this.#socket; }
-    constructor(path, network) {
-        super(network);
+    constructor(path, network, options) {
+        super(network, options);
         this.#socket = connect(path);
         this.socket.on("ready", async () => {
             try {

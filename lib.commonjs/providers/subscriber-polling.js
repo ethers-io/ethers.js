@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PollingEventSubscriber = exports.PollingTransactionSubscriber = exports.PollingOrphanSubscriber = exports.OnBlockSubscriber = exports.PollingBlockSubscriber = exports.getPollingSubscriber = void 0;
+exports.PollingEventSubscriber = exports.PollingTransactionSubscriber = exports.PollingOrphanSubscriber = exports.PollingBlockTagSubscriber = exports.OnBlockSubscriber = exports.PollingBlockSubscriber = exports.getPollingSubscriber = void 0;
 const index_js_1 = require("../utils/index.js");
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
@@ -151,6 +151,35 @@ class OnBlockSubscriber {
     resume() { this.start(); }
 }
 exports.OnBlockSubscriber = OnBlockSubscriber;
+class PollingBlockTagSubscriber extends OnBlockSubscriber {
+    #tag;
+    #lastBlock;
+    constructor(provider, tag) {
+        super(provider);
+        this.#tag = tag;
+        this.#lastBlock = -2;
+    }
+    pause(dropWhilePaused) {
+        if (dropWhilePaused) {
+            this.#lastBlock = -2;
+        }
+        super.pause(dropWhilePaused);
+    }
+    async _poll(blockNumber, provider) {
+        const block = await provider.getBlock(this.#tag);
+        if (block == null) {
+            return;
+        }
+        if (this.#lastBlock === -2) {
+            this.#lastBlock = block.number;
+        }
+        else if (block.number > this.#lastBlock) {
+            provider.emit(this.#tag, block.number);
+            this.#lastBlock = block.number;
+        }
+    }
+}
+exports.PollingBlockTagSubscriber = PollingBlockTagSubscriber;
 /**
  *  @_ignore:
  *

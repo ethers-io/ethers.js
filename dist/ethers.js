@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.8.1";
+const version = "6.9.0";
 
 /**
  *  Property helper functions.
@@ -11335,9 +11335,6 @@ class ParamType {
         }
         else {
             if (this.isTuple()) {
-                if (format !== "sighash") {
-                    result += this.type;
-                }
                 result += "(" + this.components.map((comp) => comp.format(format)).join((format === "full") ? ", " : ",") + ")";
             }
             else {
@@ -17176,23 +17173,6 @@ function getGasStationPlugin(url) {
         }
     });
 }
-// Used by Optimism for a custom priority fee
-function getPriorityFeePlugin(maxPriorityFeePerGas) {
-    return new FetchUrlFeeDataNetworkPlugin("data:", async (fetchFeeData, provider, request) => {
-        const feeData = await fetchFeeData();
-        // This should always fail
-        if (feeData.maxFeePerGas == null || feeData.maxPriorityFeePerGas == null) {
-            return feeData;
-        }
-        // Compute the corrected baseFee to recompute the updated values
-        const baseFee = feeData.maxFeePerGas - feeData.maxPriorityFeePerGas;
-        return {
-            gasPrice: feeData.gasPrice,
-            maxFeePerGas: (baseFee + maxPriorityFeePerGas),
-            maxPriorityFeePerGas
-        };
-    });
-}
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks() {
@@ -17235,6 +17215,9 @@ function injectCommonNetworks() {
         ensNetwork: 1,
     });
     registerEth("arbitrum-goerli", 421613, {});
+    registerEth("base", 8453, { ensNetwork: 1 });
+    registerEth("base-goerli", 84531, {});
+    registerEth("base-sepolia", 84532, {});
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, {});
     registerEth("linea", 59144, { ensNetwork: 1 });
@@ -17253,9 +17236,7 @@ function injectCommonNetworks() {
     });
     registerEth("optimism", 10, {
         ensNetwork: 1,
-        plugins: [
-            getPriorityFeePlugin(BigInt("1000000"))
-        ]
+        plugins: []
     });
     registerEth("optimism-goerli", 420, {});
     registerEth("xdai", 100, { ensNetwork: 1 });
@@ -17390,6 +17371,34 @@ class OnBlockSubscriber {
     }
     pause(dropWhilePaused) { this.stop(); }
     resume() { this.start(); }
+}
+class PollingBlockTagSubscriber extends OnBlockSubscriber {
+    #tag;
+    #lastBlock;
+    constructor(provider, tag) {
+        super(provider);
+        this.#tag = tag;
+        this.#lastBlock = -2;
+    }
+    pause(dropWhilePaused) {
+        if (dropWhilePaused) {
+            this.#lastBlock = -2;
+        }
+        super.pause(dropWhilePaused);
+    }
+    async _poll(blockNumber, provider) {
+        const block = await provider.getBlock(this.#tag);
+        if (block == null) {
+            return;
+        }
+        if (this.#lastBlock === -2) {
+            this.#lastBlock = block.number;
+        }
+        else if (block.number > this.#lastBlock) {
+            provider.emit(this.#tag, block.number);
+            this.#lastBlock = block.number;
+        }
+    }
 }
 /**
  *  @_ignore:
@@ -17589,10 +17598,12 @@ async function getSubscription(_event, provider) {
     if (typeof (_event) === "string") {
         switch (_event) {
             case "block":
-            case "pending":
             case "debug":
             case "error":
-            case "network": {
+            case "finalized":
+            case "network":
+            case "pending":
+            case "safe": {
                 return { type: _event, tag: _event };
             }
         }
@@ -17890,10 +17901,10 @@ class AbstractProvider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
+            case "finalized":
             case "latest":
             case "pending":
             case "safe":
-            case "finalized":
                 return blockTag;
         }
         if (isHexString(blockTag)) {
@@ -18076,12 +18087,20 @@ class AbstractProvider {
     async getFeeData() {
         const network = await this.getNetwork();
         const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await resolveProperties({
+            const { _block, gasPrice, priorityFee } = await resolveProperties({
                 _block: this.#getBlock("latest", false),
                 gasPrice: ((async () => {
                     try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return getBigInt(gasPrice, "%response");
+                        const value = await this.#perform({ method: "getGasPrice" });
+                        return getBigInt(value, "%response");
+                    }
+                    catch (error) { }
+                    return null;
+                })()),
+                priorityFee: ((async () => {
+                    try {
+                        const value = await this.#perform({ method: "getPriorityFee" });
+                        return getBigInt(value, "%response");
                     }
                     catch (error) { }
                     return null;
@@ -18092,7 +18111,7 @@ class AbstractProvider {
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
+                maxPriorityFeePerGas = (priorityFee != null) ? priorityFee : BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2$1) + maxPriorityFeePerGas;
             }
             return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
@@ -18470,6 +18489,9 @@ class AbstractProvider {
                 subscriber.pollingInterval = this.pollingInterval;
                 return subscriber;
             }
+            case "safe":
+            case "finalized":
+                return new PollingBlockTagSubscriber(this, sub.type);
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":
@@ -19500,6 +19522,7 @@ class JsonRpcApiProvider extends AbstractProvider {
     #drainTimer;
     #notReady;
     #network;
+    #pendingDetectNetwork;
     #scheduleDrain() {
         if (this.#drainTimer) {
             return;
@@ -19575,6 +19598,7 @@ class JsonRpcApiProvider extends AbstractProvider {
         this.#payloads = [];
         this.#drainTimer = null;
         this.#network = null;
+        this.#pendingDetectNetwork = null;
         {
             let resolve = null;
             const promise = new Promise((_resolve) => {
@@ -19582,9 +19606,15 @@ class JsonRpcApiProvider extends AbstractProvider {
             });
             this.#notReady = { promise, resolve };
         }
-        // Make sure any static network is compatbile with the provided netwrok
         const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork) {
+        if (typeof (staticNetwork) === "boolean") {
+            assertArgument(!staticNetwork || network !== "any", "staticNetwork cannot be used on special network 'any'", "options", options);
+            if (staticNetwork && network != null) {
+                this.#network = Network.from(network);
+            }
+        }
+        else if (staticNetwork) {
+            // Make sure any static network is compatbile with the provided netwrok
             assertArgument(network == null || staticNetwork.matches(network), "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
         }
@@ -19645,30 +19675,50 @@ class JsonRpcApiProvider extends AbstractProvider {
     async _detectNetwork() {
         const network = this._getOption("staticNetwork");
         if (network) {
-            return network;
+            if (network === true) {
+                if (this.#network) {
+                    return this.#network;
+                }
+            }
+            else {
+                return network;
+            }
+        }
+        if (this.#pendingDetectNetwork) {
+            return await this.#pendingDetectNetwork;
         }
         // If we are ready, use ``send``, which enabled requests to be batched
         if (this.ready) {
-            return Network.from(getBigInt(await this.send("eth_chainId", [])));
+            this.#pendingDetectNetwork = (async () => {
+                const result = Network.from(getBigInt(await this.send("eth_chainId", [])));
+                this.#pendingDetectNetwork = null;
+                return result;
+            })();
+            return await this.#pendingDetectNetwork;
         }
         // We are not ready yet; use the primitive _send
-        const payload = {
-            id: this.#nextId++, method: "eth_chainId", params: [], jsonrpc: "2.0"
-        };
-        this.emit("debug", { action: "sendRpcPayload", payload });
-        let result;
-        try {
-            result = (await this._send(payload))[0];
-        }
-        catch (error) {
-            this.emit("debug", { action: "receiveRpcError", error });
-            throw error;
-        }
-        this.emit("debug", { action: "receiveRpcResult", result });
-        if ("result" in result) {
-            return Network.from(getBigInt(result.result));
-        }
-        throw this.getRpcError(payload, result);
+        this.#pendingDetectNetwork = (async () => {
+            const payload = {
+                id: this.#nextId++, method: "eth_chainId", params: [], jsonrpc: "2.0"
+            };
+            this.emit("debug", { action: "sendRpcPayload", payload });
+            let result;
+            try {
+                result = (await this._send(payload))[0];
+                this.#pendingDetectNetwork = null;
+            }
+            catch (error) {
+                this.#pendingDetectNetwork = null;
+                this.emit("debug", { action: "receiveRpcError", error });
+                throw error;
+            }
+            this.emit("debug", { action: "receiveRpcResult", result });
+            if ("result" in result) {
+                return Network.from(getBigInt(result.result));
+            }
+            throw this.getRpcError(payload, result);
+        })();
+        return await this.#pendingDetectNetwork;
     }
     /**
      *  Sub-classes **MUST** call this. Until [[_start]] has been called, no calls
@@ -19784,6 +19834,8 @@ class JsonRpcApiProvider extends AbstractProvider {
                 return { method: "eth_blockNumber", args: [] };
             case "getGasPrice":
                 return { method: "eth_gasPrice", args: [] };
+            case "getPriorityFee":
+                return { method: "eth_maxPriorityFeePerGas", args: [] };
             case "getBalance":
                 return {
                     method: "eth_getBalance",
@@ -20277,6 +20329,10 @@ function getHost$3(name) {
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":
             return "arb-goerli.g.alchemy.com";
+        case "base":
+            return "base-mainnet.g.alchemy.com";
+        case "base-goerli":
+            return "base-goerli.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
         case "matic-mumbai":
@@ -20725,6 +20781,44 @@ class EtherscanProvider extends AbstractProvider {
                 return this.fetch("proxy", { action: "eth_blockNumber" });
             case "getGasPrice":
                 return this.fetch("proxy", { action: "eth_gasPrice" });
+            case "getPriorityFee":
+                // This is temporary until Etherscan completes support
+                if (this.network.name === "mainnet") {
+                    return "1000000000";
+                }
+                else if (this.network.name === "optimism") {
+                    return "1000000";
+                }
+                else {
+                    throw new Error("fallback onto the AbstractProvider default");
+                }
+            /* Working with Etherscan to get this added:
+            try {
+                const test = await this.fetch("proxy", {
+                    action: "eth_maxPriorityFeePerGas"
+                });
+                console.log(test);
+                return test;
+            } catch (e) {
+                console.log("DEBUG", e);
+                throw e;
+            }
+            */
+            /* This might be safe; but due to rounding neither myself
+               or Etherscan are necessarily comfortable with this. :)
+            try {
+                const result = await this.fetch("gastracker", { action: "gasoracle" });
+                console.log(result);
+                const gasPrice = parseUnits(result.SafeGasPrice, "gwei");
+                const baseFee = parseUnits(result.suggestBaseFee, "gwei");
+                const priorityFee = gasPrice - baseFee;
+                if (priorityFee < 0) { throw new Error("negative priority fee; defer to abstract provider default"); }
+                return priorityFee;
+            } catch (error) {
+                console.log("DEBUG", error);
+                throw error;
+            }
+            */
             case "getBalance":
                 // Returns base-10 result
                 return this.fetch("account", {
@@ -21015,8 +21109,21 @@ class SocketProvider extends JsonRpcApiProvider {
      *
      *  If unspecified, the network will be discovered.
      */
-    constructor(network) {
-        super(network, { batchMaxCount: 1 });
+    constructor(network, _options) {
+        // Copy the options
+        const options = Object.assign({}, (_options != null) ? _options : {});
+        // Support for batches is generally not supported for
+        // connection-base providers; if this changes in the future
+        // the _send should be updated to reflect this
+        assertArgument(options.batchMaxCount == null || options.batchMaxCount === 1, "sockets-based providers do not support batches", "options.batchMaxCount", _options);
+        options.batchMaxCount = 1;
+        // Socket-based Providers (generally) cannot change their network,
+        // since they have a long-lived connection; but let people override
+        // this if they have just cause.
+        if (options.staticNetwork == null) {
+            options.staticNetwork = true;
+        }
+        super(network, options);
         this.#callbacks = new Map();
         this.#subs = new Map();
         this.#pending = new Map();
@@ -21160,8 +21267,8 @@ class WebSocketProvider extends SocketProvider {
         }
         return this.#websocket;
     }
-    constructor(url, network) {
-        super(network);
+    constructor(url, network, options) {
+        super(network, options);
         if (typeof (url) === "string") {
             this.#connect = () => { return new _WebSocket(url); };
             this.#websocket = this.#connect();
@@ -21778,6 +21885,8 @@ class FallbackProvider extends AbstractProvider {
                 return await provider.getCode(req.address, req.blockTag);
             case "getGasPrice":
                 return (await provider.getFeeData()).gasPrice;
+            case "getPriorityFee":
+                return (await provider.getFeeData()).maxPriorityFeePerGas;
             case "getLogs":
                 return await provider.getLogs(req.filter);
             case "getStorage":
@@ -21923,6 +22032,7 @@ class FallbackProvider extends AbstractProvider {
                 return this.#height;
             }
             case "getGasPrice":
+            case "getPriorityFee":
             case "estimateGas":
                 return getMedian(this.quorum, results);
             case "getBlock":
@@ -22004,15 +22114,46 @@ class FallbackProvider extends AbstractProvider {
         // a cost on the user, so spamming is safe-ish. Just send it to
         // every backend.
         if (req.method === "broadcastTransaction") {
-            const results = await Promise.all(this.#configs.map(async ({ provider, weight }) => {
+            // Once any broadcast provides a positive result, use it. No
+            // need to wait for anyone else
+            const results = this.#configs.map((c) => null);
+            const broadcasts = this.#configs.map(async ({ provider, weight }, index) => {
                 try {
                     const result = await provider._perform(req);
-                    return Object.assign(normalizeResult({ result }), { weight });
+                    results[index] = Object.assign(normalizeResult({ result }), { weight });
                 }
                 catch (error) {
-                    return Object.assign(normalizeResult({ error }), { weight });
+                    results[index] = Object.assign(normalizeResult({ error }), { weight });
                 }
-            }));
+            });
+            // As each promise finishes...
+            while (true) {
+                // Check for a valid broadcast result
+                const done = results.filter((r) => (r != null));
+                for (const { value } of done) {
+                    if (!(value instanceof Error)) {
+                        return value;
+                    }
+                }
+                // Check for a legit broadcast error (one which we cannot
+                // recover from; some nodes may return the following red
+                // herring events:
+                // - alredy seend (UNKNOWN_ERROR)
+                // - NONCE_EXPIRED
+                // - REPLACEMENT_UNDERPRICED
+                const result = checkQuorum(this.quorum, results.filter((r) => (r != null)));
+                if (isError(result, "INSUFFICIENT_FUNDS")) {
+                    throw result;
+                }
+                // Kick off the next provider (if any)
+                const waiting = broadcasts.filter((b, i) => (results[i] == null));
+                if (waiting.length === 0) {
+                    break;
+                }
+                await Promise.race(waiting);
+            }
+            // Use standard quorum results; any result was returned above,
+            // so this will find any error that met quorum if any
             const result = getAnyResult(this.quorum, results);
             assert(result !== undefined, "problem multi-broadcasting", "SERVER_ERROR", {
                 request: "%sub-requests",
@@ -22026,8 +22167,16 @@ class FallbackProvider extends AbstractProvider {
         await this.#initialSync();
         // Bootstrap enough runners to meet quorum
         const running = new Set();
-        for (let i = 0; i < this.quorum; i++) {
-            this.#addRunner(running, req);
+        let inflightQuorum = 0;
+        while (true) {
+            const runner = this.#addRunner(running, req);
+            if (runner == null) {
+                break;
+            }
+            inflightQuorum += runner.config.weight;
+            if (inflightQuorum >= this.quorum) {
+                break;
+            }
         }
         const result = await this.#waitForQuorum(running, req);
         // Track requests sent to a provider that are still

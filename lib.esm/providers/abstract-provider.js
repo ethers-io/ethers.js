@@ -22,7 +22,7 @@ import { EnsResolver } from "./ens-resolver.js";
 import { formatBlock, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
 import { Network } from "./network.js";
 import { copyRequest, Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
-import { PollingBlockSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber } from "./subscriber-polling.js";
+import { PollingBlockSubscriber, PollingBlockTagSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber } from "./subscriber-polling.js";
 // Constants
 const BN_2 = BigInt(2);
 const MAX_CCIP_REDIRECTS = 10;
@@ -90,10 +90,12 @@ async function getSubscription(_event, provider) {
     if (typeof (_event) === "string") {
         switch (_event) {
             case "block":
-            case "pending":
             case "debug":
             case "error":
-            case "network": {
+            case "finalized":
+            case "network":
+            case "pending":
+            case "safe": {
                 return { type: _event, tag: _event };
             }
         }
@@ -391,10 +393,10 @@ export class AbstractProvider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
+            case "finalized":
             case "latest":
             case "pending":
             case "safe":
-            case "finalized":
                 return blockTag;
         }
         if (isHexString(blockTag)) {
@@ -577,12 +579,20 @@ export class AbstractProvider {
     async getFeeData() {
         const network = await this.getNetwork();
         const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await resolveProperties({
+            const { _block, gasPrice, priorityFee } = await resolveProperties({
                 _block: this.#getBlock("latest", false),
                 gasPrice: ((async () => {
                     try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return getBigInt(gasPrice, "%response");
+                        const value = await this.#perform({ method: "getGasPrice" });
+                        return getBigInt(value, "%response");
+                    }
+                    catch (error) { }
+                    return null;
+                })()),
+                priorityFee: ((async () => {
+                    try {
+                        const value = await this.#perform({ method: "getPriorityFee" });
+                        return getBigInt(value, "%response");
                     }
                     catch (error) { }
                     return null;
@@ -593,7 +603,7 @@ export class AbstractProvider {
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
+                maxPriorityFeePerGas = (priorityFee != null) ? priorityFee : BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
             }
             return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
@@ -971,6 +981,9 @@ export class AbstractProvider {
                 subscriber.pollingInterval = this.pollingInterval;
                 return subscriber;
             }
+            case "safe":
+            case "finalized":
+                return new PollingBlockTagSubscriber(this, sub.type);
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":

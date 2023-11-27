@@ -1,4 +1,5 @@
 import { SocketProvider } from "./provider-socket.js";
+import type { JsonRpcApiProviderOptions } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
 /**
  *  A generic interface to a Websocket-like object.
@@ -29,7 +30,7 @@ export type WebSocketCreator = () => WebSocketLike;
 export declare class WebSocketProvider extends SocketProvider {
     #private;
     get websocket(): WebSocketLike;
-    constructor(url: string | WebSocketLike | WebSocketCreator, network?: Networkish);
+    constructor(url: string | WebSocketLike | WebSocketCreator, network?: Networkish, options?: JsonRpcApiProviderOptions);
     _write(message: string): Promise<void>;
     destroy(): Promise<void>;
 }

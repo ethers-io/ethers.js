@@ -287,23 +287,6 @@ function getGasStationPlugin(url) {
         }
     });
 }
-// Used by Optimism for a custom priority fee
-function getPriorityFeePlugin(maxPriorityFeePerGas) {
-    return new FetchUrlFeeDataNetworkPlugin("data:", async (fetchFeeData, provider, request) => {
-        const feeData = await fetchFeeData();
-        // This should always fail
-        if (feeData.maxFeePerGas == null || feeData.maxPriorityFeePerGas == null) {
-            return feeData;
-        }
-        // Compute the corrected baseFee to recompute the updated values
-        const baseFee = feeData.maxFeePerGas - feeData.maxPriorityFeePerGas;
-        return {
-            gasPrice: feeData.gasPrice,
-            maxFeePerGas: (baseFee + maxPriorityFeePerGas),
-            maxPriorityFeePerGas
-        };
-    });
-}
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks() {
@@ -346,6 +329,9 @@ function injectCommonNetworks() {
         ensNetwork: 1,
     });
     registerEth("arbitrum-goerli", 421613, {});
+    registerEth("base", 8453, { ensNetwork: 1 });
+    registerEth("base-goerli", 84531, {});
+    registerEth("base-sepolia", 84532, {});
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, {});
     registerEth("linea", 59144, { ensNetwork: 1 });
@@ -364,9 +350,7 @@ function injectCommonNetworks() {
     });
     registerEth("optimism", 10, {
         ensNetwork: 1,
-        plugins: [
-            getPriorityFeePlugin(BigInt("1000000"))
-        ]
+        plugins: []
     });
     registerEth("optimism-goerli", 420, {});
     registerEth("xdai", 100, { ensNetwork: 1 });

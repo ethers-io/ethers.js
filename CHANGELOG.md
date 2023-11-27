@@ -3,6 +3,17 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.9.0 (2023-11-27 06:07)
+--------------------------------
+
+  - Use provider-specified suggested priority fee when available, otherwise fallback onto existing logic of 1 gwei ([#4463](https://github.com/ethers-io/ethers.js/issues/4463); [f8f11c7](https://github.com/ethers-io/ethers.js/commit/f8f11c754aa2c9b541db73d3bde66a8ffa5146f0)).
+  - Add auto-detected static network support to providers and allow customizing socket provider options ([#4199](https://github.com/ethers-io/ethers.js/issues/4199), [#4418](https://github.com/ethers-io/ethers.js/issues/4418), [#4441](https://github.com/ethers-io/ethers.js/issues/4441); [4681b83](https://github.com/ethers-io/ethers.js/commit/4681b83d516ab2eb41ddb68b5021c97e14c6f2cf)).
+  - Added Base network to AlchemyProvider ([#4384](https://github.com/ethers-io/ethers.js/issues/4384); [9e74d14](https://github.com/ethers-io/ethers.js/commit/9e74d14432e6efebdff21b9a7d2e6143af55e143)).
+  - Fixed ParamType formatting causing bad tuple full and minimal ABI output ([#4329](https://github.com/ethers-io/ethers.js/issues/4329), [#4479](https://github.com/ethers-io/ethers.js/issues/4479); [2b67488](https://github.com/ethers-io/ethers.js/commit/2b6748815169abf2c99a647131875c13b8b6a787)).
+  - Adjust for provider config weight when kicking off a request in FallbackProvider ([#4298](https://github.com/ethers-io/ethers.js/issues/4298); [da34e35](https://github.com/ethers-io/ethers.js/commit/da34e3569e95357d9469209d926cb645f0750bfa)).
+  - More robust FallbackProvider broadcast ([#4186](https://github.com/ethers-io/ethers.js/issues/4186), [#4297](https://github.com/ethers-io/ethers.js/issues/4297), [#4442](https://github.com/ethers-io/ethers.js/issues/4442); [e2485b8](https://github.com/ethers-io/ethers.js/commit/e2485b8ef927d18c7a15d2d29b3b0feffec9991a)).
+  - Added safe and finalized provider events ([#3921](https://github.com/ethers-io/ethers.js/issues/3921); [a92766e](https://github.com/ethers-io/ethers.js/commit/a92766e56ad04185625037d84fc28adaac7fae8c)).
+
 ethers/v6.8.1 (2023-11-01 16:08)
 --------------------------------
 

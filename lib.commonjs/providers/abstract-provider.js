@@ -94,10 +94,12 @@ async function getSubscription(_event, provider) {
     if (typeof (_event) === "string") {
         switch (_event) {
             case "block":
-            case "pending":
             case "debug":
             case "error":
-            case "network": {
+            case "finalized":
+            case "network":
+            case "pending":
+            case "safe": {
                 return { type: _event, tag: _event };
             }
         }
@@ -395,10 +397,10 @@ class AbstractProvider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
+            case "finalized":
             case "latest":
             case "pending":
             case "safe":
-            case "finalized":
                 return blockTag;
         }
         if ((0, index_js_6.isHexString)(blockTag)) {
@@ -581,12 +583,20 @@ class AbstractProvider {
     async getFeeData() {
         const network = await this.getNetwork();
         const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await (0, index_js_6.resolveProperties)({
+            const { _block, gasPrice, priorityFee } = await (0, index_js_6.resolveProperties)({
                 _block: this.#getBlock("latest", false),
                 gasPrice: ((async () => {
                     try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return (0, index_js_6.getBigInt)(gasPrice, "%response");
+                        const value = await this.#perform({ method: "getGasPrice" });
+                        return (0, index_js_6.getBigInt)(value, "%response");
+                    }
+                    catch (error) { }
+                    return null;
+                })()),
+                priorityFee: ((async () => {
+                    try {
+                        const value = await this.#perform({ method: "getPriorityFee" });
+                        return (0, index_js_6.getBigInt)(value, "%response");
                     }
                     catch (error) { }
                     return null;
@@ -597,7 +607,7 @@ class AbstractProvider {
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
+                maxPriorityFeePerGas = (priorityFee != null) ? priorityFee : BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
             }
             return new provider_js_1.FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
@@ -975,6 +985,9 @@ class AbstractProvider {
                 subscriber.pollingInterval = this.pollingInterval;
                 return subscriber;
             }
+            case "safe":
+            case "finalized":
+                return new subscriber_polling_js_1.PollingBlockTagSubscriber(this, sub.type);
             case "event":
                 return new subscriber_polling_js_1.PollingEventSubscriber(this, sub.filter);
             case "transaction":

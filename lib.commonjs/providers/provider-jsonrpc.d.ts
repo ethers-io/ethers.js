@@ -117,7 +117,7 @@ export type DebugEventJsonRpcApiProvider = {
  */
 export type JsonRpcApiProviderOptions = {
     polling?: boolean;
-    staticNetwork?: null | Network;
+    staticNetwork?: null | boolean | Network;
     batchStallTime?: number;
     batchMaxSize?: number;
     batchMaxCount?: number;

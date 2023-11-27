@@ -23,6 +23,10 @@ function getHost(name) {
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":
             return "arb-goerli.g.alchemy.com";
+        case "base":
+            return "base-mainnet.g.alchemy.com";
+        case "base-goerli":
+            return "base-goerli.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
         case "matic-mumbai":

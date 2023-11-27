@@ -20,7 +20,9 @@
 import { AbiCoder } from "../abi/index.js";
 import { Contract } from "../contract/index.js";
 import { accessListify, Transaction } from "../transaction/index.js";
-import { defineProperties, hexlify, toQuantity, FetchRequest, assert, assertArgument, isError, toUtf8String } from "../utils/index.js";
+import { defineProperties, hexlify, toQuantity, FetchRequest, assert, assertArgument, isError, 
+//    parseUnits,
+toUtf8String } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import { NetworkPlugin } from "./plugins-network.js";
@@ -342,6 +344,44 @@ export class EtherscanProvider extends AbstractProvider {
                 return this.fetch("proxy", { action: "eth_blockNumber" });
             case "getGasPrice":
                 return this.fetch("proxy", { action: "eth_gasPrice" });
+            case "getPriorityFee":
+                // This is temporary until Etherscan completes support
+                if (this.network.name === "mainnet") {
+                    return "1000000000";
+                }
+                else if (this.network.name === "optimism") {
+                    return "1000000";
+                }
+                else {
+                    throw new Error("fallback onto the AbstractProvider default");
+                }
+            /* Working with Etherscan to get this added:
+            try {
+                const test = await this.fetch("proxy", {
+                    action: "eth_maxPriorityFeePerGas"
+                });
+                console.log(test);
+                return test;
+            } catch (e) {
+                console.log("DEBUG", e);
+                throw e;
+            }
+            */
+            /* This might be safe; but due to rounding neither myself
+               or Etherscan are necessarily comfortable with this. :)
+            try {
+                const result = await this.fetch("gastracker", { action: "gasoracle" });
+                console.log(result);
+                const gasPrice = parseUnits(result.SafeGasPrice, "gwei");
+                const baseFee = parseUnits(result.suggestBaseFee, "gwei");
+                const priorityFee = gasPrice - baseFee;
+                if (priorityFee < 0) { throw new Error("negative priority fee; defer to abstract provider default"); }
+                return priorityFee;
+            } catch (error) {
+                console.log("DEBUG", error);
+                throw error;
+            }
+            */
             case "getBalance":
                 // Returns base-10 result
                 return this.fetch("account", {
