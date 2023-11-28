@@ -411,7 +411,7 @@ export class FallbackProvider extends AbstractProvider {
         this.eventWorkers = 1;
 
         assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0),
-            "quorum exceed provider wieght", "quorum", this.quorum);
+            "quorum exceed provider weight", "quorum", this.quorum);
     }
 
     get providerConfigs(): Array<FallbackProviderState> {
