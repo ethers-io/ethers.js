@@ -156,7 +156,7 @@ you can use the [[JsonRpcProvider]] directly, which communicates
 using the [[link-jsonrpc]] protocol.
 
 When using your own Ethereum node or a developer-base blockchain,
-such as Hardhat or Ganache, you can get access the accounts with
+such as Hardhat or Ganache, you can get access to the accounts with
 [[JsonRpcProvider-getSigner]].
 
 _code: connecting to a JSON-RPC URL  @lang<script>
