@@ -236,6 +236,7 @@ export class EnsResolver {
             ];
 
             funcName = "resolve(bytes,bytes)";
+            fragment = null;
         }
 
         params.push({
