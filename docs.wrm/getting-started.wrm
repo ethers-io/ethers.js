@@ -129,8 +129,8 @@ _code:  @lang<script>
 
       // If MetaMask is not installed, we use the default provider,
       // which is backed by a variety of third-party services (such
-      // as INFURA). They do not have private keys installed so are
-      // only have read-only access
+      // as INFURA). They do not have private keys installed,
+      // so they only have read-only access
       console.log("MetaMask not installed; using read-only defaults")
       provider = ethers.getDefaultProvider()
 
@@ -156,7 +156,7 @@ you can use the [[JsonRpcProvider]] directly, which communicates
 using the [[link-jsonrpc]] protocol.
 
 When using your own Ethereum node or a developer-base blockchain,
-such as Hardhat or Ganache, you can get access the accounts with
+such as Hardhat or Ganache, you can get access to the accounts with
 [[JsonRpcProvider-getSigner]].
 
 _code: connecting to a JSON-RPC URL  @lang<script>
@@ -177,7 +177,7 @@ results when performing mathematic operations.
 
 As a result, the internal units used (e.g. wei) which are suited for
 machine-readable purposes and maths are often very large and not
-terribly human-readable.
+easily human-readable.
 
 For example, imagine dealing with dollars and cents; you would show
 values like ``"$2.56"``. In the blockchain world, we would keep all
