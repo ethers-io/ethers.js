@@ -209,12 +209,24 @@ export function toBeHex(_value: BigNumberish, _width?: Numeric): string {
  *  Converts %%value%% to a Big Endian Uint8Array.
  */
 export function toBeArray(_value: BigNumberish): Uint8Array {
+    let leftPadZeroCount = 0;
+    if (typeof _value === "string") {
+        _value = _value.replace("0x", "");
+        for (let i = 0; i < _value.length; i++) {
+            if (_value[i] === "0") {
+                leftPadZeroCount++;
+            } else {
+                break;
+            }
+        }
+    }
+
     const value = getUint(_value, "value");
 
     if (value === BN_0) { return new Uint8Array([ ]); }
 
     let hex = value.toString(16);
-    if (hex.length % 2) { hex = "0" + hex; }
+    hex = "0".repeat(leftPadZeroCount) + hex
 
     const result = new Uint8Array(hex.length / 2);
     for (let i = 0; i < result.length; i++) {
