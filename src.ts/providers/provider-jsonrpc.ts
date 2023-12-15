@@ -374,7 +374,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
                 // Wait another 4 seconds
                 this.provider._setTimeout(() => { checkTx(); }, timeouts.pop() || 4000);
             };
-            checkTx();
+            checkTx().catch(reject);
         }));
     }
 
