@@ -365,7 +365,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
             const timeouts = [ 1000, 100 ];
             const checkTx = async () => {
                 // Try getting the transaction
-                const tx = await this.provider.getTransaction(hash);
+                const tx = await this.provider.getTransaction(hash).catch(reject);
                 if (tx != null) {
                     resolve(tx.replaceableTransaction(blockNumber));
                     return;
@@ -374,7 +374,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
                 // Wait another 4 seconds
                 this.provider._setTimeout(() => { checkTx(); }, timeouts.pop() || 4000);
             };
-            checkTx().catch(reject);
+            checkTx();
         }));
     }
 
