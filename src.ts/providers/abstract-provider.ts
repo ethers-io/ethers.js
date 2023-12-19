@@ -862,16 +862,18 @@ export class AbstractProvider implements Provider {
         if (this.#networkPromise == null) {
 
             // Detect the current network (shared with all calls)
-            const detectNetwork = this._detectNetwork().then((network) => {
-                this.emit("network", network, null);
-                return network;
-            }, (error) => {
-                // Reset the networkPromise on failure, so we will try again
-                if (this.#networkPromise === detectNetwork) {
-                    this.#networkPromise = null;
+            const detectNetwork = (async () => {
+                try {
+                    const network = await this._detectNetwork();
+                    this.emit("network", network, null);
+                    return network;
+                } catch (error) {
+                    if (this.#networkPromise === detectNetwork!) {
+                        this.#networkPromise = null;
+                    }
+                    throw error;
                 }
-                throw error;
-            });
+            })();
 
             this.#networkPromise = detectNetwork;
             return (await detectNetwork).clone();

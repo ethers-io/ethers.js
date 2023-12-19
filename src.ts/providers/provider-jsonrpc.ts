@@ -21,7 +21,7 @@ import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes,
-    makeError, assert, assertArgument,
+    isError, makeError, assert, assertArgument,
     FetchRequest, resolveProperties
 } from "../utils/index.js";
 
@@ -40,7 +40,6 @@ import type { Provider, TransactionRequest, TransactionResponse } from "./provid
 import type { Signer } from "./signer.js";
 
 type Timer = ReturnType<typeof setTimeout>;
-
 
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
@@ -363,12 +362,49 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         // for it; it should show up very quickly
         return await (new Promise((resolve, reject) => {
             const timeouts = [ 1000, 100 ];
+            let invalids = 0;
+
             const checkTx = async () => {
-                // Try getting the transaction
-                const tx = await this.provider.getTransaction(hash);
-                if (tx != null) {
-                    resolve(tx.replaceableTransaction(blockNumber));
-                    return;
+
+                try {
+                    // Try getting the transaction
+                    const tx = await this.provider.getTransaction(hash);
+
+                    if (tx != null) {
+                        resolve(tx.replaceableTransaction(blockNumber));
+                        return;
+                    }
+
+                } catch (error) {
+
+                    // If we were cancelled: stop polling.
+                    // If the data is bad: the node returns bad transactions
+                    // If the network changed: calling again will also fail
+                    // If unsupported: likely destroyed
+                    if (isError(error, "CANCELLED") || isError(error, "BAD_DATA") ||
+                        isError(error, "NETWORK_ERROR" || isError(error, "UNSUPPORTED_OPERATION"))) {
+
+                        if (error.info == null) { error.info = { }; }
+                        error.info.sendTransactionHash = hash;
+
+                        reject(error);
+                        return;
+                    }
+
+                    // Stop-gap for misbehaving backends; see #4513
+                    if (isError(error, "INVALID_ARGUMENT")) {
+                        invalids++;
+                        if (error.info == null) { error.info = { }; }
+                        error.info.sendTransactionHash = hash;
+                        if (invalids > 10) {
+                            reject(error);
+                            return;
+                        }
+                    }
+
+                    // Notify anyone that cares; but we will try again, since
+                    // it is likely an intermittent service error
+                    this.provider.emit("error", makeError("failed to fetch transation after sending (will try again)", "UNKNOWN_ERROR", { error }));
                 }
 
                 // Wait another 4 seconds
@@ -468,7 +504,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     #scheduleDrain(): void {
         if (this.#drainTimer) { return; }
 
-        // If we aren't using batching, no hard in sending it immeidately
+        // If we aren't using batching, no harm in sending it immediately
         const stallTime = (this._getOption("batchMaxCount") === 1) ? 0: this._getOption("batchStallTime");
 
         this.#drainTimer = setTimeout(() => {
@@ -613,6 +649,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
      *  and should generally call ``super._perform`` as a fallback.
      */
     async _perform(req: PerformActionRequest): Promise<any> {
+
         // Legacy networks do not like the type field being passed along (which
         // is fair), so we delete type if it is 0 and a non-EIP-1559 network
         if (req.method === "call" || req.method === "estimateGas") {
@@ -664,9 +701,14 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         // If we are ready, use ``send``, which enabled requests to be batched
         if (this.ready) {
             this.#pendingDetectNetwork = (async () => {
-                const result = Network.from(getBigInt(await this.send("eth_chainId", [ ])));
-                this.#pendingDetectNetwork = null;
-                return result;
+                try {
+                    const result = Network.from(getBigInt(await this.send("eth_chainId", [ ])));
+                    this.#pendingDetectNetwork = null;
+                    return result;
+                } catch (error) {
+                    this.#pendingDetectNetwork = null;
+                    throw error;
+                }
             })();
             return await this.#pendingDetectNetwork;
         }
@@ -1186,7 +1228,6 @@ export class JsonRpcProvider extends JsonRpcApiPollingProvider {
         const request = this._getConnection();
         request.body = JSON.stringify(payload);
         request.setHeader("content-type", "application/json");
-
         const response = await request.send();
         response.assertOk();
 
