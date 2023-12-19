@@ -16,7 +16,7 @@ import { AbiCoder } from "../abi/index.js";
 import { getAddress, resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
 import { accessListify } from "../transaction/index.js";
-import { defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes, makeError, assert, assertArgument, FetchRequest, resolveProperties } from "../utils/index.js";
+import { defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes, isError, makeError, assert, assertArgument, FetchRequest, resolveProperties } from "../utils/index.js";
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 import { AbstractSigner } from "./abstract-signer.js";
 import { Network } from "./network.js";
@@ -133,12 +133,45 @@ export class JsonRpcSigner extends AbstractSigner {
         // for it; it should show up very quickly
         return await (new Promise((resolve, reject) => {
             const timeouts = [1000, 100];
+            let invalids = 0;
             const checkTx = async () => {
-                // Try getting the transaction
-                const tx = await this.provider.getTransaction(hash);
-                if (tx != null) {
-                    resolve(tx.replaceableTransaction(blockNumber));
-                    return;
+                try {
+                    // Try getting the transaction
+                    const tx = await this.provider.getTransaction(hash);
+                    if (tx != null) {
+                        resolve(tx.replaceableTransaction(blockNumber));
+                        return;
+                    }
+                }
+                catch (error) {
+                    // If we were cancelled: stop polling.
+                    // If the data is bad: the node returns bad transactions
+                    // If the network changed: calling again will also fail
+                    // If unsupported: likely destroyed
+                    if (isError(error, "CANCELLED") || isError(error, "BAD_DATA") ||
+                        isError(error, "NETWORK_ERROR" || isError(error, "UNSUPPORTED_OPERATION"))) {
+                        if (error.info == null) {
+                            error.info = {};
+                        }
+                        error.info.sendTransactionHash = hash;
+                        reject(error);
+                        return;
+                    }
+                    // Stop-gap for misbehaving backends; see #4513
+                    if (isError(error, "INVALID_ARGUMENT")) {
+                        invalids++;
+                        if (error.info == null) {
+                            error.info = {};
+                        }
+                        error.info.sendTransactionHash = hash;
+                        if (invalids > 10) {
+                            reject(error);
+                            return;
+                        }
+                    }
+                    // Notify anyone that cares; but we will try again, since
+                    // it is likely an intermittent service error
+                    this.provider.emit("error", makeError("failed to fetch transation after sending (will try again)", "UNKNOWN_ERROR", { error }));
                 }
                 // Wait another 4 seconds
                 this.provider._setTimeout(() => { checkTx(); }, timeouts.pop() || 4000);
@@ -216,7 +249,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
         if (this.#drainTimer) {
             return;
         }
-        // If we aren't using batching, no hard in sending it immeidately
+        // If we aren't using batching, no harm in sending it immediately
         const stallTime = (this._getOption("batchMaxCount") === 1) ? 0 : this._getOption("batchStallTime");
         this.#drainTimer = setTimeout(() => {
             this.#drainTimer = null;
@@ -379,9 +412,15 @@ export class JsonRpcApiProvider extends AbstractProvider {
         // If we are ready, use ``send``, which enabled requests to be batched
         if (this.ready) {
             this.#pendingDetectNetwork = (async () => {
-                const result = Network.from(getBigInt(await this.send("eth_chainId", [])));
-                this.#pendingDetectNetwork = null;
-                return result;
+                try {
+                    const result = Network.from(getBigInt(await this.send("eth_chainId", [])));
+                    this.#pendingDetectNetwork = null;
+                    return result;
+                }
+                catch (error) {
+                    this.#pendingDetectNetwork = null;
+                    throw error;
+                }
             })();
             return await this.#pendingDetectNetwork;
         }

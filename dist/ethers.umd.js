@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.9.0";
+    const version = "6.9.1";
 
     /**
      *  Property helper functions.
@@ -18054,16 +18054,19 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // No explicit network was set and this is our first time
             if (this.#networkPromise == null) {
                 // Detect the current network (shared with all calls)
-                const detectNetwork = this._detectNetwork().then((network) => {
-                    this.emit("network", network, null);
-                    return network;
-                }, (error) => {
-                    // Reset the networkPromise on failure, so we will try again
-                    if (this.#networkPromise === detectNetwork) {
-                        this.#networkPromise = null;
+                const detectNetwork = (async () => {
+                    try {
+                        const network = await this._detectNetwork();
+                        this.emit("network", network, null);
+                        return network;
                     }
-                    throw error;
-                });
+                    catch (error) {
+                        if (this.#networkPromise === detectNetwork) {
+                            this.#networkPromise = null;
+                        }
+                        throw error;
+                    }
+                })();
                 this.#networkPromise = detectNetwork;
                 return (await detectNetwork).clone();
             }
@@ -19450,12 +19453,45 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // for it; it should show up very quickly
             return await (new Promise((resolve, reject) => {
                 const timeouts = [1000, 100];
+                let invalids = 0;
                 const checkTx = async () => {
-                    // Try getting the transaction
-                    const tx = await this.provider.getTransaction(hash);
-                    if (tx != null) {
-                        resolve(tx.replaceableTransaction(blockNumber));
-                        return;
+                    try {
+                        // Try getting the transaction
+                        const tx = await this.provider.getTransaction(hash);
+                        if (tx != null) {
+                            resolve(tx.replaceableTransaction(blockNumber));
+                            return;
+                        }
+                    }
+                    catch (error) {
+                        // If we were cancelled: stop polling.
+                        // If the data is bad: the node returns bad transactions
+                        // If the network changed: calling again will also fail
+                        // If unsupported: likely destroyed
+                        if (isError(error, "CANCELLED") || isError(error, "BAD_DATA") ||
+                            isError(error, "NETWORK_ERROR" )) {
+                            if (error.info == null) {
+                                error.info = {};
+                            }
+                            error.info.sendTransactionHash = hash;
+                            reject(error);
+                            return;
+                        }
+                        // Stop-gap for misbehaving backends; see #4513
+                        if (isError(error, "INVALID_ARGUMENT")) {
+                            invalids++;
+                            if (error.info == null) {
+                                error.info = {};
+                            }
+                            error.info.sendTransactionHash = hash;
+                            if (invalids > 10) {
+                                reject(error);
+                                return;
+                            }
+                        }
+                        // Notify anyone that cares; but we will try again, since
+                        // it is likely an intermittent service error
+                        this.provider.emit("error", makeError("failed to fetch transation after sending (will try again)", "UNKNOWN_ERROR", { error }));
                     }
                     // Wait another 4 seconds
                     this.provider._setTimeout(() => { checkTx(); }, timeouts.pop() || 4000);
@@ -19533,7 +19569,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (this.#drainTimer) {
                 return;
             }
-            // If we aren't using batching, no hard in sending it immeidately
+            // If we aren't using batching, no harm in sending it immediately
             const stallTime = (this._getOption("batchMaxCount") === 1) ? 0 : this._getOption("batchStallTime");
             this.#drainTimer = setTimeout(() => {
                 this.#drainTimer = null;
@@ -19696,9 +19732,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // If we are ready, use ``send``, which enabled requests to be batched
             if (this.ready) {
                 this.#pendingDetectNetwork = (async () => {
-                    const result = Network.from(getBigInt(await this.send("eth_chainId", [])));
-                    this.#pendingDetectNetwork = null;
-                    return result;
+                    try {
+                        const result = Network.from(getBigInt(await this.send("eth_chainId", [])));
+                        this.#pendingDetectNetwork = null;
+                        return result;
+                    }
+                    catch (error) {
+                        this.#pendingDetectNetwork = null;
+                        throw error;
+                    }
                 })();
                 return await this.#pendingDetectNetwork;
             }

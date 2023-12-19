@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.9.1 (2023-12-19 04:53)
+--------------------------------
+
+  - Fix uncatchable issue when sending transactions over JSON-RPC and provide some retry-recovery for missing v ([#4513](https://github.com/ethers-io/ethers.js/issues/4513); [1802215](https://github.com/ethers-io/ethers.js/commit/180221574c5d2af9ad85404af4fab8752d3d5029)).
+
 ethers/v6.9.0 (2023-11-27 06:15)
 --------------------------------
 

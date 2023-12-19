@@ -93,7 +93,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "f8f11c754aa2c9b541db73d3bde66a8ffa5146f0",
+  "gitHead": "180221574c5d2af9ad85404af4fab8752d3d5029",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -128,8 +128,8 @@
     "test-browser": "node lib.esm/_admin/test-browser",
     "test-commonjs": "mocha --reporter ./reporter.cjs ./lib.commonjs/_tests/test-*.js",
     "test-coverage": "c8 -o output -r lcov -r text mocha --no-color --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js | tee output/summary.txt",
-    "test-esm": "mocha --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js"
+    "test-esm": "mocha --trace-warnings --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js"
   },
   "sideEffects": false,
-  "version": "6.9.0"
+  "version": "6.9.1"
 }
