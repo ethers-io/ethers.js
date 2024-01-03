@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.9.1";
+const version = "6.9.2";
 
 /**
  *  Property helper functions.
@@ -695,11 +695,19 @@ const BN_58 = BigInt(58);
  *  Encode %%value%% as a Base58-encoded string.
  */
 function encodeBase58(_value) {
-    let value = toBigInt(getBytes(_value));
+    const bytes = getBytes(_value);
+    let value = toBigInt(bytes);
     let result = "";
     while (value) {
         result = Alphabet[Number(value % BN_58)] + result;
         value /= BN_58;
+    }
+    // Account for leading padding zeros
+    for (let i = 0; i < bytes.length; i++) {
+        if (bytes[i]) {
+            break;
+        }
+        result = Alphabet[0] + result;
     }
     return result;
 }

@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.9.2 (2024-01-02 19:12)
+--------------------------------
+
+  - Fix Base58 padding for string representation of binary data ([#4527](https://github.com/ethers-io/ethers.js/issues/4527); [ccac24a](https://github.com/ethers-io/ethers.js/commit/ccac24a5b0a4d07a4b639c1c4d0a44703e32d418)).
+
 ethers/v6.9.1 (2023-12-19 04:53)
 --------------------------------
 
