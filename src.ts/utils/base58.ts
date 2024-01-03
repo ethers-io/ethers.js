@@ -42,12 +42,21 @@ const BN_58 = BigInt(58);
  *  Encode %%value%% as a Base58-encoded string.
  */
 export function encodeBase58(_value: BytesLike): string {
-    let value = toBigInt(getBytes(_value));
+    const bytes = getBytes(_value);
+
+    let value = toBigInt(bytes);
     let result = "";
     while (value) {
         result = Alphabet[Number(value % BN_58)] + result;
         value /= BN_58;
     }
+
+    // Account for leading padding zeros
+    for (let i = 0; i < bytes.length; i++) {
+        if (bytes[i]) { break; }
+        result = Alphabet[0] + result;
+    }
+
     return result;
 }
 
