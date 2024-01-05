@@ -13838,7 +13838,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         break;
                     }
                     else {
-                        if (v.hash === hash) {
+                        if (v.hash !== hash) {
                             continue;
                         }
                         tx = v;
@@ -14732,7 +14732,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return { orphan: "drop-transaction", tx };
     }
     function createRemovedLogFilter(log) {
-        return { orphan: "drop-log", log: {
+        return {
+            orphan: "drop-log", log: {
                 transactionHash: log.transactionHash,
                 blockHash: log.blockHash,
                 blockNumber: log.blockNumber,
@@ -14740,7 +14741,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 data: log.data,
                 topics: Object.freeze(log.topics.slice()),
                 index: log.index
-            } };
+            }
+        };
     }
 
     // import from provider.ts instead of index.ts to prevent circular dep
