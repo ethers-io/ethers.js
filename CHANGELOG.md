@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.10.0 (2024-01-12 19:46)
+---------------------------------
+
+  - Limit decoded result imflation ratio from ABI-encoded data ([#4537](https://github.com/ethers-io/ethers.js/issues/4537); [1b4debd](https://github.com/ethers-io/ethers.js/commit/1b4debd4a9e61d171bfc60590116facb8bdbd2da)).
+
 ethers/v6.9.2 (2024-01-02 19:12)
 --------------------------------
 

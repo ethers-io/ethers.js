@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.9.2";
+const version = "6.10.0";
 
 /**
  *  Property helper functions.
@@ -2970,15 +2970,35 @@ class Reader {
     allowLoose;
     #data;
     #offset;
-    constructor(data, allowLoose) {
+    #bytesRead;
+    #parent;
+    #maxInflation;
+    constructor(data, allowLoose, maxInflation) {
         defineProperties(this, { allowLoose: !!allowLoose });
         this.#data = getBytesCopy(data);
+        this.#bytesRead = 0;
+        this.#parent = null;
+        this.#maxInflation = (maxInflation != null) ? maxInflation : 1024;
         this.#offset = 0;
     }
     get data() { return hexlify(this.#data); }
     get dataLength() { return this.#data.length; }
     get consumed() { return this.#offset; }
     get bytes() { return new Uint8Array(this.#data); }
+    #incrementBytesRead(count) {
+        if (this.#parent) {
+            return this.#parent.#incrementBytesRead(count);
+        }
+        this.#bytesRead += count;
+        // Check for excessive inflation (see: #4537)
+        assert(this.#maxInflation < 1 || this.#bytesRead <= this.#maxInflation * this.dataLength, `compressed ABI data exceeds inflation ratio of ${this.#maxInflation} ( see: https:/\/github.com/ethers-io/ethers.js/issues/4537 )`, "BUFFER_OVERRUN", {
+            buffer: getBytesCopy(this.#data), offset: this.#offset,
+            length: count, info: {
+                bytesRead: this.#bytesRead,
+                dataLength: this.dataLength
+            }
+        });
+    }
     #peekBytes(offset, length, loose) {
         let alignedLength = Math.ceil(length / WordSize) * WordSize;
         if (this.#offset + alignedLength > this.#data.length) {
@@ -2997,11 +3017,14 @@ class Reader {
     }
     // Create a sub-reader with the same underlying data, but offset
     subReader(offset) {
-        return new Reader(this.#data.slice(this.#offset + offset), this.allowLoose);
+        const reader = new Reader(this.#data.slice(this.#offset + offset), this.allowLoose, this.#maxInflation);
+        reader.#parent = this;
+        return reader;
     }
     // Read bytes
     readBytes(length, loose) {
         let bytes = this.#peekBytes(0, length, !!loose);
+        this.#incrementBytesRead(length);
         this.#offset += bytes.length;
         // @TODO: Make sure the length..end bytes are all 0?
         return bytes.slice(0, length);
@@ -12232,6 +12255,7 @@ PanicReasons$1.set(0x51, "UNINITIALIZED_FUNCTION_CALL");
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 let defaultCoder = null;
+let defaultMaxInflation = 1024;
 function getBuiltinCallException(action, tx, data, abiCoder) {
     let message = "missing revert data";
     let reason = null;
@@ -12368,7 +12392,11 @@ class AbiCoder {
     decode(types, data, loose) {
         const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(new Reader(data, loose));
+        return coder.decode(new Reader(data, loose, defaultMaxInflation));
+    }
+    static _setDefaultMaxInflation(value) {
+        assertArgument(typeof (value) === "number" && Number.isInteger(value), "invalid defaultMaxInflation factor", "value", value);
+        defaultMaxInflation = value;
     }
     /**
      *  Returns the shared singleton instance of a default [[AbiCoder]].
