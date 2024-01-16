@@ -3,12 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.10.1 (2024-01-15 23:07)
+ethers/v6.10.1 (2024-01-16 17:43)
 ---------------------------------
 
   - Updated third-party provider network URLs ([#4542](https://github.com/ethers-io/ethers.js/issues/4542); [84ca14f](https://github.com/ethers-io/ethers.js/commit/84ca14f1ffc5afbdd7f4c26a9b734ec5951eee3c)).
   - Added additional sepolia testnets ([4efef76](https://github.com/ethers-io/ethers.js/commit/4efef76e8cab0acaf1b2ba231a0148f9381bb1ee)).
-  - Fix EIP-712 type aliases for uint and int ([#4541](https://github.com/ethers-io/ethers.js/issues/4541); [43fb9c2](https://github.com/ethers-io/ethers.js/commit/43fb9c233696aeaa80b1c2b0e5fafce90e0ad508)).
+  - Fix EIP-712 type aliases for uint and int ([#4541](https://github.com/ethers-io/ethers.js/issues/4541); [43fb9c2](https://github.com/ethers-io/ethers.js/commit/43fb9c233696aeaa80b1c2b0e5fafce90e0ad508), [8f99601](https://github.com/ethers-io/ethers.js/commit/8f99601df1f26a8ba4d6d9dea5e033e7f688107e)).
   - Fixed typo in Error string ([#4539](https://github.com/ethers-io/ethers.js/issues/4539); [7882905](https://github.com/ethers-io/ethers.js/commit/78829050853093bc5291ae78fc5a904044759aa0)).
   - Better debugging output on fetch errors ([bee07a0](https://github.com/ethers-io/ethers.js/commit/bee07a0750b448a9d13c2d57014bcf27f43e2ed7)).
 
