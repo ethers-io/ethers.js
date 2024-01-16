@@ -68,6 +68,66 @@ describe("Tests Typed Data (EIP-712) aliases", function() {
             },
             encoded: "0xa272ada5f88085e4cb18acdb87bd057a8cbfec249fee53de0149409080947cf500000000000000000000000000000000000000000000000000000000000000231c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8"
         },
+        {
+            name: "array-uint",
+            types: {
+                foo: [
+                    { name: "a", type: "uint256[]" },
+                    { name: "b", type: "string" },
+                ],
+            },
+            typesAlias: {
+                foo: [
+                    { name: "a", type: "uint[]" },
+                    { name: "b", type: "string" },
+                ],
+            },
+            data: {
+                a: [ 35, 36, 37 ],
+                b: "hello"
+            },
+            encoded: "0x1a961843d0002bdd66ec21afd6e4a5b0aac34a4b6112890378c6e3a38b752e0b0c22b846886e98aeffc1f1166d4b35868da4d4da853dcb3b2856cfc233fd10c81c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8"
+        },
+        {
+            name: "array-int",
+            types: {
+                foo: [
+                    { name: "a", type: "int256[]" },
+                    { name: "b", type: "string" },
+                ],
+            },
+            typesAlias: {
+                foo: [
+                    { name: "a", type: "int[]" },
+                    { name: "b", type: "string" },
+                ],
+            },
+            data: {
+                a: [ 35, 36, 37 ],
+                b: "hello"
+            },
+            encoded: "0x0b89085a01a3b67d2231c6a136f9c8eea75d7d479a83a127356f8540ee15af010c22b846886e98aeffc1f1166d4b35868da4d4da853dcb3b2856cfc233fd10c81c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8"
+        },
+        {
+            name: "nested-array-uint",
+            types: {
+                foo: [
+                    { name: "a", type: "uint256[][]" },
+                    { name: "b", type: "string" },
+                ],
+            },
+            typesAlias: {
+                foo: [
+                    { name: "a", type: "uint[][]" },
+                    { name: "b", type: "string" },
+                ],
+            },
+            data: {
+                a: [ [ 35, 36 ], [ 37 ] ],
+                b: "hello"
+            },
+            encoded: "0x5efa7c4b66979cf78fcc7c3e71cbfa04ec2c7529002642082bf20a91552c1147fa5ffe3a0504d850bc7c9eeda1cf960b596b73f4dc0272a6fa89dace08e320291c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8"
+        },
     ];
 
     for (const test of tests) {

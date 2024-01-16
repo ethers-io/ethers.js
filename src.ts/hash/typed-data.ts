@@ -181,6 +181,35 @@ function encodeType(name: string, fields: Array<TypedDataField>): string {
     return `${ name }(${ fields.map(({ name, type }) => (type + " " + name)).join(",") })`;
 }
 
+type ArrayResult = {
+    base: string;         // The base type
+    index?: string;       // the full Index (if any)
+    array?: {             // The Array... (if index)
+        base: string;     // ...base type (same as above)
+        prefix: string;   // ...sans the final Index
+        count: number;    // ...the final Index (-1 for dynamic)
+    }
+};
+
+// foo[][3] => { base: "foo", index: "[][3]", array: {
+//     base: "foo", prefix: "foo[]", count: 3 } }
+function splitArray(type: string): ArrayResult {
+    const match = type.match(/^([^\x5b]*)((\x5b\d*\x5d)*)(\x5b(\d*)\x5d)$/);
+    if (match) {
+        return {
+            base: match[1],
+            index: (match[2] + match[4]),
+            array: {
+                base: match[1],
+                prefix: (match[1] + match[2]),
+                count: (match[5] ? parseInt(match[5]): -1),
+            }
+        };
+    }
+
+    return { base: type };
+}
+
 /**
  *  A **TypedDataEncode** prepares and encodes [[link-eip-712]] payloads
  *  for signed typed data.
@@ -235,11 +264,14 @@ export class TypedDataEncoder {
 
         const types: Record<string, Array<TypedDataField>> = { };
         Object.keys(_types).forEach((type) => {
-            // Normalize int/uint unless they are a complex type themselves
             types[type] = _types[type].map(({ name, type }) => {
-                if (type === "int" && !_types["int"]) { type = "int256"; }
-                if (type === "uint" && !_types["uint"]) { type = "uint256"; }
-                return { name, type };
+
+                // Normalize the base type (unless name conflict)
+                let { base, index } = splitArray(type);
+                if (base === "int" && !_types["int"]) { base = "int256"; }
+                if (base === "uint" && !_types["uint"]) { base = "uint256"; }
+
+                return { name, type: (base + (index || "")) };
             });
 
             links.set(type, new Set());
@@ -258,7 +290,7 @@ export class TypedDataEncoder {
                 uniqueNames.add(field.name);
 
                 // Get the base type (drop any array specifiers)
-                const baseType = (<any>(field.type.match(/^([^\x5b]*)(\x5b|$)/)))[1] || null;
+                const baseType = splitArray(field.type).base;
                 assertArgument(baseType !== name, `circular type reference to ${ JSON.stringify(baseType) }`, "types", _types);
 
                 // Is this a base encoding type?
@@ -331,12 +363,12 @@ export class TypedDataEncoder {
         }
 
         // Array
-        const match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
-        if (match) {
-            const subtype = match[1];
+        const array = splitArray(type).array;
+        if (array) {
+            const subtype = array.prefix;
             const subEncoder = this.getEncoder(subtype);
             return (value: Array<any>) => {
-                assertArgument(!match[3] || parseInt(match[3]) === value.length, `array length mismatch; expected length ${ parseInt(match[3]) }`, "value", value);
+                assertArgument(array.count === -1 || array.count === value.length, `array length mismatch; expected length ${ array.count }`, "value", value);
 
                 let result = value.map(subEncoder);
                 if (this.#fullTypes.has(subtype)) {
@@ -413,10 +445,10 @@ export class TypedDataEncoder {
         }
 
         // Array
-        const match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
-        if (match) {
-            assertArgument(!match[3] || parseInt(match[3]) === value.length, `array length mismatch; expected length ${ parseInt(match[3]) }`, "value", value);
-            return value.map((v: any) => this._visit(match[1], v, callback));
+        const array = splitArray(type).array;
+        if (array) {
+            assertArgument(array.count === -1 || array.count === value.length, `array length mismatch; expected length ${ array.count }`, "value", value);
+            return value.map((v: any) => this._visit(array.prefix, v, callback));
         }
 
         // Struct
