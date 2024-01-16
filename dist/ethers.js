@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.10.0";
+const version = "6.10.1";
 
 /**
  *  Property helper functions.
@@ -223,7 +223,7 @@ function assertArgumentCount(count, expectedCount, message) {
         count: count,
         expectedCount: expectedCount
     });
-    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+    assert(count <= expectedCount, "too many arguments" + message, "UNEXPECTED_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });
@@ -1849,8 +1849,23 @@ class FetchResponse {
         if (message === "") {
             message = `server response ${this.statusCode} ${this.statusMessage}`;
         }
+        let requestUrl = null;
+        if (this.request) {
+            requestUrl = this.request.url;
+        }
+        let responseBody = null;
+        try {
+            if (this.#body) {
+                responseBody = toUtf8String(this.#body);
+            }
+        }
+        catch (e) { }
         assert(false, message, "SERVER_ERROR", {
-            request: (this.request || "unknown request"), response: this, error
+            request: (this.request || "unknown request"), response: this, error,
+            info: {
+                requestUrl, responseBody,
+                responseStatus: `${this.statusCode} ${this.statusMessage}`
+            }
         });
     }
 }
@@ -10491,11 +10506,11 @@ const domainChecks = {
 function getBaseEncoder(type) {
     // intXX and uintXX
     {
-        const match = type.match(/^(u?)int(\d*)$/);
+        const match = type.match(/^(u?)int(\d+)$/);
         if (match) {
             const signed = (match[1] === "");
-            const width = parseInt(match[2] || "256");
-            assertArgument(width % 8 === 0 && width !== 0 && width <= 256 && (match[2] == null || match[2] === String(width)), "invalid numeric width", "type", type);
+            const width = parseInt(match[2]);
+            assertArgument(width % 8 === 0 && width !== 0 && width <= 256 && match[2] === String(width), "invalid numeric width", "type", type);
             const boundsUpper = mask(BN_MAX_UINT256, signed ? (width - 1) : width);
             const boundsLower = signed ? ((boundsUpper + BN_1$1) * BN__1) : BN_0$3;
             return function (_value) {
@@ -10571,8 +10586,7 @@ class TypedDataEncoder {
      *  do not violate the [[link-eip-712]] structural constraints as
      *  well as computes the [[primaryType]].
      */
-    constructor(types) {
-        this.#types = JSON.stringify(types);
+    constructor(_types) {
         this.#fullTypes = new Map();
         this.#encoderCache = new Map();
         // Link struct types to their direct child structs
@@ -10581,26 +10595,38 @@ class TypedDataEncoder {
         const parents = new Map();
         // Link all subtypes within a given struct
         const subtypes = new Map();
-        Object.keys(types).forEach((type) => {
+        const types = {};
+        Object.keys(_types).forEach((type) => {
+            // Normalize int/uint unless they are a complex type themselves
+            types[type] = _types[type].map(({ name, type }) => {
+                if (type === "int" && !_types["int"]) {
+                    type = "int256";
+                }
+                if (type === "uint" && !_types["uint"]) {
+                    type = "uint256";
+                }
+                return { name, type };
+            });
             links.set(type, new Set());
             parents.set(type, []);
             subtypes.set(type, new Set());
         });
+        this.#types = JSON.stringify(types);
         for (const name in types) {
             const uniqueNames = new Set();
             for (const field of types[name]) {
                 // Check each field has a unique name
-                assertArgument(!uniqueNames.has(field.name), `duplicate variable name ${JSON.stringify(field.name)} in ${JSON.stringify(name)}`, "types", types);
+                assertArgument(!uniqueNames.has(field.name), `duplicate variable name ${JSON.stringify(field.name)} in ${JSON.stringify(name)}`, "types", _types);
                 uniqueNames.add(field.name);
                 // Get the base type (drop any array specifiers)
                 const baseType = (field.type.match(/^([^\x5b]*)(\x5b|$)/))[1] || null;
-                assertArgument(baseType !== name, `circular type reference to ${JSON.stringify(baseType)}`, "types", types);
+                assertArgument(baseType !== name, `circular type reference to ${JSON.stringify(baseType)}`, "types", _types);
                 // Is this a base encoding type?
                 const encoder = getBaseEncoder(baseType);
                 if (encoder) {
                     continue;
                 }
-                assertArgument(parents.has(baseType), `unknown type ${JSON.stringify(baseType)}`, "types", types);
+                assertArgument(parents.has(baseType), `unknown type ${JSON.stringify(baseType)}`, "types", _types);
                 // Add linkage
                 parents.get(baseType).push(name);
                 links.get(name).add(baseType);
@@ -10608,12 +10634,12 @@ class TypedDataEncoder {
         }
         // Deduce the primary type
         const primaryTypes = Array.from(parents.keys()).filter((n) => (parents.get(n).length === 0));
-        assertArgument(primaryTypes.length !== 0, "missing primary type", "types", types);
-        assertArgument(primaryTypes.length === 1, `ambiguous primary types or unused types: ${primaryTypes.map((t) => (JSON.stringify(t))).join(", ")}`, "types", types);
+        assertArgument(primaryTypes.length !== 0, "missing primary type", "types", _types);
+        assertArgument(primaryTypes.length === 1, `ambiguous primary types or unused types: ${primaryTypes.map((t) => (JSON.stringify(t))).join(", ")}`, "types", _types);
         defineProperties(this, { primaryType: primaryTypes[0] });
         // Check for circular type references
         function checkCircular(type, found) {
-            assertArgument(!found.has(type), `circular type reference to ${JSON.stringify(type)}`, "types", types);
+            assertArgument(!found.has(type), `circular type reference to ${JSON.stringify(type)}`, "types", _types);
             found.add(type);
             for (const child of links.get(type)) {
                 if (!parents.has(child)) {
@@ -17251,6 +17277,7 @@ function injectCommonNetworks() {
         ensNetwork: 1,
     });
     registerEth("arbitrum-goerli", 421613, {});
+    registerEth("arbitrum-sepolia", 421614, {});
     registerEth("base", 8453, { ensNetwork: 1 });
     registerEth("base-goerli", 84531, {});
     registerEth("base-sepolia", 84532, {});
@@ -17275,6 +17302,7 @@ function injectCommonNetworks() {
         plugins: []
     });
     registerEth("optimism-goerli", 420, {});
+    registerEth("optimism-sepolia", 11155420, {});
     registerEth("xdai", 100, { ensNetwork: 1 });
 }
 
@@ -20298,8 +20326,18 @@ function spelunkMessage(value) {
  *
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
- *  - Polygon (``matic``)
+ *  - Sepolia Testnet (``sepolia``)
  *  - Arbitrum (``arbitrum``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB (``bnb``)
+ *  - BNB Testnet (``bnbt``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Ankr  [providers-ankr]
  */
@@ -20310,10 +20348,30 @@ function getHost$4(name) {
             return "rpc.ankr.com/eth";
         case "goerli":
             return "rpc.ankr.com/eth_goerli";
-        case "matic":
-            return "rpc.ankr.com/polygon";
+        case "sepolia":
+            return "rpc.ankr.com/eth_sepolia";
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
+        case "base":
+            return "rpc.ankr.com/base";
+        case "base-goerli":
+            return "rpc.ankr.com/base_goerli";
+        case "base-sepolia":
+            return "rpc.ankr.com/base_sepolia";
+        case "bnb":
+            return "rpc.ankr.com/bsc";
+        case "bnbt":
+            return "rpc.ankr.com/bsc_testnet_chapel";
+        case "matic":
+            return "rpc.ankr.com/polygon";
+        case "matic-mumbai":
+            return "rpc.ankr.com/polygon_mumbai";
+        case "optimism":
+            return "rpc.ankr.com/optimism";
+        case "optimism-goerli":
+            return "rpc.ankr.com/optimism_testnet";
+        case "optimism-sepolia":
+            return "rpc.ankr.com/optimism_sepolia";
     }
     assertArgument(false, "unsupported network", "network", name);
 }
@@ -20390,7 +20448,25 @@ class AnkrProvider extends JsonRpcProvider {
 }
 
 /**
- *  About Alchemy
+ *  [[link-alchemy]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
@@ -20407,10 +20483,14 @@ function getHost$3(name) {
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":
             return "arb-goerli.g.alchemy.com";
+        case "arbitrum-sepolia":
+            return "arb-sepolia.g.alchemy.com";
         case "base":
             return "base-mainnet.g.alchemy.com";
         case "base-goerli":
             return "base-goerli.g.alchemy.com";
+        case "base-sepolia":
+            return "base-sepolia.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
         case "matic-mumbai":
@@ -20419,6 +20499,8 @@ function getHost$3(name) {
             return "opt-mainnet.g.alchemy.com";
         case "optimism-goerli":
             return "opt-goerli.g.alchemy.com";
+        case "optimism-sepolia":
+            return "opt-sepolia.g.alchemy.com";
     }
     assertArgument(false, "unsupported network", "network", name);
 }
@@ -21411,8 +21493,17 @@ class WebSocketProvider extends SocketProvider {
  *  - Sepolia Testnet (``sepolia``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB (``bnb``)
+ *  - BNB Testnet (``bnbt``)
+ *  - Linea (``linea``)
+ *  - Linea Goerlia Testnet (``linea-goerli``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
@@ -21431,6 +21522,18 @@ function getHost$2(name) {
             return "arbitrum-mainnet.infura.io";
         case "arbitrum-goerli":
             return "arbitrum-goerli.infura.io";
+        case "arbitrum-sepolia":
+            return "arbitrum-sepolia.infura.io";
+        case "base":
+            return "base-mainnet.infura.io";
+        case "base-goerlia":
+            return "base-goerli.infura.io";
+        case "base-sepolia":
+            return "base-sepolia.infura.io";
+        case "bnb":
+            return "bnbsmartchain-mainnet.infura.io";
+        case "bnbt":
+            return "bnbsmartchain-testnet.infura.io";
         case "linea":
             return "linea-mainnet.infura.io";
         case "linea-goerli":
@@ -21443,6 +21546,8 @@ function getHost$2(name) {
             return "optimism-mainnet.infura.io";
         case "optimism-goerli":
             return "optimism-goerli.infura.io";
+        case "optimism-sepolia":
+            return "optimism-sepolia.infura.io";
     }
     assertArgument(false, "unsupported network", "network", name);
 }

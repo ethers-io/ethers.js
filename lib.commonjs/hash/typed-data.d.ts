@@ -68,7 +68,7 @@ export declare class TypedDataEncoder {
      *  do not violate the [[link-eip-712]] structural constraints as
      *  well as computes the [[primaryType]].
      */
-    constructor(types: Record<string, Array<TypedDataField>>);
+    constructor(_types: Record<string, Array<TypedDataField>>);
     /**
      *  Returnthe encoder for the specific %%type%%.
      */
