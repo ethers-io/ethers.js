@@ -202,18 +202,21 @@ describe("Test Provider Transaction operations", function () {
 });
 describe("Test Networks", function () {
     const networks = [
+        "mainnet", "goerli", "sepolia",
         "arbitrum", "arbitrum-goerli", "arbitrum-sepolia",
         "base", "base-goerli", "base-sepolia",
         "bnb", "bnbt",
         "linea", "linea-goerli",
         "matic", "matic-mumbai",
         "optimism", "optimism-goerli", "optimism-sepolia",
+        "xdai",
     ];
     const providerNames = [
-        "AlchemyProvider", "InfuraProvider", "AnkrProvider"
+        "AlchemyProvider", "InfuraProvider", "AnkrProvider",
+        "QuickNodeProvider",
     ];
-    for (const networkName of networks) {
-        for (const providerName of providerNames) {
+    for (const providerName of providerNames) {
+        for (const networkName of networks) {
             const network = Network.from(networkName);
             const provider = getProvider(providerName, networkName);
             if (provider == null || !(provider instanceof JsonRpcProvider)) {
