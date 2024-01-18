@@ -10917,6 +10917,8 @@ class TypedDataEncoder {
             domainTypes.push({ name, type: domainFieldTypes[name] });
         });
         const encoder = TypedDataEncoder.from(types);
+        // Get the normalized types
+        types = encoder.types;
         const typesWithDomain = Object.assign({}, types);
         assertArgument(typesWithDomain.EIP712Domain == null, "types must not contain EIP712Domain type", "types.EIP712Domain", types);
         typesWithDomain.EIP712Domain = domainTypes;

@@ -121,6 +121,12 @@ describe("Tests Typed Data (EIP-712) aliases", function () {
             const encoder = TypedDataEncoder.from(test.types);
             assert.equal(encoder.primaryType, "foo", "primaryType");
             assert.equal(encoder.encodeData("foo", test.data), test.encoded, "encoded");
+            const encoderAlias = TypedDataEncoder.from(test.typesAlias);
+            assert.equal(encoderAlias.primaryType, "foo", "primaryType");
+            assert.equal(encoderAlias.encodeData("foo", test.data), test.encoded, "encoded");
+            const payload = TypedDataEncoder.getPayload({}, test.types, test.data);
+            const payloadAlias = TypedDataEncoder.getPayload({}, test.typesAlias, test.data);
+            assert.equal(JSON.stringify(payloadAlias), JSON.stringify(payload), "payload");
         });
     }
     it(`tests overriding an alias as a type`, function () {
