@@ -225,6 +225,27 @@ _code: broadcasting transactions  @lang<script>
   provider.broadcastTransaction(signedTx)
 
 
+The ``StaticJsonRpcProvider`` in v5 is now integrated into the v6
+``JsonRpcProvider`` directly. When connecting to a network which
+cannot change its network, it is much more efficient to disable
+the automatic safety check ethers performs.
+
+_code: Create a Provider on a static network  @lang<script>
+  // v5
+  provider = new StaticJsonRpcProvider(url, network);
+
+  // v6: If you know the network ahead of time and wish
+  // to avoid even a single eth_chainId call
+  provider = new JsonRpcProvider(url, network, {
+    staticNetwork: network
+  });
+
+  // v6: If you want the network automatically detected,
+  // this will query eth_chainId only once
+  provider = new JsonRpcProvider(url, undefined, {
+    staticNetwork: true
+  });
+
 _subsection: Signatures  @<migrate-signatures>
 
 The Signature is now a class which facilitates all the parsing

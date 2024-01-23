@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.9.1";
+const version = "6.10.1";
 
 /**
  *  Property helper functions.
@@ -223,7 +223,7 @@ function assertArgumentCount(count, expectedCount, message) {
         count: count,
         expectedCount: expectedCount
     });
-    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+    assert(count <= expectedCount, "too many arguments" + message, "UNEXPECTED_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });
@@ -695,11 +695,19 @@ const BN_58 = BigInt(58);
  *  Encode %%value%% as a Base58-encoded string.
  */
 function encodeBase58(_value) {
-    let value = toBigInt(getBytes(_value));
+    const bytes = getBytes(_value);
+    let value = toBigInt(bytes);
     let result = "";
     while (value) {
         result = Alphabet[Number(value % BN_58)] + result;
         value /= BN_58;
+    }
+    // Account for leading padding zeros
+    for (let i = 0; i < bytes.length; i++) {
+        if (bytes[i]) {
+            break;
+        }
+        result = Alphabet[0] + result;
     }
     return result;
 }
@@ -1841,8 +1849,23 @@ class FetchResponse {
         if (message === "") {
             message = `server response ${this.statusCode} ${this.statusMessage}`;
         }
+        let requestUrl = null;
+        if (this.request) {
+            requestUrl = this.request.url;
+        }
+        let responseBody = null;
+        try {
+            if (this.#body) {
+                responseBody = toUtf8String(this.#body);
+            }
+        }
+        catch (e) { }
         assert(false, message, "SERVER_ERROR", {
-            request: (this.request || "unknown request"), response: this, error
+            request: (this.request || "unknown request"), response: this, error,
+            info: {
+                requestUrl, responseBody,
+                responseStatus: `${this.statusCode} ${this.statusMessage}`
+            }
         });
     }
 }
@@ -2962,15 +2985,35 @@ class Reader {
     allowLoose;
     #data;
     #offset;
-    constructor(data, allowLoose) {
+    #bytesRead;
+    #parent;
+    #maxInflation;
+    constructor(data, allowLoose, maxInflation) {
         defineProperties(this, { allowLoose: !!allowLoose });
         this.#data = getBytesCopy(data);
+        this.#bytesRead = 0;
+        this.#parent = null;
+        this.#maxInflation = (maxInflation != null) ? maxInflation : 1024;
         this.#offset = 0;
     }
     get data() { return hexlify(this.#data); }
     get dataLength() { return this.#data.length; }
     get consumed() { return this.#offset; }
     get bytes() { return new Uint8Array(this.#data); }
+    #incrementBytesRead(count) {
+        if (this.#parent) {
+            return this.#parent.#incrementBytesRead(count);
+        }
+        this.#bytesRead += count;
+        // Check for excessive inflation (see: #4537)
+        assert(this.#maxInflation < 1 || this.#bytesRead <= this.#maxInflation * this.dataLength, `compressed ABI data exceeds inflation ratio of ${this.#maxInflation} ( see: https:/\/github.com/ethers-io/ethers.js/issues/4537 )`, "BUFFER_OVERRUN", {
+            buffer: getBytesCopy(this.#data), offset: this.#offset,
+            length: count, info: {
+                bytesRead: this.#bytesRead,
+                dataLength: this.dataLength
+            }
+        });
+    }
     #peekBytes(offset, length, loose) {
         let alignedLength = Math.ceil(length / WordSize) * WordSize;
         if (this.#offset + alignedLength > this.#data.length) {
@@ -2989,11 +3032,14 @@ class Reader {
     }
     // Create a sub-reader with the same underlying data, but offset
     subReader(offset) {
-        return new Reader(this.#data.slice(this.#offset + offset), this.allowLoose);
+        const reader = new Reader(this.#data.slice(this.#offset + offset), this.allowLoose, this.#maxInflation);
+        reader.#parent = this;
+        return reader;
     }
     // Read bytes
     readBytes(length, loose) {
         let bytes = this.#peekBytes(0, length, !!loose);
+        this.#incrementBytesRead(length);
         this.#offset += bytes.length;
         // @TODO: Make sure the length..end bytes are all 0?
         return bytes.slice(0, length);
@@ -10460,11 +10506,11 @@ const domainChecks = {
 function getBaseEncoder(type) {
     // intXX and uintXX
     {
-        const match = type.match(/^(u?)int(\d*)$/);
+        const match = type.match(/^(u?)int(\d+)$/);
         if (match) {
             const signed = (match[1] === "");
-            const width = parseInt(match[2] || "256");
-            assertArgument(width % 8 === 0 && width !== 0 && width <= 256 && (match[2] == null || match[2] === String(width)), "invalid numeric width", "type", type);
+            const width = parseInt(match[2]);
+            assertArgument(width % 8 === 0 && width !== 0 && width <= 256 && match[2] === String(width), "invalid numeric width", "type", type);
             const boundsUpper = mask(BN_MAX_UINT256, signed ? (width - 1) : width);
             const boundsLower = signed ? ((boundsUpper + BN_1$1) * BN__1) : BN_0$3;
             return function (_value) {
@@ -10506,6 +10552,23 @@ function getBaseEncoder(type) {
 function encodeType(name, fields) {
     return `${name}(${fields.map(({ name, type }) => (type + " " + name)).join(",")})`;
 }
+// foo[][3] => { base: "foo", index: "[][3]", array: {
+//     base: "foo", prefix: "foo[]", count: 3 } }
+function splitArray(type) {
+    const match = type.match(/^([^\x5b]*)((\x5b\d*\x5d)*)(\x5b(\d*)\x5d)$/);
+    if (match) {
+        return {
+            base: match[1],
+            index: (match[2] + match[4]),
+            array: {
+                base: match[1],
+                prefix: (match[1] + match[2]),
+                count: (match[5] ? parseInt(match[5]) : -1),
+            }
+        };
+    }
+    return { base: type };
+}
 /**
  *  A **TypedDataEncode** prepares and encodes [[link-eip-712]] payloads
  *  for signed typed data.
@@ -10540,8 +10603,7 @@ class TypedDataEncoder {
      *  do not violate the [[link-eip-712]] structural constraints as
      *  well as computes the [[primaryType]].
      */
-    constructor(types) {
-        this.#types = JSON.stringify(types);
+    constructor(_types) {
         this.#fullTypes = new Map();
         this.#encoderCache = new Map();
         // Link struct types to their direct child structs
@@ -10550,26 +10612,39 @@ class TypedDataEncoder {
         const parents = new Map();
         // Link all subtypes within a given struct
         const subtypes = new Map();
-        Object.keys(types).forEach((type) => {
+        const types = {};
+        Object.keys(_types).forEach((type) => {
+            types[type] = _types[type].map(({ name, type }) => {
+                // Normalize the base type (unless name conflict)
+                let { base, index } = splitArray(type);
+                if (base === "int" && !_types["int"]) {
+                    base = "int256";
+                }
+                if (base === "uint" && !_types["uint"]) {
+                    base = "uint256";
+                }
+                return { name, type: (base + (index || "")) };
+            });
             links.set(type, new Set());
             parents.set(type, []);
             subtypes.set(type, new Set());
         });
+        this.#types = JSON.stringify(types);
         for (const name in types) {
             const uniqueNames = new Set();
             for (const field of types[name]) {
                 // Check each field has a unique name
-                assertArgument(!uniqueNames.has(field.name), `duplicate variable name ${JSON.stringify(field.name)} in ${JSON.stringify(name)}`, "types", types);
+                assertArgument(!uniqueNames.has(field.name), `duplicate variable name ${JSON.stringify(field.name)} in ${JSON.stringify(name)}`, "types", _types);
                 uniqueNames.add(field.name);
                 // Get the base type (drop any array specifiers)
-                const baseType = (field.type.match(/^([^\x5b]*)(\x5b|$)/))[1] || null;
-                assertArgument(baseType !== name, `circular type reference to ${JSON.stringify(baseType)}`, "types", types);
+                const baseType = splitArray(field.type).base;
+                assertArgument(baseType !== name, `circular type reference to ${JSON.stringify(baseType)}`, "types", _types);
                 // Is this a base encoding type?
                 const encoder = getBaseEncoder(baseType);
                 if (encoder) {
                     continue;
                 }
-                assertArgument(parents.has(baseType), `unknown type ${JSON.stringify(baseType)}`, "types", types);
+                assertArgument(parents.has(baseType), `unknown type ${JSON.stringify(baseType)}`, "types", _types);
                 // Add linkage
                 parents.get(baseType).push(name);
                 links.get(name).add(baseType);
@@ -10577,12 +10652,12 @@ class TypedDataEncoder {
         }
         // Deduce the primary type
         const primaryTypes = Array.from(parents.keys()).filter((n) => (parents.get(n).length === 0));
-        assertArgument(primaryTypes.length !== 0, "missing primary type", "types", types);
-        assertArgument(primaryTypes.length === 1, `ambiguous primary types or unused types: ${primaryTypes.map((t) => (JSON.stringify(t))).join(", ")}`, "types", types);
+        assertArgument(primaryTypes.length !== 0, "missing primary type", "types", _types);
+        assertArgument(primaryTypes.length === 1, `ambiguous primary types or unused types: ${primaryTypes.map((t) => (JSON.stringify(t))).join(", ")}`, "types", _types);
         defineProperties(this, { primaryType: primaryTypes[0] });
         // Check for circular type references
         function checkCircular(type, found) {
-            assertArgument(!found.has(type), `circular type reference to ${JSON.stringify(type)}`, "types", types);
+            assertArgument(!found.has(type), `circular type reference to ${JSON.stringify(type)}`, "types", _types);
             found.add(type);
             for (const child of links.get(type)) {
                 if (!parents.has(child)) {
@@ -10625,12 +10700,12 @@ class TypedDataEncoder {
             }
         }
         // Array
-        const match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
-        if (match) {
-            const subtype = match[1];
+        const array = splitArray(type).array;
+        if (array) {
+            const subtype = array.prefix;
             const subEncoder = this.getEncoder(subtype);
             return (value) => {
-                assertArgument(!match[3] || parseInt(match[3]) === value.length, `array length mismatch; expected length ${parseInt(match[3])}`, "value", value);
+                assertArgument(array.count === -1 || array.count === value.length, `array length mismatch; expected length ${array.count}`, "value", value);
                 let result = value.map(subEncoder);
                 if (this.#fullTypes.has(subtype)) {
                     result = result.map(keccak256);
@@ -10700,10 +10775,10 @@ class TypedDataEncoder {
             }
         }
         // Array
-        const match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
-        if (match) {
-            assertArgument(!match[3] || parseInt(match[3]) === value.length, `array length mismatch; expected length ${parseInt(match[3])}`, "value", value);
-            return value.map((v) => this._visit(match[1], v, callback));
+        const array = splitArray(type).array;
+        if (array) {
+            assertArgument(array.count === -1 || array.count === value.length, `array length mismatch; expected length ${array.count}`, "value", value);
+            return value.map((v) => this._visit(array.prefix, v, callback));
         }
         // Struct
         const fields = this.types[type];
@@ -10842,6 +10917,8 @@ class TypedDataEncoder {
             domainTypes.push({ name, type: domainFieldTypes[name] });
         });
         const encoder = TypedDataEncoder.from(types);
+        // Get the normalized types
+        types = encoder.types;
         const typesWithDomain = Object.assign({}, types);
         assertArgument(typesWithDomain.EIP712Domain == null, "types must not contain EIP712Domain type", "types.EIP712Domain", types);
         typesWithDomain.EIP712Domain = domainTypes;
@@ -12224,6 +12301,7 @@ PanicReasons$1.set(0x51, "UNINITIALIZED_FUNCTION_CALL");
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 let defaultCoder = null;
+let defaultMaxInflation = 1024;
 function getBuiltinCallException(action, tx, data, abiCoder) {
     let message = "missing revert data";
     let reason = null;
@@ -12360,7 +12438,11 @@ class AbiCoder {
     decode(types, data, loose) {
         const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(new Reader(data, loose));
+        return coder.decode(new Reader(data, loose, defaultMaxInflation));
+    }
+    static _setDefaultMaxInflation(value) {
+        assertArgument(typeof (value) === "number" && Number.isInteger(value), "invalid defaultMaxInflation factor", "value", value);
+        defaultMaxInflation = value;
     }
     /**
      *  Returns the shared singleton instance of a default [[AbiCoder]].
@@ -17215,6 +17297,7 @@ function injectCommonNetworks() {
         ensNetwork: 1,
     });
     registerEth("arbitrum-goerli", 421613, {});
+    registerEth("arbitrum-sepolia", 421614, {});
     registerEth("base", 8453, { ensNetwork: 1 });
     registerEth("base-goerli", 84531, {});
     registerEth("base-sepolia", 84532, {});
@@ -17239,6 +17322,7 @@ function injectCommonNetworks() {
         plugins: []
     });
     registerEth("optimism-goerli", 420, {});
+    registerEth("optimism-sepolia", 11155420, {});
     registerEth("xdai", 100, { ensNetwork: 1 });
 }
 
@@ -20262,8 +20346,18 @@ function spelunkMessage(value) {
  *
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
- *  - Polygon (``matic``)
+ *  - Sepolia Testnet (``sepolia``)
  *  - Arbitrum (``arbitrum``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB (``bnb``)
+ *  - BNB Testnet (``bnbt``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Ankr  [providers-ankr]
  */
@@ -20274,10 +20368,30 @@ function getHost$4(name) {
             return "rpc.ankr.com/eth";
         case "goerli":
             return "rpc.ankr.com/eth_goerli";
-        case "matic":
-            return "rpc.ankr.com/polygon";
+        case "sepolia":
+            return "rpc.ankr.com/eth_sepolia";
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
+        case "base":
+            return "rpc.ankr.com/base";
+        case "base-goerli":
+            return "rpc.ankr.com/base_goerli";
+        case "base-sepolia":
+            return "rpc.ankr.com/base_sepolia";
+        case "bnb":
+            return "rpc.ankr.com/bsc";
+        case "bnbt":
+            return "rpc.ankr.com/bsc_testnet_chapel";
+        case "matic":
+            return "rpc.ankr.com/polygon";
+        case "matic-mumbai":
+            return "rpc.ankr.com/polygon_mumbai";
+        case "optimism":
+            return "rpc.ankr.com/optimism";
+        case "optimism-goerli":
+            return "rpc.ankr.com/optimism_testnet";
+        case "optimism-sepolia":
+            return "rpc.ankr.com/optimism_sepolia";
     }
     assertArgument(false, "unsupported network", "network", name);
 }
@@ -20354,7 +20468,25 @@ class AnkrProvider extends JsonRpcProvider {
 }
 
 /**
- *  About Alchemy
+ *  [[link-alchemy]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
@@ -20371,10 +20503,14 @@ function getHost$3(name) {
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":
             return "arb-goerli.g.alchemy.com";
+        case "arbitrum-sepolia":
+            return "arb-sepolia.g.alchemy.com";
         case "base":
             return "base-mainnet.g.alchemy.com";
         case "base-goerli":
             return "base-goerli.g.alchemy.com";
+        case "base-sepolia":
+            return "base-sepolia.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
         case "matic-mumbai":
@@ -20383,6 +20519,8 @@ function getHost$3(name) {
             return "opt-mainnet.g.alchemy.com";
         case "optimism-goerli":
             return "opt-goerli.g.alchemy.com";
+        case "optimism-sepolia":
+            return "opt-sepolia.g.alchemy.com";
     }
     assertArgument(false, "unsupported network", "network", name);
 }
@@ -21375,8 +21513,17 @@ class WebSocketProvider extends SocketProvider {
  *  - Sepolia Testnet (``sepolia``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB Smart Chain Mainnet (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
+ *  - Linea (``linea``)
+ *  - Linea Goerlia Testnet (``linea-goerli``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
@@ -21395,6 +21542,18 @@ function getHost$2(name) {
             return "arbitrum-mainnet.infura.io";
         case "arbitrum-goerli":
             return "arbitrum-goerli.infura.io";
+        case "arbitrum-sepolia":
+            return "arbitrum-sepolia.infura.io";
+        case "base":
+            return "base-mainnet.infura.io";
+        case "base-goerlia":
+            return "base-goerli.infura.io";
+        case "base-sepolia":
+            return "base-sepolia.infura.io";
+        case "bnb":
+            return "bnbsmartchain-mainnet.infura.io";
+        case "bnbt":
+            return "bnbsmartchain-testnet.infura.io";
         case "linea":
             return "linea-mainnet.infura.io";
         case "linea-goerli":
@@ -21407,6 +21566,8 @@ function getHost$2(name) {
             return "optimism-mainnet.infura.io";
         case "optimism-goerli":
             return "optimism-goerli.infura.io";
+        case "optimism-sepolia":
+            return "optimism-sepolia.infura.io";
     }
     assertArgument(false, "unsupported network", "network", name);
 }
@@ -21538,10 +21699,18 @@ class InfuraProvider extends JsonRpcProvider {
  *
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base Mainnet (``base``);
+ *  - Base Goerli Testnet (``base-goerli``);
+ *  - Base Sepolia Testnet (``base-sepolia``);
+ *  - BNB Smart Chain Mainnet (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
@@ -21554,12 +21723,24 @@ function getHost$1(name) {
             return "ethers.quiknode.pro";
         case "goerli":
             return "ethers.ethereum-goerli.quiknode.pro";
-        //case "sepolia":
-        //    return "sepolia.infura.io";
+        case "sepolia":
+            return "ethers.ethereum-sepolia.quiknode.pro";
         case "arbitrum":
             return "ethers.arbitrum-mainnet.quiknode.pro";
         case "arbitrum-goerli":
             return "ethers.arbitrum-goerli.quiknode.pro";
+        case "arbitrum-sepolia":
+            return "ethers.arbitrum-sepolia.quiknode.pro";
+        case "base":
+            return "ethers.base-mainnet.quiknode.pro";
+        case "base-goerli":
+            return "ethers.base-goerli.quiknode.pro";
+        case "base-spolia":
+            return "ethers.base-sepolia.quiknode.pro";
+        case "bnb":
+            return "ethers.bsc.quiknode.pro";
+        case "bnbt":
+            return "ethers.bsc-testnet.quiknode.pro";
         case "matic":
             return "ethers.matic.quiknode.pro";
         case "matic-mumbai":
@@ -21568,9 +21749,41 @@ function getHost$1(name) {
             return "ethers.optimism.quiknode.pro";
         case "optimism-goerli":
             return "ethers.optimism-goerli.quiknode.pro";
+        case "optimism-sepolia":
+            return "ethers.optimism-sepolia.quiknode.pro";
+        case "xdai":
+            return "ethers.xdai.quiknode.pro";
     }
     assertArgument(false, "unsupported network", "network", name);
 }
+/*
+@TODO:
+  These networks are not currently present in the Network
+  default included networks. Research them and ensure they
+  are EVM compatible and work with ethers
+
+  http://ethers.matic-amoy.quiknode.pro
+  http://ethers.ethereum-holesky.quiknode.pro
+
+  http://ethers.avalanche-mainnet.quiknode.pro
+  http://ethers.avalanche-testnet.quiknode.pro
+  http://ethers.blast-sepolia.quiknode.pro
+  http://ethers.celo-mainnet.quiknode.pro
+  http://ethers.fantom.quiknode.pro
+  http://ethers.imx-demo.quiknode.pro
+  http://ethers.imx-mainnet.quiknode.pro
+  http://ethers.imx-testnet.quiknode.pro
+  http://ethers.near-mainnet.quiknode.pro
+  http://ethers.near-testnet.quiknode.pro
+  http://ethers.nova-mainnet.quiknode.pro
+  http://ethers.scroll-mainnet.quiknode.pro
+  http://ethers.scroll-testnet.quiknode.pro
+  http://ethers.tron-mainnet.quiknode.pro
+  http://ethers.zkevm-mainnet.quiknode.pro
+  http://ethers.zkevm-testnet.quiknode.pro
+  http://ethers.zksync-mainnet.quiknode.pro
+  http://ethers.zksync-testnet.quiknode.pro
+*/
 /**
  *  The **QuickNodeProvider** connects to the [[link-quicknode]]
  *  JSON-RPC end-points.
