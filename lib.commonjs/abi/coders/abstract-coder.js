@@ -359,15 +359,35 @@ class Reader {
     allowLoose;
     #data;
     #offset;
-    constructor(data, allowLoose) {
+    #bytesRead;
+    #parent;
+    #maxInflation;
+    constructor(data, allowLoose, maxInflation) {
         (0, index_js_1.defineProperties)(this, { allowLoose: !!allowLoose });
         this.#data = (0, index_js_1.getBytesCopy)(data);
+        this.#bytesRead = 0;
+        this.#parent = null;
+        this.#maxInflation = (maxInflation != null) ? maxInflation : 1024;
         this.#offset = 0;
     }
     get data() { return (0, index_js_1.hexlify)(this.#data); }
     get dataLength() { return this.#data.length; }
     get consumed() { return this.#offset; }
     get bytes() { return new Uint8Array(this.#data); }
+    #incrementBytesRead(count) {
+        if (this.#parent) {
+            return this.#parent.#incrementBytesRead(count);
+        }
+        this.#bytesRead += count;
+        // Check for excessive inflation (see: #4537)
+        (0, index_js_1.assert)(this.#maxInflation < 1 || this.#bytesRead <= this.#maxInflation * this.dataLength, `compressed ABI data exceeds inflation ratio of ${this.#maxInflation} ( see: https:/\/github.com/ethers-io/ethers.js/issues/4537 )`, "BUFFER_OVERRUN", {
+            buffer: (0, index_js_1.getBytesCopy)(this.#data), offset: this.#offset,
+            length: count, info: {
+                bytesRead: this.#bytesRead,
+                dataLength: this.dataLength
+            }
+        });
+    }
     #peekBytes(offset, length, loose) {
         let alignedLength = Math.ceil(length / exports.WordSize) * exports.WordSize;
         if (this.#offset + alignedLength > this.#data.length) {
@@ -386,11 +406,14 @@ class Reader {
     }
     // Create a sub-reader with the same underlying data, but offset
     subReader(offset) {
-        return new Reader(this.#data.slice(this.#offset + offset), this.allowLoose);
+        const reader = new Reader(this.#data.slice(this.#offset + offset), this.allowLoose, this.#maxInflation);
+        reader.#parent = this;
+        return reader;
     }
     // Read bytes
     readBytes(length, loose) {
         let bytes = this.#peekBytes(0, length, !!loose);
+        this.#incrementBytesRead(length);
         this.#offset += bytes.length;
         // @TODO: Make sure the length..end bytes are all 0?
         return bytes.slice(0, length);

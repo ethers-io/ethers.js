@@ -9,8 +9,17 @@
  *  - Sepolia Testnet (``sepolia``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB Smart Chain Mainnet (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
+ *  - Linea (``linea``)
+ *  - Linea Goerlia Testnet (``linea-goerli``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
@@ -45,6 +54,18 @@ function getHost(name: string): string {
             return "arbitrum-mainnet.infura.io";
         case "arbitrum-goerli":
             return "arbitrum-goerli.infura.io";
+        case "arbitrum-sepolia":
+            return "arbitrum-sepolia.infura.io";
+        case "base":
+            return "base-mainnet.infura.io";
+        case "base-goerlia":
+            return "base-goerli.infura.io";
+        case "base-sepolia":
+            return "base-sepolia.infura.io";
+        case "bnb":
+            return "bnbsmartchain-mainnet.infura.io";
+        case "bnbt":
+            return "bnbsmartchain-testnet.infura.io";
         case "linea":
             return "linea-mainnet.infura.io";
         case "linea-goerli":
@@ -57,6 +78,8 @@ function getHost(name: string): string {
             return "optimism-mainnet.infura.io";
         case "optimism-goerli":
             return "optimism-goerli.infura.io";
+        case "optimism-sepolia":
+            return "optimism-sepolia.infura.io";
     }
 
     assertArgument(false, "unsupported network", "network", name);

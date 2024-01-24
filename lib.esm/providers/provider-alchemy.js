@@ -1,5 +1,23 @@
 /**
- *  About Alchemy
+ *  [[link-alchemy]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
@@ -20,10 +38,14 @@ function getHost(name) {
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":
             return "arb-goerli.g.alchemy.com";
+        case "arbitrum-sepolia":
+            return "arb-sepolia.g.alchemy.com";
         case "base":
             return "base-mainnet.g.alchemy.com";
         case "base-goerli":
             return "base-goerli.g.alchemy.com";
+        case "base-sepolia":
+            return "base-sepolia.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
         case "matic-mumbai":
@@ -32,6 +54,8 @@ function getHost(name) {
             return "opt-mainnet.g.alchemy.com";
         case "optimism-goerli":
             return "opt-goerli.g.alchemy.com";
+        case "optimism-sepolia":
+            return "opt-sepolia.g.alchemy.com";
     }
     assertArgument(false, "unsupported network", "network", name);
 }

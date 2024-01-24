@@ -398,6 +398,7 @@ function injectCommonNetworks(): void {
         ensNetwork: 1,
     });
     registerEth("arbitrum-goerli", 421613, { });
+    registerEth("arbitrum-sepolia", 421614, { });
 
     registerEth("base", 8453, { ensNetwork: 1 });
     registerEth("base-goerli", 84531, { });
@@ -427,6 +428,7 @@ function injectCommonNetworks(): void {
         plugins: [ ]
     });
     registerEth("optimism-goerli", 420, { });
+    registerEth("optimism-sepolia", 11155420, { });
 
     registerEth("xdai", 100, { ensNetwork: 1 });
 }

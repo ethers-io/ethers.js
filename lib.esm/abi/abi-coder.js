@@ -40,6 +40,7 @@ PanicReasons.set(0x51, "UNINITIALIZED_FUNCTION_CALL");
 const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 let defaultCoder = null;
+let defaultMaxInflation = 1024;
 function getBuiltinCallException(action, tx, data, abiCoder) {
     let message = "missing revert data";
     let reason = null;
@@ -176,7 +177,11 @@ export class AbiCoder {
     decode(types, data, loose) {
         const coders = types.map((type) => this.#getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(new Reader(data, loose));
+        return coder.decode(new Reader(data, loose, defaultMaxInflation));
+    }
+    static _setDefaultMaxInflation(value) {
+        assertArgument(typeof (value) === "number" && Number.isInteger(value), "invalid defaultMaxInflation factor", "value", value);
+        defaultMaxInflation = value;
     }
     /**
      *  Returns the shared singleton instance of a default [[AbiCoder]].

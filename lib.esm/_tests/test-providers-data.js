@@ -1,6 +1,7 @@
 import assert from "assert";
 import { checkProvider, getProvider, setupProviders, providerNames } from "./create-provider.js";
 import { retryIt } from "./utils.js";
+import { JsonRpcProvider, Network } from "../index.js";
 import { networkFeatureAtBlock, networkNames, testAddress, testBlock, testReceipt, testTransaction } from "./blockchain-data.js";
 setupProviders();
 function forEach(prefix, tests, func) {
@@ -198,5 +199,34 @@ describe("Test Provider Transaction operations", function () {
             assert.ok(name == null, "name == null");
         };
     });
+});
+describe("Test Networks", function () {
+    const networks = [
+        "mainnet", "goerli", "sepolia",
+        "arbitrum", "arbitrum-goerli", "arbitrum-sepolia",
+        "base", "base-goerli", "base-sepolia",
+        "bnb", "bnbt",
+        "linea", "linea-goerli",
+        "matic", "matic-mumbai",
+        "optimism", "optimism-goerli", "optimism-sepolia",
+        "xdai",
+    ];
+    const providerNames = [
+        "AlchemyProvider", "InfuraProvider", "AnkrProvider",
+        "QuickNodeProvider",
+    ];
+    for (const providerName of providerNames) {
+        for (const networkName of networks) {
+            const network = Network.from(networkName);
+            const provider = getProvider(providerName, networkName);
+            if (provider == null || !(provider instanceof JsonRpcProvider)) {
+                continue;
+            }
+            it(`checks network chainId: ${providerName}/${networkName}`, async function () {
+                const chainId = await provider.send("eth_chainId", []);
+                assert.equal(parseInt(chainId), network.chainId, "chainId");
+            });
+        }
+    }
 });
 //# sourceMappingURL=test-providers-data.js.map

@@ -1,5 +1,23 @@
 /**
- *  About Alchemy
+ *  [[link-alchemy]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */

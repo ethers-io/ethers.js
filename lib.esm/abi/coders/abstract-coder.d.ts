@@ -108,7 +108,7 @@ export declare class Writer {
 export declare class Reader {
     #private;
     readonly allowLoose: boolean;
-    constructor(data: BytesLike, allowLoose?: boolean);
+    constructor(data: BytesLike, allowLoose?: boolean, maxInflation?: number);
     get data(): string;
     get dataLength(): number;
     get consumed(): number;
