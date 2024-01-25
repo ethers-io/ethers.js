@@ -7,6 +7,7 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
  *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
@@ -47,7 +48,8 @@ function getHost(name: string): string {
             return "ethers.ethereum-goerli.quiknode.pro";
         case "sepolia":
             return "ethers.ethereum-sepolia.quiknode.pro";
-
+        case "holesky":
+            return "ethers.ethereum-holesky.quiknode.pro";
 
         case "arbitrum":
             return "ethers.arbitrum-mainnet.quiknode.pro";
@@ -89,7 +91,6 @@ function getHost(name: string): string {
   are EVM compatible and work with ethers
 
   http://ethers.matic-amoy.quiknode.pro
-  http://ethers.ethereum-holesky.quiknode.pro
 
   http://ethers.avalanche-mainnet.quiknode.pro
   http://ethers.avalanche-testnet.quiknode.pro
