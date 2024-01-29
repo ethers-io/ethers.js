@@ -936,8 +936,20 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
         if (message === "") {
             message = `server response ${ this.statusCode } ${ this.statusMessage }`;
         }
+
+        let requestUrl: null | string = null;
+        if (this.request) { requestUrl = this.request.url; }
+
+        let responseBody: null | string = null;
+        try {
+            if (this.#body) { responseBody = toUtf8String(this.#body); }
+        } catch (e) { }
+
         assert(false, message, "SERVER_ERROR", {
-            request: (this.request || "unknown request"), response: this, error
+            request: (this.request || "unknown request"), response: this, error,
+            info: {
+                requestUrl, responseBody,
+                responseStatus: `${ this.statusCode } ${ this.statusMessage }` }
         });
     }
 }

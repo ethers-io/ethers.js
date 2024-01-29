@@ -6,8 +6,18 @@
  *
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
- *  - Polygon (``matic``)
+ *  - Sepolia Testnet (``sepolia``)
  *  - Arbitrum (``arbitrum``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB (``bnb``)
+ *  - BNB Testnet (``bnbt``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Ankr  [providers-ankr]
  */

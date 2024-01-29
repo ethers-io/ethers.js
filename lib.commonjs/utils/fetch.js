@@ -824,8 +824,23 @@ class FetchResponse {
         if (message === "") {
             message = `server response ${this.statusCode} ${this.statusMessage}`;
         }
+        let requestUrl = null;
+        if (this.request) {
+            requestUrl = this.request.url;
+        }
+        let responseBody = null;
+        try {
+            if (this.#body) {
+                responseBody = (0, utf8_js_1.toUtf8String)(this.#body);
+            }
+        }
+        catch (e) { }
         (0, errors_js_1.assert)(false, message, "SERVER_ERROR", {
-            request: (this.request || "unknown request"), response: this, error
+            request: (this.request || "unknown request"), response: this, error,
+            info: {
+                requestUrl, responseBody,
+                responseStatus: `${this.statusCode} ${this.statusMessage}`
+            }
         });
     }
 }

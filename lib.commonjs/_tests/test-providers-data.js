@@ -4,6 +4,7 @@ const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
 const create_provider_js_1 = require("./create-provider.js");
 const utils_js_1 = require("./utils.js");
+const index_js_1 = require("../index.js");
 const blockchain_data_js_1 = require("./blockchain-data.js");
 (0, create_provider_js_1.setupProviders)();
 function forEach(prefix, tests, func) {
@@ -201,5 +202,34 @@ describe("Test Provider Transaction operations", function () {
             assert_1.default.ok(name == null, "name == null");
         };
     });
+});
+describe("Test Networks", function () {
+    const networks = [
+        "mainnet", "goerli", "sepolia",
+        "arbitrum", "arbitrum-goerli", "arbitrum-sepolia",
+        "base", "base-goerli", "base-sepolia",
+        "bnb", "bnbt",
+        "linea", "linea-goerli",
+        "matic", "matic-mumbai",
+        "optimism", "optimism-goerli", "optimism-sepolia",
+        "xdai",
+    ];
+    const providerNames = [
+        "AlchemyProvider", "InfuraProvider", "AnkrProvider",
+        "QuickNodeProvider",
+    ];
+    for (const providerName of providerNames) {
+        for (const networkName of networks) {
+            const network = index_js_1.Network.from(networkName);
+            const provider = (0, create_provider_js_1.getProvider)(providerName, networkName);
+            if (provider == null || !(provider instanceof index_js_1.JsonRpcProvider)) {
+                continue;
+            }
+            it(`checks network chainId: ${providerName}/${networkName}`, async function () {
+                const chainId = await provider.send("eth_chainId", []);
+                assert_1.default.equal(parseInt(chainId), network.chainId, "chainId");
+            });
+        }
+    }
 });
 //# sourceMappingURL=test-providers-data.js.map

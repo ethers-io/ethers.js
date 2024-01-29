@@ -164,7 +164,7 @@ export function assertArgumentCount(count, expectedCount, message) {
         count: count,
         expectedCount: expectedCount
     });
-    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+    assert(count <= expectedCount, "too many arguments" + message, "UNEXPECTED_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });
