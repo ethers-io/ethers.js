@@ -506,6 +506,9 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
         if (sub.type === "pending") {
             return new subscriber_filterid_js_1.FilterIdPendingSubscriber(this);
         }
+        if (sub.type === "pending_full") {
+            return new subscriber_filterid_js_1.FilterIdPendingFullSubscriber(this);
+        }
         if (sub.type === "event") {
             if (this._getOption("polling")) {
                 return new subscriber_polling_js_1.PollingEventSubscriber(this, sub.filter);

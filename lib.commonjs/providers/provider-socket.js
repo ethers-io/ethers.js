@@ -10,10 +10,12 @@
  *  @_subsection: api/providers/abstract-provider:Socket Providers  [about-socketProvider]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SocketProvider = exports.SocketEventSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = void 0;
+exports.SocketProvider = exports.SocketEventSubscriber = exports.SocketPendingFullSubscriber = exports.SocketPendingSubscriber = exports.SocketBlockSubscriber = exports.SocketSubscriber = void 0;
 const abstract_provider_js_1 = require("./abstract-provider.js");
 const index_js_1 = require("../utils/index.js");
+const format_js_1 = require("./format.js");
 const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
+const provider_js_1 = require("./provider.js");
 /**
  *  A **SocketSubscriber** uses a socket transport to handle events and
  *  should use [[_emit]] to manage the events.
@@ -126,6 +128,15 @@ class SocketPendingSubscriber extends SocketSubscriber {
     }
 }
 exports.SocketPendingSubscriber = SocketPendingSubscriber;
+class SocketPendingFullSubscriber extends SocketSubscriber {
+    constructor(provider) {
+        super(provider, ["newPendingTransactions", true]);
+    }
+    async _emit(provider, message) {
+        provider.emit("pending_full", new provider_js_1.TransactionResponse((0, format_js_1.formatTransactionResponse)(message), provider));
+    }
+}
+exports.SocketPendingFullSubscriber = SocketPendingFullSubscriber;
 /**
  *  A **SocketEventSubscriber** listens for event logs.
  */
@@ -200,6 +211,8 @@ class SocketProvider extends provider_jsonrpc_js_1.JsonRpcApiProvider {
                 return new SocketBlockSubscriber(this);
             case "pending":
                 return new SocketPendingSubscriber(this);
+            case "pending_full":
+                return new SocketPendingFullSubscriber(this);
             case "event":
                 return new SocketEventSubscriber(this, sub.filter);
             case "orphan":

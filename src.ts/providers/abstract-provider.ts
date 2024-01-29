@@ -128,7 +128,7 @@ export type DebugEventAbstractProvider = {
  *  if they are modifying a low-level feature of how subscriptions operate.
  */
 export type Subscription = {
-    type: "block" | "close" | "debug" | "error" | "finalized" | "network" | "pending" | "safe",
+    type: "block" | "close" | "debug" | "error" | "finalized" | "network" | "pending" | "pending_full" | "safe",
     tag: string
 } | {
     type: "transaction",

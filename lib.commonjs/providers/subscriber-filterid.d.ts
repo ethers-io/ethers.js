@@ -61,4 +61,8 @@ export declare class FilterIdPendingSubscriber extends FilterIdSubscriber {
     _subscribe(provider: JsonRpcApiProvider): Promise<string>;
     _emitResults(provider: JsonRpcApiProvider, results: Array<any>): Promise<void>;
 }
+export declare class FilterIdPendingFullSubscriber extends FilterIdSubscriber {
+    _subscribe(provider: JsonRpcApiProvider): Promise<string>;
+    _emitResults(provider: JsonRpcApiProvider, results: Array<any>): Promise<void>;
+}
 //# sourceMappingURL=subscriber-filterid.d.ts.map

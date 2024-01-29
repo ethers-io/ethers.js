@@ -1,5 +1,7 @@
 import { isError } from "../utils/index.js";
 import { PollingEventSubscriber } from "./subscriber-polling.js";
+import { TransactionResponse } from "./provider.js";
+import { formatTransactionResponse } from "./format";
 function copy(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
@@ -165,6 +167,16 @@ export class FilterIdPendingSubscriber extends FilterIdSubscriber {
     async _emitResults(provider, results) {
         for (const result of results) {
             provider.emit("pending", result);
+        }
+    }
+}
+export class FilterIdPendingFullSubscriber extends FilterIdSubscriber {
+    async _subscribe(provider) {
+        return await provider.send("eth_newPendingTransactionFilter", [true]);
+    }
+    async _emitResults(provider, results) {
+        for (const result of results) {
+            provider.emit("pending_full", new TransactionResponse(formatTransactionResponse(result), provider));
         }
     }
 }

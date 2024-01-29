@@ -10,7 +10,9 @@
  */
 import { UnmanagedSubscriber } from "./abstract-provider.js";
 import { assert, assertArgument, makeError } from "../utils/index.js";
+import { formatTransactionResponse } from './format.js';
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
+import { TransactionResponse } from "./provider.js";
 /**
  *  A **SocketSubscriber** uses a socket transport to handle events and
  *  should use [[_emit]] to manage the events.
@@ -120,6 +122,14 @@ export class SocketPendingSubscriber extends SocketSubscriber {
         provider.emit("pending", message);
     }
 }
+export class SocketPendingFullSubscriber extends SocketSubscriber {
+    constructor(provider) {
+        super(provider, ["newPendingTransactions", true]);
+    }
+    async _emit(provider, message) {
+        provider.emit("pending_full", new TransactionResponse(formatTransactionResponse(message), provider));
+    }
+}
 /**
  *  A **SocketEventSubscriber** listens for event logs.
  */
@@ -193,6 +203,8 @@ export class SocketProvider extends JsonRpcApiProvider {
                 return new SocketBlockSubscriber(this);
             case "pending":
                 return new SocketPendingSubscriber(this);
+            case "pending_full":
+                return new SocketPendingFullSubscriber(this);
             case "event":
                 return new SocketEventSubscriber(this, sub.filter);
             case "orphan":

@@ -20,7 +20,7 @@ import { defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8By
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 import { AbstractSigner } from "./abstract-signer.js";
 import { Network } from "./network.js";
-import { FilterIdEventSubscriber, FilterIdPendingSubscriber } from "./subscriber-filterid.js";
+import { FilterIdEventSubscriber, FilterIdPendingSubscriber, FilterIdPendingFullSubscriber } from "./subscriber-filterid.js";
 import { PollingEventSubscriber } from "./subscriber-polling.js";
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
@@ -501,6 +501,9 @@ export class JsonRpcApiProvider extends AbstractProvider {
         // Pending Filters aren't availble via polling
         if (sub.type === "pending") {
             return new FilterIdPendingSubscriber(this);
+        }
+        if (sub.type === "pending_full") {
+            return new FilterIdPendingFullSubscriber(this);
         }
         if (sub.type === "event") {
             if (this._getOption("polling")) {

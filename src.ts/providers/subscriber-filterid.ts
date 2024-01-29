@@ -6,6 +6,8 @@ import type { AbstractProvider, Subscriber } from "./abstract-provider.js";
 import type { Network } from "./network.js";
 import type { EventFilter } from "./provider.js";
 import type { JsonRpcApiProvider } from "./provider-jsonrpc.js";
+import {TransactionResponse} from "./provider.js";
+import {formatTransactionResponse} from "./format";
 
 function copy(obj: any): any {
     return JSON.parse(JSON.stringify(obj));
@@ -193,6 +195,18 @@ export class FilterIdPendingSubscriber extends FilterIdSubscriber {
     async _emitResults(provider: JsonRpcApiProvider, results: Array<any>): Promise<void> {
         for (const result of results) {
             provider.emit("pending", result);
+        }
+    }
+}
+
+export class FilterIdPendingFullSubscriber extends FilterIdSubscriber {
+    async _subscribe(provider: JsonRpcApiProvider): Promise<string> {
+        return await provider.send("eth_newPendingTransactionFilter", [true]);
+    }
+
+    async _emitResults(provider: JsonRpcApiProvider, results: Array<any>): Promise<void> {
+        for (const result of results) {
+            provider.emit("pending_full", new TransactionResponse(formatTransactionResponse(result), provider));
         }
     }
 }
