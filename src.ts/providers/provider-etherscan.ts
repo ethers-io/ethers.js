@@ -171,9 +171,9 @@ export class EtherscanProvider extends AbstractProvider {
             case "arbitrum-goerli":
                 return "https:/\/api-goerli.arbiscan.io";
             case "bnb":
-                return "http:/\/api.bscscan.com";
+                return "https:/\/api.bscscan.com";
             case "bnbt":
-                return "http:/\/api-testnet.bscscan.com";
+                return "https:/\/api-testnet.bscscan.com";
             case "matic":
                 return "https:/\/api.polygonscan.com";
             case "matic-mumbai":
