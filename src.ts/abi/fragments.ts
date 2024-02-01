@@ -121,11 +121,11 @@ function setify(items: Array<string>): ReadonlySet<string> {
     return Object.freeze(result);
 }
 
-const _kwVisibDeploy = "external public payable";
+const _kwVisibDeploy = "external public payable override";
 const KwVisibDeploy = setify(_kwVisibDeploy.split(" "));
 
 // Visibility Keywords
-const _kwVisib = "constant external internal payable private public pure view";
+const _kwVisib = "constant external internal payable private public pure view override";
 const KwVisib = setify(_kwVisib.split(" "));
 
 const _kwTypes = "constructor error event fallback function receive struct";
@@ -218,7 +218,10 @@ class TokenString {
 
     // Pops and returns the value of the next token if it is `type`; throws if out of tokens
     popType(type: string): string {
-        if (this.peek().type !== type) { throw new Error(`expected ${ type }; got ${ JSON.stringify(this.peek()) }`); }
+        if (this.peek().type !== type) {
+            const top = this.peek();
+            throw new Error(`expected ${ type }; got ${ top.type } ${ JSON.stringify(top.text) }`);
+        }
         return this.pop().text;
     }
 
@@ -471,7 +474,7 @@ function consumeGas(tokens: TokenString): null | bigint {
 
 function consumeEoi(tokens: TokenString): void {
     if (tokens.length) {
-        throw new Error(`unexpected tokens: ${ tokens.toString() }`);
+        throw new Error(`unexpected tokens at offset ${ tokens.offset }: ${ tokens.toString() }`);
     }
 }
 

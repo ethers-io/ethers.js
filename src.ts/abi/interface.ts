@@ -342,8 +342,8 @@ export class Interface {
         for (const a of abi) {
             try {
                 frags.push(Fragment.from(a));
-            } catch (error) {
-                console.log("EE", error);
+            } catch (error: any) {
+                console.log(`[Warning] Invalid Fragment ${ JSON.stringify(a) }:`, error.message);
             }
         }
 
