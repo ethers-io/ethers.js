@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.10.1";
+const version = "6.11.0";
 
 /**
  *  Property helper functions.
@@ -9529,12 +9529,11 @@ function namehash(name) {
  *  This is used for various parts of ENS name resolution, such
  *  as the wildcard resolution.
  */
-function dnsEncode(name) {
+function dnsEncode(name, _maxLength) {
+    const length = (_maxLength != null) ? _maxLength : 63;
+    assertArgument(length <= 255, "DNS encoded label cannot exceed 255", "length", length);
     return hexlify(concat(ensNameSplit(name).map((comp) => {
-        // DNS does not allow components over 63 bytes in length
-        if (comp.length > 63) {
-            throw new Error("invalid DNS encoded entry; length exceeds 63 bytes");
-        }
+        assertArgument(comp.length <= length, `label ${JSON.stringify(name)} exceeds ${length} bytes`, "name", name);
         const bytes = new Uint8Array(comp.length + 1);
         bytes.set(comp, 1);
         bytes[0] = bytes.length - 1;
@@ -9643,6 +9642,13 @@ function formatNumber(_value, name) {
 function formatAccessList(value) {
     return accessListify(value).map((set) => [set.address, set.storageKeys]);
 }
+function formatHashes(value, param) {
+    assertArgument(Array.isArray(value), `invalid ${param}`, "value", value);
+    for (let i = 0; i < value.length; i++) {
+        assertArgument(isHexString(value[i], 32), "invalid ${ param } hash", `value[${i}]`, value[i]);
+    }
+    return value;
+}
 function _parseLegacy(data) {
     const fields = decodeRlp(data);
     assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 6), "invalid field count for legacy transaction", "data", data);
@@ -9686,13 +9692,14 @@ function _parseLegacy(data) {
     return tx;
 }
 function _serializeLegacy(tx, sig) {
+    assertArgument(tx.isLegacy(), "internal check failed; !legacy", "tx", tx);
     const fields = [
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.gasPrice || 0, "gasPrice"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? getAddress(tx.to) : "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.gasPrice, "gasPrice"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
     ];
     let chainId = BN_0$4;
     if (tx.chainId != BN_0$4) {
@@ -9755,14 +9762,12 @@ function _parseEipSignature(tx, fields) {
 function _parseEip1559(data) {
     const fields = decodeRlp(getBytes(data).slice(1));
     assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 12), "invalid field count for transaction type: 2", "data", hexlify(data));
-    const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
-    const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
     const tx = {
         type: 2,
         chainId: handleUint(fields[0], "chainId"),
         nonce: handleNumber(fields[1], "nonce"),
-        maxPriorityFeePerGas: maxPriorityFeePerGas,
-        maxFeePerGas: maxFeePerGas,
+        maxPriorityFeePerGas: handleUint(fields[2], "maxPriorityFeePerGas"),
+        maxFeePerGas: handleUint(fields[3], "maxFeePerGas"),
         gasPrice: null,
         gasLimit: handleUint(fields[4], "gasLimit"),
         to: handleAddress(fields[5]),
@@ -9779,16 +9784,17 @@ function _parseEip1559(data) {
     return tx;
 }
 function _serializeEip1559(tx, sig) {
+    assertArgument(tx.isLondon(), "internal check failed; !london", "tx", tx);
     const fields = [
-        formatNumber(tx.chainId || 0, "chainId"),
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
-        formatNumber(tx.maxFeePerGas || 0, "maxFeePerGas"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? getAddress(tx.to) : "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
-        (formatAccessList(tx.accessList || []))
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
+        formatAccessList(tx.accessList)
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "yParity"));
@@ -9820,15 +9826,16 @@ function _parseEip2930(data) {
     return tx;
 }
 function _serializeEip2930(tx, sig) {
+    assertArgument(tx.isBerlin(), "internal check failed; !berlin", "tx", tx);
     const fields = [
-        formatNumber(tx.chainId || 0, "chainId"),
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.gasPrice || 0, "gasPrice"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? getAddress(tx.to) : "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
-        (formatAccessList(tx.accessList || []))
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.gasPrice, "gasPrice"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
+        formatAccessList(tx.accessList)
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "recoveryParam"));
@@ -9836,6 +9843,59 @@ function _serializeEip2930(tx, sig) {
         fields.push(toBeArray(sig.s));
     }
     return concat(["0x01", encodeRlp(fields)]);
+}
+function _parseEip4844(data) {
+    const fields = decodeRlp(getBytes(data).slice(1));
+    assertArgument(Array.isArray(fields) && (fields.length === 11 || fields.length === 14), "invalid field count for transaction type: 3", "data", hexlify(data));
+    const tx = {
+        type: 3,
+        chainId: handleUint(fields[0], "chainId"),
+        nonce: handleNumber(fields[1], "nonce"),
+        maxPriorityFeePerGas: handleUint(fields[2], "maxPriorityFeePerGas"),
+        maxFeePerGas: handleUint(fields[3], "maxFeePerGas"),
+        gasPrice: null,
+        gasLimit: handleUint(fields[4], "gasLimit"),
+        to: handleAddress(fields[5]),
+        value: handleUint(fields[6], "value"),
+        data: hexlify(fields[7]),
+        accessList: handleAccessList(fields[8], "accessList"),
+        maxFeePerBlobGas: handleUint(fields[9], "maxFeePerBlobGas"),
+        blobVersionedHashes: fields[10]
+    };
+    assertArgument(tx.to != null, "invalid address for transaction type: 3", "data", data);
+    assertArgument(Array.isArray(tx.blobVersionedHashes), "invalid blobVersionedHashes: must be an array", "data", data);
+    for (let i = 0; i < tx.blobVersionedHashes.length; i++) {
+        assertArgument(isHexString(tx.blobVersionedHashes[i], 32), `invalid blobVersionedHash at index ${i}: must be length 32`, "data", data);
+    }
+    // Unsigned EIP-4844 Transaction
+    if (fields.length === 11) {
+        return tx;
+    }
+    tx.hash = keccak256(data);
+    _parseEipSignature(tx, fields.slice(11));
+    return tx;
+}
+function _serializeEip4844(tx, sig) {
+    assertArgument(tx.isCancun(), "internal check failed; !cancun", "tx", tx);
+    const fields = [
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        tx.to,
+        formatNumber(tx.value, "value"),
+        tx.data,
+        (formatAccessList(tx.accessList)),
+        formatNumber(tx.maxFeePerBlobGas, "maxFeePerBlobGas"),
+        formatHashes(tx.blobVersionedHashes, "blobVersionedHashes")
+    ];
+    if (sig) {
+        fields.push(formatNumber(sig.yParity, "yParity"));
+        fields.push(toBeArray(sig.r));
+        fields.push(toBeArray(sig.s));
+    }
+    return concat(["0x03", encodeRlp(fields)]);
 }
 /**
  *  A **Transaction** describes an operation to be executed on
@@ -9863,6 +9923,8 @@ class Transaction {
     #chainId;
     #sig;
     #accessList;
+    #maxFeePerBlobGas;
+    #blobVersionedHashes;
     /**
      *  The transaction type.
      *
@@ -9889,6 +9951,11 @@ class Transaction {
             case "eip-1559":
                 this.#type = 2;
                 break;
+            case 3:
+            case "cancun":
+            case "eip-4844":
+                this.#type = 3;
+                break;
             default:
                 assertArgument(false, "unsupported transaction type", "type", value);
         }
@@ -9901,6 +9968,7 @@ class Transaction {
             case 0: return "legacy";
             case 1: return "eip-2930";
             case 2: return "eip-1559";
+            case 3: return "eip-4844";
         }
         return null;
     }
@@ -9908,7 +9976,13 @@ class Transaction {
      *  The ``to`` address for the transaction or ``null`` if the
      *  transaction is an ``init`` transaction.
      */
-    get to() { return this.#to; }
+    get to() {
+        const value = this.#to;
+        if (value == null && this.type === 3) {
+            return ZeroAddress;
+        }
+        return value;
+    }
     set to(value) {
         this.#to = (value == null) ? null : getAddress(value);
     }
@@ -9945,7 +10019,7 @@ class Transaction {
     get maxPriorityFeePerGas() {
         const value = this.#maxPriorityFeePerGas;
         if (value == null) {
-            if (this.type === 2) {
+            if (this.type === 2 || this.type === 3) {
                 return BN_0$4;
             }
             return null;
@@ -9962,7 +10036,7 @@ class Transaction {
     get maxFeePerGas() {
         const value = this.#maxFeePerGas;
         if (value == null) {
-            if (this.type === 2) {
+            if (this.type === 2 || this.type === 3) {
                 return BN_0$4;
             }
             return null;
@@ -10006,7 +10080,9 @@ class Transaction {
     get accessList() {
         const value = this.#accessList || null;
         if (value == null) {
-            if (this.type === 1 || this.type === 2) {
+            if (this.type === 1 || this.type === 2 || this.type === 3) {
+                // @TODO: in v7, this should assign the value or become
+                // a live object itself, otherwise mutation is inconsistent
                 return [];
             }
             return null;
@@ -10017,21 +10093,58 @@ class Transaction {
         this.#accessList = (value == null) ? null : accessListify(value);
     }
     /**
+     *  The max fee per blob gas for Cancun transactions.
+     */
+    get maxFeePerBlobGas() {
+        const value = this.#maxFeePerBlobGas;
+        if (value == null && this.type === 3) {
+            return BN_0$4;
+        }
+        return value;
+    }
+    set maxFeePerBlobGas(value) {
+        this.#maxFeePerBlobGas = (value == null) ? null : getBigInt(value, "maxFeePerBlobGas");
+    }
+    /**
+     *  The BLOB versioned hashes for Cancun transactions.
+     */
+    get blobVersionedHashes() {
+        // @TODO: Mutation is inconsistent; if unset, the returned value
+        // cannot mutate the object, if set it can
+        let value = this.#blobVersionedHashes;
+        if (value == null && this.type === 3) {
+            return [];
+        }
+        return value;
+    }
+    set blobVersionedHashes(value) {
+        if (value != null) {
+            assertArgument(Array.isArray(value), "blobVersionedHashes must be an Array", "value", value);
+            value = value.slice();
+            for (let i = 0; i < value.length; i++) {
+                assertArgument(isHexString(value[i], 32), "invalid blobVersionedHash", `value[${i}]`, value[i]);
+            }
+        }
+        this.#blobVersionedHashes = value;
+    }
+    /**
      *  Creates a new Transaction with default values.
      */
     constructor() {
         this.#type = null;
         this.#to = null;
         this.#nonce = 0;
-        this.#gasLimit = BigInt(0);
+        this.#gasLimit = BN_0$4;
         this.#gasPrice = null;
         this.#maxPriorityFeePerGas = null;
         this.#maxFeePerGas = null;
         this.#data = "0x";
-        this.#value = BigInt(0);
-        this.#chainId = BigInt(0);
+        this.#value = BN_0$4;
+        this.#chainId = BN_0$4;
         this.#sig = null;
         this.#accessList = null;
+        this.#maxFeePerBlobGas = null;
+        this.#blobVersionedHashes = null;
     }
     /**
      *  The transaction hash, if signed. Otherwise, ``null``.
@@ -10076,7 +10189,6 @@ class Transaction {
      *  transaction are non-null.
      */
     isSigned() {
-        //isSigned(): this is SignedTransaction {
         return this.signature != null;
     }
     /**
@@ -10094,6 +10206,8 @@ class Transaction {
                 return _serializeEip2930(this, this.signature);
             case 2:
                 return _serializeEip1559(this, this.signature);
+            case 3:
+                return _serializeEip4844(this, this.signature);
         }
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
     }
@@ -10111,6 +10225,8 @@ class Transaction {
                 return _serializeEip2930(this);
             case 2:
                 return _serializeEip1559(this);
+            case 3:
+                return _serializeEip4844(this);
         }
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
     }
@@ -10119,7 +10235,13 @@ class Transaction {
      *  supported transaction type.
      */
     inferType() {
-        return (this.inferTypes().pop());
+        const types = this.inferTypes();
+        // Prefer London (EIP-1559) over Cancun (BLOb)
+        if (types.indexOf(2) >= 0) {
+            return 2;
+        }
+        // Return the highest inferred type
+        return (types.pop());
     }
     /**
      *  Validates the explicit properties and returns a list of compatible
@@ -10130,6 +10252,7 @@ class Transaction {
         const hasGasPrice = this.gasPrice != null;
         const hasFee = (this.maxFeePerGas != null || this.maxPriorityFeePerGas != null);
         const hasAccessList = (this.accessList != null);
+        const hasBlob = (this.#maxFeePerBlobGas != null || this.#blobVersionedHashes);
         //if (hasGasPrice && hasFee) {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
         //}
@@ -10160,10 +10283,14 @@ class Transaction {
                 types.push(1);
                 types.push(2);
             }
+            else if (hasBlob && this.to) {
+                types.push(3);
+            }
             else {
                 types.push(0);
                 types.push(1);
                 types.push(2);
+                types.push(3);
             }
         }
         types.sort();
@@ -10198,6 +10325,16 @@ class Transaction {
      */
     isLondon() {
         return (this.type === 2);
+    }
+    /**
+     *  Returns true if this transaction is an [[link-eip-4844]] BLOB
+     *  transaction.
+     *
+     *  This provides a Type Guard that the related properties are
+     *  non-null.
+     */
+    isCancun() {
+        return (this.type === 3);
     }
     /**
      *  Create a copy of this transaciton.
@@ -10247,6 +10384,7 @@ class Transaction {
             switch (payload[0]) {
                 case 1: return Transaction.from(_parseEip2930(payload));
                 case 2: return Transaction.from(_parseEip1559(payload));
+                case 3: return Transaction.from(_parseEip4844(payload));
             }
             assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
         }
@@ -10272,6 +10410,9 @@ class Transaction {
         if (tx.maxFeePerGas != null) {
             result.maxFeePerGas = tx.maxFeePerGas;
         }
+        if (tx.maxFeePerBlobGas != null) {
+            result.maxFeePerBlobGas = tx.maxFeePerBlobGas;
+        }
         if (tx.data != null) {
             result.data = tx.data;
         }
@@ -10286,6 +10427,9 @@ class Transaction {
         }
         if (tx.accessList != null) {
             result.accessList = tx.accessList;
+        }
+        if (tx.blobVersionedHashes != null) {
+            result.blobVersionedHashes = tx.blobVersionedHashes;
         }
         if (tx.hash != null) {
             assertArgument(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);
@@ -10975,10 +11119,10 @@ function setify(items) {
     items.forEach((k) => result.add(k));
     return Object.freeze(result);
 }
-const _kwVisibDeploy = "external public payable";
+const _kwVisibDeploy = "external public payable override";
 const KwVisibDeploy = setify(_kwVisibDeploy.split(" "));
 // Visibility Keywords
-const _kwVisib = "constant external internal payable private public pure view";
+const _kwVisib = "constant external internal payable private public pure view override";
 const KwVisib = setify(_kwVisib.split(" "));
 const _kwTypes = "constructor error event fallback function receive struct";
 const KwTypes = setify(_kwTypes.split(" "));
@@ -11032,7 +11176,8 @@ class TokenString {
     // Pops and returns the value of the next token if it is `type`; throws if out of tokens
     popType(type) {
         if (this.peek().type !== type) {
-            throw new Error(`expected ${type}; got ${JSON.stringify(this.peek())}`);
+            const top = this.peek();
+            throw new Error(`expected ${type}; got ${top.type} ${JSON.stringify(top.text)}`);
         }
         return this.pop().text;
     }
@@ -11264,7 +11409,7 @@ function consumeGas(tokens) {
 }
 function consumeEoi(tokens) {
     if (tokens.length) {
-        throw new Error(`unexpected tokens: ${tokens.toString()}`);
+        throw new Error(`unexpected tokens at offset ${tokens.offset}: ${tokens.toString()}`);
     }
 }
 const regexArrayType = new RegExp(/^(.*)\[([0-9]*)\]$/);
@@ -12743,7 +12888,7 @@ class Interface {
                 frags.push(Fragment.from(a));
             }
             catch (error) {
-                console.log("EE", error);
+                console.log(`[Warning] Invalid Fragment ${JSON.stringify(a)}:`, error.message);
             }
         }
         defineProperties(this, {
@@ -14916,8 +15061,8 @@ class ContractTransactionResponse extends TransactionResponse {
      *  and the transaction has not been mined, otherwise this will
      *  wait until enough confirmations have completed.
      */
-    async wait(confirms) {
-        const receipt = await super.wait(confirms);
+    async wait(confirms, timeout) {
+        const receipt = await super.wait(confirms, timeout);
         if (receipt == null) {
             return null;
         }
@@ -16000,7 +16145,7 @@ class ContractFactory {
      *  Resolves to the Contract deployed by passing %%args%% into the
      *  constructor.
      *
-     *  This will resovle to the Contract before it has been deployed to the
+     *  This will resolve to the Contract before it has been deployed to the
      *  network, so the [[BaseContract-waitForDeployment]] should be used before
      *  sending any transactions to it.
      */
@@ -17291,6 +17436,7 @@ function injectCommonNetworks() {
     registerEth("goerli", 5, { ensNetwork: 5 });
     registerEth("kovan", 42, { ensNetwork: 42 });
     registerEth("sepolia", 11155111, { ensNetwork: 11155111 });
+    registerEth("holesky", 17000, { ensNetwork: 17000 });
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
     registerEth("arbitrum", 42161, {
@@ -20636,8 +20782,11 @@ class CloudflareProvider extends JsonRpcProvider {
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Sepolia Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - BNB Smart Chain Mainnet (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
@@ -20725,10 +20874,16 @@ class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-goerli.etherscan.io";
             case "sepolia":
                 return "https:/\/api-sepolia.etherscan.io";
+            case "holesky":
+                return "https:/\/api-holesky.etherscan.io";
             case "arbitrum":
                 return "https:/\/api.arbiscan.io";
             case "arbitrum-goerli":
                 return "https:/\/api-goerli.arbiscan.io";
+            case "bnb":
+                return "https:/\/api.bscscan.com";
+            case "bnbt":
+                return "https:/\/api-testnet.bscscan.com";
             case "matic":
                 return "https:/\/api.polygonscan.com";
             case "matic-mumbai":
@@ -20737,10 +20892,6 @@ class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
                 return "https:/\/api-goerli-optimistic.etherscan.io";
-            case "bnb":
-                return "http:/\/api.bscscan.com";
-            case "bnbt":
-                return "http:/\/api-testnet.bscscan.com";
         }
         assertArgument(false, "unsupported network", "network", this.network);
     }
@@ -21700,6 +21851,7 @@ class InfuraProvider extends JsonRpcProvider {
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
  *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
@@ -21725,6 +21877,8 @@ function getHost$1(name) {
             return "ethers.ethereum-goerli.quiknode.pro";
         case "sepolia":
             return "ethers.ethereum-sepolia.quiknode.pro";
+        case "holesky":
+            return "ethers.ethereum-holesky.quiknode.pro";
         case "arbitrum":
             return "ethers.arbitrum-mainnet.quiknode.pro";
         case "arbitrum-goerli":
@@ -21763,7 +21917,6 @@ function getHost$1(name) {
   are EVM compatible and work with ethers
 
   http://ethers.matic-amoy.quiknode.pro
-  http://ethers.ethereum-holesky.quiknode.pro
 
   http://ethers.avalanche-mainnet.quiknode.pro
   http://ethers.avalanche-testnet.quiknode.pro
@@ -21845,7 +21998,7 @@ class QuickNodeProvider extends JsonRpcProvider {
 }
 
 /**
- *  A **FallbackProvider** providers resiliance, security and performatnce
+ *  A **FallbackProvider** provides resilience, security and performance
  *  in a way that is customizable and configurable.
  *
  *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
@@ -22043,7 +22196,7 @@ function getFuzzyMode(quorum, results) {
 }
 /**
  *  A **FallbackProvider** manages several [[Providers]] providing
- *  resiliance by switching between slow or misbehaving nodes, security
+ *  resilience by switching between slow or misbehaving nodes, security
  *  by requiring multiple backends to aggree and performance by allowing
  *  faster backends to respond earlier.
  *
@@ -22700,6 +22853,7 @@ class BrowserProvider extends JsonRpcApiPollingProvider {
      *  %%network%%.
      */
     constructor(ethereum, network) {
+        assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
         super(network, { batchMaxCount: 1 });
         this.#request = async (method, params) => {
             const payload = { method, params };

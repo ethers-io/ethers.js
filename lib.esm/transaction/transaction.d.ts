@@ -64,6 +64,14 @@ export interface TransactionLike<A = string> {
      *  The access list for berlin and london transactions.
      */
     accessList?: null | AccessListish;
+    /**
+     *  The maximum fee per blob gas (see [[link-eip-4844]]).
+     */
+    maxFeePerBlobGas?: null | BigNumberish;
+    /**
+     *  The versioned hashes (see [[link-eip-4844]]).
+     */
+    blobVersionedHashes?: null | Array<string>;
 }
 /**
  *  A **Transaction** describes an operation to be executed on
@@ -158,6 +166,16 @@ export declare class Transaction implements TransactionLike<string> {
     get accessList(): null | AccessList;
     set accessList(value: null | AccessListish);
     /**
+     *  The max fee per blob gas for Cancun transactions.
+     */
+    get maxFeePerBlobGas(): null | bigint;
+    set maxFeePerBlobGas(value: null | BigNumberish);
+    /**
+     *  The BLOB versioned hashes for Cancun transactions.
+     */
+    get blobVersionedHashes(): null | Array<string>;
+    set blobVersionedHashes(value: null | Array<string>);
+    /**
      *  Creates a new Transaction with default values.
      */
     constructor();
@@ -251,6 +269,22 @@ export declare class Transaction implements TransactionLike<string> {
         accessList: AccessList;
         maxFeePerGas: bigint;
         maxPriorityFeePerGas: bigint;
+    });
+    /**
+     *  Returns true if this transaction is an [[link-eip-4844]] BLOB
+     *  transaction.
+     *
+     *  This provides a Type Guard that the related properties are
+     *  non-null.
+     */
+    isCancun(): this is (Transaction & {
+        type: 3;
+        to: string;
+        accessList: AccessList;
+        maxFeePerGas: bigint;
+        maxPriorityFeePerGas: bigint;
+        maxFeePerBlobGas: bigint;
+        blobVersionedHashes: Array<string>;
     });
     /**
      *  Create a copy of this transaciton.

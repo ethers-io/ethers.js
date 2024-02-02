@@ -361,7 +361,7 @@ export declare class Interface {
      *  If the matching event cannot be found, returns null.
      */
     parseLog(log: {
-        topics: Array<string>;
+        topics: ReadonlyArray<string>;
         data: string;
     }): null | LogDescription;
     /**

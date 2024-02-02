@@ -158,7 +158,7 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
      */
     static from<T = ContractInterface>(target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner): BaseContract & Omit<T, keyof BaseContract>;
 }
-declare const Contract_base: new (target: string, abi: Interface | InterfaceAbi, runner?: ContractRunner | null | undefined) => BaseContract & Omit<ContractInterface, keyof BaseContract>;
+declare const Contract_base: new (target: string | Addressable, abi: Interface | InterfaceAbi, runner?: ContractRunner | null | undefined) => BaseContract & Omit<ContractInterface, keyof BaseContract>;
 /**
  *  A [[BaseContract]] with no type guards on its methods or events.
  */

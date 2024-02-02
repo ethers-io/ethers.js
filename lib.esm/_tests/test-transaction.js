@@ -54,6 +54,16 @@ describe("Tests Unsigned Transaction Serializing", function () {
             assert.equal(tx.unsignedSerialized, test.unsignedLondon, "unsignedLondon");
         });
     }
+    for (const test of tests) {
+        if (!test.unsignedCancun) {
+            continue;
+        }
+        it(`serialized unsigned cancun transaction: ${test.name}`, function () {
+            const txData = Object.assign({}, test.transaction, { type: 3 });
+            const tx = Transaction.from(txData);
+            assert.equal(tx.unsignedSerialized, test.unsignedCancun, "unsignedCancun");
+        });
+    }
 });
 describe("Tests Signed Transaction Serializing", function () {
     const tests = loadTests("transactions");
@@ -109,6 +119,19 @@ describe("Tests Signed Transaction Serializing", function () {
             });
             const tx = Transaction.from(txData);
             assert.equal(tx.serialized, test.signedLondon, "signedLondon");
+        });
+    }
+    for (const test of tests) {
+        if (!test.signedCancun) {
+            continue;
+        }
+        it(`serialized signed Cancun transaction: ${test.name}`, function () {
+            const txData = Object.assign({}, test.transaction, {
+                type: 3,
+                signature: test.signatureCancun
+            });
+            const tx = Transaction.from(txData);
+            assert.equal(tx.serialized, test.signedCancun, "signedCancun");
         });
     }
 });
@@ -194,6 +217,17 @@ describe("Tests Unsigned Transaction Parsing", function () {
             assertTxEqual(tx, expected);
         });
     }
+    for (const test of tests) {
+        if (!test.unsignedCancun) {
+            continue;
+        }
+        it(`parses unsigned Cancun transaction: ${test.name}`, function () {
+            const tx = Transaction.from(test.unsignedCancun);
+            const expected = addDefaults(test.transaction);
+            expected.gasPrice = null;
+            assertTxEqual(tx, expected);
+        });
+    }
 });
 describe("Tests Signed Transaction Parsing", function () {
     const tests = loadTests("transactions");
@@ -235,6 +269,7 @@ describe("Tests Signed Transaction Parsing", function () {
                 assert.equal(tx.isLegacy(), true, "isLegacy");
                 assert.equal(tx.isBerlin(), false, "isBerlin");
                 assert.equal(tx.isLondon(), false, "isLondon");
+                assert.equal(tx.isCancun(), false, "isCancun");
                 assert.ok(!!tx.signature, "signature:!null");
                 assert.equal(tx.signature.r, test.signatureEip155.r, "signature.r");
                 assert.equal(tx.signature.s, test.signatureEip155.s, "signature.s");
@@ -255,6 +290,7 @@ describe("Tests Signed Transaction Parsing", function () {
                 assert.equal(tx.isLegacy(), false, "isLegacy");
                 assert.equal(tx.isBerlin(), true, "isBerlin");
                 assert.equal(tx.isLondon(), false, "isLondon");
+                assert.equal(tx.isCancun(), false, "isCancun");
                 assert.ok(!!tx.signature, "signature:!null");
                 assert.equal(tx.signature.r, test.signatureBerlin.r, "signature.r");
                 assert.equal(tx.signature.s, test.signatureBerlin.s, "signature.s");
@@ -274,10 +310,35 @@ describe("Tests Signed Transaction Parsing", function () {
                 assert.equal(tx.isLegacy(), false, "isLegacy");
                 assert.equal(tx.isBerlin(), false, "isBerlin");
                 assert.equal(tx.isLondon(), true, "isLondon");
+                assert.equal(tx.isCancun(), false, "isCancun");
                 assert.ok(!!tx.signature, "signature:!null");
                 assert.equal(tx.signature.r, test.signatureLondon.r, "signature.r");
                 assert.equal(tx.signature.s, test.signatureLondon.s, "signature.s");
                 assert.equal(tx.signature.yParity, parseInt(test.signatureLondon.v), "signature.v");
+                // Test cloning
+                tx = tx.clone();
+            }
+        });
+    }
+    for (const test of tests) {
+        if (!test.signedCancun) {
+            continue;
+        }
+        it(`parses signed Cancun transaction: ${test.name}`, function () {
+            let tx = Transaction.from(test.signedCancun);
+            const expected = addDefaults(test.transaction);
+            expected.gasPrice = null;
+            for (let i = 0; i < 2; i++) {
+                assertTxEqual(tx, expected);
+                assert.equal(tx.typeName, "eip-4844", "typeName");
+                assert.equal(tx.isLegacy(), false, "isLegacy");
+                assert.equal(tx.isBerlin(), false, "isBerlin");
+                assert.equal(tx.isLondon(), false, "isLondon");
+                assert.equal(tx.isCancun(), true, "isCancun");
+                assert.ok(!!tx.signature, "signature:!null");
+                assert.equal(tx.signature.r, test.signatureCancun.r, "signature.r");
+                assert.equal(tx.signature.s, test.signatureCancun.s, "signature.s");
+                assert.equal(tx.signature.yParity, parseInt(test.signatureCancun.v), "signature.v");
                 // Test cloning
                 tx = tx.clone();
             }

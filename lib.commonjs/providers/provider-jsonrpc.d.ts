@@ -100,7 +100,7 @@ export type DebugEventJsonRpcApiProvider = {
  *  cannot change, such as when using INFURA (since the URL dictates the
  *  network). If the network is assumed static and it does change, this
  *  can have tragic consequences. For example, this **CANNOT** be used
- *  with MetaMask, since the used can select a new network from the
+ *  with MetaMask, since the user can select a new network from the
  *  drop-down at any time.
  *
  *  **``batchStallTime``** - how long (ms) to aggregate requests into a

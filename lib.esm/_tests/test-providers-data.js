@@ -202,7 +202,7 @@ describe("Test Provider Transaction operations", function () {
 });
 describe("Test Networks", function () {
     const networks = [
-        "mainnet", "goerli", "sepolia",
+        "mainnet", "goerli", "sepolia", "holesky",
         "arbitrum", "arbitrum-goerli", "arbitrum-sepolia",
         "base", "base-goerli", "base-sepolia",
         "bnb", "bnbt",
