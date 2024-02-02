@@ -336,14 +336,19 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
         try {
             result = await runner.call(tx);
         } catch (error: any) {
-            if (isCallException(error) && error.data) {
-                throw contract.interface.makeError(error.data, tx);
+            if (error.data) {
+                result = error.data;
+            } else {
+                throw error;
             }
-            throw error;
         }
 
         const fragment = getFragment(...args);
-        return contract.interface.decodeFunctionResult(fragment, result);
+        try {
+            return contract.interface.decodeFunctionResult(fragment, result);
+        } catch (error) {
+            throw contract.interface.makeError(result, tx);
+        }
     };
 
     const method = async (...args: ContractMethodArgs<A>) => {
