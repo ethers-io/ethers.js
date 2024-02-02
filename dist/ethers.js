@@ -8406,7 +8406,7 @@ function id(value) {
     return keccak256(toUtf8Bytes(value));
 }
 
-// created 2023-09-12T22:05:14.211Z
+// created 2023-09-25T01:01:55.148Z
 // compressed base64-encoded blob for include-ens data
 // source: https://github.com/adraffy/ens-normalize.js/blob/main/src/make.js
 // see: https://github.com/adraffy/ens-normalize.js#security
@@ -8687,7 +8687,7 @@ function compare_arrays(a, b) {
 	return c;
 }
 
-// created 2023-09-12T22:05:14.211Z
+// created 2023-09-25T01:01:55.148Z
 // compressed base64-encoded blob for include-nf data
 // source: https://github.com/adraffy/ens-normalize.js/blob/main/src/make.js
 // see: https://github.com/adraffy/ens-normalize.js#security
@@ -8903,6 +8903,7 @@ function init() {
 	let r = read_compressed_payload(COMPRESSED$1);
 	const read_sorted_array = () => read_sorted(r);
 	const read_sorted_set = () => new Set(read_sorted_array());
+	const set_add_many = (set, v) => v.forEach(x => set.add(x));
 
 	MAPPED = new Map(read_mapped(r)); 
 	IGNORED = read_sorted_set(); // ignored characters are not valid, so just read raw codepoints
@@ -8925,13 +8926,20 @@ function init() {
 
 	let chunks = read_sorted_arrays(r);
 	let unrestricted = r();
-	const read_chunked = () => new Set(read_sorted_array().flatMap(i => chunks[i]).concat(read_sorted_array()));
+	//const read_chunked = () => new Set(read_sorted_array().flatMap(i => chunks[i]).concat(read_sorted_array()));
+	const read_chunked = () => {
+		// 20230921: build set in parts, 2x faster
+		let set = new Set();
+		read_sorted_array().forEach(i => set_add_many(set, chunks[i]));
+		set_add_many(set, read_sorted_array());
+		return set; 
+	};
 	GROUPS = read_array_while(i => {
 		// minifier property mangling seems unsafe
 		// so these are manually renamed to single chars
 		let N = read_array_while(r).map(x => x+0x60);
 		if (N.length) {
-			let R = i >= unrestricted; // first arent restricted
+			let R = i >= unrestricted; // unrestricted then restricted
 			N[0] -= 32; // capitalize
 			N = str_from_cps(N);
 			if (R) N=`Restricted[${N}]`;
@@ -8969,6 +8977,7 @@ function init() {
 	});
 
 	// compute confusable-extent complements
+	// usage: WHOLE_MAP.get(cp).M.get(cp) = complement set
 	for (let {V, M} of new Set(WHOLE_MAP.values())) {
 		// connect all groups that have each whole character
 		let recs = [];
@@ -8980,34 +8989,37 @@ function init() {
 				recs.push(rec);
 			}
 			rec.V.push(cp);
-			gs.forEach(g => rec.G.add(g));
+			set_add_many(rec.G, gs);
 		}
 		// per character cache groups which are not a member of the extent
-		let union = recs.flatMap(x => Array_from(x.G));
+		let union = recs.flatMap(x => Array_from(x.G)); // all of the groups used by this whole
 		for (let {G, V} of recs) {
-			let complement = new Set(union.filter(g => !G.has(g)));
+			let complement = new Set(union.filter(g => !G.has(g))); // groups not covered by the extent
 			for (let cp of V) {
-				M.set(cp, complement);
+				M.set(cp, complement); // this is the same reference
 			}
 		}
 	}
 
 	// compute valid set
-	let union = new Set(); // exists in 1+ groups
+	// 20230924: VALID was union but can be re-used
+	VALID = new Set(); // exists in 1+ groups
 	let multi = new Set(); // exists in 2+ groups
-	const add_to_union = cp => union.has(cp) ? multi.add(cp) : union.add(cp);
+	const add_to_union = cp => VALID.has(cp) ? multi.add(cp) : VALID.add(cp);
 	for (let g of GROUPS) {
 		for (let cp of g.P) add_to_union(cp);
 		for (let cp of g.Q) add_to_union(cp);
 	}
 	// dual purpose WHOLE_MAP: return placeholder if unique non-confusable
-	for (let cp of union) {
+	for (let cp of VALID) {
 		if (!WHOLE_MAP.has(cp) && !multi.has(cp)) {
 			WHOLE_MAP.set(cp, UNIQUE_PH);
 		}
 	}
-	VALID = new Set(Array_from(union).concat(Array_from(nfd(union)))); // possibly valid
-
+	// add all decomposed parts
+	// see derive: "Valid is Closed (via Brute-force)"
+	set_add_many(VALID, nfd(VALID));
+	
 	// decode emoji
 	// 20230719: emoji are now fully-expanded to avoid quirk logic 
 	EMOJI_LIST = read_trie(r).map(v => Emoji.from(v)).sort(compare_arrays);
@@ -9060,7 +9072,7 @@ function bidi_qq(s) {
 
 function check_label_extension(cps) {
 	if (cps.length >= 4 && cps[2] == HYPHEN && cps[3] == HYPHEN) {
-		throw new Error(`invalid label extension: "${str_from_cps(cps.slice(0, 4))}"`);
+		throw new Error(`invalid label extension: "${str_from_cps(cps.slice(0, 4))}"`); // this can only be ascii so cant be bidi
 	}
 }
 function check_leading_underscore(cps) {
@@ -9094,13 +9106,18 @@ function check_fenced(cps) {
 // create a safe to print string 
 // invisibles are escaped
 // leading cm uses placeholder
+// if cps exceed max, middle truncate with ellipsis
 // quoter(cp) => string, eg. 3000 => "{3000}"
 // note: in html, you'd call this function then replace [<>&] with entities
-function safe_str_from_cps(cps, quoter = quote_cp) {
+function safe_str_from_cps(cps, max = Infinity, quoter = quote_cp) {
 	//if (Number.isInteger(cps)) cps = [cps];
 	//if (!Array.isArray(cps)) throw new TypeError(`expected codepoints`);
 	let buf = [];
 	if (is_combining_mark(cps[0])) buf.push('◌');
+	if (cps.length > max) {
+		max >>= 1;
+		cps = [...cps.slice(0, max), 0x2026, ...cps.slice(-max)];
+	}
 	let prev = 0;
 	let n = cps.length;
 	for (let i = 0; i < n; i++) {
@@ -9265,7 +9282,7 @@ function flatten(split) {
 			// don't print label again if just a single label
 			let msg = error.message;
 			// bidi_qq() only necessary if msg is digits
-			throw new Error(split.length == 1 ? msg : `Invalid label ${bidi_qq(safe_str_from_cps(input))}: ${msg}`); 
+			throw new Error(split.length == 1 ? msg : `Invalid label ${bidi_qq(safe_str_from_cps(input, 63))}: ${msg}`); 
 		}
 		return str_from_cps(output);
 	}).join(STOP_CH);

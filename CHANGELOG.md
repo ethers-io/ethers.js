@@ -3,7 +3,7 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.11.0 (2024-02-02 03:13)
+ethers/v6.11.0 (2024-02-02 03:28)
 ---------------------------------
 
   - Assert BrowserProvider receives an EIP-1193 provider to fail early when passing undefined ethereum object ([b69f43b](https://github.com/ethers-io/ethers.js/commit/b69f43bc6f35da881ca7a0c8ccc5fda92edd076d)).
