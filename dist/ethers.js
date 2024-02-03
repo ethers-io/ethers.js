@@ -13928,6 +13928,16 @@ class Block {
      */
     gasUsed;
     /**
+     *  The total amount of blob gas consumed by the transactions
+     *  within the block. See [[link-eip-4844]].
+     */
+    blobGasUsed;
+    /**
+     *  The running total of blob gas consumed in excess of the
+     *  target, prior to the block. See [[link-eip-4844]].
+     */
+    excessBlobGas;
+    /**
      *  The miner coinbase address, wihch receives any subsidies for
      *  including this block.
      */
@@ -13968,6 +13978,8 @@ class Block {
             difficulty: block.difficulty,
             gasLimit: block.gasLimit,
             gasUsed: block.gasUsed,
+            blobGasUsed: block.blobGasUsed,
+            excessBlobGas: block.excessBlobGas,
             miner: block.miner,
             extraData: block.extraData,
             baseFeePerGas: getValue(block.baseFeePerGas)
@@ -14017,6 +14029,8 @@ class Block {
             extraData,
             gasLimit: toJson(gasLimit),
             gasUsed: toJson(gasUsed),
+            blobGasUsed: toJson(this.blobGasUsed),
+            excessBlobGas: toJson(this.excessBlobGas),
             hash, miner, nonce, number, parentHash, timestamp,
             transactions,
         };
@@ -14321,6 +14335,10 @@ class TransactionReceipt {
      */
     gasUsed;
     /**
+     *  The gas used for BLObs. See [[link-eip-4844]].
+     */
+    blobGasUsed;
+    /**
      *  The amount of gas used by all transactions within the block for this
      *  and all transactions with a lower ``index``.
      *
@@ -14336,6 +14354,10 @@ class TransactionReceipt {
      *  fee is protocol-enforced.
      */
     gasPrice;
+    /**
+     *  The price paid per BLOB in gas. See [[link-eip-4844]].
+     */
+    blobGasPrice;
     /**
      *  The [[link-eip-2718]] transaction type.
      */
@@ -14383,7 +14405,9 @@ class TransactionReceipt {
             logsBloom: tx.logsBloom,
             gasUsed: tx.gasUsed,
             cumulativeGasUsed: tx.cumulativeGasUsed,
+            blobGasUsed: tx.blobGasUsed,
             gasPrice,
+            blobGasPrice: tx.blobGasPrice,
             type: tx.type,
             //byzantium: tx.byzantium,
             status: tx.status,
@@ -14408,6 +14432,8 @@ class TransactionReceipt {
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
             gasPrice: toJson(this.gasPrice),
+            blobGasUsed: toJson(this.blobGasUsed),
+            blobGasPrice: toJson(this.blobGasPrice),
             gasUsed: toJson(this.gasUsed),
             hash, index, logs, logsBloom, root, status, to
         };
@@ -14577,6 +14603,10 @@ class TransactionResponse {
      */
     maxFeePerGas;
     /**
+     *  The [[link-eip-4844]] max fee per BLOb gas.
+     */
+    maxFeePerBlobGas;
+    /**
      *  The data.
      */
     data;
@@ -14598,6 +14628,10 @@ class TransactionResponse {
      *  support it, otherwise ``null``.
      */
     accessList;
+    /**
+     *  The [[link-eip-4844]] BLOb versioned hashes.
+     */
+    blobVersionedHashes;
     #startBlock;
     /**
      *  @_ignore:
@@ -14618,19 +14652,22 @@ class TransactionResponse {
         this.gasPrice = tx.gasPrice;
         this.maxPriorityFeePerGas = (tx.maxPriorityFeePerGas != null) ? tx.maxPriorityFeePerGas : null;
         this.maxFeePerGas = (tx.maxFeePerGas != null) ? tx.maxFeePerGas : null;
+        this.maxFeePerBlobGas = (tx.maxFeePerBlobGas != null) ? tx.maxFeePerBlobGas : null;
         this.chainId = tx.chainId;
         this.signature = tx.signature;
         this.accessList = (tx.accessList != null) ? tx.accessList : null;
+        this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes : null;
         this.#startBlock = -1;
     }
     /**
      *  Returns a JSON-compatible representation of this transaction.
      */
     toJSON() {
-        const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;
+        const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList, blobVersionedHashes } = this;
         return {
-            _type: "TransactionReceipt",
+            _type: "TransactionResponse",
             accessList, blockNumber, blockHash,
+            blobVersionedHashes,
             chainId: toJson(this.chainId),
             data, from,
             gasLimit: toJson(this.gasLimit),
@@ -14638,6 +14675,7 @@ class TransactionResponse {
             hash,
             maxFeePerGas: toJson(this.maxFeePerGas),
             maxPriorityFeePerGas: toJson(this.maxPriorityFeePerGas),
+            maxFeePerBlobGas: toJson(this.maxFeePerBlobGas),
             nonce, signature, to, index, type,
             value: toJson(this.value),
         };
@@ -14918,6 +14956,13 @@ class TransactionResponse {
      */
     isLondon() {
         return (this.type === 2);
+    }
+    /**
+     *  Returns true if hte transaction is a Cancun (i.e. ``type == 3``)
+     *  transaction. See [[link-eip-4844]].
+     */
+    isCancun() {
+        return (this.type === 3);
     }
     /**
      *  Returns a filter which can be used to listen for orphan events
@@ -16689,8 +16734,11 @@ function allowNull(format, nullValue) {
         return format(value);
     });
 }
-function arrayOf(format) {
+function arrayOf(format, allowNull) {
     return ((array) => {
+        if (allowNull && array == null) {
+            return null;
+        }
         if (!Array.isArray(array)) {
             throw new Error("not an array");
         }
@@ -16771,6 +16819,8 @@ const _formatBlock = object({
     difficulty: getBigInt,
     gasLimit: getBigInt,
     gasUsed: getBigInt,
+    blobGasUsed: allowNull(getBigInt, null),
+    excessBlobGas: allowNull(getBigInt, null),
     miner: allowNull(getAddress),
     extraData: formatData,
     baseFeePerGas: allowNull(getBigInt)
@@ -16808,6 +16858,7 @@ const _formatTransactionReceipt = object({
     index: getNumber,
     root: allowNull(hexlify),
     gasUsed: getBigInt,
+    blobGasUsed: allowNull(getBigInt, null),
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
     hash: formatHash,
@@ -16816,6 +16867,7 @@ const _formatTransactionReceipt = object({
     //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: getBigInt,
     effectiveGasPrice: allowNull(getBigInt),
+    blobGasPrice: allowNull(getBigInt, null),
     status: allowNull(getNumber),
     type: allowNull(getNumber, 0)
 }, {
@@ -16841,6 +16893,7 @@ function formatTransactionResponse(value) {
             return getNumber(value);
         },
         accessList: allowNull(accessListify, null),
+        blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),
@@ -16850,6 +16903,7 @@ function formatTransactionResponse(value) {
         gasPrice: allowNull(getBigInt),
         maxPriorityFeePerGas: allowNull(getBigInt),
         maxFeePerGas: allowNull(getBigInt),
+        maxFeePerBlobGas: allowNull(getBigInt, null),
         gasLimit: getBigInt,
         to: allowNull(getAddress, null),
         value: getBigInt,

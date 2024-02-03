@@ -13934,6 +13934,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         gasUsed;
         /**
+         *  The total amount of blob gas consumed by the transactions
+         *  within the block. See [[link-eip-4844]].
+         */
+        blobGasUsed;
+        /**
+         *  The running total of blob gas consumed in excess of the
+         *  target, prior to the block. See [[link-eip-4844]].
+         */
+        excessBlobGas;
+        /**
          *  The miner coinbase address, wihch receives any subsidies for
          *  including this block.
          */
@@ -13974,6 +13984,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 difficulty: block.difficulty,
                 gasLimit: block.gasLimit,
                 gasUsed: block.gasUsed,
+                blobGasUsed: block.blobGasUsed,
+                excessBlobGas: block.excessBlobGas,
                 miner: block.miner,
                 extraData: block.extraData,
                 baseFeePerGas: getValue(block.baseFeePerGas)
@@ -14023,6 +14035,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 extraData,
                 gasLimit: toJson(gasLimit),
                 gasUsed: toJson(gasUsed),
+                blobGasUsed: toJson(this.blobGasUsed),
+                excessBlobGas: toJson(this.excessBlobGas),
                 hash, miner, nonce, number, parentHash, timestamp,
                 transactions,
             };
@@ -14327,6 +14341,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         gasUsed;
         /**
+         *  The gas used for BLObs. See [[link-eip-4844]].
+         */
+        blobGasUsed;
+        /**
          *  The amount of gas used by all transactions within the block for this
          *  and all transactions with a lower ``index``.
          *
@@ -14342,6 +14360,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  fee is protocol-enforced.
          */
         gasPrice;
+        /**
+         *  The price paid per BLOB in gas. See [[link-eip-4844]].
+         */
+        blobGasPrice;
         /**
          *  The [[link-eip-2718]] transaction type.
          */
@@ -14389,7 +14411,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 logsBloom: tx.logsBloom,
                 gasUsed: tx.gasUsed,
                 cumulativeGasUsed: tx.cumulativeGasUsed,
+                blobGasUsed: tx.blobGasUsed,
                 gasPrice,
+                blobGasPrice: tx.blobGasPrice,
                 type: tx.type,
                 //byzantium: tx.byzantium,
                 status: tx.status,
@@ -14414,6 +14438,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 cumulativeGasUsed: toJson(this.cumulativeGasUsed),
                 from,
                 gasPrice: toJson(this.gasPrice),
+                blobGasUsed: toJson(this.blobGasUsed),
+                blobGasPrice: toJson(this.blobGasPrice),
                 gasUsed: toJson(this.gasUsed),
                 hash, index, logs, logsBloom, root, status, to
             };
@@ -14583,6 +14609,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         maxFeePerGas;
         /**
+         *  The [[link-eip-4844]] max fee per BLOb gas.
+         */
+        maxFeePerBlobGas;
+        /**
          *  The data.
          */
         data;
@@ -14604,6 +14634,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  support it, otherwise ``null``.
          */
         accessList;
+        /**
+         *  The [[link-eip-4844]] BLOb versioned hashes.
+         */
+        blobVersionedHashes;
         #startBlock;
         /**
          *  @_ignore:
@@ -14624,19 +14658,22 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.gasPrice = tx.gasPrice;
             this.maxPriorityFeePerGas = (tx.maxPriorityFeePerGas != null) ? tx.maxPriorityFeePerGas : null;
             this.maxFeePerGas = (tx.maxFeePerGas != null) ? tx.maxFeePerGas : null;
+            this.maxFeePerBlobGas = (tx.maxFeePerBlobGas != null) ? tx.maxFeePerBlobGas : null;
             this.chainId = tx.chainId;
             this.signature = tx.signature;
             this.accessList = (tx.accessList != null) ? tx.accessList : null;
+            this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes : null;
             this.#startBlock = -1;
         }
         /**
          *  Returns a JSON-compatible representation of this transaction.
          */
         toJSON() {
-            const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;
+            const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList, blobVersionedHashes } = this;
             return {
-                _type: "TransactionReceipt",
+                _type: "TransactionResponse",
                 accessList, blockNumber, blockHash,
+                blobVersionedHashes,
                 chainId: toJson(this.chainId),
                 data, from,
                 gasLimit: toJson(this.gasLimit),
@@ -14644,6 +14681,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 hash,
                 maxFeePerGas: toJson(this.maxFeePerGas),
                 maxPriorityFeePerGas: toJson(this.maxPriorityFeePerGas),
+                maxFeePerBlobGas: toJson(this.maxFeePerBlobGas),
                 nonce, signature, to, index, type,
                 value: toJson(this.value),
             };
@@ -14924,6 +14962,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         isLondon() {
             return (this.type === 2);
+        }
+        /**
+         *  Returns true if hte transaction is a Cancun (i.e. ``type == 3``)
+         *  transaction. See [[link-eip-4844]].
+         */
+        isCancun() {
+            return (this.type === 3);
         }
         /**
          *  Returns a filter which can be used to listen for orphan events
@@ -16695,8 +16740,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return format(value);
         });
     }
-    function arrayOf(format) {
+    function arrayOf(format, allowNull) {
         return ((array) => {
+            if (allowNull && array == null) {
+                return null;
+            }
             if (!Array.isArray(array)) {
                 throw new Error("not an array");
             }
@@ -16777,6 +16825,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         difficulty: getBigInt,
         gasLimit: getBigInt,
         gasUsed: getBigInt,
+        blobGasUsed: allowNull(getBigInt, null),
+        excessBlobGas: allowNull(getBigInt, null),
         miner: allowNull(getAddress),
         extraData: formatData,
         baseFeePerGas: allowNull(getBigInt)
@@ -16814,6 +16864,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         index: getNumber,
         root: allowNull(hexlify),
         gasUsed: getBigInt,
+        blobGasUsed: allowNull(getBigInt, null),
         logsBloom: allowNull(formatData),
         blockHash: formatHash,
         hash: formatHash,
@@ -16822,6 +16873,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         //confirmations: allowNull(getNumber, null),
         cumulativeGasUsed: getBigInt,
         effectiveGasPrice: allowNull(getBigInt),
+        blobGasPrice: allowNull(getBigInt, null),
         status: allowNull(getNumber),
         type: allowNull(getNumber, 0)
     }, {
@@ -16847,6 +16899,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return getNumber(value);
             },
             accessList: allowNull(accessListify, null),
+            blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
             blockHash: allowNull(formatHash, null),
             blockNumber: allowNull(getNumber, null),
             transactionIndex: allowNull(getNumber, null),
@@ -16856,6 +16909,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             gasPrice: allowNull(getBigInt),
             maxPriorityFeePerGas: allowNull(getBigInt),
             maxFeePerGas: allowNull(getBigInt),
+            maxFeePerBlobGas: allowNull(getBigInt, null),
             gasLimit: getBigInt,
             to: allowNull(getAddress, null),
             value: getBigInt,

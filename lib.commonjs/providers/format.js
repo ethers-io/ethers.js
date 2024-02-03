@@ -18,8 +18,11 @@ function allowNull(format, nullValue) {
     });
 }
 exports.allowNull = allowNull;
-function arrayOf(format) {
+function arrayOf(format, allowNull) {
     return ((array) => {
+        if (allowNull && array == null) {
+            return null;
+        }
         if (!Array.isArray(array)) {
             throw new Error("not an array");
         }
@@ -113,6 +116,8 @@ const _formatBlock = object({
     difficulty: index_js_4.getBigInt,
     gasLimit: index_js_4.getBigInt,
     gasUsed: index_js_4.getBigInt,
+    blobGasUsed: allowNull(index_js_4.getBigInt, null),
+    excessBlobGas: allowNull(index_js_4.getBigInt, null),
     miner: allowNull(index_js_1.getAddress),
     extraData: formatData,
     baseFeePerGas: allowNull(index_js_4.getBigInt)
@@ -152,6 +157,7 @@ const _formatTransactionReceipt = object({
     index: index_js_4.getNumber,
     root: allowNull(index_js_4.hexlify),
     gasUsed: index_js_4.getBigInt,
+    blobGasUsed: allowNull(index_js_4.getBigInt, null),
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
     hash: formatHash,
@@ -160,6 +166,7 @@ const _formatTransactionReceipt = object({
     //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: index_js_4.getBigInt,
     effectiveGasPrice: allowNull(index_js_4.getBigInt),
+    blobGasPrice: allowNull(index_js_4.getBigInt, null),
     status: allowNull(index_js_4.getNumber),
     type: allowNull(index_js_4.getNumber, 0)
 }, {
@@ -186,6 +193,7 @@ function formatTransactionResponse(value) {
             return (0, index_js_4.getNumber)(value);
         },
         accessList: allowNull(index_js_3.accessListify, null),
+        blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(index_js_4.getNumber, null),
         transactionIndex: allowNull(index_js_4.getNumber, null),
@@ -195,6 +203,7 @@ function formatTransactionResponse(value) {
         gasPrice: allowNull(index_js_4.getBigInt),
         maxPriorityFeePerGas: allowNull(index_js_4.getBigInt),
         maxFeePerGas: allowNull(index_js_4.getBigInt),
+        maxFeePerBlobGas: allowNull(index_js_4.getBigInt, null),
         gasLimit: index_js_4.getBigInt,
         to: allowNull(index_js_1.getAddress, null),
         value: index_js_4.getBigInt,
