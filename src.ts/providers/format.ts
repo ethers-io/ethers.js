@@ -26,8 +26,9 @@ export function allowNull(format: FormatFunc, nullValue?: any): FormatFunc {
     });
 }
 
-export function arrayOf(format: FormatFunc): FormatFunc {
+export function arrayOf(format: FormatFunc, allowNull?: boolean): FormatFunc {
     return ((array: any) => {
+        if (allowNull && array == null) { return null; }
         if (!Array.isArray(array)) { throw new Error("not an array"); }
         return array.map((i) => format(i));
     });
@@ -119,6 +120,9 @@ const _formatBlock = object({
     gasLimit: getBigInt,
     gasUsed: getBigInt,
 
+    blobGasUsed: allowNull(getBigInt, null),
+    excessBlobGas: allowNull(getBigInt, null),
+
     miner: allowNull(getAddress),
     extraData: formatData,
 
@@ -159,6 +163,7 @@ const _formatTransactionReceipt = object({
     index: getNumber,
     root: allowNull(hexlify),
     gasUsed: getBigInt,
+    blobGasUsed: allowNull(getBigInt, null),
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
     hash: formatHash,
@@ -167,6 +172,7 @@ const _formatTransactionReceipt = object({
     //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: getBigInt,
     effectiveGasPrice: allowNull(getBigInt),
+    blobGasPrice: allowNull(getBigInt, null),
     status: allowNull(getNumber),
     type: allowNull(getNumber, 0)
 }, {
@@ -195,6 +201,7 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
             return getNumber(value);
         },
         accessList: allowNull(accessListify, null),
+        blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
 
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
@@ -208,6 +215,7 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         gasPrice: allowNull(getBigInt),
         maxPriorityFeePerGas: allowNull(getBigInt),
         maxFeePerGas: allowNull(getBigInt),
+        maxFeePerBlobGas: allowNull(getBigInt, null),
 
         gasLimit: getBigInt,
         to: allowNull(getAddress, null),

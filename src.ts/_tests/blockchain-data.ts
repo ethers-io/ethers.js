@@ -1,5 +1,5 @@
 export type TestBlockchainNetwork =
-    "mainnet" | "goerli";
+    "mainnet" | "goerli" | "sepolia";
 
 export interface TestBlockchainAddress {
     test: string;
@@ -13,19 +13,21 @@ export interface TestBlockchainAddress {
 
 export interface TestBlockchainBlock {
     test: string;
-    hash: string,
-    parentHash: string,
-    number: number,
-    timestamp: number,
-    nonce: string,
-    difficulty: bigint,
-    gasLimit: bigint,
-    gasUsed: bigint,
-    miner: string,
-    extraData: string,
-    transactions: Array<string>,
+    hash: string;
+    parentHash: string;
+    number: number;
+    timestamp: number;
+    nonce: string;
+    difficulty: bigint;
+    gasLimit: bigint;
+    gasUsed: bigint;
+    miner: string;
+    extraData: string;
+    transactions: Array<string>;
 
-    baseFeePerGas?: bigint
+    baseFeePerGas?: bigint;
+    blobGasUsed?: bigint;
+    excessBlobGas?: bigint;
 }
 
 export interface TestBlockchainTransaction {
@@ -46,7 +48,7 @@ export interface TestBlockchainTransaction {
         r: string,
         s: string,
         yParity: 0 | 1,
-        v: number,
+        v?: number,
         networkV: null | bigint,
     },
     creates: null | string,
@@ -56,6 +58,8 @@ export interface TestBlockchainTransaction {
 
     maxPriorityFeePerGas?: bigint,
     maxFeePerGas?: bigint
+    maxFeePerBlobGas?: bigint;
+    blobVersionedHashes?: Array<string>
 }
 
 export interface TestBlockchainReceipt {
@@ -84,7 +88,10 @@ export interface TestBlockchainReceipt {
     status: null | number,
     to: string,
     hash: string,
-    index: number
+    index: number;
+
+    blobGasUsed?: bigint;
+    blobGasPrice?: bigint;
 };
 
 export const testAddress: Record<TestBlockchainNetwork, Array<TestBlockchainAddress>> = {
@@ -109,6 +116,8 @@ export const testAddress: Record<TestBlockchainNetwork, Array<TestBlockchainAddr
         },
     ],
     goerli: [
+    ],
+    sepolia: [
     ]
 };
 
@@ -174,6 +183,100 @@ export const testBlock: Record<TestBlockchainNetwork, Array<TestBlockchainBlock>
     ],
     goerli: [
     ],
+    sepolia: [
+        {
+            test: "eip-4844-BLob-block",
+            hash: "0xa76eb2ed547798d6010f599902788136f0cd289e2c6df5bbf5242e36e356124d",
+            parentHash: "0x2b579cb7224abdbe7a66c76380d60329bba41d95d225feb80ca1a78cf83a5124",
+            number: 5198187,
+            timestamp: 1706801700,
+            nonce: "0x0000000000000000",
+            difficulty: BigInt(0),
+            gasLimit: BigInt("30000000"),
+            gasUsed: BigInt("5622957"),
+            baseFeePerGas: BigInt("48793932840"),
+            miner: "0x008b3b2F992C0E14eDaa6E2c662Bec549CAA8df1",
+            extraData: "0x",
+            blobGasUsed: BigInt("524288"),
+            excessBlobGas: BigInt("79691776"),
+            transactions: [
+                "0xe8a096a98cd7b8d783cbb30687c3adc8e59f1e9563c0454623cc8af59f8bcab1",
+                "0x5aac2d50b15e177e8edaae4819e989650a6cdb335dd8924b5a7a7ed1675d15e7",
+                "0x21c94c24419f746efd2c1f470c0842df21ab8da14f7db8e30a12c53a4e7d5145",
+                "0x85b40ce37262a7962487bd37bf36867b344525b425a90a25516ac3c2cb1f6535",
+                "0x1a674ff3bd6bbe7bc7ada2ae3da893a7b74b4cfaadebc8c3f0fe0c9ad3c1c35b",
+                "0x48cafe99a7d2284a1664e05c404dd88e4113ffb65bf49846716bd855ffc6835d",
+                "0x658065003e8952782d121d9b5729845862c2a45ed24e46c634041a77c4577bed",
+                "0xc5416e0a2383b1a9b3ba030803f88e45faebfb35ad5db022e44a09b15aeae385",
+                "0x9030f7962f3f638f96bb703f45cdaa8778cf393ead767592aa50bce32230eae3",
+                "0xce008888308a4c1d51f87a1c2a75b1d0bd15eb096c675ad091dcc9705e4d016d",
+                "0xcf17c1f09a22c992a469da0023ad3c9bd2c29a8532146bcdf9ce3216609ea50c",
+                "0x3933e49a215c80b35ec7d48e2741fda50c8cc7b92652e79663e4423c00e8e1e2",
+                "0x82b2af4ed108880c151ee38cb3ab28e81ba86a2b0e707dd9cee9bf341f895a8a",
+                "0x51ef5af42d572d6135bec154d5c754928465bad00d1ff7b769a5b65e0054a90e",
+                "0x87cab3ae3a36d439a539ded7eb57e0ef07c5a1fbe1697c2e5ba8d7c03875fd22",
+                "0x70371a20dfbff0ee753b52cd9445f431454b929c7375624a96f5dbc25e88afed",
+                "0x57ee8a4a09875b7720f7d9e75fb93a1cc86d166ad9a1b4c2d7cf2c7c8324fbc0",
+                "0xf004bd2b0119aca5f364b16421a5b2e7db811568761f5542fdcd74903cd9115d",
+                "0x5b6635688362651e1cd33c668bd748d964ba93006661e53dc117d1c1e44886a5",
+                "0xe5893e07bfec18dd206da279a47ee5cc9471930bbb3b85d64ee4945b98137348",
+                "0x4f0f48032a77a80550f71cbcbe86f7d1b34009910f12dbe153a93cb66965393e",
+                "0x5420c3f7b5118e0829df31794aa55a1a91e0009600bbff283b553d5ac7a248ff",
+                "0xece2175e4b06bf6105f5be10a9ed48808a5f96f12f80b3941ee7cb1eeca99e03",
+                "0x383ea6445cd183e32fbc7b846c00b34c419078fe4055cd078f8692fc02b300c8",
+                "0x6c4aef4c26410b1fcbf24d0148e3d66a10cb3e9ad4ca10a71782489688cdd45a",
+                "0xe7e24b8c8182832e7b1113cd07ae68e4ca8618decdc527650f57d25d0b681fde",
+                "0xef5f520662c133be33209249fbc93afb7c614c06a0b45086d15c33bd7c0ca47a",
+                "0x4af20dc2e952e381789065f2cd0c88730fea820bcc3db82eaddf63b36e65b3ac",
+                "0xf99eef2240abc5002c9d71a90ffd463935642aaf81213f37337327c1afcb502c",
+                "0xf7d1ad53e2435e6d978563e39db89660d1b4de6084a3a3cefe7025d28507017f",
+                "0xfc21e64a158ac26ea9afc754460e16fefc4316a3fb92ec9a6042b792d7855788",
+                "0xee60e551bcf518853ef4f5c33551ad07fa95267814940c4203934c79355b1ac0",
+                "0x2a3c649caf77b942b206b9eb1be4635d950cf9a15fea2b43d3d7cbeddf700739",
+                "0xbbd7b9c1434eb98d177f2ff8911b0186309534dea942c40a86517d69247cd0ac",
+                "0xd86daa6d16e2aee4fc6ae831336ada63623685fb998dc5c605284a034604d751",
+                "0xcfc848dfbbbe76fe0095f04ef35c931799c294eb3623e5cb8c0d81362e8bf125",
+                "0x71e3ea97c91bd14388d99d69d122314a1cf0d595cbad1e45040277b470c4e67b",
+                "0xa9b2e44e46d38bb67cbd7a2d47d57e60892dff018f7754b54a221ae3f1b996c4",
+                "0xd1b8f9d669bd7f5072a095476e94e90510f2a18b434551fb7852b5c38c41471a",
+                "0xa3858e80680997080fddde083398e857b14cd4e2cfe74629f6a1245df0447efb",
+                "0x97593f663b07f8a4555202abb691cf7997210284195c24980abee02040c60618",
+                "0x03387f22b01919486338fbd874dd7059f8df62d5b16052cb0ab855b6a364777e",
+                "0xf2561f5f487c3d20c42b42e697a49fb5d05e0fb844ca97b2f127b210475f457e",
+                "0xa67951a1309f1c7ec07ee518ecad831d12c5c78619250681068e7973243f7d9b",
+                "0x7b007997da62b3ac9e5a7005066941e74f5c14d0bdaf4ac44faa8c3479b3cf45",
+                "0x74379408aa3518cbbb394886c91f77ba95ccd37f6b10517834f69a8ff5120ca7",
+                "0xd4843ef02a0d9802d31a89e13e60b6e71870de9124d0b472047012f7a4320f83",
+                "0xaa50331afeafd8f9e913a9f78e898e299314d0825936724cc31211ebf177a9bf",
+                "0xf20c83f2e5d199ad84a7b5dc6fda9611772516e07e7fc71b9f7889af4f2a16aa",
+                "0x89a7c645987dc079ce1af236ed3dd445ad805cc030e5a57766324d4a0a1def9a",
+                "0xe8e7d1116c2c60afd063b9c1e87624426cf6c9fd8d3fa6befe25666e68459570",
+                "0x50be079e71cabf80ca27c39a27f9c0759ac272151f4608b9b75ebfac8284a601",
+                "0xca24f69d47438ebd0b8f304f2f6d7a513d056905f10b164ed6a2cff6da1d4fea",
+                "0x08d2521e04dfd0decc2f556b11274212e84076ff84a0135e9b4e3434de09d42a",
+                "0xcc1e01932a627e9aa20d2b72480d13b4826e128efbbe03526504f7cb9facfc1f",
+                "0x0a3ac907b6d1584cb3d7f9f588ddb4bdd7878db34bc47bd8baf881dd71a98f7d",
+                "0x487539ee9cc6933e13e75e94935c30faffa826c28460fed6d9c3a07d15e2617f",
+                "0xad251856762796acc75dc2846def1f6995fe1b5c747bcab51c10f561d22ffd57",
+                "0x27ca72aa253e009e5e4497dd838986c561e7bea129fec930bc276968525456a8",
+                "0xe26391de668d3eb6f5a3c2f3e14f911dc683873b7ea60d883116c205610b36ff",
+                "0x691c3c5583c5f6444dc6c2f26315a127fc72ebd4f3848055cc8abb8a941d065b",
+                "0x449578293a1dce8d3c147fed564a765515d090e8cd8866209648eb86cd5c1090",
+                "0xb79c6f59d533663ca4fa3a70e9c8be18a3761edc43923c2ecd0904447f654f90",
+                "0xc03863ffa85dd15e0d774ea20006dffd01a868dbf3ff2abe04ccdbf4f027d7ec",
+                "0x28bc1a65696947beb387adbbeabb5328e5f812c435db288688041d9a8c6ab372",
+                "0x6dca99c2103d3894ba83c75e0fa0d42f722e5e93fe6f7a6a55a80cf2907a1a5e",
+                "0x75a7c5f00d79f1b30f82855a8b25077182f1abfd5dbccdf18fe1276e6c9e6a1e",
+                "0x3fc5a320d8c16bcfe2eda847582d34731abc12a3bffbf334a238b47c0bacb90d",
+                "0x47a61770f0771ba34d8e8ab883a3d588769a8d387eb5531b4befccb7ea23a6d3",
+                "0xdc8d0b20e8d8b0fbce50d24eaa36bc56467f35459139dda5e42ffebb1060535c",
+                "0x65bebb9628b5bf5d5e1dbedf00a7e6610fb5615c7ff9d92adaa135bc88f90648",
+                "0x9d2f5b7858631ee196bc24d14d2ef1ce07af081d8fe27b2be70ab90bd8edf930",
+                "0xd7724915af54b4d2c896d05c039f5ba508c878d524eb132c09c3abc22f6111ca",
+                "0xfda6f72dde86c0b8f84ea7c1e157f1d207dd2e974589cc351404bd5a01fe1d9d",
+                "0x3fae3676e266af80b0cc810b6b491750b64b013da78935a288b93e33215bee32"            ]
+        },
+    ],
 };
 
 export const testTransaction: Record<TestBlockchainNetwork, Array<TestBlockchainTransaction>> = {
@@ -231,6 +334,41 @@ export const testTransaction: Record<TestBlockchainNetwork, Array<TestBlockchain
         }
     ],
     goerli: [
+    ],
+    sepolia: [
+        {
+            test: "EIP-4844-BLOb-tx",
+            hash: "0x6c4aef4c26410b1fcbf24d0148e3d66a10cb3e9ad4ca10a71782489688cdd45a",
+            blockHash: '0xa76eb2ed547798d6010f599902788136f0cd289e2c6df5bbf5242e36e356124d',
+            blockNumber: 5198187,
+//            index: 185,
+            type: 3,
+            from: '0x1803c760451DC8da8935c7B7E47e1c60910E6986',
+            to: '0x4f56fFC63c28b72F79b02E91F11a4707bac4043C',
+            gasLimit: BigInt("21000"),
+            nonce: 1635,
+            data: '0x',
+            value: BigInt("0"),
+            gasPrice: BigInt("54793932840"),
+            maxPriorityFeePerGas: BigInt("6000000000"),
+            maxFeePerGas: BigInt("600000000000"),
+            maxFeePerBlobGas: BigInt("60000000000"),
+            chainId: BigInt(11155111),
+            signature: {
+                r: "0x56fc10a770e9fa39a30f71a56d13affbdc390a1bfb419ff806e59b54bfc8bab1",
+                s: "0x35be8b0c774c179520dd43df46925361c4817472441d7dd5162d43efc90679f1",
+                yParity: 1,
+                networkV: null
+            },
+            creates: null,
+            accessList: [ ],
+            blobVersionedHashes: [
+                "0x010264a7b018f0edbe5caa5cb309ca50d3d7c6c7c990d21bf30a7f18ffd06cd6",
+                "0x017fe9ef61e3c501acec804ec15849d977433f4cf87050c098272dd1257f9c68",
+                "0x019975416c9d7c70ba9cc041464a6e1c3e4f176bdab463573504b55c681364c8",
+                "0x0123ae55ad7d8e8afec2202bdc6dfb931efc8990acf29afbd0c3c0ef61eae92d"
+            ]
+        }
     ]
 };
 
@@ -319,11 +457,34 @@ export const testReceipt: Record<TestBlockchainNetwork, Array<TestBlockchainRece
         }
     ],
     goerli: [
+    ],
+    sepolia: [
+        {
+            test: "eip-4844-BLOb-receipt",
+            //byzantium: true,
+            blockHash: "0xa76eb2ed547798d6010f599902788136f0cd289e2c6df5bbf5242e36e356124d",
+            blockNumber: 5198187,
+            type: 3,
+            contractAddress: null,
+            cumulativeGasUsed: BigInt("930313"),
+            from: "0x1803c760451DC8da8935c7B7E47e1c60910E6986",
+            gasUsed: BigInt("21000"),
+            gasPrice: BigInt("54793932840"),
+            logs: [ ],
+            logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            root: null,
+            status: 1,
+            to: "0x4f56fFC63c28b72F79b02E91F11a4707bac4043C",
+            hash: "0x6c4aef4c26410b1fcbf24d0148e3d66a10cb3e9ad4ca10a71782489688cdd45a",
+            index: 24,
+            blobGasUsed: BigInt("524288"),
+            blobGasPrice: BigInt("23276216517"),
+        }
     ]
 };
 
 export const networkNames: Array<TestBlockchainNetwork> = [
-    "mainnet", "goerli"
+    "mainnet", "goerli", "sepolia"
 ];
 export function networkFeatureAtBlock(feature: string, block: number): boolean {
     switch (feature) {
