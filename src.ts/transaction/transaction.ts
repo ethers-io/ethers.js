@@ -1,9 +1,10 @@
 
 import { getAddress } from "../address/index.js";
+import { ZeroAddress } from "../constants/addresses.js";
 import { keccak256, Signature, SigningKey } from "../crypto/index.js";
 import {
     concat, decodeRlp, encodeRlp, getBytes, getBigInt, getNumber, hexlify,
-    assert, assertArgument, toBeArray, zeroPadValue
+    assert, assertArgument, isHexString, toBeArray, zeroPadValue
 } from "../utils/index.js";
 
 import { accessListify } from "./accesslist.js";
@@ -21,6 +22,7 @@ const BN_27 = BigInt(27)
 const BN_28 = BigInt(28)
 const BN_35 = BigInt(35);
 const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
 
 /**
  *  A **TransactionLike** is an object which is appropriate as a loose
@@ -97,6 +99,16 @@ export interface TransactionLike<A = string> {
      *  The access list for berlin and london transactions.
      */
     accessList?: null | AccessListish;
+
+    /**
+     *  The maximum fee per blob gas (see [[link-eip-4844]]).
+     */
+    maxFeePerBlobGas?: null | BigNumberish;
+
+    /**
+     *  The versioned hashes (see [[link-eip-4844]]).
+     */
+    blobVersionedHashes?: null | Array<string>;
 }
 
 function handleAddress(value: string): null | string {
@@ -133,6 +145,14 @@ function formatNumber(_value: BigNumberish, name: string): Uint8Array {
 
 function formatAccessList(value: AccessListish): Array<[ string, Array<string> ]> {
     return accessListify(value).map((set) => [ set.address, set.storageKeys ]);
+}
+
+function formatHashes(value: Array<string>, param: string): Array<string> {
+    assertArgument(Array.isArray(value), `invalid ${ param }`, "value", value);
+    for (let i = 0; i < value.length; i++) {
+        assertArgument(isHexString(value[i], 32), "invalid ${ param } hash", `value[${ i }]`, value[i]);
+    }
+    return value;
 }
 
 function _parseLegacy(data: Uint8Array): TransactionLike {
@@ -186,13 +206,15 @@ function _parseLegacy(data: Uint8Array): TransactionLike {
 }
 
 function _serializeLegacy(tx: Transaction, sig?: Signature): string {
+    assertArgument(tx.isLegacy(), "internal check failed; !legacy", "tx", tx);
+
     const fields: Array<any> = [
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.gasPrice || 0, "gasPrice"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? getAddress(tx.to): "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.gasPrice, "gasPrice"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
     ];
 
     let chainId = BN_0;
@@ -265,14 +287,12 @@ function _parseEip1559(data: Uint8Array): TransactionLike {
     assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 12),
         "invalid field count for transaction type: 2", "data", hexlify(data));
 
-    const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
-    const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
     const tx: TransactionLike = {
         type:                  2,
         chainId:               handleUint(fields[0], "chainId"),
         nonce:                 handleNumber(fields[1], "nonce"),
-        maxPriorityFeePerGas:  maxPriorityFeePerGas,
-        maxFeePerGas:          maxFeePerGas,
+        maxPriorityFeePerGas:  handleUint(fields[2], "maxPriorityFeePerGas"),
+        maxFeePerGas:          handleUint(fields[3], "maxFeePerGas"),
         gasPrice:              null,
         gasLimit:              handleUint(fields[4], "gasLimit"),
         to:                    handleAddress(fields[5]),
@@ -291,17 +311,19 @@ function _parseEip1559(data: Uint8Array): TransactionLike {
     return tx;
 }
 
-function _serializeEip1559(tx: TransactionLike, sig?: Signature): string {
+function _serializeEip1559(tx: Transaction, sig?: Signature): string {
+    assertArgument(tx.isLondon(), "internal check failed; !london", "tx", tx);
+
     const fields: Array<any> = [
-        formatNumber(tx.chainId || 0, "chainId"),
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
-        formatNumber(tx.maxFeePerGas || 0, "maxFeePerGas"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? getAddress(tx.to): "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
-        (formatAccessList(tx.accessList || []))
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
+        formatAccessList(tx.accessList)
     ];
 
     if (sig) {
@@ -341,16 +363,18 @@ function _parseEip2930(data: Uint8Array): TransactionLike {
     return tx;
 }
 
-function _serializeEip2930(tx: TransactionLike, sig?: Signature): string {
+function _serializeEip2930(tx: Transaction, sig?: Signature): string {
+    assertArgument(tx.isBerlin(), "internal check failed; !berlin", "tx", tx);
+
     const fields: any = [
-        formatNumber(tx.chainId || 0, "chainId"),
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.gasPrice || 0, "gasPrice"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? getAddress(tx.to): "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
-        (formatAccessList(tx.accessList || []))
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.gasPrice, "gasPrice"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
+        formatAccessList(tx.accessList)
     ];
 
     if (sig) {
@@ -360,6 +384,71 @@ function _serializeEip2930(tx: TransactionLike, sig?: Signature): string {
     }
 
     return concat([ "0x01", encodeRlp(fields)]);
+}
+
+function _parseEip4844(data: Uint8Array): TransactionLike {
+    const fields: any = decodeRlp(getBytes(data).slice(1));
+
+    assertArgument(Array.isArray(fields) && (fields.length === 11 || fields.length === 14),
+        "invalid field count for transaction type: 3", "data", hexlify(data));
+
+    const tx: TransactionLike = {
+        type:                  3,
+        chainId:               handleUint(fields[0], "chainId"),
+        nonce:                 handleNumber(fields[1], "nonce"),
+        maxPriorityFeePerGas:  handleUint(fields[2], "maxPriorityFeePerGas"),
+        maxFeePerGas:          handleUint(fields[3], "maxFeePerGas"),
+        gasPrice:              null,
+        gasLimit:              handleUint(fields[4], "gasLimit"),
+        to:                    handleAddress(fields[5]),
+        value:                 handleUint(fields[6], "value"),
+        data:                  hexlify(fields[7]),
+        accessList:            handleAccessList(fields[8], "accessList"),
+        maxFeePerBlobGas:      handleUint(fields[9], "maxFeePerBlobGas"),
+        blobVersionedHashes:   fields[10]
+    };
+
+    assertArgument(tx.to != null, "invalid address for transaction type: 3", "data", data);
+
+    assertArgument(Array.isArray(tx.blobVersionedHashes), "invalid blobVersionedHashes: must be an array", "data", data);
+    for (let i = 0; i < tx.blobVersionedHashes.length; i++) {
+        assertArgument(isHexString(tx.blobVersionedHashes[i], 32), `invalid blobVersionedHash at index ${ i }: must be length 32`, "data", data);
+    }
+
+    // Unsigned EIP-4844 Transaction
+    if (fields.length === 11) { return tx; }
+
+    tx.hash = keccak256(data);
+
+    _parseEipSignature(tx, fields.slice(11));
+
+    return tx;
+}
+
+function _serializeEip4844(tx: Transaction, sig?: Signature): string {
+    assertArgument(tx.isCancun(), "internal check failed; !cancun", "tx", tx);
+
+    const fields: Array<any> = [
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        tx.to,
+        formatNumber(tx.value, "value"),
+        tx.data,
+        (formatAccessList(tx.accessList)),
+        formatNumber(tx.maxFeePerBlobGas, "maxFeePerBlobGas"),
+        formatHashes(tx.blobVersionedHashes, "blobVersionedHashes")
+    ];
+
+    if (sig) {
+        fields.push(formatNumber(sig.yParity, "yParity"));
+        fields.push(toBeArray(sig.r));
+        fields.push(toBeArray(sig.s));
+    }
+
+    return concat([ "0x03", encodeRlp(fields)]);
 }
 
 /**
@@ -388,6 +477,8 @@ export class Transaction implements TransactionLike<string> {
     #chainId: bigint;
     #sig: null | Signature;
     #accessList: null | AccessList;
+    #maxFeePerBlobGas: null | bigint;
+    #blobVersionedHashes: null | Array<string>;
 
     /**
      *  The transaction type.
@@ -410,6 +501,9 @@ export class Transaction implements TransactionLike<string> {
             case 2: case "london": case "eip-1559":
                 this.#type = 2;
                 break;
+            case 3: case "cancun": case "eip-4844":
+                this.#type = 3;
+                break;
             default:
                 assertArgument(false, "unsupported transaction type", "type", value);
         }
@@ -423,6 +517,7 @@ export class Transaction implements TransactionLike<string> {
             case 0: return "legacy";
             case 1: return "eip-2930";
             case 2: return "eip-1559";
+            case 3: return "eip-4844";
         }
 
         return null;
@@ -432,7 +527,11 @@ export class Transaction implements TransactionLike<string> {
      *  The ``to`` address for the transaction or ``null`` if the
      *  transaction is an ``init`` transaction.
      */
-    get to(): null | string { return this.#to; }
+    get to(): null | string {
+        const value = this.#to;
+        if (value == null && this.type === 3) { return ZeroAddress; }
+        return value;
+    }
     set to(value: null | string) {
         this.#to = (value == null) ? null: getAddress(value);
     }
@@ -471,7 +570,7 @@ export class Transaction implements TransactionLike<string> {
     get maxPriorityFeePerGas(): null | bigint {
         const value = this.#maxPriorityFeePerGas;
         if (value == null) {
-            if (this.type === 2) { return BN_0; }
+            if (this.type === 2 || this.type === 3) { return BN_0; }
             return null;
         }
         return value;
@@ -487,7 +586,7 @@ export class Transaction implements TransactionLike<string> {
     get maxFeePerGas(): null | bigint {
         const value = this.#maxFeePerGas;
         if (value == null) {
-            if (this.type === 2) { return BN_0; }
+            if (this.type === 2 || this.type === 3) { return BN_0; }
             return null;
         }
         return value;
@@ -534,7 +633,11 @@ export class Transaction implements TransactionLike<string> {
     get accessList(): null | AccessList {
         const value = this.#accessList || null;
         if (value == null) {
-            if (this.type === 1 || this.type === 2) { return [ ]; }
+            if (this.type === 1 || this.type === 2 || this.type === 3) {
+                // @TODO: in v7, this should assign the value or become
+                // a live object itself, otherwise mutation is inconsistent
+                return [ ];
+            }
             return null;
         }
         return value;
@@ -544,21 +647,56 @@ export class Transaction implements TransactionLike<string> {
     }
 
     /**
+     *  The max fee per blob gas for Cancun transactions.
+     */
+    get maxFeePerBlobGas(): null | bigint {
+        const value = this.#maxFeePerBlobGas;
+        if (value == null && this.type === 3) { return BN_0; }
+        return value;
+    }
+    set maxFeePerBlobGas(value: null | BigNumberish) {
+        this.#maxFeePerBlobGas = (value == null) ? null: getBigInt(value, "maxFeePerBlobGas");
+    }
+
+    /**
+     *  The BLOB versioned hashes for Cancun transactions.
+     */
+    get blobVersionedHashes(): null | Array<string> {
+        // @TODO: Mutation is inconsistent; if unset, the returned value
+        // cannot mutate the object, if set it can
+        let value = this.#blobVersionedHashes;
+        if (value == null && this.type === 3) { return [ ]; }
+        return value;
+    }
+    set blobVersionedHashes(value: null | Array<string>) {
+        if (value != null) {
+            assertArgument(Array.isArray(value), "blobVersionedHashes must be an Array", "value", value);
+            value = value.slice();
+            for (let i = 0; i < value.length; i++) {
+                assertArgument(isHexString(value[i], 32), "invalid blobVersionedHash", `value[${ i }]`, value[i]);
+            }
+        }
+        this.#blobVersionedHashes = value;
+    }
+
+    /**
      *  Creates a new Transaction with default values.
      */
     constructor() {
         this.#type = null;
         this.#to = null;
         this.#nonce = 0;
-        this.#gasLimit = BigInt(0);
+        this.#gasLimit = BN_0;
         this.#gasPrice = null;
         this.#maxPriorityFeePerGas = null;
         this.#maxFeePerGas = null;
         this.#data = "0x";
-        this.#value = BigInt(0);
-        this.#chainId = BigInt(0);
+        this.#value = BN_0;
+        this.#chainId = BN_0;
         this.#sig = null;
         this.#accessList = null;
+        this.#maxFeePerBlobGas = null;
+        this.#blobVersionedHashes = null;
     }
 
     /**
@@ -602,7 +740,6 @@ export class Transaction implements TransactionLike<string> {
      *  transaction are non-null.
      */
     isSigned(): this is (Transaction & { type: number, typeName: string, from: string, signature: Signature }) {
-    //isSigned(): this is SignedTransaction {
         return this.signature != null;
     }
 
@@ -622,6 +759,8 @@ export class Transaction implements TransactionLike<string> {
                 return _serializeEip2930(this, this.signature);
             case 2:
                 return _serializeEip1559(this, this.signature);
+            case 3:
+                return _serializeEip4844(this, this.signature);
         }
 
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
@@ -641,6 +780,8 @@ export class Transaction implements TransactionLike<string> {
                 return _serializeEip2930(this);
             case 2:
                 return _serializeEip1559(this);
+            case 3:
+                return _serializeEip4844(this);
         }
 
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
@@ -651,7 +792,13 @@ export class Transaction implements TransactionLike<string> {
      *  supported transaction type.
      */
     inferType(): number {
-        return <number>(this.inferTypes().pop());
+        const types = this.inferTypes();
+
+        // Prefer London (EIP-1559) over Cancun (BLOb)
+        if (types.indexOf(2) >= 0) { return 2; }
+
+        // Return the highest inferred type
+        return <number>(types.pop());
     }
 
     /**
@@ -664,6 +811,7 @@ export class Transaction implements TransactionLike<string> {
         const hasGasPrice = this.gasPrice != null;
         const hasFee = (this.maxFeePerGas != null || this.maxPriorityFeePerGas != null);
         const hasAccessList = (this.accessList != null);
+        const hasBlob = (this.#maxFeePerBlobGas != null || this.#blobVersionedHashes);
 
         //if (hasGasPrice && hasFee) {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
@@ -695,10 +843,13 @@ export class Transaction implements TransactionLike<string> {
             } else if (hasAccessList) {
                 types.push(1);
                 types.push(2);
+            } else if (hasBlob && this.to) {
+                types.push(3);
             } else {
                 types.push(0);
                 types.push(1);
                 types.push(2);
+                types.push(3);
             }
         }
 
@@ -736,8 +887,19 @@ export class Transaction implements TransactionLike<string> {
      *  This provides a Type Guard that the related properties are
      *  non-null.
      */
-    isLondon(): this is (Transaction & { type: 2, accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint}) {
+    isLondon(): this is (Transaction & { type: 2, accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint }) {
         return (this.type === 2);
+    }
+
+    /**
+     *  Returns true if this transaction is an [[link-eip-4844]] BLOB
+     *  transaction.
+     *
+     *  This provides a Type Guard that the related properties are
+     *  non-null.
+     */
+    isCancun(): this is (Transaction & { type: 3, to: string, accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint, maxFeePerBlobGas: bigint, blobVersionedHashes: Array<string> }) {
+        return (this.type === 3);
     }
 
     /**
@@ -790,6 +952,7 @@ export class Transaction implements TransactionLike<string> {
             switch(payload[0]) {
                 case 1: return Transaction.from(_parseEip2930(payload));
                 case 2: return Transaction.from(_parseEip1559(payload));
+                case 3: return Transaction.from(_parseEip4844(payload));
             }
             assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
         }
@@ -802,11 +965,13 @@ export class Transaction implements TransactionLike<string> {
         if (tx.gasPrice != null) { result.gasPrice = tx.gasPrice; }
         if (tx.maxPriorityFeePerGas != null) { result.maxPriorityFeePerGas = tx.maxPriorityFeePerGas; }
         if (tx.maxFeePerGas != null) { result.maxFeePerGas = tx.maxFeePerGas; }
+        if (tx.maxFeePerBlobGas != null) { result.maxFeePerBlobGas = tx.maxFeePerBlobGas; }
         if (tx.data != null) { result.data = tx.data; }
         if (tx.value != null) { result.value = tx.value; }
         if (tx.chainId != null) { result.chainId = tx.chainId; }
         if (tx.signature != null) { result.signature = Signature.from(tx.signature); }
         if (tx.accessList != null) { result.accessList = tx.accessList; }
+        if (tx.blobVersionedHashes != null) { result.blobVersionedHashes = tx.blobVersionedHashes; }
 
         if (tx.hash != null) {
             assertArgument(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);

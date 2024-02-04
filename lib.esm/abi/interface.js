@@ -245,7 +245,7 @@ export class Interface {
                 frags.push(Fragment.from(a));
             }
             catch (error) {
-                console.log("EE", error);
+                console.log(`[Warning] Invalid Fragment ${JSON.stringify(a)}:`, error.message);
             }
         }
         defineProperties(this, {

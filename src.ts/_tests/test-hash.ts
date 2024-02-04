@@ -12,7 +12,7 @@ import { loadTests } from "./utils.js"
 import type { TestCaseNamehash, TestCaseSolidityHash } from "./types.js";
 
 
-//import { dnsEncode, isValidName, namehash } from "../index.js";
+import { dnsEncode } from "../index.js";
 
 describe("Tests Namehash", function() {
     const tests = loadTests<TestCaseNamehash>("namehash");
@@ -140,6 +140,58 @@ describe("Tests DNS Names", function() {
 
 });
 */
+
+interface TestCaseDnsEncode {
+    name: string;
+    length?: number;
+    result?: string;
+    error?: string;
+}
+
+describe("Test dnsEncode", function() {
+
+    const tests: Array<TestCaseDnsEncode> = [
+        { name: "ricmoo.com", result: "0x067269636d6f6f03636f6d00" },
+        { name: "ricmoo.com", length: 5, error: "exceeds 5 bytes" },
+        {
+            name: "a-very-long-label-without-a-length-override-foo-12345678901234567890",
+            error: "exceeds 63 bytes"
+        },
+        {
+            name: "a-very-long-label-with-a-length-override-to-255-foo-12345678901234567890",
+            length: 255, result: "0x48612d766572792d6c6f6e672d6c6162656c2d776974682d612d6c656e6774682d6f766572726964652d746f2d3235352d666f6f2d313233343536373839303132333435363738393000"
+        },
+    ];
+
+    for (const test of tests) {
+        it(`tests dnsEncode: ${ test.name }`, function() {
+            if (test.error) {
+
+                assert.throws(() => {
+                    let result;
+                    if (test.length != null) {
+                        result = dnsEncode(test.name, test.length);
+                    } else {
+                        result = dnsEncode(test.name);
+                    }
+                    console.log("result", result);
+
+                }, (error) => {
+                    return (isError(error, "INVALID_ARGUMENT") &&
+                        error.argument === "name" && error.value === test.name &&
+                        error.message.indexOf(test.error || "") >= 0);
+                });
+
+            } else {
+                if (test.length != null) {
+                    assert.equal(dnsEncode(test.name, test.length), test.result, "dnsEncode(name, length)");
+                } else {
+                    assert.equal(dnsEncode(test.name), test.result, "dnsEncode(name)");
+                }
+            }
+        });
+    }
+});
 
 describe("Test EIP-191 Personal Message Hash", function() {
     const tests = [

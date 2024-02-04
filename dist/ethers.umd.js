@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.10.1";
+    const version = "6.11.0";
 
     /**
      *  Property helper functions.
@@ -8412,7 +8412,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return keccak256(toUtf8Bytes(value));
     }
 
-    // created 2023-09-12T22:05:14.211Z
+    // created 2023-09-25T01:01:55.148Z
     // compressed base64-encoded blob for include-ens data
     // source: https://github.com/adraffy/ens-normalize.js/blob/main/src/make.js
     // see: https://github.com/adraffy/ens-normalize.js#security
@@ -8693,7 +8693,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     	return c;
     }
 
-    // created 2023-09-12T22:05:14.211Z
+    // created 2023-09-25T01:01:55.148Z
     // compressed base64-encoded blob for include-nf data
     // source: https://github.com/adraffy/ens-normalize.js/blob/main/src/make.js
     // see: https://github.com/adraffy/ens-normalize.js#security
@@ -8909,6 +8909,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     	let r = read_compressed_payload(COMPRESSED$1);
     	const read_sorted_array = () => read_sorted(r);
     	const read_sorted_set = () => new Set(read_sorted_array());
+    	const set_add_many = (set, v) => v.forEach(x => set.add(x));
 
     	MAPPED = new Map(read_mapped(r)); 
     	IGNORED = read_sorted_set(); // ignored characters are not valid, so just read raw codepoints
@@ -8931,13 +8932,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     	let chunks = read_sorted_arrays(r);
     	let unrestricted = r();
-    	const read_chunked = () => new Set(read_sorted_array().flatMap(i => chunks[i]).concat(read_sorted_array()));
+    	//const read_chunked = () => new Set(read_sorted_array().flatMap(i => chunks[i]).concat(read_sorted_array()));
+    	const read_chunked = () => {
+    		// 20230921: build set in parts, 2x faster
+    		let set = new Set();
+    		read_sorted_array().forEach(i => set_add_many(set, chunks[i]));
+    		set_add_many(set, read_sorted_array());
+    		return set; 
+    	};
     	GROUPS = read_array_while(i => {
     		// minifier property mangling seems unsafe
     		// so these are manually renamed to single chars
     		let N = read_array_while(r).map(x => x+0x60);
     		if (N.length) {
-    			let R = i >= unrestricted; // first arent restricted
+    			let R = i >= unrestricted; // unrestricted then restricted
     			N[0] -= 32; // capitalize
     			N = str_from_cps(N);
     			if (R) N=`Restricted[${N}]`;
@@ -8975,6 +8983,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     	});
 
     	// compute confusable-extent complements
+    	// usage: WHOLE_MAP.get(cp).M.get(cp) = complement set
     	for (let {V, M} of new Set(WHOLE_MAP.values())) {
     		// connect all groups that have each whole character
     		let recs = [];
@@ -8986,34 +8995,37 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     				recs.push(rec);
     			}
     			rec.V.push(cp);
-    			gs.forEach(g => rec.G.add(g));
+    			set_add_many(rec.G, gs);
     		}
     		// per character cache groups which are not a member of the extent
-    		let union = recs.flatMap(x => Array_from(x.G));
+    		let union = recs.flatMap(x => Array_from(x.G)); // all of the groups used by this whole
     		for (let {G, V} of recs) {
-    			let complement = new Set(union.filter(g => !G.has(g)));
+    			let complement = new Set(union.filter(g => !G.has(g))); // groups not covered by the extent
     			for (let cp of V) {
-    				M.set(cp, complement);
+    				M.set(cp, complement); // this is the same reference
     			}
     		}
     	}
 
     	// compute valid set
-    	let union = new Set(); // exists in 1+ groups
+    	// 20230924: VALID was union but can be re-used
+    	VALID = new Set(); // exists in 1+ groups
     	let multi = new Set(); // exists in 2+ groups
-    	const add_to_union = cp => union.has(cp) ? multi.add(cp) : union.add(cp);
+    	const add_to_union = cp => VALID.has(cp) ? multi.add(cp) : VALID.add(cp);
     	for (let g of GROUPS) {
     		for (let cp of g.P) add_to_union(cp);
     		for (let cp of g.Q) add_to_union(cp);
     	}
     	// dual purpose WHOLE_MAP: return placeholder if unique non-confusable
-    	for (let cp of union) {
+    	for (let cp of VALID) {
     		if (!WHOLE_MAP.has(cp) && !multi.has(cp)) {
     			WHOLE_MAP.set(cp, UNIQUE_PH);
     		}
     	}
-    	VALID = new Set(Array_from(union).concat(Array_from(nfd(union)))); // possibly valid
-
+    	// add all decomposed parts
+    	// see derive: "Valid is Closed (via Brute-force)"
+    	set_add_many(VALID, nfd(VALID));
+    	
     	// decode emoji
     	// 20230719: emoji are now fully-expanded to avoid quirk logic 
     	EMOJI_LIST = read_trie(r).map(v => Emoji.from(v)).sort(compare_arrays);
@@ -9066,7 +9078,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     function check_label_extension(cps) {
     	if (cps.length >= 4 && cps[2] == HYPHEN && cps[3] == HYPHEN) {
-    		throw new Error(`invalid label extension: "${str_from_cps(cps.slice(0, 4))}"`);
+    		throw new Error(`invalid label extension: "${str_from_cps(cps.slice(0, 4))}"`); // this can only be ascii so cant be bidi
     	}
     }
     function check_leading_underscore(cps) {
@@ -9100,13 +9112,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     // create a safe to print string 
     // invisibles are escaped
     // leading cm uses placeholder
+    // if cps exceed max, middle truncate with ellipsis
     // quoter(cp) => string, eg. 3000 => "{3000}"
     // note: in html, you'd call this function then replace [<>&] with entities
-    function safe_str_from_cps(cps, quoter = quote_cp) {
+    function safe_str_from_cps(cps, max = Infinity, quoter = quote_cp) {
     	//if (Number.isInteger(cps)) cps = [cps];
     	//if (!Array.isArray(cps)) throw new TypeError(`expected codepoints`);
     	let buf = [];
     	if (is_combining_mark(cps[0])) buf.push('◌');
+    	if (cps.length > max) {
+    		max >>= 1;
+    		cps = [...cps.slice(0, max), 0x2026, ...cps.slice(-max)];
+    	}
     	let prev = 0;
     	let n = cps.length;
     	for (let i = 0; i < n; i++) {
@@ -9271,7 +9288,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     			// don't print label again if just a single label
     			let msg = error.message;
     			// bidi_qq() only necessary if msg is digits
-    			throw new Error(split.length == 1 ? msg : `Invalid label ${bidi_qq(safe_str_from_cps(input))}: ${msg}`); 
+    			throw new Error(split.length == 1 ? msg : `Invalid label ${bidi_qq(safe_str_from_cps(input, 63))}: ${msg}`); 
     		}
     		return str_from_cps(output);
     	}).join(STOP_CH);
@@ -9535,12 +9552,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  This is used for various parts of ENS name resolution, such
      *  as the wildcard resolution.
      */
-    function dnsEncode(name) {
+    function dnsEncode(name, _maxLength) {
+        const length = (_maxLength != null) ? _maxLength : 63;
+        assertArgument(length <= 255, "DNS encoded label cannot exceed 255", "length", length);
         return hexlify(concat(ensNameSplit(name).map((comp) => {
-            // DNS does not allow components over 63 bytes in length
-            if (comp.length > 63) {
-                throw new Error("invalid DNS encoded entry; length exceeds 63 bytes");
-            }
+            assertArgument(comp.length <= length, `label ${JSON.stringify(name)} exceeds ${length} bytes`, "name", name);
             const bytes = new Uint8Array(comp.length + 1);
             bytes.set(comp, 1);
             bytes[0] = bytes.length - 1;
@@ -9649,6 +9665,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function formatAccessList(value) {
         return accessListify(value).map((set) => [set.address, set.storageKeys]);
     }
+    function formatHashes(value, param) {
+        assertArgument(Array.isArray(value), `invalid ${param}`, "value", value);
+        for (let i = 0; i < value.length; i++) {
+            assertArgument(isHexString(value[i], 32), "invalid ${ param } hash", `value[${i}]`, value[i]);
+        }
+        return value;
+    }
     function _parseLegacy(data) {
         const fields = decodeRlp(data);
         assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 6), "invalid field count for legacy transaction", "data", data);
@@ -9692,13 +9715,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return tx;
     }
     function _serializeLegacy(tx, sig) {
+        assertArgument(tx.isLegacy(), "internal check failed; !legacy", "tx", tx);
         const fields = [
-            formatNumber(tx.nonce || 0, "nonce"),
-            formatNumber(tx.gasPrice || 0, "gasPrice"),
-            formatNumber(tx.gasLimit || 0, "gasLimit"),
-            ((tx.to != null) ? getAddress(tx.to) : "0x"),
-            formatNumber(tx.value || 0, "value"),
-            (tx.data || "0x"),
+            formatNumber(tx.nonce, "nonce"),
+            formatNumber(tx.gasPrice, "gasPrice"),
+            formatNumber(tx.gasLimit, "gasLimit"),
+            (tx.to || "0x"),
+            formatNumber(tx.value, "value"),
+            tx.data,
         ];
         let chainId = BN_0$4;
         if (tx.chainId != BN_0$4) {
@@ -9761,14 +9785,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function _parseEip1559(data) {
         const fields = decodeRlp(getBytes(data).slice(1));
         assertArgument(Array.isArray(fields) && (fields.length === 9 || fields.length === 12), "invalid field count for transaction type: 2", "data", hexlify(data));
-        const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
-        const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
         const tx = {
             type: 2,
             chainId: handleUint(fields[0], "chainId"),
             nonce: handleNumber(fields[1], "nonce"),
-            maxPriorityFeePerGas: maxPriorityFeePerGas,
-            maxFeePerGas: maxFeePerGas,
+            maxPriorityFeePerGas: handleUint(fields[2], "maxPriorityFeePerGas"),
+            maxFeePerGas: handleUint(fields[3], "maxFeePerGas"),
             gasPrice: null,
             gasLimit: handleUint(fields[4], "gasLimit"),
             to: handleAddress(fields[5]),
@@ -9785,16 +9807,17 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return tx;
     }
     function _serializeEip1559(tx, sig) {
+        assertArgument(tx.isLondon(), "internal check failed; !london", "tx", tx);
         const fields = [
-            formatNumber(tx.chainId || 0, "chainId"),
-            formatNumber(tx.nonce || 0, "nonce"),
-            formatNumber(tx.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
-            formatNumber(tx.maxFeePerGas || 0, "maxFeePerGas"),
-            formatNumber(tx.gasLimit || 0, "gasLimit"),
-            ((tx.to != null) ? getAddress(tx.to) : "0x"),
-            formatNumber(tx.value || 0, "value"),
-            (tx.data || "0x"),
-            (formatAccessList(tx.accessList || []))
+            formatNumber(tx.chainId, "chainId"),
+            formatNumber(tx.nonce, "nonce"),
+            formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
+            formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+            formatNumber(tx.gasLimit, "gasLimit"),
+            (tx.to || "0x"),
+            formatNumber(tx.value, "value"),
+            tx.data,
+            formatAccessList(tx.accessList)
         ];
         if (sig) {
             fields.push(formatNumber(sig.yParity, "yParity"));
@@ -9826,15 +9849,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return tx;
     }
     function _serializeEip2930(tx, sig) {
+        assertArgument(tx.isBerlin(), "internal check failed; !berlin", "tx", tx);
         const fields = [
-            formatNumber(tx.chainId || 0, "chainId"),
-            formatNumber(tx.nonce || 0, "nonce"),
-            formatNumber(tx.gasPrice || 0, "gasPrice"),
-            formatNumber(tx.gasLimit || 0, "gasLimit"),
-            ((tx.to != null) ? getAddress(tx.to) : "0x"),
-            formatNumber(tx.value || 0, "value"),
-            (tx.data || "0x"),
-            (formatAccessList(tx.accessList || []))
+            formatNumber(tx.chainId, "chainId"),
+            formatNumber(tx.nonce, "nonce"),
+            formatNumber(tx.gasPrice, "gasPrice"),
+            formatNumber(tx.gasLimit, "gasLimit"),
+            (tx.to || "0x"),
+            formatNumber(tx.value, "value"),
+            tx.data,
+            formatAccessList(tx.accessList)
         ];
         if (sig) {
             fields.push(formatNumber(sig.yParity, "recoveryParam"));
@@ -9842,6 +9866,59 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             fields.push(toBeArray(sig.s));
         }
         return concat(["0x01", encodeRlp(fields)]);
+    }
+    function _parseEip4844(data) {
+        const fields = decodeRlp(getBytes(data).slice(1));
+        assertArgument(Array.isArray(fields) && (fields.length === 11 || fields.length === 14), "invalid field count for transaction type: 3", "data", hexlify(data));
+        const tx = {
+            type: 3,
+            chainId: handleUint(fields[0], "chainId"),
+            nonce: handleNumber(fields[1], "nonce"),
+            maxPriorityFeePerGas: handleUint(fields[2], "maxPriorityFeePerGas"),
+            maxFeePerGas: handleUint(fields[3], "maxFeePerGas"),
+            gasPrice: null,
+            gasLimit: handleUint(fields[4], "gasLimit"),
+            to: handleAddress(fields[5]),
+            value: handleUint(fields[6], "value"),
+            data: hexlify(fields[7]),
+            accessList: handleAccessList(fields[8], "accessList"),
+            maxFeePerBlobGas: handleUint(fields[9], "maxFeePerBlobGas"),
+            blobVersionedHashes: fields[10]
+        };
+        assertArgument(tx.to != null, "invalid address for transaction type: 3", "data", data);
+        assertArgument(Array.isArray(tx.blobVersionedHashes), "invalid blobVersionedHashes: must be an array", "data", data);
+        for (let i = 0; i < tx.blobVersionedHashes.length; i++) {
+            assertArgument(isHexString(tx.blobVersionedHashes[i], 32), `invalid blobVersionedHash at index ${i}: must be length 32`, "data", data);
+        }
+        // Unsigned EIP-4844 Transaction
+        if (fields.length === 11) {
+            return tx;
+        }
+        tx.hash = keccak256(data);
+        _parseEipSignature(tx, fields.slice(11));
+        return tx;
+    }
+    function _serializeEip4844(tx, sig) {
+        assertArgument(tx.isCancun(), "internal check failed; !cancun", "tx", tx);
+        const fields = [
+            formatNumber(tx.chainId, "chainId"),
+            formatNumber(tx.nonce, "nonce"),
+            formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
+            formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+            formatNumber(tx.gasLimit, "gasLimit"),
+            tx.to,
+            formatNumber(tx.value, "value"),
+            tx.data,
+            (formatAccessList(tx.accessList)),
+            formatNumber(tx.maxFeePerBlobGas, "maxFeePerBlobGas"),
+            formatHashes(tx.blobVersionedHashes, "blobVersionedHashes")
+        ];
+        if (sig) {
+            fields.push(formatNumber(sig.yParity, "yParity"));
+            fields.push(toBeArray(sig.r));
+            fields.push(toBeArray(sig.s));
+        }
+        return concat(["0x03", encodeRlp(fields)]);
     }
     /**
      *  A **Transaction** describes an operation to be executed on
@@ -9869,6 +9946,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #chainId;
         #sig;
         #accessList;
+        #maxFeePerBlobGas;
+        #blobVersionedHashes;
         /**
          *  The transaction type.
          *
@@ -9895,6 +9974,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 case "eip-1559":
                     this.#type = 2;
                     break;
+                case 3:
+                case "cancun":
+                case "eip-4844":
+                    this.#type = 3;
+                    break;
                 default:
                     assertArgument(false, "unsupported transaction type", "type", value);
             }
@@ -9907,6 +9991,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 case 0: return "legacy";
                 case 1: return "eip-2930";
                 case 2: return "eip-1559";
+                case 3: return "eip-4844";
             }
             return null;
         }
@@ -9914,7 +9999,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  The ``to`` address for the transaction or ``null`` if the
          *  transaction is an ``init`` transaction.
          */
-        get to() { return this.#to; }
+        get to() {
+            const value = this.#to;
+            if (value == null && this.type === 3) {
+                return ZeroAddress;
+            }
+            return value;
+        }
         set to(value) {
             this.#to = (value == null) ? null : getAddress(value);
         }
@@ -9951,7 +10042,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         get maxPriorityFeePerGas() {
             const value = this.#maxPriorityFeePerGas;
             if (value == null) {
-                if (this.type === 2) {
+                if (this.type === 2 || this.type === 3) {
                     return BN_0$4;
                 }
                 return null;
@@ -9968,7 +10059,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         get maxFeePerGas() {
             const value = this.#maxFeePerGas;
             if (value == null) {
-                if (this.type === 2) {
+                if (this.type === 2 || this.type === 3) {
                     return BN_0$4;
                 }
                 return null;
@@ -10012,7 +10103,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         get accessList() {
             const value = this.#accessList || null;
             if (value == null) {
-                if (this.type === 1 || this.type === 2) {
+                if (this.type === 1 || this.type === 2 || this.type === 3) {
+                    // @TODO: in v7, this should assign the value or become
+                    // a live object itself, otherwise mutation is inconsistent
                     return [];
                 }
                 return null;
@@ -10023,21 +10116,58 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#accessList = (value == null) ? null : accessListify(value);
         }
         /**
+         *  The max fee per blob gas for Cancun transactions.
+         */
+        get maxFeePerBlobGas() {
+            const value = this.#maxFeePerBlobGas;
+            if (value == null && this.type === 3) {
+                return BN_0$4;
+            }
+            return value;
+        }
+        set maxFeePerBlobGas(value) {
+            this.#maxFeePerBlobGas = (value == null) ? null : getBigInt(value, "maxFeePerBlobGas");
+        }
+        /**
+         *  The BLOB versioned hashes for Cancun transactions.
+         */
+        get blobVersionedHashes() {
+            // @TODO: Mutation is inconsistent; if unset, the returned value
+            // cannot mutate the object, if set it can
+            let value = this.#blobVersionedHashes;
+            if (value == null && this.type === 3) {
+                return [];
+            }
+            return value;
+        }
+        set blobVersionedHashes(value) {
+            if (value != null) {
+                assertArgument(Array.isArray(value), "blobVersionedHashes must be an Array", "value", value);
+                value = value.slice();
+                for (let i = 0; i < value.length; i++) {
+                    assertArgument(isHexString(value[i], 32), "invalid blobVersionedHash", `value[${i}]`, value[i]);
+                }
+            }
+            this.#blobVersionedHashes = value;
+        }
+        /**
          *  Creates a new Transaction with default values.
          */
         constructor() {
             this.#type = null;
             this.#to = null;
             this.#nonce = 0;
-            this.#gasLimit = BigInt(0);
+            this.#gasLimit = BN_0$4;
             this.#gasPrice = null;
             this.#maxPriorityFeePerGas = null;
             this.#maxFeePerGas = null;
             this.#data = "0x";
-            this.#value = BigInt(0);
-            this.#chainId = BigInt(0);
+            this.#value = BN_0$4;
+            this.#chainId = BN_0$4;
             this.#sig = null;
             this.#accessList = null;
+            this.#maxFeePerBlobGas = null;
+            this.#blobVersionedHashes = null;
         }
         /**
          *  The transaction hash, if signed. Otherwise, ``null``.
@@ -10082,7 +10212,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  transaction are non-null.
          */
         isSigned() {
-            //isSigned(): this is SignedTransaction {
             return this.signature != null;
         }
         /**
@@ -10100,6 +10229,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return _serializeEip2930(this, this.signature);
                 case 2:
                     return _serializeEip1559(this, this.signature);
+                case 3:
+                    return _serializeEip4844(this, this.signature);
             }
             assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
         }
@@ -10117,6 +10248,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return _serializeEip2930(this);
                 case 2:
                     return _serializeEip1559(this);
+                case 3:
+                    return _serializeEip4844(this);
             }
             assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
         }
@@ -10125,7 +10258,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  supported transaction type.
          */
         inferType() {
-            return (this.inferTypes().pop());
+            const types = this.inferTypes();
+            // Prefer London (EIP-1559) over Cancun (BLOb)
+            if (types.indexOf(2) >= 0) {
+                return 2;
+            }
+            // Return the highest inferred type
+            return (types.pop());
         }
         /**
          *  Validates the explicit properties and returns a list of compatible
@@ -10136,6 +10275,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const hasGasPrice = this.gasPrice != null;
             const hasFee = (this.maxFeePerGas != null || this.maxPriorityFeePerGas != null);
             const hasAccessList = (this.accessList != null);
+            const hasBlob = (this.#maxFeePerBlobGas != null || this.#blobVersionedHashes);
             //if (hasGasPrice && hasFee) {
             //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
             //}
@@ -10166,10 +10306,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     types.push(1);
                     types.push(2);
                 }
+                else if (hasBlob && this.to) {
+                    types.push(3);
+                }
                 else {
                     types.push(0);
                     types.push(1);
                     types.push(2);
+                    types.push(3);
                 }
             }
             types.sort();
@@ -10204,6 +10348,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         isLondon() {
             return (this.type === 2);
+        }
+        /**
+         *  Returns true if this transaction is an [[link-eip-4844]] BLOB
+         *  transaction.
+         *
+         *  This provides a Type Guard that the related properties are
+         *  non-null.
+         */
+        isCancun() {
+            return (this.type === 3);
         }
         /**
          *  Create a copy of this transaciton.
@@ -10253,6 +10407,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 switch (payload[0]) {
                     case 1: return Transaction.from(_parseEip2930(payload));
                     case 2: return Transaction.from(_parseEip1559(payload));
+                    case 3: return Transaction.from(_parseEip4844(payload));
                 }
                 assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
             }
@@ -10278,6 +10433,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (tx.maxFeePerGas != null) {
                 result.maxFeePerGas = tx.maxFeePerGas;
             }
+            if (tx.maxFeePerBlobGas != null) {
+                result.maxFeePerBlobGas = tx.maxFeePerBlobGas;
+            }
             if (tx.data != null) {
                 result.data = tx.data;
             }
@@ -10292,6 +10450,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             if (tx.accessList != null) {
                 result.accessList = tx.accessList;
+            }
+            if (tx.blobVersionedHashes != null) {
+                result.blobVersionedHashes = tx.blobVersionedHashes;
             }
             if (tx.hash != null) {
                 assertArgument(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);
@@ -10981,10 +11142,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         items.forEach((k) => result.add(k));
         return Object.freeze(result);
     }
-    const _kwVisibDeploy = "external public payable";
+    const _kwVisibDeploy = "external public payable override";
     const KwVisibDeploy = setify(_kwVisibDeploy.split(" "));
     // Visibility Keywords
-    const _kwVisib = "constant external internal payable private public pure view";
+    const _kwVisib = "constant external internal payable private public pure view override";
     const KwVisib = setify(_kwVisib.split(" "));
     const _kwTypes = "constructor error event fallback function receive struct";
     const KwTypes = setify(_kwTypes.split(" "));
@@ -11038,7 +11199,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // Pops and returns the value of the next token if it is `type`; throws if out of tokens
         popType(type) {
             if (this.peek().type !== type) {
-                throw new Error(`expected ${type}; got ${JSON.stringify(this.peek())}`);
+                const top = this.peek();
+                throw new Error(`expected ${type}; got ${top.type} ${JSON.stringify(top.text)}`);
             }
             return this.pop().text;
         }
@@ -11270,7 +11432,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     function consumeEoi(tokens) {
         if (tokens.length) {
-            throw new Error(`unexpected tokens: ${tokens.toString()}`);
+            throw new Error(`unexpected tokens at offset ${tokens.offset}: ${tokens.toString()}`);
         }
     }
     const regexArrayType = new RegExp(/^(.*)\[([0-9]*)\]$/);
@@ -12749,7 +12911,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     frags.push(Fragment.from(a));
                 }
                 catch (error) {
-                    console.log("EE", error);
+                    console.log(`[Warning] Invalid Fragment ${JSON.stringify(a)}:`, error.message);
                 }
             }
             defineProperties(this, {
@@ -13772,6 +13934,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         gasUsed;
         /**
+         *  The total amount of blob gas consumed by the transactions
+         *  within the block. See [[link-eip-4844]].
+         */
+        blobGasUsed;
+        /**
+         *  The running total of blob gas consumed in excess of the
+         *  target, prior to the block. See [[link-eip-4844]].
+         */
+        excessBlobGas;
+        /**
          *  The miner coinbase address, wihch receives any subsidies for
          *  including this block.
          */
@@ -13812,6 +13984,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 difficulty: block.difficulty,
                 gasLimit: block.gasLimit,
                 gasUsed: block.gasUsed,
+                blobGasUsed: block.blobGasUsed,
+                excessBlobGas: block.excessBlobGas,
                 miner: block.miner,
                 extraData: block.extraData,
                 baseFeePerGas: getValue(block.baseFeePerGas)
@@ -13861,6 +14035,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 extraData,
                 gasLimit: toJson(gasLimit),
                 gasUsed: toJson(gasUsed),
+                blobGasUsed: toJson(this.blobGasUsed),
+                excessBlobGas: toJson(this.excessBlobGas),
                 hash, miner, nonce, number, parentHash, timestamp,
                 transactions,
             };
@@ -14165,6 +14341,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         gasUsed;
         /**
+         *  The gas used for BLObs. See [[link-eip-4844]].
+         */
+        blobGasUsed;
+        /**
          *  The amount of gas used by all transactions within the block for this
          *  and all transactions with a lower ``index``.
          *
@@ -14180,6 +14360,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  fee is protocol-enforced.
          */
         gasPrice;
+        /**
+         *  The price paid per BLOB in gas. See [[link-eip-4844]].
+         */
+        blobGasPrice;
         /**
          *  The [[link-eip-2718]] transaction type.
          */
@@ -14227,7 +14411,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 logsBloom: tx.logsBloom,
                 gasUsed: tx.gasUsed,
                 cumulativeGasUsed: tx.cumulativeGasUsed,
+                blobGasUsed: tx.blobGasUsed,
                 gasPrice,
+                blobGasPrice: tx.blobGasPrice,
                 type: tx.type,
                 //byzantium: tx.byzantium,
                 status: tx.status,
@@ -14252,6 +14438,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 cumulativeGasUsed: toJson(this.cumulativeGasUsed),
                 from,
                 gasPrice: toJson(this.gasPrice),
+                blobGasUsed: toJson(this.blobGasUsed),
+                blobGasPrice: toJson(this.blobGasPrice),
                 gasUsed: toJson(this.gasUsed),
                 hash, index, logs, logsBloom, root, status, to
             };
@@ -14421,6 +14609,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         maxFeePerGas;
         /**
+         *  The [[link-eip-4844]] max fee per BLOb gas.
+         */
+        maxFeePerBlobGas;
+        /**
          *  The data.
          */
         data;
@@ -14442,6 +14634,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  support it, otherwise ``null``.
          */
         accessList;
+        /**
+         *  The [[link-eip-4844]] BLOb versioned hashes.
+         */
+        blobVersionedHashes;
         #startBlock;
         /**
          *  @_ignore:
@@ -14462,19 +14658,22 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.gasPrice = tx.gasPrice;
             this.maxPriorityFeePerGas = (tx.maxPriorityFeePerGas != null) ? tx.maxPriorityFeePerGas : null;
             this.maxFeePerGas = (tx.maxFeePerGas != null) ? tx.maxFeePerGas : null;
+            this.maxFeePerBlobGas = (tx.maxFeePerBlobGas != null) ? tx.maxFeePerBlobGas : null;
             this.chainId = tx.chainId;
             this.signature = tx.signature;
             this.accessList = (tx.accessList != null) ? tx.accessList : null;
+            this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes : null;
             this.#startBlock = -1;
         }
         /**
          *  Returns a JSON-compatible representation of this transaction.
          */
         toJSON() {
-            const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList } = this;
+            const { blockNumber, blockHash, index, hash, type, to, from, nonce, data, signature, accessList, blobVersionedHashes } = this;
             return {
-                _type: "TransactionReceipt",
+                _type: "TransactionResponse",
                 accessList, blockNumber, blockHash,
+                blobVersionedHashes,
                 chainId: toJson(this.chainId),
                 data, from,
                 gasLimit: toJson(this.gasLimit),
@@ -14482,6 +14681,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 hash,
                 maxFeePerGas: toJson(this.maxFeePerGas),
                 maxPriorityFeePerGas: toJson(this.maxPriorityFeePerGas),
+                maxFeePerBlobGas: toJson(this.maxFeePerBlobGas),
                 nonce, signature, to, index, type,
                 value: toJson(this.value),
             };
@@ -14764,6 +14964,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return (this.type === 2);
         }
         /**
+         *  Returns true if hte transaction is a Cancun (i.e. ``type == 3``)
+         *  transaction. See [[link-eip-4844]].
+         */
+        isCancun() {
+            return (this.type === 3);
+        }
+        /**
          *  Returns a filter which can be used to listen for orphan events
          *  that evict this transaction.
          */
@@ -14922,8 +15129,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  and the transaction has not been mined, otherwise this will
          *  wait until enough confirmations have completed.
          */
-        async wait(confirms) {
-            const receipt = await super.wait(confirms);
+        async wait(confirms, timeout) {
+            const receipt = await super.wait(confirms, timeout);
             if (receipt == null) {
                 return null;
             }
@@ -16006,7 +16213,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Resolves to the Contract deployed by passing %%args%% into the
          *  constructor.
          *
-         *  This will resovle to the Contract before it has been deployed to the
+         *  This will resolve to the Contract before it has been deployed to the
          *  network, so the [[BaseContract-waitForDeployment]] should be used before
          *  sending any transactions to it.
          */
@@ -16533,8 +16740,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return format(value);
         });
     }
-    function arrayOf(format) {
+    function arrayOf(format, allowNull) {
         return ((array) => {
+            if (allowNull && array == null) {
+                return null;
+            }
             if (!Array.isArray(array)) {
                 throw new Error("not an array");
             }
@@ -16615,6 +16825,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         difficulty: getBigInt,
         gasLimit: getBigInt,
         gasUsed: getBigInt,
+        blobGasUsed: allowNull(getBigInt, null),
+        excessBlobGas: allowNull(getBigInt, null),
         miner: allowNull(getAddress),
         extraData: formatData,
         baseFeePerGas: allowNull(getBigInt)
@@ -16652,6 +16864,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         index: getNumber,
         root: allowNull(hexlify),
         gasUsed: getBigInt,
+        blobGasUsed: allowNull(getBigInt, null),
         logsBloom: allowNull(formatData),
         blockHash: formatHash,
         hash: formatHash,
@@ -16660,6 +16873,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         //confirmations: allowNull(getNumber, null),
         cumulativeGasUsed: getBigInt,
         effectiveGasPrice: allowNull(getBigInt),
+        blobGasPrice: allowNull(getBigInt, null),
         status: allowNull(getNumber),
         type: allowNull(getNumber, 0)
     }, {
@@ -16685,6 +16899,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return getNumber(value);
             },
             accessList: allowNull(accessListify, null),
+            blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
             blockHash: allowNull(formatHash, null),
             blockNumber: allowNull(getNumber, null),
             transactionIndex: allowNull(getNumber, null),
@@ -16694,6 +16909,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             gasPrice: allowNull(getBigInt),
             maxPriorityFeePerGas: allowNull(getBigInt),
             maxFeePerGas: allowNull(getBigInt),
+            maxFeePerBlobGas: allowNull(getBigInt, null),
             gasLimit: getBigInt,
             to: allowNull(getAddress, null),
             value: getBigInt,
@@ -17297,6 +17513,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         registerEth("goerli", 5, { ensNetwork: 5 });
         registerEth("kovan", 42, { ensNetwork: 42 });
         registerEth("sepolia", 11155111, { ensNetwork: 11155111 });
+        registerEth("holesky", 17000, { ensNetwork: 17000 });
         registerEth("classic", 61, {});
         registerEth("classicKotti", 6, {});
         registerEth("arbitrum", 42161, {
@@ -20642,8 +20859,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - Ethereum Mainnet (``mainnet``)
      *  - Goerli Testnet (``goerli``)
      *  - Sepolia Testnet (``sepolia``)
+     *  - Sepolia Testnet (``holesky``)
      *  - Arbitrum (``arbitrum``)
      *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+     *  - BNB Smart Chain Mainnet (``bnb``)
+     *  - BNB Smart Chain Testnet (``bnbt``)
      *  - Optimism (``optimism``)
      *  - Optimism Goerli Testnet (``optimism-goerli``)
      *  - Polygon (``matic``)
@@ -20731,10 +20951,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return "https:/\/api-goerli.etherscan.io";
                 case "sepolia":
                     return "https:/\/api-sepolia.etherscan.io";
+                case "holesky":
+                    return "https:/\/api-holesky.etherscan.io";
                 case "arbitrum":
                     return "https:/\/api.arbiscan.io";
                 case "arbitrum-goerli":
                     return "https:/\/api-goerli.arbiscan.io";
+                case "bnb":
+                    return "https:/\/api.bscscan.com";
+                case "bnbt":
+                    return "https:/\/api-testnet.bscscan.com";
                 case "matic":
                     return "https:/\/api.polygonscan.com";
                 case "matic-mumbai":
@@ -20743,10 +20969,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return "https:/\/api-optimistic.etherscan.io";
                 case "optimism-goerli":
                     return "https:/\/api-goerli-optimistic.etherscan.io";
-                case "bnb":
-                    return "http:/\/api.bscscan.com";
-                case "bnbt":
-                    return "http:/\/api-testnet.bscscan.com";
             }
             assertArgument(false, "unsupported network", "network", this.network);
         }
@@ -21706,6 +21928,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - Ethereum Mainnet (``mainnet``)
      *  - Goerli Testnet (``goerli``)
      *  - Sepolia Testnet (``sepolia``)
+     *  - Holesky Testnet (``holesky``)
      *  - Arbitrum (``arbitrum``)
      *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
      *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
@@ -21731,6 +21954,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return "ethers.ethereum-goerli.quiknode.pro";
             case "sepolia":
                 return "ethers.ethereum-sepolia.quiknode.pro";
+            case "holesky":
+                return "ethers.ethereum-holesky.quiknode.pro";
             case "arbitrum":
                 return "ethers.arbitrum-mainnet.quiknode.pro";
             case "arbitrum-goerli":
@@ -21769,7 +21994,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
       are EVM compatible and work with ethers
 
       http://ethers.matic-amoy.quiknode.pro
-      http://ethers.ethereum-holesky.quiknode.pro
 
       http://ethers.avalanche-mainnet.quiknode.pro
       http://ethers.avalanche-testnet.quiknode.pro
@@ -21851,7 +22075,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
 
     /**
-     *  A **FallbackProvider** providers resiliance, security and performatnce
+     *  A **FallbackProvider** provides resilience, security and performance
      *  in a way that is customizable and configurable.
      *
      *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
@@ -22049,7 +22273,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     /**
      *  A **FallbackProvider** manages several [[Providers]] providing
-     *  resiliance by switching between slow or misbehaving nodes, security
+     *  resilience by switching between slow or misbehaving nodes, security
      *  by requiring multiple backends to aggree and performance by allowing
      *  faster backends to respond earlier.
      *
@@ -22706,6 +22930,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  %%network%%.
          */
         constructor(ethereum, network) {
+            assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
             super(network, { batchMaxCount: 1 });
             this.#request = async (method, params) => {
                 const payload = { method, params };

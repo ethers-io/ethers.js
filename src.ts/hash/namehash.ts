@@ -85,17 +85,17 @@ export function namehash(name: string): string {
  *  This is used for various parts of ENS name resolution, such
  *  as the wildcard resolution.
  */
-export function dnsEncode(name: string): string {
+export function dnsEncode(name: string, _maxLength?: number): string {
+    const length = (_maxLength != null) ? _maxLength: 63;
+
+    assertArgument(length <= 255, "DNS encoded label cannot exceed 255", "length", length);
+
     return hexlify(concat(ensNameSplit(name).map((comp) => {
-        // DNS does not allow components over 63 bytes in length
-        if (comp.length > 63) {
-            throw new Error("invalid DNS encoded entry; length exceeds 63 bytes");
-        }
+        assertArgument(comp.length <= length, `label ${ JSON.stringify(name) } exceeds ${ length } bytes`, "name", name);
 
         const bytes = new Uint8Array(comp.length + 1);
         bytes.set(comp, 1);
         bytes[0] = bytes.length - 1;
         return bytes;
-
     }))) + "00";
 }

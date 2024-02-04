@@ -143,7 +143,7 @@ export interface TransactionRequest {
     nonce?: null | number;
 
     /**
-     *  The maximum amount of gas to allow this transaction to consime.
+     *  The maximum amount of gas to allow this transaction to consume.
      */
     gasLimit?: null | BigNumberish;
 
@@ -467,6 +467,18 @@ export class Block implements BlockParams, Iterable<string> {
     readonly gasUsed!: bigint;
 
     /**
+     *  The total amount of blob gas consumed by the transactions
+     *  within the block. See [[link-eip-4844]].
+     */
+    readonly blobGasUsed!: null | bigint;
+
+    /**
+     *  The running total of blob gas consumed in excess of the
+     *  target, prior to the block. See [[link-eip-4844]].
+     */
+    readonly excessBlobGas!: null | bigint;
+
+    /**
      *  The miner coinbase address, wihch receives any subsidies for
      *  including this block.
      */
@@ -518,6 +530,8 @@ export class Block implements BlockParams, Iterable<string> {
 
             gasLimit: block.gasLimit,
             gasUsed: block.gasUsed,
+            blobGasUsed: block.blobGasUsed,
+            excessBlobGas: block.excessBlobGas,
             miner: block.miner,
             extraData: block.extraData,
 
@@ -574,6 +588,8 @@ export class Block implements BlockParams, Iterable<string> {
             extraData,
             gasLimit: toJson(gasLimit),
             gasUsed: toJson(gasUsed),
+            blobGasUsed: toJson(this.blobGasUsed),
+            excessBlobGas: toJson(this.excessBlobGas),
             hash, miner, nonce, number, parentHash, timestamp,
             transactions,
         };
@@ -915,6 +931,11 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
     readonly gasUsed!: bigint;
 
     /**
+     *  The gas used for BLObs. See [[link-eip-4844]].
+     */
+    readonly blobGasUsed!: null | bigint;
+
+    /**
      *  The amount of gas used by all transactions within the block for this
      *  and all transactions with a lower ``index``.
      *
@@ -931,6 +952,11 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      *  fee is protocol-enforced.
      */
     readonly gasPrice!: bigint;
+
+    /**
+     *  The price paid per BLOB in gas. See [[link-eip-4844]].
+     */
+    readonly blobGasPrice!: null | bigint;
 
     /**
      *  The [[link-eip-2718]] transaction type.
@@ -989,7 +1015,9 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
             gasUsed: tx.gasUsed,
             cumulativeGasUsed: tx.cumulativeGasUsed,
+            blobGasUsed: tx.blobGasUsed,
             gasPrice,
+            blobGasPrice: tx.blobGasPrice,
 
             type: tx.type,
             //byzantium: tx.byzantium,
@@ -1008,7 +1036,8 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      */
     toJSON(): any {
         const {
-            to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom,
+            to, from, contractAddress, hash, index,
+            blockHash, blockNumber, logsBloom,
             logs, //byzantium, 
             status, root
         } = this;
@@ -1021,6 +1050,8 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
             gasPrice: toJson(this.gasPrice),
+            blobGasUsed: toJson(this.blobGasUsed),
+            blobGasPrice: toJson(this.blobGasPrice),
             gasUsed: toJson(this.gasUsed),
             hash, index, logs, logsBloom, root, status, to
         };
@@ -1237,6 +1268,11 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
     readonly maxFeePerGas!: null | bigint;
 
     /**
+     *  The [[link-eip-4844]] max fee per BLOb gas.
+     */
+    readonly maxFeePerBlobGas!: null | bigint;
+
+    /**
      *  The data.
      */
     readonly data!: string;
@@ -1262,6 +1298,11 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
      *  support it, otherwise ``null``.
      */
     readonly accessList!: null | AccessList;
+
+    /**
+     *  The [[link-eip-4844]] BLOb versioned hashes.
+     */
+    readonly blobVersionedHashes!: null | Array<string>;
 
     #startBlock: number;
 
@@ -1290,11 +1331,13 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         this.gasPrice = tx.gasPrice;
         this.maxPriorityFeePerGas = (tx.maxPriorityFeePerGas != null) ? tx.maxPriorityFeePerGas: null;
         this.maxFeePerGas = (tx.maxFeePerGas != null) ? tx.maxFeePerGas: null;
+        this.maxFeePerBlobGas = (tx.maxFeePerBlobGas != null) ? tx.maxFeePerBlobGas: null;
 
         this.chainId = tx.chainId;
         this.signature = tx.signature;
 
         this.accessList = (tx.accessList != null) ? tx.accessList: null;
+        this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes: null;
 
         this.#startBlock = -1;
     }
@@ -1305,12 +1348,13 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
     toJSON(): any {
         const {
             blockNumber, blockHash, index, hash, type, to, from, nonce,
-            data, signature, accessList
+            data, signature, accessList, blobVersionedHashes
         } = this;
 
         return {
-            _type: "TransactionReceipt",
+            _type: "TransactionResponse",
             accessList, blockNumber, blockHash,
+            blobVersionedHashes,
             chainId: toJson(this.chainId),
             data, from,
             gasLimit: toJson(this.gasLimit),
@@ -1318,6 +1362,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
             hash,
             maxFeePerGas: toJson(this.maxFeePerGas),
             maxPriorityFeePerGas: toJson(this.maxPriorityFeePerGas),
+            maxFeePerBlobGas: toJson(this.maxFeePerBlobGas),
             nonce, signature, to, index, type,
             value: toJson(this.value),
         };
@@ -1597,6 +1642,14 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
      */
     isLondon(): this is (TransactionResponse & { accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint }){
         return (this.type === 2);
+    }
+
+    /**
+     *  Returns true if hte transaction is a Cancun (i.e. ``type == 3``)
+     *  transaction. See [[link-eip-4844]].
+     */
+    isCancun(): this is (TransactionResponse & { accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint, maxFeePerBlobGas: bigint, blobVersionedHashes: Array<string> }){
+        return (this.type === 3);
     }
 
     /**

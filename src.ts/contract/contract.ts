@@ -1110,7 +1110,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     }
 }
 
-function _ContractBase(): new (target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner) => BaseContract & Omit<ContractInterface, keyof BaseContract> {
+function _ContractBase(): new (target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner) => BaseContract & Omit<ContractInterface, keyof BaseContract> {
     return BaseContract as any;
 }
 

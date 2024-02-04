@@ -68,7 +68,7 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
  *      exclusive: [ "etherscan", "infura" ]
  *    });
  */
-export function getDefaultProvider(network: string | Networkish | WebSocketLike, options?: any): AbstractProvider {
+export function getDefaultProvider(network?: string | Networkish | WebSocketLike, options?: any): AbstractProvider {
     if (options == null) { options = { }; }
 
     const allowService = (name: string) => {

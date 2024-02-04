@@ -14,8 +14,11 @@ export function allowNull(format, nullValue) {
         return format(value);
     });
 }
-export function arrayOf(format) {
+export function arrayOf(format, allowNull) {
     return ((array) => {
+        if (allowNull && array == null) {
+            return null;
+        }
         if (!Array.isArray(array)) {
             throw new Error("not an array");
         }
@@ -102,6 +105,8 @@ const _formatBlock = object({
     difficulty: getBigInt,
     gasLimit: getBigInt,
     gasUsed: getBigInt,
+    blobGasUsed: allowNull(getBigInt, null),
+    excessBlobGas: allowNull(getBigInt, null),
     miner: allowNull(getAddress),
     extraData: formatData,
     baseFeePerGas: allowNull(getBigInt)
@@ -139,6 +144,7 @@ const _formatTransactionReceipt = object({
     index: getNumber,
     root: allowNull(hexlify),
     gasUsed: getBigInt,
+    blobGasUsed: allowNull(getBigInt, null),
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
     hash: formatHash,
@@ -147,6 +153,7 @@ const _formatTransactionReceipt = object({
     //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: getBigInt,
     effectiveGasPrice: allowNull(getBigInt),
+    blobGasPrice: allowNull(getBigInt, null),
     status: allowNull(getNumber),
     type: allowNull(getNumber, 0)
 }, {
@@ -172,6 +179,7 @@ export function formatTransactionResponse(value) {
             return getNumber(value);
         },
         accessList: allowNull(accessListify, null),
+        blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),
@@ -181,6 +189,7 @@ export function formatTransactionResponse(value) {
         gasPrice: allowNull(getBigInt),
         maxPriorityFeePerGas: allowNull(getBigInt),
         maxFeePerGas: allowNull(getBigInt),
+        maxFeePerBlobGas: allowNull(getBigInt, null),
         gasLimit: getBigInt,
         to: allowNull(getAddress, null),
         value: getBigInt,

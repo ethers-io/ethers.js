@@ -3,12 +3,26 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.10.1 (2024-01-17 20:34)
+ethers/v6.11.0 (2024-02-03 00:18)
 ---------------------------------
 
-  - Updated third-party provider network URLs ([#4542](https://github.com/ethers-io/ethers.js/issues/4542); [84ca14f](https://github.com/ethers-io/ethers.js/commit/84ca14f1ffc5afbdd7f4c26a9b734ec5951eee3c), [fed28e4](https://github.com/ethers-io/ethers.js/commit/fed28e4a8ce052b7976a70747aefd5fa13e6ac9d), [2b4891d](https://github.com/ethers-io/ethers.js/commit/2b4891d86e72e849079cb1dc98b18e158b0c0620)).
+  - Added EIP-4844 fields to Provider classes and formatter ([#4570](https://github.com/ethers-io/ethers.js/issues/4570); [7b4f2c1](https://github.com/ethers-io/ethers.js/commit/7b4f2c1a74db411829b5e8ef758bfa2ee21e5890)).
+  - Assert BrowserProvider receives an EIP-1193 provider to fail early when passing undefined ethereum object ([b69f43b](https://github.com/ethers-io/ethers.js/commit/b69f43bc6f35da881ca7a0c8ccc5fda92edd076d)).
+  - Add timeout to ContractTransactionResponse wait ([#4497](https://github.com/ethers-io/ethers.js/issues/4497); [095de51](https://github.com/ethers-io/ethers.js/commit/095de51e605a9b88576e5e34fd55a6e32befa4eb)).
+  - Allow override keyword in human-readable ABI and improve error messages ([#4514](https://github.com/ethers-io/ethers.js/issues/4514), [#4548](https://github.com/ethers-io/ethers.js/issues/4548); [be5ec2d](https://github.com/ethers-io/ethers.js/commit/be5ec2d327a503b2e5fc0f37c47eee9e828f8e23)).
+  - Expand Contract sub-class to accept BaseContract super-class constructor arguments ([#4538](https://github.com/ethers-io/ethers.js/issues/4538); [98496bc](https://github.com/ethers-io/ethers.js/commit/98496bc48ec23ce0d9c21d3c6c87e5b1b796a610)).
+  - Allow network for default provider to be null to select mainnet ([#4501](https://github.com/ethers-io/ethers.js/issues/4501); [b6bf7ab](https://github.com/ethers-io/ethers.js/commit/b6bf7aba62fb38839cd01858432b801cc5c28a11)).
+  - Allow long dnsEncode names with optional length parameter ([#4543](https://github.com/ethers-io/ethers.js/issues/4543); [a136348](https://github.com/ethers-io/ethers.js/commit/a1363483a56b0dee342595c8f44ed8fcce7ecca9)).
+  - Fix parseLog signature when receiving read-only array for topics ([#4029](https://github.com/ethers-io/ethers.js/issues/4029), [#4459](https://github.com/ethers-io/ethers.js/issues/4459); [20cd8a2](https://github.com/ethers-io/ethers.js/commit/20cd8a23eaf8e8a14e2b51f7f64da4cb3e32fccb)).
+  - Use Secure endpoints for BNB on Etherscan ([#4525](https://github.com/ethers-io/ethers.js/issues/4525); [1f6e188](https://github.com/ethers-io/ethers.js/commit/1f6e1882515195bd67f0bce9fe347ec05107324b)).
+  - Added holesky network and related end-points for supporting providers ([c6e6c43](https://github.com/ethers-io/ethers.js/commit/c6e6c432574a0b7e55c300ab3e470aafdace28b3)).
+  - Added EIP-4844 BLOb transactions ([#4554](https://github.com/ethers-io/ethers.js/issues/4554); [9c1e82e](https://github.com/ethers-io/ethers.js/commit/9c1e82e1230526ebcd62902890c4f24b1f7f7d79)).
+  - Normalize EIP-712 types before computing the payload ([#4541](https://github.com/ethers-io/ethers.js/issues/4541); [56c1361](https://github.com/ethers-io/ethers.js/commit/56c1361ee83db8b68859caf0850c95ff70e7e306)).
+  - Updated thrid-part provider URLs for QuickNode ([2b4891d](https://github.com/ethers-io/ethers.js/commit/2b4891d86e72e849079cb1dc98b18e158b0c0620)).
+  - Fixed normalization and abstracted EIP-712 Array parsing ([#4541](https://github.com/ethers-io/ethers.js/issues/4541); [8f99601](https://github.com/ethers-io/ethers.js/commit/8f99601df1f26a8ba4d6d9dea5e033e7f688107e)).
+  - Updated third-party provider network URLs ([#4542](https://github.com/ethers-io/ethers.js/issues/4542); [84ca14f](https://github.com/ethers-io/ethers.js/commit/84ca14f1ffc5afbdd7f4c26a9b734ec5951eee3c)).
   - Added additional sepolia testnets ([4efef76](https://github.com/ethers-io/ethers.js/commit/4efef76e8cab0acaf1b2ba231a0148f9381bb1ee)).
-  - Fix EIP-712 type aliases for uint and int ([#4541](https://github.com/ethers-io/ethers.js/issues/4541); [43fb9c2](https://github.com/ethers-io/ethers.js/commit/43fb9c233696aeaa80b1c2b0e5fafce90e0ad508), [56c1361](https://github.com/ethers-io/ethers.js/commit/56c1361ee83db8b68859caf0850c95ff70e7e306), [8f99601](https://github.com/ethers-io/ethers.js/commit/8f99601df1f26a8ba4d6d9dea5e033e7f688107e)).
+  - Fix EIP-712 type aliases for uint and int ([#4541](https://github.com/ethers-io/ethers.js/issues/4541); [43fb9c2](https://github.com/ethers-io/ethers.js/commit/43fb9c233696aeaa80b1c2b0e5fafce90e0ad508)).
   - Fixed typo in Error string ([#4539](https://github.com/ethers-io/ethers.js/issues/4539); [7882905](https://github.com/ethers-io/ethers.js/commit/78829050853093bc5291ae78fc5a904044759aa0)).
   - Better debugging output on fetch errors ([bee07a0](https://github.com/ethers-io/ethers.js/commit/bee07a0750b448a9d13c2d57014bcf27f43e2ed7)).
 

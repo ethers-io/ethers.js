@@ -1,6 +1,7 @@
 node_modules/**
 output/**
 
+**/*.save
 **/*.swp
 **/*.tgz
 dist/*.gz

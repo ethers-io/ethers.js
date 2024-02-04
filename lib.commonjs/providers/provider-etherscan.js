@@ -9,8 +9,11 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Sepolia Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - BNB Smart Chain Mainnet (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
@@ -109,10 +112,16 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 return "https:/\/api-goerli.etherscan.io";
             case "sepolia":
                 return "https:/\/api-sepolia.etherscan.io";
+            case "holesky":
+                return "https:/\/api-holesky.etherscan.io";
             case "arbitrum":
                 return "https:/\/api.arbiscan.io";
             case "arbitrum-goerli":
                 return "https:/\/api-goerli.arbiscan.io";
+            case "bnb":
+                return "https:/\/api.bscscan.com";
+            case "bnbt":
+                return "https:/\/api-testnet.bscscan.com";
             case "matic":
                 return "https:/\/api.polygonscan.com";
             case "matic-mumbai":
@@ -121,10 +130,6 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
                 return "https:/\/api-goerli-optimistic.etherscan.io";
-            case "bnb":
-                return "http:/\/api.bscscan.com";
-            case "bnbt":
-                return "http:/\/api-testnet.bscscan.com";
             default:
         }
         (0, index_js_4.assertArgument)(false, "unsupported network", "network", this.network);

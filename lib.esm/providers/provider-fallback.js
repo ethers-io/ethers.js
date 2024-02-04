@@ -1,5 +1,5 @@
 /**
- *  A **FallbackProvider** providers resiliance, security and performatnce
+ *  A **FallbackProvider** provides resilience, security and performance
  *  in a way that is customizable and configurable.
  *
  *  @_section: api/providers/fallback-provider:Fallback Provider [about-fallback-provider]
@@ -201,7 +201,7 @@ function getFuzzyMode(quorum, results) {
 }
 /**
  *  A **FallbackProvider** manages several [[Providers]] providing
- *  resiliance by switching between slow or misbehaving nodes, security
+ *  resilience by switching between slow or misbehaving nodes, security
  *  by requiring multiple backends to aggree and performance by allowing
  *  faster backends to respond earlier.
  *

@@ -102,11 +102,24 @@ describe("Test Provider Address operations", function () {
 });
 function assertObj(prefix, actual, expected) {
     assert_1.default.ok(actual != null, `${prefix} is null`);
+    if (typeof (expected) !== "object") {
+        assert_1.default.equal(actual, expected, prefix);
+        return;
+    }
     for (const key in expected) {
         if (expected[key] === undefined) {
             continue;
         }
-        assert_1.default.equal(actual[key], expected[key], `${prefix}.${key}`);
+        if (Array.isArray(expected[key])) {
+            assert_1.default.ok(Array.isArray(actual[key]), `Array.isArray(${prefix}.${key})`);
+            assert_1.default.equal(actual[key].length, expected[key].length, `${prefix}.${key}.length`);
+            for (let i = 0; i < expected[key].length; i++) {
+                assertObj(`${prefix}[${i}]`, actual[key][i], expected[key][i]);
+            }
+        }
+        else {
+            assert_1.default.equal(actual[key], expected[key], `${prefix}.${key}`);
+        }
     }
 }
 function assertBlock(actual, expected) {
@@ -205,7 +218,7 @@ describe("Test Provider Transaction operations", function () {
 });
 describe("Test Networks", function () {
     const networks = [
-        "mainnet", "goerli", "sepolia",
+        "mainnet", "goerli", "sepolia", "holesky",
         "arbitrum", "arbitrum-goerli", "arbitrum-sepolia",
         "base", "base-goerli", "base-sepolia",
         "bnb", "bnbt",
@@ -226,6 +239,7 @@ describe("Test Networks", function () {
                 continue;
             }
             it(`checks network chainId: ${providerName}/${networkName}`, async function () {
+                this.timeout(10000);
                 const chainId = await provider.send("eth_chainId", []);
                 assert_1.default.equal(parseInt(chainId), network.chainId, "chainId");
             });

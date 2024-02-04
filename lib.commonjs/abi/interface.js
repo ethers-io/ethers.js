@@ -253,7 +253,7 @@ class Interface {
                 frags.push(fragments_js_1.Fragment.from(a));
             }
             catch (error) {
-                console.log("EE", error);
+                console.log(`[Warning] Invalid Fragment ${JSON.stringify(a)}:`, error.message);
             }
         }
         (0, index_js_3.defineProperties)(this, {

@@ -342,8 +342,8 @@ export class Interface {
         for (const a of abi) {
             try {
                 frags.push(Fragment.from(a));
-            } catch (error) {
-                console.log("EE", error);
+            } catch (error: any) {
+                console.log(`[Warning] Invalid Fragment ${ JSON.stringify(a) }:`, error.message);
             }
         }
 
@@ -1212,7 +1212,7 @@ export class Interface {
      *
      *  If the matching event cannot be found, returns null.
      */
-    parseLog(log: { topics: Array<string>, data: string}): null | LogDescription {
+    parseLog(log: { topics: ReadonlyArray<string>, data: string}): null | LogDescription {
         const fragment = this.getEvent(log.topics[0]);
 
         if (!fragment || fragment.anonymous) { return null; }

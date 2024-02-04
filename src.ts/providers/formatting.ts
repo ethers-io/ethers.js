@@ -61,6 +61,18 @@ export interface BlockParams {
     gasUsed: bigint;
 
     /**
+     *  The total amount of BLOb gas consumed by transactions within
+     *  the block. See [[link-eip4844].
+     */
+    blobGasUsed?: null | bigint;
+
+    /**
+     *  The running total of BLOb gas consumed in excess of the target
+     *  prior to the block. See [[link-eip-4844]].
+     */
+    excessBlobGas?: null | bigint;
+
+    /**
      *  The miner (or author) of a block.
      */
     miner: string;
@@ -204,6 +216,11 @@ export interface TransactionReceiptParams {
     gasUsed: bigint;
 
     /**
+     *  The amount of BLOb gas used. See [[link-eip-4844]].
+     */
+    blobGasUsed?: null | bigint;
+
+    /**
      *  The total amount of gas consumed during the entire block up to
      *  and including this transaction.
      */
@@ -213,6 +230,11 @@ export interface TransactionReceiptParams {
      *  The actual gas price per gas charged for this transaction.
      */
     gasPrice?: null | bigint;
+
+    /**
+     *  The actual BLOb gas price that was charged. See [[link-eip-4844]].
+     */
+    blobGasPrice?: null | bigint;
 
     /**
      *  The actual gas price per gas charged for this transaction.
@@ -328,6 +350,12 @@ export interface TransactionResponseParams {
     maxFeePerGas: null | bigint;
 
     /**
+     *  For [[link-eip-4844]] transactions, this is the maximum fee that
+     *  will be paid per BLOb.
+     */
+    maxFeePerBlobGas?: null | bigint;
+
+    /**
      *  The transaction data.
      */
     data: string;
@@ -351,6 +379,11 @@ export interface TransactionResponseParams {
      *  The transaction access list.
      */
     accessList: null | AccessList;
+
+    /**
+     *  The [[link-eip-4844]] BLOb versioned hashes.
+     */
+    blobVersionedHashes?: null | Array<string>;
 };
 
 

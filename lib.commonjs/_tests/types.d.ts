@@ -173,10 +173,13 @@ export interface TestCaseTransaction {
     signedBerlin: string;
     unsignedLondon: string;
     signedLondon: string;
+    unsignedCancun: string;
+    signedCancun: string;
     signatureLegacy: TestCaseTransactionSig;
     signatureEip155: TestCaseTransactionSig;
     signatureBerlin: TestCaseTransactionSig;
     signatureLondon: TestCaseTransactionSig;
+    signatureCancun: TestCaseTransactionSig;
 }
 export interface TestCaseMnemonicNode {
     path: string;

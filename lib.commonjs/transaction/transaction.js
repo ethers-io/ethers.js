@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transaction = void 0;
 const index_js_1 = require("../address/index.js");
+const addresses_js_1 = require("../constants/addresses.js");
 const index_js_2 = require("../crypto/index.js");
 const index_js_3 = require("../utils/index.js");
 const accesslist_js_1 = require("./accesslist.js");
@@ -49,6 +50,13 @@ function formatNumber(_value, name) {
 function formatAccessList(value) {
     return (0, accesslist_js_1.accessListify)(value).map((set) => [set.address, set.storageKeys]);
 }
+function formatHashes(value, param) {
+    (0, index_js_3.assertArgument)(Array.isArray(value), `invalid ${param}`, "value", value);
+    for (let i = 0; i < value.length; i++) {
+        (0, index_js_3.assertArgument)((0, index_js_3.isHexString)(value[i], 32), "invalid ${ param } hash", `value[${i}]`, value[i]);
+    }
+    return value;
+}
 function _parseLegacy(data) {
     const fields = (0, index_js_3.decodeRlp)(data);
     (0, index_js_3.assertArgument)(Array.isArray(fields) && (fields.length === 9 || fields.length === 6), "invalid field count for legacy transaction", "data", data);
@@ -92,13 +100,14 @@ function _parseLegacy(data) {
     return tx;
 }
 function _serializeLegacy(tx, sig) {
+    (0, index_js_3.assertArgument)(tx.isLegacy(), "internal check failed; !legacy", "tx", tx);
     const fields = [
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.gasPrice || 0, "gasPrice"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? (0, index_js_1.getAddress)(tx.to) : "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.gasPrice, "gasPrice"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
     ];
     let chainId = BN_0;
     if (tx.chainId != BN_0) {
@@ -161,14 +170,12 @@ function _parseEipSignature(tx, fields) {
 function _parseEip1559(data) {
     const fields = (0, index_js_3.decodeRlp)((0, index_js_3.getBytes)(data).slice(1));
     (0, index_js_3.assertArgument)(Array.isArray(fields) && (fields.length === 9 || fields.length === 12), "invalid field count for transaction type: 2", "data", (0, index_js_3.hexlify)(data));
-    const maxPriorityFeePerGas = handleUint(fields[2], "maxPriorityFeePerGas");
-    const maxFeePerGas = handleUint(fields[3], "maxFeePerGas");
     const tx = {
         type: 2,
         chainId: handleUint(fields[0], "chainId"),
         nonce: handleNumber(fields[1], "nonce"),
-        maxPriorityFeePerGas: maxPriorityFeePerGas,
-        maxFeePerGas: maxFeePerGas,
+        maxPriorityFeePerGas: handleUint(fields[2], "maxPriorityFeePerGas"),
+        maxFeePerGas: handleUint(fields[3], "maxFeePerGas"),
         gasPrice: null,
         gasLimit: handleUint(fields[4], "gasLimit"),
         to: handleAddress(fields[5]),
@@ -185,16 +192,17 @@ function _parseEip1559(data) {
     return tx;
 }
 function _serializeEip1559(tx, sig) {
+    (0, index_js_3.assertArgument)(tx.isLondon(), "internal check failed; !london", "tx", tx);
     const fields = [
-        formatNumber(tx.chainId || 0, "chainId"),
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
-        formatNumber(tx.maxFeePerGas || 0, "maxFeePerGas"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? (0, index_js_1.getAddress)(tx.to) : "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
-        (formatAccessList(tx.accessList || []))
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
+        formatAccessList(tx.accessList)
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "yParity"));
@@ -226,15 +234,16 @@ function _parseEip2930(data) {
     return tx;
 }
 function _serializeEip2930(tx, sig) {
+    (0, index_js_3.assertArgument)(tx.isBerlin(), "internal check failed; !berlin", "tx", tx);
     const fields = [
-        formatNumber(tx.chainId || 0, "chainId"),
-        formatNumber(tx.nonce || 0, "nonce"),
-        formatNumber(tx.gasPrice || 0, "gasPrice"),
-        formatNumber(tx.gasLimit || 0, "gasLimit"),
-        ((tx.to != null) ? (0, index_js_1.getAddress)(tx.to) : "0x"),
-        formatNumber(tx.value || 0, "value"),
-        (tx.data || "0x"),
-        (formatAccessList(tx.accessList || []))
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.gasPrice, "gasPrice"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
+        formatAccessList(tx.accessList)
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "recoveryParam"));
@@ -242,6 +251,59 @@ function _serializeEip2930(tx, sig) {
         fields.push((0, index_js_3.toBeArray)(sig.s));
     }
     return (0, index_js_3.concat)(["0x01", (0, index_js_3.encodeRlp)(fields)]);
+}
+function _parseEip4844(data) {
+    const fields = (0, index_js_3.decodeRlp)((0, index_js_3.getBytes)(data).slice(1));
+    (0, index_js_3.assertArgument)(Array.isArray(fields) && (fields.length === 11 || fields.length === 14), "invalid field count for transaction type: 3", "data", (0, index_js_3.hexlify)(data));
+    const tx = {
+        type: 3,
+        chainId: handleUint(fields[0], "chainId"),
+        nonce: handleNumber(fields[1], "nonce"),
+        maxPriorityFeePerGas: handleUint(fields[2], "maxPriorityFeePerGas"),
+        maxFeePerGas: handleUint(fields[3], "maxFeePerGas"),
+        gasPrice: null,
+        gasLimit: handleUint(fields[4], "gasLimit"),
+        to: handleAddress(fields[5]),
+        value: handleUint(fields[6], "value"),
+        data: (0, index_js_3.hexlify)(fields[7]),
+        accessList: handleAccessList(fields[8], "accessList"),
+        maxFeePerBlobGas: handleUint(fields[9], "maxFeePerBlobGas"),
+        blobVersionedHashes: fields[10]
+    };
+    (0, index_js_3.assertArgument)(tx.to != null, "invalid address for transaction type: 3", "data", data);
+    (0, index_js_3.assertArgument)(Array.isArray(tx.blobVersionedHashes), "invalid blobVersionedHashes: must be an array", "data", data);
+    for (let i = 0; i < tx.blobVersionedHashes.length; i++) {
+        (0, index_js_3.assertArgument)((0, index_js_3.isHexString)(tx.blobVersionedHashes[i], 32), `invalid blobVersionedHash at index ${i}: must be length 32`, "data", data);
+    }
+    // Unsigned EIP-4844 Transaction
+    if (fields.length === 11) {
+        return tx;
+    }
+    tx.hash = (0, index_js_2.keccak256)(data);
+    _parseEipSignature(tx, fields.slice(11));
+    return tx;
+}
+function _serializeEip4844(tx, sig) {
+    (0, index_js_3.assertArgument)(tx.isCancun(), "internal check failed; !cancun", "tx", tx);
+    const fields = [
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        tx.to,
+        formatNumber(tx.value, "value"),
+        tx.data,
+        (formatAccessList(tx.accessList)),
+        formatNumber(tx.maxFeePerBlobGas, "maxFeePerBlobGas"),
+        formatHashes(tx.blobVersionedHashes, "blobVersionedHashes")
+    ];
+    if (sig) {
+        fields.push(formatNumber(sig.yParity, "yParity"));
+        fields.push((0, index_js_3.toBeArray)(sig.r));
+        fields.push((0, index_js_3.toBeArray)(sig.s));
+    }
+    return (0, index_js_3.concat)(["0x03", (0, index_js_3.encodeRlp)(fields)]);
 }
 /**
  *  A **Transaction** describes an operation to be executed on
@@ -269,6 +331,8 @@ class Transaction {
     #chainId;
     #sig;
     #accessList;
+    #maxFeePerBlobGas;
+    #blobVersionedHashes;
     /**
      *  The transaction type.
      *
@@ -295,6 +359,11 @@ class Transaction {
             case "eip-1559":
                 this.#type = 2;
                 break;
+            case 3:
+            case "cancun":
+            case "eip-4844":
+                this.#type = 3;
+                break;
             default:
                 (0, index_js_3.assertArgument)(false, "unsupported transaction type", "type", value);
         }
@@ -307,6 +376,7 @@ class Transaction {
             case 0: return "legacy";
             case 1: return "eip-2930";
             case 2: return "eip-1559";
+            case 3: return "eip-4844";
         }
         return null;
     }
@@ -314,7 +384,13 @@ class Transaction {
      *  The ``to`` address for the transaction or ``null`` if the
      *  transaction is an ``init`` transaction.
      */
-    get to() { return this.#to; }
+    get to() {
+        const value = this.#to;
+        if (value == null && this.type === 3) {
+            return addresses_js_1.ZeroAddress;
+        }
+        return value;
+    }
     set to(value) {
         this.#to = (value == null) ? null : (0, index_js_1.getAddress)(value);
     }
@@ -351,7 +427,7 @@ class Transaction {
     get maxPriorityFeePerGas() {
         const value = this.#maxPriorityFeePerGas;
         if (value == null) {
-            if (this.type === 2) {
+            if (this.type === 2 || this.type === 3) {
                 return BN_0;
             }
             return null;
@@ -368,7 +444,7 @@ class Transaction {
     get maxFeePerGas() {
         const value = this.#maxFeePerGas;
         if (value == null) {
-            if (this.type === 2) {
+            if (this.type === 2 || this.type === 3) {
                 return BN_0;
             }
             return null;
@@ -412,7 +488,9 @@ class Transaction {
     get accessList() {
         const value = this.#accessList || null;
         if (value == null) {
-            if (this.type === 1 || this.type === 2) {
+            if (this.type === 1 || this.type === 2 || this.type === 3) {
+                // @TODO: in v7, this should assign the value or become
+                // a live object itself, otherwise mutation is inconsistent
                 return [];
             }
             return null;
@@ -423,21 +501,58 @@ class Transaction {
         this.#accessList = (value == null) ? null : (0, accesslist_js_1.accessListify)(value);
     }
     /**
+     *  The max fee per blob gas for Cancun transactions.
+     */
+    get maxFeePerBlobGas() {
+        const value = this.#maxFeePerBlobGas;
+        if (value == null && this.type === 3) {
+            return BN_0;
+        }
+        return value;
+    }
+    set maxFeePerBlobGas(value) {
+        this.#maxFeePerBlobGas = (value == null) ? null : (0, index_js_3.getBigInt)(value, "maxFeePerBlobGas");
+    }
+    /**
+     *  The BLOB versioned hashes for Cancun transactions.
+     */
+    get blobVersionedHashes() {
+        // @TODO: Mutation is inconsistent; if unset, the returned value
+        // cannot mutate the object, if set it can
+        let value = this.#blobVersionedHashes;
+        if (value == null && this.type === 3) {
+            return [];
+        }
+        return value;
+    }
+    set blobVersionedHashes(value) {
+        if (value != null) {
+            (0, index_js_3.assertArgument)(Array.isArray(value), "blobVersionedHashes must be an Array", "value", value);
+            value = value.slice();
+            for (let i = 0; i < value.length; i++) {
+                (0, index_js_3.assertArgument)((0, index_js_3.isHexString)(value[i], 32), "invalid blobVersionedHash", `value[${i}]`, value[i]);
+            }
+        }
+        this.#blobVersionedHashes = value;
+    }
+    /**
      *  Creates a new Transaction with default values.
      */
     constructor() {
         this.#type = null;
         this.#to = null;
         this.#nonce = 0;
-        this.#gasLimit = BigInt(0);
+        this.#gasLimit = BN_0;
         this.#gasPrice = null;
         this.#maxPriorityFeePerGas = null;
         this.#maxFeePerGas = null;
         this.#data = "0x";
-        this.#value = BigInt(0);
-        this.#chainId = BigInt(0);
+        this.#value = BN_0;
+        this.#chainId = BN_0;
         this.#sig = null;
         this.#accessList = null;
+        this.#maxFeePerBlobGas = null;
+        this.#blobVersionedHashes = null;
     }
     /**
      *  The transaction hash, if signed. Otherwise, ``null``.
@@ -482,7 +597,6 @@ class Transaction {
      *  transaction are non-null.
      */
     isSigned() {
-        //isSigned(): this is SignedTransaction {
         return this.signature != null;
     }
     /**
@@ -500,6 +614,8 @@ class Transaction {
                 return _serializeEip2930(this, this.signature);
             case 2:
                 return _serializeEip1559(this, this.signature);
+            case 3:
+                return _serializeEip4844(this, this.signature);
         }
         (0, index_js_3.assert)(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
     }
@@ -517,6 +633,8 @@ class Transaction {
                 return _serializeEip2930(this);
             case 2:
                 return _serializeEip1559(this);
+            case 3:
+                return _serializeEip4844(this);
         }
         (0, index_js_3.assert)(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
     }
@@ -525,7 +643,13 @@ class Transaction {
      *  supported transaction type.
      */
     inferType() {
-        return (this.inferTypes().pop());
+        const types = this.inferTypes();
+        // Prefer London (EIP-1559) over Cancun (BLOb)
+        if (types.indexOf(2) >= 0) {
+            return 2;
+        }
+        // Return the highest inferred type
+        return (types.pop());
     }
     /**
      *  Validates the explicit properties and returns a list of compatible
@@ -536,6 +660,7 @@ class Transaction {
         const hasGasPrice = this.gasPrice != null;
         const hasFee = (this.maxFeePerGas != null || this.maxPriorityFeePerGas != null);
         const hasAccessList = (this.accessList != null);
+        const hasBlob = (this.#maxFeePerBlobGas != null || this.#blobVersionedHashes);
         //if (hasGasPrice && hasFee) {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
         //}
@@ -566,10 +691,14 @@ class Transaction {
                 types.push(1);
                 types.push(2);
             }
+            else if (hasBlob && this.to) {
+                types.push(3);
+            }
             else {
                 types.push(0);
                 types.push(1);
                 types.push(2);
+                types.push(3);
             }
         }
         types.sort();
@@ -604,6 +733,16 @@ class Transaction {
      */
     isLondon() {
         return (this.type === 2);
+    }
+    /**
+     *  Returns true if this transaction is an [[link-eip-4844]] BLOB
+     *  transaction.
+     *
+     *  This provides a Type Guard that the related properties are
+     *  non-null.
+     */
+    isCancun() {
+        return (this.type === 3);
     }
     /**
      *  Create a copy of this transaciton.
@@ -653,6 +792,7 @@ class Transaction {
             switch (payload[0]) {
                 case 1: return Transaction.from(_parseEip2930(payload));
                 case 2: return Transaction.from(_parseEip1559(payload));
+                case 3: return Transaction.from(_parseEip4844(payload));
             }
             (0, index_js_3.assert)(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
         }
@@ -678,6 +818,9 @@ class Transaction {
         if (tx.maxFeePerGas != null) {
             result.maxFeePerGas = tx.maxFeePerGas;
         }
+        if (tx.maxFeePerBlobGas != null) {
+            result.maxFeePerBlobGas = tx.maxFeePerBlobGas;
+        }
         if (tx.data != null) {
             result.data = tx.data;
         }
@@ -692,6 +835,9 @@ class Transaction {
         }
         if (tx.accessList != null) {
             result.accessList = tx.accessList;
+        }
+        if (tx.blobVersionedHashes != null) {
+            result.blobVersionedHashes = tx.blobVersionedHashes;
         }
         if (tx.hash != null) {
             (0, index_js_3.assertArgument)(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);

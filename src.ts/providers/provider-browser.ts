@@ -49,6 +49,8 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
      *  %%network%%.
      */
     constructor(ethereum: Eip1193Provider, network?: Networkish) {
+        assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
+
         super(network, { batchMaxCount: 1 });
 
         this.#request = async (method: string, params: Array<any> | Record<string, any>) => {

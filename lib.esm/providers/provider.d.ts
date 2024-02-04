@@ -86,7 +86,7 @@ export interface TransactionRequest {
      */
     nonce?: null | number;
     /**
-     *  The maximum amount of gas to allow this transaction to consime.
+     *  The maximum amount of gas to allow this transaction to consume.
      */
     gasLimit?: null | BigNumberish;
     /**
@@ -319,6 +319,16 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     readonly gasUsed: bigint;
     /**
+     *  The total amount of blob gas consumed by the transactions
+     *  within the block. See [[link-eip-4844]].
+     */
+    readonly blobGasUsed: null | bigint;
+    /**
+     *  The running total of blob gas consumed in excess of the
+     *  target, prior to the block. See [[link-eip-4844]].
+     */
+    readonly excessBlobGas: null | bigint;
+    /**
      *  The miner coinbase address, wihch receives any subsidies for
      *  including this block.
      */
@@ -540,6 +550,10 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
      */
     readonly gasUsed: bigint;
     /**
+     *  The gas used for BLObs. See [[link-eip-4844]].
+     */
+    readonly blobGasUsed: null | bigint;
+    /**
      *  The amount of gas used by all transactions within the block for this
      *  and all transactions with a lower ``index``.
      *
@@ -555,6 +569,10 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
      *  fee is protocol-enforced.
      */
     readonly gasPrice: bigint;
+    /**
+     *  The price paid per BLOB in gas. See [[link-eip-4844]].
+     */
+    readonly blobGasPrice: null | bigint;
     /**
      *  The [[link-eip-2718]] transaction type.
      */
@@ -738,6 +756,10 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
      */
     readonly maxFeePerGas: null | bigint;
     /**
+     *  The [[link-eip-4844]] max fee per BLOb gas.
+     */
+    readonly maxFeePerBlobGas: null | bigint;
+    /**
      *  The data.
      */
     readonly data: string;
@@ -759,6 +781,10 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
      *  support it, otherwise ``null``.
      */
     readonly accessList: null | AccessList;
+    /**
+     *  The [[link-eip-4844]] BLOb versioned hashes.
+     */
+    readonly blobVersionedHashes: null | Array<string>;
     /**
      *  @_ignore:
      */
@@ -840,6 +866,17 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
         accessList: AccessList;
         maxFeePerGas: bigint;
         maxPriorityFeePerGas: bigint;
+    });
+    /**
+     *  Returns true if hte transaction is a Cancun (i.e. ``type == 3``)
+     *  transaction. See [[link-eip-4844]].
+     */
+    isCancun(): this is (TransactionResponse & {
+        accessList: AccessList;
+        maxFeePerGas: bigint;
+        maxPriorityFeePerGas: bigint;
+        maxFeePerBlobGas: bigint;
+        blobVersionedHashes: Array<string>;
     });
     /**
      *  Returns a filter which can be used to listen for orphan events

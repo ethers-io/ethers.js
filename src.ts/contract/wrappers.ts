@@ -132,8 +132,8 @@ export class ContractTransactionResponse extends TransactionResponse {
      *  and the transaction has not been mined, otherwise this will
      *  wait until enough confirmations have completed.
      */
-    async wait(confirms?: number): Promise<null | ContractTransactionReceipt> {
-        const receipt = await super.wait(confirms);
+    async wait(confirms?: number, timeout?: number): Promise<null | ContractTransactionReceipt> {
+        const receipt = await super.wait(confirms, timeout);
         if (receipt == null) { return null; }
         return new ContractTransactionReceipt(this.#iface, this.provider, receipt);
     }
