@@ -149,6 +149,11 @@ export class Block {
      */
     parentHash;
     /**
+     *  The hash tree root of the parent beacon block for the given
+     *  execution block. See [[link-eip-4788]].
+     */
+    parentBeaconBlockRoot;
+    /**
      *  The nonce.
      *
      *  On legacy networks, this is the random number inserted which
@@ -173,6 +178,15 @@ export class Block {
      *  The total gas used in this block.
      */
     gasUsed;
+    /**
+     *  The root hash for the global state after applying changes
+     *  in this block.
+     */
+    stateRoot;
+    /**
+     *  The hash of the transaction receipts trie.
+     */
+    receiptsRoot;
     /**
      *  The total amount of blob gas consumed by the transactions
      *  within the block. See [[link-eip-4844]].
@@ -220,6 +234,7 @@ export class Block {
             number: block.number,
             timestamp: block.timestamp,
             parentHash: block.parentHash,
+            parentBeaconBlockRoot: block.parentBeaconBlockRoot,
             nonce: block.nonce,
             difficulty: block.difficulty,
             gasLimit: block.gasLimit,
@@ -228,7 +243,9 @@ export class Block {
             excessBlobGas: block.excessBlobGas,
             miner: block.miner,
             extraData: block.extraData,
-            baseFeePerGas: getValue(block.baseFeePerGas)
+            baseFeePerGas: getValue(block.baseFeePerGas),
+            stateRoot: block.stateRoot,
+            receiptsRoot: block.receiptsRoot,
         });
     }
     /**
@@ -267,7 +284,7 @@ export class Block {
      *  Returns a JSON-friendly value.
      */
     toJSON() {
-        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, timestamp, transactions } = this;
+        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
         return {
             _type: "Block",
             baseFeePerGas: toJson(baseFeePerGas),
@@ -278,6 +295,7 @@ export class Block {
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
             hash, miner, nonce, number, parentHash, timestamp,
+            parentBeaconBlockRoot, stateRoot, receiptsRoot,
             transactions,
         };
     }

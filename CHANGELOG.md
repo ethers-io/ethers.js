@@ -3,9 +3,10 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.11.0 (2024-02-03 00:18)
+ethers/v6.11.0 (2024-02-05 19:57)
 ---------------------------------
 
+  - Added EIP-4788, receipts root and state root fields to Block ([#4570](https://github.com/ethers-io/ethers.js/issues/4570); [c5f126f](https://github.com/ethers-io/ethers.js/commit/c5f126faf7d826b6a99df0ee578ff3d0ef409381)).
   - Added EIP-4844 fields to Provider classes and formatter ([#4570](https://github.com/ethers-io/ethers.js/issues/4570); [7b4f2c1](https://github.com/ethers-io/ethers.js/commit/7b4f2c1a74db411829b5e8ef758bfa2ee21e5890)).
   - Assert BrowserProvider receives an EIP-1193 provider to fail early when passing undefined ethereum object ([b69f43b](https://github.com/ethers-io/ethers.js/commit/b69f43bc6f35da881ca7a0c8ccc5fda92edd076d)).
   - Add timeout to ContractTransactionResponse wait ([#4497](https://github.com/ethers-io/ethers.js/issues/4497); [095de51](https://github.com/ethers-io/ethers.js/commit/095de51e605a9b88576e5e34fd55a6e32befa4eb)).
