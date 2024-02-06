@@ -437,6 +437,12 @@ export class Block implements BlockParams, Iterable<string> {
     readonly parentHash!: string;
 
     /**
+     *  The hash tree root of the parent beacon block for the given
+     *  execution block. See [[link-eip-4788]].
+     */
+    parentBeaconBlockRoot!: null | string;
+
+    /**
      *  The nonce.
      *
      *  On legacy networks, this is the random number inserted which
@@ -465,6 +471,18 @@ export class Block implements BlockParams, Iterable<string> {
      *  The total gas used in this block.
      */
     readonly gasUsed!: bigint;
+
+
+    /**
+     *  The root hash for the global state after applying changes
+     *  in this block.
+     */
+    readonly stateRoot!: null | string;
+
+    /**
+     *  The hash of the transaction receipts trie.
+     */
+    readonly receiptsRoot!: null | string;
 
     /**
      *  The total amount of blob gas consumed by the transactions
@@ -524,6 +542,7 @@ export class Block implements BlockParams, Iterable<string> {
             timestamp: block.timestamp,
 
             parentHash: block.parentHash,
+            parentBeaconBlockRoot: block.parentBeaconBlockRoot,
 
             nonce: block.nonce,
             difficulty: block.difficulty,
@@ -535,7 +554,10 @@ export class Block implements BlockParams, Iterable<string> {
             miner: block.miner,
             extraData: block.extraData,
 
-            baseFeePerGas: getValue(block.baseFeePerGas)
+            baseFeePerGas: getValue(block.baseFeePerGas),
+
+            stateRoot: block.stateRoot,
+            receiptsRoot: block.receiptsRoot,
         });
     }
 
@@ -578,7 +600,8 @@ export class Block implements BlockParams, Iterable<string> {
     toJSON(): any {
         const {
             baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash,
-            miner, nonce, number, parentHash, timestamp, transactions
+            miner, nonce, number, parentHash, parentBeaconBlockRoot,
+            stateRoot, receiptsRoot, timestamp, transactions
         } = this;
 
         return {
@@ -591,6 +614,7 @@ export class Block implements BlockParams, Iterable<string> {
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
             hash, miner, nonce, number, parentHash, timestamp,
+            parentBeaconBlockRoot, stateRoot, receiptsRoot,
             transactions,
         };
     }
