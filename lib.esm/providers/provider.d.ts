@@ -294,6 +294,11 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     readonly parentHash: string;
     /**
+     *  The hash tree root of the parent beacon block for the given
+     *  execution block. See [[link-eip-4788]].
+     */
+    parentBeaconBlockRoot: null | string;
+    /**
      *  The nonce.
      *
      *  On legacy networks, this is the random number inserted which
@@ -318,6 +323,15 @@ export declare class Block implements BlockParams, Iterable<string> {
      *  The total gas used in this block.
      */
     readonly gasUsed: bigint;
+    /**
+     *  The root hash for the global state after applying changes
+     *  in this block.
+     */
+    readonly stateRoot: null | string;
+    /**
+     *  The hash of the transaction receipts trie.
+     */
+    readonly receiptsRoot: null | string;
     /**
      *  The total amount of blob gas consumed by the transactions
      *  within the block. See [[link-eip-4844]].

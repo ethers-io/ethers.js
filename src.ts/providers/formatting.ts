@@ -39,6 +39,12 @@ export interface BlockParams {
     parentHash: string;
 
     /**
+     *  The hash tree root of the parent beacon block for the given
+     *  execution block. See [[link-eip-4788]].
+     */
+    parentBeaconBlockRoot?: null | string;
+
+    /**
      *  A random sequence provided during the mining process for
      *  proof-of-work networks.
      */
@@ -87,6 +93,17 @@ export interface BlockParams {
      *  block.
      */
     baseFeePerGas: null | bigint;
+
+    /**
+     *  The root hash for the global state after applying changes
+     *  in this block.
+     */
+    stateRoot?: null | string;
+
+    /**
+     *  The hash of the transaction receipts trie.
+     */
+    receiptsRoot?: null | string;
 
     /**
      *  The list of transactions in the block.

@@ -111,6 +111,8 @@ export function formatLog(value: any): LogParams {
 const _formatBlock = object({
     hash: allowNull(formatHash),
     parentHash: formatHash,
+    parentBeaconBlockRoot: allowNull(formatHash, null),
+
     number: getNumber,
 
     timestamp: getNumber,
@@ -119,6 +121,9 @@ const _formatBlock = object({
 
     gasLimit: getBigInt,
     gasUsed: getBigInt,
+
+    stateRoot: allowNull(formatHash, null),
+    receiptsRoot: allowNull(formatHash, null),
 
     blobGasUsed: allowNull(getBigInt, null),
     excessBlobGas: allowNull(getBigInt, null),

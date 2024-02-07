@@ -13909,6 +13909,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         parentHash;
         /**
+         *  The hash tree root of the parent beacon block for the given
+         *  execution block. See [[link-eip-4788]].
+         */
+        parentBeaconBlockRoot;
+        /**
          *  The nonce.
          *
          *  On legacy networks, this is the random number inserted which
@@ -13933,6 +13938,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  The total gas used in this block.
          */
         gasUsed;
+        /**
+         *  The root hash for the global state after applying changes
+         *  in this block.
+         */
+        stateRoot;
+        /**
+         *  The hash of the transaction receipts trie.
+         */
+        receiptsRoot;
         /**
          *  The total amount of blob gas consumed by the transactions
          *  within the block. See [[link-eip-4844]].
@@ -13980,6 +13994,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 number: block.number,
                 timestamp: block.timestamp,
                 parentHash: block.parentHash,
+                parentBeaconBlockRoot: block.parentBeaconBlockRoot,
                 nonce: block.nonce,
                 difficulty: block.difficulty,
                 gasLimit: block.gasLimit,
@@ -13988,7 +14003,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 excessBlobGas: block.excessBlobGas,
                 miner: block.miner,
                 extraData: block.extraData,
-                baseFeePerGas: getValue(block.baseFeePerGas)
+                baseFeePerGas: getValue(block.baseFeePerGas),
+                stateRoot: block.stateRoot,
+                receiptsRoot: block.receiptsRoot,
             });
         }
         /**
@@ -14027,7 +14044,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Returns a JSON-friendly value.
          */
         toJSON() {
-            const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, timestamp, transactions } = this;
+            const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
             return {
                 _type: "Block",
                 baseFeePerGas: toJson(baseFeePerGas),
@@ -14038,6 +14055,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 blobGasUsed: toJson(this.blobGasUsed),
                 excessBlobGas: toJson(this.excessBlobGas),
                 hash, miner, nonce, number, parentHash, timestamp,
+                parentBeaconBlockRoot, stateRoot, receiptsRoot,
                 transactions,
             };
         }
@@ -16819,12 +16837,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const _formatBlock = object({
         hash: allowNull(formatHash),
         parentHash: formatHash,
+        parentBeaconBlockRoot: allowNull(formatHash, null),
         number: getNumber,
         timestamp: getNumber,
         nonce: allowNull(formatData),
         difficulty: getBigInt,
         gasLimit: getBigInt,
         gasUsed: getBigInt,
+        stateRoot: allowNull(formatHash, null),
+        receiptsRoot: allowNull(formatHash, null),
         blobGasUsed: allowNull(getBigInt, null),
         excessBlobGas: allowNull(getBigInt, null),
         miner: allowNull(getAddress),
