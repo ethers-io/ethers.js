@@ -5,6 +5,7 @@
  *
  *  @_section: api/providers/abstract-provider: Subclassing Provider  [abstract-provider]
  */
+import { TransactionLike } from "../transaction/index.js";
 import { FetchRequest } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { Network } from "./network.js";
@@ -348,7 +349,7 @@ export declare class AbstractProvider implements Provider {
      */
     _getTransactionRequest(_request: TransactionRequest): PerformActionTransaction | Promise<PerformActionTransaction>;
     getNetwork(): Promise<Network>;
-    getFeeData(): Promise<FeeData>;
+    getFeeData(tx?: TransactionLike): Promise<FeeData>;
     estimateGas(_tx: TransactionRequest): Promise<bigint>;
     call(_tx: TransactionRequest): Promise<string>;
     getBalance(address: AddressLike, blockTag?: BlockTag): Promise<bigint>;

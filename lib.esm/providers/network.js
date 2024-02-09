@@ -6,7 +6,7 @@
  */
 import { accessListify } from "../transaction/index.js";
 import { getBigInt, assert, assertArgument } from "../utils/index.js";
-import { EnsPlugin, FetchUrlFeeDataNetworkPlugin, GasCostPlugin } from "./plugins-network.js";
+import { EnsPlugin, FetchUrlFeeDataNetworkPlugin, FetchLineaFeeDataNetworkPlugin, GasCostPlugin } from "./plugins-network.js";
 /* * * *
 // Networks which operation against an L2 can use this plugin to
 // specify how to access L1, for the purpose of resolving ENS,
@@ -287,6 +287,26 @@ function getGasStationPlugin(url) {
         }
     });
 }
+// Used by Linea to get fee data
+function getLineaPricingPlugin() {
+    console.log("getLineaPricingPlugin");
+    return new FetchLineaFeeDataNetworkPlugin(async (fetchFeeData, provider, tx) => {
+        console.log("fetchFeeData", tx.from, tx.to);
+        try {
+            fetchFeeData();
+            const blockNumber = await provider.getBlockNumber();
+            console.log("blockNumber", blockNumber);
+            return {
+                gasLimit: parseUnits("10", 9),
+                maxFeePerGas: parseUnits("10", 9),
+                maxPriorityFeePerGas: parseUnits("10", 9),
+            };
+        }
+        catch (error) {
+            assert(false, `error encountered with polygon gas station`, "SERVER_ERROR", error);
+        }
+    });
+}
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks() {
@@ -336,8 +356,13 @@ function injectCommonNetworks() {
     registerEth("base-sepolia", 84532, {});
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, {});
-    registerEth("linea", 59144, { ensNetwork: 1 });
-    registerEth("linea-goerli", 59140, {});
+    registerEth("linea", 59144, {
+        ensNetwork: 1,
+        plugins: [getLineaPricingPlugin()],
+    });
+    registerEth("linea-goerli", 59140, {
+        plugins: [getLineaPricingPlugin()],
+    });
     registerEth("matic", 137, {
         ensNetwork: 1,
         plugins: [

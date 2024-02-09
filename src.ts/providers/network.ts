@@ -9,7 +9,8 @@ import { accessListify } from "../transaction/index.js";
 import { getBigInt, assert, assertArgument } from "../utils/index.js";
 
 import {
-    EnsPlugin, FetchUrlFeeDataNetworkPlugin, GasCostPlugin
+    EnsPlugin, FetchUrlFeeDataNetworkPlugin,
+    FetchLineaFeeDataNetworkPlugin, GasCostPlugin
 } from "./plugins-network.js";
 
 import type { BigNumberish } from "../utils/index.js";
@@ -346,6 +347,35 @@ function getGasStationPlugin(url: string) {
     });
 }
 
+// Used by Linea to get fee data
+function getLineaPricingPlugin() {
+  console.log("getLineaPricingPlugin");
+
+  return new FetchLineaFeeDataNetworkPlugin(
+    async (fetchFeeData, provider, tx) => {
+      console.log("fetchFeeData", tx.from, tx.to);
+      try {
+        fetchFeeData();
+
+        const blockNumber = await provider.getBlockNumber();
+        console.log("blockNumber", blockNumber);
+        return {
+          gasLimit: parseUnits("10", 9),
+          maxFeePerGas: parseUnits("10", 9),
+          maxPriorityFeePerGas: parseUnits("10", 9),
+        };
+      } catch (error: any) {
+        assert(
+          false,
+          `error encountered with polygon gas station`,
+          "SERVER_ERROR",
+          error
+        );
+      }
+    }
+  );
+}
+
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks(): void {
@@ -406,8 +436,13 @@ function injectCommonNetworks(): void {
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, { });
 
-    registerEth("linea", 59144, { ensNetwork: 1 });
-    registerEth("linea-goerli", 59140, { });
+    registerEth("linea", 59144, {
+      ensNetwork: 1,
+      plugins: [getLineaPricingPlugin()],
+    });
+    registerEth("linea-goerli", 59140, {
+      plugins: [getLineaPricingPlugin()],
+    });
 
     registerEth("matic", 137, {
         ensNetwork: 1,

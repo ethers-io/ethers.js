@@ -78,7 +78,8 @@ export {
     Network,
 
     EnsPlugin, EtherscanPlugin,
-    FeeDataNetworkPlugin, FetchUrlFeeDataNetworkPlugin,
+    FeeDataNetworkPlugin, FetchUrlFeeDataNetworkPlugin, 
+    FetchLineaFeeDataNetworkPlugin,
     GasCostPlugin, NetworkPlugin, MulticoinProviderPlugin,
 
     SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber,

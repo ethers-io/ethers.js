@@ -18,7 +18,7 @@ import { getAddress, resolveAddress } from "../address/index.js";
 import { ZeroAddress } from "../constants/index.js";
 import { Contract } from "../contract/index.js";
 import { namehash } from "../hash/index.js";
-import { Transaction } from "../transaction/index.js";
+import { Transaction, TransactionLike } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
     getBigInt, getBytes, getNumber,
@@ -45,7 +45,7 @@ import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { Listener } from "../utils/index.js";
 
 import type { Networkish } from "./network.js";
-import type { FetchUrlFeeDataNetworkPlugin } from "./plugins-network.js";
+import type { FetchUrlFeeDataNetworkPlugin, FetchLineaFeeDataNetworkPlugin } from "./plugins-network.js";
 //import type { MaxPriorityFeePlugin } from "./plugins-network.js";
 import type {
     BlockParams, LogParams, TransactionReceiptParams,
@@ -906,7 +906,7 @@ export class AbstractProvider implements Provider {
         return expected.clone();
     }
 
-    async getFeeData(): Promise<FeeData> {
+    async getFeeData(tx?: TransactionLike): Promise<FeeData> {
         const network = await this.getNetwork();
 
         const getFeeDataFunc = async () => {
@@ -947,6 +947,20 @@ export class AbstractProvider implements Provider {
             const req = new FetchRequest(plugin.url);
             const feeData = await plugin.processFunc(getFeeDataFunc, this, req);
             return new FeeData(feeData.gasPrice, feeData.maxFeePerGas, feeData.maxPriorityFeePerGas);
+        }
+        // Check for a FetchLineaFeeDataNetworkPlugin
+        const pluginLinea = <FetchLineaFeeDataNetworkPlugin>(
+          network.getPlugin("org.ethers.plugins.network.FetchLineaFeeDataPlugin")
+        );
+        if (pluginLinea && tx) {
+          // const test = this.getTransaction();
+          console.log("pluginLinea:", pluginLinea);
+          const feeData = await pluginLinea.processFunc(getFeeDataFunc, this, tx);
+          return new FeeData(
+            feeData.gasPrice,
+            feeData.maxFeePerGas,
+            feeData.maxPriorityFeePerGas
+          );
         }
 
         return await getFeeDataFunc();
