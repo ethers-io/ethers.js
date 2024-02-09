@@ -173,7 +173,7 @@ export declare class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
     /**
      *  The callback to use when computing the FeeData.
      */
-    get processFunc(): (f: () => Promise<FeeData>, p: Provider, tx: TransactionLike) => Promise<{
+    get processFunc(): (p: Provider, tx: TransactionLike) => Promise<{
         gasPrice?: null | bigint;
         maxFeePerGas?: null | bigint;
         maxPriorityFeePerGas?: null | bigint;
@@ -182,7 +182,7 @@ export declare class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
      *  Creates a new **FetchLineaFeeDataNetworkPlugin** which will
      *  be used when computing the fee data for the network.
      */
-    constructor(processFunc: (f: () => Promise<FeeData>, p: Provider, tx: TransactionLike) => Promise<{
+    constructor(processFunc: (p: Provider, tx: TransactionLike) => Promise<{
         gasPrice?: null | bigint;
         maxFeePerGas?: null | bigint;
         maxPriorityFeePerGas?: null | bigint;

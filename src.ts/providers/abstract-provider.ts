@@ -953,7 +953,7 @@ export class AbstractProvider implements Provider {
           network.getPlugin("org.ethers.plugins.network.FetchLineaFeeDataPlugin")
         );
         if (pluginLinea && tx) {
-          const feeData = await pluginLinea.processFunc(getFeeDataFunc, this, tx);
+          const feeData = await pluginLinea.processFunc(this, tx);
           return new FeeData(
             feeData.gasPrice,
             feeData.maxFeePerGas,

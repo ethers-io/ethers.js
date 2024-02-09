@@ -289,34 +289,27 @@ function getGasStationPlugin(url) {
 }
 // Used by Linea to get fee data
 function getLineaPricingPlugin() {
-    // const BASE_FEE_PER_GAS_MARGIN = 1.35
-    console.log("getLineaPricingPlugin");
-    return new FetchLineaFeeDataNetworkPlugin(async (fetchFeeData, provider, tx) => {
-        console.log("fetchFeeData", tx.from, tx.to);
+    const BASE_FEE_PER_GAS_MARGIN = 1.35;
+    return new FetchLineaFeeDataNetworkPlugin(async (provider, tx) => {
         try {
-            const blockNumber = await provider.getBlockNumber();
-            console.log("blockNumber", blockNumber);
-            return {
-                gasLimit: parseUnits("10", 9),
-                maxFeePerGas: parseUnits("10", 9),
-                maxPriorityFeePerGas: parseUnits("10", 9),
+            const providerTest = provider;
+            const formattedTx = { ...tx,
+                chainId: tx.chainId?.toString(),
+                gasLimit: tx.gasLimit?.toString(),
+                maxFeePerGas: tx.maxFeePerGas?.toString(),
+                maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toString(),
+                value: tx.value?.toString(),
             };
-            /*
-            // provider.send("linea_estimateGas", [ tx ]);
-            const test = fetchFeeData();
-            console.log("test===>>>", test);
-            const estimateGas =   provider.send("linea_estimateGas", [ tx ]);
-
+            const estimateGas = await providerTest.send("linea_estimateGas", [formattedTx]);
             const { baseFeePerGas, priorityFeePerGas } = estimateGas;
             const adjustedPriorityFeePerGas = BigInt(priorityFeePerGas);
             const adjustedBaseFee = (BigInt(baseFeePerGas) * BigInt(BASE_FEE_PER_GAS_MARGIN * 100)) / BigInt(100);
             const gasPrice = adjustedBaseFee + adjustedPriorityFeePerGas;
             return {
-                gasPrice,
-                maxFeePerGas: gasPrice,
-                maxPriorityFeePerGas: adjustedPriorityFeePerGas,
+                gasLimit: gasPrice,
+                maxFeePerGas: gasPrice * BigInt(2),
+                maxPriorityFeePerGas: adjustedPriorityFeePerGas * BigInt(2),
             };
-            */
         }
         catch (error) {
             assert(false, `error encountered with linea gas station`, "SERVER_ERROR", error);

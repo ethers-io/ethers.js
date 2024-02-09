@@ -297,7 +297,6 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
 
 export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
     readonly #processFunc: (
-        f: () => Promise<FeeData>,
         p: Provider,
         tx: TransactionLike
     ) => Promise<{
@@ -310,7 +309,6 @@ export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
      *  The callback to use when computing the FeeData.
      */
     get processFunc(): (
-        f: () => Promise<FeeData>,
         p: Provider,
         tx: TransactionLike
     ) => Promise<{
@@ -327,7 +325,6 @@ export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
      */
     constructor(
         processFunc: (
-        f: () => Promise<FeeData>,
         p: Provider,
         tx: TransactionLike
         ) => Promise<{
