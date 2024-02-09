@@ -349,31 +349,47 @@ function getGasStationPlugin(url: string) {
 
 // Used by Linea to get fee data
 function getLineaPricingPlugin() {
+    // const BASE_FEE_PER_GAS_MARGIN = 1.35
     console.log("getLineaPricingPlugin");
-  return new FetchLineaFeeDataNetworkPlugin(
-    async (fetchFeeData, provider, tx) => {
-      console.log("fetchFeeData", tx.from, tx.to);
-      try {
-        const test = await fetchFeeData();
-        console.log("test===>>>", test);
+    
+    return new FetchLineaFeeDataNetworkPlugin(
+        async (fetchFeeData, provider, tx) => {
+        
+        console.log("fetchFeeData", tx.from, tx.to);
+        try {
+            const blockNumber = await provider.getBlockNumber();
+            console.log("blockNumber", blockNumber);
+            return {
+                gasLimit: parseUnits("10", 9),
+                maxFeePerGas: parseUnits("10", 9),
+                maxPriorityFeePerGas: parseUnits("10", 9),
+              };
+            /*            
+            // provider.send("linea_estimateGas", [ tx ]);
+            const test = fetchFeeData();
+            console.log("test===>>>", test);
+            const estimateGas =   provider.send("linea_estimateGas", [ tx ]);
 
-        const blockNumber = await provider.getBlockNumber();
-        console.log("blockNumber", blockNumber);
-        return {
-          gasLimit: parseUnits("10", 9),
-          maxFeePerGas: parseUnits("10", 9),
-          maxPriorityFeePerGas: parseUnits("10", 9),
-        };
-      } catch (error: any) {
-        assert(
-          false,
-          `error encountered with polygon gas station`,
-          "SERVER_ERROR",
-          error
-        );
-      }
-    }
-  );
+            const { baseFeePerGas, priorityFeePerGas } = estimateGas;
+            const adjustedPriorityFeePerGas = BigInt(priorityFeePerGas);
+            const adjustedBaseFee = (BigInt(baseFeePerGas) * BigInt(BASE_FEE_PER_GAS_MARGIN * 100)) / BigInt(100);
+            const gasPrice = adjustedBaseFee + adjustedPriorityFeePerGas;
+            return {
+                gasPrice,
+                maxFeePerGas: gasPrice,
+                maxPriorityFeePerGas: adjustedPriorityFeePerGas,
+            };
+            */
+        } catch (error: any) {
+            assert(
+            false,
+            `error encountered with linea gas station`,
+            "SERVER_ERROR",
+            error
+            );
+        }
+        }
+    );
 }
 
 // See: https://chainlist.org

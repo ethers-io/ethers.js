@@ -964,7 +964,6 @@ export class AbstractProvider implements Provider {
         return await getFeeDataFunc();
     }
 
-
     async estimateGas(_tx: TransactionRequest): Promise<bigint> {
         let tx = this._getTransactionRequest(_tx);
         if (isPromise(tx)) { tx = await tx; }

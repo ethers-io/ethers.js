@@ -70,14 +70,14 @@ export class GasCostPlugin extends NetworkPlugin {
         if (effectiveBlock == null) {
             effectiveBlock = 0;
         }
-        super(`org.ethers.network.plugins.GasCost#${(effectiveBlock || 0)}`);
+        super(`org.ethers.network.plugins.GasCost#${effectiveBlock || 0}`);
         const props = { effectiveBlock };
         function set(name, nullish) {
             let value = (costs || {})[name];
             if (value == null) {
                 value = nullish;
             }
-            assertArgument(typeof (value) === "number", `invalud value for ${name}`, "costs", costs);
+            assertArgument(typeof value === "number", `invalud value for ${name}`, "costs", costs);
             props[name] = value;
         }
         set("txBase", 21000);
@@ -118,8 +118,8 @@ export class EnsPlugin extends NetworkPlugin {
     constructor(address, targetNetwork) {
         super("org.ethers.plugins.network.Ens");
         defineProperties(this, {
-            address: (address || EnsAddress),
-            targetNetwork: ((targetNetwork == null) ? 1 : targetNetwork)
+            address: address || EnsAddress,
+            targetNetwork: targetNetwork == null ? 1 : targetNetwork,
         });
     }
     clone() {
@@ -164,11 +164,15 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
     /**
      *  The URL to initialize the FetchRequest with in %%processFunc%%.
      */
-    get url() { return this.#url; }
+    get url() {
+        return this.#url;
+    }
     /**
      *  The callback to use when computing the FeeData.
      */
-    get processFunc() { return this.#processFunc; }
+    get processFunc() {
+        return this.#processFunc;
+    }
     /**
      *  Creates a new **FetchUrlFeeDataNetworkPlugin** which will
      *  be used when computing the fee data for the network.
@@ -179,7 +183,9 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
         this.#processFunc = processFunc;
     }
     // We are immutable, so we can serve as our own clone
-    clone() { return this; }
+    clone() {
+        return this;
+    }
 }
 export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
     #processFunc;
