@@ -621,8 +621,6 @@ export class AbstractProvider {
         // Check for a FetchLineaFeeDataNetworkPlugin
         const pluginLinea = (network.getPlugin("org.ethers.plugins.network.FetchLineaFeeDataPlugin"));
         if (pluginLinea && tx) {
-            // const test = this.getTransaction();
-            console.log("pluginLinea:", pluginLinea);
             const feeData = await pluginLinea.processFunc(getFeeDataFunc, this, tx);
             return new FeeData(feeData.gasPrice, feeData.maxFeePerGas, feeData.maxPriorityFeePerGas);
         }

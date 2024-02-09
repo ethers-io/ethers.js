@@ -293,7 +293,8 @@ function getLineaPricingPlugin() {
     return new FetchLineaFeeDataNetworkPlugin(async (fetchFeeData, provider, tx) => {
         console.log("fetchFeeData", tx.from, tx.to);
         try {
-            fetchFeeData();
+            const test = fetchFeeData();
+            console.log("test===>>>", test);
             const blockNumber = await provider.getBlockNumber();
             console.log("blockNumber", blockNumber);
             return {

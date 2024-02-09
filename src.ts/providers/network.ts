@@ -349,13 +349,13 @@ function getGasStationPlugin(url: string) {
 
 // Used by Linea to get fee data
 function getLineaPricingPlugin() {
-  console.log("getLineaPricingPlugin");
-
+    console.log("getLineaPricingPlugin");
   return new FetchLineaFeeDataNetworkPlugin(
     async (fetchFeeData, provider, tx) => {
       console.log("fetchFeeData", tx.from, tx.to);
       try {
-        fetchFeeData();
+        const test = await fetchFeeData();
+        console.log("test===>>>", test);
 
         const blockNumber = await provider.getBlockNumber();
         console.log("blockNumber", blockNumber);
