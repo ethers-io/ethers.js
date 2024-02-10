@@ -100,10 +100,9 @@ function _parseLegacy(data) {
     return tx;
 }
 function _serializeLegacy(tx, sig) {
-    (0, index_js_3.assertArgument)(tx.isLegacy(), "internal check failed; !legacy", "tx", tx);
     const fields = [
         formatNumber(tx.nonce, "nonce"),
-        formatNumber(tx.gasPrice, "gasPrice"),
+        formatNumber(tx.gasPrice || 0, "gasPrice"),
         formatNumber(tx.gasLimit, "gasLimit"),
         (tx.to || "0x"),
         formatNumber(tx.value, "value"),
@@ -192,17 +191,16 @@ function _parseEip1559(data) {
     return tx;
 }
 function _serializeEip1559(tx, sig) {
-    (0, index_js_3.assertArgument)(tx.isLondon(), "internal check failed; !london", "tx", tx);
     const fields = [
         formatNumber(tx.chainId, "chainId"),
         formatNumber(tx.nonce, "nonce"),
-        formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
-        formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+        formatNumber(tx.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas || 0, "maxFeePerGas"),
         formatNumber(tx.gasLimit, "gasLimit"),
         (tx.to || "0x"),
         formatNumber(tx.value, "value"),
         tx.data,
-        formatAccessList(tx.accessList)
+        formatAccessList(tx.accessList || [])
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "yParity"));
@@ -234,16 +232,15 @@ function _parseEip2930(data) {
     return tx;
 }
 function _serializeEip2930(tx, sig) {
-    (0, index_js_3.assertArgument)(tx.isBerlin(), "internal check failed; !berlin", "tx", tx);
     const fields = [
         formatNumber(tx.chainId, "chainId"),
         formatNumber(tx.nonce, "nonce"),
-        formatNumber(tx.gasPrice, "gasPrice"),
+        formatNumber(tx.gasPrice || 0, "gasPrice"),
         formatNumber(tx.gasLimit, "gasLimit"),
         (tx.to || "0x"),
         formatNumber(tx.value, "value"),
         tx.data,
-        formatAccessList(tx.accessList)
+        formatAccessList(tx.accessList || [])
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "recoveryParam"));
@@ -284,19 +281,18 @@ function _parseEip4844(data) {
     return tx;
 }
 function _serializeEip4844(tx, sig) {
-    (0, index_js_3.assertArgument)(tx.isCancun(), "internal check failed; !cancun", "tx", tx);
     const fields = [
         formatNumber(tx.chainId, "chainId"),
         formatNumber(tx.nonce, "nonce"),
-        formatNumber(tx.maxPriorityFeePerGas, "maxPriorityFeePerGas"),
-        formatNumber(tx.maxFeePerGas, "maxFeePerGas"),
+        formatNumber(tx.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas || 0, "maxFeePerGas"),
         formatNumber(tx.gasLimit, "gasLimit"),
-        tx.to,
+        (tx.to || addresses_js_1.ZeroAddress),
         formatNumber(tx.value, "value"),
         tx.data,
-        (formatAccessList(tx.accessList)),
-        formatNumber(tx.maxFeePerBlobGas, "maxFeePerBlobGas"),
-        formatHashes(tx.blobVersionedHashes, "blobVersionedHashes")
+        formatAccessList(tx.accessList || []),
+        formatNumber(tx.maxFeePerBlobGas || 0, "maxFeePerBlobGas"),
+        formatHashes(tx.blobVersionedHashes || [], "blobVersionedHashes")
     ];
     if (sig) {
         fields.push(formatNumber(sig.yParity, "yParity"));
