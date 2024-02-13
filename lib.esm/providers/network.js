@@ -6,7 +6,7 @@
  */
 import { accessListify } from "../transaction/index.js";
 import { getBigInt, assert, assertArgument } from "../utils/index.js";
-import { EnsPlugin, FetchUrlFeeDataNetworkPlugin, GasCostPlugin } from "./plugins-network.js";
+import { EnsPlugin, FetchUrlFeeDataNetworkPlugin, FetchLineaFeeDataNetworkPlugin, GasCostPlugin, } from "./plugins-network.js";
 /* * * *
 // Networks which operation against an L2 can use this plugin to
 // specify how to access L1, for the purpose of resolving ENS,
@@ -287,6 +287,38 @@ function getGasStationPlugin(url) {
         }
     });
 }
+// Used by Linea to get fee data
+function getLineaPricingPlugin() {
+    const BASE_FEE_PER_GAS_MARGIN = 1.35;
+    return new FetchLineaFeeDataNetworkPlugin(async (provider, tx) => {
+        try {
+            const formattedTx = {
+                ...tx,
+                chainId: tx.chainId?.toString(),
+                gasLimit: tx.gasLimit?.toString(),
+                maxFeePerGas: tx.maxFeePerGas?.toString(),
+                maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toString(),
+                value: tx.value?.toString(),
+            };
+            const estimateGas = await provider.send("linea_estimateGas", [
+                formattedTx,
+            ]);
+            const { baseFeePerGas, priorityFeePerGas } = estimateGas;
+            const adjustedPriorityFeePerGas = BigInt(priorityFeePerGas);
+            const adjustedBaseFee = (BigInt(baseFeePerGas) * BigInt(BASE_FEE_PER_GAS_MARGIN * 100)) /
+                BigInt(100);
+            const gasPrice = adjustedBaseFee + adjustedPriorityFeePerGas;
+            return {
+                gasLimit: gasPrice,
+                maxFeePerGas: gasPrice * BigInt(2),
+                maxPriorityFeePerGas: adjustedPriorityFeePerGas * BigInt(2),
+            };
+        }
+        catch (error) {
+            assert(false, `error encountered with linea gas station`, "SERVER_ERROR", error);
+        }
+    });
+}
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks() {
@@ -336,8 +368,13 @@ function injectCommonNetworks() {
     registerEth("base-sepolia", 84532, {});
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, {});
-    registerEth("linea", 59144, { ensNetwork: 1 });
-    registerEth("linea-goerli", 59140, {});
+    registerEth("linea", 59144, {
+        ensNetwork: 1,
+        plugins: [getLineaPricingPlugin()],
+    });
+    registerEth("linea-goerli", 59140, {
+        plugins: [getLineaPricingPlugin()],
+    });
     registerEth("matic", 137, {
         ensNetwork: 1,
         plugins: [

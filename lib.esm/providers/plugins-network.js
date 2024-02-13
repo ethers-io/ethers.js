@@ -181,6 +181,27 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
     // We are immutable, so we can serve as our own clone
     clone() { return this; }
 }
+export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
+    #processFunc;
+    /**
+     *  The callback to use when computing the FeeData.
+     */
+    get processFunc() {
+        return this.#processFunc;
+    }
+    /**
+     *  Creates a new **FetchLineaFeeDataNetworkPlugin** which will
+     *  be used when computing the fee data for the network.
+     */
+    constructor(processFunc) {
+        super("org.ethers.plugins.network.FetchLineaFeeDataPlugin");
+        this.#processFunc = processFunc;
+    }
+    // We are immutable, so we can serve as our own clone
+    clone() {
+        return this;
+    }
+}
 /*
 export class CustomBlockNetworkPlugin extends NetworkPlugin {
     readonly #blockFunc: (provider: Provider, block: BlockParams<string>) => Block<string>;

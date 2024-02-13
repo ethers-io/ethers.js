@@ -1918,7 +1918,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     /**
      *  Get the best guess at the recommended [[FeeData]].
      */
-    getFeeData(): Promise<FeeData>;
+    getFeeData(tx?: TransactionLike): Promise<FeeData>;
 
 
     ////////////////////
