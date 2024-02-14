@@ -3,6 +3,7 @@ import type { BigNumberish, BytesLike } from "../../utils/index.js";
  * @_ignore:
  */
 export declare const WordSize: number;
+type Cast<T, U> = T extends U ? T : U;
 /**
  *  A [[Result]] is a sub-class of Array, which allows accessing any
  *  of its values either positionally by its index or, if keys are
