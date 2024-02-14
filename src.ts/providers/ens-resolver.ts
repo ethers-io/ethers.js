@@ -231,7 +231,7 @@ export class EnsResolver {
             });
 
             params = [
-                dnsEncode(this.name),
+                dnsEncode(this.name, 255),
                 iface.encodeFunctionData(fragment, params)
             ];
 
