@@ -19,6 +19,7 @@ import type { BigNumberish } from "../utils/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 
 import type { NetworkPlugin } from "./plugins-network.js";
+import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
 
 /**
@@ -349,42 +350,42 @@ function getGasStationPlugin(url: string) {
     });
 }
 
-
 // Used by Linea to get fee data
-function getLineaPricingPlugin() {
+function getLineaPricingPlugin(fallbackUrl: string) {
     const BASE_FEE_PER_GAS_MARGIN = 1.35;
-    return new FetchLineaFeeDataNetworkPlugin(async (provider: any, tx) => {
-        try {
-        const formattedTx = {
-            ...tx,
-            chainId: tx.chainId?.toString(),
-            gasLimit: tx.gasLimit?.toString(),
-            maxFeePerGas: tx.maxFeePerGas?.toString(),
-            maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toString(),
-            value: tx.value?.toString(),
-        };
-        const estimateGas = await provider.send("linea_estimateGas", [
-            formattedTx,
-        ]);
-        const { baseFeePerGas, priorityFeePerGas } = estimateGas;
-        const adjustedPriorityFeePerGas = BigInt(priorityFeePerGas);
-        const adjustedBaseFee =
-            (BigInt(baseFeePerGas) * BigInt(BASE_FEE_PER_GAS_MARGIN * 100)) /
-            BigInt(100);
-        const gasPrice = adjustedBaseFee + adjustedPriorityFeePerGas;
+    // Temporary multiplier to ensure that the gas price is always higher than the base fee
+    const BASE_MULTIPLIER = BigInt(2);
+    return new FetchLineaFeeDataNetworkPlugin(fallbackUrl, async (provider: any, tx) => {
+        const attemptEstimateGas = async (provider: any, tx: TransactionLike) => {
+            const formattedTx = {
+                ...tx,
+                chainId: tx.chainId?.toString(),
+                gasLimit: tx.gasLimit?.toString(),
+                maxFeePerGas: tx.maxFeePerGas?.toString(),
+                maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toString(),
+                value: tx.value?.toString(),
+            };
 
-        return {
-            gasLimit: gasPrice,
-            maxFeePerGas: gasPrice * BigInt(2),
-            maxPriorityFeePerGas: adjustedPriorityFeePerGas * BigInt(2),
+            const estimateGas = await provider.send("linea_estimateGas", [formattedTx]);
+            const { baseFeePerGas, priorityFeePerGas } = estimateGas;
+            const adjustedPriorityFeePerGas = BigInt(priorityFeePerGas);
+            const adjustedBaseFee = (BigInt(baseFeePerGas) * BigInt(BASE_FEE_PER_GAS_MARGIN * 100)) / BigInt(100);
+            const gasPrice = adjustedBaseFee + adjustedPriorityFeePerGas;
+
+            return {
+                gasLimit: gasPrice,
+                maxFeePerGas: gasPrice * BASE_MULTIPLIER,
+                maxPriorityFeePerGas: adjustedPriorityFeePerGas * BASE_MULTIPLIER,
+            };            
         };
-        } catch (error: any) {
-        assert(
-            false,
-            `error encountered with linea gas station`,
-            "SERVER_ERROR",
-            error
-        );
+
+        try {
+            // Try with the initial provider on first attempt
+            return await attemptEstimateGas(provider, tx);
+        } catch (error) {
+            console.log(`Retrying with fallback...`);
+            const provider = new JsonRpcProvider(fallbackUrl);
+            return await attemptEstimateGas(provider, tx);
         }
     });
 }
@@ -451,10 +452,10 @@ function injectCommonNetworks(): void {
 
     registerEth("linea", 59144, {
         ensNetwork: 1,
-        plugins: [getLineaPricingPlugin()],
+        plugins: [getLineaPricingPlugin("https://rpc.linea.build")],
       });
       registerEth("linea-goerli", 59140, {
-        plugins: [getLineaPricingPlugin()],
+        plugins: [getLineaPricingPlugin("https://rpc.goerli.linea.build")],
       });
       
     registerEth("matic", 137, {

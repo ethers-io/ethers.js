@@ -257,6 +257,7 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
 }
 
 export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
+    readonly #fallbackUrl: string;
     readonly #processFunc: (
         p: Provider,
         tx: TransactionLike
@@ -265,6 +266,12 @@ export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
         maxFeePerGas?: null | bigint;
         maxPriorityFeePerGas?: null | bigint;
     }>;
+
+    
+    /**
+     *  The URL for rpc fallback.   
+     */
+    get fallbackUrl(): string { return this.#fallbackUrl; }
 
     /**
      *  The callback to use when computing the FeeData.
@@ -285,6 +292,7 @@ export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
      *  be used when computing the fee data for the network.
      */
     constructor(
+        fallbackUrl: string,
         processFunc: (
         p: Provider,
         tx: TransactionLike
@@ -295,6 +303,7 @@ export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
         }>
     ) {
         super("org.ethers.plugins.network.FetchLineaFeeDataPlugin");
+        this.#fallbackUrl = fallbackUrl;
         this.#processFunc = processFunc;
     }
 

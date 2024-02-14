@@ -171,6 +171,10 @@ export declare class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
 export declare class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
     #private;
     /**
+     *  The URL for rpc fallback.
+     */
+    get fallbackUrl(): string;
+    /**
      *  The callback to use when computing the FeeData.
      */
     get processFunc(): (p: Provider, tx: TransactionLike) => Promise<{
@@ -182,7 +186,7 @@ export declare class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
      *  Creates a new **FetchLineaFeeDataNetworkPlugin** which will
      *  be used when computing the fee data for the network.
      */
-    constructor(processFunc: (p: Provider, tx: TransactionLike) => Promise<{
+    constructor(fallbackUrl: string, processFunc: (p: Provider, tx: TransactionLike) => Promise<{
         gasPrice?: null | bigint;
         maxFeePerGas?: null | bigint;
         maxPriorityFeePerGas?: null | bigint;

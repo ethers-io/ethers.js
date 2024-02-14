@@ -182,7 +182,12 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
     clone() { return this; }
 }
 export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
+    #fallbackUrl;
     #processFunc;
+    /**
+     *  The URL for rpc fallback.
+     */
+    get fallbackUrl() { return this.#fallbackUrl; }
     /**
      *  The callback to use when computing the FeeData.
      */
@@ -193,8 +198,9 @@ export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
      *  Creates a new **FetchLineaFeeDataNetworkPlugin** which will
      *  be used when computing the fee data for the network.
      */
-    constructor(processFunc) {
+    constructor(fallbackUrl, processFunc) {
         super("org.ethers.plugins.network.FetchLineaFeeDataPlugin");
+        this.#fallbackUrl = fallbackUrl;
         this.#processFunc = processFunc;
     }
     // We are immutable, so we can serve as our own clone
