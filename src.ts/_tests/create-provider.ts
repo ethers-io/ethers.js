@@ -4,6 +4,7 @@ import {
 //    CloudflareProvider,
     EtherscanProvider,
     InfuraProvider,
+    LlamaNodesProvider,
 //    PocketProvider,
     QuickNodeProvider,
 
@@ -67,6 +68,13 @@ const ProviderCreators: Array<ProviderCreator> = [
         networks: ethNetworks,
         create: function(network: string) {
             return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+        }
+    },
+    {
+        name: "LlamaNodesProvider",
+        networks: ethNetworks,
+        create: function(network: string) {
+            return new LlamaNodesProvider(network);
         }
     },
 /*
