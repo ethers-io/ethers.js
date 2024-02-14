@@ -63,8 +63,9 @@ function ser_I(index, chainCode, publicKey, privateKey) {
 }
 function derivePath(node, path) {
     const components = path.split("/");
-    (0, index_js_4.assertArgument)(components.length > 0 && (components[0] === "m" || node.depth > 0), "invalid path", "path", path);
+    (0, index_js_4.assertArgument)(components.length > 0, "invalid path", "path", path);
     if (components[0] === "m") {
+        (0, index_js_4.assertArgument)(node.depth === 0, `cannot derive root path (i.e. path starting with "m/") for a node at non-zero depth ${node.depth}`, "path", path);
         components.shift();
     }
     let result = node;

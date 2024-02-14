@@ -3,6 +3,14 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.11.1 (2024-02-14 13:13)
+---------------------------------
+
+  - Throw an error when attempting to derive from a master path from a non-master node ([#4551](https://github.com/ethers-io/ethers.js/issues/4551); [556fdd9](https://github.com/ethers-io/ethers.js/commit/556fdd91d9b6bf7db4041bb099e66b2080e1a985)).
+  - Allow ENS wildcards with labels up to 255 bytes wide; discussed with ENS and deemed safe ([#4543](https://github.com/ethers-io/ethers.js/issues/4543); [7f14bde](https://github.com/ethers-io/ethers.js/commit/7f14bdebf1aef6760462a1c2437c31f002b984fe)).
+  - Enforce string is passed to toUtf8Bytes ([#4583](https://github.com/ethers-io/ethers.js/issues/4583); [f45bb87](https://github.com/ethers-io/ethers.js/commit/f45bb87aefaf2c6c3a4991f6e30a81c227ae83c0)).
+  - Fix transaction.index not being populated on some backends ([#4591](https://github.com/ethers-io/ethers.js/issues/4591); [7f0e140](https://github.com/ethers-io/ethers.js/commit/7f0e140d5e3925a42e8bb2ac9eb1ba3fbd939864)).
+
 ethers/v6.11.0 (2024-02-08 20:26)
 ---------------------------------
 

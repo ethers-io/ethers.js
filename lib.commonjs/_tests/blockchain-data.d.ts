@@ -33,6 +33,7 @@ export interface TestBlockchainTransaction {
     hash: string;
     blockHash: string;
     blockNumber: number;
+    index: number;
     type: number;
     from: string;
     gasPrice: bigint;

@@ -189,6 +189,8 @@ function formatTransactionResponse(value) {
     }
     const result = object({
         hash: formatHash,
+        // Some nodes do not return this, usually test nodes (like Ganache)
+        index: allowNull(index_js_4.getNumber, undefined),
         type: (value) => {
             if (value === "0x" || value == null) {
                 return 0;
@@ -200,7 +202,6 @@ function formatTransactionResponse(value) {
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(index_js_4.getNumber, null),
         transactionIndex: allowNull(index_js_4.getNumber, null),
-        //confirmations: allowNull(getNumber, null),
         from: index_js_1.getAddress,
         // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
         gasPrice: allowNull(index_js_4.getBigInt),
@@ -216,7 +217,8 @@ function formatTransactionResponse(value) {
         chainId: allowNull(index_js_4.getBigInt, null)
     }, {
         data: ["input"],
-        gasLimit: ["gas"]
+        gasLimit: ["gas"],
+        index: ["transactionIndex"]
     })(value);
     // If to and creates are empty, populate the creates from the value
     if (result.to == null && result.creates == null) {
