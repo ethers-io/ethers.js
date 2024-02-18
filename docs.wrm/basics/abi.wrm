@@ -62,7 +62,7 @@ _subsection: Event Data Representation
 When an Event is emitted from a contract, there are two places data is
 logged in a Log: the **topics** and the **data**.
 
-An additonal fee is paid for each **topic**, but this affords a topic
+An additional fee is paid for each **topic**, but this affords a topic
 to be indexed in a bloom filter within the block, which allows efficient
 filtering.
 
