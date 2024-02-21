@@ -353,8 +353,6 @@ function getGasStationPlugin(url: string) {
 // Used by Linea to get fee data
 function getLineaPricingPlugin(fallbackUrl: string) {
     const BASE_FEE_PER_GAS_MARGIN = 1.35;
-    // Temporary multiplier to ensure that the gas price is always higher than the base fee
-    const BASE_MULTIPLIER = BigInt(2);
     return new FetchLineaFeeDataNetworkPlugin(fallbackUrl, async (provider: any, tx) => {
         const attemptEstimateGas = async (provider: any, tx: TransactionLike) => {
             const formattedTx = {
@@ -374,8 +372,8 @@ function getLineaPricingPlugin(fallbackUrl: string) {
 
             return {
                 gasLimit: gasPrice,
-                maxFeePerGas: gasPrice * BASE_MULTIPLIER,
-                maxPriorityFeePerGas: adjustedPriorityFeePerGas * BASE_MULTIPLIER,
+                maxFeePerGas: gasPrice,
+                maxPriorityFeePerGas: adjustedPriorityFeePerGas,
             };            
         };
 
