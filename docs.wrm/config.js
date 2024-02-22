@@ -268,6 +268,7 @@ module.exports = {
       "link-legacy-docs3": "https:/\/docs.ethers.org/v3/",
       "link-legacy-docs4": "https:/\/docs.ethers.org/v4/",
       "link-beta-docs6": "https:/\/docs.ethers.org/v6-beta/",
+      "link-docs6": "https:/\/docs.ethers.org/v6/",
 
       "link-github-ci": "https:/\/github.com/ethers-io/ethers.js/actions/runs/158006903",
       "link-github-issues": "https:/\/github.com/ethers-io/ethers.js/issues",

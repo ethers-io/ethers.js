@@ -1,8 +1,9 @@
 _section: Documentation @<documentation>
 
-This documentation is for Ethers v5.
+This documentation is for Ethers v5, which only receives
+minimal maintenance support. Please consider upgrading to v6.
 
-For Ethers v6, see [v6 beta documentation](link-beta-docs6).
+For Ethers v6, see [v6 documentation](link-docs6).
 
 _subsection: What is Ethers? @<preamble>
 
