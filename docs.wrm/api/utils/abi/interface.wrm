@@ -310,7 +310,7 @@ iface.encodeFunctionData("addUser", [ user ]);
 //_log:
 
 // Encoding structured data, using objects. Only available
-// if paramters are named.
+// if parameters are named.
 user = {
    name: "Richard Moore",
    addr: "0x8ba1f109551bD432803012645Ac136ddd64DBA72"
