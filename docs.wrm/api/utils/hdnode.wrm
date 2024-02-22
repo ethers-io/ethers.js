@@ -37,14 +37,14 @@ _subsection: HDNode @<HDNode> @SRC<hdnode:class.HDNode>
 
 _heading: Creating Instances @<HDNode--creating>
 
-_property: ethers.HDNode.fromMnemonic(phrase [, password [, wordlist ] ]) => [[HDNode]]  @<HDNode-fromMnemonic> @SRC<hdnode>
+_property: ethers.utils.HDNode.fromMnemonic(phrase [, password [, wordlist ] ]) => [[HDNode]]  @<HDNode-fromMnemonic> @SRC<hdnode>
 Return the [[HDNode]] for //phrase// with the optional //password//
 and //wordlist//.
 
-_property: ethers.HDNode.fromSeed(aBytesLike) => [[HDNode]]  @<HDNode-fromSeed> @SRC<hdnode>
+_property: ethers.utils.HDNode.fromSeed(aBytesLike) => [[HDNode]]  @<HDNode-fromSeed> @SRC<hdnode>
 Return the [[HDNode]] for the seed //aBytesLike//.
 
-_property: ethers.HDNode.fromExtendedKey(extendedKey) => [[HDNode]]  @<HDNode-fromExtendedKey> @SRC<hdnode>
+_property: ethers.utils.HDNode.fromExtendedKey(extendedKey) => [[HDNode]]  @<HDNode-fromExtendedKey> @SRC<hdnode>
 Return the [[HDNode]] for the //extendedKey//. If //extendedKey// was
 neutered, the **HDNode** will only be able to compute addresses and not
 private keys.
