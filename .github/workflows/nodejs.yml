@@ -3,14 +3,12 @@ name: Node.js CI
 on:
   push:
     branches:
-      - master
+      - v5
 
 jobs:
 
   test-node:
-
-#    runs-on: ubuntu-latest
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     environment: ethers-tests
     env:
       FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
@@ -28,9 +26,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v2
-
-#      - name: Install node-hid requirements
-#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+        with:
+          ref: 'v5'
 
       - name: Install dependencies (and link per package)
         run: npm ci
@@ -43,10 +40,7 @@ jobs:
 
 
   test-browser:
-
-#    runs-on: ubuntu-latest
-    runs-on: macos-latest
-
+    runs-on: ubuntu-latest
     environment: ethers-tests
     env:
       FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
@@ -63,9 +57,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v2
-
-#      - name: Install node-hid requirements
-#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+        with:
+          ref: 'v5'
 
       - name: Install dependencies (and link per package)
         run: npm ci
@@ -109,9 +102,7 @@ jobs:
 
     name: Coverage
 
-#    runs-on: ubuntu-latest
-    runs-on: macos-latest
-
+    runs-on: ubuntu-latest
     environment: ethers-tests
     env:
       FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
@@ -125,9 +116,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v2
-
-#      - name: Install node-hid requirements
-#        run: sudo apt-get install libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+        with:
+          ref: "v5"
 
       - name: Install dependencies (and link per package)
         run: npm ci
