@@ -68,10 +68,10 @@ function nonnull(value: string): string {
     return value;
 }
 
-function staller(duration: number): Promise<void> {
+function staller(duration: number, block?: boolean): Promise<void> {
     return new Promise((resolve) => {
         const timer = setTimeout(resolve, duration);
-        timer.unref();
+        if (!block) { timer.unref(); }
     });
 }
 
@@ -131,7 +131,7 @@ export async function getUrl(href: string, options?: Options): Promise<GetUrlRes
         } catch (e) {
             error = e;
         }
-        await staller(1000);
+        await staller(1000, true);
     }
     throw error;
 }

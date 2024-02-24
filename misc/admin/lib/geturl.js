@@ -61,10 +61,12 @@ function nonnull(value) {
     }
     return value;
 }
-function staller(duration) {
+function staller(duration, block) {
     return new Promise((resolve) => {
         const timer = setTimeout(resolve, duration);
-        timer.unref();
+        if (!block) {
+            timer.unref();
+        }
     });
 }
 function _getUrl(href, options) {
@@ -121,7 +123,7 @@ function getUrl(href, options) {
             catch (e) {
                 error = e;
             }
-            yield staller(1000);
+            yield staller(1000, true);
         }
         throw error;
     });
