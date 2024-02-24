@@ -62,6 +62,12 @@ function ethDefaultProvider(network) {
             }
             catch (error) { }
         }
+        if (providers.QuickNodeProvider && options.quicknode !== "-") {
+            try {
+                providerList.push(new providers.QuickNodeProvider(network, options.quicknode));
+            }
+            catch (error) { }
+        }
         if (providerList.length === 0) {
             return null;
         }
@@ -142,6 +148,11 @@ var networks = {
         name: "sepolia",
         _defaultProvider: ethDefaultProvider("sepolia")
     },
+    holesky: {
+        chainId: 17000,
+        name: "holesky",
+        _defaultProvider: ethDefaultProvider("holesky")
+    },
     // ETC (See: #351)
     classic: {
         chainId: 61,
@@ -162,7 +173,11 @@ var networks = {
         name: "matic",
         _defaultProvider: ethDefaultProvider("matic")
     },
-    maticmum: { chainId: 80001, name: "maticmum" },
+    maticmum: {
+        chainId: 80001,
+        name: "maticmum",
+        _defaultProvider: ethDefaultProvider("maticmum")
+    },
     optimism: {
         chainId: 10,
         name: "optimism",
@@ -170,9 +185,11 @@ var networks = {
     },
     "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
     "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
+    "optimism-sepolia": { chainId: 11155420, name: "optimism-sepolia" },
     arbitrum: { chainId: 42161, name: "arbitrum" },
     "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
     "arbitrum-goerli": { chainId: 421613, name: "arbitrum-goerli" },
+    "arbitrum-sepolia": { chainId: 421614, name: "arbitrum-sepolia" },
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
 };

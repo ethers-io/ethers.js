@@ -7,11 +7,11 @@
   },
   "author": "Richard Moore <me@ricmoo.com>",
   "dependencies": {
-    "@ethersproject/bytes": "^5.7.0",
-    "@ethersproject/hash": "^5.7.0",
-    "@ethersproject/logger": "^5.7.0",
-    "@ethersproject/properties": "^5.7.0",
-    "@ethersproject/strings": "^5.7.0"
+    "@ethersproject/bytes": "^5.8.0",
+    "@ethersproject/hash": "^5.8.0",
+    "@ethersproject/logger": "^5.8.0",
+    "@ethersproject/properties": "^5.8.0",
+    "@ethersproject/strings": "^5.8.0"
   },
   "description": "Word lists for BIP39 wallets.",
   "ethereum": "donations.ethers.eth",
@@ -45,7 +45,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x7f753c8f34ec57f7fe3d96c39b7787d3d543b398a152fcb5b2548ef20098d3e1",
+  "tarballHash": "0x3e1814d163850783bd6750a9f72bb2c608e3facb2c573eb24424b821e716ec06",
   "types": "./lib/index.d.ts",
-  "version": "5.7.0"
+  "version": "5.8.0"
 }

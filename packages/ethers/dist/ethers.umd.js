@@ -3601,7 +3601,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "logger/5.7.0";
+	exports.version = "logger/5.8.0";
 
 	});
 
@@ -3987,7 +3987,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bytes/5.7.0";
+	exports.version = "bytes/5.8.0";
 
 	});
 
@@ -4429,7 +4429,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "bignumber/5.7.0";
+	exports.version = "bignumber/5.8.0";
 
 	});
 
@@ -5153,7 +5153,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "properties/5.7.0";
+	exports.version = "properties/5.8.0";
 
 	});
 
@@ -5339,7 +5339,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abi/5.7.0";
+	exports.version = "abi/5.8.0";
 
 	});
 
@@ -7109,7 +7109,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "rlp/5.7.0";
+	exports.version = "rlp/5.8.0";
 
 	});
 
@@ -7248,7 +7248,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "address/5.7.0";
+	exports.version = "address/5.8.0";
 
 	});
 
@@ -8087,7 +8087,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "strings/5.7.0";
+	exports.version = "strings/5.8.0";
 
 	});
 
@@ -8868,7 +8868,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hash/5.7.0";
+	exports.version = "hash/5.8.0";
 
 	});
 
@@ -10716,7 +10716,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-provider/5.7.0";
+	exports.version = "abstract-provider/5.8.0";
 
 	});
 
@@ -10917,7 +10917,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "abstract-signer/5.7.0";
+	exports.version = "abstract-signer/5.8.0";
 
 	});
 
@@ -18538,7 +18538,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "signing-key/5.7.0";
+	exports.version = "signing-key/5.8.0";
 
 	});
 
@@ -18641,7 +18641,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "transactions/5.7.0";
+	exports.version = "transactions/5.8.0";
 
 	});
 
@@ -19068,7 +19068,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "contracts/5.7.0";
+	exports.version = "contracts/5.8.0";
 
 	});
 
@@ -19992,7 +19992,7 @@
 	            logger.throwError("events require a provider or a signer with a provider", lib.Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
 	        }
 	        runningEvent.addListener(listener, once);
-	        // Track this running event and its listeners (may already be there; but no hard in updating)
+	        // Track this running event and its listeners (may already be there; but no harm in updating)
 	        this._runningEvents[runningEvent.tag] = runningEvent;
 	        // If we are not polling the provider, start polling
 	        if (!this._wrappedEmits[runningEvent.tag]) {
@@ -20431,7 +20431,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "sha2/5.7.0";
+	exports.version = "sha2/5.8.0";
 
 	});
 
@@ -20561,7 +20561,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wordlists/5.7.0";
+	exports.version = "wordlists/5.8.0";
 
 	});
 
@@ -20719,7 +20719,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "hdnode/5.7.0";
+	exports.version = "hdnode/5.8.0";
 
 	});
 
@@ -21077,7 +21077,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "random/5.7.0";
+	exports.version = "random/5.8.0";
 
 	});
 
@@ -21972,7 +21972,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "json-wallets/5.7.0";
+	exports.version = "json-wallets/5.8.0";
 
 	});
 
@@ -23118,7 +23118,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "wallet/5.7.0";
+	exports.version = "wallet/5.8.0";
 
 	});
 
@@ -23381,7 +23381,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "networks/5.7.1";
+	exports.version = "networks/5.8.0";
 
 	});
 
@@ -23449,6 +23449,12 @@
 	                if (provider.network && skip.indexOf(provider.network.name) === -1) {
 	                    providerList.push(provider);
 	                }
+	            }
+	            catch (error) { }
+	        }
+	        if (providers.QuickNodeProvider && options.quicknode !== "-") {
+	            try {
+	                providerList.push(new providers.QuickNodeProvider(network, options.quicknode));
 	            }
 	            catch (error) { }
 	        }
@@ -23532,6 +23538,11 @@
 	        name: "sepolia",
 	        _defaultProvider: ethDefaultProvider("sepolia")
 	    },
+	    holesky: {
+	        chainId: 17000,
+	        name: "holesky",
+	        _defaultProvider: ethDefaultProvider("holesky")
+	    },
 	    // ETC (See: #351)
 	    classic: {
 	        chainId: 61,
@@ -23552,7 +23563,11 @@
 	        name: "matic",
 	        _defaultProvider: ethDefaultProvider("matic")
 	    },
-	    maticmum: { chainId: 80001, name: "maticmum" },
+	    maticmum: {
+	        chainId: 80001,
+	        name: "maticmum",
+	        _defaultProvider: ethDefaultProvider("maticmum")
+	    },
 	    optimism: {
 	        chainId: 10,
 	        name: "optimism",
@@ -23560,9 +23575,11 @@
 	    },
 	    "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
 	    "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
+	    "optimism-sepolia": { chainId: 11155420, name: "optimism-sepolia" },
 	    arbitrum: { chainId: 42161, name: "arbitrum" },
 	    "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
 	    "arbitrum-goerli": { chainId: 421613, name: "arbitrum-goerli" },
+	    "arbitrum-sepolia": { chainId: 421614, name: "arbitrum-sepolia" },
 	    bnb: { chainId: 56, name: "bnb" },
 	    bnbt: { chainId: 97, name: "bnbt" },
 	};
@@ -23647,7 +23664,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "web/5.7.1";
+	exports.version = "web/5.8.0";
 
 	});
 
@@ -24422,7 +24439,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "providers/5.7.2";
+	exports.version = "providers/5.8.0";
 
 	});
 
@@ -28987,6 +29004,9 @@
 	            case "goerli":
 	                host = "eth-goerli.g.alchemy.com/v2/";
 	                break;
+	            case "sepolia":
+	                host = "eth-sepolia.g.alchemy.com/v2/";
+	                break;
 	            case "matic":
 	                host = "polygon-mainnet.g.alchemy.com/v2/";
 	                break;
@@ -28999,11 +29019,17 @@
 	            case "arbitrum-goerli":
 	                host = "arb-goerli.g.alchemy.com/v2/";
 	                break;
+	            case "arbitrum-sepolia":
+	                host = "arb-sepolia.g.alchemy.com/v2/";
+	                break;
 	            case "optimism":
 	                host = "opt-mainnet.g.alchemy.com/v2/";
 	                break;
 	            case "optimism-goerli":
 	                host = "opt-goerli.g.alchemy.com/v2/";
+	                break;
+	            case "optimism-sepolia":
+	                host = "opt-sepolia.g.alchemy.com/v2/";
 	                break;
 	            default:
 	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
@@ -29065,8 +29091,18 @@
 	            return "rpc.ankr.com/eth_rinkeby/";
 	        case "goerli":
 	            return "rpc.ankr.com/eth_goerli/";
+	        case "sepolia":
+	            return "rpc.ankr.com/eth_sepolia/";
 	        case "matic":
 	            return "rpc.ankr.com/polygon/";
+	        case "maticmum":
+	            return "rpc.ankr.com/polygon_mumbai/";
+	        case "optimism":
+	            return "rpc.ankr.com/optimism/";
+	        case "optimism-goerli":
+	            return "rpc.ankr.com/optimism_testnet/";
+	        case "optimism-sepolia":
+	            return "rpc.ankr.com/optimism_sepolia/";
 	        case "arbitrum":
 	            return "rpc.ankr.com/arbitrum/";
 	    }
@@ -30574,11 +30610,17 @@
 	            case "optimism-goerli":
 	                host = "optimism-goerli.infura.io";
 	                break;
+	            case "optimism-sepolia":
+	                host = "optimism-sepolia.infura.io";
+	                break;
 	            case "arbitrum":
 	                host = "arbitrum-mainnet.infura.io";
 	                break;
 	            case "arbitrum-goerli":
 	                host = "arbitrum-goerli.infura.io";
+	                break;
+	            case "arbitrum-sepolia":
+	                host = "arbitrum-sepolia.infura.io";
 	                break;
 	            default:
 	                logger.throwError("unsupported network", lib.Logger.errors.INVALID_ARGUMENT, {
@@ -30889,6 +30931,112 @@
 
 	var pocketProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(pocketProvider);
 
+	var quicknodeProvider = createCommonjsModule(function (module, exports) {
+	"use strict";
+	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
+	    var extendStatics = function (d, b) {
+	        extendStatics = Object.setPrototypeOf ||
+	            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+	        return extendStatics(d, b);
+	    };
+	    return function (d, b) {
+	        if (typeof b !== "function" && b !== null)
+	            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.QuickNodeProvider = void 0;
+
+
+
+	var logger = new lib.Logger(_version$I.version);
+	// Special API key provided by Quicknode for ethers.js
+	var defaultApiKey = "919b412a057b5e9c9b6dce193c5a60242d6efadb";
+	var QuickNodeProvider = /** @class */ (function (_super) {
+	    __extends(QuickNodeProvider, _super);
+	    function QuickNodeProvider() {
+	        return _super !== null && _super.apply(this, arguments) || this;
+	    }
+	    QuickNodeProvider.getApiKey = function (apiKey) {
+	        if (apiKey && typeof (apiKey) !== "string") {
+	            logger.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+	        }
+	        return apiKey || defaultApiKey;
+	    };
+	    QuickNodeProvider.getUrl = function (network, apiKey) {
+	        var host = null;
+	        switch (network.name) {
+	            case "homestead":
+	                host = "ethers.quiknode.pro";
+	                break;
+	            case "goerli":
+	                host = "ethers.ethereum-goerli.quiknode.pro";
+	                break;
+	            case "sepolia":
+	                host = "ethers.ethereum-sepolia.quiknode.pro";
+	                break;
+	            case "holesky":
+	                host = "ethers.ethereum-holesky.quiknode.pro";
+	                break;
+	            case "arbitrum":
+	                host = "ethers.arbitrum-mainnet.quiknode.pro";
+	                break;
+	            case "arbitrum-goerli":
+	                host = "ethers.arbitrum-goerli.quiknode.pro";
+	                break;
+	            case "arbitrum-sepolia":
+	                host = "ethers.arbitrum-sepolia.quiknode.pro";
+	                break;
+	            case "base":
+	                host = "ethers.base-mainnet.quiknode.pro";
+	                break;
+	            case "base-goerli":
+	                host = "ethers.base-goerli.quiknode.pro";
+	                break;
+	            case "base-spolia":
+	                host = "ethers.base-sepolia.quiknode.pro";
+	                break;
+	            case "bnb":
+	                host = "ethers.bsc.quiknode.pro";
+	                break;
+	            case "bnbt":
+	                host = "ethers.bsc-testnet.quiknode.pro";
+	                break;
+	            case "matic":
+	                host = "ethers.matic.quiknode.pro";
+	                break;
+	            case "maticmum":
+	                host = "ethers.matic-testnet.quiknode.pro";
+	                break;
+	            case "optimism":
+	                host = "ethers.optimism.quiknode.pro";
+	                break;
+	            case "optimism-goerli":
+	                host = "ethers.optimism-goerli.quiknode.pro";
+	                break;
+	            case "optimism-sepolia":
+	                host = "ethers.optimism-sepolia.quiknode.pro";
+	                break;
+	            case "xdai":
+	                host = "ethers.xdai.quiknode.pro";
+	                break;
+	            default:
+	                logger.throwArgumentError("unsupported network", "network", arguments[0]);
+	        }
+	        return ("https:/" + "/" + host + "/" + apiKey);
+	    };
+	    return QuickNodeProvider;
+	}(urlJsonRpcProvider.UrlJsonRpcProvider));
+	exports.QuickNodeProvider = QuickNodeProvider;
+
+	});
+
+	var quicknodeProvider$1 = /*@__PURE__*/getDefaultExportFromCjs(quicknodeProvider);
+
 	var web3Provider = createCommonjsModule(function (module, exports) {
 	"use strict";
 	var __extends = (commonjsGlobal && commonjsGlobal.__extends) || (function () {
@@ -31052,7 +31200,7 @@
 	var lib$t = createCommonjsModule(function (module, exports) {
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
+	exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.QuickNodeProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 
 	Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return lib$e.Provider; } });
 
@@ -31085,6 +31233,8 @@
 	Object.defineProperty(exports, "NodesmithProvider", { enumerable: true, get: function () { return nodesmithProvider.NodesmithProvider; } });
 
 	Object.defineProperty(exports, "PocketProvider", { enumerable: true, get: function () { return pocketProvider.PocketProvider; } });
+
+	Object.defineProperty(exports, "QuickNodeProvider", { enumerable: true, get: function () { return quicknodeProvider.QuickNodeProvider; } });
 
 	Object.defineProperty(exports, "StaticJsonRpcProvider", { enumerable: true, get: function () { return urlJsonRpcProvider.StaticJsonRpcProvider; } });
 	Object.defineProperty(exports, "UrlJsonRpcProvider", { enumerable: true, get: function () { return urlJsonRpcProvider.UrlJsonRpcProvider; } });
@@ -31141,6 +31291,7 @@
 	        JsonRpcProvider: jsonRpcProvider.JsonRpcProvider,
 	        NodesmithProvider: nodesmithProvider.NodesmithProvider,
 	        PocketProvider: pocketProvider.PocketProvider,
+	        QuickNodeProvider: quicknodeProvider.QuickNodeProvider,
 	        Web3Provider: web3Provider.Web3Provider,
 	        IpcProvider: browserIpcProvider.IpcProvider,
 	    }, options);
@@ -31155,7 +31306,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "solidity/5.7.0";
+	exports.version = "solidity/5.8.0";
 
 	});
 
@@ -31266,7 +31417,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "units/5.7.0";
+	exports.version = "units/5.8.0";
 
 	});
 
@@ -31525,7 +31676,7 @@
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.version = void 0;
-	exports.version = "ethers/5.7.2";
+	exports.version = "ethers/5.8.0";
 
 	});
 

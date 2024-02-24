@@ -1,1 +1,1 @@
-export const version = "base64/5.7.0";
+export const version = "base64/5.8.0";

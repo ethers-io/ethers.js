@@ -104,11 +104,17 @@ var InfuraProvider = /** @class */ (function (_super) {
             case "optimism-goerli":
                 host = "optimism-goerli.infura.io";
                 break;
+            case "optimism-sepolia":
+                host = "optimism-sepolia.infura.io";
+                break;
             case "arbitrum":
                 host = "arbitrum-mainnet.infura.io";
                 break;
             case "arbitrum-goerli":
                 host = "arbitrum-goerli.infura.io";
+                break;
+            case "arbitrum-sepolia":
+                host = "arbitrum-sepolia.infura.io";
                 break;
             default:
                 logger.throwError("unsupported network", logger_1.Logger.errors.INVALID_ARGUMENT, {

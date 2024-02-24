@@ -915,7 +915,7 @@ var BaseContract = /** @class */ (function () {
             logger.throwError("events require a provider or a signer with a provider", logger_1.Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
         }
         runningEvent.addListener(listener, once);
-        // Track this running event and its listeners (may already be there; but no hard in updating)
+        // Track this running event and its listeners (may already be there; but no harm in updating)
         this._runningEvents[runningEvent.tag] = runningEvent;
         // If we are not polling the provider, start polling
         if (!this._wrappedEmits[runningEvent.tag]) {

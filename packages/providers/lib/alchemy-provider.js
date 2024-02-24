@@ -71,6 +71,9 @@ var AlchemyProvider = /** @class */ (function (_super) {
             case "goerli":
                 host = "eth-goerli.g.alchemy.com/v2/";
                 break;
+            case "sepolia":
+                host = "eth-sepolia.g.alchemy.com/v2/";
+                break;
             case "matic":
                 host = "polygon-mainnet.g.alchemy.com/v2/";
                 break;
@@ -83,11 +86,17 @@ var AlchemyProvider = /** @class */ (function (_super) {
             case "arbitrum-goerli":
                 host = "arb-goerli.g.alchemy.com/v2/";
                 break;
+            case "arbitrum-sepolia":
+                host = "arb-sepolia.g.alchemy.com/v2/";
+                break;
             case "optimism":
                 host = "opt-mainnet.g.alchemy.com/v2/";
                 break;
             case "optimism-goerli":
                 host = "opt-goerli.g.alchemy.com/v2/";
+                break;
+            case "optimism-sepolia":
+                host = "opt-sepolia.g.alchemy.com/v2/";
                 break;
             default:
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);

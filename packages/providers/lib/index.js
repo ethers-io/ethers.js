@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
+exports.Formatter = exports.showThrottleMessage = exports.isCommunityResourcable = exports.isCommunityResource = exports.getNetwork = exports.getDefaultProvider = exports.JsonRpcSigner = exports.IpcProvider = exports.WebSocketProvider = exports.Web3Provider = exports.StaticJsonRpcProvider = exports.QuickNodeProvider = exports.PocketProvider = exports.NodesmithProvider = exports.JsonRpcBatchProvider = exports.JsonRpcProvider = exports.InfuraWebSocketProvider = exports.InfuraProvider = exports.EtherscanProvider = exports.CloudflareProvider = exports.AnkrProvider = exports.AlchemyWebSocketProvider = exports.AlchemyProvider = exports.FallbackProvider = exports.UrlJsonRpcProvider = exports.Resolver = exports.BaseProvider = exports.Provider = void 0;
 var abstract_provider_1 = require("@ethersproject/abstract-provider");
 Object.defineProperty(exports, "Provider", { enumerable: true, get: function () { return abstract_provider_1.Provider; } });
 var networks_1 = require("@ethersproject/networks");
@@ -33,6 +33,8 @@ var nodesmith_provider_1 = require("./nodesmith-provider");
 Object.defineProperty(exports, "NodesmithProvider", { enumerable: true, get: function () { return nodesmith_provider_1.NodesmithProvider; } });
 var pocket_provider_1 = require("./pocket-provider");
 Object.defineProperty(exports, "PocketProvider", { enumerable: true, get: function () { return pocket_provider_1.PocketProvider; } });
+var quicknode_provider_1 = require("./quicknode-provider");
+Object.defineProperty(exports, "QuickNodeProvider", { enumerable: true, get: function () { return quicknode_provider_1.QuickNodeProvider; } });
 var url_json_rpc_provider_1 = require("./url-json-rpc-provider");
 Object.defineProperty(exports, "StaticJsonRpcProvider", { enumerable: true, get: function () { return url_json_rpc_provider_1.StaticJsonRpcProvider; } });
 Object.defineProperty(exports, "UrlJsonRpcProvider", { enumerable: true, get: function () { return url_json_rpc_provider_1.UrlJsonRpcProvider; } });
@@ -89,6 +91,7 @@ function getDefaultProvider(network, options) {
         JsonRpcProvider: json_rpc_provider_1.JsonRpcProvider,
         NodesmithProvider: nodesmith_provider_1.NodesmithProvider,
         PocketProvider: pocket_provider_1.PocketProvider,
+        QuickNodeProvider: quicknode_provider_1.QuickNodeProvider,
         Web3Provider: web3_provider_1.Web3Provider,
         IpcProvider: ipc_provider_1.IpcProvider,
     }, options);

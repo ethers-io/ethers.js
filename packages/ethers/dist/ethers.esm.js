@@ -3591,7 +3591,7 @@ var bn = createCommonjsModule(function (module) {
 })('object' === 'undefined' || module, commonjsGlobal);
 });
 
-const version = "logger/5.7.0";
+const version = "logger/5.8.0";
 
 "use strict";
 let _permanentCensorErrors = false;
@@ -3947,7 +3947,7 @@ class Logger {
 Logger.errors = ErrorCode;
 Logger.levels = LogLevel;
 
-const version$1 = "bytes/5.7.0";
+const version$1 = "bytes/5.8.0";
 
 "use strict";
 const logger = new Logger(version$1);
@@ -4356,7 +4356,7 @@ function joinSignature(signature) {
     ]));
 }
 
-const version$2 = "bignumber/5.7.0";
+const version$2 = "bignumber/5.8.0";
 
 "use strict";
 var BN = bn.BN;
@@ -5009,7 +5009,7 @@ class FixedNumber {
 const ONE = FixedNumber.from(1);
 const BUMP = FixedNumber.from("0.5");
 
-const version$3 = "properties/5.7.0";
+const version$3 = "properties/5.8.0";
 
 "use strict";
 var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -5135,7 +5135,7 @@ class Description {
     }
 }
 
-const version$4 = "abi/5.7.0";
+const version$4 = "abi/5.8.0";
 
 "use strict";
 const logger$4 = new Logger(version$4);
@@ -6794,7 +6794,7 @@ function keccak256(data) {
     return '0x' + sha3.keccak_256(arrayify(data));
 }
 
-const version$5 = "rlp/5.7.0";
+const version$5 = "rlp/5.8.0";
 
 "use strict";
 const logger$6 = new Logger(version$5);
@@ -6918,7 +6918,7 @@ var index = /*#__PURE__*/Object.freeze({
 	decode: decode
 });
 
-const version$6 = "address/5.7.0";
+const version$6 = "address/5.8.0";
 
 "use strict";
 const logger$7 = new Logger(version$6);
@@ -7451,7 +7451,7 @@ class NumberCoder extends Coder {
     }
 }
 
-const version$7 = "strings/5.7.0";
+const version$7 = "strings/5.8.0";
 
 "use strict";
 const logger$9 = new Logger(version$7);
@@ -8067,7 +8067,7 @@ function id(text) {
     return keccak256(toUtf8Bytes(text));
 }
 
-const version$8 = "hash/5.7.0";
+const version$8 = "hash/5.8.0";
 
 "use strict";
 function decode$1(textData) {
@@ -9629,7 +9629,7 @@ class Interface {
 
 "use strict";
 
-const version$9 = "abstract-provider/5.7.0";
+const version$9 = "abstract-provider/5.8.0";
 
 "use strict";
 var __awaiter$2 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -9737,7 +9737,7 @@ class Provider {
     }
 }
 
-const version$a = "abstract-signer/5.7.0";
+const version$a = "abstract-signer/5.8.0";
 
 "use strict";
 var __awaiter$3 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -13843,7 +13843,7 @@ elliptic.eddsa = /*RicMoo:ethers:require(./elliptic/eddsa)*/(null);
 
 var EC$1 = elliptic_1.ec;
 
-const version$b = "signing-key/5.7.0";
+const version$b = "signing-key/5.8.0";
 
 "use strict";
 const logger$g = new Logger(version$b);
@@ -13922,7 +13922,7 @@ function computePublicKey(key, compressed) {
     return logger$g.throwArgumentError("invalid public or private key", "key", "[REDACTED]");
 }
 
-const version$c = "transactions/5.7.0";
+const version$c = "transactions/5.8.0";
 
 "use strict";
 const logger$h = new Logger(version$c);
@@ -14299,7 +14299,7 @@ function parse(rawTransaction) {
     });
 }
 
-const version$d = "contracts/5.7.0";
+const version$d = "contracts/5.8.0";
 
 "use strict";
 var __awaiter$4 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -15065,7 +15065,7 @@ class BaseContract {
             logger$i.throwError("events require a provider or a signer with a provider", Logger.errors.UNSUPPORTED_OPERATION, { operation: "once" });
         }
         runningEvent.addListener(listener, once);
-        // Track this running event and its listeners (may already be there; but no hard in updating)
+        // Track this running event and its listeners (may already be there; but no harm in updating)
         this._runningEvents[runningEvent.tag] = runningEvent;
         // If we are not polling the provider, start polling
         if (!this._wrappedEmits[runningEvent.tag]) {
@@ -15442,7 +15442,7 @@ var SupportedAlgorithm;
 })(SupportedAlgorithm || (SupportedAlgorithm = {}));
 ;
 
-const version$e = "sha2/5.7.0";
+const version$e = "sha2/5.8.0";
 
 "use strict";
 const logger$j = new Logger(version$e);
@@ -15507,7 +15507,7 @@ function pbkdf2(password, salt, iterations, keylen, hashAlgorithm) {
     return hexlify(DK);
 }
 
-const version$f = "wordlists/5.7.0";
+const version$f = "wordlists/5.8.0";
 
 "use strict";
 // This gets overridden by rollup
@@ -15595,7 +15595,7 @@ const wordlists = {
 
 "use strict";
 
-const version$g = "hdnode/5.7.0";
+const version$g = "hdnode/5.8.0";
 
 "use strict";
 const logger$l = new Logger(version$g);
@@ -15915,7 +15915,7 @@ function getAccountPath(index) {
     return `m/44'/60'/${index}'/0/0`;
 }
 
-const version$h = "random/5.7.0";
+const version$h = "random/5.8.0";
 
 "use strict";
 const logger$m = new Logger(version$h);
@@ -16772,7 +16772,7 @@ var aesJs = createCommonjsModule(function (module, exports) {
 })(commonjsGlobal);
 });
 
-const version$i = "json-wallets/5.7.0";
+const version$i = "json-wallets/5.8.0";
 
 "use strict";
 function looseArrayify(hexString) {
@@ -17742,7 +17742,7 @@ function decryptJsonWalletSync(json, password) {
     throw new Error("invalid JSON wallet");
 }
 
-const version$j = "wallet/5.7.0";
+const version$j = "wallet/5.8.0";
 
 "use strict";
 var __awaiter$6 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -17906,7 +17906,7 @@ function verifyTypedData(domain, types, value, signature) {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
 
-const version$k = "networks/5.7.1";
+const version$k = "networks/5.8.0";
 
 "use strict";
 const logger$q = new Logger(version$k);
@@ -17965,6 +17965,12 @@ function ethDefaultProvider(network) {
                 if (provider.network && skip.indexOf(provider.network.name) === -1) {
                     providerList.push(provider);
                 }
+            }
+            catch (error) { }
+        }
+        if (providers.QuickNodeProvider && options.quicknode !== "-") {
+            try {
+                providerList.push(new providers.QuickNodeProvider(network, options.quicknode));
             }
             catch (error) { }
         }
@@ -18048,6 +18054,11 @@ const networks = {
         name: "sepolia",
         _defaultProvider: ethDefaultProvider("sepolia")
     },
+    holesky: {
+        chainId: 17000,
+        name: "holesky",
+        _defaultProvider: ethDefaultProvider("holesky")
+    },
     // ETC (See: #351)
     classic: {
         chainId: 61,
@@ -18068,7 +18079,11 @@ const networks = {
         name: "matic",
         _defaultProvider: ethDefaultProvider("matic")
     },
-    maticmum: { chainId: 80001, name: "maticmum" },
+    maticmum: {
+        chainId: 80001,
+        name: "maticmum",
+        _defaultProvider: ethDefaultProvider("maticmum")
+    },
     optimism: {
         chainId: 10,
         name: "optimism",
@@ -18076,9 +18091,11 @@ const networks = {
     },
     "optimism-kovan": { chainId: 69, name: "optimism-kovan" },
     "optimism-goerli": { chainId: 420, name: "optimism-goerli" },
+    "optimism-sepolia": { chainId: 11155420, name: "optimism-sepolia" },
     arbitrum: { chainId: 42161, name: "arbitrum" },
     "arbitrum-rinkeby": { chainId: 421611, name: "arbitrum-rinkeby" },
     "arbitrum-goerli": { chainId: 421613, name: "arbitrum-goerli" },
+    "arbitrum-sepolia": { chainId: 421614, name: "arbitrum-sepolia" },
     bnb: { chainId: 56, name: "bnb" },
     bnbt: { chainId: 97, name: "bnbt" },
 };
@@ -18154,7 +18171,7 @@ function getNetwork(network) {
     };
 }
 
-const version$l = "web/5.7.1";
+const version$l = "web/5.8.0";
 
 "use strict";
 var __awaiter$7 = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -18804,7 +18821,7 @@ var bech32 = {
   fromWords: fromWords
 };
 
-const version$m = "providers/5.7.2";
+const version$m = "providers/5.8.0";
 
 "use strict";
 const logger$s = new Logger(version$m);
@@ -22339,6 +22356,9 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             case "goerli":
                 host = "eth-goerli.g.alchemy.com/v2/";
                 break;
+            case "sepolia":
+                host = "eth-sepolia.g.alchemy.com/v2/";
+                break;
             case "matic":
                 host = "polygon-mainnet.g.alchemy.com/v2/";
                 break;
@@ -22351,11 +22371,17 @@ class AlchemyProvider extends UrlJsonRpcProvider {
             case "arbitrum-goerli":
                 host = "arb-goerli.g.alchemy.com/v2/";
                 break;
+            case "arbitrum-sepolia":
+                host = "arb-sepolia.g.alchemy.com/v2/";
+                break;
             case "optimism":
                 host = "opt-mainnet.g.alchemy.com/v2/";
                 break;
             case "optimism-goerli":
                 host = "opt-goerli.g.alchemy.com/v2/";
+                break;
+            case "optimism-sepolia":
+                host = "opt-sepolia.g.alchemy.com/v2/";
                 break;
             default:
                 logger$x.throwArgumentError("unsupported network", "network", arguments[0]);
@@ -22388,8 +22414,18 @@ function getHost(name) {
             return "rpc.ankr.com/eth_rinkeby/";
         case "goerli":
             return "rpc.ankr.com/eth_goerli/";
+        case "sepolia":
+            return "rpc.ankr.com/eth_sepolia/";
         case "matic":
             return "rpc.ankr.com/polygon/";
+        case "maticmum":
+            return "rpc.ankr.com/polygon_mumbai/";
+        case "optimism":
+            return "rpc.ankr.com/optimism/";
+        case "optimism-goerli":
+            return "rpc.ankr.com/optimism_testnet/";
+        case "optimism-sepolia":
+            return "rpc.ankr.com/optimism_sepolia/";
         case "arbitrum":
             return "rpc.ankr.com/arbitrum/";
     }
@@ -23540,11 +23576,17 @@ class InfuraProvider extends UrlJsonRpcProvider {
             case "optimism-goerli":
                 host = "optimism-goerli.infura.io";
                 break;
+            case "optimism-sepolia":
+                host = "optimism-sepolia.infura.io";
+                break;
             case "arbitrum":
                 host = "arbitrum-mainnet.infura.io";
                 break;
             case "arbitrum-goerli":
                 host = "arbitrum-goerli.infura.io";
+                break;
+            case "arbitrum-sepolia":
+                host = "arbitrum-sepolia.infura.io";
                 break;
             default:
                 logger$C.throwError("unsupported network", Logger.errors.INVALID_ARGUMENT, {
@@ -23756,6 +23798,81 @@ class PocketProvider extends UrlJsonRpcProvider {
 
 "use strict";
 const logger$F = new Logger(version$m);
+// Special API key provided by Quicknode for ethers.js
+const defaultApiKey$3 = "919b412a057b5e9c9b6dce193c5a60242d6efadb";
+class QuickNodeProvider extends UrlJsonRpcProvider {
+    static getApiKey(apiKey) {
+        if (apiKey && typeof (apiKey) !== "string") {
+            logger$F.throwArgumentError("invalid apiKey", "apiKey", apiKey);
+        }
+        return apiKey || defaultApiKey$3;
+    }
+    static getUrl(network, apiKey) {
+        let host = null;
+        switch (network.name) {
+            case "homestead":
+                host = "ethers.quiknode.pro";
+                break;
+            case "goerli":
+                host = "ethers.ethereum-goerli.quiknode.pro";
+                break;
+            case "sepolia":
+                host = "ethers.ethereum-sepolia.quiknode.pro";
+                break;
+            case "holesky":
+                host = "ethers.ethereum-holesky.quiknode.pro";
+                break;
+            case "arbitrum":
+                host = "ethers.arbitrum-mainnet.quiknode.pro";
+                break;
+            case "arbitrum-goerli":
+                host = "ethers.arbitrum-goerli.quiknode.pro";
+                break;
+            case "arbitrum-sepolia":
+                host = "ethers.arbitrum-sepolia.quiknode.pro";
+                break;
+            case "base":
+                host = "ethers.base-mainnet.quiknode.pro";
+                break;
+            case "base-goerli":
+                host = "ethers.base-goerli.quiknode.pro";
+                break;
+            case "base-spolia":
+                host = "ethers.base-sepolia.quiknode.pro";
+                break;
+            case "bnb":
+                host = "ethers.bsc.quiknode.pro";
+                break;
+            case "bnbt":
+                host = "ethers.bsc-testnet.quiknode.pro";
+                break;
+            case "matic":
+                host = "ethers.matic.quiknode.pro";
+                break;
+            case "maticmum":
+                host = "ethers.matic-testnet.quiknode.pro";
+                break;
+            case "optimism":
+                host = "ethers.optimism.quiknode.pro";
+                break;
+            case "optimism-goerli":
+                host = "ethers.optimism-goerli.quiknode.pro";
+                break;
+            case "optimism-sepolia":
+                host = "ethers.optimism-sepolia.quiknode.pro";
+                break;
+            case "xdai":
+                host = "ethers.xdai.quiknode.pro";
+                break;
+            default:
+                logger$F.throwArgumentError("unsupported network", "network", arguments[0]);
+        }
+        return ("https:/" + "/" + host + "/" + apiKey);
+    }
+}
+
+"use strict";
+const logger$G = new Logger(version$m);
 let _nextId = 1;
 function buildWeb3LegacyFetcher(provider, sendFunc) {
     const fetcher = "Web3LegacyFetcher";
@@ -23838,7 +23955,7 @@ function buildEip1193Fetcher(provider) {
 class Web3Provider extends JsonRpcProvider {
     constructor(provider, network) {
         if (provider == null) {
-            logger$F.throwArgumentError("missing provider", "provider", provider);
+            logger$G.throwArgumentError("missing provider", "provider", provider);
         }
         let path = null;
         let jsonRpcFetchFunc = null;
@@ -23866,7 +23983,7 @@ class Web3Provider extends JsonRpcProvider {
                 jsonRpcFetchFunc = buildWeb3LegacyFetcher(provider, provider.send.bind(provider));
             }
             else {
-                logger$F.throwArgumentError("unsupported provider", "provider", provider);
+                logger$G.throwArgumentError("unsupported provider", "provider", provider);
             }
             if (!path) {
                 path = "unknown:";
@@ -23882,7 +23999,7 @@ class Web3Provider extends JsonRpcProvider {
 }
 
 "use strict";
-const logger$G = new Logger(version$m);
+const logger$H = new Logger(version$m);
 ////////////////////////
 // Helper Functions
 function getDefaultProvider(network, options) {
@@ -23903,13 +24020,13 @@ function getDefaultProvider(network, options) {
                 case "wss":
                     return new WebSocketProvider(network);
                 default:
-                    logger$G.throwArgumentError("unsupported URL scheme", "network", network);
+                    logger$H.throwArgumentError("unsupported URL scheme", "network", network);
             }
         }
     }
     const n = getNetwork(network);
     if (!n || !n._defaultProvider) {
-        logger$G.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
+        logger$H.throwError("unsupported getDefaultProvider network", Logger.errors.NETWORK_ERROR, {
             operation: "getDefaultProvider",
             network: network
         });
@@ -23924,6 +24041,7 @@ function getDefaultProvider(network, options) {
         JsonRpcProvider,
         NodesmithProvider,
         PocketProvider,
+        QuickNodeProvider,
         Web3Provider,
         IpcProvider,
     }, options);
@@ -23947,6 +24065,7 @@ var index$3 = /*#__PURE__*/Object.freeze({
 	JsonRpcBatchProvider: JsonRpcBatchProvider,
 	NodesmithProvider: NodesmithProvider,
 	PocketProvider: PocketProvider,
+	QuickNodeProvider: QuickNodeProvider,
 	StaticJsonRpcProvider: StaticJsonRpcProvider,
 	Web3Provider: Web3Provider,
 	WebSocketProvider: WebSocketProvider,
@@ -23960,14 +24079,14 @@ var index$3 = /*#__PURE__*/Object.freeze({
 	Formatter: Formatter
 });
 
-const version$n = "solidity/5.7.0";
+const version$n = "solidity/5.8.0";
 
 "use strict";
 const regexBytes = new RegExp("^bytes([0-9]+)$");
 const regexNumber = new RegExp("^(u?int)([0-9]*)$");
 const regexArray = new RegExp("^(.*)\\[([0-9]*)\\]$");
 const Zeros$1 = "0000000000000000000000000000000000000000000000000000000000000000";
-const logger$H = new Logger(version$n);
+const logger$I = new Logger(version$n);
 function _pack(type, value, isArray) {
     switch (type) {
         case "address":
@@ -23991,7 +24110,7 @@ function _pack(type, value, isArray) {
         //let signed = (match[1] === "int")
         let size = parseInt(match[2] || "256");
         if ((match[2] && String(size) !== match[2]) || (size % 8 !== 0) || size === 0 || size > 256) {
-            logger$H.throwArgumentError("invalid number type", "type", type);
+            logger$I.throwArgumentError("invalid number type", "type", type);
         }
         if (isArray) {
             size = 256;
@@ -24003,10 +24122,10 @@ function _pack(type, value, isArray) {
     if (match) {
         const size = parseInt(match[1]);
         if (String(size) !== match[1] || size === 0 || size > 32) {
-            logger$H.throwArgumentError("invalid bytes type", "type", type);
+            logger$I.throwArgumentError("invalid bytes type", "type", type);
         }
         if (arrayify(value).byteLength !== size) {
-            logger$H.throwArgumentError(`invalid value for ${type}`, "value", value);
+            logger$I.throwArgumentError(`invalid value for ${type}`, "value", value);
         }
         if (isArray) {
             return arrayify((value + Zeros$1).substring(0, 66));
@@ -24018,7 +24137,7 @@ function _pack(type, value, isArray) {
         const baseType = match[1];
         const count = parseInt(match[2] || String(value.length));
         if (count != value.length) {
-            logger$H.throwArgumentError(`invalid array length for ${type}`, "value", value);
+            logger$I.throwArgumentError(`invalid array length for ${type}`, "value", value);
         }
         const result = [];
         value.forEach(function (value) {
@@ -24026,12 +24145,12 @@ function _pack(type, value, isArray) {
         });
         return concat(result);
     }
-    return logger$H.throwArgumentError("invalid type", "type", type);
+    return logger$I.throwArgumentError("invalid type", "type", type);
 }
 // @TODO: Array Enum
 function pack$1(types, values) {
     if (types.length != values.length) {
-        logger$H.throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
+        logger$I.throwArgumentError("wrong number of values; expected ${ types.length }", "values", values);
     }
     const tight = [];
     types.forEach(function (type, index) {
@@ -24046,10 +24165,10 @@ function sha256$2(types, values) {
     return sha256$1(pack$1(types, values));
 }
 
-const version$o = "units/5.7.0";
+const version$o = "units/5.8.0";
 
 "use strict";
-const logger$I = new Logger(version$o);
+const logger$J = new Logger(version$o);
 const names = [
     "wei",
     "kwei",
@@ -24064,7 +24183,7 @@ const names = [
 function commify(value) {
     const comps = String(value).split(".");
     if (comps.length > 2 || !comps[0].match(/^-?[0-9]*$/) || (comps[1] && !comps[1].match(/^[0-9]*$/)) || value === "." || value === "-.") {
-        logger$I.throwArgumentError("invalid value", "value", value);
+        logger$J.throwArgumentError("invalid value", "value", value);
     }
     // Make sure we have at least one whole digit (0 if none)
     let whole = comps[0];
@@ -24112,7 +24231,7 @@ function formatUnits(value, unitName) {
 }
 function parseUnits(value, unitName) {
     if (typeof (value) !== "string") {
-        logger$I.throwArgumentError("value must be a string", "value", value);
+        logger$J.throwArgumentError("value must be a string", "value", value);
     }
     if (typeof (unitName) === "string") {
         const index = names.indexOf(unitName);
@@ -24234,10 +24353,10 @@ var utils$1 = /*#__PURE__*/Object.freeze({
 	Indexed: Indexed
 });
 
-const version$p = "ethers/5.7.2";
+const version$p = "ethers/5.8.0";
 
 "use strict";
-const logger$J = new Logger(version$p);
+const logger$K = new Logger(version$p);
 
 var ethers = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -24253,7 +24372,7 @@ var ethers = /*#__PURE__*/Object.freeze({
 	FixedNumber: FixedNumber,
 	constants: index$1,
 	get errors () { return ErrorCode; },
-	logger: logger$J,
+	logger: logger$K,
 	utils: utils$1,
 	wordlists: wordlists,
 	version: version$p,
@@ -24269,5 +24388,5 @@ try {
 }
 catch (error) { }
 
-export { BaseContract, BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$J as logger, index$3 as providers, utils$1 as utils, version$p as version, wordlists };
+export { BaseContract, BigNumber, Contract, ContractFactory, FixedNumber, Signer, VoidSigner, Wallet, Wordlist, index$1 as constants, ErrorCode as errors, ethers, getDefaultProvider, logger$K as logger, index$3 as providers, utils$1 as utils, version$p as version, wordlists };
 //# sourceMappingURL=ethers.esm.js.map
