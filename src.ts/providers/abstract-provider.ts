@@ -818,7 +818,7 @@ export class AbstractProvider implements Provider {
     }
 
     /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  Returns or resolves to a transaction for %%request%%, resolving
      *  any ENS names or [[Addressable]] and returning if already a valid
      *  transaction.
      */
