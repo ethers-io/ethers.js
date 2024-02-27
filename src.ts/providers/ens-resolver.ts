@@ -114,14 +114,14 @@ export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin 
     }
 
     /**
-     *  Resovles to the encoded %%address%% for %%coinType%%.
+     *  Resolves to the encoded %%address%% for %%coinType%%.
      */
     async encodeAddress(coinType: number, address: string): Promise<string> {
         throw new Error("unsupported coin");
     }
 
     /**
-     *  Resovles to the decoded %%data%% for %%coinType%%.
+     *  Resolves to the decoded %%data%% for %%coinType%%.
      */
     async decodeAddress(coinType: number, data: BytesLike): Promise<string> {
         throw new Error("unsupported coin");
