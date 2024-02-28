@@ -10,7 +10,7 @@
  *  The class most developers will want to use is [[Wallet]], which
  *  can load a private key directly or from any common wallet format.
  *
- *  The [[HDNodeWallet]] can be used when it is necessary to access
+ *  The [[HDNodeWallet]] class can be used when it is necessary to access
  *  low-level details of how an HD wallets are derived, exported
  *  or imported.
  *

@@ -118,7 +118,7 @@ function derivePath<T extends HDNodeLike<T>>(node: T, path: string): T {
 
 /**
  *  An **HDNodeWallet** is a [[Signer]] backed by the private key derived
- *  from an HD Node using the [[link-bip-32]] stantard.
+ *  from an HD Node using the [[link-bip-32]] standard.
  *
  *  An HD Node forms a hierarchal structure with each HD Node having a
  *  private key and the ability to derive child HD Nodes, defined by
