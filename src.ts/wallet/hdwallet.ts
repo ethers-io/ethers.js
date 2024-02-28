@@ -1,5 +1,8 @@
 /**
- *  Explain HD Wallets..
+ *  HD wallets are a common wallet pattern introduced in [[link-bip-32]]
+ *  whereby many private keys are generated from a single seed, often represented as a mnemonic phrase.
+ * 
+ *  [[HDNodeWallet]] is the primary class in this category, with the ability to derive child private keys.
  *
  *  @_subsection: api/wallet:HD Wallets  [hd-wallets]
  */
