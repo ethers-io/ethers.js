@@ -154,7 +154,7 @@ class EnsResolver {
                 info: { funcName }
             });
             params = [
-                (0, index_js_4.dnsEncode)(this.name),
+                (0, index_js_4.dnsEncode)(this.name, 255),
                 iface.encodeFunctionData(fragment, params)
             ];
             funcName = "resolve(bytes,bytes)";

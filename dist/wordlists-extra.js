@@ -100,7 +100,7 @@ const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
 /**
  *  The current version of Ethers.
  */
-const version = "6.11.0";
+const version = "6.11.1";
 
 /**
  *  Property helper functions.
@@ -503,6 +503,7 @@ function getUtf8CodePoints(_bytes, onError) {
  *  If %%form%% is specified, the string is normalized.
  */
 function toUtf8Bytes(str, form) {
+    assertArgument(typeof (str) === "string", "invalid string value", "str", str);
     if (form != null) {
         assertNormalize(form);
         str = str.normalize(form);

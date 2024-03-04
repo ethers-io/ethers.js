@@ -155,6 +155,7 @@ function getUtf8CodePoints(_bytes, onError) {
  *  If %%form%% is specified, the string is normalized.
  */
 export function toUtf8Bytes(str, form) {
+    assertArgument(typeof (str) === "string", "invalid string value", "str", str);
     if (form != null) {
         assertNormalize(form);
         str = str.normalize(form);

@@ -149,7 +149,7 @@ export class EnsResolver {
                 info: { funcName }
             });
             params = [
-                dnsEncode(this.name),
+                dnsEncode(this.name, 255),
                 iface.encodeFunctionData(fragment, params)
             ];
             funcName = "resolve(bytes,bytes)";

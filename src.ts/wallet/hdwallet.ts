@@ -87,9 +87,12 @@ type HDNodeLike<T> = { depth: number, deriveChild: (i: number) => T };
 function derivePath<T extends HDNodeLike<T>>(node: T, path: string): T {
     const components = path.split("/");
 
-    assertArgument(components.length > 0 && (components[0] === "m" || node.depth > 0), "invalid path", "path", path);
+    assertArgument(components.length > 0, "invalid path", "path", path);
 
-    if (components[0] === "m") { components.shift(); }
+    if (components[0] === "m") {
+        assertArgument(node.depth === 0, `cannot derive root path (i.e. path starting with "m/") for a node at non-zero depth ${ node.depth }`, "path", path);
+        components.shift();
+    }
 
     let result: T = node;
     for (let i = 0; i < components.length; i++) {

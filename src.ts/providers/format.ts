@@ -201,6 +201,9 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
     const result = object({
         hash: formatHash,
 
+        // Some nodes do not return this, usually test nodes (like Ganache)
+        index: allowNull(getNumber, undefined),
+
         type: (value: any) => {
             if (value === "0x" || value == null) { return 0; }
             return getNumber(value);
@@ -211,8 +214,6 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),
-
-        //confirmations: allowNull(getNumber, null),
 
         from: getAddress,
 
@@ -233,7 +234,8 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         chainId: allowNull(getBigInt, null)
     }, {
         data: [ "input" ],
-        gasLimit: [ "gas" ]
+        gasLimit: [ "gas" ],
+        index: [ "transactionIndex" ]
     })(value);
 
     // If to and creates are empty, populate the creates from the value

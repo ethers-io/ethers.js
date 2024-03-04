@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.11.0";
+    const version = "6.11.1";
 
     /**
      *  Property helper functions.
@@ -942,6 +942,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  If %%form%% is specified, the string is normalized.
      */
     function toUtf8Bytes(str, form) {
+        assertArgument(typeof (str) === "string", "invalid string value", "str", str);
         if (form != null) {
             assertNormalize(form);
             str = str.normalize(form);
@@ -16397,7 +16398,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     info: { funcName }
                 });
                 params = [
-                    dnsEncode(this.name),
+                    dnsEncode(this.name, 255),
                     iface.encodeFunctionData(fragment, params)
                 ];
                 funcName = "resolve(bytes,bytes)";
@@ -16909,6 +16910,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         const result = object({
             hash: formatHash,
+            // Some nodes do not return this, usually test nodes (like Ganache)
+            index: allowNull(getNumber, undefined),
             type: (value) => {
                 if (value === "0x" || value == null) {
                     return 0;
@@ -16920,7 +16923,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             blockHash: allowNull(formatHash, null),
             blockNumber: allowNull(getNumber, null),
             transactionIndex: allowNull(getNumber, null),
-            //confirmations: allowNull(getNumber, null),
             from: getAddress,
             // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
             gasPrice: allowNull(getBigInt),
@@ -16936,7 +16938,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             chainId: allowNull(getBigInt, null)
         }, {
             data: ["input"],
-            gasLimit: ["gas"]
+            gasLimit: ["gas"],
+            index: ["transactionIndex"]
         })(value);
         // If to and creates are empty, populate the creates from the value
         if (result.to == null && result.creates == null) {
@@ -24423,8 +24426,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     function derivePath(node, path) {
         const components = path.split("/");
-        assertArgument(components.length > 0 && (components[0] === "m" || node.depth > 0), "invalid path", "path", path);
+        assertArgument(components.length > 0, "invalid path", "path", path);
         if (components[0] === "m") {
+            assertArgument(node.depth === 0, `cannot derive root path (i.e. path starting with "m/") for a node at non-zero depth ${node.depth}`, "path", path);
             components.shift();
         }
         let result = node;
