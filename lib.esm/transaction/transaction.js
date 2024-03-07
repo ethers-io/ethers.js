@@ -707,7 +707,7 @@ export class Transaction {
         const hasFee = (this.maxFeePerGas != null || this.maxPriorityFeePerGas != null);
         const hasAccessList = (this.accessList != null);
         const hasBlob = (this.#maxFeePerBlobGas != null || this.#blobVersionedHashes);
-        const hasvalue = this.value > 0n;
+        const hasValue = this.value > 0n;
         //if (hasGasPrice && hasFee) {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
         //}
@@ -719,7 +719,7 @@ export class Transaction {
         //}
         assert(!hasFee || (this.type !== 0 && this.type !== 1), "transaction type cannot have maxFeePerGas or maxPriorityFeePerGas", "BAD_DATA", { value: this });
         assert(!hasAccessList || this.type !== 0, "legacy transaction cannot have accessList", "BAD_DATA", { value: this });
-        assert(!hasvalue || this.type !== 4, "delegate transaction cannot have value", "BAD_DATA", { value: this });
+        assert(!hasValue || this.type !== 4, "delegate transaction cannot have value", "BAD_DATA", { value: this });
         const types = [];
         // Explicit type
         if (this.type != null) {
