@@ -239,6 +239,8 @@ export interface WrappedFallback {
      */
     estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint>;
 
-    send(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse>;
-    estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint>;
+    /**
+     * Send a EIP-5806 delegate transaction for the contract method with %%args%%.
+     */
+    delegateCall(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse>;
 }
