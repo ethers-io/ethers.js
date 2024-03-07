@@ -151,6 +151,11 @@ export interface BaseContractMethod<A extends Array<any> = Array<any>, R = any, 
      *  without any dereferencing.
      */
     staticCallResult(...args: ContractMethodArgs<A>): Promise<Result>;
+
+    /**
+     * Send a EIP-5806 delegate transaction for the contract method with %%args%%.
+     */
+    delegateCall(...args: ContractMethodArgs<A>): Promise<ContractTransactionResponse>;
 }
 
 /**
@@ -232,5 +237,8 @@ export interface WrappedFallback {
      *
      *  For non-receive fallback, ``data`` may be overridden.
      */
+    estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint>;
+
+    send(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse>;
     estimateGas(overrides?: Omit<TransactionRequest, "to">): Promise<bigint>;
 }
