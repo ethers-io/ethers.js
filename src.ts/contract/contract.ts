@@ -261,8 +261,7 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
 
         estimateGas,
         populateTransaction,
-        send, staticCall,
-        delegateCall,
+        send, staticCall, delegateCall
     });
 
     return <WrappedFallback>method;
@@ -376,8 +375,7 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
 
         estimateGas,
         populateTransaction,
-        send, staticCall, staticCallResult,
-        delegateCall,
+        send, staticCall, staticCallResult, delegateCall
     });
 
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
