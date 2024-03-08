@@ -286,6 +286,13 @@ export declare class Transaction implements TransactionLike<string> {
         maxFeePerBlobGas: bigint;
         blobVersionedHashes: Array<string>;
     });
+    isDelegate(): this is (Transaction & {
+        type: 4;
+        value: 0n;
+        accessList: AccessList;
+        maxFeePerGas: bigint;
+        maxPriorityFeePerGas: bigint;
+    });
     /**
      *  Create a copy of this transaciton.
      */

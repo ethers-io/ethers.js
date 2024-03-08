@@ -443,6 +443,57 @@ function _serializeEip4844(tx: Transaction, sig?: Signature): string {
     return concat([ "0x03", encodeRlp(fields)]);
 }
 
+function _parseEip5806(data: Uint8Array): TransactionLike {
+    const fields: any = decodeRlp(getBytes(data).slice(1));
+
+    assertArgument(Array.isArray(fields) && (fields.length === 8 || fields.length === 11),
+        "invalid field count for transaction type: 4", "data", hexlify(data));
+
+    const tx: TransactionLike = {
+        type:                  4,
+        chainId:               handleUint(fields[0], "chainId"),
+        nonce:                 handleNumber(fields[1], "nonce"),
+        maxPriorityFeePerGas:  handleUint(fields[2], "maxPriorityFeePerGas"),
+        maxFeePerGas:          handleUint(fields[3], "maxFeePerGas"),
+        gasPrice:              null,
+        gasLimit:              handleUint(fields[4], "gasLimit"),
+        to:                    handleAddress(fields[5]),
+        value:                 0,
+        data:                  hexlify(fields[6]),
+        accessList:            handleAccessList(fields[7], "accessList")
+    };
+
+    // Unsigned EIP-1559 Transaction
+    if (fields.length === 8) { return tx; }
+
+    tx.hash = keccak256(data);
+
+    _parseEipSignature(tx, fields.slice(8));
+
+    return tx;
+}
+
+function _serializeEip5806(tx: Transaction, sig?: Signature): string {
+    const fields: Array<any> = [
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas || 0, "maxFeePerGas"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        tx.data,
+        formatAccessList(tx.accessList || [ ])
+    ];
+
+    if (sig) {
+        fields.push(formatNumber(sig.yParity, "yParity"));
+        fields.push(toBeArray(sig.r));
+        fields.push(toBeArray(sig.s));
+    }
+
+    return concat([ "0x04", encodeRlp(fields)]);
+}
+
 /**
  *  A **Transaction** describes an operation to be executed on
  *  Ethereum by an Externally Owned Account (EOA). It includes
@@ -496,6 +547,10 @@ export class Transaction implements TransactionLike<string> {
             case 3: case "cancun": case "eip-4844":
                 this.#type = 3;
                 break;
+            case 4: case "eip-5806":
+                assertArgument(this.#value == 0n, "Delegate transaction do not support value", "value", value);
+                this.#type = 4;
+                break;
             default:
                 assertArgument(false, "unsupported transaction type", "type", value);
         }
@@ -510,6 +565,7 @@ export class Transaction implements TransactionLike<string> {
             case 1: return "eip-2930";
             case 2: return "eip-1559";
             case 3: return "eip-4844";
+            case 4: return "eip-5806";
         }
 
         return null;
@@ -600,6 +656,7 @@ export class Transaction implements TransactionLike<string> {
     get value(): bigint { return this.#value; }
     set value(value: BigNumberish) {
         this.#value = getBigInt(value, "value");
+        assertArgument(this.#type !== 4 || this.#value == 0n, "Delegate transaction do not support value", "value", value);
     }
 
     /**
@@ -753,6 +810,8 @@ export class Transaction implements TransactionLike<string> {
                 return _serializeEip1559(this, this.signature);
             case 3:
                 return _serializeEip4844(this, this.signature);
+            case 4:
+                return _serializeEip5806(this, this.signature);
         }
 
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
@@ -774,6 +833,8 @@ export class Transaction implements TransactionLike<string> {
                 return _serializeEip1559(this);
             case 3:
                 return _serializeEip4844(this);
+            case 4:
+                return _serializeEip5806(this);
         }
 
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
@@ -804,6 +865,7 @@ export class Transaction implements TransactionLike<string> {
         const hasFee = (this.maxFeePerGas != null || this.maxPriorityFeePerGas != null);
         const hasAccessList = (this.accessList != null);
         const hasBlob = (this.#maxFeePerBlobGas != null || this.#blobVersionedHashes);
+        const hasValue = this.value > 0n;
 
         //if (hasGasPrice && hasFee) {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
@@ -818,7 +880,8 @@ export class Transaction implements TransactionLike<string> {
         //}
 
         assert(!hasFee || (this.type !== 0 && this.type !== 1), "transaction type cannot have maxFeePerGas or maxPriorityFeePerGas", "BAD_DATA", { value: this });
-        assert(this.type !== 0 || !hasAccessList, "legacy transaction cannot have accessList", "BAD_DATA", { value: this })
+        assert(!hasAccessList || this.type !== 0, "legacy transaction cannot have accessList", "BAD_DATA", { value: this });
+        assert(!hasValue || this.type !== 4, "delegate transaction cannot have value", "BAD_DATA", { value: this });
 
         const types: Array<number> = [ ];
 
@@ -894,6 +957,10 @@ export class Transaction implements TransactionLike<string> {
         return (this.type === 3);
     }
 
+    isDelegate(): this is (Transaction & { type: 4, value: 0n, accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint }) {
+        return (this.type === 4);
+    }
+
     /**
      *  Create a copy of this transaciton.
      */
@@ -945,6 +1012,7 @@ export class Transaction implements TransactionLike<string> {
                 case 1: return Transaction.from(_parseEip2930(payload));
                 case 2: return Transaction.from(_parseEip1559(payload));
                 case 3: return Transaction.from(_parseEip4844(payload));
+                case 4: return Transaction.from(_parseEip5806(payload));
             }
             assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
         }

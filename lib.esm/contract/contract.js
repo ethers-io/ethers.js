@@ -166,6 +166,9 @@ function buildWrappedFallback(contract) {
         // meaningful error
         return new ContractTransactionResponse(contract.interface, provider, tx);
     };
+    const delegateCall = async function (overrides) {
+        return send({ ...overrides, type: 4 });
+    };
     const estimateGas = async function (overrides) {
         const runner = getRunner(contract.runner, "estimateGas");
         assert(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
@@ -178,7 +181,8 @@ function buildWrappedFallback(contract) {
         _contract: contract,
         estimateGas,
         populateTransaction,
-        send, staticCall
+        send, staticCall,
+        delegateCall,
     });
     return method;
 }
@@ -226,6 +230,17 @@ function buildWrappedMethod(contract, key) {
         // meaningful error
         return new ContractTransactionResponse(contract.interface, provider, tx);
     };
+    const delegateCall = async function (...args) {
+        const fragment = getFragment(...args);
+        // If an overrides was passed in, copy it and normalize the values
+        if (fragment.inputs.length + 1 === args.length) {
+            Object.assign(args[args.length - 1], { type: 4 });
+        }
+        else {
+            args.push({ type: 4 });
+        }
+        return send(...args);
+    };
     const estimateGas = async function (...args) {
         const runner = getRunner(contract.runner, "estimateGas");
         assert(canEstimate(runner), "contract runner does not support gas estimation", "UNSUPPORTED_OPERATION", { operation: "estimateGas" });
@@ -262,6 +277,7 @@ function buildWrappedMethod(contract, key) {
         estimateGas,
         populateTransaction,
         send, staticCall, staticCallResult,
+        delegateCall,
     });
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
     Object.defineProperty(method, "fragment", {

@@ -82,15 +82,15 @@ class AbstractSigner {
         }
         // Do not allow mixing pre-eip-1559 and eip-1559 properties
         const hasEip1559 = (pop.maxFeePerGas != null || pop.maxPriorityFeePerGas != null);
-        if (pop.gasPrice != null && (pop.type === 2 || hasEip1559)) {
-            (0, index_js_3.assertArgument)(false, "eip-1559 transaction do not support gasPrice", "tx", tx);
+        if (pop.gasPrice != null && (pop.type === 2 || pop.type === 4 || hasEip1559)) {
+            (0, index_js_3.assertArgument)(false, "eip-1559 and eip-5806 transactions do not support gasPrice", "tx", tx);
         }
         else if ((pop.type === 0 || pop.type === 1) && hasEip1559) {
             (0, index_js_3.assertArgument)(false, "pre-eip-1559 transaction do not support maxFeePerGas/maxPriorityFeePerGas", "tx", tx);
         }
-        if ((pop.type === 2 || pop.type == null) && (pop.maxFeePerGas != null && pop.maxPriorityFeePerGas != null)) {
+        if ((pop.type === 2 || pop.type === 4 || pop.type == null) && (pop.maxFeePerGas != null && pop.maxPriorityFeePerGas != null)) {
             // Fully-formed EIP-1559 transaction (skip getFeeData)
-            pop.type = 2;
+            pop.type ??= 2;
         }
         else if (pop.type === 0 || pop.type === 1) {
             // Explicit Legacy or EIP-2930 transaction
@@ -152,7 +152,7 @@ class AbstractSigner {
                     });
                 }
             }
-            else if (pop.type === 2) {
+            else if (pop.type === 2 || pop.type === 4) {
                 // Explicitly using EIP-1559
                 // Populate missing fee data
                 if (pop.maxFeePerGas == null) {

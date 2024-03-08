@@ -240,6 +240,10 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
         return new ContractTransactionResponse(contract.interface, <Provider>provider, tx);
     }
 
+    const delegateCall = async function(overrides?: Omit<TransactionRequest, "to">): Promise<ContractTransactionResponse> {
+        return send({ ...overrides, type: 4 });
+    }
+
     const estimateGas = async function(overrides?: Omit<TransactionRequest, "to">): Promise<bigint> {
         const runner = getRunner(contract.runner, "estimateGas");
         assert(canEstimate(runner), "contract runner does not support gas estimation",
@@ -257,7 +261,7 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
 
         estimateGas,
         populateTransaction,
-        send, staticCall
+        send, staticCall, delegateCall
     });
 
     return <WrappedFallback>method;
@@ -317,6 +321,17 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
         return new ContractTransactionResponse(contract.interface, <Provider>provider, tx);
     }
 
+    const delegateCall = async function(...args: ContractMethodArgs<A>): Promise<ContractTransactionResponse> {
+        const fragment = getFragment(...args);
+        // If an overrides was passed in, copy it and normalize the values
+        if (fragment.inputs.length + 1 === args.length) {
+            Object.assign(args[args.length - 1], { type: 4 });
+        } else {
+            args.push({ type: 4 });
+        }
+        return send(...args);
+    }
+
     const estimateGas = async function(...args: ContractMethodArgs<A>): Promise<bigint> {
         const runner = getRunner(contract.runner, "estimateGas");
         assert(canEstimate(runner), "contract runner does not support gas estimation",
@@ -360,7 +375,7 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
 
         estimateGas,
         populateTransaction,
-        send, staticCall, staticCallResult,
+        send, staticCall, staticCallResult, delegateCall
     });
 
     // Only works on non-ambiguous keys (refined fragment is always non-ambiguous)
