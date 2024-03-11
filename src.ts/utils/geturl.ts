@@ -37,7 +37,9 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
 
         const request = ((protocol === "http") ? http: https).request(req.url, reqOptions);
 
-        request.setTimeout(req.timeout);
+        request.setTimeout(req.timeout, () => {
+            request.destroy(new Error("request timeout"));
+        });
 
         const body = req.body;
         if (body) { request.write(Buffer.from(body)); }
