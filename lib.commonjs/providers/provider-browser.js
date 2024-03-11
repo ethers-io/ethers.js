@@ -15,9 +15,9 @@ class BrowserProvider extends provider_jsonrpc_js_1.JsonRpcApiPollingProvider {
      *  Connnect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
-    constructor(ethereum, network) {
+    constructor(ethereum, network, options) {
         (0, index_js_1.assertArgument)(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
-        super(network, { batchMaxCount: 1 });
+        super(network, { batchMaxCount: 1, ...options });
         this.#request = async (method, params) => {
             const payload = { method, params };
             this.emit("debug", { action: "sendEip1193Request", payload });
