@@ -574,6 +574,20 @@ export interface ActionRejectedError extends EthersError<"ACTION_REJECTED"> {
     reason: "expired" | "rejected" | "pending"
 }
 
+/**
+ *  This Error indicates `lhs` != `rhs`.
+ */
+export interface ValueMismatchError extends EthersError<"VALUE_MISMATCH"> {
+    /**
+     *  The left-hand side.
+     */
+    lhs: any,
+    /**
+     *  The right-hand side.
+     */
+    rhs: any
+}
+
 // Coding; converts an ErrorCode its Typed Error
 
 /**
@@ -608,6 +622,7 @@ export type CodedEthersError<T> =
     T extends "UNCONFIGURED_NAME" ? UnconfiguredNameError:
 
     T extends "ACTION_REJECTED" ? ActionRejectedError:
+	T extends "VALUE_MISMATCH" ? ValueMismatchError:
 
     never;
 

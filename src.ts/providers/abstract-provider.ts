@@ -15,14 +15,11 @@
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 
 import { getAddress, resolveAddress } from "../address/index.js";
-import { ZeroAddress } from "../constants/index.js";
-import { Contract } from "../contract/index.js";
-import { namehash } from "../hash/index.js";
 import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
     getBigInt, getBytes, getNumber,
-    isCallException, isError, makeError, assert, assertArgument,
+    isCallException, makeError, assert, assertArgument,
     FetchRequest,
     toBeArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
@@ -1196,41 +1193,18 @@ export class AbstractProvider implements Provider {
 
     async lookupAddress(address: string): Promise<null | string> {
         address = getAddress(address);
-        const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
-
-        try {
-
-            const ensAddr = await EnsResolver.getEnsAddress(this);
-            const ensContract = new Contract(ensAddr, [
-                "function resolver(bytes32) view returns (address)"
-            ], this);
-
-            const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroAddress) { return null; }
-
-            const resolverContract = new Contract(resolver, [
-                "function name(bytes32) view returns (string)"
-            ], this);
-            const name = await resolverContract.name(node);
-
-            // Failed forward resolution
-            const check = await this.resolveName(name);
-            if (check !== address) { return null; }
-
-            return name;
-
-        } catch (error) {
-            // No data was returned from the resolver
-            if (isError(error, "BAD_DATA") && error.value === "0x") {
-                return null;
+        const resolver = await this.getResolver(address.substring(2).toLowerCase() + ".addr.reverse");
+        if (resolver) {
+            const name = await resolver.getName();
+            if (name) { // possible optimization: name.includes('.')
+                const expect = await this.resolveName(name);
+                // check roundtrip
+                assert(address === expect, "address->name->address mismatch", "VALUE_MISMATCH", {lhs: address, rhs: expect});
+                return name;
             }
-
-            // Something reerted
-            if (isError(error, "CALL_EXCEPTION")) { return null; }
-
-            throw error;
         }
-
+        // i think ALL errors should propagate out as reverse names are a critical piece 
+        // of ENS infrastructure and saying a primary is null should be a true-positive
         return null;
     }
 

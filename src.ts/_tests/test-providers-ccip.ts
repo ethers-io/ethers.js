@@ -179,4 +179,16 @@ describe("Test CCIP execution", function() {
         const result = await provider.call(tx);
         verify(address, calldata, result);
     });
+
+    // it("query a ensip-10 reverse registrar that's offchain", async function() {
+    //     this.timeout(60000);
+
+    //     const provider = connect("goerli");
+
+    //     // this accounts primary has an offchain reverse resolver
+    //     const address = '0xEB4200f750335eFb67E726485445d302D64B1c8A';
+    //     const name = await provider.lookupAddress(address);
+    //     console.log(name);
+    // });
+    
 })
