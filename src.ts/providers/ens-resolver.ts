@@ -188,6 +188,7 @@ export class EnsResolver {
             "function addr(bytes32, uint) view returns (bytes)",
             "function text(bytes32, string) view returns (string)",
             "function contenthash(bytes32) view returns (bytes)",
+            "function name(bytes32) view returns (string)",
         ], provider);
 
     }
@@ -311,6 +312,14 @@ export class EnsResolver {
             operation: `getAddress(${ coinType })`,
             info: { coinType, data }
         });
+    }
+
+    /**
+     *  Resolves to the ENSIP-3 name record for %%key%%, or ``null``
+     *  if unconfigured.
+     */
+    async getName(): Promise<null | string> {
+        return this.#fetch("name(bytes32)");
     }
 
     /**
