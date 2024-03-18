@@ -8,8 +8,9 @@ import { LangKo } from "./lang-ko.js";
 import { LangIt } from "./lang-it.js";
 import { LangPt } from "./lang-pt.js";
 import { LangZh } from "./lang-zh.js";
-
+import { LangTr } from "./lang-tr.js";
 import type { Wordlist } from "./wordlist.js";
+
 
 /**
  *  The available Wordlists by their
@@ -17,7 +18,7 @@ import type { Wordlist } from "./wordlist.js";
  *
  *  (**i.e.** [cz](LangCz), [en](LangEn), [es](LangEs), [fr](LangFr),
  *  [ja](LangJa), [ko](LangKo), [it](LangIt), [pt](LangPt),
- *  [zh_cn](LangZh), [zh_tw](LangZh))
+ *  [zh_cn](LangZh), [zh_tw](LangZh)), [tr](LangTr)
  *
  *  The dist files (in the ``/dist`` folder) have had all languages
  *  except English stripped out, which reduces the library size by
@@ -35,4 +36,5 @@ export const wordlists: Record<string, Wordlist> = {
   ko: LangKo.wordlist(),
   zh_cn: LangZh.wordlist("cn"),
   zh_tw: LangZh.wordlist("tw"),
+  tr:LangTr.wordlist(),
 };
