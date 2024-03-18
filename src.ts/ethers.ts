@@ -71,6 +71,7 @@ export {
 
     AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider,
     InfuraProvider, InfuraWebSocketProvider, PocketProvider, QuickNodeProvider,
+    TenderlyProvider,
 
     IpcSocketProvider, SocketProvider, WebSocketProvider,
 
