@@ -408,6 +408,7 @@ function injectCommonNetworks(): void {
 
     registerEth("linea", 59144, { ensNetwork: 1 });
     registerEth("linea-goerli", 59140, { });
+    registerEth("linea-sepolia", 59141, { });
 
     registerEth("matic", 137, {
         ensNetwork: 1,
