@@ -10,13 +10,14 @@ const lang_ko_js_1 = require("./lang-ko.js");
 const lang_it_js_1 = require("./lang-it.js");
 const lang_pt_js_1 = require("./lang-pt.js");
 const lang_zh_js_1 = require("./lang-zh.js");
+const lang_tr_js_1 = require("./lang-tr.js");
 /**
  *  The available Wordlists by their
  *  [ISO 639-1 Language Code](link-wiki-iso639).
  *
  *  (**i.e.** [cz](LangCz), [en](LangEn), [es](LangEs), [fr](LangFr),
  *  [ja](LangJa), [ko](LangKo), [it](LangIt), [pt](LangPt),
- *  [zh_cn](LangZh), [zh_tw](LangZh))
+ *  [zh_cn](LangZh), [zh_tw](LangZh)), [tr](LangTr)
  *
  *  The dist files (in the ``/dist`` folder) have had all languages
  *  except English stripped out, which reduces the library size by
@@ -34,5 +35,6 @@ exports.wordlists = {
     ko: lang_ko_js_1.LangKo.wordlist(),
     zh_cn: lang_zh_js_1.LangZh.wordlist("cn"),
     zh_tw: lang_zh_js_1.LangZh.wordlist("tw"),
+    tr: lang_tr_js_1.LangTr.wordlist(),
 };
 //# sourceMappingURL=wordlists.js.map

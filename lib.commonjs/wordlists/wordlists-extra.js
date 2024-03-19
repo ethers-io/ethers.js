@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LangZh = exports.LangPt = exports.LangIt = exports.LangKo = exports.LangJa = exports.LangFr = exports.LangEs = exports.LangCz = void 0;
+exports.LangTr = exports.LangZh = exports.LangPt = exports.LangIt = exports.LangKo = exports.LangJa = exports.LangFr = exports.LangEs = exports.LangCz = void 0;
 var lang_cz_js_1 = require("./lang-cz.js");
 Object.defineProperty(exports, "LangCz", { enumerable: true, get: function () { return lang_cz_js_1.LangCz; } });
 var lang_es_js_1 = require("./lang-es.js");
@@ -17,4 +17,6 @@ var lang_pt_js_1 = require("./lang-pt.js");
 Object.defineProperty(exports, "LangPt", { enumerable: true, get: function () { return lang_pt_js_1.LangPt; } });
 var lang_zh_js_1 = require("./lang-zh.js");
 Object.defineProperty(exports, "LangZh", { enumerable: true, get: function () { return lang_zh_js_1.LangZh; } });
+var lang_tr_js_1 = require("./lang-tr.js");
+Object.defineProperty(exports, "LangTr", { enumerable: true, get: function () { return lang_tr_js_1.LangTr; } });
 //# sourceMappingURL=wordlists-extra.js.map
