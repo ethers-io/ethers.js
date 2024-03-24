@@ -271,7 +271,7 @@ function safe_str_from_cps(cps: number[], max: number = Infinity) {
 	//if (Number.isInteger(cps)) cps = [cps];
 	//if (!Array.isArray(cps)) throw new TypeError(`expected codepoints`);
 	let buf = [];
-	if (cps[0] in CM) buf.push('◌');
+	if (cps[0] in CM) buf.push('\u25CC');
 	if (cps.length > max) {
 		max >>= 1;
 		cps = [...cps.slice(0, max), 0x2026, ...cps.slice(-max)];
@@ -302,7 +302,7 @@ export function ens_beautify(name: string) {
 
 		// replace leading/trailing hyphen
 		// 20230121: consider beautifing all or leading/trailing hyphen to unicode variant
-		// not exactly the same in every font, but very similar: "-" vs "‐"
+		// not exactly the same in every font, but very similar: see hyphen example
 		/*
 		const UNICODE_HYPHEN = 0x2010;
 		// maybe this should replace all for visual consistancy?
@@ -315,8 +315,7 @@ export function ens_beautify(name: string) {
 		// 20230123: WHATWG URL uses "CheckHyphens" false
 		// https://url.spec.whatwg.org/#idna
 
-		// update ethereum symbol
-		// ξ => Ξ if not greek
+		// update ethereum symbol if not greek
 		if (type !== 'Greek') array_replace(output, 0x3BE, 0x39E);
 
 		// 20221213: fixes bidi subdomain issue, but breaks invariant (200E is disallowed)
@@ -598,7 +597,7 @@ function check_group(g: Group, cps: number[]) {
 
 // given a list of codepoints
 // returns a list of lists, where emoji are a fully-qualified (as Array subclass)
-// eg. explode_cp("abc💩d") => [[61, 62, 63], Emoji[1F4A9, FE0F], [64]]
+// eg. explode_cp("abc{POOP EMOJI}d") => [[61, 62, 63], Emoji[1F4A9, FE0F], [64]]
 // 20230818: rename for 'process' name collision h/t Javarome
 // https://github.com/adraffy/ens-normalize.js/issues/23
 function tokens_from_str(input: number[], nf: Transform, ef: Transform) {
