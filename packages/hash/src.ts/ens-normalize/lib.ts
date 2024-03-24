@@ -27,11 +27,11 @@
  * See: https://github.com/adraffy/ens-normalize.js
  */
 
-import COMPRESSED, {FENCED, NSM_MAX} from './include-ens';
-import {read_compressed_payload, read_sorted, read_sorted_arrays, read_mapped, read_trie, read_array_while} from './decoder';
-import {explode_cp, str_from_cps, quote_cp, compare_arrays, array_replace} from './utils';
-import {nfc, nfd} from './nf';
-import {IntSet, set_add_many} from './set';
+import COMPRESSED, {FENCED, NSM_MAX} from './include-ens.js';
+import {read_compressed_payload, read_sorted, read_sorted_arrays, read_mapped, read_trie, read_array_while} from './decoder.js';
+import {explode_cp, str_from_cps, quote_cp, compare_arrays, array_replace} from './utils.js';
+import {nfc, nfd} from './nf.js';
+import {IntSet, set_add_many} from './set.js';
 
 type OutputToken = {
 	emoji: boolean;
