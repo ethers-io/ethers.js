@@ -667,6 +667,8 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         clone.#process = this.#process;
         clone.#retry = this.#retry;
 
+        clone.#throttle = Object.assign({ }, this.#throttle);
+
         clone.#getUrlFunc = this.#getUrlFunc;
 
         return clone;
