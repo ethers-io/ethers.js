@@ -42,7 +42,24 @@ export type DebugEventBrowserProvider = {
  *  currently do.
  */
 export class BrowserProvider extends JsonRpcApiPollingProvider {
-    #request: (method: string, params: Array<any> | Record<string, any>) => Promise<any>;
+    protected ethereum: Eip1193Provider;
+
+    #request = async (method: string, params: Array<any> | Record<string, any>) => {
+        const payload = { method, params };
+        this.emit("debug", { action: "sendEip1193Request", payload });
+        try {
+            const result = await this.ethereum.request(payload);
+            this.emit("debug", { action: "receiveEip1193Result", result });
+            return result;
+        } catch (e: any) {
+            const error = new Error(e.message);
+            (<any>error).code = e.code;
+            (<any>error).data = e.data;
+            (<any>error).payload = payload;
+            this.emit("debug", { action: "receiveEip1193Error", error });
+            throw error;
+        }
+    };
 
     /**
      *  Connnect to the %%ethereum%% provider, optionally forcing the
@@ -50,25 +67,7 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
      */
     constructor(ethereum: Eip1193Provider, network?: Networkish) {
         assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
-
         super(network, { batchMaxCount: 1 });
-
-        this.#request = async (method: string, params: Array<any> | Record<string, any>) => {
-            const payload = { method, params };
-            this.emit("debug", { action: "sendEip1193Request", payload });
-            try {
-                const result = await ethereum.request(payload);
-                this.emit("debug", { action: "receiveEip1193Result", result });
-                return result;
-            } catch (e: any) {
-                const error = new Error(e.message);
-                (<any>error).code = e.code;
-                (<any>error).data = e.data;
-                (<any>error).payload = payload;
-                this.emit("debug", { action: "receiveEip1193Error", error });
-                throw error;
-            }
-        };
     }
 
     async send(method: string, params: Array<any> | Record<string, any>): Promise<any> {
