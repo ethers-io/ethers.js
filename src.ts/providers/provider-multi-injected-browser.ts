@@ -47,6 +47,11 @@ export interface Eip6963ProviderFilter {
   rdns?: string;
 }
 
+/**
+ * MultiInjectedBrowserProvider is a provider that wrapper around `BrowserProvider`.
+ * It supports EIP6963(https://eips.ethereum.org/EIPS/eip-6963) compliant
+ * provider protocols and automatically select one to use.
+ */
 export class MultiInjectedBrowserProvider extends BrowserProvider {
   #options?: Eip6963ProviderFilter;
 
