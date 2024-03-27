@@ -77,10 +77,7 @@ export class MultiInjectedBrowserProvider extends BrowserProvider {
         this.#providers = [...this.#providers, providerDetail];
       }
 
-      const selectedProvider = this.getEip6963Provider(this.#options)?.provider;
-      if (selectedProvider && selectedProvider !== this.ethereum) {
-        this.ethereum = selectedProvider;
-      }
+      this.switchEip6963Provider(this.#options);
     };
 
     // subscribe to the announceProvider event
@@ -91,20 +88,33 @@ export class MultiInjectedBrowserProvider extends BrowserProvider {
   }
 
   /**
-   * Get the EIP-6963 provider details.
+   * Switch the EIP-6963 provider detail.
    *
    * @param filter.rdns filter the provider by reverse DNS name
    * @returns EIP-6963 provider details or null
    */
-  getEip6963Provider(
+  switchEip6963Provider(
     filter?: Eip6963ProviderFilter
   ): Eip6963ProviderDetail | null {
-    const defaultProvider = this.#providers[0] || null;
-    if (!filter?.rdns) return defaultProvider;
-    return (
+    const provider =
       this.#providers.find(
-        (providerDetail) => providerDetail.info.rdns === filter.rdns
-      ) || defaultProvider
-    );
+        (providerDetail) => providerDetail.info.rdns === filter?.rdns
+      ) ||
+      this.#providers[0] ||
+      null;
+
+    if (provider?.provider && provider.provider !== this.ethereum) {
+      this.ethereum = provider.provider;
+    }
+    return provider;
+  }
+
+  /**
+   * Get the list of EIP-6963 providers details.
+   *
+   * @returns EIP-6963 providers details list
+   */
+  getEip6963Providers(): Eip6963ProviderDetail[] {
+    return this.#providers;
   }
 }
