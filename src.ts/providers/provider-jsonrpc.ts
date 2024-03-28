@@ -616,6 +616,10 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         }
     }
 
+    get providerType() {
+        return 'jsonrpc' as const;
+    }
+
     /**
      *  Returns the value associated with the option %%key%%.
      *

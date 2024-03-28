@@ -146,6 +146,10 @@ export class EtherscanProvider extends AbstractProvider {
         this.getBaseUrl();
     }
 
+    get providerType() {
+        return 'etherscan' as const;
+    }
+
     /**
      *  Returns the base URL.
      *
