@@ -388,7 +388,7 @@ _code: commify  @lang<script>
   // v5
   ethers.utils.commify("1234.5")
 
-  // v6; we removed some of these local-specific utilities,
+  // v6; we removed some of these locale-specific utilities,
   // however the functionality can be easily replicated
   // and adjusted depending on your desired output format,
   // for which everyone wanted their own tweaks anyways.
