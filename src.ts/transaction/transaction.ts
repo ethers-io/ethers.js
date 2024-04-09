@@ -27,6 +27,9 @@ const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffff
 
 const BLOB_SIZE = 4096 * 32;
 
+// The BLS Modulo; each field within a BLOb must be less than this
+//const BLOB_BLS_MODULO = BigInt("0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001");
+
 /**
  *  A **TransactionLike** is an object which is appropriate as a loose
  *  input for many operations which will populate missing properties of
@@ -792,6 +795,11 @@ export class Transaction implements TransactionLike<string> {
      *  be already set. The blob will be correctly padded and the
      *  [[KzgLibrary]] will be used to compute the committment and
      *  proof for the blob.
+     *
+     *  A BLOb is a sequence of field elements, each of which must
+     *  be within the BLS field modulo, so some additional processing
+     *  may be required to encode arbitrary data to ensure each 32 byte
+     *  field is within the valid range.
      *
      *  Setting this automatically populates [[blobVersionedHashes]],
      *  overwriting any existing values. Setting this to ``null``
