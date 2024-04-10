@@ -1,5 +1,6 @@
 link-alchemy [Alchemy](https://alchemy.com/?a=ethers)
 link-ankr [Ankr](https://www.ankr.com)
+link-chainstack [Chainstack](https://chainstack.com)
 link-cloudflare [Cloudflare](https://developers.cloudflare.com/distributed-web/ethereum-gateway/)
 link-ens [ENS](https://ens.domains/)
 link-ethereum [Ethereum](https://ethereumorg)
