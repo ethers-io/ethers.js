@@ -178,6 +178,7 @@ export type {
 
 export type {
     AccessList, AccessListish, AccessListEntry,
+    Blob, BlobLike, KzgLibrary,
     TransactionLike
 } from "./transaction/index.js";
 

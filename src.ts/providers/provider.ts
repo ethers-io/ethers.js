@@ -1,6 +1,7 @@
 //import { resolveAddress } from "@ethersproject/address";
 import {
-    defineProperties, getBigInt, getNumber, hexlify, resolveProperties,
+    defineProperties, getBigInt, getNumber, hexlify, isBytesLike,
+    resolveProperties,
     assert, assertArgument, isError, makeError
 } from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
@@ -8,7 +9,9 @@ import { accessListify } from "../transaction/index.js";
 import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
-import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
+import type {
+    AccessList, AccessListish, BlobLike, KzgLibrary, TransactionLike
+} from "../transaction/index.js";
 
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
@@ -214,6 +217,30 @@ export interface TransactionRequest {
      */
     enableCcipRead?: boolean;
 
+    /**
+     *  The blob versioned hashes (see [[link-eip-4844]]).
+     */
+    blobVersionedHashes?: null | Array<string>
+
+    /**
+     *  The maximum fee per blob gas (see [[link-eip-4844]]).
+     */
+    maxFeePerBlobGas?: null | BigNumberish;
+
+    /**
+     *  Any blobs to include in the transaction (see [[link-eip-4844]]).
+     */
+    blobs?: null | Array<BlobLike>;
+
+    /**
+     *  An external library for computing the KZG commitments and
+     *  proofs necessary for EIP-4844 transactions (see [[link-eip-4844]]).
+     *
+     *  This is generally ``null``, unless you are creating BLOb
+     *  transactions.
+     */
+    kzg?: null | KzgLibrary;
+
     // Todo?
     //gasMultiplier?: number;
 };
@@ -332,7 +359,7 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 
     if (req.data) { result.data = hexlify(req.data); }
 
-    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
+    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerBlobGas,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
     for (const key of bigIntKeys) {
         if (!(key in req) || (<any>req)[key] == null) { continue; }
         result[key] = getBigInt((<any>req)[key], `request.${ key }`);
@@ -356,6 +383,19 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 
     if ("customData" in req) {
         result.customData = req.customData;
+    }
+
+    if ("blobVersionedHashes" in req && req.blobVersionedHashes) {
+        result.blobVersionedHashes = req.blobVersionedHashes.slice();
+    }
+
+    if ("kzg" in req) { result.kzg = req.kzg; }
+
+    if ("blobs" in req && req.blobs) {
+        result.blobs = req.blobs.map((b) => {
+            if (isBytesLike(b)) { return hexlify(b); }
+            return Object.assign({ }, b);
+        });
     }
 
     return result;
