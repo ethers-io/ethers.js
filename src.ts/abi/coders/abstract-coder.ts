@@ -130,27 +130,33 @@ export class Result extends Array<any> {
     }
 
     /**
-     *  Returns the Result as a normal Array.
+     *  Returns the Result as a normal Array. If %%deep%%, any children
+     *  which are Result objects are also converted to a normal Array.
      *
      *  This will throw if there are any outstanding deferred
      *  errors.
      */
-    toArray(): Array<any> {
+    toArray(deep?: boolean): Array<any> {
         const result: Array<any> = [ ];
         this.forEach((item, index) => {
             if (item instanceof Error) { throwError(`index ${ index }`, item); }
+            if (deep && item instanceof Result) {
+                item = item.toArray(deep);
+            }
             result.push(item);
         });
         return result;
     }
 
     /**
-     *  Returns the Result as an Object with each name-value pair.
+     *  Returns the Result as an Object with each name-value pair. If
+     *  %%deep%%, any children which are Result objects are also
+     *  converted to an Object.
      *
      *  This will throw if any value is unnamed, or if there are
      *  any outstanding deferred errors.
      */
-    toObject(): Record<string, any> {
+    toObject(deep?: boolean): Record<string, any> {
         return this.#names.reduce((accum, name, index) => {
             assert(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
                 operation: "toObject()"
@@ -158,7 +164,11 @@ export class Result extends Array<any> {
 
             // Add values for names that don't conflict
             if (!(name in accum)) {
-                accum[name] = this.getValue(name);
+                let child = this.getValue(name);
+                if (deep && child instanceof Result) {
+                    child = child.toObject(deep);
+                }
+                accum[name] = child;
             }
 
             return accum;
