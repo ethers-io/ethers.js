@@ -4,6 +4,7 @@ exports.getDefaultProvider = void 0;
 const index_js_1 = require("../utils/index.js");
 const provider_ankr_js_1 = require("./provider-ankr.js");
 const provider_alchemy_js_1 = require("./provider-alchemy.js");
+const provider_chainstack_js_1 = require("./provider-chainstack.js");
 const provider_cloudflare_js_1 = require("./provider-cloudflare.js");
 const provider_etherscan_js_1 = require("./provider-etherscan.js");
 const provider_infura_js_1 = require("./provider-infura.js");
@@ -41,6 +42,7 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
  *  - ``"alchemy"``
  *  - ``"ankr"``
  *  - ``"cloudflare"``
+ *  - ``"chainstack"``
  *  - ``"etherscan"``
  *  - ``"infura"``
  *  - ``"publicPolygon"``
@@ -94,6 +96,9 @@ function getDefaultProvider(network, options) {
         if (staticNetwork.name === "matic") {
             providers.push(new provider_jsonrpc_js_1.JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
         }
+        else if (staticNetwork.name === "matic-amoy") {
+            providers.push(new provider_jsonrpc_js_1.JsonRpcProvider("https:/\/rpc-amoy.polygon.technology/", staticNetwork, { staticNetwork }));
+        }
     }
     if (allowService("alchemy")) {
         try {
@@ -104,6 +109,12 @@ function getDefaultProvider(network, options) {
     if (allowService("ankr") && options.ankr != null) {
         try {
             providers.push(new provider_ankr_js_1.AnkrProvider(network, options.ankr));
+        }
+        catch (error) { }
+    }
+    if (allowService("chainstack")) {
+        try {
+            providers.push(new provider_chainstack_js_1.ChainstackProvider(network, options.chainstack));
         }
         catch (error) { }
     }

@@ -21,5 +21,5 @@ export type AccessListish = AccessList | Array<[string, Array<string>]> | Record
 export { accessListify } from "./accesslist.js";
 export { computeAddress, recoverAddress } from "./address.js";
 export { Transaction } from "./transaction.js";
-export type { TransactionLike } from "./transaction.js";
+export type { Blob, BlobLike, KzgLibrary, TransactionLike } from "./transaction.js";
 //# sourceMappingURL=index.d.ts.map

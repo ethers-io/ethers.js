@@ -93,7 +93,7 @@ function copyRequest(req) {
     if (req.data) {
         result.data = (0, index_js_1.hexlify)(req.data);
     }
-    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
+    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerBlobGas,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
     for (const key of bigIntKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
@@ -118,6 +118,20 @@ function copyRequest(req) {
     }
     if ("customData" in req) {
         result.customData = req.customData;
+    }
+    if ("blobVersionedHashes" in req && req.blobVersionedHashes) {
+        result.blobVersionedHashes = req.blobVersionedHashes.slice();
+    }
+    if ("kzg" in req) {
+        result.kzg = req.kzg;
+    }
+    if ("blobs" in req && req.blobs) {
+        result.blobs = req.blobs.map((b) => {
+            if ((0, index_js_1.isBytesLike)(b)) {
+                return (0, index_js_1.hexlify)(b);
+            }
+            return Object.assign({}, b);
+        });
     }
     return result;
 }

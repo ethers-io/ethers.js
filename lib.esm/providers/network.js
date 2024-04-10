@@ -344,6 +344,7 @@ function injectCommonNetworks() {
             getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
         ]
     });
+    registerEth("matic-amoy", 80002, {});
     registerEth("matic-mumbai", 80001, {
         altNames: ["maticMumbai", "maticmum"],
         plugins: [

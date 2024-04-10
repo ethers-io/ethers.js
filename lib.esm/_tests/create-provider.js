@@ -1,7 +1,7 @@
 import { AlchemyProvider, 
 //    AnkrProvider,
 //    CloudflareProvider,
-EtherscanProvider, InfuraProvider, 
+ChainstackProvider, EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
 QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
 ;
@@ -33,6 +33,13 @@ const ProviderCreators = [
         }
     },
     */
+    {
+        name: "ChainstackProvider",
+        networks: ["default", "mainnet", "arbitrum", "bnb", "matic"],
+        create: function (network) {
+            return new ChainstackProvider(network);
+        }
+    },
     {
         name: "EtherscanProvider",
         networks: ethNetworks,
@@ -136,7 +143,7 @@ export function getProvider(provider, network) {
 }
 export function checkProvider(provider, network) {
     const creator = getCreator(provider);
-    return (creator != null);
+    return (creator != null && creator.networks.indexOf(network) >= 0);
 }
 export function connect(network) {
     const provider = getProvider("InfuraProvider", network);

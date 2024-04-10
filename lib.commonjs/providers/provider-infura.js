@@ -24,6 +24,7 @@ exports.InfuraProvider = exports.InfuraWebSocketProvider = void 0;
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
@@ -64,6 +65,8 @@ function getHost(name) {
             return "linea-goerli.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
+        case "matic-amoy":
+            return "polygon-amoy.infura.io";
         case "matic-mumbai":
             return "polygon-mumbai.infura.io";
         case "optimism":

@@ -3,6 +3,15 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.12.0 (2024-04-09 21:12)
+---------------------------------
+
+  - Added Polygon Amoy testnet ([#4645](https://github.com/ethers-io/ethers.js/issues/4645); [1717abb](https://github.com/ethers-io/ethers.js/commit/1717abbf29a14a6f6b106e479fe9a5b1f8768dc4)).
+  - Added Chainstack provider ([#2741](https://github.com/ethers-io/ethers.js/issues/2741); [014004d](https://github.com/ethers-io/ethers.js/commit/014004d9402d7fd8c15553792cfb7a8a84ed327a)).
+  - Added deep convertion to Result for toObject and toArray ([#4681](https://github.com/ethers-io/ethers.js/issues/4681); [03bfe2a](https://github.com/ethers-io/ethers.js/commit/03bfe2a4f7b29b15cd90127974b7fc1d8b03edf9)).
+  - Added EIP-4844 broadcast support ([92bad88](https://github.com/ethers-io/ethers.js/commit/92bad88261a5d8a538535a7d5528162fe5010527)).
+  - Fix ignored throttle parameters ([#4663](https://github.com/ethers-io/ethers.js/issues/4663); [12772e9](https://github.com/ethers-io/ethers.js/commit/12772e9498b70f8538838f30e16f3792ea90e173)).
+
 ethers/v6.11.1 (2024-02-14 13:13)
 ---------------------------------
 
