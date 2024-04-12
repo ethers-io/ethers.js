@@ -111,8 +111,11 @@ const _formatBlock = object({
     blobGasUsed: allowNull(getBigInt, null),
     excessBlobGas: allowNull(getBigInt, null),
     miner: allowNull(getAddress),
+    prevRandao: allowNull(formatHash, null),
     extraData: formatData,
     baseFeePerGas: allowNull(getBigInt)
+}, {
+    prevRandao: ["mixHash"]
 });
 export function formatBlock(value) {
     const result = _formatBlock(value);

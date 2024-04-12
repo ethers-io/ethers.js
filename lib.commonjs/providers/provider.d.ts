@@ -368,6 +368,11 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     readonly miner: string;
     /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    readonly prevRandao: null | string;
+    /**
      *  Any extra data the validator wished to include.
      */
     readonly extraData: string;

@@ -217,6 +217,11 @@ export class Block {
      */
     miner;
     /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    prevRandao;
+    /**
      *  Any extra data the validator wished to include.
      */
     extraData;
@@ -256,6 +261,7 @@ export class Block {
             blobGasUsed: block.blobGasUsed,
             excessBlobGas: block.excessBlobGas,
             miner: block.miner,
+            prevRandao: getValue(block.prevRandao),
             extraData: block.extraData,
             baseFeePerGas: getValue(block.baseFeePerGas),
             stateRoot: block.stateRoot,
@@ -298,7 +304,7 @@ export class Block {
      *  Returns a JSON-friendly value.
      */
     toJSON() {
-        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
+        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
         return {
             _type: "Block",
             baseFeePerGas: toJson(baseFeePerGas),
@@ -308,7 +314,7 @@ export class Block {
             gasUsed: toJson(gasUsed),
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
-            hash, miner, nonce, number, parentHash, timestamp,
+            hash, miner, prevRandao, nonce, number, parentHash, timestamp,
             parentBeaconBlockRoot, stateRoot, receiptsRoot,
             transactions,
         };

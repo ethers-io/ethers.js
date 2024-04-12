@@ -10592,11 +10592,11 @@ class Transaction {
             result.blobs = tx.blobs;
         }
         if (tx.hash != null) {
-            assertArgument(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);
+            assertArgument(result.isSigned(), "unsigned transaction cannot define '.hash'", "tx", tx);
             assertArgument(result.hash === tx.hash, "hash mismatch", "tx", tx);
         }
         if (tx.from != null) {
-            assertArgument(result.isSigned(), "unsigned transaction cannot define from", "tx", tx);
+            assertArgument(result.isSigned(), "unsigned transaction cannot define '.from'", "tx", tx);
             assertArgument(result.from.toLowerCase() === (tx.from || "").toLowerCase(), "from mismatch", "tx", tx);
         }
         return result;
@@ -14114,6 +14114,11 @@ class Block {
      */
     miner;
     /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    prevRandao;
+    /**
      *  Any extra data the validator wished to include.
      */
     extraData;
@@ -14153,6 +14158,7 @@ class Block {
             blobGasUsed: block.blobGasUsed,
             excessBlobGas: block.excessBlobGas,
             miner: block.miner,
+            prevRandao: getValue(block.prevRandao),
             extraData: block.extraData,
             baseFeePerGas: getValue(block.baseFeePerGas),
             stateRoot: block.stateRoot,
@@ -14195,7 +14201,7 @@ class Block {
      *  Returns a JSON-friendly value.
      */
     toJSON() {
-        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
+        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
         return {
             _type: "Block",
             baseFeePerGas: toJson(baseFeePerGas),
@@ -14205,7 +14211,7 @@ class Block {
             gasUsed: toJson(gasUsed),
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
-            hash, miner, nonce, number, parentHash, timestamp,
+            hash, miner, prevRandao, nonce, number, parentHash, timestamp,
             parentBeaconBlockRoot, stateRoot, receiptsRoot,
             transactions,
         };
@@ -17000,8 +17006,11 @@ const _formatBlock = object({
     blobGasUsed: allowNull(getBigInt, null),
     excessBlobGas: allowNull(getBigInt, null),
     miner: allowNull(getAddress),
+    prevRandao: allowNull(formatHash, null),
     extraData: formatData,
     baseFeePerGas: allowNull(getBigInt)
+}, {
+    prevRandao: ["mixHash"]
 });
 function formatBlock(value) {
     const result = _formatBlock(value);

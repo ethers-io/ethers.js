@@ -122,8 +122,11 @@ const _formatBlock = object({
     blobGasUsed: allowNull(index_js_4.getBigInt, null),
     excessBlobGas: allowNull(index_js_4.getBigInt, null),
     miner: allowNull(index_js_1.getAddress),
+    prevRandao: allowNull(formatHash, null),
     extraData: formatData,
     baseFeePerGas: allowNull(index_js_4.getBigInt)
+}, {
+    prevRandao: ["mixHash"]
 });
 function formatBlock(value) {
     const result = _formatBlock(value);

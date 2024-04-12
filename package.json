@@ -93,7 +93,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "531ab95b3e49631d147d56f674adda98fe722100",
+  "gitHead": "9230aa0b9a88b5241915a8d6afa8a522d35abd5d",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -106,7 +106,7 @@
   "name": "ethers",
   "publishConfig": {
     "access": "public",
-    "tag": "next"
+    "tag": "latest"
   },
   "repository": {
     "type": "git",
