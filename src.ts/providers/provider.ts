@@ -543,6 +543,12 @@ export class Block implements BlockParams, Iterable<string> {
     readonly miner!: string;
 
     /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    readonly prevRandao!: null | string;
+
+    /**
      *  Any extra data the validator wished to include.
      */
     readonly extraData!: string;
@@ -592,6 +598,7 @@ export class Block implements BlockParams, Iterable<string> {
             blobGasUsed: block.blobGasUsed,
             excessBlobGas: block.excessBlobGas,
             miner: block.miner,
+            prevRandao: getValue(block.prevRandao),
             extraData: block.extraData,
 
             baseFeePerGas: getValue(block.baseFeePerGas),
@@ -640,7 +647,7 @@ export class Block implements BlockParams, Iterable<string> {
     toJSON(): any {
         const {
             baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash,
-            miner, nonce, number, parentHash, parentBeaconBlockRoot,
+            miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot,
             stateRoot, receiptsRoot, timestamp, transactions
         } = this;
 
@@ -653,7 +660,7 @@ export class Block implements BlockParams, Iterable<string> {
             gasUsed: toJson(gasUsed),
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
-            hash, miner, nonce, number, parentHash, timestamp,
+            hash, miner, prevRandao, nonce, number, parentHash, timestamp,
             parentBeaconBlockRoot, stateRoot, receiptsRoot,
             transactions,
         };
