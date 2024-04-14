@@ -1257,7 +1257,12 @@ export class Interface {
 
         // Maybe an interface from an older version, or from a symlinked copy
         if (typeof((<any>value).format) === "function") {
-            return new Interface((<any>value).format("json"));
+            // format("json") implies minimal, which drops output args
+            // the argument can simply be removed because:
+            // v5: format() defaults to full: https://github.com/ethers-io/ethers.js/blob/555f16ce7bc6f5fcb40f4c88037f3e4e4182c36c/packages/abi/src.ts/interface.ts#L159
+            // v6: format() => !minimal => full
+            // alternatively, we could probe for formatJson() but that doesn't exist in v5
+            return new Interface((<any>value).format());
         }
 
         // Array of fragments
