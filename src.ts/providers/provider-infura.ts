@@ -123,7 +123,7 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
             "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
 
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-        super(url, network);
+        super(url, provider._network);
 
         defineProperties<InfuraWebSocketProvider>(this, {
             projectId: provider.projectId,
