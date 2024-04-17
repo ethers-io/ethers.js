@@ -107,7 +107,7 @@ class InfuraWebSocketProvider extends provider_websocket_js_1.WebSocketProvider 
         const req = provider._getConnection();
         (0, index_js_1.assert)(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-        super(url, network);
+        super(url, provider._network);
         (0, index_js_1.defineProperties)(this, {
             projectId: provider.projectId,
             projectSecret: provider.projectSecret

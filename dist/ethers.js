@@ -19741,6 +19741,9 @@ class FilterIdSubscriber {
         if (filterIdPromise) {
             this.#filterIdPromise = null;
             filterIdPromise.then((filterId) => {
+                if (this.#provider.destroyed) {
+                    return;
+                }
                 this.#provider.send("eth_uninstallFilter", [filterId]);
             });
         }
@@ -21686,6 +21689,9 @@ class SocketSubscriber {
     }
     stop() {
         (this.#filterId).then((filterId) => {
+            if (this.#provider.destroyed) {
+                return;
+            }
             this.#provider.send("eth_unsubscribe", [filterId]);
         });
         this.#filterId = null;
@@ -22112,7 +22118,7 @@ class InfuraWebSocketProvider extends WebSocketProvider {
         const req = provider._getConnection();
         assert(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-        super(url, network);
+        super(url, provider._network);
         defineProperties(this, {
             projectId: provider.projectId,
             projectSecret: provider.projectSecret
