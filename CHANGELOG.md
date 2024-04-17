@@ -3,7 +3,7 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.12.0 (2024-04-16 21:49)
+ethers/v6.12.0 (2024-04-17 01:09)
 ---------------------------------
 
   - Added Linea Sepolia network and Infura endpoint ([#4655](https://github.com/ethers-io/ethers.js/issues/4655); [b4aaab8](https://github.com/ethers-io/ethers.js/commit/b4aaab8d39fe47f8a1a296fa442f0856f84faf03)).

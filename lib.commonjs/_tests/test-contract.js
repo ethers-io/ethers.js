@@ -6,7 +6,8 @@ const create_provider_js_1 = require("./create-provider.js");
 const index_js_1 = require("../index.js");
 (0, create_provider_js_1.setupProviders)();
 describe("Test Contract", function () {
-    const addr = "0x99417252Aad7B065940eBdF50d665Fb8879c5958";
+    const addr = "0x24264C81146c23bbF83Db1d3F87d2111C2935Ffa";
+    const networkName = "sepolia";
     const abi = [
         "error CustomError1(uint256 code, string message)",
         "event EventUint256(uint256 indexed value)",
@@ -21,20 +22,20 @@ describe("Test Contract", function () {
     ];
     it("tests contract calls", async function () {
         this.timeout(10000);
-        const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", "goerli");
+        const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", networkName);
         const contract = new index_js_1.Contract(addr, abi, provider);
         assert_1.default.equal(await contract.testCallAdd(4, 5), BigInt(9), "testCallAdd(4, 5)");
         assert_1.default.equal(await contract.testCallAdd(6, 0), BigInt(6), "testCallAdd(6, 0)");
     });
     it("tests events", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", "goerli");
+        const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", networkName);
         assert_1.default.ok(provider);
         const contract = new index_js_1.Contract(addr, abi, provider);
         const signer = new index_js_1.Wallet((process.env.FAUCET_PRIVATEKEY), provider);
         const contractSigner = contract.connect(signer);
         const vUint256 = 42;
-        const vAddrName = "ethers.eth";
+        const vAddrName = "tests.eth";
         const vAddr = "0x228568EA92aC5Bc281c1E30b1893735c60a139F1";
         const vString = "Hello";
         const vBytes = "0x12345678";
@@ -215,8 +216,9 @@ describe("Test Typed Contract Interaction", function () {
     abi.push(`function testTyped(bool) public pure returns (string memory)`);
     abi.push(`function testTyped(bytes memory) public pure returns (string memory)`);
     abi.push(`function testTyped(string memory) public pure returns (string memory)`);
-    const addr = "0x838f41545DA5e18AA0e1ab391085d22E172B7B02";
-    const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", "goerli");
+    const addr = "0xf20ba47c47a32fc2d9ad846ff06f2fa6e89eec74";
+    const networkName = "sepolia";
+    const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", networkName);
     const contract = new index_js_1.Contract(addr, abi, provider);
     for (const { types, valueFunc } of tests) {
         for (const type of types) {
@@ -305,7 +307,8 @@ describe("Test Contract Fallback", function () {
             sendDataAndValue: { error: "overrides" },
         },
     ];
-    const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", "goerli");
+    const networkName = "sepolia";
+    const provider = (0, create_provider_js_1.getProvider)("InfuraProvider", networkName);
     const testGroups = [
         {
             group: "sendNone",

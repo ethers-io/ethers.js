@@ -218,13 +218,13 @@ describe("Test Provider Transaction operations", function () {
 });
 describe("Test Networks", function () {
     const networks = [
-        "mainnet", "goerli", "sepolia", "holesky",
-        "arbitrum", "arbitrum-goerli", "arbitrum-sepolia",
-        "base", "base-goerli", "base-sepolia",
+        "mainnet", "sepolia", "holesky",
+        "arbitrum", "arbitrum-sepolia",
+        "base", "base-sepolia",
         "bnb", "bnbt",
-        "linea", "linea-goerli",
-        "matic", "matic-mumbai",
-        "optimism", "optimism-goerli", "optimism-sepolia",
+        "linea", "linea-sepolia",
+        "matic", "matic-mumbai", "matic-amoy",
+        "optimism", "optimism-sepolia",
         "xdai",
     ];
     const providerNames = [

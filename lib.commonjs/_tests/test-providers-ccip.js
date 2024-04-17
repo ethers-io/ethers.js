@@ -15,11 +15,12 @@ describe("Test CCIP execution", function () {
         ]);
         assert_1.default.equal(result, (0, index_js_1.keccak256)(check), "response is equal");
     };
-    const address = "0x6C5ed35574a9b4d163f75bBf0595F7540D8FCc2d";
+    const address = "0xaeaa06a37e6421ac63120d6daddee0ffa04b43e8";
+    const networkName = "sepolia";
     const calldata = "0x1234";
     it("testGet passes under normal operation", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.connect)("goerli");
+        const provider = (0, create_provider_js_1.connect)(networkName);
         // testGet(bytes callData = "0x1234")
         const tx = {
             to: address, enableCcipRead: true,
@@ -30,7 +31,7 @@ describe("Test CCIP execution", function () {
     });
     it("testGet should fail with CCIP not explicitly enabled by overrides", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.connect)("goerli");
+        const provider = (0, create_provider_js_1.connect)(networkName);
         // testGet(bytes callData = "0x1234")
         const tx = {
             to: address,
@@ -40,13 +41,17 @@ describe("Test CCIP execution", function () {
             const result = await provider.call(tx);
             console.log(result);
         }, (error) => {
-            const offchainErrorData = "0x556f18300000000000000000000000006c5ed35574a9b4d163f75bbf0595f7540d8fcc2d00000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000140b1494be100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000004068747470733a2f2f6574686572732e7269636d6f6f2e776f726b6572732e6465762f746573742d636369702d726561642f7b73656e6465727d2f7b646174617d00000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d4d79206578747261206461746100000000000000000000000000000000000000";
+            const offchainErrorData = (0, index_js_1.concat)([
+                "0x556f1830000000000000000000000000",
+                address,
+                "0x00000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000140b1494be100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000004068747470733a2f2f6574686572732e7269636d6f6f2e776f726b6572732e6465762f746573742d636369702d726561642f7b73656e6465727d2f7b646174617d00000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d4d79206578747261206461746100000000000000000000000000000000000000"
+            ]);
             return ((0, index_js_1.isCallException)(error) && error.data === offchainErrorData);
         });
     });
     it("testGet should fail with CCIP explicitly disabled on provider", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.connect)("goerli");
+        const provider = (0, create_provider_js_1.connect)(networkName);
         provider.disableCcipRead = true;
         // testGetFail(bytes callData = "0x1234")
         const tx = {
@@ -57,13 +62,17 @@ describe("Test CCIP execution", function () {
             const result = await provider.call(tx);
             console.log(result);
         }, (error) => {
-            const offchainErrorData = "0x556f18300000000000000000000000006c5ed35574a9b4d163f75bbf0595f7540d8fcc2d00000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000140b1494be100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000004068747470733a2f2f6574686572732e7269636d6f6f2e776f726b6572732e6465762f746573742d636369702d726561642f7b73656e6465727d2f7b646174617d00000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d4d79206578747261206461746100000000000000000000000000000000000000";
+            const offchainErrorData = (0, index_js_1.concat)([
+                "0x556f1830000000000000000000000000",
+                address,
+                "0x00000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000140b1494be100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000004068747470733a2f2f6574686572732e7269636d6f6f2e776f726b6572732e6465762f746573742d636369702d726561642f7b73656e6465727d2f7b646174617d00000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d4d79206578747261206461746100000000000000000000000000000000000000"
+            ]);
             return ((0, index_js_1.isCallException)(error) && error.data === offchainErrorData);
         });
     });
     it("testGetFail should fail if all URLs 5xx", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.connect)("goerli");
+        const provider = (0, create_provider_js_1.connect)(networkName);
         // testGetFail(bytes callData = "0x1234")
         const tx = {
             to: address, enableCcipRead: true,
@@ -80,7 +89,7 @@ describe("Test CCIP execution", function () {
     });
     it("testGetSenderFail should fail if sender does not match", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.connect)("goerli");
+        const provider = (0, create_provider_js_1.connect)(networkName);
         // testGetSenderFail(bytes callData = "0x1234")
         const tx = {
             to: address, enableCcipRead: true,
@@ -100,7 +109,7 @@ describe("Test CCIP execution", function () {
     });
     it("testGetMissing should fail if early URL 4xx", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.connect)("goerli");
+        const provider = (0, create_provider_js_1.connect)(networkName);
         // testGetMissing(bytes callData = "0x1234")
         const tx = {
             to: address, enableCcipRead: true,
@@ -117,7 +126,7 @@ describe("Test CCIP execution", function () {
     });
     it("testGetFallback passes if any URL returns correctly", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.connect)("goerli");
+        const provider = (0, create_provider_js_1.connect)(networkName);
         // testGetFallback(bytes callData = "0x1234")
         const tx = {
             to: address, enableCcipRead: true,
@@ -128,7 +137,7 @@ describe("Test CCIP execution", function () {
     });
     it("testPost passes under normal operation", async function () {
         this.timeout(60000);
-        const provider = (0, create_provider_js_1.connect)("goerli");
+        const provider = (0, create_provider_js_1.connect)(networkName);
         // testPost(bytes callData = "0x1234")
         const tx = {
             to: address, enableCcipRead: true,

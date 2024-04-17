@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.connect = exports.checkProvider = exports.getProvider = exports.getProviderNetworks = exports.providerNames = exports.setupProviders = void 0;
 const index_js_1 = require("../index.js");
 ;
-const ethNetworks = ["default", "mainnet", "goerli"];
+const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {

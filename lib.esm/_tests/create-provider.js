@@ -5,7 +5,7 @@ ChainstackProvider, EtherscanProvider, InfuraProvider,
 //    PocketProvider,
 QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
 ;
-const ethNetworks = ["default", "mainnet", "goerli"];
+const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {
