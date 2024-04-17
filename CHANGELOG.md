@@ -3,9 +3,10 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.12.0 (2024-04-16 21:34)
+ethers/v6.12.0 (2024-04-16 21:49)
 ---------------------------------
 
+  - Added Linea Sepolia network and Infura endpoint ([#4655](https://github.com/ethers-io/ethers.js/issues/4655); [b4aaab8](https://github.com/ethers-io/ethers.js/commit/b4aaab8d39fe47f8a1a296fa442f0856f84faf03)).
   - Do not send unsubscribe messages to destroyed Providers ([#4678](https://github.com/ethers-io/ethers.js/issues/4678); [c45935e](https://github.com/ethers-io/ethers.js/commit/c45935e29ca0dd1ecdf1277fa1107246041be580)).
   - Get definitive network from InfuraProvider when using InfuraWebSocketProvider ([38e32d8](https://github.com/ethers-io/ethers.js/commit/38e32d82145eb289e5179f9b6b11f4a9225a7022)).
   - Better error messages for transaction field mismatch ([#4659](https://github.com/ethers-io/ethers.js/issues/4659); [9230aa0](https://github.com/ethers-io/ethers.js/commit/9230aa0b9a88b5241915a8d6afa8a522d35abd5d)).

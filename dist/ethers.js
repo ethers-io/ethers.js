@@ -17711,6 +17711,7 @@ function injectCommonNetworks() {
     registerEth("bnbt", 97, {});
     registerEth("linea", 59144, { ensNetwork: 1 });
     registerEth("linea-goerli", 59140, {});
+    registerEth("linea-sepolia", 59141, {});
     registerEth("matic", 137, {
         ensNetwork: 1,
         plugins: [
@@ -21143,7 +21144,7 @@ class CloudflareProvider extends JsonRpcProvider {
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
- *  - Sepolia Testnet (``holesky``)
+ *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
  *  - BNB Smart Chain Mainnet (``bnb``)
@@ -22035,7 +22036,8 @@ class WebSocketProvider extends SocketProvider {
  *  - BNB Smart Chain Mainnet (``bnb``)
  *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Linea (``linea``)
- *  - Linea Goerlia Testnet (``linea-goerli``)
+ *  - Linea Goerli Testnet (``linea-goerli``)
+ *  - Linea Sepolia Testnet (``linea-sepolia``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Optimism Sepolia Testnet (``optimism-sepolia``)
@@ -22074,6 +22076,8 @@ function getHost$2(name) {
             return "linea-mainnet.infura.io";
         case "linea-goerli":
             return "linea-goerli.infura.io";
+        case "linea-sepolia":
+            return "linea-sepolia.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
         case "matic-amoy":

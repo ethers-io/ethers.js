@@ -17717,6 +17717,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         registerEth("bnbt", 97, {});
         registerEth("linea", 59144, { ensNetwork: 1 });
         registerEth("linea-goerli", 59140, {});
+        registerEth("linea-sepolia", 59141, {});
         registerEth("matic", 137, {
             ensNetwork: 1,
             plugins: [
@@ -21149,7 +21150,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - Ethereum Mainnet (``mainnet``)
      *  - Goerli Testnet (``goerli``)
      *  - Sepolia Testnet (``sepolia``)
-     *  - Sepolia Testnet (``holesky``)
+     *  - Holesky Testnet (``holesky``)
      *  - Arbitrum (``arbitrum``)
      *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
      *  - BNB Smart Chain Mainnet (``bnb``)
@@ -22041,7 +22042,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - BNB Smart Chain Mainnet (``bnb``)
      *  - BNB Smart Chain Testnet (``bnbt``)
      *  - Linea (``linea``)
-     *  - Linea Goerlia Testnet (``linea-goerli``)
+     *  - Linea Goerli Testnet (``linea-goerli``)
+     *  - Linea Sepolia Testnet (``linea-sepolia``)
      *  - Optimism (``optimism``)
      *  - Optimism Goerli Testnet (``optimism-goerli``)
      *  - Optimism Sepolia Testnet (``optimism-sepolia``)
@@ -22080,6 +22082,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return "linea-mainnet.infura.io";
             case "linea-goerli":
                 return "linea-goerli.infura.io";
+            case "linea-sepolia":
+                return "linea-sepolia.infura.io";
             case "matic":
                 return "polygon-mainnet.infura.io";
             case "matic-amoy":

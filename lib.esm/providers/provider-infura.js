@@ -16,7 +16,8 @@
  *  - BNB Smart Chain Mainnet (``bnb``)
  *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Linea (``linea``)
- *  - Linea Goerlia Testnet (``linea-goerli``)
+ *  - Linea Goerli Testnet (``linea-goerli``)
+ *  - Linea Sepolia Testnet (``linea-sepolia``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Optimism Sepolia Testnet (``optimism-sepolia``)
@@ -60,6 +61,8 @@ function getHost(name) {
             return "linea-mainnet.infura.io";
         case "linea-goerli":
             return "linea-goerli.infura.io";
+        case "linea-sepolia":
+            return "linea-sepolia.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
         case "matic-amoy":
