@@ -5,7 +5,7 @@ import { connect, setupProviders } from "./create-provider.js";
 setupProviders();
 
 describe("Test EIP-2544 ENS wildcards", function() {
-    const provider = connect("goerli");
+    const provider = connect("sepolia");
 
     it("Resolves recursively", async function() {
         this.timeout(10000);
@@ -13,13 +13,13 @@ describe("Test EIP-2544 ENS wildcards", function() {
         const resolver = await provider.getResolver("ricmoose.hatch.eth");
         assert.ok(resolver, "failed to get resolver");
 
-        assert.equal(resolver.address, "0x15abA1fa74Bfdecd63A71218DC632d4328Db8168", "address");
+        assert.equal(resolver.address, "0x657D81B1E647A56457ff035Af22898411673f7FD", "address");
         assert.equal(await resolver.supportsWildcard(), true, "supportsWildcard()");
 
         // Test pass-through avatar
         assert.equal(await resolver.getAvatar(), "https:/\/static.ricmoo.com/uploads/profile-06cb9c3031c9.jpg", "getAvatar()");
 
-        assert.equal(await resolver.getAddress(), "0x4B711A377B1b3534749FBe5e59Bcf7F94d92EA98", "getAddress()");
+        assert.equal(await resolver.getAddress(), "0xF0d6e3fC0f5A23aAAA4933700438b6313Dd331bD", "getAddress()");
     });
 });
 

@@ -17,7 +17,7 @@ describe("Sends Transactions", function() {
     const wallet = new Wallet(<string>(process.env.FAUCET_PRIVATEKEY));
     console.log("Faucet Address:", wallet.address);
 
-    const networkName = "goerli";
+    const networkName = "sepolia";
     for (const providerName of providerNames) {
         const provider = getProvider(providerName, networkName);
         if (provider == null) { continue; }

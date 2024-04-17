@@ -11,7 +11,9 @@ import type { ContractEventPayload, ContractEventName, Log } from "../index.js";
 setupProviders();
 
 describe("Test Contract", function() {
-    const addr = "0x99417252Aad7B065940eBdF50d665Fb8879c5958";
+    const addr = "0x24264C81146c23bbF83Db1d3F87d2111C2935Ffa";
+    const networkName = "sepolia";
+
     const abi = [
         "error CustomError1(uint256 code, string message)",
 
@@ -30,7 +32,7 @@ describe("Test Contract", function() {
     it("tests contract calls", async function() {
         this.timeout(10000);
 
-        const provider = getProvider("InfuraProvider", "goerli");
+        const provider = getProvider("InfuraProvider", networkName);
         const contract = new Contract(addr, abi, provider);
 
         assert.equal(await contract.testCallAdd(4, 5), BigInt(9), "testCallAdd(4, 5)");
@@ -40,7 +42,7 @@ describe("Test Contract", function() {
     it("tests events", async function() {
         this.timeout(60000);
 
-        const provider = getProvider("InfuraProvider", "goerli");
+        const provider = getProvider("InfuraProvider", networkName);
         assert.ok(provider);
 
         const contract = new Contract(addr, abi, provider);
@@ -49,7 +51,7 @@ describe("Test Contract", function() {
         const contractSigner = <any>contract.connect(signer);
 
         const vUint256 = 42;
-        const vAddrName = "ethers.eth";
+        const vAddrName = "tests.eth";
         const vAddr = "0x228568EA92aC5Bc281c1E30b1893735c60a139F1";
         const vString = "Hello";
         const vBytes = "0x12345678";
@@ -260,8 +262,10 @@ describe("Test Typed Contract Interaction", function() {
     abi.push(`function testTyped(bytes memory) public pure returns (string memory)`);
     abi.push(`function testTyped(string memory) public pure returns (string memory)`);
 
-    const addr = "0x838f41545DA5e18AA0e1ab391085d22E172B7B02";
-    const provider = getProvider("InfuraProvider", "goerli");
+    const addr = "0xf20ba47c47a32fc2d9ad846ff06f2fa6e89eec74";
+    const networkName = "sepolia";
+
+    const provider = getProvider("InfuraProvider", networkName);
     const contract = new Contract(addr, abi, provider);
 
     for (const { types, valueFunc } of tests) {
@@ -446,7 +450,8 @@ describe("Test Contract Fallback", function() {
         },
     ];
 
-    const provider = getProvider("InfuraProvider", "goerli");
+    const networkName = "sepolia";
+    const provider = getProvider("InfuraProvider", networkName);
 
     const testGroups: Array<{ group: "sendNone" | "sendData" | "sendValue" | "sendDataAndValue", tx: any }> = [
         {

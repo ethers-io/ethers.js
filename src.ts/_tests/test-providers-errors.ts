@@ -42,9 +42,9 @@ describe("Tests Provider Call Exception", function() {
         //{ code: 0x51, reason: "UNINITIALIZED_FUNCTION_CALL" },
     ];
 
-    const testAddr = "0xF20Ba47c47a32fc2d9ad846fF06f2fa6e89eeC74";
+    const testAddr = "0x86d19fF4b2EB0D451511B5B930b01DC71fD9a2Ee";
+    const networkName = "sepolia";
 
-    const networkName = "goerli";
     for (const { code, reason } of panics) {
         for (const method of [ "call", "estimateGas" ]) {
             for (const providerName of providerNames) {
@@ -166,7 +166,7 @@ describe("Tests Provider Call Exception", function() {
 describe("Test Provider Blockchain Errors", function() {
     const wallet = new Wallet(<string>(process.env.FAUCET_PRIVATEKEY));
 
-    const networkName = "goerli";
+    const networkName = "sepolia";
     for (const providerName of providerNames) {
 
         const provider = getProvider(providerName, networkName);

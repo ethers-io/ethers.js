@@ -20,7 +20,7 @@ interface ProviderCreator {
     create: (network: string) => null | AbstractProvider;
 };
 
-const ethNetworks = [ "default", "mainnet", "goerli" ];
+const ethNetworks = [ "default", "mainnet", "sepolia" ];
 //const maticNetworks = [ "matic", "maticmum" ];
 
 const ProviderCreators: Array<ProviderCreator> = [
