@@ -69,6 +69,7 @@ export class SocketSubscriber implements Subscriber {
 
     stop(): void {
         (<Promise<number>>(this.#filterId)).then((filterId) => {
+            if (this.#provider.destroyed) { return; }
             this.#provider.send("eth_unsubscribe", [ filterId ]);
         });
         this.#filterId = null;
