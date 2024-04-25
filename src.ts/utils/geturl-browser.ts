@@ -30,7 +30,7 @@ declare global {
 export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
 
     async function getUrl(req: FetchRequest, _signal?: FetchCancelSignal): Promise<GetUrlResponse> {
-        assert(signal == null || !signal.cancelled, "request cancelled before sending", "CANCELLED");
+        assert(_signal == null || !_signal.cancelled, "request cancelled before sending", "CANCELLED");
 
         const protocol = req.url.split(":")[0].toLowerCase();
 
