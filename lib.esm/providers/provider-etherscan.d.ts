@@ -17,6 +17,7 @@
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
