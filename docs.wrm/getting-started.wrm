@@ -271,7 +271,7 @@ _code:  @lang<script>
 _subsection: Contracts  @<starting-contracts>
 
 A **Contract** is a meta-class, which means that its definition
-its derived at run-time, based on the ABI it is passed, which then
+is derived at run-time, based on the ABI it is passed, which then
 determined what methods and properties are available on it.
 
 _heading: Application Binary Interface (ABI)
