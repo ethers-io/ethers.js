@@ -3,6 +3,14 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.12.1 (2024-04-30 22:46)
+---------------------------------
+
+  - Prevent bad Interface clone when using two different versions of v6 ([#4689](https://github.com/ethers-io/ethers.js/issues/4689); [4d2d90f](https://github.com/ethers-io/ethers.js/commit/4d2d90f5cea2eb2f9559e490a34aa1567c8c4c14)).
+  - Fixed typo in error message for invalid quorum weight ([#4149](https://github.com/ethers-io/ethers.js/issues/4149); [45b9b9c](https://github.com/ethers-io/ethers.js/commit/45b9b9c9322bf20feaf892d948bcfb8db8932877)).
+  - Added matic-amoy to EtherescanProvider ([#4711](https://github.com/ethers-io/ethers.js/issues/4711); [5c8d17a](https://github.com/ethers-io/ethers.js/commit/5c8d17a61825fe002bd45ee5b2239bfd8c8ae189)).
+  - Fix JsonRpcProvider ignoring pollingInterval in options ([#4644](https://github.com/ethers-io/ethers.js/issues/4644); [7b7be0d](https://github.com/ethers-io/ethers.js/commit/7b7be0d1ef637f073b28bce54f4ecdfb8c88d09c)).
+
 ethers/v6.12.0 (2024-04-17 01:09)
 ---------------------------------
 

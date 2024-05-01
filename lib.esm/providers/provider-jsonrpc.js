@@ -814,7 +814,11 @@ export class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     #pollingInterval;
     constructor(network, options) {
         super(network, options);
-        this.#pollingInterval = 4000;
+        let pollingInterval = this._getOption("pollingInterval");
+        if (pollingInterval == null) {
+            pollingInterval = defaultOptions.pollingInterval;
+        }
+        this.#pollingInterval = pollingInterval;
     }
     _getSubscriber(sub) {
         const subscriber = super._getSubscriber(sub);

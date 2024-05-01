@@ -63,11 +63,11 @@ export declare abstract class MulticoinProviderPlugin implements AbstractProvide
      */
     supportsCoinType(coinType: number): boolean;
     /**
-     *  Resovles to the encoded %%address%% for %%coinType%%.
+     *  Resolves to the encoded %%address%% for %%coinType%%.
      */
     encodeAddress(coinType: number, address: string): Promise<string>;
     /**
-     *  Resovles to the decoded %%data%% for %%coinType%%.
+     *  Resolves to the decoded %%data%% for %%coinType%%.
      */
     decodeAddress(coinType: number, data: BytesLike): Promise<string>;
 }

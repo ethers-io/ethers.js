@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.12.0";
+    const version = "6.12.1";
 
     /**
      *  Property helper functions.
@@ -13895,7 +13895,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (typeof (value) === "string") {
                 return new Interface(JSON.parse(value));
             }
-            // Maybe an interface from an older version, or from a symlinked copy
+            // An Interface; possibly from another v6 instance
+            if (typeof (value.formatJson) === "function") {
+                return new Interface(value.formatJson());
+            }
+            // A legacy Interface; from an older version
             if (typeof (value.format) === "function") {
                 return new Interface(value.format("json"));
             }
@@ -16478,13 +16482,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return false;
         }
         /**
-         *  Resovles to the encoded %%address%% for %%coinType%%.
+         *  Resolves to the encoded %%address%% for %%coinType%%.
          */
         async encodeAddress(coinType, address) {
             throw new Error("unsupported coin");
         }
         /**
-         *  Resovles to the decoded %%data%% for %%coinType%%.
+         *  Resolves to the decoded %%data%% for %%coinType%%.
          */
         async decodeAddress(coinType, data) {
             throw new Error("unsupported coin");
@@ -18506,7 +18510,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return resolve(address, fromBlock, toBlock);
         }
         /**
-         *  Returns or resovles to a transaction for %%request%%, resolving
+         *  Returns or resolves to a transaction for %%request%%, resolving
          *  any ENS names or [[Addressable]] and returning if already a valid
          *  transaction.
          */
@@ -20629,7 +20633,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #pollingInterval;
         constructor(network, options) {
             super(network, options);
-            this.#pollingInterval = 4000;
+            let pollingInterval = this._getOption("pollingInterval");
+            if (pollingInterval == null) {
+                pollingInterval = defaultOptions.pollingInterval;
+            }
+            this.#pollingInterval = pollingInterval;
         }
         _getSubscriber(sub) {
             const subscriber = super._getSubscriber(sub);
@@ -21159,6 +21167,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - Optimism Goerli Testnet (``optimism-goerli``)
      *  - Polygon (``matic``)
      *  - Polygon Mumbai Testnet (``matic-mumbai``)
+     *  - Polygon Amoy Testnet (``matic-amoy``)
      *
      *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
      */
@@ -21254,6 +21263,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return "https:/\/api-testnet.bscscan.com";
                 case "matic":
                     return "https:/\/api.polygonscan.com";
+                case "matic-amoy":
+                    return "https:/\/api-amoy.polygonscan.com";
                 case "matic-mumbai":
                     return "https:/\/api-testnet.polygonscan.com";
                 case "optimism":
@@ -22625,7 +22636,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             this.eventQuorum = 1;
             this.eventWorkers = 1;
-            assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0), "quorum exceed provider wieght", "quorum", this.quorum);
+            assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0), "quorum exceed provider weight", "quorum", this.quorum);
         }
         get providerConfigs() {
             return this.#configs.map((c) => {
@@ -24780,9 +24791,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         /**
          *  The derivation path of this wallet.
          *
-         *  Since extended keys do not provider full path details, this
+         *  Since extended keys do not provide full path details, this
          *  may be ``null``, if instantiated from a source that does not
-         *  enocde it.
+         *  encode it.
          */
         path;
         /**

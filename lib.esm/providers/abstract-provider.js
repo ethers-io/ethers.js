@@ -500,7 +500,7 @@ export class AbstractProvider {
         return resolve(address, fromBlock, toBlock);
     }
     /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  Returns or resolves to a transaction for %%request%%, resolving
      *  any ENS names or [[Addressable]] and returning if already a valid
      *  transaction.
      */
