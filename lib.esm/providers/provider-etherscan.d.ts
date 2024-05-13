@@ -18,6 +18,8 @@
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *  - Polygon Amoy Testnet (``matic-amoy``)
+ *  - Base (``base``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */

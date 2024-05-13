@@ -18,6 +18,8 @@
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *  - Polygon Amoy Testnet (``matic-amoy``)
+ *  - Base (``base``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
@@ -185,6 +187,10 @@ export class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
                 return "https:/\/api-goerli-optimistic.etherscan.io";
+            case "base":
+                return "https:/\/api.basescan.org";
+            case "base-sepolia":
+                return "https:/\/api-sepolia.basescan.org";
 
             default:
         }
