@@ -14,6 +14,7 @@ export interface WebSocketLike {
     onopen: null | ((...args: Array<any>) => any);
     onmessage: null | ((...args: Array<any>) => any);
     onerror: null | ((...args: Array<any>) => any);
+    onclose: null | ((...args: Array<any>) => any);
 
     readyState: number;
 
