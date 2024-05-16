@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.12.2 (2024-05-16 11:03)
+---------------------------------
+
+  - Added Base endpoints to EtherscanProvider ([#4729](https://github.com/ethers-io/ethers.js/issues/4729); [7e1dc95](https://github.com/ethers-io/ethers.js/commit/7e1dc95ea2564c1eb0a9452b9a16002f3696765c)).
+
 ethers/v6.12.1 (2024-04-30 22:46)
 ---------------------------------
 

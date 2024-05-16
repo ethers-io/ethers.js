@@ -11,6 +11,8 @@
  *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Base (``base``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
  *  - BNB Smart Chain Mainnet (``bnb``)
  *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
@@ -117,6 +119,10 @@ export class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api.arbiscan.io";
             case "arbitrum-goerli":
                 return "https:/\/api-goerli.arbiscan.io";
+            case "base":
+                return "https:/\/api.basescan.org";
+            case "base-sepolia":
+                return "https:/\/api-sepolia.basescan.org";
             case "bnb":
                 return "https:/\/api.bscscan.com";
             case "bnbt":

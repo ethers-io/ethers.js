@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.12.1";
+const version = "6.12.2";
 
 /**
  *  Property helper functions.
@@ -11849,7 +11849,7 @@ class ParamType {
      *  Walks the **ParamType** with %%value%%, asynchronously calling
      *  %%process%% on each type, destructing the %%value%% recursively.
      *
-     *  This can be used to resolve ENS naes by walking and resolving each
+     *  This can be used to resolve ENS names by walking and resolving each
      *  ``"address"`` type.
      */
     async walkAsync(value, process) {
@@ -21155,6 +21155,8 @@ class CloudflareProvider extends JsonRpcProvider {
  *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Base (``base``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
  *  - BNB Smart Chain Mainnet (``bnb``)
  *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
@@ -21251,6 +21253,10 @@ class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api.arbiscan.io";
             case "arbitrum-goerli":
                 return "https:/\/api-goerli.arbiscan.io";
+            case "base":
+                return "https:/\/api.basescan.org";
+            case "base-sepolia":
+                return "https:/\/api-sepolia.basescan.org";
             case "bnb":
                 return "https:/\/api.bscscan.com";
             case "bnbt":
