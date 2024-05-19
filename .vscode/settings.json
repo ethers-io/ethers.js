@@ -1,3 +1,4 @@
 {
-    "totvsLanguageServer.welcomePage": false
+    "totvsLanguageServer.welcomePage": false,
+    "totvsLanguageServer.workspaceServerConfig": true
 }

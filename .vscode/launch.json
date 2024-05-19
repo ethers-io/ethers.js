@@ -1,7 +1,10 @@
 {
 	"version": "0.2.0",
 	"configurations": [
-		
+		accessibilitySupport
+
+
+
 
 		{
 			"type": "totvs_language_debug",
