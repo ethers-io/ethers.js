@@ -787,7 +787,7 @@ export class Typed {
     static dereference<T>(value: Typed | T, type: string): T {
         if (Typed.isTyped(value)) {
             if (value.type !== type) {
-                throw new Error(`invalid type: expecetd ${ type }, got ${ value.type }`);
+                throw new Error(`invalid type: expected ${ type }, got ${ value.type }`);
             }
             return value.value;
         }
