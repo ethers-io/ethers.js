@@ -281,6 +281,16 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                     return `{address:"${set.address}",storageKeys:["${set.storageKeys.join('","')}"]}`;
                 }).join(",") + "]";
             }
+            else if (key === "blobVersionedHashes") {
+                if (value.length === 0) {
+                    continue;
+                }
+                // @TODO: update this once the API supports blobs
+                (0, index_js_4.assert)(false, "Etherscan API does not support blobVersionedHashes", "UNSUPPORTED_OPERATION", {
+                    operation: "_getTransactionPostData",
+                    info: { transaction }
+                });
+            }
             else {
                 value = (0, index_js_4.hexlify)(value);
             }

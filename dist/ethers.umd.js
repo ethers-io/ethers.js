@@ -300,7 +300,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return value;
         }
-        if (typeof (value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
+        if (typeof (value) === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
             const result = new Uint8Array((value.length - 2) / 2);
             let offset = 2;
             for (let i = 0; i < result.length; i++) {
@@ -20188,7 +20188,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (req.method === "call" || req.method === "estimateGas") {
                 let tx = req.transaction;
                 if (tx && tx.type != null && getBigInt(tx.type)) {
-                    // If there are no EIP-1559 properties, it might be non-EIP-a559
+                    // If there are no EIP-1559 or newer properties, it might be pre-EIP-1559
                     if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                         const feeData = await this.getFeeData();
                         if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
@@ -20367,6 +20367,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (tx.accessList) {
                 result["accessList"] = accessListify(tx.accessList);
             }
+            if (tx.blobVersionedHashes) {
+                // @TODO: Remove this <any> case once EIP-4844 added to prepared tx
+                result["blobVersionedHashes"] = tx.blobVersionedHashes.map(h => h.toLowerCase());
+            }
+            // @TODO: blobs should probably also be copied over, optionally
+            // accounting for the kzg property to backfill blobVersionedHashes
+            // using the commitment. Or should that be left as an exercise to
+            // the caller?
             return result;
         }
         /**
@@ -21417,6 +21425,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     value = "[" + accessListify(value).map((set) => {
                         return `{address:"${set.address}",storageKeys:["${set.storageKeys.join('","')}"]}`;
                     }).join(",") + "]";
+                }
+                else if (key === "blobVersionedHashes") {
+                    if (value.length === 0) {
+                        continue;
+                    }
+                    // @TODO: update this once the API supports blobs
+                    assert(false, "Etherscan API does not support blobVersionedHashes", "UNSUPPORTED_OPERATION", {
+                        operation: "_getTransactionPostData",
+                        info: { transaction }
+                    });
                 }
                 else {
                     value = hexlify(value);

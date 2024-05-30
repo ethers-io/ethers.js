@@ -3,10 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.12.2 (2024-05-16 11:03)
+ethers/v6.12.2 (2024-05-30 17:24)
 ---------------------------------
 
-  - Added Base endpoints to EtherscanProvider ([#4729](https://github.com/ethers-io/ethers.js/issues/4729); [7e1dc95](https://github.com/ethers-io/ethers.js/commit/7e1dc95ea2564c1eb0a9452b9a16002f3696765c)).
+  - Copy EIP-4844 properties during estimateGas and call ([#4728](https://github.com/ethers-io/ethers.js/issues/4728); [cebe5ee](https://github.com/ethers-io/ethers.js/commit/cebe5eed91de0db5931b7847e76ee27cb2ce9219)).
+  - Use non-capturing regex for data to prevent memory exhaustion for long strings ([#4741](https://github.com/ethers-io/ethers.js/issues/4741); [5463aa0](https://github.com/ethers-io/ethers.js/commit/5463aa03eacde45322a1e05693ce90e4d7abcaa7)).
+  - Added Base endpointsto EtherscanProvider ([#4729](https://github.com/ethers-io/ethers.js/issues/4729); [7e1dc95](https://github.com/ethers-io/ethers.js/commit/7e1dc95ea2564c1eb0a9452b9a16002f3696765c)).
 
 ethers/v6.12.1 (2024-04-30 22:46)
 ---------------------------------

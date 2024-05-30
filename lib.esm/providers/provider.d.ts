@@ -1133,7 +1133,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     getStorage(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>;
     /**
-     *  Estimates the amount of gas required to executre %%tx%%.
+     *  Estimates the amount of gas required to execute %%tx%%.
      */
     estimateGas(tx: TransactionRequest): Promise<bigint>;
     /**
