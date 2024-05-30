@@ -340,10 +340,21 @@ export class EtherscanProvider extends AbstractProvider {
             // Quantity-types require no leading zero, unless 0
             if ((<any>{ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true })[key]) {
                 value = toQuantity(value);
+
             } else if (key === "accessList") {
                 value = "[" + accessListify(value).map((set) => {
                     return `{address:"${ set.address }",storageKeys:["${ set.storageKeys.join('","') }"]}`;
                 }).join(",") + "]";
+
+            } else if (key === "blobVersionedHashes") {
+                if (value.length === 0) { continue; }
+
+                // @TODO: update this once the API supports blobs
+                assert(false, "Etherscan API does not support blobVersionedHashes", "UNSUPPORTED_OPERATION", {
+                    operation: "_getTransactionPostData",
+                    info: { transaction }
+                });
+
             } else {
                 value = hexlify(value);
             }
