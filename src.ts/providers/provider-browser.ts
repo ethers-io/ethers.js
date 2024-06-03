@@ -3,10 +3,11 @@ import { assertArgument } from "../utils/index.js";
 import { JsonRpcApiPollingProvider } from "./provider-jsonrpc.js";
 
 import type {
+    JsonRpcApiProviderOptions,
     JsonRpcError, JsonRpcPayload, JsonRpcResult,
     JsonRpcSigner
 } from "./provider-jsonrpc.js";
-import type { Networkish } from "./network.js";
+import type { Network, Networkish } from "./network.js";
 
 /**
  *  The interface to an [[link-eip-1193]] provider, which is a standard
@@ -35,6 +36,13 @@ export type DebugEventBrowserProvider = {
     error: Error
 };
 
+export type BrowserProviderOptions = {
+    polling?: boolean;
+    staticNetwork?: null | boolean | Network;
+
+    cacheTimeout?: number;
+    pollingInterval?: number;
+};
 
 /**
  *  A **BrowserProvider** is intended to wrap an injected provider which
@@ -48,10 +56,15 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
      *  Connnect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
-    constructor(ethereum: Eip1193Provider, network?: Networkish) {
+    constructor(ethereum: Eip1193Provider, network?: Networkish, _options?: BrowserProviderOptions) {
+        // Copy the options
+        const options: JsonRpcApiProviderOptions = Object.assign({ },
+          ((_options != null) ? _options: { }),
+          { batchMaxCount: 1 });
+
         assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
 
-        super(network, { batchMaxCount: 1 });
+        super(network, options);
 
         this.#request = async (method: string, params: Array<any> | Record<string, any>) => {
             const payload = { method, params };
