@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.12.2";
+const version = "6.13.0";
 
 /**
  *  Property helper functions.
@@ -999,9 +999,9 @@ function toUtf8CodePoints(str, form) {
     return getUtf8CodePoints(toUtf8Bytes(str, form));
 }
 
-// @TODO: timeout is completely ignored; start a Promise.any with a reject?
 function createGetUrl(options) {
     async function getUrl(req, _signal) {
+        assert(_signal == null || !_signal.cancelled, "request cancelled before sending", "CANCELLED");
         const protocol = req.url.split(":")[0].toLowerCase();
         assert(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
             info: { protocol },
@@ -1010,19 +1010,36 @@ function createGetUrl(options) {
         assert(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
             operation: "request"
         });
-        let signal = undefined;
+        let error = null;
+        const controller = new AbortController();
+        const timer = setTimeout(() => {
+            error = makeError("request timeout", "TIMEOUT");
+            controller.abort();
+        }, req.timeout);
         if (_signal) {
-            const controller = new AbortController();
-            signal = controller.signal;
-            _signal.addListener(() => { controller.abort(); });
+            _signal.addListener(() => {
+                error = makeError("request cancelled", "CANCELLED");
+                controller.abort();
+            });
         }
         const init = {
             method: req.method,
             headers: new Headers(Array.from(req)),
             body: req.body || undefined,
-            signal
+            signal: controller.signal
         };
-        const resp = await fetch(req.url, init);
+        let resp;
+        try {
+            resp = await fetch(req.url, init);
+        }
+        catch (_error) {
+            clearTimeout(timer);
+            if (error) {
+                throw error;
+            }
+            throw _error;
+        }
+        clearTimeout(timer);
         const headers = {};
         resp.headers.forEach((value, key) => {
             headers[key.toLowerCase()] = value;
@@ -2643,10 +2660,37 @@ const Padding = new Uint8Array(WordSize);
 // - `then` is used to detect if an object is a Promise for await
 const passProperties$1 = ["then"];
 const _guard$4 = {};
+const resultNames = new WeakMap();
+function getNames(result) {
+    return resultNames.get(result);
+}
+function setNames(result, names) {
+    resultNames.set(result, names);
+}
 function throwError(name, error) {
     const wrapped = new Error(`deferred error during ABI decoding triggered accessing ${name}`);
     wrapped.error = error;
     throw wrapped;
+}
+function toObject(names, items, deep) {
+    if (names.indexOf(null) >= 0) {
+        return items.map((item, index) => {
+            if (item instanceof Result) {
+                return toObject(getNames(item), item, deep);
+            }
+            return item;
+        });
+    }
+    return names.reduce((accum, name, index) => {
+        let item = items.getValue(name);
+        if (!(name in accum)) {
+            if (deep && item instanceof Result) {
+                item = toObject(getNames(item), item, deep);
+            }
+            accum[name] = item;
+        }
+        return accum;
+    }, {});
 }
 /**
  *  A [[Result]] is a sub-class of Array, which allows accessing any
@@ -2656,6 +2700,9 @@ function throwError(name, error) {
  *  @_docloc: api/abi
  */
 class Result extends Array {
+    // No longer used; but cannot be removed as it will remove the
+    // #private field from the .d.ts which may break backwards
+    // compatibility
     #names;
     /**
      *  @private
@@ -2688,20 +2735,25 @@ class Result extends Array {
             return accum;
         }, (new Map()));
         // Remove any key thats not unique
-        this.#names = Object.freeze(items.map((item, index) => {
+        setNames(this, Object.freeze(items.map((item, index) => {
             const name = names[index];
             if (name != null && nameCounts.get(name) === 1) {
                 return name;
             }
             return null;
-        }));
+        })));
+        // Dummy operations to prevent TypeScript from complaining
+        this.#names = [];
+        if (this.#names == null) {
+            void (this.#names);
+        }
         if (!wrap) {
             return;
         }
         // A wrapped Result is immutable
         Object.freeze(this);
         // Proxy indices and names so we can trap deferred errors
-        return new Proxy(this, {
+        const proxy = new Proxy(this, {
             get: (target, prop, receiver) => {
                 if (typeof (prop) === "string") {
                     // Index accessor
@@ -2736,6 +2788,7 @@ class Result extends Array {
                 return Reflect.get(target, prop, receiver);
             }
         });
+        setNames(proxy, getNames(this));
     }
     /**
      *  Returns the Result as a normal Array. If %%deep%%, any children
@@ -2766,19 +2819,12 @@ class Result extends Array {
      *  any outstanding deferred errors.
      */
     toObject(deep) {
-        return this.#names.reduce((accum, name, index) => {
-            assert(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
+        const names = getNames(this);
+        return names.reduce((accum, name, index) => {
+            assert(name != null, `value at index ${index} unnamed`, "UNSUPPORTED_OPERATION", {
                 operation: "toObject()"
             });
-            // Add values for names that don't conflict
-            if (!(name in accum)) {
-                let child = this.getValue(name);
-                if (deep && child instanceof Result) {
-                    child = child.toObject(deep);
-                }
-                accum[name] = child;
-            }
-            return accum;
+            return toObject(names, this, deep);
         }, {});
     }
     /**
@@ -2806,10 +2852,11 @@ class Result extends Array {
         if (end > this.length) {
             end = this.length;
         }
+        const _names = getNames(this);
         const result = [], names = [];
         for (let i = start; i < end; i++) {
             result.push(this[i]);
-            names.push(this.#names[i]);
+            names.push(_names[i]);
         }
         return new Result(_guard$4, result, names);
     }
@@ -2817,6 +2864,7 @@ class Result extends Array {
      *  @_ignore
      */
     filter(callback, thisArg) {
+        const _names = getNames(this);
         const result = [], names = [];
         for (let i = 0; i < this.length; i++) {
             const item = this[i];
@@ -2825,7 +2873,7 @@ class Result extends Array {
             }
             if (callback.call(thisArg, item, i, this)) {
                 result.push(item);
-                names.push(this.#names[i]);
+                names.push(_names[i]);
             }
         }
         return new Result(_guard$4, result, names);
@@ -2853,7 +2901,7 @@ class Result extends Array {
      *  accessible by name.
      */
     getValue(name) {
-        const index = this.#names.indexOf(name);
+        const index = getNames(this).indexOf(name);
         if (index === -1) {
             return undefined;
         }
@@ -23268,9 +23316,11 @@ class BrowserProvider extends JsonRpcApiPollingProvider {
      *  Connnect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
-    constructor(ethereum, network) {
+    constructor(ethereum, network, _options) {
+        // Copy the options
+        const options = Object.assign({}, ((_options != null) ? _options : {}), { batchMaxCount: 1 });
         assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
-        super(network, { batchMaxCount: 1 });
+        super(network, options);
         this.#request = async (method, params) => {
             const payload = { method, params };
             this.emit("debug", { action: "sendEip1193Request", payload });

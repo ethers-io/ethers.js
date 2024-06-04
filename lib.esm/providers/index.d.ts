@@ -40,7 +40,7 @@ export type { BlockParams, LogParams, TransactionReceiptParams, TransactionRespo
 export type { Networkish } from "./network.js";
 export type { GasCostParameters } from "./plugins-network.js";
 export type { BlockTag, TransactionRequest, PreparedTransactionRequest, EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent, TopicFilter, Provider, MinedBlock, MinedTransactionResponse } from "./provider.js";
-export type { DebugEventBrowserProvider, Eip1193Provider } from "./provider-browser.js";
+export type { BrowserProviderOptions, DebugEventBrowserProvider, Eip1193Provider } from "./provider-browser.js";
 export type { FallbackProviderOptions } from "./provider-fallback.js";
 export type { JsonRpcPayload, JsonRpcResult, JsonRpcError, JsonRpcApiProviderOptions, JsonRpcTransactionRequest, } from "./provider-jsonrpc.js";
 export type { WebSocketCreator, WebSocketLike } from "./provider-websocket.js";

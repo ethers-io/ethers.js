@@ -1,6 +1,6 @@
 import { JsonRpcApiPollingProvider } from "./provider-jsonrpc.js";
 import type { JsonRpcError, JsonRpcPayload, JsonRpcResult, JsonRpcSigner } from "./provider-jsonrpc.js";
-import type { Networkish } from "./network.js";
+import type { Network, Networkish } from "./network.js";
 /**
  *  The interface to an [[link-eip-1193]] provider, which is a standard
  *  used by most injected providers, which the [[BrowserProvider]] accepts
@@ -32,6 +32,12 @@ export type DebugEventBrowserProvider = {
     action: "receiveEip1193Error";
     error: Error;
 };
+export type BrowserProviderOptions = {
+    polling?: boolean;
+    staticNetwork?: null | boolean | Network;
+    cacheTimeout?: number;
+    pollingInterval?: number;
+};
 /**
  *  A **BrowserProvider** is intended to wrap an injected provider which
  *  adheres to the [[link-eip-1193]] standard, which most (if not all)
@@ -43,7 +49,7 @@ export declare class BrowserProvider extends JsonRpcApiPollingProvider {
      *  Connnect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
-    constructor(ethereum: Eip1193Provider, network?: Networkish);
+    constructor(ethereum: Eip1193Provider, network?: Networkish, _options?: BrowserProviderOptions);
     send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>>;
     getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error;

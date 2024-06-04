@@ -3,6 +3,13 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.0 (2024-06-04 00:24)
+---------------------------------
+
+  - Added Options for BrowserProvider ([#4707](https://github.com/ethers-io/ethers.js/issues/4707); [33bb0bf](https://github.com/ethers-io/ethers.js/commit/33bb0bf30e1e6a699c24415a1edf0fa4ed28b6aa)).
+  - Fix Result deep toObject when a parent is an Array ([#4681](https://github.com/ethers-io/ethers.js/issues/4681); [d8cb849](https://github.com/ethers-io/ethers.js/commit/d8cb84957078985f5449fa26c6fd8087dbd17aec)).
+  - Added consistent timeout and cancel behaviour to FetchRequest ([#4122](https://github.com/ethers-io/ethers.js/issues/4122); [a12a739](https://github.com/ethers-io/ethers.js/commit/a12a7391fba39b5c114fa658590fae305dcedd17)).
+
 ethers/v6.12.2 (2024-05-30 17:24)
 ---------------------------------
 

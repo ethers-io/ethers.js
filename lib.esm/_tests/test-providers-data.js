@@ -220,7 +220,7 @@ describe("Test Networks", function () {
         "base", "base-sepolia",
         "bnb", "bnbt",
         "linea", "linea-sepolia",
-        "matic", "matic-mumbai", "matic-amoy",
+        "matic", "matic-amoy",
         "optimism", "optimism-sepolia",
         "xdai",
     ];

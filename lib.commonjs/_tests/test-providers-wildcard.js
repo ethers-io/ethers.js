@@ -18,11 +18,11 @@ describe("Test EIP-2544 ENS wildcards", function () {
     });
 });
 describe("Test ENS-DNS gasless resolver", function () {
-    it("Resolved almonit.org", async function () {
+    it("Resolved firefly.app", async function () {
         this.timeout(10000);
         const provider = (0, create_provider_js_1.connect)("mainnet");
-        const addr = await provider.resolveName("almonit.org");
-        assert_1.default.equal(addr, "0x0D59d0f7DcC0fBF0A3305cE0261863aAf7Ab685c", "addr");
+        const addr = await provider.resolveName("firefly.app");
+        assert_1.default.equal(addr, "0x643aA0A61eADCC9Cc202D1915D942d35D005400C", "addr");
     });
 });
 //# sourceMappingURL=test-providers-wildcard.js.map
