@@ -579,7 +579,7 @@ export class AbstractProvider {
         }
         return expected.clone();
     }
-    async getFeeData(tx) {
+    async getFeeData() {
         const network = await this.getNetwork();
         const getFeeDataFunc = async () => {
             const { _block, gasPrice, priorityFee } = await resolveProperties({
@@ -617,18 +617,6 @@ export class AbstractProvider {
             const req = new FetchRequest(plugin.url);
             const feeData = await plugin.processFunc(getFeeDataFunc, this, req);
             return new FeeData(feeData.gasPrice, feeData.maxFeePerGas, feeData.maxPriorityFeePerGas);
-        }
-        // Check for a FetchLineaFeeDataNetworkPlugin
-        const pluginLinea = (network.getPlugin("org.ethers.plugins.network.FetchLineaFeeDataPlugin"));
-        if (pluginLinea && tx) {
-            try {
-                const feeData = await pluginLinea.processFunc(this, tx);
-                return new FeeData(feeData.gasPrice, feeData.maxFeePerGas, feeData.maxPriorityFeePerGas);
-            }
-            catch (error) {
-                console.warn("Error fetching fee data from Linea", error);
-                // continue to use standard fee data
-            }
         }
         return await getFeeDataFunc();
     }

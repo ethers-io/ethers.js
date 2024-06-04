@@ -1097,7 +1097,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     /**
      *  Get the best guess at the recommended [[FeeData]].
      */
-    getFeeData(tx?: TransactionLike): Promise<FeeData>;
+    getFeeData(): Promise<FeeData>;
     /**
      *  Get the account balance (in wei) of %%address%%. If %%blockTag%%
      *  is specified and the node supports archive access for that

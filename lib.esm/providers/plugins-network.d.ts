@@ -1,6 +1,5 @@
 import type { FeeData, Provider } from "./provider.js";
 import type { FetchRequest } from "../utils/fetch.js";
-import { TransactionLike } from "../ethers.js";
 /**
  *  A **NetworkPlugin** provides additional functionality on a [[Network]].
  */
@@ -167,30 +166,5 @@ export declare class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
         maxPriorityFeePerGas?: null | bigint;
     }>);
     clone(): FetchUrlFeeDataNetworkPlugin;
-}
-export declare class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
-    #private;
-    /**
-     *  The URL for rpc fallback.
-     */
-    get fallbackUrl(): string;
-    /**
-     *  The callback to use when computing the FeeData.
-     */
-    get processFunc(): (p: Provider, tx: TransactionLike) => Promise<{
-        gasPrice?: null | bigint;
-        maxFeePerGas?: null | bigint;
-        maxPriorityFeePerGas?: null | bigint;
-    }>;
-    /**
-     *  Creates a new **FetchLineaFeeDataNetworkPlugin** which will
-     *  be used when computing the fee data for the network.
-     */
-    constructor(fallbackUrl: string, processFunc: (p: Provider, tx: TransactionLike) => Promise<{
-        gasPrice?: null | bigint;
-        maxFeePerGas?: null | bigint;
-        maxPriorityFeePerGas?: null | bigint;
-    }>);
-    clone(): FetchLineaFeeDataNetworkPlugin;
 }
 //# sourceMappingURL=plugins-network.d.ts.map
