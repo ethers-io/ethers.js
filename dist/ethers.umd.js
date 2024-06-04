@@ -2795,6 +2795,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
             });
             setNames(proxy, getNames(this));
+            return proxy;
         }
         /**
          *  Returns the Result as a normal Array. If %%deep%%, any children

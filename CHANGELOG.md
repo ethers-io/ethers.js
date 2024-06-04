@@ -3,7 +3,7 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.13.0 (2024-06-04 00:24)
+ethers/v6.13.0 (2024-06-04 01:01)
 ---------------------------------
 
   - Added Options for BrowserProvider ([#4707](https://github.com/ethers-io/ethers.js/issues/4707); [33bb0bf](https://github.com/ethers-io/ethers.js/commit/33bb0bf30e1e6a699c24415a1edf0fa4ed28b6aa)).

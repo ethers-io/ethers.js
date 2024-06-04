@@ -2789,6 +2789,7 @@ class Result extends Array {
             }
         });
         setNames(proxy, getNames(this));
+        return proxy;
     }
     /**
      *  Returns the Result as a normal Array. If %%deep%%, any children
