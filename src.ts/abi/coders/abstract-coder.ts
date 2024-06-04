@@ -168,6 +168,7 @@ export class Result extends Array<any> {
             }
         });
         setNames(proxy, getNames(this));
+        return proxy;
     }
 
     /**
