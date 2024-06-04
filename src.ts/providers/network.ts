@@ -517,9 +517,7 @@ function injectCommonNetworks(): void {
     ensNetwork: 1,
     plugins: [getLineaPricingPlugin("https://rpc.linea.build")],
   });
-  registerEth("linea-goerli", 59140, {
-    plugins: [getLineaPricingPlugin("https://rpc.goerli.linea.build")],
-  });
+  registerEth("linea-goerli", 59140, {});
 
   registerEth("linea-sepolia", 59141, {
     plugins: [getLineaPricingPlugin("https://rpc.sepolia.linea.build")],
