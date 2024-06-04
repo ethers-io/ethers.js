@@ -576,6 +576,7 @@ export class FetchRequest {
         clone.#preflight = this.#preflight;
         clone.#process = this.#process;
         clone.#retry = this.#retry;
+        clone.#throttle = Object.assign({}, this.#throttle);
         clone.#getUrlFunc = this.#getUrlFunc;
         return clone;
     }

@@ -374,19 +374,16 @@ function injectCommonNetworks() {
     registerEth("base-sepolia", 84532, {});
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, {});
-    registerEth("linea", 59144, {
-        ensNetwork: 1,
-        plugins: [getLineaPricingPlugin("https://rpc.linea.build")],
-    });
-    registerEth("linea-goerli", 59140, {
-        plugins: [getLineaPricingPlugin("https://rpc.goerli.linea.build")],
-    });
+    registerEth("linea", 59144, { ensNetwork: 1 });
+    registerEth("linea-goerli", 59140, {});
+    registerEth("linea-sepolia", 59141, {});
     registerEth("matic", 137, {
         ensNetwork: 1,
         plugins: [
             getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
         ]
     });
+    registerEth("matic-amoy", 80002, {});
     registerEth("matic-mumbai", 80001, {
         altNames: ["maticMumbai", "maticmum"],
         plugins: [

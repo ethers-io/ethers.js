@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.11.0";
+    const version = "6.13.0";
 
     /**
      *  Property helper functions.
@@ -300,7 +300,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return value;
         }
-        if (typeof (value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
+        if (typeof (value) === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
             const result = new Uint8Array((value.length - 2) / 2);
             let offset = 2;
             for (let i = 0; i < result.length; i++) {
@@ -942,6 +942,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  If %%form%% is specified, the string is normalized.
      */
     function toUtf8Bytes(str, form) {
+        assertArgument(typeof (str) === "string", "invalid string value", "str", str);
         if (form != null) {
             assertNormalize(form);
             str = str.normalize(form);
@@ -1004,9 +1005,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return getUtf8CodePoints(toUtf8Bytes(str, form));
     }
 
-    // @TODO: timeout is completely ignored; start a Promise.any with a reject?
     function createGetUrl(options) {
         async function getUrl(req, _signal) {
+            assert(_signal == null || !_signal.cancelled, "request cancelled before sending", "CANCELLED");
             const protocol = req.url.split(":")[0].toLowerCase();
             assert(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
                 info: { protocol },
@@ -1015,19 +1016,36 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             assert(protocol === "https" || !req.credentials || req.allowInsecureAuthentication, "insecure authorized connections unsupported", "UNSUPPORTED_OPERATION", {
                 operation: "request"
             });
-            let signal = undefined;
+            let error = null;
+            const controller = new AbortController();
+            const timer = setTimeout(() => {
+                error = makeError("request timeout", "TIMEOUT");
+                controller.abort();
+            }, req.timeout);
             if (_signal) {
-                const controller = new AbortController();
-                signal = controller.signal;
-                _signal.addListener(() => { controller.abort(); });
+                _signal.addListener(() => {
+                    error = makeError("request cancelled", "CANCELLED");
+                    controller.abort();
+                });
             }
             const init = {
                 method: req.method,
                 headers: new Headers(Array.from(req)),
                 body: req.body || undefined,
-                signal
+                signal: controller.signal
             };
-            const resp = await fetch(req.url, init);
+            let resp;
+            try {
+                resp = await fetch(req.url, init);
+            }
+            catch (_error) {
+                clearTimeout(timer);
+                if (error) {
+                    throw error;
+                }
+                throw _error;
+            }
+            clearTimeout(timer);
             const headers = {};
             resp.headers.forEach((value, key) => {
                 headers[key.toLowerCase()] = value;
@@ -1613,6 +1631,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             clone.#preflight = this.#preflight;
             clone.#process = this.#process;
             clone.#retry = this.#retry;
+            clone.#throttle = Object.assign({}, this.#throttle);
             clone.#getUrlFunc = this.#getUrlFunc;
             return clone;
         }
@@ -2647,10 +2666,37 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     // - `then` is used to detect if an object is a Promise for await
     const passProperties$1 = ["then"];
     const _guard$4 = {};
+    const resultNames = new WeakMap();
+    function getNames(result) {
+        return resultNames.get(result);
+    }
+    function setNames(result, names) {
+        resultNames.set(result, names);
+    }
     function throwError(name, error) {
         const wrapped = new Error(`deferred error during ABI decoding triggered accessing ${name}`);
         wrapped.error = error;
         throw wrapped;
+    }
+    function toObject(names, items, deep) {
+        if (names.indexOf(null) >= 0) {
+            return items.map((item, index) => {
+                if (item instanceof Result) {
+                    return toObject(getNames(item), item, deep);
+                }
+                return item;
+            });
+        }
+        return names.reduce((accum, name, index) => {
+            let item = items.getValue(name);
+            if (!(name in accum)) {
+                if (deep && item instanceof Result) {
+                    item = toObject(getNames(item), item, deep);
+                }
+                accum[name] = item;
+            }
+            return accum;
+        }, {});
     }
     /**
      *  A [[Result]] is a sub-class of Array, which allows accessing any
@@ -2660,6 +2706,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  @_docloc: api/abi
      */
     class Result extends Array {
+        // No longer used; but cannot be removed as it will remove the
+        // #private field from the .d.ts which may break backwards
+        // compatibility
         #names;
         /**
          *  @private
@@ -2692,20 +2741,25 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return accum;
             }, (new Map()));
             // Remove any key thats not unique
-            this.#names = Object.freeze(items.map((item, index) => {
+            setNames(this, Object.freeze(items.map((item, index) => {
                 const name = names[index];
                 if (name != null && nameCounts.get(name) === 1) {
                     return name;
                 }
                 return null;
-            }));
+            })));
+            // Dummy operations to prevent TypeScript from complaining
+            this.#names = [];
+            if (this.#names == null) {
+                void (this.#names);
+            }
             if (!wrap) {
                 return;
             }
             // A wrapped Result is immutable
             Object.freeze(this);
             // Proxy indices and names so we can trap deferred errors
-            return new Proxy(this, {
+            const proxy = new Proxy(this, {
                 get: (target, prop, receiver) => {
                     if (typeof (prop) === "string") {
                         // Index accessor
@@ -2740,39 +2794,44 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return Reflect.get(target, prop, receiver);
                 }
             });
+            setNames(proxy, getNames(this));
+            return proxy;
         }
         /**
-         *  Returns the Result as a normal Array.
+         *  Returns the Result as a normal Array. If %%deep%%, any children
+         *  which are Result objects are also converted to a normal Array.
          *
          *  This will throw if there are any outstanding deferred
          *  errors.
          */
-        toArray() {
+        toArray(deep) {
             const result = [];
             this.forEach((item, index) => {
                 if (item instanceof Error) {
                     throwError(`index ${index}`, item);
+                }
+                if (deep && item instanceof Result) {
+                    item = item.toArray(deep);
                 }
                 result.push(item);
             });
             return result;
         }
         /**
-         *  Returns the Result as an Object with each name-value pair.
+         *  Returns the Result as an Object with each name-value pair. If
+         *  %%deep%%, any children which are Result objects are also
+         *  converted to an Object.
          *
          *  This will throw if any value is unnamed, or if there are
          *  any outstanding deferred errors.
          */
-        toObject() {
-            return this.#names.reduce((accum, name, index) => {
-                assert(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
+        toObject(deep) {
+            const names = getNames(this);
+            return names.reduce((accum, name, index) => {
+                assert(name != null, `value at index ${index} unnamed`, "UNSUPPORTED_OPERATION", {
                     operation: "toObject()"
                 });
-                // Add values for names that don't conflict
-                if (!(name in accum)) {
-                    accum[name] = this.getValue(name);
-                }
-                return accum;
+                return toObject(names, this, deep);
             }, {});
         }
         /**
@@ -2800,10 +2859,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (end > this.length) {
                 end = this.length;
             }
+            const _names = getNames(this);
             const result = [], names = [];
             for (let i = start; i < end; i++) {
                 result.push(this[i]);
-                names.push(this.#names[i]);
+                names.push(_names[i]);
             }
             return new Result(_guard$4, result, names);
         }
@@ -2811,6 +2871,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  @_ignore
          */
         filter(callback, thisArg) {
+            const _names = getNames(this);
             const result = [], names = [];
             for (let i = 0; i < this.length; i++) {
                 const item = this[i];
@@ -2819,7 +2880,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 if (callback.call(thisArg, item, i, this)) {
                     result.push(item);
-                    names.push(this.#names[i]);
+                    names.push(_names[i]);
                 }
             }
             return new Result(_guard$4, result, names);
@@ -2847,7 +2908,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  accessible by name.
          */
         getValue(name) {
-            const index = this.#names.indexOf(name);
+            const index = getNames(this).indexOf(name);
             if (index === -1) {
                 return undefined;
             }
@@ -9628,6 +9689,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const BN_28 = BigInt(28);
     const BN_35 = BigInt(35);
     const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    const BLOB_SIZE = 4096 * 32;
+    function getVersionedHash(version, hash) {
+        let versioned = version.toString(16);
+        while (versioned.length < 2) {
+            versioned = "0" + versioned;
+        }
+        versioned += sha256(hash).substring(4);
+        return "0x" + versioned;
+    }
     function handleAddress(value) {
         if (value === "0x") {
             return null;
@@ -9710,7 +9780,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 s: zeroPadValue(fields[8], 32),
                 v
             });
-            tx.hash = keccak256(data);
+            //tx.hash = keccak256(data);
         }
         return tx;
     }
@@ -9801,7 +9871,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (fields.length === 9) {
             return tx;
         }
-        tx.hash = keccak256(data);
+        //tx.hash = keccak256(data);
         _parseEipSignature(tx, fields.slice(9));
         return tx;
     }
@@ -9842,7 +9912,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (fields.length === 8) {
             return tx;
         }
-        tx.hash = keccak256(data);
+        //tx.hash = keccak256(data);
         _parseEipSignature(tx, fields.slice(8));
         return tx;
     }
@@ -9865,8 +9935,29 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         return concat(["0x01", encodeRlp(fields)]);
     }
     function _parseEip4844(data) {
-        const fields = decodeRlp(getBytes(data).slice(1));
-        assertArgument(Array.isArray(fields) && (fields.length === 11 || fields.length === 14), "invalid field count for transaction type: 3", "data", hexlify(data));
+        let fields = decodeRlp(getBytes(data).slice(1));
+        let typeName = "3";
+        let blobs = null;
+        // Parse the network format
+        if (fields.length === 4 && Array.isArray(fields[0])) {
+            typeName = "3 (network format)";
+            const fBlobs = fields[1], fCommits = fields[2], fProofs = fields[3];
+            assertArgument(Array.isArray(fBlobs), "invalid network format: blobs not an array", "fields[1]", fBlobs);
+            assertArgument(Array.isArray(fCommits), "invalid network format: commitments not an array", "fields[2]", fCommits);
+            assertArgument(Array.isArray(fProofs), "invalid network format: proofs not an array", "fields[3]", fProofs);
+            assertArgument(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
+            assertArgument(fBlobs.length === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+            blobs = [];
+            for (let i = 0; i < fields[1].length; i++) {
+                blobs.push({
+                    data: fBlobs[i],
+                    commitment: fCommits[i],
+                    proof: fProofs[i],
+                });
+            }
+            fields = fields[0];
+        }
+        assertArgument(Array.isArray(fields) && (fields.length === 11 || fields.length === 14), `invalid field count for transaction type: ${typeName}`, "data", hexlify(data));
         const tx = {
             type: 3,
             chainId: handleUint(fields[0], "chainId"),
@@ -9882,7 +9973,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             maxFeePerBlobGas: handleUint(fields[9], "maxFeePerBlobGas"),
             blobVersionedHashes: fields[10]
         };
-        assertArgument(tx.to != null, "invalid address for transaction type: 3", "data", data);
+        if (blobs) {
+            tx.blobs = blobs;
+        }
+        assertArgument(tx.to != null, `invalid address for transaction type: ${typeName}`, "data", data);
         assertArgument(Array.isArray(tx.blobVersionedHashes), "invalid blobVersionedHashes: must be an array", "data", data);
         for (let i = 0; i < tx.blobVersionedHashes.length; i++) {
             assertArgument(isHexString(tx.blobVersionedHashes[i], 32), `invalid blobVersionedHash at index ${i}: must be length 32`, "data", data);
@@ -9891,11 +9985,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (fields.length === 11) {
             return tx;
         }
-        tx.hash = keccak256(data);
+        // @TODO: Do we need to do this? This is only called internally
+        // and used to verify hashes; it might save time to not do this
+        //tx.hash = keccak256(concat([ "0x03", encodeRlp(fields) ]));
         _parseEipSignature(tx, fields.slice(11));
         return tx;
     }
-    function _serializeEip4844(tx, sig) {
+    function _serializeEip4844(tx, sig, blobs) {
         const fields = [
             formatNumber(tx.chainId, "chainId"),
             formatNumber(tx.nonce, "nonce"),
@@ -9913,6 +10009,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             fields.push(formatNumber(sig.yParity, "yParity"));
             fields.push(toBeArray(sig.r));
             fields.push(toBeArray(sig.s));
+            // We have blobs; return the network wrapped format
+            if (blobs) {
+                return concat([
+                    "0x03",
+                    encodeRlp([
+                        fields,
+                        blobs.map((b) => b.data),
+                        blobs.map((b) => b.commitment),
+                        blobs.map((b) => b.proof),
+                    ])
+                ]);
+            }
         }
         return concat(["0x03", encodeRlp(fields)]);
     }
@@ -9944,6 +10052,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #accessList;
         #maxFeePerBlobGas;
         #blobVersionedHashes;
+        #kzg;
+        #blobs;
         /**
          *  The transaction type.
          *
@@ -10125,7 +10235,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#maxFeePerBlobGas = (value == null) ? null : getBigInt(value, "maxFeePerBlobGas");
         }
         /**
-         *  The BLOB versioned hashes for Cancun transactions.
+         *  The BLOb versioned hashes for Cancun transactions.
          */
         get blobVersionedHashes() {
             // @TODO: Mutation is inconsistent; if unset, the returned value
@@ -10147,6 +10257,87 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#blobVersionedHashes = value;
         }
         /**
+         *  The BLObs for the Transaction, if any.
+         *
+         *  If ``blobs`` is non-``null``, then the [[seriailized]]
+         *  will return the network formatted sidecar, otherwise it
+         *  will return the standard [[link-eip-2718]] payload. The
+         *  [[unsignedSerialized]] is unaffected regardless.
+         *
+         *  When setting ``blobs``, either fully valid [[Blob]] objects
+         *  may be specified (i.e. correctly padded, with correct
+         *  committments and proofs) or a raw [[BytesLike]] may
+         *  be provided.
+         *
+         *  If raw [[BytesLike]] are provided, the [[kzg]] property **must**
+         *  be already set. The blob will be correctly padded and the
+         *  [[KzgLibrary]] will be used to compute the committment and
+         *  proof for the blob.
+         *
+         *  A BLOb is a sequence of field elements, each of which must
+         *  be within the BLS field modulo, so some additional processing
+         *  may be required to encode arbitrary data to ensure each 32 byte
+         *  field is within the valid range.
+         *
+         *  Setting this automatically populates [[blobVersionedHashes]],
+         *  overwriting any existing values. Setting this to ``null``
+         *  does **not** remove the [[blobVersionedHashes]], leaving them
+         *  present.
+         */
+        get blobs() {
+            if (this.#blobs == null) {
+                return null;
+            }
+            return this.#blobs.map((b) => Object.assign({}, b));
+        }
+        set blobs(_blobs) {
+            if (_blobs == null) {
+                this.#blobs = null;
+                return;
+            }
+            const blobs = [];
+            const versionedHashes = [];
+            for (let i = 0; i < _blobs.length; i++) {
+                const blob = _blobs[i];
+                if (isBytesLike(blob)) {
+                    assert(this.#kzg, "adding a raw blob requires a KZG library", "UNSUPPORTED_OPERATION", {
+                        operation: "set blobs()"
+                    });
+                    let data = getBytes(blob);
+                    assertArgument(data.length <= BLOB_SIZE, "blob is too large", `blobs[${i}]`, blob);
+                    // Pad blob if necessary
+                    if (data.length !== BLOB_SIZE) {
+                        const padded = new Uint8Array(BLOB_SIZE);
+                        padded.set(data);
+                        data = padded;
+                    }
+                    const commit = this.#kzg.blobToKzgCommitment(data);
+                    const proof = hexlify(this.#kzg.computeBlobKzgProof(data, commit));
+                    blobs.push({
+                        data: hexlify(data),
+                        commitment: hexlify(commit),
+                        proof
+                    });
+                    versionedHashes.push(getVersionedHash(1, commit));
+                }
+                else {
+                    const commit = hexlify(blob.commitment);
+                    blobs.push({
+                        data: hexlify(blob.data),
+                        commitment: commit,
+                        proof: hexlify(blob.proof)
+                    });
+                    versionedHashes.push(getVersionedHash(1, commit));
+                }
+            }
+            this.#blobs = blobs;
+            this.#blobVersionedHashes = versionedHashes;
+        }
+        get kzg() { return this.#kzg; }
+        set kzg(kzg) {
+            this.#kzg = kzg;
+        }
+        /**
          *  Creates a new Transaction with default values.
          */
         constructor() {
@@ -10164,6 +10355,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#accessList = null;
             this.#maxFeePerBlobGas = null;
             this.#blobVersionedHashes = null;
+            this.#blobs = null;
+            this.#kzg = null;
         }
         /**
          *  The transaction hash, if signed. Otherwise, ``null``.
@@ -10172,7 +10365,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (this.signature == null) {
                 return null;
             }
-            return keccak256(this.serialized);
+            return keccak256(this.#getSerialized(true, false));
         }
         /**
          *  The pre-image hash of this transaction.
@@ -10210,6 +10403,21 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         isSigned() {
             return this.signature != null;
         }
+        #getSerialized(signed, sidecar) {
+            assert(!signed || this.signature != null, "cannot serialize unsigned transaction; maybe you meant .unsignedSerialized", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
+            const sig = signed ? this.signature : null;
+            switch (this.inferType()) {
+                case 0:
+                    return _serializeLegacy(this, sig);
+                case 1:
+                    return _serializeEip2930(this, sig);
+                case 2:
+                    return _serializeEip1559(this, sig);
+                case 3:
+                    return _serializeEip4844(this, sig, sidecar ? this.blobs : null);
+            }
+            assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
+        }
         /**
          *  The serialized transaction.
          *
@@ -10217,18 +10425,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  use [[unsignedSerialized]].
          */
         get serialized() {
-            assert(this.signature != null, "cannot serialize unsigned transaction; maybe you meant .unsignedSerialized", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
-            switch (this.inferType()) {
-                case 0:
-                    return _serializeLegacy(this, this.signature);
-                case 1:
-                    return _serializeEip2930(this, this.signature);
-                case 2:
-                    return _serializeEip1559(this, this.signature);
-                case 3:
-                    return _serializeEip4844(this, this.signature);
-            }
-            assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
+            return this.#getSerialized(true, true);
         }
         /**
          *  The transaction pre-image.
@@ -10237,17 +10434,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  authorize this transaction.
          */
         get unsignedSerialized() {
-            switch (this.inferType()) {
-                case 0:
-                    return _serializeLegacy(this);
-                case 1:
-                    return _serializeEip2930(this);
-                case 2:
-                    return _serializeEip1559(this);
-                case 3:
-                    return _serializeEip4844(this);
-            }
-            assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".unsignedSerialized" });
+            return this.#getSerialized(false, false);
         }
         /**
          *  Return the most "likely" type; currently the highest
@@ -10447,15 +10634,24 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (tx.accessList != null) {
                 result.accessList = tx.accessList;
             }
+            // This will get overwritten by blobs, if present
             if (tx.blobVersionedHashes != null) {
                 result.blobVersionedHashes = tx.blobVersionedHashes;
             }
+            // Make sure we assign the kzg before assigning blobs, which
+            // require the library in the event raw blob data is provided.
+            if (tx.kzg != null) {
+                result.kzg = tx.kzg;
+            }
+            if (tx.blobs != null) {
+                result.blobs = tx.blobs;
+            }
             if (tx.hash != null) {
-                assertArgument(result.isSigned(), "unsigned transaction cannot define hash", "tx", tx);
+                assertArgument(result.isSigned(), "unsigned transaction cannot define '.hash'", "tx", tx);
                 assertArgument(result.hash === tx.hash, "hash mismatch", "tx", tx);
             }
             if (tx.from != null) {
-                assertArgument(result.isSigned(), "unsigned transaction cannot define from", "tx", tx);
+                assertArgument(result.isSigned(), "unsigned transaction cannot define '.from'", "tx", tx);
                 assertArgument(result.from.toLowerCase() === (tx.from || "").toLowerCase(), "from mismatch", "tx", tx);
             }
             return result;
@@ -11708,7 +11904,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Walks the **ParamType** with %%value%%, asynchronously calling
          *  %%process%% on each type, destructing the %%value%% recursively.
          *
-         *  This can be used to resolve ENS naes by walking and resolving each
+         *  This can be used to resolve ENS names by walking and resolving each
          *  ``"address"`` type.
          */
         async walkAsync(value, process) {
@@ -13748,7 +13944,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (typeof (value) === "string") {
                 return new Interface(JSON.parse(value));
             }
-            // Maybe an interface from an older version, or from a symlinked copy
+            // An Interface; possibly from another v6 instance
+            if (typeof (value.formatJson) === "function") {
+                return new Interface(value.formatJson());
+            }
+            // A legacy Interface; from an older version
             if (typeof (value.format) === "function") {
                 return new Interface(value.format("json"));
             }
@@ -13845,7 +14045,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (req.data) {
             result.data = hexlify(req.data);
         }
-        const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
+        const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerBlobGas,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
         for (const key of bigIntKeys) {
             if (!(key in req) || req[key] == null) {
                 continue;
@@ -13870,6 +14070,20 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         if ("customData" in req) {
             result.customData = req.customData;
+        }
+        if ("blobVersionedHashes" in req && req.blobVersionedHashes) {
+            result.blobVersionedHashes = req.blobVersionedHashes.slice();
+        }
+        if ("kzg" in req) {
+            result.kzg = req.kzg;
+        }
+        if ("blobs" in req && req.blobs) {
+            result.blobs = req.blobs.map((b) => {
+                if (isBytesLike(b)) {
+                    return hexlify(b);
+                }
+                return Object.assign({}, b);
+            });
         }
         return result;
     }
@@ -13959,6 +14173,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          */
         miner;
         /**
+         *  The latest RANDAO mix of the post beacon state of
+         *  the previous block.
+         */
+        prevRandao;
+        /**
          *  Any extra data the validator wished to include.
          */
         extraData;
@@ -13998,6 +14217,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 blobGasUsed: block.blobGasUsed,
                 excessBlobGas: block.excessBlobGas,
                 miner: block.miner,
+                prevRandao: getValue(block.prevRandao),
                 extraData: block.extraData,
                 baseFeePerGas: getValue(block.baseFeePerGas),
                 stateRoot: block.stateRoot,
@@ -14040,7 +14260,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Returns a JSON-friendly value.
          */
         toJSON() {
-            const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
+            const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
             return {
                 _type: "Block",
                 baseFeePerGas: toJson(baseFeePerGas),
@@ -14050,7 +14270,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 gasUsed: toJson(gasUsed),
                 blobGasUsed: toJson(this.blobGasUsed),
                 excessBlobGas: toJson(this.excessBlobGas),
-                hash, miner, nonce, number, parentHash, timestamp,
+                hash, miner, prevRandao, nonce, number, parentHash, timestamp,
                 parentBeaconBlockRoot, stateRoot, receiptsRoot,
                 transactions,
             };
@@ -16311,13 +16531,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return false;
         }
         /**
-         *  Resovles to the encoded %%address%% for %%coinType%%.
+         *  Resolves to the encoded %%address%% for %%coinType%%.
          */
         async encodeAddress(coinType, address) {
             throw new Error("unsupported coin");
         }
         /**
-         *  Resovles to the decoded %%data%% for %%coinType%%.
+         *  Resolves to the decoded %%data%% for %%coinType%%.
          */
         async decodeAddress(coinType, data) {
             throw new Error("unsupported coin");
@@ -16397,7 +16617,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     info: { funcName }
                 });
                 params = [
-                    dnsEncode(this.name),
+                    dnsEncode(this.name, 255),
                     iface.encodeFunctionData(fragment, params)
                 ];
                 funcName = "resolve(bytes,bytes)";
@@ -16845,8 +17065,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         blobGasUsed: allowNull(getBigInt, null),
         excessBlobGas: allowNull(getBigInt, null),
         miner: allowNull(getAddress),
+        prevRandao: allowNull(formatHash, null),
         extraData: formatData,
         baseFeePerGas: allowNull(getBigInt)
+    }, {
+        prevRandao: ["mixHash"]
     });
     function formatBlock(value) {
         const result = _formatBlock(value);
@@ -16909,6 +17132,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         const result = object({
             hash: formatHash,
+            // Some nodes do not return this, usually test nodes (like Ganache)
+            index: allowNull(getNumber, undefined),
             type: (value) => {
                 if (value === "0x" || value == null) {
                     return 0;
@@ -16920,7 +17145,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             blockHash: allowNull(formatHash, null),
             blockNumber: allowNull(getNumber, null),
             transactionIndex: allowNull(getNumber, null),
-            //confirmations: allowNull(getNumber, null),
             from: getAddress,
             // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
             gasPrice: allowNull(getBigInt),
@@ -16936,7 +17160,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             chainId: allowNull(getBigInt, null)
         }, {
             data: ["input"],
-            gasLimit: ["gas"]
+            gasLimit: ["gas"],
+            index: ["transactionIndex"]
         })(value);
         // If to and creates are empty, populate the creates from the value
         if (result.to == null && result.creates == null) {
@@ -17545,12 +17770,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         registerEth("bnbt", 97, {});
         registerEth("linea", 59144, { ensNetwork: 1 });
         registerEth("linea-goerli", 59140, {});
+        registerEth("linea-sepolia", 59141, {});
         registerEth("matic", 137, {
             ensNetwork: 1,
             plugins: [
                 getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
             ]
         });
+        registerEth("matic-amoy", 80002, {});
         registerEth("matic-mumbai", 80001, {
             altNames: ["maticMumbai", "maticmum"],
             plugins: [
@@ -18332,7 +18559,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return resolve(address, fromBlock, toBlock);
         }
         /**
-         *  Returns or resovles to a transaction for %%request%%, resolving
+         *  Returns or resolves to a transaction for %%request%%, resolving
          *  any ENS names or [[Addressable]] and returning if already a valid
          *  transaction.
          */
@@ -19369,8 +19596,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         });
                     }
                 }
-                else if (pop.type === 2) {
-                    // Explicitly using EIP-1559
+                else if (pop.type === 2 || pop.type === 3) {
+                    // Explicitly using EIP-1559 or EIP-4844
                     // Populate missing fee data
                     if (pop.maxFeePerGas == null) {
                         pop.maxFeePerGas = feeData.maxFeePerGas;
@@ -19574,6 +19801,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (filterIdPromise) {
                 this.#filterIdPromise = null;
                 filterIdPromise.then((filterId) => {
+                    if (this.#provider.destroyed) {
+                        return;
+                    }
                     this.#provider.send("eth_uninstallFilter", [filterId]);
                 });
             }
@@ -20007,7 +20237,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (req.method === "call" || req.method === "estimateGas") {
                 let tx = req.transaction;
                 if (tx && tx.type != null && getBigInt(tx.type)) {
-                    // If there are no EIP-1559 properties, it might be non-EIP-a559
+                    // If there are no EIP-1559 or newer properties, it might be pre-EIP-1559
                     if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                         const feeData = await this.getFeeData();
                         if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
@@ -20186,6 +20416,14 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (tx.accessList) {
                 result["accessList"] = accessListify(tx.accessList);
             }
+            if (tx.blobVersionedHashes) {
+                // @TODO: Remove this <any> case once EIP-4844 added to prepared tx
+                result["blobVersionedHashes"] = tx.blobVersionedHashes.map(h => h.toLowerCase());
+            }
+            // @TODO: blobs should probably also be copied over, optionally
+            // accounting for the kzg property to backfill blobVersionedHashes
+            // using the commitment. Or should that be left as an exercise to
+            // the caller?
             return result;
         }
         /**
@@ -20452,7 +20690,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #pollingInterval;
         constructor(network, options) {
             super(network, options);
-            this.#pollingInterval = 4000;
+            let pollingInterval = this._getOption("pollingInterval");
+            if (pollingInterval == null) {
+                pollingInterval = defaultOptions.pollingInterval;
+            }
+            this.#pollingInterval = pollingInterval;
         }
         _getSubscriber(sub) {
             const subscriber = super._getSubscriber(sub);
@@ -20602,7 +20844,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  @_subsection: api/providers/thirdparty:Ankr  [providers-ankr]
      */
     const defaultApiKey$1 = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
-    function getHost$4(name) {
+    function getHost$5(name) {
         switch (name) {
             case "mainnet":
                 return "rpc.ankr.com/eth";
@@ -20684,7 +20926,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (apiKey == null) {
                 apiKey = defaultApiKey$1;
             }
-            const request = new FetchRequest(`https:/\/${getHost$4(network.name)}/${apiKey}`);
+            const request = new FetchRequest(`https:/\/${getHost$5(network.name)}/${apiKey}`);
             request.allowGzip = true;
             if (apiKey === defaultApiKey$1) {
                 request.retryFunc = async (request, response, attempt) => {
@@ -20726,12 +20968,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - Optimism Goerli Testnet (``optimism-goerli``)
      *  - Optimism Sepolia Testnet (``optimism-sepolia``)
      *  - Polygon (``matic``)
+     *  - Polygon Amoy Testnet (``matic-amoy``)
      *  - Polygon Mumbai Testnet (``matic-mumbai``)
      *
      *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
      */
     const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
-    function getHost$3(name) {
+    function getHost$4(name) {
         switch (name) {
             case "mainnet":
                 return "eth-mainnet.alchemyapi.io";
@@ -20753,6 +20996,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return "base-sepolia.g.alchemy.com";
             case "matic":
                 return "polygon-mainnet.g.alchemy.com";
+            case "matic-amoy":
+                return "polygon-amoy.g.alchemy.com";
             case "matic-mumbai":
                 return "polygon-mumbai.g.alchemy.com";
             case "optimism":
@@ -20835,11 +21080,105 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (apiKey == null) {
                 apiKey = defaultApiKey;
             }
-            const request = new FetchRequest(`https:/\/${getHost$3(network.name)}/v2/${apiKey}`);
+            const request = new FetchRequest(`https:/\/${getHost$4(network.name)}/v2/${apiKey}`);
             request.allowGzip = true;
             if (apiKey === defaultApiKey) {
                 request.retryFunc = async (request, response, attempt) => {
                     showThrottleMessage("alchemy");
+                    return true;
+                };
+            }
+            return request;
+        }
+    }
+
+    /**
+     *  [[link-chainstack]] provides a third-party service for connecting to
+     *  various blockchains over JSON-RPC.
+     *
+     *  **Supported Networks**
+     *
+     *  - Ethereum Mainnet (``mainnet``)
+     *  - Arbitrum (``arbitrum``)
+     *  - BNB Smart Chain Mainnet (``bnb``)
+     *  - Polygon (``matic``)
+     *
+     *  @_subsection: api/providers/thirdparty:Chainstack  [providers-chainstack]
+     */
+    function getApiKey(name) {
+        switch (name) {
+            case "mainnet": return "39f1d67cedf8b7831010a665328c9197";
+            case "arbitrum": return "0550c209db33c3abf4cc927e1e18cea1";
+            case "bnb": return "98b5a77e531614387366f6fc5da097f8";
+            case "matic": return "cd9d4d70377471aa7c142ec4a4205249";
+        }
+        assertArgument(false, "unsupported network", "network", name);
+    }
+    function getHost$3(name) {
+        switch (name) {
+            case "mainnet":
+                return "ethereum-mainnet.core.chainstack.com";
+            case "arbitrum":
+                return "arbitrum-mainnet.core.chainstack.com";
+            case "bnb":
+                return "bsc-mainnet.core.chainstack.com";
+            case "matic":
+                return "polygon-mainnet.core.chainstack.com";
+        }
+        assertArgument(false, "unsupported network", "network", name);
+    }
+    /**
+     *  The **ChainstackProvider** connects to the [[link-chainstack]]
+     *  JSON-RPC end-points.
+     *
+     *  By default, a highly-throttled API key is used, which is
+     *  appropriate for quick prototypes and simple scripts. To
+     *  gain access to an increased rate-limit, it is highly
+     *  recommended to [sign up here](link-chainstack).
+     */
+    class ChainstackProvider extends JsonRpcProvider {
+        /**
+         *  The API key for the Chainstack connection.
+         */
+        apiKey;
+        /**
+         *  Creates a new **ChainstackProvider**.
+         */
+        constructor(_network, apiKey) {
+            if (_network == null) {
+                _network = "mainnet";
+            }
+            const network = Network.from(_network);
+            if (apiKey == null) {
+                apiKey = getApiKey(network.name);
+            }
+            const request = ChainstackProvider.getRequest(network, apiKey);
+            super(request, network, { staticNetwork: network });
+            defineProperties(this, { apiKey });
+        }
+        _getProvider(chainId) {
+            try {
+                return new ChainstackProvider(chainId, this.apiKey);
+            }
+            catch (error) { }
+            return super._getProvider(chainId);
+        }
+        isCommunityResource() {
+            return (this.apiKey === getApiKey(this._network.name));
+        }
+        /**
+         *  Returns a prepared request for connecting to %%network%%
+         *  with %%apiKey%% and %%projectSecret%%.
+         */
+        static getRequest(network, apiKey) {
+            if (apiKey == null) {
+                apiKey = getApiKey(network.name);
+            }
+            const request = new FetchRequest(`https:/\/${getHost$3(network.name)}/${apiKey}`);
+            request.allowGzip = true;
+            if (apiKey === getApiKey(network.name)) {
+                request.retryFunc = async (request, response, attempt) => {
+                    showThrottleMessage("ChainstackProvider");
                     return true;
                 };
             }
@@ -20876,15 +21215,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - Ethereum Mainnet (``mainnet``)
      *  - Goerli Testnet (``goerli``)
      *  - Sepolia Testnet (``sepolia``)
-     *  - Sepolia Testnet (``holesky``)
+     *  - Holesky Testnet (``holesky``)
      *  - Arbitrum (``arbitrum``)
      *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+     *  - Base (``base``)
+     *  - Base Sepolia Testnet (``base-sepolia``)
      *  - BNB Smart Chain Mainnet (``bnb``)
      *  - BNB Smart Chain Testnet (``bnbt``)
      *  - Optimism (``optimism``)
      *  - Optimism Goerli Testnet (``optimism-goerli``)
      *  - Polygon (``matic``)
      *  - Polygon Mumbai Testnet (``matic-mumbai``)
+     *  - Polygon Amoy Testnet (``matic-amoy``)
      *
      *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
      */
@@ -20974,12 +21316,18 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     return "https:/\/api.arbiscan.io";
                 case "arbitrum-goerli":
                     return "https:/\/api-goerli.arbiscan.io";
+                case "base":
+                    return "https:/\/api.basescan.org";
+                case "base-sepolia":
+                    return "https:/\/api-sepolia.basescan.org";
                 case "bnb":
                     return "https:/\/api.bscscan.com";
                 case "bnbt":
                     return "https:/\/api-testnet.bscscan.com";
                 case "matic":
                     return "https:/\/api.polygonscan.com";
+                case "matic-amoy":
+                    return "https:/\/api-amoy.polygonscan.com";
                 case "matic-mumbai":
                     return "https:/\/api-testnet.polygonscan.com";
                 case "optimism":
@@ -21126,6 +21474,16 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     value = "[" + accessListify(value).map((set) => {
                         return `{address:"${set.address}",storageKeys:["${set.storageKeys.join('","')}"]}`;
                     }).join(",") + "]";
+                }
+                else if (key === "blobVersionedHashes") {
+                    if (value.length === 0) {
+                        continue;
+                    }
+                    // @TODO: update this once the API supports blobs
+                    assert(false, "Etherscan API does not support blobVersionedHashes", "UNSUPPORTED_OPERATION", {
+                        operation: "_getTransactionPostData",
+                        info: { transaction }
+                    });
                 }
                 else {
                     value = hexlify(value);
@@ -21422,6 +21780,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         stop() {
             (this.#filterId).then((filterId) => {
+                if (this.#provider.destroyed) {
+                    return;
+                }
                 this.#provider.send("eth_unsubscribe", [filterId]);
             });
             this.#filterId = null;
@@ -21765,11 +22126,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - BNB Smart Chain Mainnet (``bnb``)
      *  - BNB Smart Chain Testnet (``bnbt``)
      *  - Linea (``linea``)
-     *  - Linea Goerlia Testnet (``linea-goerli``)
+     *  - Linea Goerli Testnet (``linea-goerli``)
+     *  - Linea Sepolia Testnet (``linea-sepolia``)
      *  - Optimism (``optimism``)
      *  - Optimism Goerli Testnet (``optimism-goerli``)
      *  - Optimism Sepolia Testnet (``optimism-sepolia``)
      *  - Polygon (``matic``)
+     *  - Polygon Amoy Testnet (``matic-amoy``)
      *  - Polygon Mumbai Testnet (``matic-mumbai``)
      *
      *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
@@ -21803,8 +22166,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return "linea-mainnet.infura.io";
             case "linea-goerli":
                 return "linea-goerli.infura.io";
+            case "linea-sepolia":
+                return "linea-sepolia.infura.io";
             case "matic":
                 return "polygon-mainnet.infura.io";
+            case "matic-amoy":
+                return "polygon-amoy.infura.io";
             case "matic-mumbai":
                 return "polygon-mumbai.infura.io";
             case "optimism":
@@ -21845,7 +22212,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const req = provider._getConnection();
             assert(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
             const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-            super(url, network);
+            super(url, provider._network);
             defineProperties(this, {
                 projectId: provider.projectId,
                 projectSecret: provider.projectSecret
@@ -22342,7 +22709,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             this.eventQuorum = 1;
             this.eventWorkers = 1;
-            assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0), "quorum exceed provider wieght", "quorum", this.quorum);
+            assertArgument(this.quorum <= this.#configs.reduce((a, c) => (a + c.weight), 0), "quorum exceed provider weight", "quorum", this.quorum);
         }
         get providerConfigs() {
             return this.#configs.map((c) => {
@@ -22726,6 +23093,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - ``"alchemy"``
      *  - ``"ankr"``
      *  - ``"cloudflare"``
+     *  - ``"chainstack"``
      *  - ``"etherscan"``
      *  - ``"infura"``
      *  - ``"publicPolygon"``
@@ -22779,6 +23147,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (staticNetwork.name === "matic") {
                 providers.push(new JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
             }
+            else if (staticNetwork.name === "matic-amoy") {
+                providers.push(new JsonRpcProvider("https:/\/rpc-amoy.polygon.technology/", staticNetwork, { staticNetwork }));
+            }
         }
         if (allowService("alchemy")) {
             try {
@@ -22789,6 +23160,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (allowService("ankr") && options.ankr != null) {
             try {
                 providers.push(new AnkrProvider(network, options.ankr));
+            }
+            catch (error) { }
+        }
+        if (allowService("chainstack")) {
+            try {
+                providers.push(new ChainstackProvider(network, options.chainstack));
             }
             catch (error) { }
         }
@@ -22946,9 +23323,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Connnect to the %%ethereum%% provider, optionally forcing the
          *  %%network%%.
          */
-        constructor(ethereum, network) {
+        constructor(ethereum, network, _options) {
+            // Copy the options
+            const options = Object.assign({}, ((_options != null) ? _options : {}), { batchMaxCount: 1 });
             assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
-            super(network, { batchMaxCount: 1 });
+            super(network, options);
             this.#request = async (method, params) => {
                 const payload = { method, params };
                 this.emit("debug", { action: "sendEip1193Request", payload });
@@ -24423,8 +24802,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     }
     function derivePath(node, path) {
         const components = path.split("/");
-        assertArgument(components.length > 0 && (components[0] === "m" || node.depth > 0), "invalid path", "path", path);
+        assertArgument(components.length > 0, "invalid path", "path", path);
         if (components[0] === "m") {
+            assertArgument(node.depth === 0, `cannot derive root path (i.e. path starting with "m/") for a node at non-zero depth ${node.depth}`, "path", path);
             components.shift();
         }
         let result = node;
@@ -24486,9 +24866,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         /**
          *  The derivation path of this wallet.
          *
-         *  Since extended keys do not provider full path details, this
+         *  Since extended keys do not provide full path details, this
          *  may be ``null``, if instantiated from a source that does not
-         *  enocde it.
+         *  encode it.
          */
         path;
         /**
@@ -25154,6 +25534,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         BaseWallet: BaseWallet,
         Block: Block,
         BrowserProvider: BrowserProvider,
+        ChainstackProvider: ChainstackProvider,
         CloudflareProvider: CloudflareProvider,
         ConstructorFragment: ConstructorFragment,
         Contract: Contract,
@@ -25344,6 +25725,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     exports.BaseWallet = BaseWallet;
     exports.Block = Block;
     exports.BrowserProvider = BrowserProvider;
+    exports.ChainstackProvider = ChainstackProvider;
     exports.CloudflareProvider = CloudflareProvider;
     exports.ConstructorFragment = ConstructorFragment;
     exports.Contract = Contract;

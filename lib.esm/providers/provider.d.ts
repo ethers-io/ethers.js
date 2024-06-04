@@ -1,7 +1,7 @@
 import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
-import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
+import type { AccessList, AccessListish, BlobLike, KzgLibrary, TransactionLike } from "../transaction/index.js";
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
 /**
@@ -144,6 +144,26 @@ export interface TransactionRequest {
      *  the fetch to unexpected parties.
      */
     enableCcipRead?: boolean;
+    /**
+     *  The blob versioned hashes (see [[link-eip-4844]]).
+     */
+    blobVersionedHashes?: null | Array<string>;
+    /**
+     *  The maximum fee per blob gas (see [[link-eip-4844]]).
+     */
+    maxFeePerBlobGas?: null | BigNumberish;
+    /**
+     *  Any blobs to include in the transaction (see [[link-eip-4844]]).
+     */
+    blobs?: null | Array<BlobLike>;
+    /**
+     *  An external library for computing the KZG commitments and
+     *  proofs necessary for EIP-4844 transactions (see [[link-eip-4844]]).
+     *
+     *  This is generally ``null``, unless you are creating BLOb
+     *  transactions.
+     */
+    kzg?: null | KzgLibrary;
 }
 /**
  *  A **PreparedTransactionRequest** is identical to a [[TransactionRequest]]
@@ -347,6 +367,11 @@ export declare class Block implements BlockParams, Iterable<string> {
      *  including this block.
      */
     readonly miner: string;
+    /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    readonly prevRandao: null | string;
     /**
      *  Any extra data the validator wished to include.
      */
@@ -965,7 +990,7 @@ export type OrphanFilter = {
  *  queries.
  *
  *  Each field that is ``null`` matches **any** value, a field that is
- *  a ``string`` must match exactly that value and and ``array`` is
+ *  a ``string`` must match exactly that value and ``array`` is
  *  effectively an ``OR``-ed set, where any one of those values must
  *  match.
  */
@@ -1108,7 +1133,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     getStorage(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>;
     /**
-     *  Estimates the amount of gas required to executre %%tx%%.
+     *  Estimates the amount of gas required to execute %%tx%%.
      */
     estimateGas(tx: TransactionRequest): Promise<bigint>;
     /**

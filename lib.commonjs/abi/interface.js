@@ -1094,7 +1094,11 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         if (typeof (value) === "string") {
             return new Interface(JSON.parse(value));
         }
-        // Maybe an interface from an older version, or from a symlinked copy
+        // An Interface; possibly from another v6 instance
+        if (typeof (value.formatJson) === "function") {
+            return new Interface(value.formatJson());
+        }
+        // A legacy Interface; from an older version
         if (typeof (value.format) === "function") {
             return new Interface(value.format("json"));
         }

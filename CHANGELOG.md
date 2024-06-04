@@ -3,6 +3,50 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.0 (2024-06-04 01:01)
+---------------------------------
+
+  - Added Options for BrowserProvider ([#4707](https://github.com/ethers-io/ethers.js/issues/4707); [33bb0bf](https://github.com/ethers-io/ethers.js/commit/33bb0bf30e1e6a699c24415a1edf0fa4ed28b6aa)).
+  - Fix Result deep toObject when a parent is an Array ([#4681](https://github.com/ethers-io/ethers.js/issues/4681); [d8cb849](https://github.com/ethers-io/ethers.js/commit/d8cb84957078985f5449fa26c6fd8087dbd17aec)).
+  - Added consistent timeout and cancel behaviour to FetchRequest ([#4122](https://github.com/ethers-io/ethers.js/issues/4122); [a12a739](https://github.com/ethers-io/ethers.js/commit/a12a7391fba39b5c114fa658590fae305dcedd17)).
+
+ethers/v6.12.2 (2024-05-30 17:24)
+---------------------------------
+
+  - Copy EIP-4844 properties during estimateGas and call ([#4728](https://github.com/ethers-io/ethers.js/issues/4728); [cebe5ee](https://github.com/ethers-io/ethers.js/commit/cebe5eed91de0db5931b7847e76ee27cb2ce9219)).
+  - Use non-capturing regex for data to prevent memory exhaustion for long strings ([#4741](https://github.com/ethers-io/ethers.js/issues/4741); [5463aa0](https://github.com/ethers-io/ethers.js/commit/5463aa03eacde45322a1e05693ce90e4d7abcaa7)).
+  - Added Base endpointsto EtherscanProvider ([#4729](https://github.com/ethers-io/ethers.js/issues/4729); [7e1dc95](https://github.com/ethers-io/ethers.js/commit/7e1dc95ea2564c1eb0a9452b9a16002f3696765c)).
+
+ethers/v6.12.1 (2024-04-30 22:46)
+---------------------------------
+
+  - Prevent bad Interface clone when using two different versions of v6 ([#4689](https://github.com/ethers-io/ethers.js/issues/4689); [4d2d90f](https://github.com/ethers-io/ethers.js/commit/4d2d90f5cea2eb2f9559e490a34aa1567c8c4c14)).
+  - Fixed typo in error message for invalid quorum weight ([#4149](https://github.com/ethers-io/ethers.js/issues/4149); [45b9b9c](https://github.com/ethers-io/ethers.js/commit/45b9b9c9322bf20feaf892d948bcfb8db8932877)).
+  - Added matic-amoy to EtherescanProvider ([#4711](https://github.com/ethers-io/ethers.js/issues/4711); [5c8d17a](https://github.com/ethers-io/ethers.js/commit/5c8d17a61825fe002bd45ee5b2239bfd8c8ae189)).
+  - Fix JsonRpcProvider ignoring pollingInterval in options ([#4644](https://github.com/ethers-io/ethers.js/issues/4644); [7b7be0d](https://github.com/ethers-io/ethers.js/commit/7b7be0d1ef637f073b28bce54f4ecdfb8c88d09c)).
+
+ethers/v6.12.0 (2024-04-17 01:09)
+---------------------------------
+
+  - Added Linea Sepolia network and Infura endpoint ([#4655](https://github.com/ethers-io/ethers.js/issues/4655); [b4aaab8](https://github.com/ethers-io/ethers.js/commit/b4aaab8d39fe47f8a1a296fa442f0856f84faf03)).
+  - Do not send unsubscribe messages to destroyed Providers ([#4678](https://github.com/ethers-io/ethers.js/issues/4678); [c45935e](https://github.com/ethers-io/ethers.js/commit/c45935e29ca0dd1ecdf1277fa1107246041be580)).
+  - Get definitive network from InfuraProvider when using InfuraWebSocketProvider ([38e32d8](https://github.com/ethers-io/ethers.js/commit/38e32d82145eb289e5179f9b6b11f4a9225a7022)).
+  - Better error messages for transaction field mismatch ([#4659](https://github.com/ethers-io/ethers.js/issues/4659); [9230aa0](https://github.com/ethers-io/ethers.js/commit/9230aa0b9a88b5241915a8d6afa8a522d35abd5d)).
+  - Added prevRandao to block ([#3372](https://github.com/ethers-io/ethers.js/issues/3372); [ec6a754](https://github.com/ethers-io/ethers.js/commit/ec6a754f0c8647dae59c73b2589225cb200d83dd)).
+  - Added Polygon Amoy testnet ([#4645](https://github.com/ethers-io/ethers.js/issues/4645); [1717abb](https://github.com/ethers-io/ethers.js/commit/1717abbf29a14a6f6b106e479fe9a5b1f8768dc4)).
+  - Added Chainstack provider ([#2741](https://github.com/ethers-io/ethers.js/issues/2741); [014004d](https://github.com/ethers-io/ethers.js/commit/014004d9402d7fd8c15553792cfb7a8a84ed327a)).
+  - Added deep convertion to Result for toObject and toArray ([#4681](https://github.com/ethers-io/ethers.js/issues/4681); [03bfe2a](https://github.com/ethers-io/ethers.js/commit/03bfe2a4f7b29b15cd90127974b7fc1d8b03edf9)).
+  - Added EIP-4844 broadcast support ([92bad88](https://github.com/ethers-io/ethers.js/commit/92bad88261a5d8a538535a7d5528162fe5010527)).
+  - Fix ignored throttle parameters ([#4663](https://github.com/ethers-io/ethers.js/issues/4663); [12772e9](https://github.com/ethers-io/ethers.js/commit/12772e9498b70f8538838f30e16f3792ea90e173)).
+
+ethers/v6.11.1 (2024-02-14 13:13)
+---------------------------------
+
+  - Throw an error when attempting to derive from a master path from a non-master node ([#4551](https://github.com/ethers-io/ethers.js/issues/4551); [556fdd9](https://github.com/ethers-io/ethers.js/commit/556fdd91d9b6bf7db4041bb099e66b2080e1a985)).
+  - Allow ENS wildcards with labels up to 255 bytes wide; discussed with ENS and deemed safe ([#4543](https://github.com/ethers-io/ethers.js/issues/4543); [7f14bde](https://github.com/ethers-io/ethers.js/commit/7f14bdebf1aef6760462a1c2437c31f002b984fe)).
+  - Enforce string is passed to toUtf8Bytes ([#4583](https://github.com/ethers-io/ethers.js/issues/4583); [f45bb87](https://github.com/ethers-io/ethers.js/commit/f45bb87aefaf2c6c3a4991f6e30a81c227ae83c0)).
+  - Fix transaction.index not being populated on some backends ([#4591](https://github.com/ethers-io/ethers.js/issues/4591); [7f0e140](https://github.com/ethers-io/ethers.js/commit/7f0e140d5e3925a42e8bb2ac9eb1ba3fbd939864)).
+
 ethers/v6.11.0 (2024-02-08 20:26)
 ---------------------------------
 

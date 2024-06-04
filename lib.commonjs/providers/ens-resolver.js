@@ -52,13 +52,13 @@ class MulticoinProviderPlugin {
         return false;
     }
     /**
-     *  Resovles to the encoded %%address%% for %%coinType%%.
+     *  Resolves to the encoded %%address%% for %%coinType%%.
      */
     async encodeAddress(coinType, address) {
         throw new Error("unsupported coin");
     }
     /**
-     *  Resovles to the decoded %%data%% for %%coinType%%.
+     *  Resolves to the decoded %%data%% for %%coinType%%.
      */
     async decodeAddress(coinType, data) {
         throw new Error("unsupported coin");
@@ -154,7 +154,7 @@ class EnsResolver {
                 info: { funcName }
             });
             params = [
-                (0, index_js_4.dnsEncode)(this.name),
+                (0, index_js_4.dnsEncode)(this.name, 255),
                 iface.encodeFunctionData(fragment, params)
             ];
             funcName = "resolve(bytes,bytes)";

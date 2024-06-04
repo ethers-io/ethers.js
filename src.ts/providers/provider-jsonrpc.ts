@@ -655,7 +655,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         if (req.method === "call" || req.method === "estimateGas") {
             let tx = req.transaction;
             if (tx && tx.type != null && getBigInt(tx.type)) {
-                // If there are no EIP-1559 properties, it might be non-EIP-a559
+                // If there are no EIP-1559 or newer properties, it might be pre-EIP-1559
                 if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                     const feeData = await this.getFeeData();
                     if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
@@ -844,6 +844,16 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         if (tx.accessList) {
             result["accessList"] = accessListify(tx.accessList);
         }
+
+        if (tx.blobVersionedHashes) {
+            // @TODO: Remove this <any> case once EIP-4844 added to prepared tx
+            (<any>result)["blobVersionedHashes"] = tx.blobVersionedHashes.map(h => h.toLowerCase());
+        }
+
+        // @TODO: blobs should probably also be copied over, optionally
+        // accounting for the kzg property to backfill blobVersionedHashes
+        // using the commitment. Or should that be left as an exercise to
+        // the caller?
 
         return result;
     }
@@ -1162,7 +1172,10 @@ export abstract class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions) {
         super(network, options);
 
-        this.#pollingInterval = 4000;
+        let pollingInterval = this._getOption("pollingInterval");
+        if (pollingInterval == null) { pollingInterval = defaultOptions.pollingInterval; }
+
+        this.#pollingInterval = pollingInterval;
     }
 
     _getSubscriber(sub: Subscription): Subscriber {

@@ -48,6 +48,9 @@ class SocketSubscriber {
     }
     stop() {
         (this.#filterId).then((filterId) => {
+            if (this.#provider.destroyed) {
+                return;
+            }
             this.#provider.send("eth_unsubscribe", [filterId]);
         });
         this.#filterId = null;

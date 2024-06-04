@@ -1,13 +1,15 @@
 import http from "http";
 import https from "https";
 import { gunzipSync } from "zlib";
-import { assert } from "./errors.js";
+import { assert, makeError } from "./errors.js";
 import { getBytes } from "./data.js";
 /**
  *  @_ignore:
  */
 export function createGetUrl(options) {
     async function getUrl(req, signal) {
+        // Make sure we weren't cancelled before sending
+        assert(signal == null || !signal.cancelled, "request cancelled before sending", "CANCELLED");
         const protocol = req.url.split(":")[0].toLowerCase();
         assert(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
             info: { protocol },
@@ -24,6 +26,15 @@ export function createGetUrl(options) {
                 reqOptions.agent = options.agent;
             }
         }
+        // Create a Node-specific AbortController, if available
+        let abort = null;
+        try {
+            abort = new AbortController();
+            reqOptions.abort = abort.signal;
+        }
+        catch (e) {
+            console.log(e);
+        }
         const request = ((protocol === "http") ? http : https).request(req.url, reqOptions);
         request.setTimeout(req.timeout);
         const body = req.body;
@@ -32,8 +43,17 @@ export function createGetUrl(options) {
         }
         request.end();
         return new Promise((resolve, reject) => {
-            // @TODO: Node 15 added AbortSignal; once we drop support for
-            // Node14, we can add that in here too
+            if (signal) {
+                signal.addListener(() => {
+                    if (abort) {
+                        abort.abort();
+                    }
+                    reject(makeError("request cancelled", "CANCELLED"));
+                });
+            }
+            request.on("timeout", () => {
+                reject(makeError("request timeout", "TIMEOUT"));
+            });
             request.once("response", (resp) => {
                 const statusCode = resp.statusCode || 0;
                 const statusMessage = resp.statusMessage || "";

@@ -19,8 +19,8 @@ describe("Tests Provider Call Exception", function () {
         //{ code: 0x41, reason: "OUT_OF_MEMORY" },
         //{ code: 0x51, reason: "UNINITIALIZED_FUNCTION_CALL" },
     ];
-    const testAddr = "0xF20Ba47c47a32fc2d9ad846fF06f2fa6e89eeC74";
-    const networkName = "goerli";
+    const testAddr = "0x86d19fF4b2EB0D451511B5B930b01DC71fD9a2Ee";
+    const networkName = "sepolia";
     for (const { code, reason } of panics) {
         for (const method of ["call", "estimateGas"]) {
             for (const providerName of create_provider_js_1.providerNames) {
@@ -132,7 +132,7 @@ describe("Tests Provider Call Exception", function () {
 });
 describe("Test Provider Blockchain Errors", function () {
     const wallet = new index_js_1.Wallet((process.env.FAUCET_PRIVATEKEY));
-    const networkName = "goerli";
+    const networkName = "sepolia";
     for (const providerName of create_provider_js_1.providerNames) {
         const provider = (0, create_provider_js_1.getProvider)(providerName, networkName);
         if (provider == null) {

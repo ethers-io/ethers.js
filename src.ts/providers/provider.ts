@@ -1,6 +1,7 @@
 //import { resolveAddress } from "@ethersproject/address";
 import {
-    defineProperties, getBigInt, getNumber, hexlify, resolveProperties,
+    defineProperties, getBigInt, getNumber, hexlify, isBytesLike,
+    resolveProperties,
     assert, assertArgument, isError, makeError
 } from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
@@ -8,7 +9,9 @@ import { accessListify } from "../transaction/index.js";
 import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
-import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
+import type {
+    AccessList, AccessListish, BlobLike, KzgLibrary, TransactionLike
+} from "../transaction/index.js";
 
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
@@ -214,6 +217,30 @@ export interface TransactionRequest {
      */
     enableCcipRead?: boolean;
 
+    /**
+     *  The blob versioned hashes (see [[link-eip-4844]]).
+     */
+    blobVersionedHashes?: null | Array<string>
+
+    /**
+     *  The maximum fee per blob gas (see [[link-eip-4844]]).
+     */
+    maxFeePerBlobGas?: null | BigNumberish;
+
+    /**
+     *  Any blobs to include in the transaction (see [[link-eip-4844]]).
+     */
+    blobs?: null | Array<BlobLike>;
+
+    /**
+     *  An external library for computing the KZG commitments and
+     *  proofs necessary for EIP-4844 transactions (see [[link-eip-4844]]).
+     *
+     *  This is generally ``null``, unless you are creating BLOb
+     *  transactions.
+     */
+    kzg?: null | KzgLibrary;
+
     // Todo?
     //gasMultiplier?: number;
 };
@@ -332,7 +359,7 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 
     if (req.data) { result.data = hexlify(req.data); }
 
-    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
+    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerBlobGas,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
     for (const key of bigIntKeys) {
         if (!(key in req) || (<any>req)[key] == null) { continue; }
         result[key] = getBigInt((<any>req)[key], `request.${ key }`);
@@ -356,6 +383,19 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 
     if ("customData" in req) {
         result.customData = req.customData;
+    }
+
+    if ("blobVersionedHashes" in req && req.blobVersionedHashes) {
+        result.blobVersionedHashes = req.blobVersionedHashes.slice();
+    }
+
+    if ("kzg" in req) { result.kzg = req.kzg; }
+
+    if ("blobs" in req && req.blobs) {
+        result.blobs = req.blobs.map((b) => {
+            if (isBytesLike(b)) { return hexlify(b); }
+            return Object.assign({ }, b);
+        });
     }
 
     return result;
@@ -503,6 +543,12 @@ export class Block implements BlockParams, Iterable<string> {
     readonly miner!: string;
 
     /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    readonly prevRandao!: null | string;
+
+    /**
      *  Any extra data the validator wished to include.
      */
     readonly extraData!: string;
@@ -552,6 +598,7 @@ export class Block implements BlockParams, Iterable<string> {
             blobGasUsed: block.blobGasUsed,
             excessBlobGas: block.excessBlobGas,
             miner: block.miner,
+            prevRandao: getValue(block.prevRandao),
             extraData: block.extraData,
 
             baseFeePerGas: getValue(block.baseFeePerGas),
@@ -600,7 +647,7 @@ export class Block implements BlockParams, Iterable<string> {
     toJSON(): any {
         const {
             baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash,
-            miner, nonce, number, parentHash, parentBeaconBlockRoot,
+            miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot,
             stateRoot, receiptsRoot, timestamp, transactions
         } = this;
 
@@ -613,7 +660,7 @@ export class Block implements BlockParams, Iterable<string> {
             gasUsed: toJson(gasUsed),
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
-            hash, miner, nonce, number, parentHash, timestamp,
+            hash, miner, prevRandao, nonce, number, parentHash, timestamp,
             parentBeaconBlockRoot, stateRoot, receiptsRoot,
             transactions,
         };
@@ -1785,7 +1832,7 @@ function createRemovedLogFilter(log: { blockHash: string, transactionHash: strin
  *  queries.
  *
  *  Each field that is ``null`` matches **any** value, a field that is
- *  a ``string`` must match exactly that value and and ``array`` is
+ *  a ``string`` must match exactly that value and ``array`` is
  *  effectively an ``OR``-ed set, where any one of those values must
  *  match.
  */
@@ -1967,7 +2014,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     // Execution
 
     /**
-     *  Estimates the amount of gas required to executre %%tx%%.
+     *  Estimates the amount of gas required to execute %%tx%%.
      */
     estimateGas(tx: TransactionRequest): Promise<bigint>;
 

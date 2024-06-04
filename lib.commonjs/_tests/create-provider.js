@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.connect = exports.checkProvider = exports.getProvider = exports.getProviderNetworks = exports.providerNames = exports.setupProviders = void 0;
 const index_js_1 = require("../index.js");
 ;
-const ethNetworks = ["default", "mainnet", "goerli"];
+const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {
@@ -31,6 +31,13 @@ const ProviderCreators = [
         }
     },
     */
+    {
+        name: "ChainstackProvider",
+        networks: ["default", "mainnet", "arbitrum", "bnb", "matic"],
+        create: function (network) {
+            return new index_js_1.ChainstackProvider(network);
+        }
+    },
     {
         name: "EtherscanProvider",
         networks: ethNetworks,
@@ -137,7 +144,7 @@ function getProvider(provider, network) {
 exports.getProvider = getProvider;
 function checkProvider(provider, network) {
     const creator = getCreator(provider);
-    return (creator != null);
+    return (creator != null && creator.networks.indexOf(network) >= 0);
 }
 exports.checkProvider = checkProvider;
 function connect(network) {

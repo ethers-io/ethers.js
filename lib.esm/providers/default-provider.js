@@ -1,6 +1,7 @@
 import { assert } from "../utils/index.js";
 import { AnkrProvider } from "./provider-ankr.js";
 import { AlchemyProvider } from "./provider-alchemy.js";
+import { ChainstackProvider } from "./provider-chainstack.js";
 import { CloudflareProvider } from "./provider-cloudflare.js";
 import { EtherscanProvider } from "./provider-etherscan.js";
 import { InfuraProvider } from "./provider-infura.js";
@@ -38,6 +39,7 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
  *  - ``"alchemy"``
  *  - ``"ankr"``
  *  - ``"cloudflare"``
+ *  - ``"chainstack"``
  *  - ``"etherscan"``
  *  - ``"infura"``
  *  - ``"publicPolygon"``
@@ -91,6 +93,9 @@ export function getDefaultProvider(network, options) {
         if (staticNetwork.name === "matic") {
             providers.push(new JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
         }
+        else if (staticNetwork.name === "matic-amoy") {
+            providers.push(new JsonRpcProvider("https:/\/rpc-amoy.polygon.technology/", staticNetwork, { staticNetwork }));
+        }
     }
     if (allowService("alchemy")) {
         try {
@@ -101,6 +106,12 @@ export function getDefaultProvider(network, options) {
     if (allowService("ankr") && options.ankr != null) {
         try {
             providers.push(new AnkrProvider(network, options.ankr));
+        }
+        catch (error) { }
+    }
+    if (allowService("chainstack")) {
+        try {
+            providers.push(new ChainstackProvider(network, options.chainstack));
         }
         catch (error) { }
     }

@@ -1,5 +1,5 @@
 //import { resolveAddress } from "@ethersproject/address";
-import { defineProperties, getBigInt, getNumber, hexlify, resolveProperties, assert, assertArgument, isError, makeError } from "../utils/index.js";
+import { defineProperties, getBigInt, getNumber, hexlify, isBytesLike, resolveProperties, assert, assertArgument, isError, makeError } from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
 const BN_0 = BigInt(0);
 // -----------------------
@@ -89,7 +89,7 @@ export function copyRequest(req) {
     if (req.data) {
         result.data = hexlify(req.data);
     }
-    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
+    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerBlobGas,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
     for (const key of bigIntKeys) {
         if (!(key in req) || req[key] == null) {
             continue;
@@ -114,6 +114,20 @@ export function copyRequest(req) {
     }
     if ("customData" in req) {
         result.customData = req.customData;
+    }
+    if ("blobVersionedHashes" in req && req.blobVersionedHashes) {
+        result.blobVersionedHashes = req.blobVersionedHashes.slice();
+    }
+    if ("kzg" in req) {
+        result.kzg = req.kzg;
+    }
+    if ("blobs" in req && req.blobs) {
+        result.blobs = req.blobs.map((b) => {
+            if (isBytesLike(b)) {
+                return hexlify(b);
+            }
+            return Object.assign({}, b);
+        });
     }
     return result;
 }
@@ -203,6 +217,11 @@ export class Block {
      */
     miner;
     /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    prevRandao;
+    /**
      *  Any extra data the validator wished to include.
      */
     extraData;
@@ -242,6 +261,7 @@ export class Block {
             blobGasUsed: block.blobGasUsed,
             excessBlobGas: block.excessBlobGas,
             miner: block.miner,
+            prevRandao: getValue(block.prevRandao),
             extraData: block.extraData,
             baseFeePerGas: getValue(block.baseFeePerGas),
             stateRoot: block.stateRoot,
@@ -284,7 +304,7 @@ export class Block {
      *  Returns a JSON-friendly value.
      */
     toJSON() {
-        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
+        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
         return {
             _type: "Block",
             baseFeePerGas: toJson(baseFeePerGas),
@@ -294,7 +314,7 @@ export class Block {
             gasUsed: toJson(gasUsed),
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
-            hash, miner, nonce, number, parentHash, timestamp,
+            hash, miner, prevRandao, nonce, number, parentHash, timestamp,
             parentBeaconBlockRoot, stateRoot, receiptsRoot,
             transactions,
         };

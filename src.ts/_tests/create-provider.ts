@@ -2,6 +2,7 @@ import {
     AlchemyProvider,
 //    AnkrProvider,
 //    CloudflareProvider,
+    ChainstackProvider,
     EtherscanProvider,
     InfuraProvider,
 //    PocketProvider,
@@ -19,7 +20,7 @@ interface ProviderCreator {
     create: (network: string) => null | AbstractProvider;
 };
 
-const ethNetworks = [ "default", "mainnet", "goerli" ];
+const ethNetworks = [ "default", "mainnet", "sepolia" ];
 //const maticNetworks = [ "matic", "maticmum" ];
 
 const ProviderCreators: Array<ProviderCreator> = [
@@ -48,6 +49,13 @@ const ProviderCreators: Array<ProviderCreator> = [
         }
     },
     */
+    {
+        name: "ChainstackProvider",
+        networks: [ "default", "mainnet", "arbitrum", "bnb", "matic" ],
+        create: function(network: string) {
+            return new ChainstackProvider(network);
+        }
+    },
     {
         name: "EtherscanProvider",
         networks: ethNetworks,
@@ -143,7 +151,7 @@ export function getProvider(provider: string, network: string): null | AbstractP
 
 export function checkProvider(provider: string, network: string): boolean {
     const creator = getCreator(provider);
-    return (creator != null);
+    return (creator != null && creator.networks.indexOf(network) >= 0);
 }
 
 export function connect(network: string): AbstractProvider {

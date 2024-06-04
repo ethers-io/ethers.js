@@ -28,4 +28,6 @@ export { accessListify } from "./accesslist.js";
 export { computeAddress, recoverAddress } from "./address.js";
 export { Transaction } from "./transaction.js";
 
-export type { TransactionLike } from "./transaction.js";
+export type {
+    Blob, BlobLike, KzgLibrary, TransactionLike
+} from "./transaction.js";

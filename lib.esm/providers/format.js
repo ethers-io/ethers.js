@@ -111,8 +111,11 @@ const _formatBlock = object({
     blobGasUsed: allowNull(getBigInt, null),
     excessBlobGas: allowNull(getBigInt, null),
     miner: allowNull(getAddress),
+    prevRandao: allowNull(formatHash, null),
     extraData: formatData,
     baseFeePerGas: allowNull(getBigInt)
+}, {
+    prevRandao: ["mixHash"]
 });
 export function formatBlock(value) {
     const result = _formatBlock(value);
@@ -175,6 +178,8 @@ export function formatTransactionResponse(value) {
     }
     const result = object({
         hash: formatHash,
+        // Some nodes do not return this, usually test nodes (like Ganache)
+        index: allowNull(getNumber, undefined),
         type: (value) => {
             if (value === "0x" || value == null) {
                 return 0;
@@ -186,7 +191,6 @@ export function formatTransactionResponse(value) {
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),
-        //confirmations: allowNull(getNumber, null),
         from: getAddress,
         // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
         gasPrice: allowNull(getBigInt),
@@ -202,7 +206,8 @@ export function formatTransactionResponse(value) {
         chainId: allowNull(getBigInt, null)
     }, {
         data: ["input"],
-        gasLimit: ["gas"]
+        gasLimit: ["gas"],
+        index: ["transactionIndex"]
     })(value);
     // If to and creates are empty, populate the creates from the value
     if (result.to == null && result.creates == null) {

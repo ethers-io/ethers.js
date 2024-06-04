@@ -26,6 +26,7 @@ export { BrowserProvider } from "./provider-browser.js";
 export { AlchemyProvider } from "./provider-alchemy.js";
 export { AnkrProvider } from "./provider-ankr.js";
 export { CloudflareProvider } from "./provider-cloudflare.js";
+export { ChainstackProvider } from "./provider-chainstack.js";
 export { EtherscanProvider, EtherscanPlugin } from "./provider-etherscan.js";
 export { InfuraProvider, InfuraWebSocketProvider } from "./provider-infura.js";
 export { PocketProvider } from "./provider-pocket.js";

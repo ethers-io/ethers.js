@@ -66,6 +66,11 @@ export interface BlockParams {
      */
     miner: string;
     /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    prevRandao?: null | string;
+    /**
      *  Additional data the miner choose to include.
      */
     extraData: string;

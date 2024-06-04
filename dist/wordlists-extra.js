@@ -100,7 +100,7 @@ const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
 /**
  *  The current version of Ethers.
  */
-const version = "6.11.0";
+const version = "6.13.0";
 
 /**
  *  Property helper functions.
@@ -314,7 +314,7 @@ function _getBytes(value, name, copy) {
         }
         return value;
     }
-    if (typeof (value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
+    if (typeof (value) === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
         const result = new Uint8Array((value.length - 2) / 2);
         let offset = 2;
         for (let i = 0; i < result.length; i++) {
@@ -503,6 +503,7 @@ function getUtf8CodePoints(_bytes, onError) {
  *  If %%form%% is specified, the string is normalized.
  */
 function toUtf8Bytes(str, form) {
+    assertArgument(typeof (str) === "string", "invalid string value", "str", str);
     if (form != null) {
         assertNormalize(form);
         str = str.normalize(form);

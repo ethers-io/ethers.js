@@ -12,6 +12,8 @@ const data_js_1 = require("./data.js");
  */
 function createGetUrl(options) {
     async function getUrl(req, signal) {
+        // Make sure we weren't cancelled before sending
+        (0, errors_js_1.assert)(signal == null || !signal.cancelled, "request cancelled before sending", "CANCELLED");
         const protocol = req.url.split(":")[0].toLowerCase();
         (0, errors_js_1.assert)(protocol === "http" || protocol === "https", `unsupported protocol ${protocol}`, "UNSUPPORTED_OPERATION", {
             info: { protocol },
@@ -28,6 +30,15 @@ function createGetUrl(options) {
                 reqOptions.agent = options.agent;
             }
         }
+        // Create a Node-specific AbortController, if available
+        let abort = null;
+        try {
+            abort = new AbortController();
+            reqOptions.abort = abort.signal;
+        }
+        catch (e) {
+            console.log(e);
+        }
         const request = ((protocol === "http") ? http_1.default : https_1.default).request(req.url, reqOptions);
         request.setTimeout(req.timeout);
         const body = req.body;
@@ -36,8 +47,17 @@ function createGetUrl(options) {
         }
         request.end();
         return new Promise((resolve, reject) => {
-            // @TODO: Node 15 added AbortSignal; once we drop support for
-            // Node14, we can add that in here too
+            if (signal) {
+                signal.addListener(() => {
+                    if (abort) {
+                        abort.abort();
+                    }
+                    reject((0, errors_js_1.makeError)("request cancelled", "CANCELLED"));
+                });
+            }
+            request.on("timeout", () => {
+                reject((0, errors_js_1.makeError)("request timeout", "TIMEOUT"));
+            });
             request.once("response", (resp) => {
                 const statusCode = resp.statusCode || 0;
                 const statusMessage = resp.statusMessage || "";

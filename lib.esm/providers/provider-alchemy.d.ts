@@ -17,6 +17,7 @@
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
