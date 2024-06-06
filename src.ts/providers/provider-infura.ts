@@ -24,6 +24,8 @@
  *  - Polygon (``matic``)
  *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
+ *  - Mantle (``mantle``)
+ *  - Mantle Sepolia Testnet (``mantle-sepolia``)
  *
  *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
  */
@@ -86,6 +88,10 @@ function getHost(name: string): string {
             return "optimism-goerli.infura.io";
         case "optimism-sepolia":
             return "optimism-sepolia.infura.io";
+        case "mantle":
+            return "mantle-mainnet.infura.io";
+        case "mantle-sepolia":
+            return "mantle-sepolia.infura.io";
     }
 
     assertArgument(false, "unsupported network", "network", name);
