@@ -3,7 +3,7 @@ import { hashMessage, TypedDataEncoder } from "../hash/index.js";
 import { AbstractSigner } from "../providers/index.js";
 import { computeAddress, Transaction } from "../transaction/index.js";
 import {
-    defineProperties, resolveProperties, assert, assertArgument
+    defineProperties, resolveProperties, assert, assertArgument, BytesLike
 } from "../utils/index.js";
 
 import type { SigningKey } from "../crypto/index.js";
@@ -105,7 +105,10 @@ export class BaseWallet extends AbstractSigner {
         return this.signingKey.sign(hashMessage(message)).serialized;
     }
 
-    async signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string> {
+    /**
+     *  DOMAIN_SEPARATOR can be passed into %%domain%% directly.
+     */ 
+    async signTypedData(domain: TypedDataDomain | BytesLike, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string> {
 
         // Populate any ENS names
         const populated = await TypedDataEncoder.resolveNames(domain, types, value, async (name: string) => {
