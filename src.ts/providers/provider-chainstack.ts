@@ -8,6 +8,15 @@
  *  - Arbitrum (``arbitrum``)
  *  - BNB Smart Chain Mainnet (``bnb``)
  *  - Polygon (``matic``)
+ *  - Base (``base``)
+ *  - Optimism (``optimism``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Holeski Testnet (``holeski``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
+ *  - Polygon Amoy Testnet (``matic-amoy``) 
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)  
  *
  *  @_subsection: api/providers/thirdparty:Chainstack  [providers-chainstack]
  */
@@ -27,9 +36,18 @@ import type { Networkish } from "./network.js";
 function getApiKey(name: string): string {
     switch (name) {
         case "mainnet": return "39f1d67cedf8b7831010a665328c9197";
-        case "arbitrum": return "0550c209db33c3abf4cc927e1e18cea1"
+        case "arbitrum": return "0550c209db33c3abf4cc927e1e18cea1";
         case "bnb": return "98b5a77e531614387366f6fc5da097f8";
         case "matic": return "cd9d4d70377471aa7c142ec4a4205249";
+        case "base": return "f7e96b2c9129bcd7a571125c3e2a9672";
+        case "optimism": return "c33ecbe4ae1be1311452ed472d8ad46a";
+        case "sepolia": return "2376020706e35a4756462faf9a71b208";
+        case "holesky": return "631810e152d4046bb660e08bcec92794";
+        case "arbitrum-sepolia`": return "3aea296a4ff0b638245e2b40dda113fb";
+        case "bnbt": return "5643c7df594dcdfb01304de11331f795";
+        case "matic-amoy": return "241d9f34fee2c4c1c86efa9821534067";
+        case "base-sepolia": return "a23461eb9b2026654d5507fe6a92085a";
+        case "optimism-sepolia": return "4cd31436760a1d9d0912bceeeced641b";
     }
 
     assertArgument(false, "unsupported network", "network", name);
@@ -45,6 +63,24 @@ function getHost(name: string): string {
             return "bsc-mainnet.core.chainstack.com";
         case "matic":
             return "polygon-mainnet.core.chainstack.com";
+        case "base":
+            return "base-mainnet.core.chainstack.com";
+        case "optimism":
+            return "optimism-mainnet.core.chainstack.com";
+        case "sepolia":
+            return "ethereum-sepolia.core.chainstack.com";
+        case "holesky":
+            return "ethereum-holesky.core.chainstack.com";
+        case "arbitrum-sepolia":
+            return "arbitrum-sepolia.core.chainstack.com";
+        case "bnbt":
+            return "bsc-testnet.core.chainstack.com";
+        case "matic-amoy":
+            return "polygon-amoy.core.chainstack.com";
+        case "base-sepolia":
+            return "base-sepolia.core.chainstack.com";
+        case "optimism-sepolia":
+            return "optimism-sepolia.core.chainstack.com";
     }
 
     assertArgument(false, "unsupported network", "network", name);
