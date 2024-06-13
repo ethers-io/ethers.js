@@ -1,5 +1,5 @@
 /**
- *  [[link-chainstack]] provides a third-party service for connecting to
+ *  [Chainstack](https://chainstack.com/) provides a third-party service for connecting to
  *  various blockchains over JSON-RPC.
  *
  *  **Supported Networks**
@@ -87,7 +87,7 @@ function getHost(name: string): string {
 }
 
 /**
- *  The **ChainstackProvider** connects to the [[link-chainstack]]
+ *  The **ChainstackProvider** connects to the [Chainstack](https://chainstack.com/)
  *  JSON-RPC end-points.
  *
  *  By default, a highly-throttled API key is used, which is
