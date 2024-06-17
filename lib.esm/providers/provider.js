@@ -662,6 +662,29 @@ export class TransactionReceipt {
      *  could be used to validate certain parts of the receipt.
      */
     root;
+    /**
+     * The price of gas for the L1 security.
+     * Computed based on the base fee per gas and the blob base fee per gas of the underlying L1 chain.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be 0n for L1 transaction receipts.
+     */
+    l1GasPrice;
+    /**
+     * The amount of gas used for the L1 security.
+     * Computed based on the call data size.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be 0n for L1 transaction receipts.
+     */
+    l1GasUsed;
+    /**
+     * The the product of the l1GasPrice and l1GasUsed. The total fee paid for the L1 security.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be 0n for L1 transaction receipts.
+     */
+    l1Fee;
     #logs;
     /**
      *  @_ignore:
@@ -695,7 +718,10 @@ export class TransactionReceipt {
             type: tx.type,
             //byzantium: tx.byzantium,
             status: tx.status,
-            root: tx.root
+            root: tx.root,
+            l1Fee: tx.l1Fee,
+            l1GasPrice: tx.l1GasPrice,
+            l1GasUsed: tx.l1GasUsed,
         });
     }
     /**
@@ -707,7 +733,7 @@ export class TransactionReceipt {
      */
     toJSON() {
         const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
-        status, root } = this;
+        status, root, } = this;
         return {
             _type: "TransactionReceipt",
             blockHash, blockNumber,
@@ -719,6 +745,9 @@ export class TransactionReceipt {
             blobGasUsed: toJson(this.blobGasUsed),
             blobGasPrice: toJson(this.blobGasPrice),
             gasUsed: toJson(this.gasUsed),
+            l1GasPrice: toJson(this.l1GasPrice),
+            l1GasUsed: toJson(this.l1GasUsed),
+            l1Fee: toJson(this.l1Fee),
             hash, index, logs, logsBloom, root, status, to
         };
     }

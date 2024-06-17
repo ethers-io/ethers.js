@@ -1052,6 +1052,32 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      */
     readonly root!: null | string;
 
+    /**
+     * The price of gas for the L1 security.
+     * Computed based on the base fee per gas and the blob base fee per gas of the underlying L1 chain.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be 0n for L1 transaction receipts.
+     */
+    readonly l1GasPrice!: bigint;
+
+    /**
+     * The amount of gas used for the L1 security.
+     * Computed based on the call data size.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be 0n for L1 transaction receipts.
+     */
+    readonly l1GasUsed!: bigint;
+
+    /**
+     * The the product of the l1GasPrice and l1GasUsed. The total fee paid for the L1 security.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be 0n for L1 transaction receipts.
+     */
+    readonly l1Fee!: bigint;
+
     readonly #logs: ReadonlyArray<Log>;
 
     /**
@@ -1093,7 +1119,11 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             type: tx.type,
             //byzantium: tx.byzantium,
             status: tx.status,
-            root: tx.root
+            root: tx.root,
+
+            l1Fee: tx.l1Fee,
+            l1GasPrice: tx.l1GasPrice,
+            l1GasUsed: tx.l1GasUsed,
         });
     }
 
@@ -1110,7 +1140,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             to, from, contractAddress, hash, index,
             blockHash, blockNumber, logsBloom,
             logs, //byzantium, 
-            status, root
+            status, root,
         } = this;
 
         return {
@@ -1124,6 +1154,9 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             blobGasUsed: toJson(this.blobGasUsed),
             blobGasPrice: toJson(this.blobGasPrice),
             gasUsed: toJson(this.gasUsed),
+            l1GasPrice: toJson(this.l1GasPrice),
+            l1GasUsed: toJson(this.l1GasUsed),
+            l1Fee: toJson(this.l1Fee),
             hash, index, logs, logsBloom, root, status, to
         };
     }

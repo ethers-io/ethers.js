@@ -182,7 +182,11 @@ const _formatTransactionReceipt = object({
     effectiveGasPrice: allowNull(getBigInt),
     blobGasPrice: allowNull(getBigInt, null),
     status: allowNull(getNumber),
-    type: allowNull(getNumber, 0)
+    type: allowNull(getNumber, 0),
+    // l1 gas data exist only on L2 optimism chains such as Optimism or Base
+    l1Fee: allowNull(getBigInt, 0n),
+    l1GasPrice: allowNull(getBigInt, 0n),
+    l1GasUsed: allowNull(getBigInt, 0n),
 }, {
     effectiveGasPrice: [ "gasPrice" ],
     hash: [ "transactionHash" ],
