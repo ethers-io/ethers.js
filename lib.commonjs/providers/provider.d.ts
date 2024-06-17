@@ -632,6 +632,29 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
      */
     readonly root: null | string;
     /**
+     * The price of gas for the L1 security.
+     * Computed based on the base fee per gas and the blob base fee per gas of the underlying L1 chain.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be null for L1 transaction receipts.
+     */
+    readonly l1GasPrice: null | bigint;
+    /**
+     * The amount of gas used for the L1 security.
+     * Computed based on the call data size.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be null for L1 transaction receipts.
+     */
+    readonly l1GasUsed: null | bigint;
+    /**
+     * The the product of the l1GasPrice and l1GasUsed. The total fee paid for the L1 security.
+     *
+     * Only relevant for L2 optimism chains such as Optimism or Base.
+     * Will be null for L1 transaction receipts.
+     */
+    readonly l1Fee: null | bigint;
+    /**
      *  @_ignore:
      */
     constructor(tx: TransactionReceiptParams, provider: Provider);
