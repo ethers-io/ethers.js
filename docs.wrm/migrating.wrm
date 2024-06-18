@@ -214,6 +214,8 @@ _code: wrapping EIP-1193 providers  @lang<script>
   // v6:
   provider = new ethers.BrowserProvider(window.ethereum)
 
+_null:
+
 Also, the method for broadcasting transactions to the network has
 changed:
 
@@ -224,6 +226,7 @@ _code: broadcasting transactions  @lang<script>
   // v6
   provider.broadcastTransaction(signedTx)
 
+_null:
 
 The ``StaticJsonRpcProvider`` in v5 is now integrated into the v6
 ``JsonRpcProvider`` directly. When connecting to a network which
