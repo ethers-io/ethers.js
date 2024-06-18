@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.1 (2024-06-18 02:09)
+---------------------------------
+
+  - Update ws package to address possible DoS vulnerability ([a4b1d1f](https://github.com/ethers-io/ethers.js/commit/a4b1d1f43fca14f2e826e3c60e0d45f5b6ef3ec4)).
+
 ethers/v6.13.0 (2024-06-04 01:01)
 ---------------------------------
 

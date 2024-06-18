@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.13.0";
+    const version = "6.13.1";
 
     /**
      *  Property helper functions.
@@ -25522,6 +25522,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     /////////////////////////////
     //
+    // dummy change; to pick-up ws security issue changes
 
     var ethers = /*#__PURE__*/Object.freeze({
         __proto__: null,
