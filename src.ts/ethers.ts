@@ -210,3 +210,4 @@ export type {
     CrowdsaleAccount, KeystoreAccount, EncryptOptions
 } from "./wallet/index.js";
 
+// dummy change; to pick-up ws security issue changes
