@@ -15,7 +15,7 @@
     "@types/node": "18.15.13",
     "aes-js": "4.0.0-beta.5",
     "tslib": "2.4.0",
-    "ws": "8.5.0"
+    "ws": "8.17.1"
   },
   "description": "A complete and compact Ethereum library, for dapps, wallets and any other tools.",
   "devDependencies": {
