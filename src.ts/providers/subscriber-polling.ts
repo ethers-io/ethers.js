@@ -267,8 +267,10 @@ export class PollingEventSubscriber implements Subscriber {
         if (this.#blockNumber === -2) { return; }
 
         const filter = copy(this.#filter);
-        filter.fromBlock = this.#blockNumber + 1;
-        filter.toBlock = blockNumber;
+        // In case the server responds with blockNumber thta is less
+        // than this.#blockNumber + 1 so we make sure fromBlock < toBlock
+        filter.fromBlock = Math.min(this.#blockNumber + 1, blockNumber);
+        filter.toBlock = Math.max(this.#blockNumber + 1, blockNumber);
 
         const logs = await this.#provider.getLogs(filter);
 
