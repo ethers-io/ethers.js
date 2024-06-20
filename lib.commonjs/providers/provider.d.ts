@@ -1157,6 +1157,10 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     getBlock(blockHashOrBlockTag: BlockTag | string, prefetchTxs?: boolean): Promise<null | Block>;
     /**
+     *  Resolves to the transaction receipts in the block %%blockHashOrBlockTag%%.
+     */
+    getBlockReceipts(blockHashOrBlockTag: BlockTag | string): Promise<null | Array<TransactionReceipt>>;
+    /**
      *  Resolves to the transaction for %%hash%%.
      *
      *  If the transaction is unknown or on pruning nodes which
