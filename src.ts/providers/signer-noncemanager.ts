@@ -74,14 +74,16 @@ export class NonceManager extends AbstractSigner {
 
     async sendTransaction(tx: TransactionRequest): Promise<TransactionResponse> {
         const noncePromise = this.getNonce("pending");
-        this.increment();
-
+        
         tx = await this.signer.populateTransaction(tx);
         tx.nonce = await noncePromise;
 
         // @TODO: Maybe handle interesting/recoverable errors?
         // Like don't increment if the tx was certainly not sent
-        return await this.signer.sendTransaction(tx);
+        const txn = await this.signer.sendTransaction(tx);
+        this.increment();
+
+        return txn;
     }
 
     signTransaction(tx: TransactionRequest): Promise<string> {
