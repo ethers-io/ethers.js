@@ -53,7 +53,7 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
     #request: (method: string, params: Array<any> | Record<string, any>) => Promise<any>;
 
     /**
-     *  Connnect to the %%ethereum%% provider, optionally forcing the
+     *  Connect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
     constructor(ethereum: Eip1193Provider, network?: Networkish, _options?: BrowserProviderOptions) {
