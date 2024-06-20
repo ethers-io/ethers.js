@@ -198,6 +198,12 @@ export type PerformActionRequest = {
     blockHash: string;
     includeTransactions: boolean;
 } | {
+    method: "getBlockReceipts";
+    blockHash: string;
+} | {
+    method: "getBlockReceipts";
+    blockTag: BlockTag;
+} | {
     method: "getBlockNumber";
 } | {
     method: "getCode";
@@ -357,6 +363,7 @@ export declare class AbstractProvider implements Provider {
     getStorage(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string>;
     broadcastTransaction(signedTx: string): Promise<TransactionResponse>;
     getBlock(block: BlockTag | string, prefetchTxs?: boolean): Promise<null | Block>;
+    getBlockReceipts(blockHashOrBlockTag: BlockTag | string): Promise<null | Array<TransactionReceipt>>;
     getTransaction(hash: string): Promise<null | TransactionResponse>;
     getTransactionReceipt(hash: string): Promise<null | TransactionReceipt>;
     getTransactionResult(hash: string): Promise<null | string>;

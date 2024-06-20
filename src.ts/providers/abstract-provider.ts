@@ -374,6 +374,12 @@ export type PerformActionRequest = {
     method: "getBlock",
     blockHash: string, includeTransactions: boolean
 } | {
+    method: "getBlockReceipts",
+    blockHash: string
+} | {
+    method: "getBlockReceipts",
+    blockTag: BlockTag,
+} | {
     method: "getBlockNumber"
 } | {
     method: "getCode",
@@ -1119,6 +1125,31 @@ export class AbstractProvider implements Provider {
         if (params == null) { return null; }
 
         return this._wrapBlock(params, network);
+    }
+
+    async #getBlockReceipts(block: BlockTag | string): Promise<Array<TransactionReceipt>> {
+        if (isHexString(block, 32)) {
+            return await this.#perform({
+                method: "getBlockReceipts", blockHash: block
+            });
+        }
+
+        let blockTag = this._getBlockTag(block);
+        if (typeof(blockTag) !== "string") { blockTag = await blockTag; }
+
+        return await this.#perform({
+            method: "getBlockReceipts", blockTag
+        });
+    }
+
+    async getBlockReceipts(blockHashOrBlockTag: BlockTag | string): Promise<null | Array<TransactionReceipt>> {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#getBlockReceipts(blockHashOrBlockTag)
+        });
+        if (params == null) { return null; }
+
+        return params.map((p) => this._wrapTransactionReceipt(p, network));
     }
 
     async getTransaction(hash: string): Promise<null | TransactionResponse> {
