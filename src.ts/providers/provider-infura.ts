@@ -28,7 +28,7 @@
  *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
  */
 import {
-    defineProperties, FetchRequest, assert, assertArgument
+  defineProperties, FetchRequest, assert, assertArgument
 } from "../utils/index.js";
 
 import { showThrottleMessage } from "./community.js";
@@ -37,58 +37,58 @@ import { JsonRpcProvider } from "./provider-jsonrpc.js";
 import { WebSocketProvider } from "./provider-websocket.js";
 
 import type { AbstractProvider } from "./abstract-provider.js";
-import type { CommunityResourcable } from "./community.js";
+import type { CommunityResourceable } from "./community.js";
 import type { Networkish } from "./network.js";
 
 
 const defaultProjectId = "84842078b09946638c03157f83405213";
 
 function getHost(name: string): string {
-    switch(name) {
-        case "mainnet":
-            return "mainnet.infura.io";
-        case "goerli":
-            return "goerli.infura.io";
-        case "sepolia":
-            return "sepolia.infura.io";
+  switch (name) {
+    case "mainnet":
+      return "mainnet.infura.io";
+    case "goerli":
+      return "goerli.infura.io";
+    case "sepolia":
+      return "sepolia.infura.io";
 
-        case "arbitrum":
-            return "arbitrum-mainnet.infura.io";
-        case "arbitrum-goerli":
-            return "arbitrum-goerli.infura.io";
-        case "arbitrum-sepolia":
-            return "arbitrum-sepolia.infura.io";
-        case "base":
-            return "base-mainnet.infura.io";
-        case "base-goerlia":
-            return "base-goerli.infura.io";
-        case "base-sepolia":
-            return "base-sepolia.infura.io";
-        case "bnb":
-            return "bnbsmartchain-mainnet.infura.io";
-        case "bnbt":
-            return "bnbsmartchain-testnet.infura.io";
-        case "linea":
-            return "linea-mainnet.infura.io";
-        case "linea-goerli":
-            return "linea-goerli.infura.io";
-        case "linea-sepolia":
-            return "linea-sepolia.infura.io";
-        case "matic":
-            return "polygon-mainnet.infura.io";
-        case "matic-amoy":
-            return "polygon-amoy.infura.io";
-        case "matic-mumbai":
-            return "polygon-mumbai.infura.io";
-        case "optimism":
-            return "optimism-mainnet.infura.io";
-        case "optimism-goerli":
-            return "optimism-goerli.infura.io";
-        case "optimism-sepolia":
-            return "optimism-sepolia.infura.io";
-    }
+    case "arbitrum":
+      return "arbitrum-mainnet.infura.io";
+    case "arbitrum-goerli":
+      return "arbitrum-goerli.infura.io";
+    case "arbitrum-sepolia":
+      return "arbitrum-sepolia.infura.io";
+    case "base":
+      return "base-mainnet.infura.io";
+    case "base-goerlia":
+      return "base-goerli.infura.io";
+    case "base-sepolia":
+      return "base-sepolia.infura.io";
+    case "bnb":
+      return "bnbsmartchain-mainnet.infura.io";
+    case "bnbt":
+      return "bnbsmartchain-testnet.infura.io";
+    case "linea":
+      return "linea-mainnet.infura.io";
+    case "linea-goerli":
+      return "linea-goerli.infura.io";
+    case "linea-sepolia":
+      return "linea-sepolia.infura.io";
+    case "matic":
+      return "polygon-mainnet.infura.io";
+    case "matic-amoy":
+      return "polygon-amoy.infura.io";
+    case "matic-mumbai":
+      return "polygon-mumbai.infura.io";
+    case "optimism":
+      return "optimism-mainnet.infura.io";
+    case "optimism-goerli":
+      return "optimism-goerli.infura.io";
+    case "optimism-sepolia":
+      return "optimism-sepolia.infura.io";
+  }
 
-    assertArgument(false, "unsupported network", "network", name);
+  assertArgument(false, "unsupported network", "network", name);
 }
 
 /**
@@ -100,43 +100,43 @@ function getHost(name: string): string {
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-infura-signup).
  */
-export class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourcable {
+export class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourceable {
 
-    /**
-     *  The Project ID for the INFURA connection.
-     */
-    readonly projectId!: string;
+  /**
+   *  The Project ID for the INFURA connection.
+   */
+  readonly projectId!: string;
 
-    /**
-     *  The Project Secret.
-     *
-     *  If null, no authenticated requests are made. This should not
-     *  be used outside of private contexts.
-     */
-    readonly projectSecret!: null | string;
+  /**
+   *  The Project Secret.
+   *
+   *  If null, no authenticated requests are made. This should not
+   *  be used outside of private contexts.
+   */
+  readonly projectSecret!: null | string;
 
-    /**
-     *  Creates a new **InfuraWebSocketProvider**.
-     */
-    constructor(network?: Networkish, projectId?: string) {
-        const provider = new InfuraProvider(network, projectId);
+  /**
+   *  Creates a new **InfuraWebSocketProvider**.
+   */
+  constructor(network?: Networkish, projectId?: string) {
+    const provider = new InfuraProvider(network, projectId);
 
-        const req = provider._getConnection();
-        assert(!req.credentials, "INFURA WebSocket project secrets unsupported",
-            "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
+    const req = provider._getConnection();
+    assert(!req.credentials, "INFURA WebSocket project secrets unsupported",
+      "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
 
-        const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-        super(url, provider._network);
+    const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
+    super(url, provider._network);
 
-        defineProperties<InfuraWebSocketProvider>(this, {
-            projectId: provider.projectId,
-            projectSecret: provider.projectSecret
-        });
-    }
+    defineProperties<InfuraWebSocketProvider>(this, {
+      projectId: provider.projectId,
+      projectSecret: provider.projectSecret
+    });
+  }
 
-    isCommunityResource(): boolean {
-        return (this.projectId === defaultProjectId);
-    }
+  isCommunityResource(): boolean {
+    return (this.projectId === defaultProjectId);
+  }
 }
 
 /**
@@ -148,72 +148,72 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-infura-signup).
  */
-export class InfuraProvider extends JsonRpcProvider implements CommunityResourcable {
-    /**
-     *  The Project ID for the INFURA connection.
-     */
-    readonly projectId!: string;
+export class InfuraProvider extends JsonRpcProvider implements CommunityResourceable {
+  /**
+   *  The Project ID for the INFURA connection.
+   */
+  readonly projectId!: string;
 
-    /**
-     *  The Project Secret.
-     *
-     *  If null, no authenticated requests are made. This should not
-     *  be used outside of private contexts.
-     */
-    readonly projectSecret!: null | string;
+  /**
+   *  The Project Secret.
+   *
+   *  If null, no authenticated requests are made. This should not
+   *  be used outside of private contexts.
+   */
+  readonly projectSecret!: null | string;
 
-    /**
-     *  Creates a new **InfuraProvider**.
-     */
-    constructor(_network?: Networkish, projectId?: null | string, projectSecret?: null | string) {
-        if (_network == null) { _network = "mainnet"; }
-        const network = Network.from(_network);
-        if (projectId == null) { projectId = defaultProjectId; }
-        if (projectSecret == null) { projectSecret = null; }
+  /**
+   *  Creates a new **InfuraProvider**.
+   */
+  constructor(_network?: Networkish, projectId?: null | string, projectSecret?: null | string) {
+    if (_network == null) { _network = "mainnet"; }
+    const network = Network.from(_network);
+    if (projectId == null) { projectId = defaultProjectId; }
+    if (projectSecret == null) { projectSecret = null; }
 
-        const request = InfuraProvider.getRequest(network, projectId, projectSecret);
-        super(request, network, { staticNetwork: network });
+    const request = InfuraProvider.getRequest(network, projectId, projectSecret);
+    super(request, network, { staticNetwork: network });
 
-        defineProperties<InfuraProvider>(this, { projectId, projectSecret });
+    defineProperties<InfuraProvider>(this, { projectId, projectSecret });
+  }
+
+  _getProvider(chainId: number): AbstractProvider {
+    try {
+      return new InfuraProvider(chainId, this.projectId, this.projectSecret);
+    } catch (error) { }
+    return super._getProvider(chainId);
+  }
+
+  isCommunityResource(): boolean {
+    return (this.projectId === defaultProjectId);
+  }
+
+  /**
+   *  Creates a new **InfuraWebSocketProvider**.
+   */
+  static getWebSocketProvider(network?: Networkish, projectId?: string): InfuraWebSocketProvider {
+    return new InfuraWebSocketProvider(network, projectId);
+  }
+
+  /**
+   *  Returns a prepared request for connecting to %%network%%
+   *  with %%projectId%% and %%projectSecret%%.
+   */
+  static getRequest(network: Network, projectId?: null | string, projectSecret?: null | string): FetchRequest {
+    if (projectId == null) { projectId = defaultProjectId; }
+    if (projectSecret == null) { projectSecret = null; }
+
+    const request = new FetchRequest(`https:/\/${getHost(network.name)}/v3/${projectId}`);
+    request.allowGzip = true;
+    if (projectSecret) { request.setCredentials("", projectSecret); }
+
+    if (projectId === defaultProjectId) {
+      request.retryFunc = async (request, response, attempt) => {
+        showThrottleMessage("InfuraProvider");
+        return true;
+      };
     }
 
-    _getProvider(chainId: number): AbstractProvider {
-        try {
-            return new InfuraProvider(chainId, this.projectId, this.projectSecret);
-        } catch (error) { }
-        return super._getProvider(chainId);
-    }
-
-    isCommunityResource(): boolean {
-        return (this.projectId === defaultProjectId);
-    }
-
-    /**
-     *  Creates a new **InfuraWebSocketProvider**.
-     */
-    static getWebSocketProvider(network?: Networkish, projectId?: string): InfuraWebSocketProvider {
-        return new InfuraWebSocketProvider(network, projectId);
-    }
-
-    /**
-     *  Returns a prepared request for connecting to %%network%%
-     *  with %%projectId%% and %%projectSecret%%.
-     */
-    static getRequest(network: Network, projectId?: null | string, projectSecret?: null | string): FetchRequest {
-        if (projectId == null) { projectId = defaultProjectId; }
-        if (projectSecret == null) { projectSecret = null; }
-
-        const request = new FetchRequest(`https:/\/${ getHost(network.name) }/v3/${ projectId }`);
-        request.allowGzip = true;
-        if (projectSecret) { request.setCredentials("", projectSecret); }
-
-        if (projectId === defaultProjectId) {
-            request.retryFunc = async (request, response, attempt) => {
-                showThrottleMessage("InfuraProvider");
-                return true;
-            };
-        }
-
-        return request;
-    }
+    return request;
+  }
 }

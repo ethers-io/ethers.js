@@ -26,7 +26,7 @@
  */
 
 import {
-    defineProperties, FetchRequest, assertArgument
+  defineProperties, FetchRequest, assertArgument
 } from "../utils/index.js";
 
 import { showThrottleMessage } from "./community.js";
@@ -34,54 +34,54 @@ import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
 import type { AbstractProvider } from "./abstract-provider.js";
-import type { CommunityResourcable } from "./community.js";
+import type { CommunityResourceable } from "./community.js";
 import type { Networkish } from "./network.js";
 
 
 const defaultToken = "919b412a057b5e9c9b6dce193c5a60242d6efadb";
 
 function getHost(name: string): string {
-    switch(name) {
-        case "mainnet":
-            return "ethers.quiknode.pro";
-        case "goerli":
-            return "ethers.ethereum-goerli.quiknode.pro";
-        case "sepolia":
-            return "ethers.ethereum-sepolia.quiknode.pro";
-        case "holesky":
-            return "ethers.ethereum-holesky.quiknode.pro";
+  switch (name) {
+    case "mainnet":
+      return "ethers.quiknode.pro";
+    case "goerli":
+      return "ethers.ethereum-goerli.quiknode.pro";
+    case "sepolia":
+      return "ethers.ethereum-sepolia.quiknode.pro";
+    case "holesky":
+      return "ethers.ethereum-holesky.quiknode.pro";
 
-        case "arbitrum":
-            return "ethers.arbitrum-mainnet.quiknode.pro";
-        case "arbitrum-goerli":
-            return "ethers.arbitrum-goerli.quiknode.pro";
-        case "arbitrum-sepolia":
-            return "ethers.arbitrum-sepolia.quiknode.pro";
-        case "base":
-            return "ethers.base-mainnet.quiknode.pro";
-        case "base-goerli":
-            return "ethers.base-goerli.quiknode.pro";
-        case "base-spolia":
-            return "ethers.base-sepolia.quiknode.pro";
-        case "bnb":
-            return "ethers.bsc.quiknode.pro";
-        case "bnbt":
-            return "ethers.bsc-testnet.quiknode.pro";
-        case "matic":
-            return "ethers.matic.quiknode.pro";
-        case "matic-mumbai":
-            return "ethers.matic-testnet.quiknode.pro";
-        case "optimism":
-            return "ethers.optimism.quiknode.pro";
-        case "optimism-goerli":
-            return "ethers.optimism-goerli.quiknode.pro";
-        case "optimism-sepolia":
-            return "ethers.optimism-sepolia.quiknode.pro";
-        case "xdai":
-            return "ethers.xdai.quiknode.pro";
-    }
+    case "arbitrum":
+      return "ethers.arbitrum-mainnet.quiknode.pro";
+    case "arbitrum-goerli":
+      return "ethers.arbitrum-goerli.quiknode.pro";
+    case "arbitrum-sepolia":
+      return "ethers.arbitrum-sepolia.quiknode.pro";
+    case "base":
+      return "ethers.base-mainnet.quiknode.pro";
+    case "base-goerli":
+      return "ethers.base-goerli.quiknode.pro";
+    case "base-spolia":
+      return "ethers.base-sepolia.quiknode.pro";
+    case "bnb":
+      return "ethers.bsc.quiknode.pro";
+    case "bnbt":
+      return "ethers.bsc-testnet.quiknode.pro";
+    case "matic":
+      return "ethers.matic.quiknode.pro";
+    case "matic-mumbai":
+      return "ethers.matic-testnet.quiknode.pro";
+    case "optimism":
+      return "ethers.optimism.quiknode.pro";
+    case "optimism-goerli":
+      return "ethers.optimism-goerli.quiknode.pro";
+    case "optimism-sepolia":
+      return "ethers.optimism-sepolia.quiknode.pro";
+    case "xdai":
+      return "ethers.xdai.quiknode.pro";
+  }
 
-    assertArgument(false, "unsupported network", "network", name);
+  assertArgument(false, "unsupported network", "network", name);
 }
 
 /*
@@ -123,55 +123,55 @@ function getHost(name: string): string {
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-quicknode).
  */
-export class QuickNodeProvider extends JsonRpcProvider implements CommunityResourcable {
-    /**
-     *  The API token.
-     */
-    readonly token!: string;
+export class QuickNodeProvider extends JsonRpcProvider implements CommunityResourceable {
+  /**
+   *  The API token.
+   */
+  readonly token!: string;
 
-    /**
-     *  Creates a new **QuickNodeProvider**.
-     */
-    constructor(_network?: Networkish, token?: null | string) {
-        if (_network == null) { _network = "mainnet"; }
-        const network = Network.from(_network);
-        if (token == null) { token = defaultToken; }
+  /**
+   *  Creates a new **QuickNodeProvider**.
+   */
+  constructor(_network?: Networkish, token?: null | string) {
+    if (_network == null) { _network = "mainnet"; }
+    const network = Network.from(_network);
+    if (token == null) { token = defaultToken; }
 
-        const request = QuickNodeProvider.getRequest(network, token);
-        super(request, network, { staticNetwork: network });
+    const request = QuickNodeProvider.getRequest(network, token);
+    super(request, network, { staticNetwork: network });
 
-        defineProperties<QuickNodeProvider>(this, { token });
+    defineProperties<QuickNodeProvider>(this, { token });
+  }
+
+  _getProvider(chainId: number): AbstractProvider {
+    try {
+      return new QuickNodeProvider(chainId, this.token);
+    } catch (error) { }
+    return super._getProvider(chainId);
+  }
+
+  isCommunityResource(): boolean {
+    return (this.token === defaultToken);
+  }
+
+  /**
+   *  Returns a new request prepared for %%network%% and the
+   *  %%token%%.
+   */
+  static getRequest(network: Network, token?: null | string): FetchRequest {
+    if (token == null) { token = defaultToken; }
+
+    const request = new FetchRequest(`https:/\/${getHost(network.name)}/${token}`);
+    request.allowGzip = true;
+    //if (projectSecret) { request.setCredentials("", projectSecret); }
+
+    if (token === defaultToken) {
+      request.retryFunc = async (request, response, attempt) => {
+        showThrottleMessage("QuickNodeProvider");
+        return true;
+      };
     }
 
-    _getProvider(chainId: number): AbstractProvider {
-        try {
-            return new QuickNodeProvider(chainId, this.token);
-        } catch (error) { }
-        return super._getProvider(chainId);
-    }
-
-    isCommunityResource(): boolean {
-        return (this.token === defaultToken);
-    }
-
-    /**
-     *  Returns a new request prepared for %%network%% and the
-     *  %%token%%.
-     */
-    static getRequest(network: Network, token?: null | string): FetchRequest {
-        if (token == null) { token = defaultToken; }
-
-        const request = new FetchRequest(`https:/\/${ getHost(network.name) }/${ token }`);
-        request.allowGzip = true;
-        //if (projectSecret) { request.setCredentials("", projectSecret); }
-
-        if (token === defaultToken) {
-            request.retryFunc = async (request, response, attempt) => {
-                showThrottleMessage("QuickNodeProvider");
-                return true;
-            };
-        }
-
-        return request;
-    }
+    return request;
+  }
 }
