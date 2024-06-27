@@ -173,7 +173,7 @@ export type {
     OrphanFilter, PerformActionFilter, PerformActionRequest, PerformActionTransaction,
     PreparedTransactionRequest, ProviderEvent, Subscriber, Subscription, TopicFilter,
     TransactionReceiptParams, TransactionRequest, TransactionResponseParams,
-    WebSocketCreator, WebSocketLike
+    WebSocketCreator, WebSocketLike, CommunityResourceable
 } from "./providers/index.js";
 
 export type {
