@@ -11,7 +11,7 @@
  *  to notify any interested consumers whether community credentials
  *  are in-use.
  */
-export interface CommunityResourcable {
+export interface CommunityResourceable {
     /**
      *  Returns true of the instance is connected using the community
      *  credentials.
