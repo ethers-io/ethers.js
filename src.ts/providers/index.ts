@@ -93,7 +93,7 @@ export type {
 
 
 export type {
-    CommunityResourcable
+    CommunityResourceable
 } from "./community.js";
 
 /*
