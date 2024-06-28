@@ -24,7 +24,7 @@
     "sourceMap": true,
     "target": "es2022"
   },
-  "exclude": [ ],
+  "exclude": [],
   "include": [
     "./src.ts/**/*.ts"
   ],
