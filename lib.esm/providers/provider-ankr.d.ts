@@ -25,7 +25,7 @@ import { FetchRequest } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
-import type { CommunityResourcable } from "./community.js";
+import type { CommunityResourceable } from "./community.js";
 import type { Networkish } from "./network.js";
 import type { JsonRpcError, JsonRpcPayload } from "./provider-jsonrpc.js";
 /**
@@ -37,7 +37,7 @@ import type { JsonRpcError, JsonRpcPayload } from "./provider-jsonrpc.js";
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-ankr-signup).
  */
-export declare class AnkrProvider extends JsonRpcProvider implements CommunityResourcable {
+export declare class AnkrProvider extends JsonRpcProvider implements CommunityResourceable {
     /**
      *  The API key for the Ankr connection.
      */

@@ -15,7 +15,7 @@ import { FetchRequest } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
-import type { CommunityResourcable } from "./community.js";
+import type { CommunityResourceable } from "./community.js";
 import type { Networkish } from "./network.js";
 /**
  *  The **PocketProvider** connects to the [[link-pocket]]
@@ -26,7 +26,7 @@ import type { Networkish } from "./network.js";
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-pocket-signup).
  */
-export declare class PocketProvider extends JsonRpcProvider implements CommunityResourcable {
+export declare class PocketProvider extends JsonRpcProvider implements CommunityResourceable {
     /**
      *  The Application ID for the Pocket connection.
      */

@@ -28,7 +28,7 @@ import { FetchRequest } from "../utils/index.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 import type { AbstractProvider } from "./abstract-provider.js";
-import type { CommunityResourcable } from "./community.js";
+import type { CommunityResourceable } from "./community.js";
 import type { Networkish } from "./network.js";
 /**
  *  The **QuickNodeProvider** connects to the [[link-quicknode]]
@@ -39,7 +39,7 @@ import type { Networkish } from "./network.js";
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-quicknode).
  */
-export declare class QuickNodeProvider extends JsonRpcProvider implements CommunityResourcable {
+export declare class QuickNodeProvider extends JsonRpcProvider implements CommunityResourceable {
     /**
      *  The API token.
      */

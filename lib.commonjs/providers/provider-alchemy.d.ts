@@ -26,7 +26,7 @@ import { FetchRequest } from "../utils/index.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 import type { AbstractProvider, PerformActionRequest } from "./abstract-provider.js";
-import type { CommunityResourcable } from "./community.js";
+import type { CommunityResourceable } from "./community.js";
 import type { Networkish } from "./network.js";
 /**
  *  The **AlchemyProvider** connects to the [[link-alchemy]]
@@ -39,7 +39,7 @@ import type { Networkish } from "./network.js";
  *
  *  @_docloc: api/providers/thirdparty
  */
-export declare class AlchemyProvider extends JsonRpcProvider implements CommunityResourcable {
+export declare class AlchemyProvider extends JsonRpcProvider implements CommunityResourceable {
     readonly apiKey: string;
     constructor(_network?: Networkish, apiKey?: null | string);
     _getProvider(chainId: number): AbstractProvider;

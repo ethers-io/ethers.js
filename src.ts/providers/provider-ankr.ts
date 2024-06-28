@@ -22,7 +22,7 @@
  *  @_subsection: api/providers/thirdparty:Ankr  [providers-ankr]
  */
 import {
-    defineProperties, FetchRequest, assertArgument
+  defineProperties, FetchRequest, assertArgument
 } from "../utils/index.js";
 
 import { AbstractProvider } from "./abstract-provider.js";
@@ -30,7 +30,7 @@ import { showThrottleMessage } from "./community.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
-import type { CommunityResourcable } from "./community.js";
+import type { CommunityResourceable } from "./community.js";
 import type { Networkish } from "./network.js";
 import type { JsonRpcError, JsonRpcPayload } from "./provider-jsonrpc.js";
 
@@ -38,39 +38,39 @@ import type { JsonRpcError, JsonRpcPayload } from "./provider-jsonrpc.js";
 const defaultApiKey = "9f7d929b018cdffb338517efa06f58359e86ff1ffd350bc889738523659e7972";
 
 function getHost(name: string): string {
-    switch (name) {
-        case "mainnet":
-            return "rpc.ankr.com/eth";
-        case "goerli":
-            return "rpc.ankr.com/eth_goerli";
-        case "sepolia":
-            return "rpc.ankr.com/eth_sepolia";
+  switch (name) {
+    case "mainnet":
+      return "rpc.ankr.com/eth";
+    case "goerli":
+      return "rpc.ankr.com/eth_goerli";
+    case "sepolia":
+      return "rpc.ankr.com/eth_sepolia";
 
-        case "arbitrum":
-            return "rpc.ankr.com/arbitrum";
-        case "base":
-            return "rpc.ankr.com/base";
-        case "base-goerli":
-            return "rpc.ankr.com/base_goerli";
-        case "base-sepolia":
-            return "rpc.ankr.com/base_sepolia";
-        case "bnb":
-            return "rpc.ankr.com/bsc";
-        case "bnbt":
-            return "rpc.ankr.com/bsc_testnet_chapel";
-        case "matic":
-            return "rpc.ankr.com/polygon";
-        case "matic-mumbai":
-            return "rpc.ankr.com/polygon_mumbai";
-        case "optimism":
-            return "rpc.ankr.com/optimism";
-        case "optimism-goerli":
-            return "rpc.ankr.com/optimism_testnet";
-        case "optimism-sepolia":
-            return "rpc.ankr.com/optimism_sepolia";
-    }
+    case "arbitrum":
+      return "rpc.ankr.com/arbitrum";
+    case "base":
+      return "rpc.ankr.com/base";
+    case "base-goerli":
+      return "rpc.ankr.com/base_goerli";
+    case "base-sepolia":
+      return "rpc.ankr.com/base_sepolia";
+    case "bnb":
+      return "rpc.ankr.com/bsc";
+    case "bnbt":
+      return "rpc.ankr.com/bsc_testnet_chapel";
+    case "matic":
+      return "rpc.ankr.com/polygon";
+    case "matic-mumbai":
+      return "rpc.ankr.com/polygon_mumbai";
+    case "optimism":
+      return "rpc.ankr.com/optimism";
+    case "optimism-goerli":
+      return "rpc.ankr.com/optimism_testnet";
+    case "optimism-sepolia":
+      return "rpc.ankr.com/optimism_sepolia";
+  }
 
-    assertArgument(false, "unsupported network", "network", name);
+  assertArgument(false, "unsupported network", "network", name);
 }
 
 
@@ -83,71 +83,71 @@ function getHost(name: string): string {
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-ankr-signup).
  */
-export class AnkrProvider extends JsonRpcProvider implements CommunityResourcable {
+export class AnkrProvider extends JsonRpcProvider implements CommunityResourceable {
 
-    /**
-     *  The API key for the Ankr connection.
-     */
-    readonly apiKey!: string;
+  /**
+   *  The API key for the Ankr connection.
+   */
+  readonly apiKey!: string;
 
-    /**
-     *  Create a new **AnkrProvider**.
-     *
-     *  By default connecting to ``mainnet`` with a highly throttled
-     *  API key.
-     */
-    constructor(_network?: Networkish, apiKey?: null | string) {
-        if (_network == null) { _network = "mainnet"; }
-        const network = Network.from(_network);
-        if (apiKey == null) { apiKey = defaultApiKey; }
+  /**
+   *  Create a new **AnkrProvider**.
+   *
+   *  By default connecting to ``mainnet`` with a highly throttled
+   *  API key.
+   */
+  constructor(_network?: Networkish, apiKey?: null | string) {
+    if (_network == null) { _network = "mainnet"; }
+    const network = Network.from(_network);
+    if (apiKey == null) { apiKey = defaultApiKey; }
 
-        // Ankr does not support filterId, so we force polling
-        const options = { polling: true, staticNetwork: network };
+    // Ankr does not support filterId, so we force polling
+    const options = { polling: true, staticNetwork: network };
 
-        const request = AnkrProvider.getRequest(network, apiKey);
-        super(request, network, options);
+    const request = AnkrProvider.getRequest(network, apiKey);
+    super(request, network, options);
 
-        defineProperties<AnkrProvider>(this, { apiKey });
+    defineProperties<AnkrProvider>(this, { apiKey });
+  }
+
+  _getProvider(chainId: number): AbstractProvider {
+    try {
+      return new AnkrProvider(chainId, this.apiKey);
+    } catch (error) { }
+    return super._getProvider(chainId);
+  }
+
+  /**
+   *  Returns a prepared request for connecting to %%network%% with
+   *  %%apiKey%%.
+   */
+  static getRequest(network: Network, apiKey?: null | string): FetchRequest {
+    if (apiKey == null) { apiKey = defaultApiKey; }
+
+    const request = new FetchRequest(`https:/\/${getHost(network.name)}/${apiKey}`);
+    request.allowGzip = true;
+
+    if (apiKey === defaultApiKey) {
+      request.retryFunc = async (request, response, attempt) => {
+        showThrottleMessage("AnkrProvider");
+        return true;
+      };
     }
 
-    _getProvider(chainId: number): AbstractProvider {
-        try {
-            return new AnkrProvider(chainId, this.apiKey);
-        } catch (error) { }
-        return super._getProvider(chainId);
+    return request;
+  }
+
+  getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error {
+    if (payload.method === "eth_sendRawTransaction") {
+      if (error && error.error && error.error.message === "INTERNAL_ERROR: could not replace existing tx") {
+        error.error.message = "replacement transaction underpriced";
+      }
     }
 
-    /**
-     *  Returns a prepared request for connecting to %%network%% with
-     *  %%apiKey%%.
-     */
-    static getRequest(network: Network, apiKey?: null | string): FetchRequest {
-        if (apiKey == null) { apiKey = defaultApiKey; }
+    return super.getRpcError(payload, error);
+  }
 
-        const request = new FetchRequest(`https:/\/${ getHost(network.name) }/${ apiKey }`);
-        request.allowGzip = true;
-
-        if (apiKey === defaultApiKey) {
-            request.retryFunc = async (request, response, attempt) => {
-                showThrottleMessage("AnkrProvider");
-                return true;
-            };
-        }
-
-        return request;
-    }
-
-    getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error {
-        if (payload.method === "eth_sendRawTransaction") {
-            if (error && error.error && error.error.message === "INTERNAL_ERROR: could not replace existing tx") {
-                error.error.message = "replacement transaction underpriced";
-            }
-        }
-
-        return super.getRpcError(payload, error);
-    }
-
-    isCommunityResource(): boolean {
-        return (this.apiKey === defaultApiKey);
-    }
+  isCommunityResource(): boolean {
+    return (this.apiKey === defaultApiKey);
+  }
 }

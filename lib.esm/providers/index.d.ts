@@ -37,6 +37,7 @@ export { SocketSubscriber, SocketBlockSubscriber, SocketPendingSubscriber, Socke
 export type { AbstractProviderOptions, Subscription, Subscriber, AbstractProviderPlugin, PerformActionFilter, PerformActionTransaction, PerformActionRequest, } from "./abstract-provider.js";
 export type { ContractRunner } from "./contracts.js";
 export type { BlockParams, LogParams, TransactionReceiptParams, TransactionResponseParams, } from "./formatting.js";
+export type { CommunityResourceable } from "./community.js";
 export type { Networkish } from "./network.js";
 export type { GasCostParameters } from "./plugins-network.js";
 export type { BlockTag, TransactionRequest, PreparedTransactionRequest, EventFilter, Filter, FilterByBlockHash, OrphanFilter, ProviderEvent, TopicFilter, Provider, MinedBlock, MinedTransactionResponse } from "./provider.js";

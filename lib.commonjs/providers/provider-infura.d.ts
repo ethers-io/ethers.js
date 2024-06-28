@@ -32,7 +32,7 @@ import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 import { WebSocketProvider } from "./provider-websocket.js";
 import type { AbstractProvider } from "./abstract-provider.js";
-import type { CommunityResourcable } from "./community.js";
+import type { CommunityResourceable } from "./community.js";
 import type { Networkish } from "./network.js";
 /**
  *  The **InfuraWebSocketProvider** connects to the [[link-infura]]
@@ -43,7 +43,7 @@ import type { Networkish } from "./network.js";
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-infura-signup).
  */
-export declare class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourcable {
+export declare class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourceable {
     /**
      *  The Project ID for the INFURA connection.
      */
@@ -70,7 +70,7 @@ export declare class InfuraWebSocketProvider extends WebSocketProvider implement
  *  gain access to an increased rate-limit, it is highly
  *  recommended to [sign up here](link-infura-signup).
  */
-export declare class InfuraProvider extends JsonRpcProvider implements CommunityResourcable {
+export declare class InfuraProvider extends JsonRpcProvider implements CommunityResourceable {
     /**
      *  The Project ID for the INFURA connection.
      */

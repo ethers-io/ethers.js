@@ -91,11 +91,12 @@ export type {
     TransactionResponseParams,
 } from "./formatting.js";
 
-/*
+
 export type {
-    CommunityResourcable
+    CommunityResourceable
 } from "./community.js";
 
+/*
 export type {
     AvatarLinkageType, AvatarLinkage, AvatarResult
 } from "./ens-resolver.js";
