@@ -4,7 +4,8 @@ import { keccak256 } from "../crypto/index.js";
 import { recoverAddress } from "../transaction/index.js";
 import {
     concat, defineProperties, getBigInt, getBytes, hexlify, isHexString, mask, toBeHex, toQuantity, toTwos, zeroPadValue,
-    assertArgument
+    assertArgument,
+    isBytesLike
 } from "../utils/index.js";
 
 import { id } from "./id.js";
@@ -517,10 +518,11 @@ export class TypedDataEncoder {
     /**
      *  Return the fully encoded [[link-eip-712]] %%value%% for %%types%% with %%domain%%.
      */
-    static encode(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
+    static encode(domain: TypedDataDomain | BytesLike, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
         return concat([
             "0x1901",
-            TypedDataEncoder.hashDomain(domain),
+            // if domainSeparator is passed (array of bytes), then just use it.
+            isBytesLike(domain) ? domain : TypedDataEncoder.hashDomain(domain),
             TypedDataEncoder.from(types).hash(value)
         ]);
     }
@@ -528,7 +530,7 @@ export class TypedDataEncoder {
     /**
      *  Return the hash of the fully encoded [[link-eip-712]] %%value%% for %%types%% with %%domain%%.
      */
-    static hash(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
+    static hash(domain: TypedDataDomain | BytesLike, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): string {
         return keccak256(TypedDataEncoder.encode(domain, types, value));
     }
 
@@ -537,23 +539,26 @@ export class TypedDataEncoder {
      * Resolves to the value from resolving all addresses in %%value%% for
      * %%types%% and the %%domain%%.
      */
-    static async resolveNames(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, resolveName: (name: string) => Promise<string>): Promise<{ domain: TypedDataDomain, value: any }> {
-        // Make a copy to isolate it from the object passed in
-        domain = Object.assign({ }, domain);
-
-        // Allow passing null to ignore value
-        for (const key in domain) {
-            if ((<Record<string, any>>domain)[key] == null) {
-                delete (<Record<string, any>>domain)[key];
-            }
-        }
-
+    static async resolveNames<T extends TypedDataDomain | BytesLike>(domain: T, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, resolveName: (name: string) => Promise<string>): Promise<{ domain: T, value: any }> {
         // Look up all ENS names
         const ensCache: Record<string, string> = { };
 
-        // Do we need to look up the domain's verifyingContract?
-        if (domain.verifyingContract && !isHexString(domain.verifyingContract, 20)) {
-            ensCache[domain.verifyingContract] = "0x";
+        if (!isBytesLike(domain)) {
+            // Make a copy to isolate it from the object passed in
+            domain = Object.assign({}, domain);
+        }
+        if (!isBytesLike(domain)) {
+            // Allow passing null to ignore value
+            for (const key in domain) {
+                if ((<Record<string, any>>domain)[key] == null) {
+                    delete (<Record<string, any>>domain)[key];
+                }
+            }
+
+            // Do we need to look up the domain's verifyingContract?
+            if (domain.verifyingContract && !isHexString(domain.verifyingContract, 20)) {
+                ensCache[domain.verifyingContract] = "0x";
+            }
         }
 
         // We are going to use the encoder to visit all the base values
@@ -572,9 +577,11 @@ export class TypedDataEncoder {
             ensCache[name] = await resolveName(name);
         }
 
-        // Replace the domain verifyingContract if needed
-        if (domain.verifyingContract && ensCache[domain.verifyingContract]) {
-            domain.verifyingContract = ensCache[domain.verifyingContract];
+        if (!isBytesLike(domain)) {
+            // Replace the domain verifyingContract if needed
+            if (domain.verifyingContract && ensCache[domain.verifyingContract]) {
+                domain.verifyingContract = ensCache[domain.verifyingContract];
+            }
         }
 
         // Replace all ENS names with their address
@@ -652,7 +659,8 @@ export class TypedDataEncoder {
 
 /**
  *  Compute the address used to sign the typed data for the %%signature%%.
+ *  DOMAIN_SEPARATOR can be passed into %%domain%% directly.
  */
-export function verifyTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, signature: SignatureLike): string {
+export function verifyTypedData(domain: TypedDataDomain | BytesLike, types: Record<string, Array<TypedDataField>>, value: Record<string, any>, signature: SignatureLike): string {
     return recoverAddress(TypedDataEncoder.hash(domain, types, value), signature);
 }
