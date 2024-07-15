@@ -57,6 +57,7 @@ import type {
     PreparedTransactionRequest, Provider, ProviderEvent,
     TransactionRequest
 } from "./provider.js";
+import { RnsResolver } from "./rns-resolver.js";
 
 type Timer = ReturnType<typeof setTimeout>;
 
@@ -1189,6 +1190,8 @@ export class AbstractProvider implements Provider {
     }
 
     async resolveName(name: string): Promise<null | string>{
+        if (name.endsWith('.rsk')) { return (await new RnsResolver(this)).getAddress(name); }
+
         const resolver = await this.getResolver(name);
         if (resolver) { return await resolver.getAddress(); }
         return null;
@@ -1199,7 +1202,12 @@ export class AbstractProvider implements Provider {
         const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
 
         try {
-
+            const chainId = (await this.getNetwork()).chainId;
+            
+            if (chainId === 30n) {
+                return await new RnsResolver(this).getName(address);
+            }
+            
             const ensAddr = await EnsResolver.getEnsAddress(this);
             const ensContract = new Contract(ensAddr, [
                 "function resolver(bytes32) view returns (address)"
