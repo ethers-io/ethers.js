@@ -33,7 +33,7 @@
     "@ethersproject/transactions": "^5.8.0",
     "@ethersproject/web": "^5.8.0",
     "bech32": "1.1.4",
-    "ws": "7.4.6"
+    "ws": "8.18.0"
   },
   "description": "Ethereum Providers for ethers.",
   "ethereum": "donations.ethers.eth",
@@ -67,7 +67,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "sideEffects": false,
-  "tarballHash": "0x6e3bc260dd2f59771dc0b11fa7e2de8cf3624cbef8c12fbecf9671b2e801c834",
+  "tarballHash": "0x7f521bacebda7906da3c4bdb6102ae85d7fb94fe63b42972606d6201dbd92f96",
   "types": "./lib/index.d.ts",
   "version": "5.8.0"
 }
