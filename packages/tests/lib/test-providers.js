@@ -331,7 +331,8 @@ var providerFunctions = [
     },
     {
         name: "AnkrProvider",
-        networks: ["default", "homestead"],
+        //networks: [ "default", "homestead" ],
+        networks: [],
         create: function (network) {
             if (network == "default") {
                 return new ethers_1.ethers.providers.AnkrProvider(null);
@@ -377,7 +378,8 @@ var providerFunctions = [
     },
     {
         name: "PocketProvider",
-        networks: ["default", "homestead", "goerli"],
+        //networks: [ "default", "homestead", "goerli" ],
+        networks: [],
         create: function (network) {
             if (network == "default") {
                 return new ethers_1.ethers.providers.PocketProvider(null, {
@@ -1229,7 +1231,7 @@ describe("Resolve ENS avatar", function () {
         });
     });
     [
-        { title: "ERC-1155", name: "nick.eth", value: "https:/\/lh3.googleusercontent.com/hKHZTZSTmcznonu8I6xcVZio1IF76fq0XmcxnvUykC-FGuVJ75UPdLDlKJsfgVXH9wOSmkyHw0C39VAYtsGyxT7WNybjQ6s3fM3macE" },
+        { title: "ERC-1155", name: "nick.eth", value: "https:/\/i.seadn.io/gae/hKHZTZSTmcznonu8I6xcVZio1IF76fq0XmcxnvUykC-FGuVJ75UPdLDlKJsfgVXH9wOSmkyHw0C39VAYtsGyxT7WNybjQ6s3fM3macE?w=500&auto=format" },
         //        { title: "ERC-721", name: "brantly.eth", value: "https:/\/api.wrappedpunks.com/images/punks/2430.png" }
     ].forEach(function (test) {
         it("Resolves avatar for " + test.title, function () {
