@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.2 (2024-07-25 17:54)
+---------------------------------
+
+  - Prevent mutating transactions when signing ([#4789](https://github.com/ethers-io/ethers.js/issues/4789); [1a51af8](https://github.com/ethers-io/ethers.js/commit/1a51af85397283601db77ca61d5596b145e7f2cb)).
+
 ethers/v6.13.1 (2024-06-18 02:09)
 ---------------------------------
 

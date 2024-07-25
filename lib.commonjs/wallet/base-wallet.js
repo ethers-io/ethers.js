@@ -52,6 +52,7 @@ class BaseWallet extends index_js_3.AbstractSigner {
         return new BaseWallet(this.#signingKey, provider);
     }
     async signTransaction(tx) {
+        tx = (0, index_js_3.copyRequest)(tx);
         // Replace any Addressable or ENS name with an address
         const { to, from } = await (0, index_js_5.resolveProperties)({
             to: (tx.to ? (0, index_js_1.resolveAddress)(tx.to, this.provider) : undefined),
