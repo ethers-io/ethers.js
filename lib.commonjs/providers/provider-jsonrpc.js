@@ -619,6 +619,20 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                     };
                 }
                 break;
+            case "getBlockReceipts":
+                if ("blockTag" in req) {
+                    return {
+                        method: "eth_getBlockReceipts",
+                        args: [req.blockTag]
+                    };
+                }
+                else if ("blockHash" in req) {
+                    return {
+                        method: "eth_getBlockByHash",
+                        args: [req.blockHash]
+                    };
+                }
+                break;
             case "getTransaction":
                 return {
                     method: "eth_getTransactionByHash",
