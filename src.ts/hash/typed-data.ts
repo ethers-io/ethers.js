@@ -43,7 +43,7 @@ export interface TypedDataDomain {
     chainId?: null | BigNumberish;
 
     /**
-     *  The the address of the contract that will verify the signature.
+     *  The address of the contract that will verify the signature.
      */
     verifyingContract?: null | string;
 
