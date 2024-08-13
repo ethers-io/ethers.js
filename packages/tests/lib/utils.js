@@ -102,7 +102,7 @@ function equals(a, b) {
 }
 exports.equals = equals;
 function getWallet() {
-    var provider = new ethers_1.ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+    var provider = new ethers_1.ethers.providers.InfuraProvider("sepolia", "49a0efa3aaee4fd99797bfa94d8ce2f1");
     var key = null;
     // browser
     if (key == null) {

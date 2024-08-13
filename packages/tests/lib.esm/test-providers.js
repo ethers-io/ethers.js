@@ -150,67 +150,6 @@ const blockchainData = {
             }
         ]
     },
-    goerli: {
-        addresses: [
-            {
-                address: "0x06B5955A67D827CDF91823E3bB8F069e6c89c1D6",
-                balance: bnify("314159000000000000"),
-                code: "0x"
-            },
-        ],
-        blocks: [
-            {
-                hash: "0xd5daa825732729bb0d2fd187a1b888e6bfc890f1fc5333984740d9052afb2920",
-                parentHash: "0xe675f1362d82cdd1ec260b16fb046c17f61d8a84808150f5d715ccce775f575e",
-                number: 3,
-                timestamp: 1548947483,
-                difficulty: 2,
-                gasLimit: bnify("10455073"),
-                gasUsed: bnify("0"),
-                //                miner: "0xe0a2Bd4258D2768837BAa26A28fE71Dc079f84c7",
-                extraData: "0x506172697479205465636820417574686f7269747900000000000000000000002822e1b202411c38084d96c84302b8361ec4840a51cd2fad9cb4bd9921cad7e64bc2e5dc7b41f3f75b33358be3aec718cf4d4317ace940e01b3581a95c9259ac01",
-                transactions: []
-            },
-            // Blockhash with leading zero; see #629
-            {
-                hash: "0x0f305466552efa183a0de26b6fda26d55a872dbc02aca8b5852cc2a361ce9ee4",
-                parentHash: "0x6723e880e01c15c5ac894abcae0f5b55ea809a31eaf5618998928f7d9cbc5118",
-                number: 1479831,
-                timestamp: 1571216171,
-                difficulty: 2,
-                gasLimit: bnify(0x7a1200),
-                gasUsed: bnify("0x0d0ef5"),
-                //                miner: "0x22eA9f6b28DB76A7162054c05ed812dEb2f519Cd",
-                extraData: "0x0000000000000000000000000000000000000000000000000000000000000000f4e6fc1fbd88adf57a272d98f725487f872ef0495a54c2b873a58d14e010bf517cc5650417f18cfd4ad2396272c564a7da1265ae27c397609293f488ec57d68e01",
-                transactions: [
-                    "0xea29f0764f03c5c67ac53a866a28ce23a4a032c2de4327e452b39f482920761a",
-                    "0x0eef23ffb59ac41762fdfa55d9e47e82fa7f0b70b1e8ec486d72fe1fee15f6de",
-                    "0xba1eeb67ac6e8d1aa900ff6fbd84ac46869c9e100b33f787acfb234cd9c93f9f",
-                    "0x4f412ab735b29ddc8b1ff7abe4bfece7ad4684aa20e260fbc42aed75a0d387ea",
-                    "0x2f1fddcc7a2c4b2b7d83c5cadec4e7b71c34cec65da99b1114bd2b044ae0636c"
-                ]
-            }
-        ],
-        transactions: [],
-        transactionReceipts: [
-            {
-                blockHash: "0x2384e8e8bdcf6eb87ec7c138fa503ac34adb32cac817e4b35f14d4339eaa1993",
-                blockNumber: 47464,
-                byzantium: true,
-                type: 0,
-                contractAddress: null,
-                cumulativeGasUsed: bnify(21000),
-                from: "0x8c1e1e5b47980D214965f3bd8ea34C413E120ae4",
-                gasUsed: bnify(21000),
-                logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-                to: "0x58Bb4221245461E1d4cf886f18a01E3Df40Bd359",
-                transactionHash: "0xec8b1ac5d787f36c738cc7793fec606283b41f1efa69df4ae6b2a014dcd12797",
-                transactionIndex: 0,
-                logs: [],
-                status: 1
-            }
-        ],
-    }
 };
 blockchainData["default"] = blockchainData.homestead;
 function equals(name, actual, expected) {
@@ -260,7 +199,7 @@ function waiter(duration) {
         }
     });
 }
-const allNetworks = ["default", "homestead", "goerli"];
+const allNetworks = ["default", "homestead"];
 // We use separate API keys because otherwise the testcases sometimes
 // fail during CI because our default keys are pretty heavily used
 const _ApiKeys = {
@@ -479,7 +418,7 @@ Object.keys(blockchainData).forEach((network) => {
     function addErrorTest(code, func) {
         testFunctions.push({
             name: `throws correct ${code} error`,
-            networks: ["goerli"],
+            networks: ["sepolia"],
             checkSkip: (provider, network, test) => {
                 return false;
             },
@@ -606,23 +545,28 @@ testFunctions.push({
         assert.ok(b0.gt(b1), "balance is decreased");
     })
 });
+/*
 testFunctions.push({
     name: "sends an EIP-1559 transaction",
-    extras: ["funding"],
-    timeout: 900,
-    networks: ["goerli"],
-    checkSkip: (provider, network, test) => {
+    extras: [ "funding" ],         // We need funding to the funWallet
+    timeout: 900,                  // 15 minutes
+    networks: [ "goerli" ],       // Only test on Goerli
+    checkSkip: (provider: string, network: string, test: TestDescription) => {
         // These don't support EIP-1559 yet for sending
         //return (provider === "AlchemyProvider" );
-        return (provider === "AnkrProvider");
+        return (provider === "AnkrProvider" );
     },
-    execute: (provider) => __awaiter(void 0, void 0, void 0, function* () {
+    execute: async (provider: ethers.providers.Provider) => {
         const wallet = fundWallet.connect(provider);
+
         const addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
-        yield waiter(3000);
-        const b0 = yield provider.getBalance(wallet.address);
+
+        await waiter(3000);
+
+        const b0 = await provider.getBalance(wallet.address);
         assert.ok(b0.gt(ethers.constants.Zero), "balance is non-zero");
-        const tx = yield wallet.sendTransaction({
+
+        const tx = await wallet.sendTransaction({
             type: 2,
             accessList: {
                 "0x8ba1f109551bD432803012645Ac136ddd64DBA72": [
@@ -633,12 +577,16 @@ testFunctions.push({
             to: addr,
             value: 123,
         });
-        yield tx.wait();
-        yield waiter(3000);
-        const b1 = yield provider.getBalance(wallet.address);
+
+        await tx.wait();
+
+        await waiter(3000);
+
+        const b1 = await provider.getBalance(wallet.address);
         assert.ok(b0.gt(b1), "balance is decreased");
-    })
+    }
 });
+*/
 describe("Test Provider Methods", function () {
     let fundReceipt = null;
     before(function () {
@@ -943,13 +891,13 @@ describe("Test Events", function () {
     it("InfuraProvider", function () {
         return __awaiter(this, void 0, void 0, function* () {
             this.timeout(60000);
-            const provider = new ethers.providers.InfuraProvider("goerli");
+            const provider = new ethers.providers.InfuraProvider("sepolia");
             yield testBlockEvent(provider);
         });
     });
 });
 describe("Bad ENS resolution", function () {
-    const provider = providerFunctions[0].create("goerli");
+    const provider = providerFunctions[0].create("sepolia");
     it("signer has a bad ENS name", function () {
         return __awaiter(this, void 0, void 0, function* () {
             this.timeout(300000);
@@ -987,7 +935,7 @@ describe("Resolve ENS avatar", function () {
         it(`Resolves avatar for ${test.title}`, function () {
             return __awaiter(this, void 0, void 0, function* () {
                 this.timeout(60000);
-                const provider = ethers.getDefaultProvider("goerli", getApiKeys("goerli"));
+                const provider = ethers.getDefaultProvider("sepolia", getApiKeys("sepolia"));
                 const avatar = yield provider.getAvatar(test.name);
                 assert.equal(test.value, avatar, "avatar url");
             });
@@ -1025,7 +973,7 @@ describe("Resolve ENS content hash", function () {
     });
 });
 describe("Test EIP-2544 ENS wildcards", function () {
-    const provider = (providerFunctions[0].create("goerli"));
+    const provider = (providerFunctions[0].create("sepolia"));
     it("Resolves recursively", function () {
         return __awaiter(this, void 0, void 0, function* () {
             const resolver = yield provider.getResolver("ricmoose.hatch.eth");
@@ -1037,7 +985,7 @@ describe("Test EIP-2544 ENS wildcards", function () {
     });
 });
 describe("Test CCIP execution", function () {
-    const address = "0x6C5ed35574a9b4d163f75bBf0595F7540D8FCc2d";
+    const address = "0x2bbac28bf32fe92f17fb4d8a61036c8c6c2e2850";
     const ABI = [
         //'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
         'function testGet(bytes callData) view returns (bytes32)',
@@ -1048,7 +996,7 @@ describe("Test CCIP execution", function () {
         'function testPost(bytes callData) view returns (bytes32)',
         'function verifyTest(bytes result, bytes extraData) pure returns (bytes32)'
     ];
-    const provider = providerFunctions[0].create("goerli");
+    const provider = providerFunctions[0].create("sepolia");
     const contract = new ethers.Contract(address, ABI, provider);
     // This matches the verify method in the Solidity contract against the
     // processed data from the endpoint
@@ -1092,7 +1040,7 @@ describe("Test CCIP execution", function () {
     it("testGet should fail with CCIP explicitly disabled on provider", function () {
         return __awaiter(this, void 0, void 0, function* () {
             this.timeout(60000);
-            const provider = providerFunctions[0].create("goerli");
+            const provider = providerFunctions[0].create("sepolia");
             provider.disableCcipRead = true;
             const contract = new ethers.Contract(address, ABI, provider);
             try {

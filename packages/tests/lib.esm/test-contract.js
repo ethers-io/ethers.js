@@ -12,8 +12,7 @@ import assert from "assert";
 import { ethers } from "ethers";
 import { sendTransaction } from "./utils";
 import contractData from "./test-contract.json";
-const provider = new ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
-//const provider = ethers.getDefaultProvider("rinkeby");
+const provider = new ethers.providers.InfuraProvider("sepolia", "49a0efa3aaee4fd99797bfa94d8ce2f1");
 const TIMEOUT_PERIOD = 120000;
 const contract = (function () {
     return new ethers.Contract(contractData.contractAddress, contractData.interface, provider);
@@ -94,7 +93,7 @@ function TestContractEvents() {
             });
         });
         const hash = yield sendTransaction({
-            to: "0x63c5bd7ef280f150aca761a5e9a922959eb26732",
+            to: contractData.contractAddress,
             data: "0xbabf890100000000000000000000000006b5955a67d827cdf91823e3bb8f069e6c89c1d600000000000000000000000000000000000000000000000000000000000000420000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000a48656c6c6f576f726c6400000000000000000000000000000000000000000000"
         });
         console.log('*** Triggered Transaction Hash: ' + hash);

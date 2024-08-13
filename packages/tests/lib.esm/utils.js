@@ -69,7 +69,7 @@ function equals(a, b) {
     return a === b;
 }
 function getWallet() {
-    const provider = new ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+    const provider = new ethers.providers.InfuraProvider("sepolia", "49a0efa3aaee4fd99797bfa94d8ce2f1");
     let key = null;
     // browser
     if (key == null) {

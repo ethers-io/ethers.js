@@ -547,14 +547,14 @@ describe("Test ParamType Parser", function () {
     });
 });
 describe('Test EIP-838 Error Codes', function () {
-    var addr = "0x9FC52a97e59aeea064D9c24a383B70e8475b3e0B";
+    var addr = "0x5A79F8929f659AdE4A5c80B5047ADbd0Da598146";
     it("testError1", function () {
         return __awaiter(this, void 0, void 0, function () {
             var provider, contract, result, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        provider = new ethers_1.ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+                        provider = new ethers_1.ethers.providers.InfuraProvider("sepolia", "49a0efa3aaee4fd99797bfa94d8ce2f1");
                         contract = new ethers_1.ethers.Contract(addr, [
                             "function testError1(bool pass, address addr, uint256 value) pure returns (bool)",
                             "function testError2(bool pass, bytes data) pure returns (bool)",

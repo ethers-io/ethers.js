@@ -43,8 +43,7 @@ var assert_1 = __importDefault(require("assert"));
 var ethers_1 = require("ethers");
 var utils_1 = require("./utils");
 var test_contract_json_1 = __importDefault(require("./test-contract.json"));
-var provider = new ethers_1.ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
-//const provider = ethers.getDefaultProvider("rinkeby");
+var provider = new ethers_1.ethers.providers.InfuraProvider("sepolia", "49a0efa3aaee4fd99797bfa94d8ce2f1");
 var TIMEOUT_PERIOD = 120000;
 var contract = (function () {
     return new ethers_1.ethers.Contract(test_contract_json_1.default.contractAddress, test_contract_json_1.default.interface, provider);
@@ -129,7 +128,7 @@ function TestContractEvents() {
                         });
                     });
                     return [4 /*yield*/, (0, utils_1.sendTransaction)({
-                            to: "0x63c5bd7ef280f150aca761a5e9a922959eb26732",
+                            to: test_contract_json_1.default.contractAddress,
                             data: "0xbabf890100000000000000000000000006b5955a67d827cdf91823e3bb8f069e6c89c1d600000000000000000000000000000000000000000000000000000000000000420000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000a48656c6c6f576f726c6400000000000000000000000000000000000000000000"
                         })];
                 case 1:
