@@ -62,7 +62,7 @@ function equals(a: any, b: any): boolean {
 }
 
 function getWallet(): ethers.Wallet {
-    const provider = new ethers.providers.InfuraProvider("goerli", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+    const provider = new ethers.providers.InfuraProvider("sepolia", "49a0efa3aaee4fd99797bfa94d8ce2f1");
 
     let key: null | string = null;
 
