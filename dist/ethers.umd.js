@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.13.1";
+    const version = "6.13.2";
 
     /**
      *  Property helper functions.
@@ -23559,6 +23559,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return new BaseWallet(this.#signingKey, provider);
         }
         async signTransaction(tx) {
+            tx = copyRequest(tx);
             // Replace any Addressable or ENS name with an address
             const { to, from } = await resolveProperties({
                 to: (tx.to ? resolveAddress(tx.to, this.provider) : undefined),
