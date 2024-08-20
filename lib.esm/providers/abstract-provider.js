@@ -767,6 +767,30 @@ export class AbstractProvider {
         }
         return this._wrapBlock(params, network);
     }
+    async #getBlockReceipts(block) {
+        if (isHexString(block, 32)) {
+            return await this.#perform({
+                method: "getBlockReceipts", blockHash: block
+            });
+        }
+        let blockTag = this._getBlockTag(block);
+        if (typeof (blockTag) !== "string") {
+            blockTag = await blockTag;
+        }
+        return await this.#perform({
+            method: "getBlockReceipts", blockTag
+        });
+    }
+    async getBlockReceipts(blockHashOrBlockTag) {
+        const { network, params } = await resolveProperties({
+            network: this.getNetwork(),
+            params: this.#getBlockReceipts(blockHashOrBlockTag)
+        });
+        if (params == null) {
+            return null;
+        }
+        return params.map((p) => this._wrapTransactionReceipt(p, network));
+    }
     async getTransaction(hash) {
         const { network, params } = await resolveProperties({
             network: this.getNetwork(),
