@@ -249,6 +249,21 @@ _code: Create a Provider on a static network  @lang<script>
     staticNetwork: true
   });
 
+_null:
+
+Since the fees for Ethereum chains has become more complicated,
+all Fee parameters in v6 were coalesced into a single `.getFeeData`
+method. While `gasPrice` is no longer widely used in modern networks,
+when using a legacy network, it is available using that method.
+
+_code: Getting legacy gas price  @lang<script>
+  // v5
+  await provider.getGasPrice()
+
+  // v6
+  (await provider.getFeeData()).gasPrice
+
+
 _subsection: Signatures  @<migrate-signatures>
 
 The Signature is now a class which facilitates all the parsing
