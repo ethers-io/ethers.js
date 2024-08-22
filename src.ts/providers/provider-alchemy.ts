@@ -72,6 +72,36 @@ function getHost(name: string): string {
             return "opt-goerli.g.alchemy.com";
         case "optimism-sepolia":
             return "opt-sepolia.g.alchemy.com";
+        case "zksync":
+            return "zksync-mainnet.g.alchemy.com";
+        case "zksync-sepolia":
+            return "zksync-sepolia.g.alchemy.com";
+        case "starknet":
+            return "starknet-mainnet.g.alchemy.com";
+        case "starknet-sepolia":
+            return "starknet-sepolia.g.alchemy.com";
+        case "zetachain":
+            return "zetachain-mainnet.g.alchemy.com";
+        case "zetachain-testnet":
+            return "zetachain-testnet.g.alchemy.com";
+        case "fantom":
+            return "fantom-mainnet.g.alchemy.com";
+        case "fantom-testnet":
+            return "fantom-testnet.g.alchemy.com";
+        case "mantle":
+            return "mantle-mainnet.g.alchemy.com";
+        case "blast":
+            return "blast-mainnet.g.alchemy.com";
+        case "blast-sepolia":
+            return "blast-sepolia.g.alchemy.com";
+        case "linea":
+            return "linea-mainnet.g.alchemy.com";
+        case "linea-sepolia":
+            return "linea-sepolia.g.alchemy.com";
+        case "bnb":
+            return "bnb-mainnet.g.alchemy.com";
+        case "bnb-testnet":
+            return "bnb-testnet.g.alchemy.com";
     }
 
     assertArgument(false, "unsupported network", "network", name);
