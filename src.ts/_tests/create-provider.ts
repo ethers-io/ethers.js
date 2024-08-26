@@ -51,7 +51,7 @@ const ProviderCreators: Array<ProviderCreator> = [
     */
     {
         name: "ChainstackProvider",
-        networks: [ "default", "mainnet", "arbitrum", "bnb", "matic" ],
+        networks: [ "default", "mainnet", "arbitrum", "bnb", "matic", "base", "optimism", "sepolia", "holesky", "arbitrum-sepolia", "bnbt", "matic-amoy", "base-sepolia", "optimism-sepolia" ],
         create: function(network: string) {
             return new ChainstackProvider(network);
         }
