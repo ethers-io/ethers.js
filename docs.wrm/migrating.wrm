@@ -16,6 +16,26 @@ so a lot of changes are largely internal.
 - [Utilities](migrate-utils)
 - [Removed Items](migrate-missing)
 
+_subsection: Codemods
+_heading Ethers v6 Codemods
+
+Run the following codemods to automatically update your code for Ethers v6 migration:
+
+_code: codemod migration recipe @lang<script>
+
+  npx codemod@latest Ethers/6/Migration-Recipe
+
+This wil run the following codemods from the Ethers Codemod repository:
+
+- [[Ethers/6/Big-Numbers]]
+- [[Ethers/6/Signatures]]
+- [[Ethers/6/Providers]]
+- [[Ethers/6/Importing]]
+- [[Ethers/6/Transactions]]
+- [[Ethers/6/Contracts/Ambiguous-Methods]]
+- [[Ethers/6/Contracts/Other-Method-Operations]]
+- [[Ethers/6/Contracts/Other-Method-Operations]]
+
 
 _subsection: Big Numbers  @<migrate-bigint>
 
@@ -61,6 +81,10 @@ _code: simple comparison on large numbers  @lang<script>
 
   // Using BigInt in v6
   isEqual = (value1 == value2)
+
+**Note**: Codemod transforms BigNumber to BigInt and also refactors addition and equality with:
+```bash
+npx codemod@latest Ethers/6/Big-Numbers
 
 
 _subsection: Contracts @<migrate-contracts>
