@@ -164,6 +164,8 @@ export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 export type {
     Provider, Signer,
 
+    CommunityResourcable,
+
     AbstractProviderOptions, BrowserProviderOptions, FallbackProviderOptions,
 
     AbstractProviderPlugin, BlockParams, BlockTag, ContractRunner, DebugEventBrowserProvider,
