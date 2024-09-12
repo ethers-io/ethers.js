@@ -26,7 +26,7 @@ import type { ContractTransactionResponse } from "./wrappers.js";
  *
  *  [[DeferredTopicFilter]] - A filter created by calling a [[ContractEvent]]
  *  with parameters, which will create a filter for a specific event
- *  signautre and dereference each parameter when calling the listener.
+ *  signature and dereference each parameter when calling the listener.
  */
 export type ContractEventName = string | ContractEvent | TopicFilter | DeferredTopicFilter;
 
