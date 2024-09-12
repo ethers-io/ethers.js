@@ -6641,7 +6641,7 @@ class Signature {
     #v;
     #networkV;
     /**
-     *  The ``r`` value for a signautre.
+     *  The ``r`` value for a signature.
      *
      *  This represents the ``x`` coordinate of a "reference" or
      *  challenge point, from which the ``y`` can be computed.
@@ -7059,7 +7059,7 @@ class SigningKey {
         let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s])));
         secpSig = secpSig.addRecoveryBit(sig.yParity);
         const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
-        assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
+        assertArgument(pubKey != null, "invalid signature for digest", "signature", signature);
         return "0x" + pubKey.toHex(false);
     }
     /**
