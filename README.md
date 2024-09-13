@@ -6,7 +6,7 @@ The Ethers Project
 ![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/ethers)
 ![npm (downloads)](https://img.shields.io/npm/dm/ethers)
 [![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/ethers-io/ethers.js/badge)](https://www.gitpoap.io/gh/ethers-io/ethers.js)
-[![Twitter Follow](https://img.shields.io/twitter/follow/ricmoo?style=social)](https://twitter.com/ricmoo)
+[![Twitter Follow](https://img.shields.io/twitter/follow/ricmoo?style=social)](https://x.com/ricmoo)
 
 -----
 
@@ -33,11 +33,11 @@ in [TypeScript](https://www.typescriptlang.org).
 Keep Updated
 ------------
 
-For advisories and important notices, follow [@ethersproject](https://twitter.com/ethersproject)
-on Twitter (low-traffic, non-marketing, important information only) as well as watch this GitHub project.
+For advisories and important notices, follow [@ethersproject](https://x.com/ethersproject)
+on X formerly (Twitter) (low-traffic, non-marketing, important information only) as well as watch this GitHub project.
 
 For more general news, discussions, and feedback, follow or DM me,
-[@ricmoo](https://twitter.com/ricmoo) on Twitter or on the
+[@ricmoo](https://x.com/ricmoo) on X formerly (Twitter) or on the
 [Ethers Discord](https://discord.gg/qYtSscGYYc).
 
 
