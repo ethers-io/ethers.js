@@ -34,10 +34,10 @@ Keep Updated
 ------------
 
 For advisories and important notices, follow [@ethersproject](https://x.com/ethersproject)
-on X formerly (Twitter) (low-traffic, non-marketing, important information only) as well as watch this GitHub project.
+on X (formerly Twitter) (low-traffic, non-marketing, important information only) as well as watch this GitHub project.
 
 For more general news, discussions, and feedback, follow or DM me,
-[@ricmoo](https://x.com/ricmoo) on X formerly (Twitter) or on the
+[@ricmoo](https://x.com/ricmoo) on X (formerly Twitter) or on the
 [Ethers Discord](https://discord.gg/qYtSscGYYc).
 
 
