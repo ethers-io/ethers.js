@@ -29,5 +29,5 @@ export { computeAddress, recoverAddress } from "./address.js";
 export { Transaction } from "./transaction.js";
 
 export type {
-    Blob, BlobLike, KzgLibrary, TransactionLike
+    Blob, BlobLike, KzgLibrary, KzgLibraryLike, TransactionLike
 } from "./transaction.js";

@@ -128,7 +128,7 @@ export interface TransactionLike<A = string> {
      *  This is generally ``null``, unless you are creating BLOb
      *  transactions.
      */
-    kzg?: null | KzgLibrary;
+    kzg?: null | KzgLibraryLike;
 }
 
 /**
@@ -163,6 +163,52 @@ export type BlobLike = BytesLike | {
 export interface KzgLibrary {
     blobToKzgCommitment: (blob: Uint8Array) => Uint8Array;
     computeBlobKzgProof: (blob: Uint8Array, commitment: Uint8Array) => Uint8Array;
+}
+
+/**
+ *  A KZG Library with any of the various API configurations.
+ *  As the library is still experimental and the API is not
+ *  stable, depending on the version used the method names and
+ *  signatures are still in flux.
+ *
+ *  This allows any of the versions to be passed into Transaction
+ *  while providing a stable external API.
+ */
+export type KzgLibraryLike  = KzgLibrary | {
+    blobToKZGCommitment: (blob: string) => string;
+    computeBlobKZGProof: (blob: string, commitment: string) => string;
+};
+
+function getKzgLibrary(kzg: KzgLibraryLike): KzgLibrary {
+    const blobToKzgCommitment = (blob: Uint8Array) => {
+        // API <0.5.0; blobToKzgCommitment(Uint8Array) => Uint8Array
+        if ("blobToKzgCommitment" in kzg && typeof(kzg.blobToKzgCommitment) === "function") {
+            return kzg.blobToKzgCommitment(blob);
+        }
+
+        // API >= 0.5.0; blobToKZGCommitment(string) => string
+        if ("blobToKZGCommitment" in kzg && typeof(kzg.blobToKZGCommitment) === "function") {
+            return getBytes(kzg.blobToKZGCommitment(hexlify(blob)));
+        }
+
+        assertArgument(false, "unsupported KZG library", "kzg", kzg);
+    };
+
+    const computeBlobKzgProof = (blob: Uint8Array, commitment: Uint8Array) => {
+        // API <0.5.0; computeBlobKzgProof(Uint8Array, Uint8Array) => Uint8Array
+        if ("computeBlobKzgProof" in kzg && typeof(kzg.computeBlobKzgProof) === "function") {
+            return kzg.computeBlobKzgProof(blob, commitment);
+        }
+
+        // API >= 0.5.0; computeBlobKZGProof(string, string) => string
+        if ("computeBlobKZGProof" in kzg && typeof(kzg.computeBlobKZGProof) === "function") {
+            return getBytes(kzg.computeBlobKZGProof(hexlify(blob), hexlify(commitment)));
+        }
+
+        assertArgument(false, "unsupported KZG library", "kzg", kzg);
+    };
+
+    return { blobToKzgCommitment, computeBlobKzgProof };
 }
 
 function getVersionedHash(version: number, hash: BytesLike): string {
@@ -862,8 +908,12 @@ export class Transaction implements TransactionLike<string> {
     }
 
     get kzg(): null | KzgLibrary { return this.#kzg; }
-    set kzg(kzg: null | KzgLibrary) {
-        this.#kzg = kzg;
+    set kzg(kzg: null | KzgLibraryLike) {
+        if (kzg == null) {
+            this.#kzg = null;
+        } else {
+            this.#kzg = getKzgLibrary(kzg);
+        }
     }
 
     /**

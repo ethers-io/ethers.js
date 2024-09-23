@@ -10,7 +10,7 @@ import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
 import type {
-    AccessList, AccessListish, BlobLike, KzgLibrary, TransactionLike
+    AccessList, AccessListish, BlobLike, KzgLibraryLike, TransactionLike
 } from "../transaction/index.js";
 
 import type { ContractRunner } from "./contracts.js";
@@ -239,7 +239,7 @@ export interface TransactionRequest {
      *  This is generally ``null``, unless you are creating BLOb
      *  transactions.
      */
-    kzg?: null | KzgLibrary;
+    kzg?: null | KzgLibraryLike;
 
     // Todo?
     //gasMultiplier?: number;
