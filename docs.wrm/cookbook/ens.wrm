@@ -9,7 +9,7 @@ _subsection: Get all Text records  @<cookbook-ens-allText>
 Here is a short recipe to get all the text records set for an ENS
 name.
 
-It first queries all ``TextChanged`` events on the resovler, and
+It first queries all ``TextChanged`` events on the resolver, and
 uses a MulticallProvider to batch all the ``eth_call`` queries
 for each key into a single ``eth_call``. As such, you will need
 to install:
