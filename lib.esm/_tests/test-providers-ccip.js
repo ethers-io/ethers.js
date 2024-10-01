@@ -12,7 +12,7 @@ describe("Test CCIP execution", function () {
         ]);
         assert.equal(result, keccak256(check), "response is equal");
     };
-    const address = "0xaeaa06a37e6421ac63120d6daddee0ffa04b43e8";
+    const address = "0xb66e9b20258712bfb9fd40acb13d7712ef149d6e";
     const networkName = "sepolia";
     const calldata = "0x1234";
     it("testGet passes under normal operation", async function () {
@@ -128,6 +128,17 @@ describe("Test CCIP execution", function () {
         const tx = {
             to: address, enableCcipRead: true,
             data: "0xedf4a021000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000"
+        };
+        const result = await provider.call(tx);
+        verify(address, calldata, result);
+    });
+    it("testGetDeadHostFallback passes if any URL returns correctly", async function () {
+        this.timeout(60000);
+        const provider = connect(networkName);
+        // testGetDeadHostFallback(bytes callData = "0x1234")
+        const tx = {
+            to: address, enableCcipRead: true,
+            data: "0x0324be5a000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000"
         };
         const result = await provider.call(tx);
         verify(address, calldata, result);

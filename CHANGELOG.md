@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.3 (2024-09-30 22:08)
+---------------------------------
+
+  - Allow CCIP-read to continue during low-level fetch failures ([#4842](https://github.com/ethers-io/ethers.js/issues/4842); [1c31f95](https://github.com/ethers-io/ethers.js/commit/1c31f95f7a1e4993ca0f1706002a975a0060dd88)).
+
 ethers/v6.13.2 (2024-07-25 17:54)
 ---------------------------------
 
