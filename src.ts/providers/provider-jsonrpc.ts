@@ -382,7 +382,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
                     // If the network changed: calling again will also fail
                     // If unsupported: likely destroyed
                     if (isError(error, "CANCELLED") || isError(error, "BAD_DATA") ||
-                        isError(error, "NETWORK_ERROR" || isError(error, "UNSUPPORTED_OPERATION"))) {
+                        isError(error, "NETWORK_ERROR") || isError(error, "UNSUPPORTED_OPERATION")) {
 
                         if (error.info == null) { error.info = { }; }
                         error.info.sendTransactionHash = hash;
