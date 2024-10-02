@@ -3,6 +3,7 @@ import { assert } from "../utils/index.js";
 
 import { AnkrProvider } from "./provider-ankr.js";
 import { AlchemyProvider } from "./provider-alchemy.js";
+import { BlockscoutProvider } from "./provider-blockscout.js";
 import { ChainstackProvider } from "./provider-chainstack.js";
 import { CloudflareProvider } from "./provider-cloudflare.js";
 import { EtherscanProvider } from "./provider-etherscan.js";
@@ -118,6 +119,12 @@ export function getDefaultProvider(network?: string | Networkish | WebSocketLike
     if (allowService("ankr") && options.ankr != null) {
         try {
             providers.push(new AnkrProvider(network, options.ankr));
+        } catch (error) { }
+    }
+
+    if (allowService("blockscout")) {
+        try {
+            providers.push(new BlockscoutProvider(network, options.blockscout));
         } catch (error) { }
     }
 
