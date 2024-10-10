@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.4 (2024-10-10 17:22)
+---------------------------------
+
+  - Fixed bug in JSON-RPC error checking ([#4827](https://github.com/ethers-io/ethers.js/issues/4827), [#4837](https://github.com/ethers-io/ethers.js/issues/4837), [#4851](https://github.com/ethers-io/ethers.js/issues/4851); [be3e6b1](https://github.com/ethers-io/ethers.js/commit/be3e6b14433bc88ad8c0c98a4f3a2a627cea6b99)).
+
 ethers/v6.13.3 (2024-09-30 22:08)
 ---------------------------------
 

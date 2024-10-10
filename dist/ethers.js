@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.13.3";
+const version = "6.13.4";
 
 /**
  *  Property helper functions.
@@ -20022,7 +20022,7 @@ class JsonRpcSigner extends AbstractSigner {
                     // If the network changed: calling again will also fail
                     // If unsupported: likely destroyed
                     if (isError(error, "CANCELLED") || isError(error, "BAD_DATA") ||
-                        isError(error, "NETWORK_ERROR" )) {
+                        isError(error, "NETWORK_ERROR") || isError(error, "UNSUPPORTED_OPERATION")) {
                         if (error.info == null) {
                             error.info = {};
                         }
