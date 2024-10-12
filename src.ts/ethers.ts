@@ -88,6 +88,8 @@ export {
     copyRequest, showThrottleMessage
 } from "./providers/index.js";
 
+export { formatTransactionResponse } from "./providers/format.js";
+
 export {
     accessListify,
     computeAddress, recoverAddress,
@@ -175,6 +177,8 @@ export type {
     TransactionReceiptParams, TransactionRequest, TransactionResponseParams,
     WebSocketCreator, WebSocketLike
 } from "./providers/index.js";
+
+export type { formatTransactionResponse } from "./providers/format.js";
 
 export type {
     AccessList, AccessListish, AccessListEntry,
