@@ -78,6 +78,8 @@ export {
     SocketEventSubscriber
 } from "./provider-socket.js";
 
+export { formatTransactionResponse } from "./format.js";
+
 export type {
     AbstractProviderOptions, Subscription, Subscriber,
     AbstractProviderPlugin,
