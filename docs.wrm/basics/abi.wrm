@@ -71,7 +71,7 @@ keccak256 of the normalized event signature. This allows a specific
 event to be efficiently filtered, finding the matching events in a block.
 
 Each additional **indexed** parameter (i.e. parameters marked with
-``indexed`` in the signautre) are placed in the topics as well, but may be
+``indexed`` in the signature) are placed in the topics as well, but may be
 filtered to find matching values.
 
 All non-indexed parameters are encoded and placed in the **data**. This
