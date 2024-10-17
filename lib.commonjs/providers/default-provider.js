@@ -4,6 +4,7 @@ exports.getDefaultProvider = void 0;
 const index_js_1 = require("../utils/index.js");
 const provider_ankr_js_1 = require("./provider-ankr.js");
 const provider_alchemy_js_1 = require("./provider-alchemy.js");
+const provider_blockscout_js_1 = require("./provider-blockscout.js");
 const provider_chainstack_js_1 = require("./provider-chainstack.js");
 const provider_cloudflare_js_1 = require("./provider-cloudflare.js");
 const provider_etherscan_js_1 = require("./provider-etherscan.js");
@@ -109,6 +110,12 @@ function getDefaultProvider(network, options) {
     if (allowService("ankr") && options.ankr != null) {
         try {
             providers.push(new provider_ankr_js_1.AnkrProvider(network, options.ankr));
+        }
+        catch (error) { }
+    }
+    if (allowService("blockscout")) {
+        try {
+            providers.push(new provider_blockscout_js_1.BlockscoutProvider(network, options.blockscout));
         }
         catch (error) { }
     }
