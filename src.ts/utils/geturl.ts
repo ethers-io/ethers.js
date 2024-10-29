@@ -101,11 +101,18 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
                 });
 
                 resp.on("end", () => {
-                    if (headers["content-encoding"] === "gzip" && body) {
-                        body = getBytes(gunzipSync(body));
+                    try { 
+                        if (headers["content-encoding"] === "gzip" && body) {
+                        
+                            body = getBytes(gunzipSync(body));
+                        }
+    
+                        resolve({ statusCode, statusMessage, headers, body });
+                    } catch(error){
+                        // NOTE: need try/catch, because gunzipSync can throw "unexpected end of file" error
+                        // check issue: https://github.com/ethers-io/ethers.js/issues/4873
+                        return reject(error);
                     }
-
-                    resolve({ statusCode, statusMessage, headers, body });
                 });
 
                 resp.on("error", (error) => {
