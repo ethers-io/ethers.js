@@ -949,7 +949,7 @@ class TransactionResponse {
         this.signature = tx.signature;
         this.accessList = (tx.accessList != null) ? tx.accessList : null;
         this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes : null;
-        this.#startBlock = -1;
+        this.#startBlock = (tx instanceof TransactionResponse) ? tx.#startBlock : -1;
     }
     /**
      *  Returns a JSON-compatible representation of this transaction.
