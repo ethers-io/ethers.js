@@ -23,7 +23,7 @@ export class Signature {
     #v;
     #networkV;
     /**
-     *  The ``r`` value for a signautre.
+     *  The ``r`` value for a signature.
      *
      *  This represents the ``x`` coordinate of a "reference" or
      *  challenge point, from which the ``y`` can be computed.

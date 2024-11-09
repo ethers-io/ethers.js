@@ -6647,7 +6647,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #v;
         #networkV;
         /**
-         *  The ``r`` value for a signautre.
+         *  The ``r`` value for a signature.
          *
          *  This represents the ``x`` coordinate of a "reference" or
          *  challenge point, from which the ``y`` can be computed.
@@ -7065,7 +7065,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s])));
             secpSig = secpSig.addRecoveryBit(sig.yParity);
             const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
-            assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
+            assertArgument(pubKey != null, "invalid signature for digest", "signature", signature);
             return "0x" + pubKey.toHex(false);
         }
         /**
@@ -9536,6 +9536,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     		let {V} = node;
     		if (V) { // this is a valid emoji (so far)
     			emoji = V;
+    			if (eaten) eaten.push(...cps.slice(pos).reverse()); // (optional) copy input, used for ens_tokenize()
     			cps.length = pos; // truncate
     		}
     	}

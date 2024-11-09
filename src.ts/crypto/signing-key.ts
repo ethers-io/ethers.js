@@ -172,7 +172,7 @@ export class SigningKey {
         secpSig = secpSig.addRecoveryBit(sig.yParity);
 
         const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
-        assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
+        assertArgument(pubKey != null, "invalid signature for digest", "signature", signature);
 
         return "0x" + pubKey.toHex(false);
     }
