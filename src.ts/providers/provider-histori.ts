@@ -64,7 +64,6 @@ import {
     defineProperties,
     resolveProperties,
     assert,
-    assertArgument,
     FetchRequest,
   } from "../utils/index.js";
   
@@ -159,7 +158,6 @@ import {
      // we optimistically assume the provided network is correct. 
      // In case an invalid on unsupported one is supplied, the Histori Gateway will return 400
      // with a helpful message
-     // assertArgument(false, "unsupported network", "network", name);
       return name;
   }
   
