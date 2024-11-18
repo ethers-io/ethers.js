@@ -22,6 +22,7 @@ link-react-native [React Native](https://reactnative.dev)
 link-semver [semver](https://semver.org)
 link-solidity [Solidity](https://solidity.readthedocs.io/)
 link-tally [Tally](https://tallyho.org)
+link-histori [https://docs.histori.xyz/docs/archive-node-info/intro]
 
 # Project-specific
 link-alchemy-signup [Alchemy Signup](https://dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d)
@@ -30,6 +31,7 @@ link-ankr-signup [link-ankr-premium](https://www.ankr.com/protocol/plan/)
 link-etherscan-signup [Etherscan Signup](https://etherscan.io/apis)
 link-etherscan-ratelimit [link-etherscan-ratelimit](https://info.etherscan.com/api-return-errors/)
 link-infura-signup [INFURA Signup](https://infura.io/register)
+link-histori-signup [Histori Signup](https://histori.xyz/signin)
 link-geth-debug [link-geth-debug](https://github.com/ethereum/go-ethereum/wiki/Management-APIs#debug)
 link-geth-rpc [link-geth-rpc](https://github.com/ethereum/go-ethereum/wiki/Management-APIs)
 link-infura-secret [link-infura-secret](https://infura.io/docs/gettingStarted/authentication)

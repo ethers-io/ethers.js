@@ -117,6 +117,7 @@ A special thanks to these services for providing community resources:
 - [Etherscan](https://etherscan.io/)
 - [INFURA](https://infura.io/)
 - [Alchemy](https://dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d)
+- [Histori](https://docs.histori.xyz/docs/archive-node/eth-block-number)
 
 
 Extension Packages

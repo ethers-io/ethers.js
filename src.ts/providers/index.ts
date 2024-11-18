@@ -67,6 +67,7 @@ export { EtherscanProvider, EtherscanPlugin } from "./provider-etherscan.js";
 export { InfuraProvider, InfuraWebSocketProvider } from "./provider-infura.js";
 export { PocketProvider } from "./provider-pocket.js";
 export { QuickNodeProvider } from "./provider-quicknode.js";
+export { HistoriProvider } from "./provider-histori.js";
 
 import { IpcSocketProvider } from "./provider-ipcsocket.js"; /*-browser*/
 export { IpcSocketProvider };
