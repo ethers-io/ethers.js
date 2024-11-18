@@ -65,18 +65,11 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
  *    // third-party services available
  *    provider = getDefaultProvider("mainnet");
  *
- *    // Connect to Polygon, but only allow Etherscan and
- *    // INFURA and use "MY_API_KEY" in calls to Etherscan.
+ *    // Connect to Polygon, but only allow Etherscan,
+ *    // INFURA and Histori and use "MY_API_KEY" in calls to Etherscan.
  *    provider = getDefaultProvider("matic", {
  *      etherscan: "MY_API_KEY",
- *      exclusive: [ "etherscan", "infura" ]
- *    });
- * 
- *   // Connect to Histori - multi-node with archival access 
- *   // for supported networks and capabilities check https://docs.histori.xyz/docs/networks
- *   // project id can be fetched from Histori Dashboard: https://histori.xyz/signin
- *    provider = getDefaultProvider("matic", {
- *      histori: "MY_HISTORI_PROJECT_ID",
+ *      exclusive: [ "etherscan", "infura", "histori" ]
  *    });
  */
 export function getDefaultProvider(network?: string | Networkish | WebSocketLike, options?: any): AbstractProvider {
