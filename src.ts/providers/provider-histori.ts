@@ -154,9 +154,13 @@ import {
       if (resolvedNetworkId) {
           return resolvedNetworkId;
       }
-  
-      // If not found, throw an error
-      assertArgument(false, `Unsupported network: ${name}`, "network", name);
+
+     // In order to not update this provider every time a new network is updated,
+     // we optimistically assume the provided network is correct. 
+     // In case an invalid on unsupported one is supplied, the Histori Gateway will return 400
+     // with a helpful message
+     // assertArgument(false, "unsupported network", "network", name);
+      return name;
   }
   
   /**
