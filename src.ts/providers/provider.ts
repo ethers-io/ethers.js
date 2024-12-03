@@ -711,7 +711,7 @@ export class Block implements BlockParams, Iterable<string> {
                     tx = v;
                     break;
                 } else {
-                    if (v.hash === hash) { continue; }
+                    if (v.hash !== hash) { continue; }
                     tx = v;
                     break;
                 }
