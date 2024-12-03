@@ -3,6 +3,12 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.5 (2024-12-03 15:23)
+---------------------------------
+
+  - Fixed bad logic for searching prefetched transactions by hash ([#4868](https://github.com/ethers-io/ethers.js/issues/4868); [ef3c9bc](https://github.com/ethers-io/ethers.js/commit/ef3c9bc3afb9e36a073bbd3572e9021a852bd2c4)).
+  - Add newline delimiter to IPC providers for broader support ([#4847](https://github.com/ethers-io/ethers.js/issues/4847); [474a8de](https://github.com/ethers-io/ethers.js/commit/474a8ded2b94a563067d3b4dd5f60ec0725b9a27)).
+
 ethers/v6.13.4 (2024-10-10 18:01)
 ---------------------------------
 

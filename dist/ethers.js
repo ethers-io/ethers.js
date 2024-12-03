@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.13.4";
+const version = "6.13.5";
 
 /**
  *  Property helper functions.
@@ -14314,7 +14314,7 @@ class Block {
                     break;
                 }
                 else {
-                    if (v.hash === hash) {
+                    if (v.hash !== hash) {
                         continue;
                     }
                     tx = v;
