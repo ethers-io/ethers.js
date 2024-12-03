@@ -165,7 +165,7 @@ contract RecoverMessage {
     bytes32 yParityAndS;
   }
 
-  // This is an expaned Signature representation
+  // This is an expanded Signature representation
   struct SignatureExpanded {
       uint8 v;
       bytes32 r;
