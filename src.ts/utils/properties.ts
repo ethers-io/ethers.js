@@ -50,6 +50,8 @@ export function defineProperties<T>(
  types?: { [ K in keyof T ]?: string }): void {
 
     for (let key in values) {
+        if (!Object.prototype.hasOwnProperty.call(values, key)) continue;
+
         let value = values[key];
 
         const type = (types ? types[key]: null);
