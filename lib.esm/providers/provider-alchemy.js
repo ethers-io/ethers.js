@@ -24,6 +24,7 @@
  */
 import { defineProperties, resolveProperties, assert, assertArgument, FetchRequest } from "../utils/index.js";
 import { showThrottleMessage } from "./community.js";
+import { _performPrometheus } from "./prometheus.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
@@ -95,6 +96,7 @@ export class AlchemyProvider extends JsonRpcProvider {
         return super._getProvider(chainId);
     }
     async _perform(req) {
+        await _performPrometheus(req);
         // https://docs.alchemy.com/reference/trace-transaction
         if (req.method === "getTransactionResult") {
             const { trace, tx } = await resolveProperties({

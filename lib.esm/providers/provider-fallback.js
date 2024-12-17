@@ -7,6 +7,7 @@
 import { assert, assertArgument, getBigInt, getNumber, isError } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
+import { _performPrometheus } from "./prometheus.js";
 const BN_1 = BigInt("1");
 const BN_2 = BigInt("2");
 function shuffle(array) {
@@ -526,6 +527,7 @@ export class FallbackProvider extends AbstractProvider {
         // Broadcasting a transaction is rare (ish) and already incurs
         // a cost on the user, so spamming is safe-ish. Just send it to
         // every backend.
+        await _performPrometheus(req);
         if (req.method === "broadcastTransaction") {
             // Once any broadcast provides a positive result, use it. No
             // need to wait for anyone else

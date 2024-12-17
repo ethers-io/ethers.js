@@ -26,13 +26,16 @@
 import { AbiCoder } from "../abi/index.js";
 import { Contract } from "../contract/index.js";
 import { accessListify, Transaction } from "../transaction/index.js";
-import { defineProperties, hexlify, toQuantity, FetchRequest, assert, assertArgument, isError, 
-//    parseUnits,
-toUtf8String } from "../utils/index.js";
+import {
+    defineProperties, hexlify, toQuantity, FetchRequest, assert, assertArgument, isError,
+    //    parseUnits,
+    toUtf8String
+} from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import { NetworkPlugin } from "./plugins-network.js";
 import { showThrottleMessage } from "./community.js";
+import { _performPrometheus } from "./prometheus.js";
 const THROTTLE = 2000;
 function isPromise(value) {
     return (value && typeof (value.then) === "function");
@@ -361,6 +364,7 @@ export class EtherscanProvider extends AbstractProvider {
         return this.network;
     }
     async _perform(req) {
+        await _performPrometheus(req);
         switch (req.method) {
             case "chainId":
                 return this.network.chainId;

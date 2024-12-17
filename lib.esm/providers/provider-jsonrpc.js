@@ -22,6 +22,7 @@ import { AbstractSigner } from "./abstract-signer.js";
 import { Network } from "./network.js";
 import { FilterIdEventSubscriber, FilterIdPendingSubscriber } from "./subscriber-filterid.js";
 import { PollingEventSubscriber } from "./subscriber-polling.js";
+import { _performPrometheus } from "./prometheus.js";
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
 function deepCopy(value) {
@@ -366,6 +367,7 @@ export class JsonRpcApiProvider extends AbstractProvider {
     async _perform(req) {
         // Legacy networks do not like the type field being passed along (which
         // is fair), so we delete type if it is 0 and a non-EIP-1559 network
+        await _performPrometheus(req);
         if (req.method === "call" || req.method === "estimateGas") {
             let tx = req.transaction;
             if (tx && tx.type != null && getBigInt(tx.type)) {
