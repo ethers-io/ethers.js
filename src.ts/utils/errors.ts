@@ -731,7 +731,7 @@ export function assertArgumentCount(count: number, expectedCount: number, messag
     if (message == null) { message = ""; }
     if (message) { message = ": " + message; }
 
-    assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+    assert(count >= expectedCount, "missing argument" + message, "MISSING_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });
