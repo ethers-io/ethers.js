@@ -11,6 +11,12 @@ interface ContractAbi {
 
 describe("Tests contract integration", function() {
     const provider = new ethers.JsonRpcProvider("http:/\/127.0.0.1:8545");
+    provider.on("error", (error: any) => {
+        if (error && error.event === "initial-network-discovery") {
+            console.dir(error.info, { depth: null });
+            provider.off("error");
+        }
+    });
 
     const abi = [
         "constructor(address owner, uint maxSupply)",
