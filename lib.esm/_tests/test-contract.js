@@ -214,10 +214,10 @@ describe("Test Typed Contract Interaction", function () {
     abi.push(`function testTyped(bytes memory) public pure returns (string memory)`);
     abi.push(`function testTyped(string memory) public pure returns (string memory)`);
     const contractPromise = (async function () {
-        const provider = new JsonRpcProvider("http:/\/localhost:8545");
+        const provider = new JsonRpcProvider("http:/\/127.0.0.1:8545");
         provider.on("error", (error) => {
             if (error && error.event === "initial-network-discovery") {
-                console.dir(error.info, { depth: null });
+                console.dir(error, { depth: null });
                 provider.off("error");
             }
         });
