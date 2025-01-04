@@ -146,12 +146,13 @@ function _inspectString(value, done) {
     return `[ unknown type: ${value} ]`;
 }
 function _inspect(value, done) {
+    console.log("DEBUG-1", value);
     if (done.has(value)) {
         return "[ Circular ]";
     }
     done.add(value);
     const result = _inspectString(value, done);
-    console.log("DEBUG", result);
+    console.log("DEBUG-2", result);
     done.delete(value);
     return result;
 }

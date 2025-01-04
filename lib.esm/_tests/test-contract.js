@@ -218,6 +218,7 @@ describe("Test Typed Contract Interaction", function () {
         const provider = new JsonRpcProvider("http:/\/127.0.0.1:8545");
         provider.on("error", (error) => {
             if (error && error.event === "initial-network-discovery") {
+                console.log("Got error");
                 console.log(inspect(error));
                 provider.off("error");
             }
