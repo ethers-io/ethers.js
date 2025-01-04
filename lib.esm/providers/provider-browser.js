@@ -9,7 +9,7 @@ import { JsonRpcApiPollingProvider } from "./provider-jsonrpc.js";
 export class BrowserProvider extends JsonRpcApiPollingProvider {
     #request;
     /**
-     *  Connnect to the %%ethereum%% provider, optionally forcing the
+     *  Connect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
     constructor(ethereum, network, _options) {

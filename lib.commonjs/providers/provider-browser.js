@@ -12,7 +12,7 @@ const provider_jsonrpc_js_1 = require("./provider-jsonrpc.js");
 class BrowserProvider extends provider_jsonrpc_js_1.JsonRpcApiPollingProvider {
     #request;
     /**
-     *  Connnect to the %%ethereum%% provider, optionally forcing the
+     *  Connect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
     constructor(ethereum, network, _options) {

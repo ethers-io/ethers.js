@@ -3,7 +3,7 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.13.5 (2024-12-03 15:23)
+ethers/v6.13.5 (2025-01-04 01:51)
 ---------------------------------
 
   - Fixed bad logic for searching prefetched transactions by hash ([#4868](https://github.com/ethers-io/ethers.js/issues/4868); [ef3c9bc](https://github.com/ethers-io/ethers.js/commit/ef3c9bc3afb9e36a073bbd3572e9021a852bd2c4)).
