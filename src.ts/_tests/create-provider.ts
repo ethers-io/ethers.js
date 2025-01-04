@@ -6,7 +6,7 @@ import {
     EtherscanProvider,
     InfuraProvider,
 //    PocketProvider,
-    QuickNodeProvider,
+//    QuickNodeProvider,
 
     FallbackProvider,
     isError,
@@ -70,6 +70,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    /*
     {
         name: "InfuraWebsocketProvider",
         networks: ethNetworks,
@@ -77,6 +78,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    */
 /*
     {
         name: "PocketProvider",
@@ -86,6 +88,7 @@ const ProviderCreators: Array<ProviderCreator> = [
         }
     },
 */
+/*
     {
         name: "QuickNodeProvider",
         networks: ethNetworks,
@@ -93,6 +96,7 @@ const ProviderCreators: Array<ProviderCreator> = [
             return new QuickNodeProvider(network);
         }
     },
+*/
     {
         name: "FallbackProvider",
         networks: ethNetworks,
