@@ -151,6 +151,7 @@ function _inspect(value, done) {
     }
     done.add(value);
     const result = _inspectString(value, done);
+    console.log("DEBUG", result);
     done.delete(value);
     return result;
 }

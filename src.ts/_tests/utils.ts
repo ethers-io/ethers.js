@@ -164,6 +164,7 @@ function _inspect(value: any, done: Set<any>): string {
 
     done.add(value);
     const result = _inspectString(value, done);
+    console.log("DEBUG", result);
     done.delete(value);
 
     return result;
