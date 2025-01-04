@@ -2,12 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
+const utils_js_1 = require("./utils.js");
 const index_js_1 = require("../index.js");
 describe("Tests contract integration", function () {
     const provider = new index_js_1.ethers.JsonRpcProvider("http:/\/127.0.0.1:8545");
     provider.on("error", (error) => {
         if (error && error.event === "initial-network-discovery") {
-            console.dir(error.info, { depth: null });
+            console.log((0, utils_js_1.inspect)(error));
             provider.off("error");
         }
     });

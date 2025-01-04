@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.retryIt = exports.stall = exports.log = exports.loadTests = void 0;
+exports.inspect = exports.retryIt = exports.stall = exports.log = exports.loadTests = void 0;
 const tslib_1 = require("tslib");
 const fs_1 = tslib_1.__importDefault(require("fs"));
 const path_1 = tslib_1.__importDefault(require("path"));
@@ -130,4 +130,28 @@ export class Stats {
 
 export const stats = new Stats(_guard);
 */
+function inspect(value) {
+    if (Array.isArray(value)) {
+        return "[" + value.map((v) => inspect(v)).join(", ") + "]";
+    }
+    switch (typeof (value)) {
+        case "bigint":
+            return value.toString() + "n";
+        case "boolean":
+        case "number":
+        case "string":
+            return JSON.stringify(value);
+        case "symbol":
+            return `[Symbol ${String(value)}]`;
+        case "object":
+            if (value == null) {
+                return "null";
+            }
+            return "{ " + Object.keys(value).map((key) => {
+                return `${key}=${inspect(value[key])}`;
+            }).join(", ") + " }";
+    }
+    return `[ unknown type: ${value} ]`;
+}
+exports.inspect = inspect;
 //# sourceMappingURL=utils.js.map

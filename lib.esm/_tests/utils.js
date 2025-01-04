@@ -122,4 +122,27 @@ export class Stats {
 
 export const stats = new Stats(_guard);
 */
+export function inspect(value) {
+    if (Array.isArray(value)) {
+        return "[" + value.map((v) => inspect(v)).join(", ") + "]";
+    }
+    switch (typeof (value)) {
+        case "bigint":
+            return value.toString() + "n";
+        case "boolean":
+        case "number":
+        case "string":
+            return JSON.stringify(value);
+        case "symbol":
+            return `[Symbol ${String(value)}]`;
+        case "object":
+            if (value == null) {
+                return "null";
+            }
+            return "{ " + Object.keys(value).map((key) => {
+                return `${key}=${inspect(value[key])}`;
+            }).join(", ") + " }";
+    }
+    return `[ unknown type: ${value} ]`;
+}
 //# sourceMappingURL=utils.js.map

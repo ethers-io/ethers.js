@@ -1,10 +1,11 @@
 import assert from "assert";
+import { inspect } from "./utils.js";
 import { ethers } from "../index.js";
 describe("Tests contract integration", function () {
     const provider = new ethers.JsonRpcProvider("http:/\/127.0.0.1:8545");
     provider.on("error", (error) => {
         if (error && error.event === "initial-network-discovery") {
-            console.dir(error.info, { depth: null });
+            console.log(inspect(error));
             provider.off("error");
         }
     });
