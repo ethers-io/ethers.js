@@ -122,9 +122,9 @@ export class Stats {
 
 export const stats = new Stats(_guard);
 */
-export function inspect(value) {
+function _inspectString(value, done) {
     if (Array.isArray(value)) {
-        return "[" + value.map((v) => inspect(v)).join(", ") + "]";
+        return "[" + value.map((v) => _inspect(v, done)).join(", ") + "]";
     }
     switch (typeof (value)) {
         case "bigint":
@@ -140,9 +140,21 @@ export function inspect(value) {
                 return "null";
             }
             return "{ " + Object.keys(value).map((key) => {
-                return `${key}=${inspect(value[key])}`;
+                return `${key}=${_inspect(value[key], done)}`;
             }).join(", ") + " }";
     }
     return `[ unknown type: ${value} ]`;
+}
+function _inspect(value, done) {
+    if (done.has(value)) {
+        return "[ Circular ]";
+    }
+    done.add(value);
+    const result = _inspectString(value, done);
+    done.delete(value);
+    return result;
+}
+export function inspect(value) {
+    return _inspect(value, new Set());
 }
 //# sourceMappingURL=utils.js.map
