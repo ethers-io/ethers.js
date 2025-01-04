@@ -12,23 +12,28 @@ function _inspectString(value: any, done: Set<any>): string {
             return JSON.stringify(value);
         case "symbol":
             return `[Symbol ${ String(value) }]`
-        case "object":
+        case "object": {
             if (value == null) { return "null"; }
-            return "{ " + Object.keys(value).map((key) => {
+
+            const keys = Object.keys(value);
+            Object.getOwnPropertyNames(value).forEach((key) => {
+                keys.push(key);
+            });
+
+            return "{ " + keys.map((key) => {
                 return `${ key }=${ _inspect(value[key], done) }`;
             }).join(", ") + " }";
+        }
     }
 
     return `[ unknown type: ${ value } ]`
 }
 
 function _inspect(value: any, done: Set<any>): string {
-    console.log("DEBUG-1", value);
     if (done.has(value)) { return "[ Circular ]"; }
 
     done.add(value);
     const result = _inspectString(value, done);
-    console.log("DEBUG-2", result);
     done.delete(value);
 
     return result;
