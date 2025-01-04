@@ -3,7 +3,8 @@ import { AlchemyProvider,
 //    CloudflareProvider,
 ChainstackProvider, EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
-QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
+//    QuickNodeProvider,
+FallbackProvider, isError, } from "../index.js";
 ;
 const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
@@ -54,13 +55,15 @@ const ProviderCreators = [
             return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    /*
     {
         name: "InfuraWebsocketProvider",
         networks: ethNetworks,
-        create: function (network) {
+        create: function(network: string) {
             return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    */
     /*
         {
             name: "PocketProvider",
@@ -70,13 +73,15 @@ const ProviderCreators = [
             }
         },
     */
-    {
-        name: "QuickNodeProvider",
-        networks: ethNetworks,
-        create: function (network) {
-            return new QuickNodeProvider(network);
-        }
-    },
+    /*
+        {
+            name: "QuickNodeProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                return new QuickNodeProvider(network);
+            }
+        },
+    */
     {
         name: "FallbackProvider",
         networks: ethNetworks,

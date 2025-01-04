@@ -3,9 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.13.5 (2025-01-04 01:51)
+ethers/v6.13.5 (2025-01-04 03:15)
 ---------------------------------
 
+  - tests: temporarily remove QuickNode ([499ed8c](https://github.com/ethers-io/ethers.js/commit/499ed8c4bb91b918148c348b805ce753584065b6)).
+  - Use local dev net for testing Typed API to prevent tests getting throttled ([7654ee3](https://github.com/ethers-io/ethers.js/commit/7654ee3c6487171a4e13207accfc90f93a22b0fc)).
   - Fixed bad logic for searching prefetched transactions by hash ([#4868](https://github.com/ethers-io/ethers.js/issues/4868); [ef3c9bc](https://github.com/ethers-io/ethers.js/commit/ef3c9bc3afb9e36a073bbd3572e9021a852bd2c4)).
   - Add newline delimiter to IPC providers for broader support ([#4847](https://github.com/ethers-io/ethers.js/issues/4847); [474a8de](https://github.com/ethers-io/ethers.js/commit/474a8ded2b94a563067d3b4dd5f60ec0725b9a27)).
 

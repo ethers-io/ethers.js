@@ -52,13 +52,15 @@ const ProviderCreators = [
             return new index_js_1.InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    /*
     {
         name: "InfuraWebsocketProvider",
         networks: ethNetworks,
-        create: function (network) {
-            return index_js_1.InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+        create: function(network: string) {
+            return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    */
     /*
         {
             name: "PocketProvider",
@@ -68,13 +70,15 @@ const ProviderCreators = [
             }
         },
     */
-    {
-        name: "QuickNodeProvider",
-        networks: ethNetworks,
-        create: function (network) {
-            return new index_js_1.QuickNodeProvider(network);
-        }
-    },
+    /*
+        {
+            name: "QuickNodeProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                return new QuickNodeProvider(network);
+            }
+        },
+    */
     {
         name: "FallbackProvider",
         networks: ethNetworks,
