@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
 const create_provider_js_1 = require("./create-provider.js");
-const utils_js_1 = require("./utils.js");
+const utils_debug_js_1 = require("./utils-debug.js");
 const index_js_1 = require("../index.js");
 (0, create_provider_js_1.setupProviders)();
 describe("Test Contract", function () {
@@ -224,7 +224,7 @@ describe("Test Typed Contract Interaction", function () {
             setTimeout(() => {
                 console.log("Got error 2");
                 if (error && error.event === "initial-network-discovery") {
-                    console.log((0, utils_js_1.inspect)(error));
+                    console.log((0, utils_debug_js_1.inspect)(error));
                 }
                 provider.off("error");
             }, 100);

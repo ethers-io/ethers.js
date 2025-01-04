@@ -2,7 +2,7 @@
 import assert from "assert";
 
 import { getProvider, setupProviders } from "./create-provider.js";
-import { inspect } from "./utils.js";
+import { inspect } from "./utils-debug.js";
 
 import {
     Contract, ContractFactory, EventLog, isError, JsonRpcProvider,

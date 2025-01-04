@@ -6,5 +6,4 @@ export interface MochaRunnable {
     skip: () => void;
 }
 export declare function retryIt(name: string, func: (this: MochaRunnable) => Promise<void>): Promise<void>;
-export declare function inspect(value: any): string;
 //# sourceMappingURL=utils.d.ts.map
