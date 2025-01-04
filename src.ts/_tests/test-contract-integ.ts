@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import { inspect } from "./utils.js";
+//import { inspect } from "./utils.js";
 
 import { ethers } from "../index.js";
 
@@ -12,6 +12,7 @@ interface ContractAbi {
 
 describe("Tests contract integration", function() {
     const provider = new ethers.JsonRpcProvider("http:/\/127.0.0.1:8545");
+    /*
     provider.on("error", (error: any) => {
         if (error && error.event === "initial-network-discovery") {
             console.log("Got error");
@@ -19,6 +20,7 @@ describe("Tests contract integration", function() {
             provider.off("error");
         }
     });
+    */
 
     const abi = [
         "constructor(address owner, uint maxSupply)",
