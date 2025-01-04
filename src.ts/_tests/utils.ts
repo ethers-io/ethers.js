@@ -135,9 +135,9 @@ export const stats = new Stats(_guard);
 */
 
 
-export function inspect(value: any): string {
+function _inspectString(value: any, done: Set<any>): string {
     if (Array.isArray(value)) {
-        return "[" + value.map((v) => inspect(v)).join(", ") + "]";
+        return "[" + value.map((v) => _inspect(v, done)).join(", ") + "]";
     }
 
     switch (typeof(value)) {
@@ -152,10 +152,24 @@ export function inspect(value: any): string {
         case "object":
             if (value == null) { return "null"; }
             return "{ " + Object.keys(value).map((key) => {
-                return `${ key }=${ inspect(value[key]) }`;
+                return `${ key }=${ _inspect(value[key], done) }`;
             }).join(", ") + " }";
     }
 
     return `[ unknown type: ${ value } ]`
+}
+
+function _inspect(value: any, done: Set<any>): string {
+    if (done.has(value)) { return "[ Circular ]"; }
+
+    done.add(value);
+    const result = _inspectString(value, done);
+    done.delete(value);
+
+    return result;
+}
+
+export function inspect(value: any): string {
+    return _inspect(value, new Set());
 }
 
