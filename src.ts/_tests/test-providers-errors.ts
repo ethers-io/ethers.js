@@ -8,7 +8,7 @@ import {
 } from "../index.js";
 
 import { getProvider, setupProviders, providerNames } from "./create-provider.js";
-import { stall } from "./utils.js";
+import { FAUCET_PRIVATEKEY, stall } from "./utils.js";
 
 import type { TransactionResponse } from "../index.js";
 
@@ -164,7 +164,7 @@ describe("Tests Provider Call Exception", function() {
 });
 
 describe("Test Provider Blockchain Errors", function() {
-    const wallet = new Wallet(<string>(process.env.FAUCET_PRIVATEKEY));
+    const wallet = new Wallet(FAUCET_PRIVATEKEY);
 
     const networkName = "sepolia";
     for (const providerName of providerNames) {

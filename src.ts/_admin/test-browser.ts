@@ -218,6 +218,8 @@ const TestData = (function() {
   data.push(`  inflate(ethers.decodeBase64(comps[1]), result);`);
   data.push(`  return JSON.parse(ethers.toUtf8String(result))`);
   data.push(`}`);
+  data.push(``);
+  data.push(`export const FAUCET_PRIVATEKEY = ${ JSON.stringify(process.env.FAUCET_PRIVATEKEY) };`);
 
   return data.join("\n");
 })();

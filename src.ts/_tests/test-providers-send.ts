@@ -6,6 +6,9 @@ import { getProvider, providerNames, setupProviders } from "./create-provider.js
 
 import type { TransactionResponse } from "../index.js";
 
+import { FAUCET_PRIVATEKEY } from "./utils.js";
+
+
 function stall(duration: number): Promise<void> {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
@@ -14,7 +17,7 @@ setupProviders();
 
 describe("Sends Transactions", function() {
 
-    const wallet = new Wallet(<string>(process.env.FAUCET_PRIVATEKEY));
+    const wallet = new Wallet(FAUCET_PRIVATEKEY);
     console.log("Faucet Address:", wallet.address);
 
     const networkName = "sepolia";

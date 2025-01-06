@@ -7,10 +7,13 @@ import {
     InfuraProvider,
 //    PocketProvider,
 //    QuickNodeProvider,
+    JsonRpcProvider,
 
     FallbackProvider,
     isError,
 } from "../index.js";
+
+import { inspect } from "./utils-debug.js";
 
 import type { AbstractProvider } from "../index.js";
 
@@ -156,6 +159,30 @@ export function getProvider(provider: string, network: string): null | AbstractP
 export function checkProvider(provider: string, network: string): boolean {
     const creator = getCreator(provider);
     return (creator != null && creator.networks.indexOf(network) >= 0);
+}
+
+export function getDevProvider(): JsonRpcProvider {
+    class HikackEnsProvider extends JsonRpcProvider {
+        async resolveName(name: string): Promise<null | string> {
+            if (name === "tests.eth") {
+                return "0x228568EA92aC5Bc281c1E30b1893735c60a139F1";
+            }
+            return super.resolveName(name);
+        }
+    }
+
+    const provider = new HikackEnsProvider("http:/\/127.0.0.1:8545");
+
+    provider.on("error", (error: any) => {
+        setTimeout(() => {
+            if (error && error.event === "initial-network-discovery") {
+                console.log(inspect(error));
+            }
+            provider.off("error");
+        }, 100);
+    });
+
+    return provider;
 }
 
 export function connect(network: string): AbstractProvider {
