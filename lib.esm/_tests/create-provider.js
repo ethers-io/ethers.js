@@ -4,7 +4,8 @@ import { AlchemyProvider,
 ChainstackProvider, EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
 //    QuickNodeProvider,
-FallbackProvider, isError, } from "../index.js";
+JsonRpcProvider, FallbackProvider, isError, } from "../index.js";
+import { inspect } from "./utils-debug.js";
 ;
 const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
@@ -149,6 +150,26 @@ export function getProvider(provider, network) {
 export function checkProvider(provider, network) {
     const creator = getCreator(provider);
     return (creator != null && creator.networks.indexOf(network) >= 0);
+}
+export function getDevProvider() {
+    class HikackEnsProvider extends JsonRpcProvider {
+        async resolveName(name) {
+            if (name === "tests.eth") {
+                return "0x228568EA92aC5Bc281c1E30b1893735c60a139F1";
+            }
+            return super.resolveName(name);
+        }
+    }
+    const provider = new HikackEnsProvider("http:/\/127.0.0.1:8545");
+    provider.on("error", (error) => {
+        setTimeout(() => {
+            if (error && error.event === "initial-network-discovery") {
+                console.log(inspect(error));
+            }
+            provider.off("error");
+        }, 100);
+    });
+    return provider;
 }
 export function connect(network) {
     const provider = getProvider("InfuraProvider", network);
