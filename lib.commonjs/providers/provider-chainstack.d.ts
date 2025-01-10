@@ -7,7 +7,6 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Arbitrum (``arbitrum``)
  *  - BNB Smart Chain Mainnet (``bnb``)
- *  - Polygon (``matic``)
  *
  *  @_subsection: api/providers/thirdparty:Chainstack  [providers-chainstack]
  */

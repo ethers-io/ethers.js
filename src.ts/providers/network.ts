@@ -320,32 +320,6 @@ function parseUnits(_value: number | string, decimals: number): bigint {
     return BigInt(comps[0] + comps[1]);
 }
 
-// Used by Polygon to use a gas station for fee data
-function getGasStationPlugin(url: string) {
-    return new FetchUrlFeeDataNetworkPlugin(url, async (fetchFeeData, provider, request) => {
-
-        // Prevent Cloudflare from blocking our request in node.js
-        request.setHeader("User-Agent", "ethers");
-
-        let response;
-        try {
-            const [ _response, _feeData ] = await Promise.all([
-                request.send(), fetchFeeData()
-            ]);
-            response = _response;
-            const payload = response.bodyJson.standard;
-            const feeData = {
-                gasPrice: _feeData.gasPrice,
-                maxFeePerGas: parseUnits(payload.maxFee, 9),
-                maxPriorityFeePerGas: parseUnits(payload.maxPriorityFee, 9),
-            };
-            return feeData;
-        } catch (error: any) {
-            assert(false, `error encountered with polygon gas station (${ JSON.stringify(request.url) })`, "SERVER_ERROR", { request, response, error });
-        }
-    });
-}
-
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks(): void {
@@ -411,17 +385,11 @@ function injectCommonNetworks(): void {
     registerEth("linea-sepolia", 59141, { });
 
     registerEth("matic", 137, {
-        ensNetwork: 1,
-        plugins: [
-            getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
-        ]
+        ensNetwork: 1
     });
     registerEth("matic-amoy", 80002, { });
     registerEth("matic-mumbai", 80001, {
-        altNames: [ "maticMumbai", "maticmum" ],  // @TODO: Future remove these alts
-        plugins: [
-            getGasStationPlugin("https:/\/gasstation-testnet.polygon.technology/v2")
-        ]
+        altNames: [ "maticMumbai", "maticmum" ]
     });
 
     registerEth("optimism", 10, {
