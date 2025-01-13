@@ -232,6 +232,7 @@ export function start(_root: string, options: Options): Promise<Server> {
 
     const server = createServer((req, resp) => {
         const url = (req.url || "").split("?")[0];
+        console.log(`Request: ${ url }`);
 
         let transform = false;
 

@@ -190,6 +190,7 @@ export function start(_root, options) {
     }
     const server = createServer((req, resp) => {
         const url = (req.url || "").split("?")[0];
+        console.log(`Request: ${url}`);
         let transform = false;
         let filename;
         if (url === "/") {

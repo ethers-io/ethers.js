@@ -106,7 +106,7 @@ describe("Ensure Catchable Errors", function () {
         });
         const signer = await provider.getSigner();
         const tx = await signer.sendTransaction(txInfo);
-        (0, assert_1.default)(tx);
+        assert_1.default.ok(tx);
     });
     it("Missing v is recovered", async function () {
         this.timeout(15000);
