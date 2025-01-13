@@ -179,7 +179,14 @@ const TestData = (function () {
     data.push(`  return JSON.parse(ethers.toUtf8String(result))`);
     data.push(`}`);
     data.push(``);
-    data.push(`export const FAUCET_PRIVATEKEY = ${JSON.stringify(process.env.FAUCET_PRIVATEKEY)};`);
+    try {
+        data.push(`export const FAUCET_PRIVATEKEY = ${JSON.stringify(process.env.FAUCET_PRIVATEKEY || "0x0123456789012345678901234567890123456789")};`);
+    }
+    catch (e) {
+        console.log(e);
+        data.push(`export const FAUCET_PRIVATEKEY = "0x0123456789012345678901234567890123456789";`);
+    }
+    data.push(``);
     return data.join("\n");
 })();
 export function start(_root, options) {
@@ -302,7 +309,7 @@ export function start(_root, options) {
         throw new Error("no installed browser found");
     }
     const cmd = cmds[0];
-    const args = ["--headless", "--disable-gpu", "--remote-debugging-port=8023"];
+    const args = ["--headless", "--disable-gpu", "--remote-debugging-port=8022"];
     const browser = child_process.spawn(cmd, args);
     let url = await new Promise((resolve, reject) => {
         browser.stdout.on("data", (data) => {

@@ -211,6 +211,7 @@ const TestData = (function() {
     const tag = filename.split(".")[0];
     data.push(`fs.set(${ JSON.stringify(tag) }, ${ JSON.stringify(load(tag)) });`);
   }
+
   data.push(`export function loadTests(tag) {`);
   data.push(`  const data = fs.get(tag);`);
   data.push(`  if (data == null) { throw new Error("missing tag: " + tag); }`);
@@ -220,11 +221,17 @@ const TestData = (function() {
   data.push(`  return JSON.parse(ethers.toUtf8String(result))`);
   data.push(`}`);
   data.push(``);
-  data.push(`export const FAUCET_PRIVATEKEY = ${ JSON.stringify(process.env.FAUCET_PRIVATEKEY) };`);
+
+  try {
+      data.push(`export const FAUCET_PRIVATEKEY = ${ JSON.stringify(process.env.FAUCET_PRIVATEKEY || "0x0123456789012345678901234567890123456789") };`);
+  } catch (e) {
+      console.log(e);
+      data.push(`export const FAUCET_PRIVATEKEY = "0x0123456789012345678901234567890123456789";`);
+  }
+  data.push(``);
 
   return data.join("\n");
 })();
-
 
 export function start(_root: string, options: Options): Promise<Server> {
 
@@ -348,7 +355,7 @@ export function start(_root: string, options: Options): Promise<Server> {
 
     const cmd = cmds[0];
 
-    const args = [ "--headless", "--disable-gpu", "--remote-debugging-port=8023" ];
+    const args = [ "--headless", "--disable-gpu", "--remote-debugging-port=8022" ];
     const browser = child_process.spawn(cmd, args);
 
     let url: string = await new Promise((resolve, reject) => {
@@ -377,6 +384,7 @@ export function start(_root: string, options: Options): Promise<Server> {
     const status = await session.done;
     console.log("STATUS:", status);
     process.exit(status);
+
 })().catch((error) => {
     console.log("ERROR");
     console.log(error);
