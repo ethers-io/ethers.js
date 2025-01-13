@@ -379,6 +379,10 @@ export function start(_root: string, options: Options): Promise<Server> {
     const session = new CDPSession(url);
     await session.ready;
     await session.send("Console.enable", { });
+    await session.send("Debugger.enable", { });
+    await session.send("Page.enable", { });
+    await session.send("Runtime.enable", { });
+    await session.send("Security.enable", { });
     await session.navigate("http:/\/localhost:8000");
 
     const status = await session.done;

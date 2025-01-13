@@ -14,7 +14,7 @@ require("./test-providers-ccip.js");
 //import "./test-providers-extra.js";
 require("./test-providers-fallback.js");
 require("./test-providers-jsonrpc.js");
-//import "./test-providers-send.js";
+require("./test-providers-send.js");
 require("./test-providers-wildcard.js");
 require("./test-rlp.js");
 require("./test-transaction.js");
