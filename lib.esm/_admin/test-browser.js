@@ -94,6 +94,7 @@ export class CDPSession {
                     return;
                 }
                 if (msg.error) {
+                    console.log(`ERROR: ${msg.error}`);
                     responder.reject(new Error(msg.error));
                 }
                 else {
@@ -326,5 +327,8 @@ export function start(_root, options) {
     const status = await session.done;
     console.log("STATUS:", status);
     process.exit(status);
-})();
+})().catch((error) => {
+    console.log("ERROR");
+    console.log(error);
+});
 //# sourceMappingURL=test-browser.js.map

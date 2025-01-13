@@ -124,6 +124,7 @@ export class CDPSession {
                 }
 
                 if (msg.error) {
+                    console.log(`ERROR: ${ msg.error }`);
                     responder.reject(new Error(msg.error));
                 } else {
                     responder.resolve(msg.result);
@@ -376,5 +377,8 @@ export function start(_root: string, options: Options): Promise<Server> {
     const status = await session.done;
     console.log("STATUS:", status);
     process.exit(status);
-})();
+})().catch((error) => {
+    console.log("ERROR");
+    console.log(error);
+});
 

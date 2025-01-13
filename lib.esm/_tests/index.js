@@ -12,7 +12,7 @@ import "./test-providers-ccip.js";
 //import "./test-providers-extra.js";
 import "./test-providers-fallback.js";
 //import "./test-providers-jsonrpc.js";
-//import "./test-providers-send.js";
+import "./test-providers-send.js";
 import "./test-providers-wildcard.js";
 import "./test-rlp.js";
 import "./test-transaction.js";
