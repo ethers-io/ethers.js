@@ -338,6 +338,7 @@ export function start(_root: string, options: Options): Promise<Server> {
     await start(resolve("."), { port: 8000 });
 
     const cmds = [
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
         "/usr/bin/chromium"
     ].filter((f) => { try { fs.accessSync(f); return true; } catch (error) { return false; } });
@@ -346,7 +347,7 @@ export function start(_root: string, options: Options): Promise<Server> {
 
     const cmd = cmds[0];
 
-    const args = [ "--headless", "--disable-gpu", "--remote-debugging-port=8022" ];
+    const args = [ "--headless", "--disable-gpu", "--remote-debugging-port=8023" ];
     const browser = child_process.spawn(cmd, args);
 
     let url: string = await new Promise((resolve, reject) => {

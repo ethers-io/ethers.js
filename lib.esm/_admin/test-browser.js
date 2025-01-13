@@ -287,6 +287,7 @@ export function start(_root, options) {
 (async function () {
     await start(resolve("."), { port: 8000 });
     const cmds = [
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
         "/usr/bin/chromium"
     ].filter((f) => { try {
@@ -300,7 +301,7 @@ export function start(_root, options) {
         throw new Error("no installed browser found");
     }
     const cmd = cmds[0];
-    const args = ["--headless", "--disable-gpu", "--remote-debugging-port=8022"];
+    const args = ["--headless", "--disable-gpu", "--remote-debugging-port=8023"];
     const browser = child_process.spawn(cmd, args);
     let url = await new Promise((resolve, reject) => {
         browser.stdout.on("data", (data) => {
