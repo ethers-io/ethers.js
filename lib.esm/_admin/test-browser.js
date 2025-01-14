@@ -100,31 +100,23 @@ export class CDPSession {
                 else {
                     responder.resolve(msg.result);
                 }
+                return;
             }
-            else {
-                if (msg.method === "Console.messageAdded") {
+            switch (msg.method) {
+                case "Console.messageAdded": {
                     const text = msg.params.message.text;
                     if (text.startsWith("#status")) {
                         this.#exit(parseInt(text.split("=").pop()));
                     }
                     console.log(text);
                     //console.log(msg.params.message.text, `${ msg.params.message.url }:${ msg.params.message.line }`);
+                    break;
                 }
-                else if (msg.method === "Target.attachedToTarget") {
-                    // Ignore
-                }
-                else if (msg.method === "Debugger.scriptParsed") {
-                    // Ignore
-                }
-                else if (msg.method === "Runtime.consoleAPICalled") {
-                    // Ignore; handled by Console.messageAdded above
-                }
-                else if (msg.method === "Debugger.scriptFailedToParse") {
-                    // @TODO: Is this important? It happens a LOT.
-                }
-                else if (msg.method === "Runtime.exceptionThrown") {
+                case "Page.frameNavigated":
+                    console.log("Visit:", msg.params.frame.url);
+                    break;
+                case "Runtime.exceptionThrown": {
                     console.log("Runtime Exception");
-                    console.log("PARAMS:", msg.params);
                     let url = "";
                     try {
                         const e = msg.params.exceptionDetails;
@@ -140,12 +132,32 @@ export class CDPSession {
                         }
                     }
                     catch (error) {
-                        console.log("ERROR", msg, error);
+                        console.log("ERROR:", error);
+                        console.log("MESSAGE:", msg);
+                        console.log("PARAMS:", msg.params);
                     }
+                    break;
                 }
-                else {
+                case "Debugger.scriptFailedToParse":
+                    // @TODO: Is this important? It can happens a LOT
+                    //        when there is a runtime error complaining
+                    //        "from" is a bad function; maybe when trying
+                    //        to interpret ESM as legacy JavaScript?
+                    break;
+                case "Debugger.scriptParsed":
+                case "Page.frameResized":
+                case "Page.frameStoppedLoading":
+                case "Page.loadEventFired":
+                case "Page.domContentEventFired":
+                case "Page.frameStartedLoading":
+                case "Target.attachedToTarget":
+                case "Runtime.consoleAPICalled": // Handled above
+                case "Runtime.executionContextsCleared":
+                case "Runtime.executionContextCreated":
+                    // Ignore
+                    break;
+                default:
                     console.log(`WARN: Unhandled event - ${JSON.stringify(msg)}`);
-                }
             }
         };
         this.websocket.onerror = (error) => {
@@ -223,7 +235,6 @@ export function start(_root, options) {
     }
     const server = createServer((req, resp) => {
         const url = (req.url || "").split("?")[0];
-        console.log(`Request: ${url}`);
         let transform = false;
         let filename;
         if (url === "/") {
@@ -358,7 +369,6 @@ export function start(_root, options) {
     await session.send("Debugger.enable", {});
     await session.send("Page.enable", {});
     await session.send("Runtime.enable", {});
-    await session.send("Security.enable", {});
     await session.navigate("http:/\/localhost:8000");
     const status = await session.done;
     console.log("STATUS:", status);

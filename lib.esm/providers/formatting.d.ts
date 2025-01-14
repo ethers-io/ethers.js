@@ -40,7 +40,7 @@ export interface BlockParams {
     nonce: string;
     /**
      *  For proof-of-work networks, the difficulty target is used to
-     *  adjust the difficulty in mining to ensure a expected block rate.
+     *  adjust the difficulty in mining to ensure an expected block rate.
      */
     difficulty: bigint;
     /**
