@@ -207,13 +207,7 @@ const TestData = (function () {
     data.push(`  return JSON.parse(ethers.toUtf8String(result))`);
     data.push(`}`);
     data.push(``);
-    try {
-        data.push(`export const FAUCET_PRIVATEKEY = ${JSON.stringify(process.env.FAUCET_PRIVATEKEY || "0x0123456789012345678901234567890123456789")};`);
-    }
-    catch (e) {
-        console.log(e);
-        data.push(`export const FAUCET_PRIVATEKEY = "0x0123456789012345678901234567890123456789";`);
-    }
+    data.push(`export const FAUCET_PRIVATEKEY = ${JSON.stringify(process.env.FAUCET_PRIVATEKEY)};`);
     data.push(``);
     return data.join("\n");
 })();

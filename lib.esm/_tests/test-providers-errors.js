@@ -128,6 +128,10 @@ describe("Tests Provider Call Exception", function () {
     }
 });
 describe("Test Provider Blockchain Errors", function () {
+    if (!FAUCET_PRIVATEKEY) {
+        console.log("Missing Faucet Private Key! Tests Skipped.");
+        return;
+    }
     const wallet = new Wallet(FAUCET_PRIVATEKEY);
     const networkName = "sepolia";
     for (const providerName of providerNames) {

@@ -10,6 +10,10 @@ function stall(duration) {
 }
 (0, create_provider_js_1.setupProviders)();
 describe("Sends Transactions", function () {
+    if (!utils_js_1.FAUCET_PRIVATEKEY) {
+        console.log("Missing Faucet Private Key! Tests Skipped.");
+        return;
+    }
     const wallet = new index_js_1.Wallet(utils_js_1.FAUCET_PRIVATEKEY);
     console.log("Faucet Address:", wallet.address);
     const networkName = "sepolia";

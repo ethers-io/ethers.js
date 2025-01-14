@@ -16,6 +16,10 @@ function stall(duration: number): Promise<void> {
 setupProviders();
 
 describe("Sends Transactions", function() {
+    if (!FAUCET_PRIVATEKEY) {
+        console.log("Missing Faucet Private Key! Tests Skipped.");
+        return;
+    }
 
     const wallet = new Wallet(FAUCET_PRIVATEKEY);
     console.log("Faucet Address:", wallet.address);
