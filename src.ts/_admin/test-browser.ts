@@ -144,6 +144,9 @@ export class CDPSession {
                 } else if (msg.method === "Debugger.scriptParsed") {
                     // Ignore
 
+                } else if (msg.method === "Runtime.consoleAPICalled") {
+                    // Ignore; handled by Console.messageAdded above
+
                 } else if (msg.method === "Debugger.scriptFailedToParse") {
                     // @TODO: Is this important? It happens a LOT.
 
