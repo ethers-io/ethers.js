@@ -111,6 +111,34 @@ export class CDPSession {
                     //console.log(msg.params.message.text, `${ msg.params.message.url }:${ msg.params.message.line }`);
                 }
                 else if (msg.method === "Target.attachedToTarget") {
+                    // Ignore
+                }
+                else if (msg.method === "Debugger.scriptParsed") {
+                    // Ignore
+                }
+                else if (msg.method === "Debugger.scriptFailedToParse") {
+                    // @TODO: Is this important? It happens a LOT.
+                }
+                else if (msg.method === "Runtime.exceptionThrown") {
+                    console.log("Runtime Exception");
+                    console.log("PARAMS:", msg.params);
+                    let url = "";
+                    try {
+                        const e = msg.params.exceptionDetails;
+                        url = e.url;
+                        console.log(`Runtime Exception: ${e.text} (${url}:${e.lineNumber}:${e.columnNumber})`);
+                        for (const frame of e.stackTrace.callFrames) {
+                            let loc = `${frame.lineNumber}:${frame.columnNumber}`;
+                            if (frame.url != url) {
+                                url = frame.url;
+                                loc = `${url}:${loc}`;
+                            }
+                            console.log(`  - ${frame.functionName} (${loc})`);
+                        }
+                    }
+                    catch (error) {
+                        console.log("ERROR", msg, error);
+                    }
                 }
                 else {
                     console.log(`WARN: Unhandled event - ${JSON.stringify(msg)}`);
