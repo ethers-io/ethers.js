@@ -6,6 +6,9 @@ import { getProvider, providerNames, setupProviders } from "./create-provider.js
 
 import type { TransactionResponse } from "../index.js";
 
+import { FAUCET_PRIVATEKEY } from "./utils.js";
+
+
 function stall(duration: number): Promise<void> {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
@@ -13,8 +16,12 @@ function stall(duration: number): Promise<void> {
 setupProviders();
 
 describe("Sends Transactions", function() {
+    if (!FAUCET_PRIVATEKEY) {
+        console.log("Missing Faucet Private Key! Tests Skipped.");
+        return;
+    }
 
-    const wallet = new Wallet(<string>(process.env.FAUCET_PRIVATEKEY));
+    const wallet = new Wallet(FAUCET_PRIVATEKEY);
     console.log("Faucet Address:", wallet.address);
 
     const networkName = "sepolia";

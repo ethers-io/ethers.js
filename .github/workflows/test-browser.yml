@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     environment: ethers-tests
+    env:
+      FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
 
     strategy:
       fail-fast: false

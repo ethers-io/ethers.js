@@ -136,7 +136,7 @@ describe("Ensure Catchable Errors", function() {
         const signer = await provider.getSigner();
 
         const tx = await signer.sendTransaction(txInfo);
-        assert(tx);
+        assert.ok(tx);
     });
 
 

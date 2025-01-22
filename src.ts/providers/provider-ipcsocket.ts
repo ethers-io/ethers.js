@@ -75,6 +75,7 @@ export class IpcSocketProvider extends SocketProvider {
     }
 
     async _write(message: string): Promise<void> {
+        if (!message.endsWith("\n")) { message += "\n"; }
         this.socket.write(message);
     }
 }

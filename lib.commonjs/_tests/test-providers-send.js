@@ -4,12 +4,17 @@ const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
 const index_js_1 = require("../index.js");
 const create_provider_js_1 = require("./create-provider.js");
+const utils_js_1 = require("./utils.js");
 function stall(duration) {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
 (0, create_provider_js_1.setupProviders)();
 describe("Sends Transactions", function () {
-    const wallet = new index_js_1.Wallet((process.env.FAUCET_PRIVATEKEY));
+    if (!utils_js_1.FAUCET_PRIVATEKEY) {
+        console.log("Missing Faucet Private Key! Tests Skipped.");
+        return;
+    }
+    const wallet = new index_js_1.Wallet(utils_js_1.FAUCET_PRIVATEKEY);
     console.log("Faucet Address:", wallet.address);
     const networkName = "sepolia";
     for (const providerName of create_provider_js_1.providerNames) {

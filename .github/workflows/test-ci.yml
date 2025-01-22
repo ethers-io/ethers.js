@@ -70,7 +70,7 @@ jobs:
 
       - name: Install and run Geth
         uses: ethers-io/run-geth-action@main
-        
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -84,7 +84,7 @@ jobs:
         run: npm run test-coverage
 
       - name: Store coverage summary artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-summary
           path: ./output/summary.txt
@@ -93,7 +93,7 @@ jobs:
         run: tar -cvf ./output/coverage.tar ./output/lcov-report/
 
       - name: Store full coverage artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-complete
           path: ./output/coverage.tar

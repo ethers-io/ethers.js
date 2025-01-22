@@ -45,7 +45,7 @@ describe("Test Fallback broadcast", function () {
             { timeout: 4000, error: makeError("already seen", "UNKNOWN_ERROR") },
             { timeout: 400 },
         ]);
-        assert(result.hash === txHash, "result.hash === txHash");
+        assert.ok(result.hash === txHash, "result.hash === txHash");
     });
     it("picks late non-failed broadcasts with quorum-met red-herrings", async function () {
         const result = await test([
@@ -53,7 +53,7 @@ describe("Test Fallback broadcast", function () {
             { timeout: 400, error: makeError("bad nonce", "NONCE_EXPIRED") },
             { timeout: 1000 },
         ]);
-        assert(result.hash === txHash, "result.hash === txHash");
+        assert.ok(result.hash === txHash, "result.hash === txHash");
     });
     it("insufficient funds short-circuit broadcast", async function () {
         await assert.rejects(async function () {
@@ -65,7 +65,7 @@ describe("Test Fallback broadcast", function () {
             ]);
             console.log(result);
         }, function (error) {
-            assert(isError(error, "INSUFFICIENT_FUNDS"));
+            assert.ok(isError(error, "INSUFFICIENT_FUNDS"));
             return true;
         });
     });

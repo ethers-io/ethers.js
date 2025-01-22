@@ -292,7 +292,18 @@ class AbstractProvider {
             }
             this.emit("debug", { action: "sendCcipReadFetchRequest", request, index: i, urls });
             let errorMessage = "unknown error";
-            const resp = await request.send();
+            // Fetch the resource...
+            let resp;
+            try {
+                resp = await request.send();
+            }
+            catch (error) {
+                // ...low-level fetch error (missing host, bad SSL, etc.),
+                // so try next URL
+                errorMessages.push(error.message);
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result: { error } });
+                continue;
+            }
             try {
                 const result = resp.bodyJson;
                 if (result.data) {

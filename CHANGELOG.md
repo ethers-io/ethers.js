@@ -3,6 +3,24 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.5 (2025-01-04 15:26)
+---------------------------------
+
+  - Use local dev net for testing Typed API to prevent tests getting throttled ([7654ee3](https://github.com/ethers-io/ethers.js/commit/7654ee3c6487171a4e13207accfc90f93a22b0fc)).
+  - Fixed bad logic for searching prefetched transactions by hash ([#4868](https://github.com/ethers-io/ethers.js/issues/4868); [ef3c9bc](https://github.com/ethers-io/ethers.js/commit/ef3c9bc3afb9e36a073bbd3572e9021a852bd2c4)).
+  - Add newline delimiter to IPC providers for broader support ([#4847](https://github.com/ethers-io/ethers.js/issues/4847); [474a8de](https://github.com/ethers-io/ethers.js/commit/474a8ded2b94a563067d3b4dd5f60ec0725b9a27)).
+
+ethers/v6.13.4 (2024-10-10 18:01)
+---------------------------------
+
+  - Updated dependencies ([1d717ef](https://github.com/ethers-io/ethers.js/commit/1d717ef940b77d4ca9b350aa3aa159a40a547ac0)).
+  - Fixed bug in JSON-RPC error checking ([#4827](https://github.com/ethers-io/ethers.js/issues/4827), [#4837](https://github.com/ethers-io/ethers.js/issues/4837), [#4851](https://github.com/ethers-io/ethers.js/issues/4851); [be3e6b1](https://github.com/ethers-io/ethers.js/commit/be3e6b14433bc88ad8c0c98a4f3a2a627cea6b99)).
+
+ethers/v6.13.3 (2024-09-30 22:08)
+---------------------------------
+
+  - Allow CCIP-read to continue during low-level fetch failures ([#4842](https://github.com/ethers-io/ethers.js/issues/4842); [1c31f95](https://github.com/ethers-io/ethers.js/commit/1c31f95f7a1e4993ca0f1706002a975a0060dd88)).
+
 ethers/v6.13.2 (2024-07-25 17:54)
 ---------------------------------
 
@@ -45,7 +63,7 @@ ethers/v6.12.0 (2024-04-17 01:09)
   - Added prevRandao to block ([#3372](https://github.com/ethers-io/ethers.js/issues/3372); [ec6a754](https://github.com/ethers-io/ethers.js/commit/ec6a754f0c8647dae59c73b2589225cb200d83dd)).
   - Added Polygon Amoy testnet ([#4645](https://github.com/ethers-io/ethers.js/issues/4645); [1717abb](https://github.com/ethers-io/ethers.js/commit/1717abbf29a14a6f6b106e479fe9a5b1f8768dc4)).
   - Added Chainstack provider ([#2741](https://github.com/ethers-io/ethers.js/issues/2741); [014004d](https://github.com/ethers-io/ethers.js/commit/014004d9402d7fd8c15553792cfb7a8a84ed327a)).
-  - Added deep convertion to Result for toObject and toArray ([#4681](https://github.com/ethers-io/ethers.js/issues/4681); [03bfe2a](https://github.com/ethers-io/ethers.js/commit/03bfe2a4f7b29b15cd90127974b7fc1d8b03edf9)).
+  - Added deep conversion to Result for toObject and toArray ([#4681](https://github.com/ethers-io/ethers.js/issues/4681); [03bfe2a](https://github.com/ethers-io/ethers.js/commit/03bfe2a4f7b29b15cd90127974b7fc1d8b03edf9)).
   - Added EIP-4844 broadcast support ([92bad88](https://github.com/ethers-io/ethers.js/commit/92bad88261a5d8a538535a7d5528162fe5010527)).
   - Fix ignored throttle parameters ([#4663](https://github.com/ethers-io/ethers.js/issues/4663); [12772e9](https://github.com/ethers-io/ethers.js/commit/12772e9498b70f8538838f30e16f3792ea90e173)).
 
@@ -186,7 +204,7 @@ ethers/v6.6.4 (2023-07-16 00:35)
 ethers/v6.6.3 (2023-07-11 20:55)
 --------------------------------
 
-  - Throw more desscriptive error for unconfigured ENS name contract targets ([#4213](https://github.com/ethers-io/ethers.js/issues/4213); [80f62ef](https://github.com/ethers-io/ethers.js/commit/80f62efc41c3a29e690af40a1976928b7f886a0e)).
+  - Throw more descriptive error for unconfigured ENS name contract targets ([#4213](https://github.com/ethers-io/ethers.js/issues/4213); [80f62ef](https://github.com/ethers-io/ethers.js/commit/80f62efc41c3a29e690af40a1976928b7f886a0e)).
   - Fixed contract once not running stop callback ([7d061b7](https://github.com/ethers-io/ethers.js/commit/7d061b786f72cbfc461bf80d139d10aeff533a6e)).
 
 ethers/v6.6.2 (2023-06-27 23:30)
@@ -283,7 +301,7 @@ ethers/v6.2.0 (2023-03-20 15:53)
 --------------------------------
 
   - Added extra details in the error info field for RPC errors ([30ffa78](https://github.com/ethers-io/ethers.js/commit/30ffa78d1441fa033677fa09237fc135a314f373)).
-  - Remove Ankr as a deafult for now as the provided API key is failing ([6e01e54](https://github.com/ethers-io/ethers.js/commit/6e01e5448f4a3e2d30288d4c8447db295c3a2e7a)).
+  - Remove Ankr as a default for now as the provided API key is failing ([6e01e54](https://github.com/ethers-io/ethers.js/commit/6e01e5448f4a3e2d30288d4c8447db295c3a2e7a)).
   - Fixed deferred filters after unsafe-eval changes ([#3749](https://github.com/ethers-io/ethers.js/issues/3749), [#3763](https://github.com/ethers-io/ethers.js/issues/3763); [2e3802a](https://github.com/ethers-io/ethers.js/commit/2e3802a83b8ad2f5a6269d79fbd1c83c9f2d1047)).
   - Remove use of Function sub-class to address unsafe-eval issues ([#3749](https://github.com/ethers-io/ethers.js/issues/3749), [#3763](https://github.com/ethers-io/ethers.js/issues/3763); [7d3af51](https://github.com/ethers-io/ethers.js/commit/7d3af512c75b4c24027ec2daef1e9f4c1064194a)).
   - Added verifyTypedData utility (reported on Farcaster) ([f06a445](https://github.com/ethers-io/ethers.js/commit/f06a445247f3b294f9fc805cc8fe0752accb8edc)).

@@ -152,7 +152,7 @@ class JsonRpcSigner extends abstract_signer_js_1.AbstractSigner {
                     // If the network changed: calling again will also fail
                     // If unsupported: likely destroyed
                     if ((0, index_js_5.isError)(error, "CANCELLED") || (0, index_js_5.isError)(error, "BAD_DATA") ||
-                        (0, index_js_5.isError)(error, "NETWORK_ERROR" || (0, index_js_5.isError)(error, "UNSUPPORTED_OPERATION"))) {
+                        (0, index_js_5.isError)(error, "NETWORK_ERROR") || (0, index_js_5.isError)(error, "UNSUPPORTED_OPERATION")) {
                         if (error.info == null) {
                             error.info = {};
                         }

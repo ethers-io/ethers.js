@@ -100,34 +100,13 @@ const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
 /**
  *  The current version of Ethers.
  */
-const version = "6.13.2";
+const version = "6.13.5";
 
 /**
  *  Property helper functions.
  *
  *  @_subsection api/utils:Properties  [about-properties]
  */
-function checkType(value, type, name) {
-    const types = type.split("|").map(t => t.trim());
-    for (let i = 0; i < types.length; i++) {
-        switch (type) {
-            case "any":
-                return;
-            case "bigint":
-            case "boolean":
-            case "number":
-            case "string":
-                if (typeof (value) === type) {
-                    return;
-                }
-        }
-    }
-    const error = new Error(`invalid value for type ${type}`);
-    error.code = "INVALID_ARGUMENT";
-    error.argument = `value.${name}`;
-    error.value = value;
-    throw error;
-}
 /**
  *  Assigns the %%values%% to %%target%% as read-only values.
  *
@@ -136,10 +115,6 @@ function checkType(value, type, name) {
 function defineProperties(target, values, types) {
     for (let key in values) {
         let value = values[key];
-        const type = (types ? types[key] : null);
-        if (type) {
-            checkType(value, type, key);
-        }
         Object.defineProperty(target, key, { enumerable: true, value, writable: false });
     }
 }
@@ -269,7 +244,7 @@ function assert(check, message, code, info) {
 function assertArgument(check, message, name, value) {
     assert(check, message, "INVALID_ARGUMENT", { argument: name, value: value });
 }
-const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
+["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
     try {
         // General test for normalize
         /* c8 ignore start */
@@ -292,14 +267,6 @@ const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
     catch (error) { }
     return accum;
 }, []);
-/**
- *  Throws if the normalization %%form%% is not supported.
- */
-function assertNormalize(form) {
-    assert(_normalizeForms.indexOf(form) >= 0, "platform missing String.prototype.normalize", "UNSUPPORTED_OPERATION", {
-        operation: "String.prototype.normalize", info: { form }
-    });
-}
 
 /**
  *  Some data helpers.
@@ -309,9 +276,6 @@ function assertNormalize(form) {
  */
 function _getBytes(value, name, copy) {
     if (value instanceof Uint8Array) {
-        if (copy) {
-            return new Uint8Array(value);
-        }
         return value;
     }
     if (typeof (value) === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
@@ -333,7 +297,7 @@ function _getBytes(value, name, copy) {
  *  @see: getBytesCopy
  */
 function getBytes(value, name) {
-    return _getBytes(value, name, false);
+    return _getBytes(value, name);
 }
 const HexCharacters = "0123456789abcdef";
 /**
@@ -504,10 +468,6 @@ function getUtf8CodePoints(_bytes, onError) {
  */
 function toUtf8Bytes(str, form) {
     assertArgument(typeof (str) === "string", "invalid string value", "str", str);
-    if (form != null) {
-        assertNormalize(form);
-        str = str.normalize(form);
-    }
     let result = [];
     for (let i = 0; i < str.length; i++) {
         const c = str.charCodeAt(i);

@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connect = exports.checkProvider = exports.getProvider = exports.getProviderNetworks = exports.providerNames = exports.setupProviders = void 0;
+exports.connect = exports.getDevProvider = exports.checkProvider = exports.getProvider = exports.getProviderNetworks = exports.providerNames = exports.setupProviders = void 0;
 const index_js_1 = require("../index.js");
+const utils_debug_js_1 = require("./utils-debug.js");
 ;
 const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
@@ -52,13 +53,15 @@ const ProviderCreators = [
             return new index_js_1.InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    /*
     {
         name: "InfuraWebsocketProvider",
         networks: ethNetworks,
-        create: function (network) {
-            return index_js_1.InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+        create: function(network: string) {
+            return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    */
     /*
         {
             name: "PocketProvider",
@@ -68,13 +71,15 @@ const ProviderCreators = [
             }
         },
     */
-    {
-        name: "QuickNodeProvider",
-        networks: ethNetworks,
-        create: function (network) {
-            return new index_js_1.QuickNodeProvider(network);
-        }
-    },
+    /*
+        {
+            name: "QuickNodeProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                return new QuickNodeProvider(network);
+            }
+        },
+    */
     {
         name: "FallbackProvider",
         networks: ethNetworks,
@@ -147,6 +152,27 @@ function checkProvider(provider, network) {
     return (creator != null && creator.networks.indexOf(network) >= 0);
 }
 exports.checkProvider = checkProvider;
+function getDevProvider() {
+    class HikackEnsProvider extends index_js_1.JsonRpcProvider {
+        async resolveName(name) {
+            if (name === "tests.eth") {
+                return "0x228568EA92aC5Bc281c1E30b1893735c60a139F1";
+            }
+            return super.resolveName(name);
+        }
+    }
+    const provider = new HikackEnsProvider("http:/\/127.0.0.1:8545");
+    provider.on("error", (error) => {
+        setTimeout(() => {
+            if (error && error.event === "initial-network-discovery") {
+                console.log((0, utils_debug_js_1.inspect)(error));
+            }
+            provider.off("error");
+        }, 100);
+    });
+    return provider;
+}
+exports.getDevProvider = getDevProvider;
 function connect(network) {
     const provider = getProvider("InfuraProvider", network);
     if (provider == null) {

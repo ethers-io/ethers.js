@@ -42,7 +42,7 @@ import {
 
 import type { Addressable, AddressLike } from "../address/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
-import type { Listener } from "../utils/index.js";
+import type { FetchResponse, Listener } from "../utils/index.js";
 
 import type { Networkish } from "./network.js";
 import type { FetchUrlFeeDataNetworkPlugin } from "./plugins-network.js";
@@ -604,15 +604,26 @@ export class AbstractProvider implements Provider {
 
             let errorMessage = "unknown error";
 
-            const resp = await request.send();
+            // Fetch the resource...
+            let resp: FetchResponse;
             try {
-                 const result = resp.bodyJson;
-                 if (result.data) {
-                     this.emit("debug", { action: "receiveCcipReadFetchResult", request, result });
-                     return result.data;
-                 }
-                 if (result.message) { errorMessage = result.message; }
-                 this.emit("debug", { action: "receiveCcipReadFetchError", request, result });
+                resp = await request.send();
+            } catch (error: any) {
+                // ...low-level fetch error (missing host, bad SSL, etc.),
+                // so try next URL
+                errorMessages.push(error.message);
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result: { error } });
+                continue;
+            }
+
+            try {
+                const result = resp.bodyJson;
+                if (result.data) {
+                    this.emit("debug", { action: "receiveCcipReadFetchResult", request, result });
+                    return result.data;
+                }
+                if (result.message) { errorMessage = result.message; }
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result });
             } catch (error) { }
 
             // 4xx indicates the result is not present; stop

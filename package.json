@@ -12,22 +12,22 @@
     "@adraffy/ens-normalize": "1.10.1",
     "@noble/curves": "1.2.0",
     "@noble/hashes": "1.3.2",
-    "@types/node": "18.15.13",
+    "@types/node": "22.7.5",
     "aes-js": "4.0.0-beta.5",
-    "tslib": "2.4.0",
+    "tslib": "2.7.0",
     "ws": "8.17.1"
   },
   "description": "A complete and compact Ethereum library, for dapps, wallets and any other tools.",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "15.0.2",
-    "@types/mocha": "9.1.1",
-    "@types/semver": "7.5.0",
+    "@rollup/plugin-node-resolve": "15.3.0",
+    "@types/mocha": "10.0.9",
+    "@types/semver": "7.5.8",
     "c8": "7.12.0",
-    "mocha": "10.0.0",
-    "rollup": "3.21.5",
-    "semver": "7.5.4",
+    "mocha": "10.7.3",
+    "rollup": "4.24.0",
+    "semver": "7.6.3",
     "typescript": "5.0.4",
-    "uglify-js": "3.17.0"
+    "uglify-js": "3.19.3"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -93,7 +93,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "1a51af85397283601db77ca61d5596b145e7f2cb",
+  "gitHead": "7654ee3c6487171a4e13207accfc90f93a22b0fc",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -131,5 +131,5 @@
     "test-esm": "mocha --trace-warnings --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js"
   },
   "sideEffects": false,
-  "version": "6.13.2"
+  "version": "6.13.5"
 }

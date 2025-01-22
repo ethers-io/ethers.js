@@ -366,7 +366,7 @@ export class Block {
                     break;
                 }
                 else {
-                    if (v.hash === hash) {
+                    if (v.hash !== hash) {
                         continue;
                     }
                     tx = v;
