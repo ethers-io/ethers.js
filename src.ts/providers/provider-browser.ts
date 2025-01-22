@@ -36,13 +36,68 @@ export type DebugEventBrowserProvider = {
     error: Error
 };
 
+/**
+ *  Provider info provided by the [[link-eip-6963]] discovery mechanism.
+ */
+export interface Eip6963ProviderInfo {
+    uuid: string;
+    name: string;
+    icon: string;
+    rdns: string;
+}
+
+interface Eip6963ProviderDetail {
+    info: Eip6963ProviderInfo;
+    provider: Eip1193Provider;
+}
+
+interface Eip6963Announcement {
+    type: "eip6963:announceProvider";
+    detail: Eip6963ProviderDetail
+}
+
 export type BrowserProviderOptions = {
     polling?: boolean;
     staticNetwork?: null | boolean | Network;
 
     cacheTimeout?: number;
     pollingInterval?: number;
+
+    providerInfo?: Eip6963ProviderInfo;
 };
+
+/**
+ *  Specifies how [[link-eip-6963]] discovery should proceed.
+ *
+ *  See: [[BrowserProvider-discover]]
+ */
+export interface BrowserDiscoverOptions {
+    /**
+     *  Override provider detection with this provider.
+     */
+    provider?: Eip1193Provider;
+
+    /**
+     *  Duration to wait to detect providers. (default: 300ms)
+     */
+    timeout?: number;
+
+    /**
+     *  Return the first detected provider. Otherwise wait for %%timeout%%
+     *  and allowing filtering before selecting the desired provider.
+     */
+    anyProvider?: boolean;
+
+    /**
+     *  Use the provided window context. Useful in non-standard
+     *  environments or to hijack where a provider comes from.
+     */
+    window?: any;
+}
+
+// @TODO: Future, provide some sort of filter mechansm callback along
+//        with exposing the following types
+
 
 /**
  *  A **BrowserProvider** is intended to wrap an injected provider which
@@ -52,11 +107,14 @@ export type BrowserProviderOptions = {
 export class BrowserProvider extends JsonRpcApiPollingProvider {
     #request: (method: string, params: Array<any> | Record<string, any>) => Promise<any>;
 
+    #providerInfo: null | Eip6963ProviderInfo;
+
     /**
      *  Connect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
     constructor(ethereum: Eip1193Provider, network?: Networkish, _options?: BrowserProviderOptions) {
+
         // Copy the options
         const options: JsonRpcApiProviderOptions = Object.assign({ },
           ((_options != null) ? _options: { }),
@@ -65,6 +123,11 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
         assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
 
         super(network, options);
+
+        this.#providerInfo = null;
+        if (_options && _options.providerInfo) {
+            this.#providerInfo = _options.providerInfo;
+        }
 
         this.#request = async (method: string, params: Array<any> | Record<string, any>) => {
             const payload = { method, params };
@@ -82,6 +145,10 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
                 throw error;
             }
         };
+    }
+
+    get providerInfo(): null | Eip6963ProviderInfo {
+        return this.#providerInfo;
     }
 
     async send(method: string, params: Array<any> | Record<string, any>): Promise<any> {
@@ -109,7 +176,7 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
         error = JSON.parse(JSON.stringify(error));
 
         // EIP-1193 gives us some machine-readable error codes, so rewrite
-        // them into 
+        // them into Ethers standard errors.
         switch (error.error.code || -1) {
             case 4001:
                 error.error.message = `ethers-user-denied: ${ error.error.message }`;
@@ -142,9 +209,7 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
 
         if (!(await this.hasSigner(address))) {
             try {
-                //const resp = 
                 await this.#request("eth_requestAccounts", [ ]);
-                //console.log("RESP", resp);
 
             } catch (error: any) {
                 const payload = error.payload;
@@ -153,5 +218,61 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
         }
 
         return await super.getSigner(address);
+    }
+
+    /**
+     *  Discover and connect to a Provider in the Browser using the
+     *  [[link-eip-6963]] discovery mechanism. If no providers are
+     *  present, ``null`` is resolved.
+     */
+    static async discover(options?: BrowserDiscoverOptions): Promise<null | BrowserProvider> {
+        if (options == null) { options = { }; }
+
+        if (options.provider) {
+            return new BrowserProvider(options.provider);
+        }
+
+        const context = options.window ? options.window:
+            (typeof(window) !== "undefined") ? window: null;
+
+        if (context == null) { return null; }
+
+        const anyProvider = options.anyProvider;
+        if (anyProvider && context.ethereum) {
+            return new BrowserProvider(context.ethereum);
+        }
+
+        const timeout = options.timeout ? options.timeout: 300;
+        if (timeout === 0) { return null; }
+
+        return await (new Promise((resolve) => {
+            let found: Array<any> = [ ];
+
+            const addProvider = (event: Eip6963Announcement) => {
+                found.push(event.detail);
+                if (anyProvider) { finalize(); }
+            };
+
+            const finalize = () => {
+                clearTimeout(timer);
+                if (found.length) {
+                    const { provider, info } = found[0];
+                    resolve(new BrowserProvider(provider, undefined, {
+                        providerInfo: info
+                    }));
+                } else {
+                    resolve(null);
+                }
+                context.removeEventListener(<any>"eip6963:announceProvider",
+                  addProvider);
+            };
+
+            const timer = setTimeout(() => { finalize(); }, timeout);
+
+            context.addEventListener(<any>"eip6963:announceProvider",
+              addProvider);
+
+            context.dispatchEvent(new Event("eip6963:requestProvider"));
+        }));
     }
 }

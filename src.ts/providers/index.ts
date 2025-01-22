@@ -114,7 +114,8 @@ export type {
 } from "./provider.js";
 
 export type {
-    BrowserProviderOptions, DebugEventBrowserProvider, Eip1193Provider
+    BrowserDiscoverOptions, BrowserProviderOptions, DebugEventBrowserProvider,
+    Eip1193Provider, Eip6963ProviderInfo
 } from "./provider-browser.js";
 
 export type { FallbackProviderOptions } from "./provider-fallback.js";

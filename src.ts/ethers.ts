@@ -168,14 +168,16 @@ export type {
 
     AbstractProviderOptions, BrowserProviderOptions, FallbackProviderOptions,
 
-    AbstractProviderPlugin, BlockParams, BlockTag, ContractRunner, DebugEventBrowserProvider,
-    Eip1193Provider, EventFilter, Filter, FilterByBlockHash, GasCostParameters,
-    JsonRpcApiProviderOptions, JsonRpcError, JsonRpcPayload, JsonRpcResult,
-    JsonRpcTransactionRequest, LogParams, MinedBlock, MinedTransactionResponse, Networkish,
-    OrphanFilter, PerformActionFilter, PerformActionRequest, PerformActionTransaction,
-    PreparedTransactionRequest, ProviderEvent, Subscriber, Subscription, TopicFilter,
-    TransactionReceiptParams, TransactionRequest, TransactionResponseParams,
-    WebSocketCreator, WebSocketLike
+    AbstractProviderPlugin, BlockParams, BlockTag, BrowserDiscoverOptions,
+    ContractRunner, DebugEventBrowserProvider, Eip1193Provider,
+    Eip6963ProviderInfo, EventFilter, Filter, FilterByBlockHash,
+    GasCostParameters, JsonRpcApiProviderOptions, JsonRpcError,
+    JsonRpcPayload, JsonRpcResult, JsonRpcTransactionRequest, LogParams,
+    MinedBlock, MinedTransactionResponse, Networkish, OrphanFilter,
+    PerformActionFilter, PerformActionRequest, PerformActionTransaction,
+    PreparedTransactionRequest, ProviderEvent, Subscriber, Subscription,
+    TopicFilter, TransactionReceiptParams, TransactionRequest,
+    TransactionResponseParams, WebSocketCreator, WebSocketLike
 } from "./providers/index.js";
 
 export type {
