@@ -18,7 +18,7 @@ export class CheckQualifiedPlugin implements AbstractProviderPlugin {
         return this;
     }
 
-    // Retruns true if this value should be considered qualified for
+    // Returns true if this value should be considered qualified for
     // inclusion in the quorum.
     isQualified(action: PerformActionRequest, result: any): boolean {
         return true;

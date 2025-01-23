@@ -56,7 +56,7 @@ export class NonceManager extends AbstractSigner {
     }
 
     /**
-     *  Manually increment the nonce. This may be useful when managng
+     *  Manually increment the nonce. This may be useful when managing
      *  offline transactions.
      */
     increment(): void {

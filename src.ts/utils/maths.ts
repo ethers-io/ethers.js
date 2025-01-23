@@ -29,7 +29,7 @@ const BN_1 = BigInt(1);
 const maxValue = 0x1fffffffffffff;
 
 /**
- *  Convert %%value%% from a twos-compliment representation of %%width%%
+ *  Convert %%value%% from a twos-complement representation of %%width%%
  *  bits to its value.
  *
  *  If the highest bit is ``1``, the result will be negative.
@@ -52,7 +52,7 @@ export function fromTwos(_value: BigNumberish, _width: Numeric): bigint {
 }
 
 /**
- *  Convert %%value%% to a twos-compliment representation of
+ *  Convert %%value%% to a twos-complement representation of
  *  %%width%% bits.
  *
  *  The result will always be positive.
@@ -229,7 +229,7 @@ export function toBeArray(_value: BigNumberish): Uint8Array {
  *  Returns a [[HexString]] for %%value%% safe to use as a //Quantity//.
  *
  *  A //Quantity// does not have and leading 0 values unless the value is
- *  the literal value `0x0`. This is most commonly used for JSSON-RPC
+ *  the literal value `0x0`. This is most commonly used for JSON-RPC
  *  numeric values.
  */
 export function toQuantity(value: BytesLike | BigNumberish): string {
