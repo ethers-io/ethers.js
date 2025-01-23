@@ -1,6 +1,6 @@
 /**
  *  A **Password-Based Key-Derivation Function** is designed to create
- *  a sequence of bytes suitible as a **key** from a human-rememberable
+ *  a sequence of bytes suitable as a **key** from a human-rememberable
  *  password.
  *
  *  @_subsection: api/crypto:Passwords  [about-pbkdf]

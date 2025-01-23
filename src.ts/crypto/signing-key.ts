@@ -77,10 +77,10 @@ export class SigningKey {
      *  private key and the %%other%% key.
      *
      *  The %%other%% key may be any type of key, a raw public key,
-     *  a compressed/uncompressed pubic key or aprivate key.
+     *  a compressed/uncompressed public key or a private key.
      *
      *  Best practice is usually to use a cryptographic hash on the
-     *  returned value before using it as a symetric secret.
+     *  returned value before using it as a symmetric secret.
      *
      *  @example:
      *    sign1 = new SigningKey(id("some-secret-1"))
@@ -178,7 +178,7 @@ export class SigningKey {
     }
 
     /**
-     *  Returns the point resulting from adding the ellipic curve points
+     *  Returns the point resulting from adding the elliptic curve points
      *  %%p0%% and %%p1%%.
      *
      *  This is not a common function most developers should require, but

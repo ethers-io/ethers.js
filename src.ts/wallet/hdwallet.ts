@@ -118,7 +118,7 @@ function derivePath<T extends HDNodeLike<T>>(node: T, path: string): T {
 
 /**
  *  An **HDNodeWallet** is a [[Signer]] backed by the private key derived
- *  from an HD Node using the [[link-bip-32]] stantard.
+ *  from an HD Node using the [[link-bip-32]] standard.
  *
  *  An HD Node forms a hierarchal structure with each HD Node having a
  *  private key and the ability to derive child HD Nodes, defined by
@@ -133,7 +133,7 @@ export class HDNodeWallet extends BaseWallet {
     /**
      *  The fingerprint.
      *
-     *  A fingerprint allows quick qay to detect parent and child nodes,
+     *  A fingerprint allows quick way to detect parent and child nodes,
      *  but developers should be prepared to deal with collisions as it
      *  is only 4 bytes.
      */
@@ -221,14 +221,14 @@ export class HDNodeWallet extends BaseWallet {
      *  %%password%%.
      *
      *  If %%progressCallback%% is specified, it will receive periodic
-     *  updates as the encryption process progreses.
+     *  updates as the encryption process progresses.
      */
     async encrypt(password: Uint8Array | string, progressCallback?: ProgressCallback): Promise<string> {
         return await encryptKeystoreJson(this.#account(), password, { progressCallback });
     }
 
     /**
-     *  Returns a [JSON Keystore Wallet](json-wallets) encryped with
+     *  Returns a [JSON Keystore Wallet](json-wallets) encrypted with
      *  %%password%%.
      *
      *  It is preferred to use the [async version](encrypt) instead,
@@ -406,7 +406,7 @@ export class HDNodeWallet extends BaseWallet {
  *
  *  The can be created by using an extended ``xpub`` key to
  *  [[HDNodeWallet_fromExtendedKey]] or by 
- *  [nuetering](HDNodeWallet-neuter) a [[HDNodeWallet]].
+ *  [neutering](HDNodeWallet-neuter) a [[HDNodeWallet]].
  */
 export class HDNodeVoidWallet extends VoidSigner {
     /**
@@ -417,7 +417,7 @@ export class HDNodeVoidWallet extends VoidSigner {
     /**
      *  The fingerprint.
      *
-     *  A fingerprint allows quick qay to detect parent and child nodes,
+     *  A fingerprint allows quick way to detect parent and child nodes,
      *  but developers should be prepared to deal with collisions as it
      *  is only 4 bytes.
      */
@@ -439,7 +439,7 @@ export class HDNodeVoidWallet extends VoidSigner {
      *
      *  Since extended keys do not provider full path details, this
      *  may be ``null``, if instantiated from a source that does not
-     *  enocde it.
+     *  encode it.
      */
     readonly path!: null | string;
 

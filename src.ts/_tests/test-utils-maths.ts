@@ -190,14 +190,14 @@ describe("Tests Twos Compliemnts Functions", function() {
     ];
 
     for (const { twos, width, value } of tests) {
-        it(`computes twos compliment values: ${ value }[${ width } bits]`, function() {
+        it(`computes twos complement values: ${ value }[${ width } bits]`, function() {
             const result = toTwos(value, width);
             assert.equal(result, twos);
         });
     }
 
     for (const { twos, width, value } of tests) {
-        it(`computes values from twos compliment: ${ value }[${ width } bits]`, function() {
+        it(`computes values from twos complement: ${ value }[${ width } bits]`, function() {
             const result = fromTwos(twos, width);
             assert.equal(result, value);
         });

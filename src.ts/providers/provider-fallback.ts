@@ -168,7 +168,7 @@ export type FallbackProviderOptions = {
     quorum?: number;
 
     // How many providers must have reported the same event
-    // for it to be emitted (currently unimplmented)
+    // for it to be emitted (currently unimplemented)
     eventQuorum?: number;
 
     // How many providers to dispatch each event to simultaneously.
@@ -358,7 +358,7 @@ export class FallbackProvider extends AbstractProvider {
 
     /**
      *  The number of backends that must agree on a value before it is
-     *  accpeted.
+     *  accepted.
      */
     readonly quorum: number;
 
@@ -733,7 +733,7 @@ export class FallbackProvider extends AbstractProvider {
                 // Check for a legit broadcast error (one which we cannot
                 // recover from; some nodes may return the following red
                 // herring events:
-                // - alredy seend (UNKNOWN_ERROR)
+                // - already seen (UNKNOWN_ERROR)
                 // - NONCE_EXPIRED
                 // - REPLACEMENT_UNDERPRICED
                 const result = checkQuorum(this.quorum, <Array<any>>results.filter((r) => (r != null)));

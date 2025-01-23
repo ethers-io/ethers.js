@@ -184,7 +184,7 @@ export function getDefaultProvider(network?: string | Networkish | WebSocketLike
     let quorum = Math.floor(providers.length / 2);
     if (quorum > 2) { quorum = 2; }
 
-    // Testnets don't need as strong a security gaurantee and speed is
+    // Testnets don't need as strong a security guarantee and speed is
     // more useful during testing
     if (staticNetwork && Testnets.indexOf(staticNetwork.name) !== -1) { quorum = 1; }
 

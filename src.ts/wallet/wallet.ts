@@ -29,7 +29,7 @@ function stall(duration: number): Promise<void> {
  *  This class is generally the main entry point for developers
  *  that wish to use a private key directly, as it can create
  *  instances from a large variety of common sources, including
- *  raw private key, [[link-bip-39]] mnemonics and encrypte JSON
+ *  raw private key, [[link-bip-39]] mnemonics and encrypt JSON
  *  wallets.
  */
 export class Wallet extends BaseWallet {
@@ -56,7 +56,7 @@ export class Wallet extends BaseWallet {
      *  %%password%%.
      *
      *  If %%progressCallback%% is specified, it will receive periodic
-     *  updates as the encryption process progreses.
+     *  updates as the encryption process progresses.
      */
     async encrypt(password: Uint8Array | string, progressCallback?: ProgressCallback): Promise<string> {
         const account = { address: this.address, privateKey: this.privateKey };
@@ -64,7 +64,7 @@ export class Wallet extends BaseWallet {
     }
 
     /**
-     *  Returns a [JSON Keystore Wallet](json-wallets) encryped with
+     *  Returns a [JSON Keystore Wallet](json-wallets) encrypted with
      *  %%password%%.
      *
      *  It is preferred to use the [async version](encrypt) instead,

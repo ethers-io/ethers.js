@@ -39,7 +39,7 @@ function getIpfsLink(link: string): string {
 }
 
 /**
- *  The type of data found during a steip during avatar resolution.
+ *  The type of data found during a step during avatar resolution.
  */
 export type AvatarLinkageType = "name" | "avatar" | "!avatar" | "url" | "data" | "ipfs" |
     "erc721" | "erc1155" | "!erc721-caip" | "!erc1155-caip" |
@@ -68,7 +68,7 @@ export interface AvatarLinkage {
  *  steps involved, fetching metadata, validating results, et cetera.
  *
  *  Some applications may wish to analyse this data, or use this data
- *  to diagnose promblems, so an **AvatarResult** provides details of
+ *  to diagnose problems, so an **AvatarResult** provides details of
  *  each completed step during avatar resolution.
  */
 export interface AvatarResult {
@@ -324,7 +324,7 @@ export class EnsResolver {
     }
 
     /**
-     *  Rsolves to the content-hash or ``null`` if unconfigured.
+     *  Resolves to the content-hash or ``null`` if unconfigured.
      */
     async getContentHash(): Promise<null | string> {
         // keccak256("contenthash()")

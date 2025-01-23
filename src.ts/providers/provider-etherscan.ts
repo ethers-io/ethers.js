@@ -649,7 +649,7 @@ export class EtherscanProvider extends AbstractProvider {
 
     /**
      *  Resolves to a [Contract]] for %%address%%, using the
-     *  Etherscan API to retreive the Contract ABI.
+     *  Etherscan API to retrieve the Contract ABI.
      */
     async getContract(_address: string): Promise<null | Contract> {
         let address = this._getAddress(_address);

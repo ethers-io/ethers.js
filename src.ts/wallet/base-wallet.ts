@@ -97,7 +97,7 @@ export class BaseWallet extends AbstractSigner {
         return this.signMessageSync(message);
     }
 
-    // @TODO: Add a secialized signTx and signTyped sync that enforces
+    // @TODO: Add a specialized signTx and signTyped sync that enforces
     // all parameters are known?
     /**
      *  Returns the signature for %%message%% signed with this wallet.

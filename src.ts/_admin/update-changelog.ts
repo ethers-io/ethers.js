@@ -128,7 +128,7 @@ type PresentVersion = {
     }
 
     // If this is a new version (not present in npm) add the changes
-    // from the lastest version until HEAD.
+    // from the latest version until HEAD.
     const curVer = loadJson(resolve("package.json")).version;
     if (curVer !== lastVer) {
         // Include any present entry, as it was placed here by a
@@ -140,7 +140,7 @@ type PresentVersion = {
             entries.push(pres);
         }
 
-        // Also include theentry from git
+        // Also include the entry from git
         const latest = await getChanges(lastVer.gitHead, "HEAD");
         if (latest.length) {
             entries.push({
@@ -151,7 +151,7 @@ type PresentVersion = {
         }
     }
 
-    // Gerenate the CHANGELOG.md output
+    // Generate the CHANGELOG.md output
     const output: Array<string> = [ ];
     output.push("Change Log");
     output.push("==========");

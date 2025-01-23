@@ -74,7 +74,7 @@ describe("Tests Provider Call Exception", function() {
                         assert.equal(error.action, method, `error.action == ${ method }`);
                         assert.equal(error.reason, `Panic due to ${ reason }(${ code })`, "error.reason");
 
-                        // Check the transaciton
+                        // Check the transaction
                         assert.equal(error.transaction.to, tx.to, `error.transaction.to`);
                         assert.equal(error.transaction.data, tx.data, `error.transaction.data`);
 
