@@ -69,7 +69,7 @@ export {
 
     BrowserProvider,
 
-    AlchemyProvider, AnkrProvider, ChainstackProvider, CloudflareProvider,
+    AlchemyProvider, AnkrProvider, BlockscoutProvider, ChainstackProvider, CloudflareProvider,
     EtherscanProvider, InfuraProvider, InfuraWebSocketProvider, PocketProvider,
     QuickNodeProvider,
 
