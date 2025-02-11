@@ -5,12 +5,13 @@ import { loadTests } from "./utils.js";
 import { formatEther, formatUnits, parseEther, parseUnits } from "../index.js";
 
 import type { TestCaseUnit } from "./types.js";
+import { UnitNameType } from "../utils/units.js";
 
 
 describe("Tests unit conversion", function() {
     const tests = loadTests<TestCaseUnit>("units");
 
-    const units = [
+    const units:{unit:UnitNameType,format:string,decimals:number}[] = [
         { unit: "ether", format: "ether_format", decimals: 18 },
         { unit: "kwei", format: "kwei_format", decimals: 3 },
         { unit: "mwei", format: "mwei_format", decimals: 6 },
@@ -65,6 +66,7 @@ describe("Tests bad unit conversion", function() {
 
     it("correctly fails to convert unknown unit", function() {
         assert.throws(() => {
+            // @ts-ignore
             parseUnits("3", "foobar");
         }, (error: any) => {
             return error.message.startsWith("invalid unit");
