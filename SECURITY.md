@@ -2,10 +2,10 @@
 
 ## Supported Versions
 
-Maintaining multiple versions of the library is quite time consuming, so
+Maintaining multiple versions of the library is quite time-consuming, so
 the majority of the effort is focused on the latest major release.
 
-If you do require a version outside of this chart updated with patch fix,
+If you do require a version outside of this chart updated with a patch fix,
 please [contact me](mailto:github@ricmoo.com).
 
 | Version | Supported                                  | Initial Release   |
