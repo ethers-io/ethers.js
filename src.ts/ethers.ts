@@ -80,6 +80,7 @@ export {
 
     EnsPlugin, EtherscanPlugin,
     FeeDataNetworkPlugin, FetchUrlFeeDataNetworkPlugin,
+    FetchLineaFeeDataNetworkPlugin,
     GasCostPlugin, NetworkPlugin, MulticoinProviderPlugin,
 
     SocketBlockSubscriber, SocketEventSubscriber, SocketPendingSubscriber,
