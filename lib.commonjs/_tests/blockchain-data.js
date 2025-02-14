@@ -394,13 +394,11 @@ exports.networkNames = [
     "mainnet", "goerli", "sepolia"
 ];
 function networkFeatureAtBlock(feature, block) {
-    switch (feature) {
-        case "byzantium":
-            return block >= 4370000;
-        default:
-            break;
+    if (feature === "byzantium") {
+        return block >= 4370000;
     }
     throw new Error(`unknown feature: ${feature}`);
 }
+
 exports.networkFeatureAtBlock = networkFeatureAtBlock;
 //# sourceMappingURL=blockchain-data.js.map
