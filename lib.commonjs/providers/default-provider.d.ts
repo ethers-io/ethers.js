@@ -27,7 +27,6 @@ import { WebSocketLike } from "./provider-websocket.js";
  *  - ``"chainstack"``
  *  - ``"etherscan"``
  *  - ``"infura"``
- *  - ``"publicPolygon"``
  *  - ``"quicknode"``
  *
  *  @example:
@@ -46,4 +45,3 @@ import { WebSocketLike } from "./provider-websocket.js";
  *    });
  */
 export declare function getDefaultProvider(network?: string | Networkish | WebSocketLike, options?: any): AbstractProvider;
-//# sourceMappingURL=default-provider.d.ts.map
