@@ -191,7 +191,7 @@ function toString(val: bigint, decimals: number) {
  *  arithmetic field.
  *
  *  A FixedNumber can be used to perform math, losslessly, on
- *  values which have decmial places.
+ *  values which have decimal places.
  *
  *  A FixedNumber has a fixed bit-width to store values in, and stores all
  *  values internally by multiplying the value by 10 raised to the power of
@@ -276,7 +276,7 @@ export class FixedNumber {
     get width(): number { return this.#format.width; }
 
     /**
-     *  The number of decimal places in the fixed-point arithment field.
+     *  The number of decimal places in the fixed-point arithmetic field.
      */
     get decimals(): number { return this.#format.decimals; }
 
@@ -541,7 +541,7 @@ export class FixedNumber {
     /**
      *  Returns a float approximation.
      *
-     *  Due to IEEE 754 precission (or lack thereof), this function
+     *  Due to IEEE 754 precision (or lack thereof), this function
      *  can only return an approximation and most values will contain
      *  rounding errors.
      */

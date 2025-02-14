@@ -98,7 +98,7 @@ function fromBase36(value: string): bigint {
  *  If you wish the checksum of %%address%% to be ignore, it should
  *  be converted to lower-case (i.e. ``.toLowercase()``) before
  *  being passed in. This should be a very rare situation though,
- *  that you wish to bypass the safegaurds in place to protect
+ *  that you wish to bypass the safeguards in place to protect
  *  against an address that has been incorrectly copied from another
  *  source.
  *

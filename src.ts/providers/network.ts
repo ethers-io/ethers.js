@@ -19,7 +19,7 @@ import type { NetworkPlugin } from "./plugins-network.js";
 
 
 /**
- *  A Networkish can be used to allude to a Network, by specifing:
+ *  A Networkish can be used to allude to a Network, by specifying:
  *  - a [[Network]] object
  *  - a well-known (or registered) network name
  *  - a well-known (or registered) chain ID
@@ -87,7 +87,7 @@ export class Network {
     /**
      *  The network common name.
      *
-     *  This is the canonical name, as networks migh have multiple
+     *  This is the canonical name, as networks might have multiple
      *  names.
      */
     get name(): string { return this.#name; }
@@ -168,7 +168,7 @@ export class Network {
     }
 
     /**
-     *  Gets a list of all plugins that match %%name%%, with otr without
+     *  Gets a list of all plugins that match %%name%%, with or without
      *  a fragment.
      */
     getPlugins<T extends NetworkPlugin = NetworkPlugin>(basename: string): Array<T> {
@@ -307,7 +307,7 @@ function parseUnits(_value: number | string, decimals: number): bigint {
         throw new Error(`invalid gwei value: ${ _value }`);
     }
 
-    // Pad the fraction to 9 decimalplaces
+    // Pad the fraction to 9 decimal places
     while (comps[1].length < decimals) { comps[1] += "0"; }
 
     // Too many decimals and some non-zero ending, take the ceiling

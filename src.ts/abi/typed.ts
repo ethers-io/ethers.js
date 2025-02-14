@@ -131,9 +131,9 @@ export class Typed {
     /**
      *  @_ignore:
      */
-    constructor(gaurd: any, type: string, value: any, options?: any) {
+    constructor(guard: any, type: string, value: any, options?: any) {
         if (options == null) { options = null; }
-        assertPrivate(_gaurd, gaurd, "Typed");
+        assertPrivate(_gaurd, guard, "Typed");
         defineProperties<Typed>(this, { _typedSymbol, type, value });
         this.#options = options;
 

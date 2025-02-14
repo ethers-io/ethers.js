@@ -457,7 +457,7 @@ export class Reader {
     // Allows incomplete unpadded data to be read; otherwise an error
     // is raised if attempting to overrun the buffer. This is required
     // to deal with an old Solidity bug, in which event data for
-    // external (not public thoguh) was tightly packed.
+    // external (not public though) was tightly packed.
     readonly allowLoose!: boolean;
 
     readonly #data: Uint8Array;
