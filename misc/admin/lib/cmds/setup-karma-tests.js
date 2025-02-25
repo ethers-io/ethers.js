@@ -25,12 +25,21 @@ function copy(src, dst, transform) {
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         yield (0, utils_1.mkdir)((0, path_1.resolve)("output/karma"));
+        // Mocha
+        copy((0, path_1.resolve)("node_modules/mocha/mocha.css"), (0, path_1.resolve)("output/karma/mocha.css"));
+        copy((0, path_1.resolve)("node_modules/mocha/mocha.js"), (0, path_1.resolve)("output/karma/mocha.js"));
+        // Shims
+        copy((0, path_1.resolve)("packages/shims/dist/index.js"), (0, path_1.resolve)("output/karma/shims.js"));
+        // ESM library and tests
+        copy((0, path_1.resolve)("misc/testing/test-esm.html"), (0, path_1.resolve)("output/karma/test-esm.html"));
         copy((0, path_1.resolve)("packages/ethers/dist/ethers.esm.js"), (0, path_1.resolve)("output/karma/ethers.esm.js"));
         copy((0, path_1.resolve)("packages/tests/dist/tests.esm.js"), (0, path_1.resolve)("output/karma/tests.esm.js"), (data) => {
             return data.replace(/^(import [^;]* from ')(ethers)(';)/, (all, prefix, id, suffix) => {
                 return prefix + "./ethers.esm.js" + suffix;
             });
         });
+        // UMD library and tests
+        copy((0, path_1.resolve)("misc/testing/test-umd.html"), (0, path_1.resolve)("output/karma/test-umd.html"));
         copy((0, path_1.resolve)("packages/ethers/dist/ethers.umd.js"), (0, path_1.resolve)("output/karma/ethers.umd.js"));
         copy((0, path_1.resolve)("packages/tests/dist/tests.umd.js"), (0, path_1.resolve)("output/karma/tests.umd.js"));
     });
