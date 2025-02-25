@@ -52,6 +52,9 @@
   "license": "MIT",
   "main": "./lib/index.js",
   "module": "./lib.esm/index.js",
+  "publishConfig": {
+    "tag": "legacy-v5"
+  },
   "name": "ethers",
   "repository": {
     "directory": "packages/ethers",
