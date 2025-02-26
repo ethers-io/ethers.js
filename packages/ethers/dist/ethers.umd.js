@@ -11820,15 +11820,15 @@
 	        var w = this.words[i];
 	        var word = (((w << off) | carry) & 0xffffff).toString(16);
 	        carry = (w >>> (24 - off)) & 0xffffff;
-	        if (carry !== 0 || i !== this.length - 1) {
-	          out = zeros[6 - word.length] + word + out;
-	        } else {
-	          out = word + out;
-	        }
 	        off += 2;
 	        if (off >= 26) {
 	          off -= 26;
 	          i--;
+	        }
+	        if (carry !== 0 || i !== this.length - 1) {
+	          out = zeros[6 - word.length] + word + out;
+	        } else {
+	          out = word + out;
 	        }
 	      }
 	      if (carry !== 0) {

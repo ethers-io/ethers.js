@@ -4,13 +4,13 @@ Changelog
 This change log is managed by `admin/cmds/update-versions` but may be manually updated.
 
 
-ethers/v5.8.0 (2024-08-12 21:25)
+ethers/v5.8.0 (2025-02-25 19:15)
 --------------------------------
 
+  - Updated to latest elliptic library to fix audit warnings. ([f8deaae](https://github.com/ethers-io/ethers.js/commit/f8deaae8d16e0ebc8ec632c76c29833c67047c7b))
   - Added ENS to Sepolia. ([0065547](https://github.com/ethers-io/ethers.js/commit/006554730e4fc3ba558f808e91039711c4b6bfe1))
   - Bump ws package version to address DoS security concern. ([#4791](https://github.com/ethers-io/ethers.js/issues/4791); [f345816](https://github.com/ethers-io/ethers.js/commit/f345816cf202fbaffa046bff7083c2c25d21f6cd))
   - Added modern networks, updated third-party backend URLs and added QuickNode. ([#3935](https://github.com/ethers-io/ethers.js/issues/3935), [#4010](https://github.com/ethers-io/ethers.js/issues/4010); [f7c813d](https://github.com/ethers-io/ethers.js/commit/f7c813d3130f4790be4381c06ee5e56c8d513c79))
-  - Updated tests for goerli. ([706d3ca](https://github.com/ethers-io/ethers.js/commit/706d3ca27c233385944877eb64c099c74109b6c2))
 
 ethers/v5.7.2 (2022-10-19 04:19)
 --------------------------------
