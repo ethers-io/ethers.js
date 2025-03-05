@@ -7,8 +7,8 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
 
 import {
-    concat, dataLength, getBytes, getBytesCopy, hexlify, toBeHex,
-    assertArgument
+    assertArgument,
+    concat, dataLength, getBytes, getBytesCopy, hexlify, toBeHex
 } from "../utils/index.js";
 
 import { Signature } from "./signature.js";
@@ -58,11 +58,13 @@ export class SigningKey {
     /**
      *  Return the signature of the signed %%digest%%.
      */
-    sign(digest: BytesLike): Signature {
+    sign(digest: BytesLike, extraEntropy: boolean | BytesLike = false): Signature {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
+        if (extraEntropy && typeof extraEntropy !== 'boolean') extraEntropy = getBytesCopy(extraEntropy);
 
         const sig = secp256k1.sign(getBytesCopy(digest), getBytesCopy(this.#privateKey), {
-            lowS: true
+            lowS: true,
+            extraEntropy
         });
 
         return Signature.from({
