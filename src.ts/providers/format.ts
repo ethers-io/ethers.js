@@ -214,6 +214,15 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         accessList: allowNull(accessListify, null),
         blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
 
+        authorizationList: allowNull(arrayOf((v: any) => {
+            return {
+                address: getAddress(v.address),
+                chainId: getBigInt(v.chainId),
+                nonce: getBigInt(v.nonce),
+                signature: Signature.from(v.signature ? v.signature: v)
+            };
+        }, false), null),
+
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),

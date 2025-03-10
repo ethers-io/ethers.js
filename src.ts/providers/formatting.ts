@@ -5,7 +5,7 @@
  */
 
 import type { Signature } from "../crypto/index.js";
-import type { AccessList } from "../transaction/index.js";
+import type { Authorization, AccessList } from "../transaction/index.js";
 
 
 //////////////////////
@@ -283,6 +283,7 @@ export interface TransactionReceiptParams {
      *  post-byzantium blocks this is null.
      */
     root: null | string;
+
 }
 
 /*
@@ -406,7 +407,12 @@ export interface TransactionResponseParams {
     /**
      *  The [[link-eip-4844]] BLOb versioned hashes.
      */
-    blobVersionedHashes?: null | Array<string>;
+    blobVersionedHashes?: null | Array<string>;  // @TODO: drop the "?"? (v7)
+
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList: null | Array<Authorization>;
 };
 
 
