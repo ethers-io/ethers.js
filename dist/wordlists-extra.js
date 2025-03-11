@@ -100,7 +100,7 @@ const rotlBL = (h, l, s) => (h << (s - 32)) | (l >>> (64 - s));
 /**
  *  The current version of Ethers.
  */
-const version = "6.13.4";
+const version = "6.13.5";
 
 /**
  *  Property helper functions.

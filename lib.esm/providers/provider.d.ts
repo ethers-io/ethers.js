@@ -187,7 +187,7 @@ export interface PreparedTransactionRequest {
      */
     nonce?: number;
     /**
-     *  The maximum amount of gas to allow this transaction to consime.
+     *  The maximum amount of gas to allow this transaction to consume.
      */
     gasLimit?: bigint;
     /**

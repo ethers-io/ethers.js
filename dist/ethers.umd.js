@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.13.4";
+    const version = "6.13.5";
 
     /**
      *  Property helper functions.
@@ -225,7 +225,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if (message) {
             message = ": " + message;
         }
-        assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+        assert(count >= expectedCount, "missing argument" + message, "MISSING_ARGUMENT", {
             count: count,
             expectedCount: expectedCount
         });
@@ -14320,7 +14320,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         break;
                     }
                     else {
-                        if (v.hash === hash) {
+                        if (v.hash !== hash) {
                             continue;
                         }
                         tx = v;
@@ -23329,7 +23329,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     class BrowserProvider extends JsonRpcApiPollingProvider {
         #request;
         /**
-         *  Connnect to the %%ethereum%% provider, optionally forcing the
+         *  Connect to the %%ethereum%% provider, optionally forcing the
          *  %%network%%.
          */
         constructor(ethereum, network, _options) {

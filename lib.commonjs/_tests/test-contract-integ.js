@@ -3,8 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
 const index_js_1 = require("../index.js");
+const create_provider_js_1 = require("./create-provider.js");
 describe("Tests contract integration", function () {
-    const provider = new index_js_1.ethers.JsonRpcProvider("http:/\/127.0.0.1:8545");
+    const provider = (0, create_provider_js_1.getDevProvider)();
     const abi = [
         "constructor(address owner, uint maxSupply)",
         "function mint(address target) returns (bool minted)",

@@ -1,7 +1,7 @@
 import assert from "assert";
 import { concat, dataSlice, id, toBeArray, zeroPadValue, isCallException, isError, Wallet } from "../index.js";
 import { getProvider, setupProviders, providerNames } from "./create-provider.js";
-import { stall } from "./utils.js";
+import { FAUCET_PRIVATEKEY, stall } from "./utils.js";
 setupProviders();
 describe("Tests Provider Call Exception", function () {
     const panics = [
@@ -128,7 +128,11 @@ describe("Tests Provider Call Exception", function () {
     }
 });
 describe("Test Provider Blockchain Errors", function () {
-    const wallet = new Wallet((process.env.FAUCET_PRIVATEKEY));
+    if (!FAUCET_PRIVATEKEY) {
+        console.log("Missing Faucet Private Key! Tests Skipped.");
+        return;
+    }
+    const wallet = new Wallet(FAUCET_PRIVATEKEY);
     const networkName = "sepolia";
     for (const providerName of providerNames) {
         const provider = getProvider(providerName, networkName);

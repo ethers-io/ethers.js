@@ -1,3 +1,4 @@
+export declare const FAUCET_PRIVATEKEY: string;
 export declare function loadTests<T>(tag: string): Array<T>;
 export declare function log(context: any, text: string): void;
 export declare function stall(duration: number): Promise<void>;

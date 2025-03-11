@@ -273,7 +273,7 @@ export interface PreparedTransactionRequest {
     nonce?: number;
 
     /**
-     *  The maximum amount of gas to allow this transaction to consime.
+     *  The maximum amount of gas to allow this transaction to consume.
      */
     gasLimit?: bigint;
 
@@ -711,7 +711,7 @@ export class Block implements BlockParams, Iterable<string> {
                     tx = v;
                     break;
                 } else {
-                    if (v.hash === hash) { continue; }
+                    if (v.hash !== hash) { continue; }
                     tx = v;
                     break;
                 }

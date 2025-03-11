@@ -131,7 +131,11 @@ describe("Tests Provider Call Exception", function () {
     }
 });
 describe("Test Provider Blockchain Errors", function () {
-    const wallet = new index_js_1.Wallet((process.env.FAUCET_PRIVATEKEY));
+    if (!utils_js_1.FAUCET_PRIVATEKEY) {
+        console.log("Missing Faucet Private Key! Tests Skipped.");
+        return;
+    }
+    const wallet = new index_js_1.Wallet(utils_js_1.FAUCET_PRIVATEKEY);
     const networkName = "sepolia";
     for (const providerName of create_provider_js_1.providerNames) {
         const provider = (0, create_provider_js_1.getProvider)(providerName, networkName);
