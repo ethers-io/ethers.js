@@ -151,7 +151,11 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                     // The network supports EIP-1559!
 
                     // Upgrade transaction from null to eip-1559
-                    pop.type = 2;
+                    if (pop.authorizationList && pop.authorizationList.length) {
+                        pop.type = 4;
+                    } else {
+                        pop.type = 2;
+                    }
 
                     if (pop.gasPrice != null) {
                         // Using legacy gasPrice property on an eip-1559 network,

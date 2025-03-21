@@ -1191,7 +1191,9 @@ export class Transaction implements TransactionLike<string> {
             types.push(this.type);
 
         } else {
-            if (hasFee) {
+            if (this.authorizationList && this.authorizationList.length) {
+                types.push(4);
+            } else if (hasFee) {
                 types.push(2);
             } else if (hasGasPrice) {
                 types.push(1);
