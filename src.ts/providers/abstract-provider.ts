@@ -14,12 +14,12 @@
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 
-import { getAddress, resolveAddress } from "../address/index.js";
+import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
     getBigInt, getBytes, getNumber,
-    isCallException, makeError, assert, assertArgument,
+    isCallException, isError, makeError, assert, assertArgument,
     FetchRequest,
     toBeArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
@@ -1202,21 +1202,34 @@ export class AbstractProvider implements Provider {
         return null;
     }
 
-    async lookupAddress(address: string): Promise<null | string> {
-        address = getAddress(address);
-        const resolver = await this.getResolver(address.substring(2).toLowerCase() + ".addr.reverse");
-        if (resolver) {
-            const name = await resolver.getName();
-            if (name) { // possible optimization: name.includes('.')
-                const expect = await this.resolveName(name);
-                // check roundtrip
-                assert(address === expect, "address->name->address mismatch", "VALUE_MISMATCH", {lhs: address, rhs: expect});
-                return name;
+    async lookupAddress(address: string, coinType: number = 60): Promise<null | string> {
+        const reverseName = EnsResolver.getReverseName(address, coinType);
+        try {
+            const revResolver = await this.getResolver(reverseName);
+            if (revResolver) {
+                const name = await revResolver.getName();
+                if (name) {
+                    const resolver = await this.getResolver(name);
+                    if (resolver) {
+                        const expect = await resolver.getAddress(coinType);
+                        if (expect) {
+                            // check roundtrip
+                            assert(address === expect, "address->name->address mismatch", "VALUE_MISMATCH", {lhs: address, rhs: expect});
+                            return name;
+                        }
+                    }
+                }
             }
+            return null;
+        } catch (error) {
+            // No data was returned from the resolver
+            if (isError(error, "BAD_DATA") && error.value === "0x") {
+                return null;
+            }
+            // Something reverted
+            if (isError(error, "CALL_EXCEPTION")) { return null; }
+            throw error;
         }
-        // i think ALL errors should propagate out as reverse names are a critical piece 
-        // of ENS infrastructure and saying a primary is null should be a true-positive
-        return null;
     }
 
     async waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt> {

@@ -13,12 +13,13 @@ import {
     hexlify, isHexString, toBeHex,
     defineProperties, encodeBase58,
     assert, assertArgument, isError,
-    FetchRequest
+    FetchRequest,
+    getBigInt
 } from "../utils/index.js";
 
 import type { FunctionFragment } from "../abi/index.js";
 
-import type { BytesLike } from "../utils/index.js";
+import type { BigNumberish, BytesLike } from "../utils/index.js";
 
 import type { AbstractProvider, AbstractProviderPlugin } from "./abstract-provider.js";
 import type { EnsPlugin } from "./plugins-network.js";
@@ -543,6 +544,19 @@ export class EnsResolver {
         } catch (error) { }
 
         return { linkage, url: null };
+    }
+
+    static getReverseName(address: string, coinType: BigNumberish = 60) {
+        // https://docs.ens.domains/ensip/19
+        assertArgument(address.length > 2 && isHexString(address), "address must be non-empty hex string", "address", address);
+        coinType = getBigInt(coinType, "coinType");
+        return `${address.toLowerCase().slice(2)}.${
+            coinType == 60n
+              ? 'addr'
+              : coinType == 0x80000000n
+              ? 'default'
+              : coinType.toString(16)
+          }.reverse`;
     }
 
     static async getEnsAddress(provider: Provider): Promise<string> {
