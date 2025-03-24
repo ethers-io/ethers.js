@@ -52,7 +52,7 @@ export interface BlockParams {
 
     /**
      *  For proof-of-work networks, the difficulty target is used to
-     *  adjust the difficulty in mining to ensure a expected block rate.
+     *  adjust the difficulty in mining to ensure an expected block rate.
      */
     difficulty: bigint;
 
@@ -82,6 +82,12 @@ export interface BlockParams {
      *  The miner (or author) of a block.
      */
     miner: string;
+
+    /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    prevRandao?: null | string;
 
     /**
      *  Additional data the miner choose to include.

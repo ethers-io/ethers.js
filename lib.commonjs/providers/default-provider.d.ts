@@ -24,6 +24,7 @@ import { WebSocketLike } from "./provider-websocket.js";
  *  - ``"alchemy"``
  *  - ``"ankr"``
  *  - ``"cloudflare"``
+ *  - ``"chainstack"``
  *  - ``"etherscan"``
  *  - ``"infura"``
  *  - ``"publicPolygon"``

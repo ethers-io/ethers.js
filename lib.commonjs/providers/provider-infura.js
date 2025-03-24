@@ -19,11 +19,13 @@ exports.InfuraProvider = exports.InfuraWebSocketProvider = void 0;
  *  - BNB Smart Chain Mainnet (``bnb``)
  *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Linea (``linea``)
- *  - Linea Goerlia Testnet (``linea-goerli``)
+ *  - Linea Goerli Testnet (``linea-goerli``)
+ *  - Linea Sepolia Testnet (``linea-sepolia``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:INFURA  [providers-infura]
@@ -62,8 +64,12 @@ function getHost(name) {
             return "linea-mainnet.infura.io";
         case "linea-goerli":
             return "linea-goerli.infura.io";
+        case "linea-sepolia":
+            return "linea-sepolia.infura.io";
         case "matic":
             return "polygon-mainnet.infura.io";
+        case "matic-amoy":
+            return "polygon-amoy.infura.io";
         case "matic-mumbai":
             return "polygon-mumbai.infura.io";
         case "optimism":
@@ -104,7 +110,7 @@ class InfuraWebSocketProvider extends provider_websocket_js_1.WebSocketProvider 
         const req = provider._getConnection();
         (0, index_js_1.assert)(!req.credentials, "INFURA WebSocket project secrets unsupported", "UNSUPPORTED_OPERATION", { operation: "InfuraProvider.getWebSocketProvider()" });
         const url = req.url.replace(/^http/i, "ws").replace("/v3/", "/ws/v3/");
-        super(url, network);
+        super(url, provider._network);
         (0, index_js_1.defineProperties)(this, {
             projectId: provider.projectId,
             projectSecret: provider.projectSecret

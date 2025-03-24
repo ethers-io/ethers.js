@@ -3,6 +3,8 @@ import fs from "fs"
 import path from "path";
 import zlib from "zlib";
 
+export const FAUCET_PRIVATEKEY = process.env.FAUCET_PRIVATEKEY || "MISSING_GITHUB_SECRET";
+
 // Find the package root (based on the nyc output/ folder)
 const root = (function() {
     let root = process.cwd();
@@ -133,3 +135,4 @@ export class Stats {
 
 export const stats = new Stats(_guard);
 */
+

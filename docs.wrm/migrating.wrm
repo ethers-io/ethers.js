@@ -214,6 +214,8 @@ _code: wrapping EIP-1193 providers  @lang<script>
   // v6:
   provider = new ethers.BrowserProvider(window.ethereum)
 
+_null:
+
 Also, the method for broadcasting transactions to the network has
 changed:
 
@@ -224,6 +226,7 @@ _code: broadcasting transactions  @lang<script>
   // v6
   provider.broadcastTransaction(signedTx)
 
+_null:
 
 The ``StaticJsonRpcProvider`` in v5 is now integrated into the v6
 ``JsonRpcProvider`` directly. When connecting to a network which
@@ -245,6 +248,21 @@ _code: Create a Provider on a static network  @lang<script>
   provider = new JsonRpcProvider(url, undefined, {
     staticNetwork: true
   });
+
+_null:
+
+Since the fees for Ethereum chains has become more complicated,
+all Fee parameters in v6 were coalesced into a single `.getFeeData`
+method. While `gasPrice` is no longer widely used in modern networks,
+when using a legacy network, it is available using that method.
+
+_code: Getting legacy gas price  @lang<script>
+  // v5
+  await provider.getGasPrice()
+
+  // v6
+  (await provider.getFeeData()).gasPrice
+
 
 _subsection: Signatures  @<migrate-signatures>
 
@@ -388,7 +406,7 @@ _code: commify  @lang<script>
   // v5
   ethers.utils.commify("1234.5")
 
-  // v6; we removed some of these local-specific utilities,
+  // v6; we removed some of these locale-specific utilities,
   // however the functionality can be easily replicated
   // and adjusted depending on your desired output format,
   // for which everyone wanted their own tweaks anyways.

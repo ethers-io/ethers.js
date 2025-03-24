@@ -9,15 +9,18 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
- *  - Sepolia Testnet (``holesky``)
+ *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Base (``base``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
  *  - BNB Smart Chain Mainnet (``bnb``)
  *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
@@ -118,12 +121,18 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 return "https:/\/api.arbiscan.io";
             case "arbitrum-goerli":
                 return "https:/\/api-goerli.arbiscan.io";
+            case "base":
+                return "https:/\/api.basescan.org";
+            case "base-sepolia":
+                return "https:/\/api-sepolia.basescan.org";
             case "bnb":
                 return "https:/\/api.bscscan.com";
             case "bnbt":
                 return "https:/\/api-testnet.bscscan.com";
             case "matic":
                 return "https:/\/api.polygonscan.com";
+            case "matic-amoy":
+                return "https:/\/api-amoy.polygonscan.com";
             case "matic-mumbai":
                 return "https:/\/api-testnet.polygonscan.com";
             case "optimism":
@@ -271,6 +280,16 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 value = "[" + (0, index_js_3.accessListify)(value).map((set) => {
                     return `{address:"${set.address}",storageKeys:["${set.storageKeys.join('","')}"]}`;
                 }).join(",") + "]";
+            }
+            else if (key === "blobVersionedHashes") {
+                if (value.length === 0) {
+                    continue;
+                }
+                // @TODO: update this once the API supports blobs
+                (0, index_js_4.assert)(false, "Etherscan API does not support blobVersionedHashes", "UNSUPPORTED_OPERATION", {
+                    operation: "_getTransactionPostData",
+                    info: { transaction }
+                });
             }
             else {
                 value = (0, index_js_4.hexlify)(value);

@@ -127,9 +127,9 @@ class HDNodeWallet extends base_wallet_js_1.BaseWallet {
     /**
      *  The derivation path of this wallet.
      *
-     *  Since extended keys do not provider full path details, this
+     *  Since extended keys do not provide full path details, this
      *  may be ``null``, if instantiated from a source that does not
-     *  enocde it.
+     *  encode it.
      */
     path;
     /**

@@ -124,9 +124,9 @@ export class HDNodeWallet extends BaseWallet {
     /**
      *  The derivation path of this wallet.
      *
-     *  Since extended keys do not provider full path details, this
+     *  Since extended keys do not provide full path details, this
      *  may be ``null``, if instantiated from a source that does not
-     *  enocde it.
+     *  encode it.
      */
     path;
     /**

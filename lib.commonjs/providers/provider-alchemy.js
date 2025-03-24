@@ -18,6 +18,7 @@
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
@@ -51,6 +52,8 @@ function getHost(name) {
             return "base-sepolia.g.alchemy.com";
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
+        case "matic-amoy":
+            return "polygon-amoy.g.alchemy.com";
         case "matic-mumbai":
             return "polygon-mumbai.g.alchemy.com";
         case "optimism":

@@ -49,13 +49,13 @@ export class MulticoinProviderPlugin {
         return false;
     }
     /**
-     *  Resovles to the encoded %%address%% for %%coinType%%.
+     *  Resolves to the encoded %%address%% for %%coinType%%.
      */
     async encodeAddress(coinType, address) {
         throw new Error("unsupported coin");
     }
     /**
-     *  Resovles to the decoded %%data%% for %%coinType%%.
+     *  Resolves to the decoded %%data%% for %%coinType%%.
      */
     async decodeAddress(coinType, data) {
         throw new Error("unsupported coin");

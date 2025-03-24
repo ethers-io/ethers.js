@@ -1,6 +1,6 @@
 import { getAddress, resolveAddress } from "../address/index.js";
 import { hashMessage, TypedDataEncoder } from "../hash/index.js";
-import { AbstractSigner } from "../providers/index.js";
+import { AbstractSigner, copyRequest } from "../providers/index.js";
 import { computeAddress, Transaction } from "../transaction/index.js";
 import {
     defineProperties, resolveProperties, assert, assertArgument
@@ -69,6 +69,7 @@ export class BaseWallet extends AbstractSigner {
     }
 
     async signTransaction(tx: TransactionRequest): Promise<string> {
+        tx = copyRequest(tx);
 
         // Replace any Addressable or ENS name with an address
         const { to, from } = await resolveProperties({

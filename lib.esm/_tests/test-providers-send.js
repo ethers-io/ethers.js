@@ -1,14 +1,19 @@
 import assert from "assert";
 import { isError, Wallet } from "../index.js";
 import { getProvider, providerNames, setupProviders } from "./create-provider.js";
+import { FAUCET_PRIVATEKEY } from "./utils.js";
 function stall(duration) {
     return new Promise((resolve) => { setTimeout(resolve, duration); });
 }
 setupProviders();
 describe("Sends Transactions", function () {
-    const wallet = new Wallet((process.env.FAUCET_PRIVATEKEY));
+    if (!FAUCET_PRIVATEKEY) {
+        console.log("Missing Faucet Private Key! Tests Skipped.");
+        return;
+    }
+    const wallet = new Wallet(FAUCET_PRIVATEKEY);
     console.log("Faucet Address:", wallet.address);
-    const networkName = "goerli";
+    const networkName = "sepolia";
     for (const providerName of providerNames) {
         const provider = getProvider(providerName, networkName);
         if (provider == null) {

@@ -9,12 +9,14 @@ import { JsonRpcApiPollingProvider } from "./provider-jsonrpc.js";
 export class BrowserProvider extends JsonRpcApiPollingProvider {
     #request;
     /**
-     *  Connnect to the %%ethereum%% provider, optionally forcing the
+     *  Connect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
-    constructor(ethereum, network) {
+    constructor(ethereum, network, _options) {
+        // Copy the options
+        const options = Object.assign({}, ((_options != null) ? _options : {}), { batchMaxCount: 1 });
         assertArgument(ethereum && ethereum.request, "invalid EIP-1193 provider", "ethereum", ethereum);
-        super(network, { batchMaxCount: 1 });
+        super(network, options);
         this.#request = async (method, params) => {
             const payload = { method, params };
             this.emit("debug", { action: "sendEip1193Request", payload });

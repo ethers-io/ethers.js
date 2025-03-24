@@ -1255,7 +1255,12 @@ export class Interface {
         // JSON
         if (typeof(value) === "string") { return new Interface(JSON.parse(value)); }
 
-        // Maybe an interface from an older version, or from a symlinked copy
+        // An Interface; possibly from another v6 instance
+        if (typeof((<any>value).formatJson) === "function") {
+            return new Interface((<any>value).formatJson());
+        }
+
+        // A legacy Interface; from an older version
         if (typeof((<any>value).format) === "function") {
             return new Interface((<any>value).format("json"));
         }

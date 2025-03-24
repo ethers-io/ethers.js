@@ -1,11 +1,13 @@
 import { AlchemyProvider, 
 //    AnkrProvider,
 //    CloudflareProvider,
-EtherscanProvider, InfuraProvider, 
+ChainstackProvider, EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
-QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
+//    QuickNodeProvider,
+JsonRpcProvider, FallbackProvider, isError, } from "../index.js";
+import { inspect } from "./utils-debug.js";
 ;
-const ethNetworks = ["default", "mainnet", "goerli"];
+const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {
@@ -34,6 +36,13 @@ const ProviderCreators = [
     },
     */
     {
+        name: "ChainstackProvider",
+        networks: ["default", "mainnet", "arbitrum", "bnb", "matic"],
+        create: function (network) {
+            return new ChainstackProvider(network);
+        }
+    },
+    {
         name: "EtherscanProvider",
         networks: ethNetworks,
         create: function (network) {
@@ -47,13 +56,15 @@ const ProviderCreators = [
             return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    /*
     {
         name: "InfuraWebsocketProvider",
         networks: ethNetworks,
-        create: function (network) {
+        create: function(network: string) {
             return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    */
     /*
         {
             name: "PocketProvider",
@@ -63,13 +74,15 @@ const ProviderCreators = [
             }
         },
     */
-    {
-        name: "QuickNodeProvider",
-        networks: ethNetworks,
-        create: function (network) {
-            return new QuickNodeProvider(network);
-        }
-    },
+    /*
+        {
+            name: "QuickNodeProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                return new QuickNodeProvider(network);
+            }
+        },
+    */
     {
         name: "FallbackProvider",
         networks: ethNetworks,
@@ -136,7 +149,27 @@ export function getProvider(provider, network) {
 }
 export function checkProvider(provider, network) {
     const creator = getCreator(provider);
-    return (creator != null);
+    return (creator != null && creator.networks.indexOf(network) >= 0);
+}
+export function getDevProvider() {
+    class HikackEnsProvider extends JsonRpcProvider {
+        async resolveName(name) {
+            if (name === "tests.eth") {
+                return "0x228568EA92aC5Bc281c1E30b1893735c60a139F1";
+            }
+            return super.resolveName(name);
+        }
+    }
+    const provider = new HikackEnsProvider("http:/\/127.0.0.1:8545");
+    provider.on("error", (error) => {
+        setTimeout(() => {
+            if (error && error.event === "initial-network-discovery") {
+                console.log(inspect(error));
+            }
+            provider.off("error");
+        }, 100);
+    });
+    return provider;
 }
 export function connect(network) {
     const provider = getProvider("InfuraProvider", network);

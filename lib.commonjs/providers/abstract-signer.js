@@ -152,8 +152,8 @@ class AbstractSigner {
                     });
                 }
             }
-            else if (pop.type === 2) {
-                // Explicitly using EIP-1559
+            else if (pop.type === 2 || pop.type === 3) {
+                // Explicitly using EIP-1559 or EIP-4844
                 // Populate missing fee data
                 if (pop.maxFeePerGas == null) {
                     pop.maxFeePerGas = feeData.maxFeePerGas;

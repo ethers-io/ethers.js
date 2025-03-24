@@ -69,8 +69,9 @@ export {
 
     BrowserProvider,
 
-    AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider,
-    InfuraProvider, InfuraWebSocketProvider, PocketProvider, QuickNodeProvider,
+    AlchemyProvider, AnkrProvider, ChainstackProvider, CloudflareProvider,
+    EtherscanProvider, InfuraProvider, InfuraWebSocketProvider, PocketProvider,
+    QuickNodeProvider,
 
     IpcSocketProvider, SocketProvider, WebSocketProvider,
 
@@ -163,7 +164,7 @@ export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
 export type {
     Provider, Signer,
 
-    AbstractProviderOptions, FallbackProviderOptions,
+    AbstractProviderOptions, BrowserProviderOptions, FallbackProviderOptions,
 
     AbstractProviderPlugin, BlockParams, BlockTag, ContractRunner, DebugEventBrowserProvider,
     Eip1193Provider, EventFilter, Filter, FilterByBlockHash, GasCostParameters,
@@ -177,6 +178,7 @@ export type {
 
 export type {
     AccessList, AccessListish, AccessListEntry,
+    Blob, BlobLike, KzgLibrary,
     TransactionLike
 } from "./transaction/index.js";
 
@@ -208,3 +210,4 @@ export type {
     CrowdsaleAccount, KeystoreAccount, EncryptOptions
 } from "./wallet/index.js";
 
+// dummy change; to pick-up ws security issue changes

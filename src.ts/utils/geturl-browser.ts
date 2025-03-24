@@ -1,37 +1,14 @@
-import { assert } from "./errors.js";
+import { assert, makeError } from "./errors.js";
 
 import type {
     FetchGetUrlFunc, FetchRequest, FetchCancelSignal, GetUrlResponse
 } from "./fetch.js";
 
-
-declare global {
-    class Headers {
-        constructor(values: Array<[ string, string ]>);
-        forEach(func: (v: string, k: string) => void): void;
-    }
-
-    class Response {
-        status: number;
-        statusText: string;
-        headers: Headers;
-        arrayBuffer(): Promise<ArrayBuffer>;
-    }
-
-    type FetchInit = {
-        method?: string,
-        headers?: Headers,
-        body?: Uint8Array
-    };
-
-    function fetch(url: string, init: FetchInit): Promise<Response>;
-}
-
-// @TODO: timeout is completely ignored; start a Promise.any with a reject?
-
 export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
 
     async function getUrl(req: FetchRequest, _signal?: FetchCancelSignal): Promise<GetUrlResponse> {
+        assert(_signal == null || !_signal.cancelled, "request cancelled before sending", "CANCELLED");
+
         const protocol = req.url.split(":")[0].toLowerCase();
 
         assert(protocol === "http" || protocol === "https", `unsupported protocol ${ protocol }`, "UNSUPPORTED_OPERATION", {
@@ -43,21 +20,39 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
             operation: "request"
         });
 
-        let signal: undefined | AbortSignal = undefined;
+        let error: null | Error = null;
+
+        const controller = new AbortController();
+
+        const timer = setTimeout(() => {
+            error = makeError("request timeout", "TIMEOUT");
+            controller.abort();
+        }, req.timeout);
+
         if (_signal) {
-            const controller = new AbortController();
-            signal = controller.signal;
-            _signal.addListener(() => { controller.abort(); });
+            _signal.addListener(() => {
+                error = makeError("request cancelled", "CANCELLED");
+                controller.abort();
+            });
         }
 
         const init = {
             method: req.method,
             headers: new Headers(Array.from(req)),
             body: req.body || undefined,
-            signal
+            signal: controller.signal
         };
 
-        const resp = await fetch(req.url, init);
+        let resp: Awaited<ReturnType<typeof fetch>>;
+        try {
+            resp = await fetch(req.url, init);
+        } catch (_error) {
+            clearTimeout(timer);
+            if (error) { throw error; }
+            throw _error;
+        }
+
+        clearTimeout(timer);
 
         const headers: Record<string, string> = { };
         resp.headers.forEach((value, key) => {
