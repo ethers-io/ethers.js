@@ -425,6 +425,22 @@ _code: listen for ERC-20 events  @lang<script>
     // `to` will always be equal to the address of "ethers.eth"
   });
 
+  // Listen for any Transfer from a specific address
+  fromAddress = "0x123..."; // Replace with actual address
+  filter = contract.filters.Transfer(fromAddress, null)
+  contract.on(filter, (from, to, amount, event) => {
+    // `from` will always be equal to fromAddress
+    console.log(`Transfer from ${from} to ${to}: ${formatEther(amount)}`);
+  });
+
+  // Listen for any Transfer from a specific address to a specific address
+  toAddress = "0x456..."; // Replace with actual address
+  filter = contract.filters.Transfer(fromAddress, toAddress)
+  contract.on(filter, (from, to, amount, event) => {
+    // Both `from` and `to` will be fixed
+    console.log(`Transfer from ${from} to ${to}: ${formatEther(amount)}`);
+  });
+
   // Listen for any event, whether it is present in the ABI
   // or not. Since unknown events can be picked up, the
   // parameters are not destructed.
@@ -468,6 +484,25 @@ _code: query historic ERC-20 events  @lang<javascript>
 
   // The first matching event
   events[0]
+  //_result:
+
+  // Query all transfers sent from a specific address
+  fromAddress = "0x123..."; // Replace with actual address
+  filter = contract.filters.Transfer(fromAddress, null)
+  events = await contract.queryFilter(filter)
+
+  // The first matching event
+  events[0]
+  //_result:
+
+  // Query all transfers sent from a specific address in the last 1000 blocks
+  events = await contract.queryFilter(filter, -1000)
+  //_result:
+
+  // Query all transfers sent from a specific address to a specific address
+  toAddress = "0x456..."; // Replace with actual address
+  filter = contract.filters.Transfer(fromAddress, toAddress)
+  events = await contract.queryFilter(filter)
   //_result:
 
 
