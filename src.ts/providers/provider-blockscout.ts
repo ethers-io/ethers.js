@@ -7,6 +7,7 @@
  *
  *  - Ethereum Mainnet (``mainnet``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Holesky Testnet (``holesky``)
  *  - Ethereum Classic (``classic``)
  *  - Arbitrum (``arbitrum``)
  *  - Base (``base``)
