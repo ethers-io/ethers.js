@@ -223,6 +223,7 @@ const TestData = (function () {
     data.push(`}`);
     data.push(``);
     data.push(`export const FAUCET_PRIVATEKEY = ${JSON.stringify(process.env.FAUCET_PRIVATEKEY)};`);
+    data.push(`export const INFURA_APIKEY = ${JSON.stringify(process.env.INFURA_APIKEY)};`);
     data.push(``);
     return data.join("\n");
 })();
@@ -346,14 +347,16 @@ export function start(_root, options) {
     }
     const cmd = cmds[0];
     const args = ["--headless", "--disable-gpu", "--remote-debugging-port=8022"];
+    console.log("Running:", cmd, args.join(" "));
     const browser = child_process.spawn(cmd, args);
     let url = await new Promise((resolve, reject) => {
         browser.stdout.on("data", (data) => {
-            console.log("OUT", data.toString());
+            console.log(">>>", data.toString());
         });
         browser.stderr.on("data", (data) => {
             const text = data.toString();
             for (const line of text.split("\n")) {
+                console.log("!!!", line);
                 const match = line.match(/^DevTools listening on (.*)$/);
                 if (match) {
                     resolve(match[1]);

@@ -6,6 +6,7 @@ ChainstackProvider, EtherscanProvider, InfuraProvider,
 //    QuickNodeProvider,
 JsonRpcProvider, FallbackProvider, isError, } from "../index.js";
 import { inspect } from "./utils-debug.js";
+import { INFURA_APIKEY } from "./utils.js";
 ;
 const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
@@ -53,7 +54,7 @@ const ProviderCreators = [
         name: "InfuraProvider",
         networks: ethNetworks,
         create: function (network) {
-            return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+            return new InfuraProvider(network, INFURA_APIKEY || undefined);
         }
     },
     /*

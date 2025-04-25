@@ -17,6 +17,8 @@ import { inspect } from "./utils-debug.js";
 
 import type { AbstractProvider } from "../index.js";
 
+import { INFURA_APIKEY } from "./utils.js";
+
 interface ProviderCreator {
     name: string;
     networks: Array<string>;
@@ -70,7 +72,7 @@ const ProviderCreators: Array<ProviderCreator> = [
         name: "InfuraProvider",
         networks: ethNetworks,
         create: function(network: string) {
-            return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+            return new InfuraProvider(network, INFURA_APIKEY || undefined);
         }
     },
     /*

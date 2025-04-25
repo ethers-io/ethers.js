@@ -1,11 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.retryIt = exports.stall = exports.log = exports.loadTests = exports.FAUCET_PRIVATEKEY = void 0;
+exports.retryIt = exports.stall = exports.log = exports.loadTests = exports.INFURA_APIKEY = exports.FAUCET_PRIVATEKEY = void 0;
 const tslib_1 = require("tslib");
 const fs_1 = tslib_1.__importDefault(require("fs"));
 const path_1 = tslib_1.__importDefault(require("path"));
 const zlib_1 = tslib_1.__importDefault(require("zlib"));
 exports.FAUCET_PRIVATEKEY = process.env.FAUCET_PRIVATEKEY || "MISSING_GITHUB_SECRET";
+exports.INFURA_APIKEY = process.env.INFURA_APIKEY || "";
 // Find the package root (based on the nyc output/ folder)
 const root = (function () {
     let root = process.cwd();

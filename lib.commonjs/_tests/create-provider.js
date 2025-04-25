@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.connect = exports.getDevProvider = exports.checkProvider = exports.getProvider = exports.getProviderNetworks = exports.providerNames = exports.setupProviders = void 0;
 const index_js_1 = require("../index.js");
 const utils_debug_js_1 = require("./utils-debug.js");
+const utils_js_1 = require("./utils.js");
 ;
 const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
@@ -50,7 +51,7 @@ const ProviderCreators = [
         name: "InfuraProvider",
         networks: ethNetworks,
         create: function (network) {
-            return new index_js_1.InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+            return new index_js_1.InfuraProvider(network, utils_js_1.INFURA_APIKEY || undefined);
         }
     },
     /*

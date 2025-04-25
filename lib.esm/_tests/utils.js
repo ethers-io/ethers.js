@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 export const FAUCET_PRIVATEKEY = process.env.FAUCET_PRIVATEKEY || "MISSING_GITHUB_SECRET";
+export const INFURA_APIKEY = process.env.INFURA_APIKEY || "";
 // Find the package root (based on the nyc output/ folder)
 const root = (function () {
     let root = process.cwd();
