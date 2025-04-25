@@ -346,7 +346,10 @@ export function start(_root, options) {
         throw new Error("no installed browser found");
     }
     const cmd = cmds[0];
-    const args = ["--headless", "--disable-gpu", "--remote-debugging-port=8022"];
+    const args = [
+        "--headless", "--no-sandbox", "--disable-gpu",
+        "--remote-debugging-port=8022"
+    ];
     console.log("Running:", cmd, args.join(" "));
     const browser = child_process.spawn(cmd, args);
     let url = await new Promise((resolve, reject) => {

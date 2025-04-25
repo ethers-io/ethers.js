@@ -404,7 +404,10 @@ export function start(_root: string, options: Options): Promise<Server> {
 
     const cmd = cmds[0];
 
-    const args = [ "--headless", "--disable-gpu", "--remote-debugging-port=8022" ];
+    const args = [
+        "--headless", "--no-sandbox", "--disable-gpu",
+        "--remote-debugging-port=8022"
+    ];
 
     console.log("Running:", cmd, args.join(" "));
     const browser = child_process.spawn(cmd, args);
