@@ -70,7 +70,10 @@ const ProviderCreators: Array<ProviderCreator> = [
         name: "InfuraProvider",
         networks: ethNetworks,
         create: function(network: string) {
-            return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+            //return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+            // Important: INFURA selects netwowrks based on API key, so
+            // to test proper default configuation, we must use it
+            return new InfuraProvider(network);
         }
     },
     /*
