@@ -220,7 +220,6 @@ the data on the blockchain. This can be used to query the current
 account state, fetch historic logs, look up contract code and so on.
 
 _code:  @lang<javascript>
-  //_hide: provider = new InfuraProvider();
 
   // Look up the current block number (i.e. height)
   await provider.getBlockNumber()

@@ -35,7 +35,8 @@ export default {
   // Prepare the context for running the examples
   contextify: function(context) {
     Object.assign(context, ethers);
-    context.provider = new ethers.InfuraProvider("mainnet", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+    //context.provider = new ethers.InfuraProvider("mainnet", "49a0efa3aaee4fd99797bfa94d8ce2f1");
+    context.provider = new ethers.InfuraProvider("mainnet");
     context.Uint8Array = Uint8Array;
 
     ethers.InfuraProvider.prototype[inspect.custom] = function(depth, options, inspect) {
