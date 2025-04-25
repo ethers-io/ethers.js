@@ -52,14 +52,15 @@ function getHost(name) {
             return "arbitrum-sepolia.infura.io";
         case "base":
             return "base-mainnet.infura.io";
-        case "base-goerlia":
+        case "base-goerlia": // @TODO: Remove this typo in the future!
+        case "base-goerli":
             return "base-goerli.infura.io";
         case "base-sepolia":
             return "base-sepolia.infura.io";
         case "bnb":
-            return "bnbsmartchain-mainnet.infura.io";
+            return "bsc-mainnet.infura.io";
         case "bnbt":
-            return "bnbsmartchain-testnet.infura.io";
+            return "bsc-testnet.infura.io";
         case "linea":
             return "linea-mainnet.infura.io";
         case "linea-goerli":

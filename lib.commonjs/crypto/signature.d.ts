@@ -32,7 +32,7 @@ export type SignatureLike = Signature | string | {
 export declare class Signature {
     #private;
     /**
-     *  The ``r`` value for a signautre.
+     *  The ``r`` value for a signature.
      *
      *  This represents the ``x`` coordinate of a "reference" or
      *  challenge point, from which the ``y`` can be computed.

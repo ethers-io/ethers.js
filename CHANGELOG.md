@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.13.7 (2025-04-25 16:38)
+---------------------------------
+
+  - Fixed Infura BSC network URLs ([#4951](https://github.com/ethers-io/ethers.js/issues/4951); [d01b4cb](https://github.com/ethers-io/ethers.js/commit/d01b4cb84b2f00dd04dc5317600a52f1fcf9b316)).
+
 ethers/v6.13.5 (2025-01-04 15:26)
 ---------------------------------
 

@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.13.5";
+    const version = "6.13.7";
 
     /**
      *  Property helper functions.
@@ -2049,7 +2049,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  If operations are performed that cause a value to become too small
      *  (close to zero), the value loses precison and is said to //underflow//.
      *
-     *  For example, an value with 1 decimal place may store a number as small
+     *  For example, a value with 1 decimal place may store a number as small
      *  as ``0.1``, but the value of ``0.1 / 2`` is ``0.05``, which cannot fit
      *  into 1 decimal place, so underflow occurs which means precision is lost
      *  and the value becomes ``0``.
@@ -6647,7 +6647,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #v;
         #networkV;
         /**
-         *  The ``r`` value for a signautre.
+         *  The ``r`` value for a signature.
          *
          *  This represents the ``x`` coordinate of a "reference" or
          *  challenge point, from which the ``y`` can be computed.
@@ -7065,7 +7065,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s])));
             secpSig = secpSig.addRecoveryBit(sig.yParity);
             const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
-            assertArgument(pubKey != null, "invalid signautre for digest", "signature", signature);
+            assertArgument(pubKey != null, "invalid signature for digest", "signature", signature);
             return "0x" + pubKey.toHex(false);
         }
         /**
@@ -19687,7 +19687,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     // Show the throttle message only once per service
     const shown = new Set();
     /**
-     *  Displays a warning in tht console when the community resource is
+     *  Displays a warning in the console when the community resource is
      *  being used too heavily by the app, recommending the developer
      *  acquire their own credentials instead of using the community
      *  credentials.
@@ -22163,14 +22163,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return "arbitrum-sepolia.infura.io";
             case "base":
                 return "base-mainnet.infura.io";
-            case "base-goerlia":
+            case "base-goerlia": // @TODO: Remove this typo in the future!
+            case "base-goerli":
                 return "base-goerli.infura.io";
             case "base-sepolia":
                 return "base-sepolia.infura.io";
             case "bnb":
-                return "bnbsmartchain-mainnet.infura.io";
+                return "bsc-mainnet.infura.io";
             case "bnbt":
-                return "bnbsmartchain-testnet.infura.io";
+                return "bsc-testnet.infura.io";
             case "linea":
                 return "linea-mainnet.infura.io";
             case "linea-goerli":
