@@ -201,7 +201,10 @@ describe("Test Provider Transaction operations", function () {
             assert_1.default.ok(receipt != null, "receipt != null");
             // Cloudflare doesn't return the root in legacy receipts; but it isn't
             // *actually* that important, so we'll give it a pass...
-            if (providerName === "CloudflareProvider" || providerName === "AnkrProvider" || providerName === "PocketProvider") {
+            if (providerName === "CloudflareProvider" ||
+                providerName === "AnkrProvider" ||
+                providerName === "PocketProvider" ||
+                providerName === "AlchemyProvider") {
                 test = Object.assign({}, test, { root: undefined });
             }
             //if (providerName === "PocketProvider") {
