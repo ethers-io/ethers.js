@@ -91,7 +91,11 @@ function getAccount(data: any, _key: string): KeystoreAccount {
     assertArgument(computedMAC === spelunk<string>(data, "crypto.mac:string!").toLowerCase(),
         "incorrect password", "password", "[ REDACTED ]");
 
-    const privateKey = decrypt(data, key.slice(0, 16), ciphertext);
+    const decryptedPrivateKey = decrypt(data, key.slice(0, 16), ciphertext);
+
+    const privateKey = decryptedPrivateKey.startsWith("0x00")
+      ? decryptedPrivateKey.replace("0x00", "0x")
+      : decryptedPrivateKey;
 
     const address = computeAddress(privateKey);
     if (data.address) {
