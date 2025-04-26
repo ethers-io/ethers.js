@@ -220,11 +220,21 @@ function _normalize(value: any): string {
     throw new Error("Hmm...");
 }
 
-function normalizeResult(value: RunnerResult): { tag: string, value: any } {
+function normalizeResult(method: string, value: RunnerResult): { tag: string, value: any } {
 
     if ("error" in value) {
         const error = value.error;
-        return { tag: _normalize(error), value: error };
+
+        let tag: string;
+        if (isError(error, "CALL_EXCEPTION")) {
+            tag = _normalize(Object.assign({ }, error, {
+                shortMessage: undefined, reason: undefined, info: undefined
+            }));
+        } else {
+            tag = _normalize(error)
+        }
+
+        return { tag, value: error };
     }
 
     const result = value.result;
@@ -248,7 +258,6 @@ function checkQuorum(quorum: number, results: Array<TallyResult>): any | Error {
     }
 
     let best: null | { value: any, weight: number } = null;
-
     for (const r of tally.values()) {
         if (r.weight >= quorum && (!best || r.weight > best.weight)) {
             best = r;
@@ -586,7 +595,7 @@ export class FallbackProvider extends AbstractProvider {
         const results: Array<TallyResult> = [ ];
         for (const runner of running) {
             if (runner.result != null) {
-                const { tag, value } = normalizeResult(runner.result);
+                const { tag, value } = normalizeResult(req.method, runner.result);
                 results.push({ tag, value, weight: runner.config.weight });
             }
         }
@@ -716,9 +725,9 @@ export class FallbackProvider extends AbstractProvider {
             const broadcasts = this.#configs.map(async ({ provider, weight }, index) => {
                 try {
                     const result = await provider._perform(req);
-                    results[index] = Object.assign(normalizeResult({ result }), { weight });
+                    results[index] = Object.assign(normalizeResult(req.method, { result }), { weight });
                 } catch (error: any) {
-                    results[index] = Object.assign(normalizeResult({ error }), { weight });
+                    results[index] = Object.assign(normalizeResult(req.method, { error }), { weight });
                 }
             });
 
