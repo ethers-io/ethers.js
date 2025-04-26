@@ -166,12 +166,18 @@ export async function resolveArgs(_runner: null | ContractRunner, inputs: Readon
     // Recursively descend into args and resolve any addresses
     const runner = getRunner(_runner, "resolveName");
     const resolver = canResolve(runner) ? runner: null;
-    return await Promise.all(inputs.map((param, index) => {
-        return param.walkAsync(args[index], (type, value) => {
+    return await Promise.all(inputs.map(async (param, index) => {
+      try {
+        return await param.walkAsync(args[index], (type, value) => {
             value = Typed.dereference(value, type);
             if (type === "address") { return resolveAddress(value, resolver); }
             return value;
-        });
+          });
+        } catch (error: any) {
+          error.message = `Can't resolve arg ${param.name}: ${error.message}`;
+
+          throw error;
+        }
     }));
 }
 
@@ -275,28 +281,34 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
     }
 
     const populateTransaction = async function(...args: ContractMethodArgs<A>): Promise<ContractTransaction> {
+      try {
         const fragment = getFragment(...args);
 
         // If an overrides was passed in, copy it and normalize the values
         let overrides: Omit<ContractTransaction, "data" | "to"> = { };
         if (fragment.inputs.length + 1 === args.length) {
-            overrides = await copyOverrides(args.pop());
+          overrides = await copyOverrides(args.pop());
 
-            if (overrides.from) {
-                overrides.from = await resolveAddress(overrides.from, getResolver(contract.runner));
-            }
+          if (overrides.from) {
+            overrides.from = await resolveAddress(overrides.from, getResolver(contract.runner));
+          }
         }
 
         if (fragment.inputs.length !== args.length) {
-            throw new Error("internal error: fragment inputs doesn't match arguments; should not happen");
+          throw new Error("internal error: fragment inputs doesn't match arguments; should not happen");
         }
 
         const resolvedArgs = await resolveArgs(contract.runner, fragment.inputs, args);
 
         return Object.assign({ }, overrides, await resolveProperties({
-            to: contract.getAddress(),
-            data: contract.interface.encodeFunctionData(fragment, resolvedArgs)
+          to: contract.getAddress(),
+          data: contract.interface.encodeFunctionData(fragment, resolvedArgs)
         }));
+      } catch (error: any) {
+        error.message = `Method ${contract.interface.getFunctionName(key)}: ${error.message}`;
+
+        throw error;
+      }
     }
 
     const staticCall = async function(...args: ContractMethodArgs<A>): Promise<R> {
