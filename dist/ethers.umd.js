@@ -22556,10 +22556,19 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         console.log("Could not serialize", value);
         throw new Error("Hmm...");
     }
-    function normalizeResult(value) {
+    function normalizeResult(method, value) {
         if ("error" in value) {
             const error = value.error;
-            return { tag: _normalize(error), value: error };
+            let tag;
+            if (isError(error, "CALL_EXCEPTION")) {
+                tag = _normalize(Object.assign({}, error, {
+                    shortMessage: undefined, reason: undefined, info: undefined
+                }));
+            }
+            else {
+                tag = _normalize(error);
+            }
+            return { tag, value: error };
         }
         const result = value.result;
         return { tag: _normalize(result), value: result };
@@ -22881,7 +22890,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const results = [];
             for (const runner of running) {
                 if (runner.result != null) {
-                    const { tag, value } = normalizeResult(runner.result);
+                    const { tag, value } = normalizeResult(req.method, runner.result);
                     results.push({ tag, value, weight: runner.config.weight });
                 }
             }
@@ -22999,10 +23008,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 const broadcasts = this.#configs.map(async ({ provider, weight }, index) => {
                     try {
                         const result = await provider._perform(req);
-                        results[index] = Object.assign(normalizeResult({ result }), { weight });
+                        results[index] = Object.assign(normalizeResult(req.method, { result }), { weight });
                     }
                     catch (error) {
-                        results[index] = Object.assign(normalizeResult({ error }), { weight });
+                        results[index] = Object.assign(normalizeResult(req.method, { error }), { weight });
                     }
                 });
                 // As each promise finishes...
