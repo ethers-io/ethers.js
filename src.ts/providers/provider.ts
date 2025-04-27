@@ -1019,7 +1019,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      *  The actual gas price used during execution.
      *
      *  Due to the complexity of [[link-eip-1559]] this value can only
-     *  be caluclated after the transaction has been mined, snce the base
+     *  be calculated after the transaction has been mined, snce the base
      *  fee is protocol-enforced.
      */
     readonly gasPrice!: bigint;
