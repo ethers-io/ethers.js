@@ -1410,7 +1410,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         this.accessList = (tx.accessList != null) ? tx.accessList: null;
         this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes: null;
 
-        this.#startBlock = -1;
+        this.#startBlock = (tx instanceof TransactionResponse) ? tx.#startBlock : -1;
     }
 
     /**
