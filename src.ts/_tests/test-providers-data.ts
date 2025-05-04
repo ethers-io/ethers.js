@@ -255,6 +255,7 @@ describe("Test Networks", function() {
         "matic", "matic-amoy",
         "optimism", "optimism-sepolia",
         "xdai",
+        "ink-sepolia"
     ];
 
     const providerNames = [
