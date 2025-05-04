@@ -221,7 +221,7 @@ export class Network {
      *  Returns a new Network for the %%network%% name or chainId.
      */
     static from(network?: Networkish): Network {
-        injectCommonNetworks();
+        injectCommonNetworks(false);
 
         // Default network
         if (network == null) { return Network.from("mainnet"); }
@@ -348,7 +348,7 @@ function getGasStationPlugin(url: string) {
 
 // See: https://chainlist.org
 let injected = false;
-function injectCommonNetworks(): void {
+function injectCommonNetworks(gsn: boolean): void {
     if (injected) { return; }
     injected = true;
 
@@ -412,15 +412,15 @@ function injectCommonNetworks(): void {
 
     registerEth("matic", 137, {
         ensNetwork: 1,
-        plugins: [
-            getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
+        plugins: gsn? [
+            getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")] : [
         ]
     });
     registerEth("matic-amoy", 80002, { });
     registerEth("matic-mumbai", 80001, {
         altNames: [ "maticMumbai", "maticmum" ],  // @TODO: Future remove these alts
-        plugins: [
-            getGasStationPlugin("https:/\/gasstation-testnet.polygon.technology/v2")
+        plugins: gsn? [
+            getGasStationPlugin("https:/\/gasstation-testnet.polygon.technology/v2")] : [
         ]
     });
 
