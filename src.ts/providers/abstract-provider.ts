@@ -363,7 +363,7 @@ export type PerformActionRequest = {
     method: "chainId"
 } | {
     method: "estimateGas",
-    transaction: PerformActionTransaction
+    transaction: PerformActionTransaction, blockTag: BlockTag
 } | {
     method: "getBalance",
     address: string, blockTag: BlockTag
@@ -965,10 +965,13 @@ export class AbstractProvider implements Provider {
 
 
     async estimateGas(_tx: TransactionRequest): Promise<bigint> {
-        let tx = this._getTransactionRequest(_tx);
+        let { tx, blockTag } = await resolveProperties({
+            tx: this._getTransactionRequest(_tx),
+            blockTag: this._getBlockTag(_tx.blockTag)
+        });
         if (isPromise(tx)) { tx = await tx; }
         return getBigInt(await this.#perform({
-            method: "estimateGas", transaction: tx
+            method: "estimateGas", transaction: tx, blockTag: blockTag
         }), "%response");
     }
 
