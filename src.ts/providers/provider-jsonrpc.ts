@@ -18,7 +18,7 @@
 import { AbiCoder } from "../abi/index.js";
 import { getAddress, resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
-import { accessListify } from "../transaction/index.js";
+import { accessListify, authorizationify } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes,
     isError, makeError, assert, assertArgument,
@@ -277,6 +277,14 @@ export interface JsonRpcTransactionRequest {
       *  The transaction access list.
       */
      accessList?: Array<{ address: string, storageKeys: Array<string> }>;
+
+     /**
+      *  The transaction authorization list.
+      */
+     authorizationList?: Array<{
+         address: string, nonce: string, chainId: string,
+         yParity: string, r: string, s: string
+     }>;
 }
 
 // @TODO: Unchecked Signers
@@ -848,6 +856,20 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         if (tx.blobVersionedHashes) {
             // @TODO: Remove this <any> case once EIP-4844 added to prepared tx
             (<any>result)["blobVersionedHashes"] = tx.blobVersionedHashes.map(h => h.toLowerCase());
+        }
+
+        if (tx.authorizationList) {
+            result["authorizationList"] = tx.authorizationList.map((_a) => {
+                const a = authorizationify(_a);
+                return {
+                    address: a.address,
+                    nonce: toQuantity(a.nonce),
+                    chainId: toQuantity(a.chainId),
+                    yParity: toQuantity(a.signature.yParity),
+                    r: a.signature.r,
+                    s: a.signature.s,
+                }
+            });
         }
 
         // @TODO: blobs should probably also be copied over, optionally

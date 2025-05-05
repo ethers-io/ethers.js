@@ -10,7 +10,8 @@ import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
 import type {
-    AccessList, AccessListish, BlobLike, KzgLibraryLike, TransactionLike
+    AccessList, AccessListish, Authorization, AuthorizationLike, BlobLike,
+    KzgLibraryLike, TransactionLike
 } from "../transaction/index.js";
 
 import type { ContractRunner } from "./contracts.js";
@@ -241,6 +242,11 @@ export interface TransactionRequest {
      */
     kzg?: null | KzgLibraryLike;
 
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: null | Array<AuthorizationLike>;
+
     // Todo?
     //gasMultiplier?: number;
 };
@@ -320,6 +326,11 @@ export interface PreparedTransactionRequest {
     accessList?: AccessList;
 
     /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: Array<Authorization>;
+
+    /**
      *  A custom object, which can be passed along for network-specific
      *  values.
      */
@@ -373,6 +384,10 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 
     if (req.accessList) {
         result.accessList = accessListify(req.accessList);
+    }
+
+    if (req.authorizationList) {
+        result.authorizationList = req.authorizationList.slice();
     }
 
     if ("blockTag" in req) { result.blockTag = req.blockTag; }
@@ -1375,6 +1390,11 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
      */
     readonly blobVersionedHashes!: null | Array<string>;
 
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    readonly authorizationList!: null | Array<Authorization>;
+
     #startBlock: number;
 
     /**
@@ -1409,6 +1429,8 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
         this.accessList = (tx.accessList != null) ? tx.accessList: null;
         this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes: null;
+
+        this.authorizationList = (tx.authorizationList != null) ? tx.authorizationList: null;
 
         this.#startBlock = -1;
     }

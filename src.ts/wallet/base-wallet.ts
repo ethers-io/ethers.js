@@ -1,15 +1,19 @@
 import { getAddress, resolveAddress } from "../address/index.js";
-import { hashMessage, TypedDataEncoder } from "../hash/index.js";
+import {
+    hashAuthorization, hashMessage, TypedDataEncoder
+} from "../hash/index.js";
 import { AbstractSigner, copyRequest } from "../providers/index.js";
 import { computeAddress, Transaction } from "../transaction/index.js";
 import {
-    defineProperties, resolveProperties, assert, assertArgument
+    defineProperties, getBigInt, resolveProperties, assert, assertArgument
 } from "../utils/index.js";
 
 import type { SigningKey } from "../crypto/index.js";
-import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
+import type {
+    AuthorizationRequest, TypedDataDomain, TypedDataField
+} from "../hash/index.js";
 import type { Provider, TransactionRequest } from "../providers/index.js";
-import type { TransactionLike } from "../transaction/index.js";
+import type { Authorization, TransactionLike } from "../transaction/index.js";
 
 
 /**
@@ -73,8 +77,8 @@ export class BaseWallet extends AbstractSigner {
 
         // Replace any Addressable or ENS name with an address
         const { to, from } = await resolveProperties({
-            to: (tx.to ? resolveAddress(tx.to, this.provider): undefined),
-            from: (tx.from ? resolveAddress(tx.from, this.provider): undefined)
+            to: (tx.to ? resolveAddress(tx.to, this): undefined),
+            from: (tx.from ? resolveAddress(tx.from, this): undefined)
         });
 
         if (to != null) { tx.to = to; }
@@ -104,6 +108,31 @@ export class BaseWallet extends AbstractSigner {
      */
     signMessageSync(message: string | Uint8Array): string {
         return this.signingKey.sign(hashMessage(message)).serialized;
+    }
+
+    /**
+     *  Returns the Authorization for %%auth%%.
+     */
+    authorizeSync(auth: AuthorizationRequest): Authorization {
+        assertArgument(typeof(auth.address) === "string",
+          "invalid address for authorizeSync", "auth.address", auth);
+
+        const signature = this.signingKey.sign(hashAuthorization(auth));
+        return Object.assign({ }, {
+            address: getAddress(auth.address),
+            nonce: getBigInt(auth.nonce || 0),
+            chainId: getBigInt(auth.chainId || 0),
+        }, { signature });
+    }
+
+    /**
+     *  Resolves to the Authorization for %%auth%%.
+     */
+    async authorize(auth: AuthorizationRequest): Promise<Authorization> {
+        auth = Object.assign({ }, auth, {
+            address: await resolveAddress(auth.address, this)
+        });
+        return this.authorizeSync(await this.populateAuthorization(auth));
     }
 
     async signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string> {

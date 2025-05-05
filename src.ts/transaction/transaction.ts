@@ -10,12 +10,15 @@ import {
 } from "../utils/index.js";
 
 import { accessListify } from "./accesslist.js";
+import { authorizationify } from "./authorization.js";
 import { recoverAddress } from "./address.js";
 
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { SignatureLike } from "../crypto/index.js";
 
-import type { AccessList, AccessListish } from "./index.js";
+import type {
+    AccessList, AccessListish, Authorization, AuthorizationLike
+} from "./index.js";
 
 
 const BN_0 = BigInt(0);
@@ -129,6 +132,11 @@ export interface TransactionLike<A = string> {
      *  transactions.
      */
     kzg?: null | KzgLibraryLike;
+
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: null | Array<Authorization>;
 }
 
 /**
@@ -231,6 +239,32 @@ function handleAccessList(value: any, param: string): AccessList {
     }
 }
 
+function handleAuthorizationList(value: any, param: string): Array<Authorization> {
+    try {
+        if (!Array.isArray(value)) { throw new Error("authorizationList: invalid array"); }
+        const result: Array<Authorization> = [ ];
+        for (let i = 0; i < value.length; i++) {
+            const auth: Array<string> = value[i];
+            if (!Array.isArray(auth)) { throw new Error(`authorization[${ i }]: invalid array`); }
+            if (auth.length !== 6) { throw new Error(`authorization[${ i }]: wrong length`); }
+            if (!auth[1]) { throw new Error(`authorization[${ i }]: null address`); }
+            result.push({
+                address: <string>handleAddress(auth[1]),
+                nonce: handleUint(auth[2], "nonce"),
+                chainId: handleUint(auth[0], "chainId"),
+                signature: Signature.from({
+                    yParity: <0 | 1>handleNumber(auth[3], "yParity"),
+                    r: zeroPadValue(auth[4], 32),
+                    s: zeroPadValue(auth[5], 32)
+                })
+            });
+        }
+        return result;
+    } catch (error: any) {
+        assertArgument(false, error.message, param, value);
+    }
+}
+
 function handleNumber(_value: string, param: string): number {
     if (_value === "0x") { return 0; }
     return getNumber(_value, param);
@@ -252,6 +286,19 @@ function formatNumber(_value: BigNumberish, name: string): Uint8Array {
 
 function formatAccessList(value: AccessListish): Array<[ string, Array<string> ]> {
     return accessListify(value).map((set) => [ set.address, set.storageKeys ]);
+}
+
+function formatAuthorizationList(value: Array<Authorization>): Array<Array<string | Uint8Array>> {
+    return value.map((a) => {
+        return [
+            formatNumber(a.chainId, "chainId"),
+            a.address,
+            formatNumber(a.nonce, "nonce"),
+            formatNumber(a.signature.yParity, "yParity"),
+            a.signature.r,
+            a.signature.s
+        ];
+    });
 }
 
 function formatHashes(value: Array<string>, param: string): Array<string> {
@@ -594,6 +641,58 @@ function _serializeEip4844(tx: Transaction, sig: null | Signature, blobs: null |
     return concat([ "0x03", encodeRlp(fields)]);
 }
 
+function _parseEip7702(data: Uint8Array): TransactionLike {
+    const fields: any = decodeRlp(getBytes(data).slice(1));
+
+    assertArgument(Array.isArray(fields) && (fields.length === 10 || fields.length === 13),
+        "invalid field count for transaction type: 4", "data", hexlify(data));
+
+    const tx: TransactionLike = {
+        type:                  4,
+        chainId:               handleUint(fields[0], "chainId"),
+        nonce:                 handleNumber(fields[1], "nonce"),
+        maxPriorityFeePerGas:  handleUint(fields[2], "maxPriorityFeePerGas"),
+        maxFeePerGas:          handleUint(fields[3], "maxFeePerGas"),
+        gasPrice:              null,
+        gasLimit:              handleUint(fields[4], "gasLimit"),
+        to:                    handleAddress(fields[5]),
+        value:                 handleUint(fields[6], "value"),
+        data:                  hexlify(fields[7]),
+        accessList:            handleAccessList(fields[8], "accessList"),
+        authorizationList:     handleAuthorizationList(fields[9], "authorizationList"),
+    };
+
+    // Unsigned EIP-7702 Transaction
+    if (fields.length === 10) { return tx; }
+
+    _parseEipSignature(tx, fields.slice(10));
+
+    return tx;
+}
+
+function _serializeEip7702(tx: Transaction, sig: null | Signature): string {
+    const fields: Array<any> = [
+        formatNumber(tx.chainId, "chainId"),
+        formatNumber(tx.nonce, "nonce"),
+        formatNumber(tx.maxPriorityFeePerGas || 0, "maxPriorityFeePerGas"),
+        formatNumber(tx.maxFeePerGas || 0, "maxFeePerGas"),
+        formatNumber(tx.gasLimit, "gasLimit"),
+        (tx.to || "0x"),
+        formatNumber(tx.value, "value"),
+        tx.data,
+        formatAccessList(tx.accessList || [ ]),
+        formatAuthorizationList(tx.authorizationList || [ ])
+    ];
+
+    if (sig) {
+        fields.push(formatNumber(sig.yParity, "yParity"));
+        fields.push(toBeArray(sig.r));
+        fields.push(toBeArray(sig.s));
+    }
+
+    return concat([ "0x04", encodeRlp(fields)]);
+}
+
 /**
  *  A **Transaction** describes an operation to be executed on
  *  Ethereum by an Externally Owned Account (EOA). It includes
@@ -624,6 +723,7 @@ export class Transaction implements TransactionLike<string> {
     #blobVersionedHashes: null | Array<string>;
     #kzg: null | KzgLibrary;
     #blobs: null | Array<Blob>;
+    #auths: null | Array<Authorization>;
 
     /**
      *  The transaction type.
@@ -649,6 +749,9 @@ export class Transaction implements TransactionLike<string> {
             case 3: case "cancun": case "eip-4844":
                 this.#type = 3;
                 break;
+            case 4: case "eip-7702":
+                this.#type = 4;
+                break;
             default:
                 assertArgument(false, "unsupported transaction type", "type", value);
         }
@@ -663,6 +766,7 @@ export class Transaction implements TransactionLike<string> {
             case 1: return "eip-2930";
             case 2: return "eip-1559";
             case 3: return "eip-4844";
+            case 4: return "eip-7702";
         }
 
         return null;
@@ -789,6 +893,22 @@ export class Transaction implements TransactionLike<string> {
     }
     set accessList(value: null | AccessListish) {
         this.#accessList = (value == null) ? null: accessListify(value);
+    }
+
+    get authorizationList(): null | Array<Authorization> {
+        const value = this.#auths || null;
+        if (value == null) {
+            if (this.type === 4) {
+                // @TODO: in v7, this should become a live object itself,
+                // otherwise mutation is inconsistent
+                return [ ];
+            }
+        }
+        return value;
+    }
+    set authorizationList(auths: null | Array<AuthorizationLike>) {
+        this.#auths = (auths == null) ? null: auths.map((a) =>
+          authorizationify(a));
     }
 
     /**
@@ -934,8 +1054,9 @@ export class Transaction implements TransactionLike<string> {
         this.#accessList = null;
         this.#maxFeePerBlobGas = null;
         this.#blobVersionedHashes = null;
-        this.#blobs = null;
         this.#kzg = null;
+        this.#blobs = null;
+        this.#auths = null;
     }
 
     /**
@@ -995,6 +1116,8 @@ export class Transaction implements TransactionLike<string> {
                 return _serializeEip1559(this, sig);
             case 3:
                 return _serializeEip4844(this, sig, sidecar ? this.blobs: null);
+            case 4:
+                return _serializeEip7702(this, sig);
         }
 
         assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: ".serialized" });
@@ -1068,7 +1191,9 @@ export class Transaction implements TransactionLike<string> {
             types.push(this.type);
 
         } else {
-            if (hasFee) {
+            if (this.authorizationList && this.authorizationList.length) {
+                types.push(4);
+            } else if (hasFee) {
                 types.push(2);
             } else if (hasGasPrice) {
                 types.push(1);
@@ -1186,6 +1311,7 @@ export class Transaction implements TransactionLike<string> {
                 case 1: return Transaction.from(_parseEip2930(payload));
                 case 2: return Transaction.from(_parseEip1559(payload));
                 case 3: return Transaction.from(_parseEip4844(payload));
+                case 4: return Transaction.from(_parseEip7702(payload));
             }
             assert(false, "unsupported transaction type", "UNSUPPORTED_OPERATION", { operation: "from" });
         }
@@ -1204,6 +1330,9 @@ export class Transaction implements TransactionLike<string> {
         if (tx.chainId != null) { result.chainId = tx.chainId; }
         if (tx.signature != null) { result.signature = Signature.from(tx.signature); }
         if (tx.accessList != null) { result.accessList = tx.accessList; }
+        if (tx.authorizationList != null) {
+            result.authorizationList = tx.authorizationList;
+        }
 
         // This will get overwritten by blobs, if present
         if (tx.blobVersionedHashes != null) { result.blobVersionedHashes = tx.blobVersionedHashes; }

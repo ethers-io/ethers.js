@@ -49,6 +49,7 @@ export {
 export {
     id,
     ensNormalize, isValidName, namehash, dnsEncode,
+    hashAuthorization, verifyAuthorization,
     hashMessage, verifyMessage,
     solidityPacked, solidityPackedKeccak256, solidityPackedSha256,
     TypedDataEncoder,
@@ -89,7 +90,7 @@ export {
 } from "./providers/index.js";
 
 export {
-    accessListify,
+    accessListify, authorizationify,
     computeAddress, recoverAddress,
     Transaction
 } from "./transaction/index.js";
@@ -159,7 +160,9 @@ export type {
 
 export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
 
-export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
+export type {
+    AuthorizationRequest, TypedDataDomain, TypedDataField
+} from "./hash/index.js";
 
 export type {
     Provider, Signer,
@@ -182,6 +185,7 @@ export type {
 
 export type {
     AccessList, AccessListish, AccessListEntry,
+    Authorization, AuthorizationLike,
     Blob, BlobLike, KzgLibrary, KzgLibraryLike,
     TransactionLike
 } from "./transaction/index.js";
