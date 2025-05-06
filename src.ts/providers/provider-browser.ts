@@ -1,4 +1,5 @@
-import { assertArgument } from "../utils/index.js";
+
+import { assertArgument, makeError } from "../utils/index.js";
 
 import { JsonRpcApiPollingProvider } from "./provider-jsonrpc.js";
 
@@ -93,10 +94,13 @@ export interface BrowserDiscoverOptions {
      *  environments or to hijack where a provider comes from.
      */
     window?: any;
-}
 
-// @TODO: Future, provide some sort of filter mechansm callback along
-//        with exposing the following types
+    /**
+     *  Explicitly choose which provider to used once scanning is complete.
+     */
+    filter?: (found: Array<Eip6963ProviderInfo>) => null | BrowserProvider |
+      Eip6963ProviderInfo;
+}
 
 
 /**
@@ -242,11 +246,16 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
             return new BrowserProvider(context.ethereum);
         }
 
+        if (!("addEventListener" in context && "dispatchEvent" in context
+          && "removeEventListener" in context)) {
+            return null;
+        }
+
         const timeout = options.timeout ? options.timeout: 300;
         if (timeout === 0) { return null; }
 
-        return await (new Promise((resolve) => {
-            let found: Array<any> = [ ];
+        return await (new Promise((resolve, reject) => {
+            let found: Array<Eip6963ProviderDetail> = [ ];
 
             const addProvider = (event: Eip6963Announcement) => {
                 found.push(event.detail);
@@ -255,14 +264,61 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
 
             const finalize = () => {
                 clearTimeout(timer);
+
                 if (found.length) {
-                    const { provider, info } = found[0];
-                    resolve(new BrowserProvider(provider, undefined, {
-                        providerInfo: info
-                    }));
+
+                    // If filtering is provided:
+                    if (options && options.filter) {
+
+                        // Call filter, with a copies of found provider infos
+                        const filtered = options.filter(found.map(i =>
+                          Object.assign({ }, (i.info))));
+
+                        if (filtered == null) {
+                            // No provider selected
+                            resolve(null);
+
+                        } else if (filtered instanceof BrowserProvider) {
+                            // Custom provider created
+                            resolve(filtered);
+
+                        } else {
+                            // Find the matching provider
+                            let match: null | Eip6963ProviderDetail = null;
+                            if (filtered.uuid) {
+                                const matches = found.filter(f =>
+                                  (filtered.uuid === f.info.uuid));
+                                // @TODO: What should happen if multiple values
+                                //        for the same UUID?
+                                match = matches[0];
+                            }
+
+                            if (match) {
+                                const { provider, info } = match;
+                                resolve(new BrowserProvider(provider, undefined, {
+                                    providerInfo: info
+                                }));
+                            } else {
+                                reject(makeError("filter returned unknown info", "UNSUPPORTED_OPERATION", {
+                                    value: filtered
+                                }));
+                            }
+                        }
+
+                    } else {
+
+                        // Pick the first found provider
+                        const { provider, info } = found[0];
+                        resolve(new BrowserProvider(provider, undefined, {
+                            providerInfo: info
+                        }));
+                    }
+
                 } else {
+                    // Nothing found
                     resolve(null);
                 }
+
                 context.removeEventListener(<any>"eip6963:announceProvider",
                   addProvider);
             };
