@@ -6,6 +6,9 @@
 
 null;
 
+import type { BigNumberish } from "../utils/maths.js";
+import type { Signature, SignatureLike } from "../crypto/index.js";
+
 /**
  *  A single [[AccessList]] entry of storage keys (slots) for an address.
  */
@@ -23,11 +26,26 @@ export type AccessListish = AccessList |
                             Array<[ string, Array<string> ]> |
                             Record<string, Array<string>>;
 
+// Keep here?
+export interface Authorization {
+    address: string;
+    nonce: bigint;
+    chainId: bigint;
+    signature: Signature;
+}
+
+export type AuthorizationLike = {
+    address: string;
+    nonce: BigNumberish;
+    chainId: BigNumberish;
+    signature: SignatureLike
+};
 
 export { accessListify } from "./accesslist.js";
+export { authorizationify } from "./authorization.js";
 export { computeAddress, recoverAddress } from "./address.js";
 export { Transaction } from "./transaction.js";
 
 export type {
-    Blob, BlobLike, KzgLibrary, TransactionLike
+    Blob, BlobLike, KzgLibrary, KzgLibraryLike, TransactionLike
 } from "./transaction.js";

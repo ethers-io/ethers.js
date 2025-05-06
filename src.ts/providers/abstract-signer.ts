@@ -14,14 +14,15 @@ import {
 
 import { copyRequest } from "./provider.js";
 
-import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
-import type { TransactionLike } from "../transaction/index.js";
+import type {
+    AuthorizationRequest, TypedDataDomain, TypedDataField
+} from "../hash/index.js";
+import type { Authorization, TransactionLike } from "../transaction/index.js";
 
 import type {
     BlockTag, Provider, TransactionRequest, TransactionResponse
 } from "./provider.js";
 import type { Signer } from "./signer.js";
-
 
 function checkProvider(signer: AbstractSigner, operation: string): Provider {
     if (signer.provider) { return signer.provider; }
@@ -150,7 +151,11 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                     // The network supports EIP-1559!
 
                     // Upgrade transaction from null to eip-1559
-                    pop.type = 2;
+                    if (pop.authorizationList && pop.authorizationList.length) {
+                        pop.type = 4;
+                    } else {
+                        pop.type = 2;
+                    }
 
                     if (pop.gasPrice != null) {
                         // Using legacy gasPrice property on an eip-1559 network,
@@ -194,7 +199,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                         operation: "signer.getFeeData" });
                 }
 
-            } else if (pop.type === 2 || pop.type === 3) {
+            } else if (pop.type === 2 || pop.type === 3 || pop.type === 4) {
                 // Explicitly using EIP-1559 or EIP-4844
 
                 // Populate missing fee data
@@ -211,6 +216,21 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
 //@TOOD: Don't await all over the place; save them up for
 // the end for better batching
         return await resolveProperties(pop);
+    }
+
+    async populateAuthorization(_auth: AuthorizationRequest): Promise<AuthorizationRequest> {
+        const auth = Object.assign({ }, _auth);
+
+        // Add a chain ID if not explicitly set to 0
+        if (auth.chainId == null) {
+            auth.chainId = (await checkProvider(this, "getNetwork").getNetwork()).chainId;
+        }
+
+        // @TODO: Take chain ID into account when populating noce?
+
+        if (auth.nonce == null) { auth.nonce = await this.getNonce(); }
+
+        return auth;
     }
 
     async estimateGas(tx: TransactionRequest): Promise<bigint> {
@@ -233,6 +253,12 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         delete pop.from;
         const txObj = Transaction.from(pop);
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
+    }
+
+    // @TODO: in v7 move this to be abstract
+    authorize(authorization: AuthorizationRequest): Promise<Authorization> {
+        assert(false, "authorization not implemented for this signer",
+          "UNSUPPORTED_OPERATION", { operation: "authorize" });
     }
 
     abstract signTransaction(tx: TransactionRequest): Promise<string>;

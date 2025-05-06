@@ -3,6 +3,15 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.14.0 (2025-05-06 02:03)
+---------------------------------
+
+  - EIP-7702 support ([#4916](https://github.com/ethers-io/ethers.js/issues/4916); [db490e1](https://github.com/ethers-io/ethers.js/commit/db490e1afaaa139be9cb38e6b50a1bc4ef28e075), [e7c1bdf](https://github.com/ethers-io/ethers.js/commit/e7c1bdf6f0a5d6f976dddd6375e76445ac6851fc)).
+  - Added support for to override fetch init options in the Browser ([#3895](https://github.com/ethers-io/ethers.js/issues/3895); [844ae68](https://github.com/ethers-io/ethers.js/commit/844ae68a96deabc4d5f053dad5f1112b06f08d9a)).
+  - Added EIP-6963 discovery to BrowserProvider ([f5469dd](https://github.com/ethers-io/ethers.js/commit/f5469dd0e0719389d51e0106ee36d07a7ebef875)).
+  - Accept modern KZG library API while exposing legacy API ([#4841](https://github.com/ethers-io/ethers.js/issues/4841); [e5036e7](https://github.com/ethers-io/ethers.js/commit/e5036e778624fea957dd847f7be1a9f148b8997e)).
+  - Added CommunityResourcable to exports ([#4776](https://github.com/ethers-io/ethers.js/issues/4776); [bca8d1b](https://github.com/ethers-io/ethers.js/commit/bca8d1b549569e6f7793f07fcc46dfd731e37d2b)).
+
 ethers/v6.13.7 (2025-04-25 21:50)
 ---------------------------------
 

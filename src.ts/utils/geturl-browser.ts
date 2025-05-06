@@ -36,12 +36,12 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
             });
         }
 
-        const init = {
+        const init = Object.assign({ }, options, {
             method: req.method,
             headers: new Headers(Array.from(req)),
             body: req.body || undefined,
             signal: controller.signal
-        };
+        });
 
         let resp: Awaited<ReturnType<typeof fetch>>;
         try {

@@ -60,6 +60,7 @@ export { JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from "./provider-j
 export { BrowserProvider } from "./provider-browser.js";
 
 export { AlchemyProvider } from "./provider-alchemy.js";
+export { BlockscoutProvider } from "./provider-blockscout.js";
 export { AnkrProvider } from "./provider-ankr.js";
 export { CloudflareProvider } from "./provider-cloudflare.js";
 export { ChainstackProvider } from "./provider-chainstack.js";
@@ -91,11 +92,11 @@ export type {
     TransactionResponseParams,
 } from "./formatting.js";
 
-/*
 export type {
     CommunityResourcable
 } from "./community.js";
 
+/*
 export type {
     AvatarLinkageType, AvatarLinkage, AvatarResult
 } from "./ens-resolver.js";
@@ -114,7 +115,8 @@ export type {
 } from "./provider.js";
 
 export type {
-    BrowserProviderOptions, DebugEventBrowserProvider, Eip1193Provider
+    BrowserDiscoverOptions, BrowserProviderOptions, DebugEventBrowserProvider,
+    Eip1193Provider, Eip6963ProviderInfo
 } from "./provider-browser.js";
 
 export type { FallbackProviderOptions } from "./provider-fallback.js";
