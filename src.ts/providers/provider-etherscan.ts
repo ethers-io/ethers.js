@@ -17,9 +17,6 @@
  *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
- *  - Polygon (``matic``)
- *  - Polygon Mumbai Testnet (``matic-mumbai``)
- *  - Polygon Amoy Testnet (``matic-amoy``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
@@ -181,12 +178,6 @@ export class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api.bscscan.com";
             case "bnbt":
                 return "https:/\/api-testnet.bscscan.com";
-            case "matic":
-                return "https:/\/api.polygonscan.com";
-            case "matic-amoy":
-                return "https:/\/api-amoy.polygonscan.com";
-            case "matic-mumbai":
-                return "https:/\/api-testnet.polygonscan.com";
             case "optimism":
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
