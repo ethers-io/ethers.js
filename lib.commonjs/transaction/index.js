@@ -5,10 +5,12 @@
  *  @_section api/transaction:Transactions  [about-transactions]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Transaction = exports.recoverAddress = exports.computeAddress = exports.accessListify = void 0;
+exports.Transaction = exports.recoverAddress = exports.computeAddress = exports.authorizationify = exports.accessListify = void 0;
 null;
 var accesslist_js_1 = require("./accesslist.js");
 Object.defineProperty(exports, "accessListify", { enumerable: true, get: function () { return accesslist_js_1.accessListify; } });
+var authorization_js_1 = require("./authorization.js");
+Object.defineProperty(exports, "authorizationify", { enumerable: true, get: function () { return authorization_js_1.authorizationify; } });
 var address_js_1 = require("./address.js");
 Object.defineProperty(exports, "computeAddress", { enumerable: true, get: function () { return address_js_1.computeAddress; } });
 Object.defineProperty(exports, "recoverAddress", { enumerable: true, get: function () { return address_js_1.recoverAddress; } });

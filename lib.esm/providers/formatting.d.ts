@@ -4,7 +4,7 @@
  *  @_section: api/providers/formatting:Formatting  [provider-formatting]
  */
 import type { Signature } from "../crypto/index.js";
-import type { AccessList } from "../transaction/index.js";
+import type { Authorization, AccessList } from "../transaction/index.js";
 /**
  *  a **BlockParams** encodes the minimal required properties for a
  *  formatted block.
@@ -310,5 +310,9 @@ export interface TransactionResponseParams {
      *  The [[link-eip-4844]] BLOb versioned hashes.
      */
     blobVersionedHashes?: null | Array<string>;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList: null | Array<Authorization>;
 }
 //# sourceMappingURL=formatting.d.ts.map

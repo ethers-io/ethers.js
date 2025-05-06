@@ -1,7 +1,7 @@
 import { Signature } from "../crypto/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { SignatureLike } from "../crypto/index.js";
-import type { AccessList, AccessListish } from "./index.js";
+import type { AccessList, AccessListish, Authorization, AuthorizationLike } from "./index.js";
 /**
  *  A **TransactionLike** is an object which is appropriate as a loose
  *  input for many operations which will populate missing properties of
@@ -83,7 +83,11 @@ export interface TransactionLike<A = string> {
      *  This is generally ``null``, unless you are creating BLOb
      *  transactions.
      */
-    kzg?: null | KzgLibrary;
+    kzg?: null | KzgLibraryLike;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: null | Array<Authorization>;
 }
 /**
  *  A full-valid BLOb object for [[link-eip-4844]] transactions.
@@ -116,6 +120,22 @@ export interface KzgLibrary {
     blobToKzgCommitment: (blob: Uint8Array) => Uint8Array;
     computeBlobKzgProof: (blob: Uint8Array, commitment: Uint8Array) => Uint8Array;
 }
+/**
+ *  A KZG Library with any of the various API configurations.
+ *  As the library is still experimental and the API is not
+ *  stable, depending on the version used the method names and
+ *  signatures are still in flux.
+ *
+ *  This allows any of the versions to be passed into Transaction
+ *  while providing a stable external API.
+ */
+export type KzgLibraryLike = KzgLibrary | {
+    blobToKZGCommitment: (blob: string) => string;
+    computeBlobKZGProof: (blob: string, commitment: string) => string;
+} | {
+    blobToKzgCommitment: (blob: string) => string | Uint8Array;
+    computeBlobProof: (blob: string, commitment: string) => string | Uint8Array;
+};
 /**
  *  A **Transaction** describes an operation to be executed on
  *  Ethereum by an Externally Owned Account (EOA). It includes
@@ -208,6 +228,8 @@ export declare class Transaction implements TransactionLike<string> {
      */
     get accessList(): null | AccessList;
     set accessList(value: null | AccessListish);
+    get authorizationList(): null | Array<Authorization>;
+    set authorizationList(auths: null | Array<AuthorizationLike>);
     /**
      *  The max fee per blob gas for Cancun transactions.
      */
@@ -249,7 +271,7 @@ export declare class Transaction implements TransactionLike<string> {
     get blobs(): null | Array<Blob>;
     set blobs(_blobs: null | Array<BlobLike>);
     get kzg(): null | KzgLibrary;
-    set kzg(kzg: null | KzgLibrary);
+    set kzg(kzg: null | KzgLibraryLike);
     /**
      *  Creates a new Transaction with default values.
      */

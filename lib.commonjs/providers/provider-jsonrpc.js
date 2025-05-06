@@ -556,6 +556,19 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
             // @TODO: Remove this <any> case once EIP-4844 added to prepared tx
             result["blobVersionedHashes"] = tx.blobVersionedHashes.map(h => h.toLowerCase());
         }
+        if (tx.authorizationList) {
+            result["authorizationList"] = tx.authorizationList.map((_a) => {
+                const a = (0, index_js_4.authorizationify)(_a);
+                return {
+                    address: a.address,
+                    nonce: (0, index_js_5.toQuantity)(a.nonce),
+                    chainId: (0, index_js_5.toQuantity)(a.chainId),
+                    yParity: (0, index_js_5.toQuantity)(a.signature.yParity),
+                    r: a.signature.r,
+                    s: a.signature.s,
+                };
+            });
+        }
         // @TODO: blobs should probably also be copied over, optionally
         // accounting for the kzg property to backfill blobVersionedHashes
         // using the commitment. Or should that be left as an exercise to

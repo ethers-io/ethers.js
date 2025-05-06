@@ -55,8 +55,8 @@ class BaseWallet extends index_js_3.AbstractSigner {
         tx = (0, index_js_3.copyRequest)(tx);
         // Replace any Addressable or ENS name with an address
         const { to, from } = await (0, index_js_5.resolveProperties)({
-            to: (tx.to ? (0, index_js_1.resolveAddress)(tx.to, this.provider) : undefined),
-            from: (tx.from ? (0, index_js_1.resolveAddress)(tx.from, this.provider) : undefined)
+            to: (tx.to ? (0, index_js_1.resolveAddress)(tx.to, this) : undefined),
+            from: (tx.from ? (0, index_js_1.resolveAddress)(tx.from, this) : undefined)
         });
         if (to != null) {
             tx.to = to;
@@ -83,6 +83,27 @@ class BaseWallet extends index_js_3.AbstractSigner {
      */
     signMessageSync(message) {
         return this.signingKey.sign((0, index_js_2.hashMessage)(message)).serialized;
+    }
+    /**
+     *  Returns the Authorization for %%auth%%.
+     */
+    authorizeSync(auth) {
+        (0, index_js_5.assertArgument)(typeof (auth.address) === "string", "invalid address for authorizeSync", "auth.address", auth);
+        const signature = this.signingKey.sign((0, index_js_2.hashAuthorization)(auth));
+        return Object.assign({}, {
+            address: (0, index_js_1.getAddress)(auth.address),
+            nonce: (0, index_js_5.getBigInt)(auth.nonce || 0),
+            chainId: (0, index_js_5.getBigInt)(auth.chainId || 0),
+        }, { signature });
+    }
+    /**
+     *  Resolves to the Authorization for %%auth%%.
+     */
+    async authorize(auth) {
+        auth = Object.assign({}, auth, {
+            address: await (0, index_js_1.resolveAddress)(auth.address, this)
+        });
+        return this.authorizeSync(await this.populateAuthorization(auth));
     }
     async signTypedData(domain, types, value) {
         // Populate any ENS names

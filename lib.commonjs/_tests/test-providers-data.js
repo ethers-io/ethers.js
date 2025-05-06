@@ -204,7 +204,7 @@ describe("Test Provider Transaction operations", function () {
             if (providerName === "CloudflareProvider" ||
                 providerName === "AnkrProvider" ||
                 providerName === "PocketProvider" ||
-                providerName === "AlchemyProvider") {
+                providerName === "BlockscoutProvider") {
                 test = Object.assign({}, test, { root: undefined });
             }
             //if (providerName === "PocketProvider") {

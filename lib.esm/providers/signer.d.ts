@@ -1,6 +1,6 @@
 import type { Addressable, NameResolver } from "../address/index.js";
-import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
-import type { TransactionLike } from "../transaction/index.js";
+import type { AuthorizationRequest, TypedDataDomain, TypedDataField } from "../hash/index.js";
+import type { Authorization, TransactionLike } from "../transaction/index.js";
 import type { ContractRunner } from "./contracts.js";
 import type { BlockTag, Provider, TransactionRequest, TransactionResponse } from "./provider.js";
 /**
@@ -114,5 +114,18 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *  Signs the [[link-eip-712]] typed data.
      */
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
+    /**
+     *  Prepares an [[AuthorizationRequest]] for authorization by
+     *  populating any missing properties:
+     *  - resolves ``address`` (if an Addressable or ENS name)
+     *  - populates ``nonce`` via ``signer.getNonce("pending")``
+     *  - populates ``chainId`` via ``signer.provider.getNetwork()``
+     */
+    populateAuthorization(auth: AuthorizationRequest): Promise<AuthorizationRequest>;
+    /**
+     *  Signs an %%authorization%% to be used in [[link-eip-7702]]
+     *  transactions.
+     */
+    authorize(authorization: AuthorizationRequest): Promise<Authorization>;
 }
 //# sourceMappingURL=signer.d.ts.map

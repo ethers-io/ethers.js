@@ -1,4 +1,4 @@
-import { AlchemyProvider, 
+import { AlchemyProvider, BlockscoutProvider, 
 //    AnkrProvider,
 //    CloudflareProvider,
 ChainstackProvider, EtherscanProvider, InfuraProvider, 
@@ -16,6 +16,15 @@ const ProviderCreators = [
         networks: ethNetworks,
         create: function (network) {
             return new AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
+        }
+    },
+    {
+        name: "BlockscoutProvider",
+        //networks: ethNetworks,  // @TODO: they are backfilling some Sepolia txs
+        networks: ["mainnet"],
+        create: function (network) {
+            //return new BlockscoutProvider(network);
+            return new BlockscoutProvider(network, "fdbfa288-1695-454e-a369-4501253a120");
         }
     },
     /*

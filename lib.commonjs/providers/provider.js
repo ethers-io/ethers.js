@@ -110,6 +110,9 @@ function copyRequest(req) {
     if (req.accessList) {
         result.accessList = (0, index_js_2.accessListify)(req.accessList);
     }
+    if (req.authorizationList) {
+        result.authorizationList = req.authorizationList.slice();
+    }
     if ("blockTag" in req) {
         result.blockTag = req.blockTag;
     }
@@ -924,6 +927,10 @@ class TransactionResponse {
      *  The [[link-eip-4844]] BLOb versioned hashes.
      */
     blobVersionedHashes;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList;
     #startBlock;
     /**
      *  @_ignore:
@@ -949,6 +956,7 @@ class TransactionResponse {
         this.signature = tx.signature;
         this.accessList = (tx.accessList != null) ? tx.accessList : null;
         this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes : null;
+        this.authorizationList = (tx.authorizationList != null) ? tx.authorizationList : null;
         this.#startBlock = -1;
     }
     /**

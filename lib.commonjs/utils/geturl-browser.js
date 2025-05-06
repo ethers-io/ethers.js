@@ -25,12 +25,12 @@ function createGetUrl(options) {
                 controller.abort();
             });
         }
-        const init = {
+        const init = Object.assign({}, options, {
             method: req.method,
             headers: new Headers(Array.from(req)),
             body: req.body || undefined,
             signal: controller.signal
-        };
+        });
         let resp;
         try {
             resp = await fetch(req.url, init);

@@ -202,6 +202,14 @@ function formatTransactionResponse(value) {
         },
         accessList: allowNull(index_js_3.accessListify, null),
         blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
+        authorizationList: allowNull(arrayOf((v) => {
+            return {
+                address: (0, index_js_1.getAddress)(v.address),
+                chainId: (0, index_js_4.getBigInt)(v.chainId),
+                nonce: (0, index_js_4.getBigInt)(v.nonce),
+                signature: index_js_2.Signature.from(v.signature ? v.signature : v)
+            };
+        }, false), null),
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(index_js_4.getNumber, null),
         transactionIndex: allowNull(index_js_4.getNumber, null),

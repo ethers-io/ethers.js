@@ -109,7 +109,12 @@ export class AbstractSigner {
                 if (feeData.maxFeePerGas != null && feeData.maxPriorityFeePerGas != null) {
                     // The network supports EIP-1559!
                     // Upgrade transaction from null to eip-1559
-                    pop.type = 2;
+                    if (pop.authorizationList && pop.authorizationList.length) {
+                        pop.type = 4;
+                    }
+                    else {
+                        pop.type = 2;
+                    }
                     if (pop.gasPrice != null) {
                         // Using legacy gasPrice property on an eip-1559 network,
                         // so use gasPrice as both fee properties
@@ -149,7 +154,7 @@ export class AbstractSigner {
                     });
                 }
             }
-            else if (pop.type === 2 || pop.type === 3) {
+            else if (pop.type === 2 || pop.type === 3 || pop.type === 4) {
                 // Explicitly using EIP-1559 or EIP-4844
                 // Populate missing fee data
                 if (pop.maxFeePerGas == null) {
@@ -163,6 +168,18 @@ export class AbstractSigner {
         //@TOOD: Don't await all over the place; save them up for
         // the end for better batching
         return await resolveProperties(pop);
+    }
+    async populateAuthorization(_auth) {
+        const auth = Object.assign({}, _auth);
+        // Add a chain ID if not explicitly set to 0
+        if (auth.chainId == null) {
+            auth.chainId = (await checkProvider(this, "getNetwork").getNetwork()).chainId;
+        }
+        // @TODO: Take chain ID into account when populating noce?
+        if (auth.nonce == null) {
+            auth.nonce = await this.getNonce();
+        }
+        return auth;
     }
     async estimateGas(tx) {
         return checkProvider(this, "estimateGas").estimateGas(await this.populateCall(tx));
@@ -180,6 +197,10 @@ export class AbstractSigner {
         delete pop.from;
         const txObj = Transaction.from(pop);
         return await provider.broadcastTransaction(await this.signTransaction(txObj));
+    }
+    // @TODO: in v7 move this to be abstract
+    authorize(authorization) {
+        assert(false, "authorization not implemented for this signer", "UNSUPPORTED_OPERATION", { operation: "authorize" });
     }
 }
 /**

@@ -6,7 +6,10 @@
  *  @_section: api/hashing:Hashing Utilities  [about-hashing]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyTypedData = exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.verifyMessage = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = exports.id = void 0;
+exports.verifyTypedData = exports.TypedDataEncoder = exports.solidityPackedSha256 = exports.solidityPackedKeccak256 = exports.solidityPacked = exports.verifyMessage = exports.hashMessage = exports.dnsEncode = exports.namehash = exports.isValidName = exports.ensNormalize = exports.id = exports.verifyAuthorization = exports.hashAuthorization = void 0;
+var authorization_js_1 = require("./authorization.js");
+Object.defineProperty(exports, "hashAuthorization", { enumerable: true, get: function () { return authorization_js_1.hashAuthorization; } });
+Object.defineProperty(exports, "verifyAuthorization", { enumerable: true, get: function () { return authorization_js_1.verifyAuthorization; } });
 var id_js_1 = require("./id.js");
 Object.defineProperty(exports, "id", { enumerable: true, get: function () { return id_js_1.id; } });
 var namehash_js_1 = require("./namehash.js");

@@ -1,7 +1,7 @@
 import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
-import type { AccessList, AccessListish, BlobLike, KzgLibrary, TransactionLike } from "../transaction/index.js";
+import type { AccessList, AccessListish, Authorization, AuthorizationLike, BlobLike, KzgLibraryLike, TransactionLike } from "../transaction/index.js";
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
 /**
@@ -163,7 +163,11 @@ export interface TransactionRequest {
      *  This is generally ``null``, unless you are creating BLOb
      *  transactions.
      */
-    kzg?: null | KzgLibrary;
+    kzg?: null | KzgLibraryLike;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: null | Array<AuthorizationLike>;
 }
 /**
  *  A **PreparedTransactionRequest** is identical to a [[TransactionRequest]]
@@ -224,6 +228,10 @@ export interface PreparedTransactionRequest {
      *  fetch is guaranteed, but then each additional access is cheaper.
      */
     accessList?: AccessList;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: Array<Authorization>;
     /**
      *  A custom object, which can be passed along for network-specific
      *  values.
@@ -824,6 +832,10 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
      *  The [[link-eip-4844]] BLOb versioned hashes.
      */
     readonly blobVersionedHashes: null | Array<string>;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    readonly authorizationList: null | Array<Authorization>;
     /**
      *  @_ignore:
      */

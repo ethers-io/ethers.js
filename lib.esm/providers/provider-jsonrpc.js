@@ -15,7 +15,7 @@
 import { AbiCoder } from "../abi/index.js";
 import { getAddress, resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
-import { accessListify } from "../transaction/index.js";
+import { accessListify, authorizationify } from "../transaction/index.js";
 import { defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes, isError, makeError, assert, assertArgument, FetchRequest, resolveProperties } from "../utils/index.js";
 import { AbstractProvider, UnmanagedSubscriber } from "./abstract-provider.js";
 import { AbstractSigner } from "./abstract-signer.js";
@@ -551,6 +551,19 @@ export class JsonRpcApiProvider extends AbstractProvider {
         if (tx.blobVersionedHashes) {
             // @TODO: Remove this <any> case once EIP-4844 added to prepared tx
             result["blobVersionedHashes"] = tx.blobVersionedHashes.map(h => h.toLowerCase());
+        }
+        if (tx.authorizationList) {
+            result["authorizationList"] = tx.authorizationList.map((_a) => {
+                const a = authorizationify(_a);
+                return {
+                    address: a.address,
+                    nonce: toQuantity(a.nonce),
+                    chainId: toQuantity(a.chainId),
+                    yParity: toQuantity(a.signature.yParity),
+                    r: a.signature.r,
+                    s: a.signature.s,
+                };
+            });
         }
         // @TODO: blobs should probably also be copied over, optionally
         // accounting for the kzg property to backfill blobVersionedHashes

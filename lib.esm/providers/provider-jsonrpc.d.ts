@@ -183,6 +183,17 @@ export interface JsonRpcTransactionRequest {
         address: string;
         storageKeys: Array<string>;
     }>;
+    /**
+     *  The transaction authorization list.
+     */
+    authorizationList?: Array<{
+        address: string;
+        nonce: string;
+        chainId: string;
+        yParity: string;
+        r: string;
+        s: string;
+    }>;
 }
 export declare class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
     address: string;
