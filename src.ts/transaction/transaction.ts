@@ -183,18 +183,34 @@ export interface KzgLibrary {
  *  while providing a stable external API.
  */
 export type KzgLibraryLike  = KzgLibrary | {
+    // kzg-wasm >= 0.5.0
     blobToKZGCommitment: (blob: string) => string;
     computeBlobKZGProof: (blob: string, commitment: string) => string;
+} | {
+    // micro-ecc-signer
+    blobToKzgCommitment: (blob: string) => string | Uint8Array;
+    computeBlobProof: (blob: string, commitment: string) => string | Uint8Array;
 };
 
 function getKzgLibrary(kzg: KzgLibraryLike): KzgLibrary {
+
     const blobToKzgCommitment = (blob: Uint8Array) => {
-        // API <0.5.0; blobToKzgCommitment(Uint8Array) => Uint8Array
-        if ("blobToKzgCommitment" in kzg && typeof(kzg.blobToKzgCommitment) === "function") {
-            return kzg.blobToKzgCommitment(blob);
+
+        if ("computeBlobProof" in kzg) {
+            // micro-ecc-signer; check for computeBlobProof since this API
+            // expects a string while the kzg-wasm below expects a Unit8Array
+
+            if ("blobToKzgCommitment" in kzg && typeof(kzg.blobToKzgCommitment) === "function") {
+                return getBytes(kzg.blobToKzgCommitment(hexlify(blob)))
+            }
+
+        } else if ("blobToKzgCommitment" in kzg && typeof(kzg.blobToKzgCommitment) === "function") {
+            // kzg-wasm <0.5.0; blobToKzgCommitment(Uint8Array) => Uint8Array
+
+            return getBytes(kzg.blobToKzgCommitment(blob));
         }
 
-        // API >= 0.5.0; blobToKZGCommitment(string) => string
+        // kzg-wasm >= 0.5.0; blobToKZGCommitment(string) => string
         if ("blobToKZGCommitment" in kzg && typeof(kzg.blobToKZGCommitment) === "function") {
             return getBytes(kzg.blobToKZGCommitment(hexlify(blob)));
         }
@@ -203,12 +219,18 @@ function getKzgLibrary(kzg: KzgLibraryLike): KzgLibrary {
     };
 
     const computeBlobKzgProof = (blob: Uint8Array, commitment: Uint8Array) => {
-        // API <0.5.0; computeBlobKzgProof(Uint8Array, Uint8Array) => Uint8Array
+
+        // micro-ecc-signer
+        if ("computeBlobProof" in kzg && typeof(kzg.computeBlobProof) === "function") {
+            return getBytes(kzg.computeBlobProof(hexlify(blob), hexlify(commitment)))
+        }
+
+        // kzg-wasm <0.5.0; computeBlobKzgProof(Uint8Array, Uint8Array) => Uint8Array
         if ("computeBlobKzgProof" in kzg && typeof(kzg.computeBlobKzgProof) === "function") {
             return kzg.computeBlobKzgProof(blob, commitment);
         }
 
-        // API >= 0.5.0; computeBlobKZGProof(string, string) => string
+        // kzg-wasm >= 0.5.0; computeBlobKZGProof(string, string) => string
         if ("computeBlobKZGProof" in kzg && typeof(kzg.computeBlobKZGProof) === "function") {
             return getBytes(kzg.computeBlobKZGProof(hexlify(blob), hexlify(commitment)));
         }
@@ -749,7 +771,7 @@ export class Transaction implements TransactionLike<string> {
             case 3: case "cancun": case "eip-4844":
                 this.#type = 3;
                 break;
-            case 4: case "eip-7702":
+            case 4: case "pectra": case "eip-7702":
                 this.#type = 4;
                 break;
             default:
