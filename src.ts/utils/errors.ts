@@ -24,12 +24,20 @@ import type { FetchRequest, FetchResponse } from "./fetch.js";
  */
 export type ErrorInfo<T> = Omit<T, "code" | "name" | "message" | "shortMessage"> & { shortMessage?: string };
 
+function stringify(value: any, seen: Set<any> = new Set()): any {
+    if (value == null) {
+        return "null";
+    }
 
-function stringify(value: any): any {
-    if (value == null) { return "null"; }
+    if (typeof value === "object") {
+        if (seen.has(value)) {
+            return "[Circular]";
+        }
+        seen.add(value);
+    }
 
     if (Array.isArray(value)) {
-        return "[ " + (value.map(stringify)).join(", ") + " ]";
+        return "[ " + value.map((v) => stringify(v, seen)).join(", ") + " ]";
     }
 
     if (value instanceof Uint8Array) {
@@ -42,27 +50,28 @@ function stringify(value: any): any {
         return result;
     }
 
-    if (typeof(value) === "object" && typeof(value.toJSON) === "function") {
-        return stringify(value.toJSON());
+    if (typeof value === "object" && typeof value.toJSON === "function") {
+        return stringify(value.toJSON(), seen);
     }
 
-    switch (typeof(value)) {
-        case "boolean": case "symbol":
+    switch (typeof value) {
+        case "boolean":
+        case "symbol":
             return value.toString();
         case "bigint":
             return BigInt(value).toString();
         case "number":
-            return (value).toString();
+            return value.toString();
         case "string":
             return JSON.stringify(value);
         case "object": {
             const keys = Object.keys(value);
             keys.sort();
-            return "{ " + keys.map((k) => `${ stringify(k) }: ${ stringify(value[k]) }`).join(", ") + " }";
+            return "{ " + keys.map((k) => `${stringify(k)}: ${stringify(value[k], seen)}`).join(", ") + " }";
         }
     }
 
-    return `[ COULD NOT SERIALIZE ]`;
+    return "[ COULD NOT SERIALIZE ]";
 }
 
 /**
