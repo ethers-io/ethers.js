@@ -70,7 +70,7 @@ export interface EventEmitterable<T> {
 
 /**
  *  When an [[EventEmitterable]] triggers a [[Listener]], the
- *  callback always ahas one additional argument passed, which is
+ *  callback always has one additional argument passed, which is
  *  an **EventPayload**.
  */
 export class EventPayload<T> {

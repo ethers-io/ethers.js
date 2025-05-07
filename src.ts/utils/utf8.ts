@@ -1,5 +1,5 @@
 /**
- *  Using strings in Ethereum (or any security-basd system) requires
+ *  Using strings in Ethereum (or any security-based system) requires
  *  additional care. These utilities attempt to mitigate some of the
  *  safety issues as well as provide the ability to recover and analyse
  *  strings.
@@ -15,7 +15,7 @@ import type { BytesLike } from "./index.js";
 ///////////////////////////////
 
 /**
- *  The stanard normalization forms.
+ *  The standard normalization forms.
  */
 export type UnicodeNormalizationForm = "NFC" | "NFD" | "NFKC" | "NFKD";
 
@@ -106,7 +106,7 @@ function ignoreFunc(reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, 
 
 function replaceFunc(reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, output: Array<number>, badCodepoint?: number): number {
 
-    // Overlong representations are otherwise "valid" code points; just non-deistingtished
+    // Overlong representations are otherwise "valid" code points; just non-distinguished
     if (reason === "OVERLONG") {
         assertArgument(typeof(badCodepoint) === "number", "invalid bad code point for replacement", "badCodepoint", badCodepoint);
         output.push(badCodepoint);

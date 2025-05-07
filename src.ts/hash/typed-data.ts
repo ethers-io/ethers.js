@@ -223,7 +223,7 @@ export class TypedDataEncoder {
      *  The primary type for the structured [[types]].
      *
      *  This is derived automatically from the [[types]], since no
-     *  recursion is possible, once the DAG for the types is consturcted
+     *  recursion is possible, once the DAG for the types is constructed
      *  internally, the primary type must be the only remaining type with
      *  no parent nodes.
      */
@@ -324,7 +324,7 @@ export class TypedDataEncoder {
                 // Recursively check children
                 checkCircular(child, found);
 
-                // Mark all ancestors as having this decendant
+                // Mark all ancestors as having this descendant
                 for (const subtype of found) {
                     (subtypes.get(subtype) as Set<string>).add(child);
                 }
@@ -343,7 +343,7 @@ export class TypedDataEncoder {
     }
 
     /**
-     *  Returnthe encoder for the specific %%type%%.
+     *  Return the encoder for the specific %%type%%.
      */
     getEncoder(type: string): (value: any) => string {
         let encoder = this.#encoderCache.get(type);
@@ -464,7 +464,7 @@ export class TypedDataEncoder {
     }
 
     /**
-     *  Call %%calback%% for each value in %%value%%, passing the type and
+     *  Call %%callback%% for each value in %%value%%, passing the type and
      *  component within %%value%%.
      *
      *  This is useful for replacing addresses or other transformation that

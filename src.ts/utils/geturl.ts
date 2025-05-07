@@ -109,7 +109,7 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
                 });
 
                 resp.on("error", (error) => {
-                //@TODO: Should this just return nornal response with a server error?
+                //@TODO: Should this just return normal response with a server error?
                     (<any>error).response = { statusCode, statusMessage, headers, body };
                     reject(error);
                 });

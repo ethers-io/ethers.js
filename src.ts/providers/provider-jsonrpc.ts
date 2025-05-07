@@ -308,7 +308,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         return this.address;
     }
 
-    // JSON-RPC will automatially fill in nonce, etc. so we just check from
+    // JSON-RPC will automatically fill in nonce, etc. so we just check from
     async populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>> {
         return await this.populateCall(tx);
     }
@@ -617,7 +617,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             }
 
         } else if (staticNetwork) {
-            // Make sure any static network is compatbile with the provided netwrok
+            // Make sure any static network is compatible with the provided network
             assertArgument(network == null || staticNetwork.matches(network),
                 "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
@@ -802,7 +802,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
      */
     _getSubscriber(sub: Subscription): Subscriber {
 
-        // Pending Filters aren't availble via polling
+        // Pending Filters aren't available via polling
         if (sub.type === "pending") { return new FilterIdPendingSubscriber(this); }
 
         if (sub.type === "event") {

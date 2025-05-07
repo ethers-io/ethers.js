@@ -127,7 +127,7 @@ export interface BlockParams {
  */
 export interface LogParams {
     /**
-     *  The transaction hash for the transaxction the log occurred in.
+     *  The transaction hash for the transaction the log occurred in.
      */
     transactionHash: string;
 
@@ -145,7 +145,7 @@ export interface LogParams {
 
     /**
      *  Whether this log was removed due to the transaction it was included
-     *  in being removed dur to an orphaned block.
+     *  in being removed due to an orphaned block.
      */
     removed: boolean;
 
@@ -186,7 +186,7 @@ export interface LogParams {
 export interface TransactionReceiptParams {
     /**
      *  The target of the transaction. If null, the transaction was trying
-     *  to deploy a transaction with the ``data`` as the initi=code.
+     *  to deploy a transaction with the ``data`` as the initcode.
      */
     to: null | string;
 
@@ -234,7 +234,7 @@ export interface TransactionReceiptParams {
     logs: ReadonlyArray<LogParams>;
 
     /**
-     *  The amount of gas consumed executing this transaciton.
+     *  The amount of gas consumed executing this transaction.
      */
     gasUsed: bigint;
 

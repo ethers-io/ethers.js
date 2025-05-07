@@ -33,7 +33,7 @@ export type WebSocketCreator = () => WebSocketLike;
  *  WebSockets are often preferred because they retain a live connection
  *  to a server, which permits more instant access to events.
  *
- *  However, this incurs higher server infrasturture costs, so additional
+ *  However, this incurs higher server infrastructure costs, so additional
  *  resources may be required to host your own WebSocket nodes and many
  *  third-party services charge additional fees for WebSocket endpoints.
  */

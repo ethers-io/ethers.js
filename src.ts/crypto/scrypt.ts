@@ -45,8 +45,8 @@ let __scryptSync: (passwd: Uint8Array, salt: Uint8Array, N: number, r: number, p
  *  but demonstrates to value of imposing large costs to decryption.
  *
  *  For this reason, if building a UI which involved decrypting or
- *  encrypting datsa using scrypt, it is recommended to use a
- *  [[ProgressCallback]] (as event short periods can seem lik an eternity
+ *  encrypting data using scrypt, it is recommended to use a
+ *  [[ProgressCallback]] (as event short periods can seem like an eternity
  *  if the UI freezes). Including the phrase //"decrypting"// in the UI
  *  can also help, assuring the user their waiting is for a good reason.
  *

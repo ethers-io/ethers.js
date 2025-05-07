@@ -1283,7 +1283,7 @@ export class Transaction implements TransactionLike<string> {
     }
 
     /**
-     *  Create a copy of this transaciton.
+     *  Create a copy of this transaction.
      */
     clone(): Transaction {
         return Transaction.from(this);
