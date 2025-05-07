@@ -1,7 +1,7 @@
 import { assert } from "../utils/index.js";
 import { AnkrProvider } from "./provider-ankr.js";
 import { AlchemyProvider } from "./provider-alchemy.js";
-import { BlockscoutProvider } from "./provider-blockscout.js";
+//import { BlockscoutProvider } from "./provider-blockscout.js";
 import { ChainstackProvider } from "./provider-chainstack.js";
 import { CloudflareProvider } from "./provider-cloudflare.js";
 import { EtherscanProvider } from "./provider-etherscan.js";
@@ -110,12 +110,13 @@ export function getDefaultProvider(network, options) {
         }
         catch (error) { }
     }
-    if (allowService("blockscout")) {
-        try {
-            providers.push(new BlockscoutProvider(network, options.blockscout));
+    /* Temporarily remove until custom error issue is fixed
+        if (allowService("blockscout")) {
+            try {
+                providers.push(new BlockscoutProvider(network, options.blockscout));
+            } catch (error) { }
         }
-        catch (error) { }
-    }
+    */
     if (allowService("chainstack")) {
         try {
             providers.push(new ChainstackProvider(network, options.chainstack));

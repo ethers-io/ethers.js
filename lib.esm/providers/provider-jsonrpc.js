@@ -679,6 +679,12 @@ export class JsonRpcApiProvider extends AbstractProvider {
                     info: { payload, error }
                 });
             }
+            else if (msg.match(/nonce/i) && msg.match(/too low/i)) {
+                return makeError("nonce has already been used", "NONCE_EXPIRED", {
+                    transaction: (payload.params[0]),
+                    info: { payload, error }
+                });
+            }
         }
         if (method === "eth_call" || method === "eth_estimateGas") {
             const result = spelunkData(error);

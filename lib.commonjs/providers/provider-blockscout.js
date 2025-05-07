@@ -90,6 +90,47 @@ class BlockscoutProvider extends provider_jsonrpc_js_1.JsonRpcProvider {
     isCommunityResource() {
         return (this.apiKey === null);
     }
+    getRpcRequest(req) {
+        // Blockscout enforces the TAG argument for estimateGas
+        const resp = super.getRpcRequest(req);
+        if (resp && resp.method === "eth_estimateGas" && resp.args.length == 1) {
+            resp.args = resp.args.slice();
+            resp.args.push("latest");
+        }
+        return resp;
+    }
+    getRpcError(payload, _error) {
+        const error = _error ? _error.error : null;
+        // Blockscout currently drops the VM result and replaces it with a
+        // human-readable string, so we need to make it machine-readable.
+        if (error && error.code === -32015 && !(0, index_js_1.isHexString)(error.data || "", true)) {
+            const panicCodes = {
+                "assert(false)": "01",
+                "arithmetic underflow or overflow": "11",
+                "division or modulo by zero": "12",
+                "out-of-bounds array access; popping on an empty array": "31",
+                "out-of-bounds access of an array or bytesN": "32"
+            };
+            let panicCode = "";
+            if (error.message === "VM execution error.") {
+                // eth_call passes this message
+                panicCode = panicCodes[error.data] || "";
+            }
+            else if (panicCodes[error.message || ""]) {
+                panicCode = panicCodes[error.message || ""];
+            }
+            if (panicCode) {
+                error.message += ` (reverted: ${error.data})`;
+                error.data = "0x4e487b7100000000000000000000000000000000000000000000000000000000000000" + panicCode;
+            }
+        }
+        else if (error && error.code === -32000) {
+            if (error.message === "wrong transaction nonce") {
+                error.message += " (nonce too low)";
+            }
+        }
+        return super.getRpcError(payload, _error);
+    }
     /**
      *  Returns a prepared request for connecting to %%network%%
      *  with %%apiKey%%.

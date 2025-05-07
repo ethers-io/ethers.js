@@ -3,9 +3,10 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.14.0 (2025-05-06 02:03)
+ethers/v6.14.0 (2025-05-06 22:02)
 ---------------------------------
 
+  - Remove BlockscoutProvider temporarily until custom error issues are fixed ([805a8b3](https://github.com/ethers-io/ethers.js/commit/805a8b3aba26998a1e25055e9d3dd41c01ebbba0)).
   - EIP-7702 support ([#4916](https://github.com/ethers-io/ethers.js/issues/4916); [db490e1](https://github.com/ethers-io/ethers.js/commit/db490e1afaaa139be9cb38e6b50a1bc4ef28e075), [e7c1bdf](https://github.com/ethers-io/ethers.js/commit/e7c1bdf6f0a5d6f976dddd6375e76445ac6851fc)).
   - Added support for to override fetch init options in the Browser ([#3895](https://github.com/ethers-io/ethers.js/issues/3895); [844ae68](https://github.com/ethers-io/ethers.js/commit/844ae68a96deabc4d5f053dad5f1112b06f08d9a)).
   - Added EIP-6963 discovery to BrowserProvider ([f5469dd](https://github.com/ethers-io/ethers.js/commit/f5469dd0e0719389d51e0106ee36d07a7ebef875)).
@@ -17,6 +18,38 @@ ethers/v6.13.7 (2025-04-25 21:50)
 
   - Fix FallbackProvider coalescing call exceptions when backends return slightly different error message ([268a0ac](https://github.com/ethers-io/ethers.js/commit/268a0ac5af6a2a59c240195d75ed19047731c6c0)).
   - Fixed Infura BSC network URLs ([#4951](https://github.com/ethers-io/ethers.js/issues/4951); [d01b4cb](https://github.com/ethers-io/ethers.js/commit/d01b4cb84b2f00dd04dc5317600a52f1fcf9b316)).
+
+ethers/v6.13.6 (2025-03-21 18:21)
+---------------------------------
+
+  - Implicitly use EIP-7702 if authorizationList is given and non-empty ([#4961](https://github.com/ethers-io/ethers.js/issues/4961); [e7c1bdf](https://github.com/ethers-io/ethers.js/commit/e7c1bdf6f0a5d6f976dddd6375e76445ac6851fc)).
+  - Initial EIP-7702 support ([#4916](https://github.com/ethers-io/ethers.js/issues/4916); [db490e1](https://github.com/ethers-io/ethers.js/commit/db490e1afaaa139be9cb38e6b50a1bc4ef28e075)).
+  - Added support for to override fetch init options in the Browser ([#3895](https://github.com/ethers-io/ethers.js/issues/3895); [844ae68](https://github.com/ethers-io/ethers.js/commit/844ae68a96deabc4d5f053dad5f1112b06f08d9a)).
+  - Added EIP-6963 discovery to BrowserProvider ([f5469dd](https://github.com/ethers-io/ethers.js/commit/f5469dd0e0719389d51e0106ee36d07a7ebef875)).
+  - Merge: e5036e77 158f5d02     Merge branch 'main' into wip-v6.14 ([e7165a6](https://github.com/ethers-io/ethers.js/commit/e7165a6151e1fddcc9b8f4f30dfc13ee0a7d6f87)).
+  - tests: squelch the noisy runtime console API event in browser tests ([79428fd](https://github.com/ethers-io/ethers.js/commit/79428fd44950ca21e9cc1b6f850122461217b0b3)).
+  - tests: added faucet key environment for browser CI tests ([27d42af](https://github.com/ethers-io/ethers.js/commit/27d42af134bec099164e7afd03420c3dad53e3a9)).
+  - tests: better runtime exception output for browser tests ([0beed25](https://github.com/ethers-io/ethers.js/commit/0beed258242cff7029ef1806ad0ff4955cb135c1)).
+  - tests: added more debug endpoints to browser tests ([33bbf66](https://github.com/ethers-io/ethers.js/commit/33bbf662213b5d4a00901e490fd432dbeeb1a26b)).
+  - tests: added JSON-RPC tests to web browser CI ([1c0c23c](https://github.com/ethers-io/ethers.js/commit/1c0c23c084e389390ce00e5a421267a4f8bdef0d)).
+  - tests: added browser tests for sending ([afd613a](https://github.com/ethers-io/ethers.js/commit/afd613a2a0c9fb548805ed36e23ad9a5d4bcc239)).
+  - tests: debugging browser tests failing to launch ([d1baa74](https://github.com/ethers-io/ethers.js/commit/d1baa741f6b272ba692e0e78787cacb1bd42a8b4)).
+  - tests: fix assert call for browser assert ([1806bbd](https://github.com/ethers-io/ethers.js/commit/1806bbde27523933fb140ad985426f94e0286faf)).
+  - tests: inlcude more node tests in the browser tests ([92fd5d1](https://github.com/ethers-io/ethers.js/commit/92fd5d1f47c640caa7100bcccf0b133e866989e6)).
+  - tests: move more tests to dev network ([996f30c](https://github.com/ethers-io/ethers.js/commit/996f30c674002cea316fa7aa3929f43409f934bc)).
+  - tests: debugging CI browser failure ([ce7212d](https://github.com/ethers-io/ethers.js/commit/ce7212d03d6867081603794f0480f31d053823c4)).
+  - tests: debugging CI browser failure ([f1821a6](https://github.com/ethers-io/ethers.js/commit/f1821a696763938ca9d44815bdcd5cc043eb3900)).
+  - tests: debugging CI browser failure ([cc9119c](https://github.com/ethers-io/ethers.js/commit/cc9119cecb6b970544861642861807c520eb763b)).
+  - tests: debugging CI browser failure ([3ac33f9](https://github.com/ethers-io/ethers.js/commit/3ac33f9a40e40dabf9c19b8cc7114ce9897a3646)).
+  - tests: debugging CI browser failure ([25b11ee](https://github.com/ethers-io/ethers.js/commit/25b11ee0eaa57293fe981b9b6b19bdae7d4db169)).
+  - tests: debug CI failing ([3bcbcae](https://github.com/ethers-io/ethers.js/commit/3bcbcaeb025c530717b15c5ba099d320fdd9f934)).
+  - tests: added circular support to browser-safe inspect ([3854b39](https://github.com/ethers-io/ethers.js/commit/3854b39763a2a57f363bf9bf925adcc27002bde1)).
+  - tests: added browser-safe inspect for tests ([e299a31](https://github.com/ethers-io/ethers.js/commit/e299a31ecb9017baf07c58bb927c2e718ebeb447)).
+  - tests: fix for browser CI tests ([74a68bc](https://github.com/ethers-io/ethers.js/commit/74a68bcc4976e48a00f57f5279664551b47b6840)).
+  - tests: adding debug info to local JsonPrcProvider ([c508538](https://github.com/ethers-io/ethers.js/commit/c5085385563c57c7958be1ab413079dc8409c8c4)).
+  - tests: temporarily remove QuickNode ([499ed8c](https://github.com/ethers-io/ethers.js/commit/499ed8c4bb91b918148c348b805ce753584065b6)).
+  - Accept modern KZG library API while exposing legacy API ([#4841](https://github.com/ethers-io/ethers.js/issues/4841); [e5036e7](https://github.com/ethers-io/ethers.js/commit/e5036e778624fea957dd847f7be1a9f148b8997e)).
+  - Added CommunityResourcable to exports ([#4776](https://github.com/ethers-io/ethers.js/issues/4776); [bca8d1b](https://github.com/ethers-io/ethers.js/commit/bca8d1b549569e6f7793f07fcc46dfd731e37d2b)).
 
 ethers/v6.13.5 (2025-01-04 15:26)
 ---------------------------------

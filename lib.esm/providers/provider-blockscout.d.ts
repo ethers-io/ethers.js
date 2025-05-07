@@ -21,9 +21,10 @@
 import { FetchRequest } from "../utils/index.js";
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
-import type { AbstractProvider } from "./abstract-provider.js";
+import type { AbstractProvider, PerformActionRequest } from "./abstract-provider.js";
 import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
+import type { JsonRpcPayload, JsonRpcError } from "./provider-jsonrpc.js";
 /**
  *  The **BlockscoutProvider** connects to the [[link-blockscout]]
  *  JSON-RPC end-points.
@@ -44,6 +45,11 @@ export declare class BlockscoutProvider extends JsonRpcProvider implements Commu
     constructor(_network?: Networkish, apiKey?: null | string);
     _getProvider(chainId: number): AbstractProvider;
     isCommunityResource(): boolean;
+    getRpcRequest(req: PerformActionRequest): null | {
+        method: string;
+        args: Array<any>;
+    };
+    getRpcError(payload: JsonRpcPayload, _error: JsonRpcError): Error;
     /**
      *  Returns a prepared request for connecting to %%network%%
      *  with %%apiKey%%.
