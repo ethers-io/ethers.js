@@ -14,10 +14,7 @@
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 
-import { getAddress, resolveAddress } from "../address/index.js";
-import { ZeroAddress } from "../constants/index.js";
-import { Contract } from "../contract/index.js";
-import { namehash } from "../hash/index.js";
+import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
@@ -1205,44 +1202,34 @@ export class AbstractProvider implements Provider {
         return null;
     }
 
-    async lookupAddress(address: string): Promise<null | string> {
-        address = getAddress(address);
-        const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
-
+    async lookupAddress(address: string, coinType: number = 60): Promise<null | string> {
+        const reverseName = EnsResolver.getReverseName(address, coinType);
         try {
-
-            const ensAddr = await EnsResolver.getEnsAddress(this);
-            const ensContract = new Contract(ensAddr, [
-                "function resolver(bytes32) view returns (address)"
-            ], this);
-
-            const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroAddress) { return null; }
-
-            const resolverContract = new Contract(resolver, [
-                "function name(bytes32) view returns (string)"
-            ], this);
-            const name = await resolverContract.name(node);
-
-            // Failed forward resolution
-            const check = await this.resolveName(name);
-            if (check !== address) { return null; }
-
-            return name;
-
+            const revResolver = await this.getResolver(reverseName);
+            if (revResolver) {
+                const name = await revResolver.getName();
+                if (name) {
+                    const resolver = await this.getResolver(name);
+                    if (resolver) {
+                        const expect = await resolver.getAddress(coinType);
+                        if (expect) {
+                            // check roundtrip
+                            assert(address === expect, "address->name->address mismatch", "VALUE_MISMATCH", {lhs: address, rhs: expect});
+                            return name;
+                        }
+                    }
+                }
+            }
+            return null;
         } catch (error) {
             // No data was returned from the resolver
             if (isError(error, "BAD_DATA") && error.value === "0x") {
                 return null;
             }
-
-            // Something reerted
+            // Something reverted
             if (isError(error, "CALL_EXCEPTION")) { return null; }
-
             throw error;
         }
-
-        return null;
     }
 
     async waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt> {
