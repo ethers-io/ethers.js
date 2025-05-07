@@ -20,15 +20,16 @@
  *  @_subsection: api/providers/thirdparty:Blockscout  [providers-blockscout]
  */
 import {
-    defineProperties, FetchRequest, assertArgument
+    assertArgument, defineProperties, FetchRequest, isHexString
 } from "../utils/index.js";
 
 import { Network } from "./network.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
-import type { AbstractProvider } from "./abstract-provider.js";
+import type { AbstractProvider, PerformActionRequest } from "./abstract-provider.js";
 import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
+import type { JsonRpcPayload, JsonRpcError } from "./provider-jsonrpc.js";
 
 
 function getUrl(name: string): string {
@@ -106,6 +107,52 @@ export class BlockscoutProvider extends JsonRpcProvider implements CommunityReso
 
     isCommunityResource(): boolean {
         return (this.apiKey === null);
+    }
+
+    getRpcRequest(req: PerformActionRequest): null | { method: string, args: Array<any> } {
+        // Blockscout enforces the TAG argument for estimateGas
+        const resp = super.getRpcRequest(req);
+        if (resp && resp.method === "eth_estimateGas" && resp.args.length == 1) {
+            resp.args = resp.args.slice();
+            resp.args.push("latest");
+        }
+        return resp;
+    }
+
+    getRpcError(payload: JsonRpcPayload, _error: JsonRpcError): Error {
+        const error = _error ? _error.error: null;
+
+        // Blockscout currently drops the VM result and replaces it with a
+        // human-readable string, so we need to make it machine-readable.
+        if (error && error.code === -32015 && !isHexString(error.data || "", true)) {
+            const panicCodes = <Record<string, string>>{
+                "assert(false)": "01",
+                "arithmetic underflow or overflow": "11",
+                "division or modulo by zero": "12",
+                "out-of-bounds array access; popping on an empty array": "31",
+                "out-of-bounds access of an array or bytesN": "32"
+            };
+
+            let panicCode = "";
+            if (error.message === "VM execution error.") {
+                // eth_call passes this message
+                panicCode = panicCodes[error.data] || "";
+            } else if (panicCodes[error.message || ""]) {
+                panicCode = panicCodes[error.message || ""];
+            }
+
+            if (panicCode) {
+                error.message += ` (reverted: ${ error.data })`;
+                error.data = "0x4e487b7100000000000000000000000000000000000000000000000000000000000000" + panicCode;
+            }
+
+        } else if (error && error.code === -32000) {
+            if (error.message === "wrong transaction nonce") {
+                error.message += " (nonce too low)";
+            }
+        }
+
+        return super.getRpcError(payload, _error);
     }
 
     /**

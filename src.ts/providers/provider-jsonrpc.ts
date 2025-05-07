@@ -1002,6 +1002,11 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
                     transaction: ((<any>payload).params[0]),
                     info: { payload, error }
                 });
+            } else if (msg.match(/nonce/i) && msg.match(/too low/i)) {
+                return makeError("nonce has already been used", "NONCE_EXPIRED", {
+                    transaction: ((<any>payload).params[0]),
+                    info: { payload, error }
+                });
             }
         }
 
