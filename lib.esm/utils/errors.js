@@ -9,12 +9,18 @@
  */
 import { version } from "../_version.js";
 import { defineProperties } from "./properties.js";
-function stringify(value) {
+function stringify(value, seen = new Set()) {
     if (value == null) {
         return "null";
     }
+    if (typeof value === "object") {
+        if (seen.has(value)) {
+            return "[Circular]";
+        }
+        seen.add(value);
+    }
     if (Array.isArray(value)) {
-        return "[ " + (value.map(stringify)).join(", ") + " ]";
+        return "[ " + value.map((v) => stringify(v, seen)).join(", ") + " ]";
     }
     if (value instanceof Uint8Array) {
         const HEX = "0123456789abcdef";
@@ -25,26 +31,26 @@ function stringify(value) {
         }
         return result;
     }
-    if (typeof (value) === "object" && typeof (value.toJSON) === "function") {
-        return stringify(value.toJSON());
+    if (typeof value === "object" && typeof value.toJSON === "function") {
+        return stringify(value.toJSON(), seen);
     }
-    switch (typeof (value)) {
+    switch (typeof value) {
         case "boolean":
         case "symbol":
             return value.toString();
         case "bigint":
             return BigInt(value).toString();
         case "number":
-            return (value).toString();
+            return value.toString();
         case "string":
             return JSON.stringify(value);
         case "object": {
             const keys = Object.keys(value);
             keys.sort();
-            return "{ " + keys.map((k) => `${stringify(k)}: ${stringify(value[k])}`).join(", ") + " }";
+            return "{ " + keys.map((k) => `${stringify(k)}: ${stringify(value[k], seen)}`).join(", ") + " }";
         }
     }
-    return `[ COULD NOT SERIALIZE ]`;
+    return "[ COULD NOT SERIALIZE ]";
 }
 /**
  *  Returns true if the %%error%% matches an error thrown by ethers
