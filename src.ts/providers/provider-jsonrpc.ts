@@ -866,8 +866,8 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
                     nonce: toQuantity(a.nonce),
                     chainId: toQuantity(a.chainId),
                     yParity: toQuantity(a.signature.yParity),
-                    r: a.signature.r,
-                    s: a.signature.s,
+                    r: toQuantity(a.signature.r),
+                    s: toQuantity(a.signature.s),
                 }
             });
         }
