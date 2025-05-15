@@ -1218,8 +1218,8 @@ export class Transaction implements TransactionLike<string> {
             } else if (hasFee) {
                 types.push(2);
             } else if (hasGasPrice) {
-                types.push(1);
-                if (!hasAccessList) { types.push(0); }
+                types.push(0); 
+                if (hasAccessList) { types.push(1); } 
             } else if (hasAccessList) {
                 types.push(1);
                 types.push(2);
