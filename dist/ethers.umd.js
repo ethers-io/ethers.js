@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.14.0";
+    const version = "6.14.1";
 
     /**
      *  Property helper functions.
@@ -20666,8 +20666,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                         nonce: toQuantity(a.nonce),
                         chainId: toQuantity(a.chainId),
                         yParity: toQuantity(a.signature.yParity),
-                        r: a.signature.r,
-                        s: a.signature.s,
+                        r: toQuantity(a.signature.r),
+                        s: toQuantity(a.signature.s),
                     };
                 });
             }

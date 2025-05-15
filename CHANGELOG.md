@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.14.1 (2025-05-15 14:17)
+---------------------------------
+
+  - Fix JSON-RPC authorizationList signature entries encoded as DATA instead of QUANTITY values ([#4916](https://github.com/ethers-io/ethers.js/issues/4916); [135db72](https://github.com/ethers-io/ethers.js/commit/135db722756b81f44f55441e1e2d24ef4f85f216)).
+
 ethers/v6.14.0 (2025-05-06 22:02)
 ---------------------------------
 
