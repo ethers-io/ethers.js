@@ -1620,7 +1620,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         if (confirms === 0) { return checkReceipt(receipt); }
 
         if (receipt) {
-            if ((await receipt.confirmations()) >= confirms) {
+            if (confirms === 1 || (await receipt.confirmations()) >= confirms) {
                 return checkReceipt(receipt);
             }
 
