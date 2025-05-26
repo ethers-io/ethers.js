@@ -93,7 +93,7 @@
       "url": "https://www.buymeacoffee.com/ricmoo"
     }
   ],
-  "gitHead": "135db722756b81f44f55441e1e2d24ef4f85f216",
+  "gitHead": "52a052210919a35b0b0b38e357b3003ac8259fce",
   "homepage": "https://ethers.org",
   "keywords": [
     "ethereum",
@@ -131,5 +131,5 @@
     "test-esm": "mocha --trace-warnings --reporter ./reporter.cjs ./lib.esm/_tests/test-*.js"
   },
   "sideEffects": false,
-  "version": "6.14.1"
+  "version": "6.14.2"
 }

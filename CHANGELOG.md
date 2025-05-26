@@ -3,6 +3,14 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.14.2 (2025-05-26 18:03)
+---------------------------------
+
+  - Fixed call stack overflow in makeError stringify for recursive structures ([#4977](https://github.com/ethers-io/ethers.js/issues/4977), [#4978](https://github.com/ethers-io/ethers.js/issues/4978); [52a0522](https://github.com/ethers-io/ethers.js/commit/52a052210919a35b0b0b38e357b3003ac8259fce)).
+  - Explicitly throw error on gunzip failure to prevent uncaught exception ([#4873](https://github.com/ethers-io/ethers.js/issues/4873), [#4874](https://github.com/ethers-io/ethers.js/issues/4874); [fe98f98](https://github.com/ethers-io/ethers.js/commit/fe98f985e38e7540108b20d7966cca3f85d620f3)).
+  - Skip additional receipt fetch for single confirmation requests ([#4972](https://github.com/ethers-io/ethers.js/issues/4972); [243cb02](https://github.com/ethers-io/ethers.js/commit/243cb02c52e33c8e09b637ae775e520c1cd672d3)).
+  - Update EtherscanProvider to use their v2 API ([#4975](https://github.com/ethers-io/ethers.js/issues/4975); [5e09aa1](https://github.com/ethers-io/ethers.js/commit/5e09aa1fe4e216a89875bab768bec484aeaf553d)).
+
 ethers/v6.14.1 (2025-05-15 14:17)
 ---------------------------------
 

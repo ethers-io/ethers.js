@@ -92,8 +92,6 @@ export class EtherscanProvider extends AbstractProvider {
         const network = Network.from(_network);
         this.#plugin = network.getPlugin(EtherscanPluginId);
         defineProperties(this, { apiKey, network });
-        // Test that the network is supported by Etherscan
-        this.getBaseUrl();
     }
     /**
      *  Returns the base URL.
@@ -101,6 +99,11 @@ export class EtherscanProvider extends AbstractProvider {
      *  If an [[EtherscanPlugin]] is configured on the
      *  [[EtherscanBaseProvider_network]], returns the plugin's
      *  baseUrl.
+     *
+     *  Deprecated; for Etherscan v2 the base is no longer a simply
+     *  host, but instead a URL including a chainId parameter. Changing
+     *  this to return a URL prefix could break some libraries, so it
+     *  is left intact but will be removed in the future as it is unused.
      */
     getBaseUrl() {
         if (this.#plugin) {
@@ -145,21 +148,23 @@ export class EtherscanProvider extends AbstractProvider {
      *  Returns the URL for the %%module%% and %%params%%.
      */
     getUrl(module, params) {
-        const query = Object.keys(params).reduce((accum, key) => {
+        let query = Object.keys(params).reduce((accum, key) => {
             const value = params[key];
             if (value != null) {
                 accum += `&${key}=${value}`;
             }
             return accum;
         }, "");
-        const apiKey = ((this.apiKey) ? `&apikey=${this.apiKey}` : "");
-        return `${this.getBaseUrl()}/api?module=${module}${query}${apiKey}`;
+        if (this.apiKey) {
+            query += `&apikey=${this.apiKey}`;
+        }
+        return `https:/\/api.etherscan.io/v2/api?chainid=${this.network.chainId}&module=${module}${query}`;
     }
     /**
      *  Returns the URL for using POST requests.
      */
     getPostUrl() {
-        return `${this.getBaseUrl()}/api`;
+        return `https:/\/api.etherscan.io/v2/api?chainid=${this.network.chainId}`;
     }
     /**
      *  Returns the parameters for using POST requests.
@@ -167,6 +172,7 @@ export class EtherscanProvider extends AbstractProvider {
     getPostData(module, params) {
         params.module = module;
         params.apikey = this.apiKey;
+        params.chainid = this.network.chainId;
         return params;
     }
     async detectNetwork() {

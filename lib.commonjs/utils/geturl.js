@@ -91,10 +91,17 @@ function createGetUrl(options) {
                     }
                 });
                 resp.on("end", () => {
-                    if (headers["content-encoding"] === "gzip" && body) {
-                        body = (0, data_js_1.getBytes)((0, zlib_1.gunzipSync)(body));
+                    try {
+                        if (headers["content-encoding"] === "gzip" && body) {
+                            body = (0, data_js_1.getBytes)((0, zlib_1.gunzipSync)(body));
+                        }
+                        resolve({ statusCode, statusMessage, headers, body });
                     }
-                    resolve({ statusCode, statusMessage, headers, body });
+                    catch (error) {
+                        reject((0, errors_js_1.makeError)("bad response data", "SERVER_ERROR", {
+                            request: req, info: { response: resp, error }
+                        }));
+                    }
                 });
                 resp.on("error", (error) => {
                     //@TODO: Should this just return nornal response with a server error?

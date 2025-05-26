@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.14.1";
+const version = "6.14.2";
 
 /**
  *  Property helper functions.
@@ -68,12 +68,21 @@ function defineProperties(target, values, types) {
  *
  *  @_section: api/utils/errors:Errors  [about-errors]
  */
-function stringify$1(value) {
+function stringify$1(value, seen) {
     if (value == null) {
         return "null";
     }
+    if (seen == null) {
+        seen = new Set();
+    }
+    if (typeof (value) === "object") {
+        if (seen.has(value)) {
+            return "[Circular]";
+        }
+        seen.add(value);
+    }
     if (Array.isArray(value)) {
-        return "[ " + (value.map(stringify$1)).join(", ") + " ]";
+        return "[ " + (value.map((v) => stringify$1(v, seen))).join(", ") + " ]";
     }
     if (value instanceof Uint8Array) {
         const HEX = "0123456789abcdef";
@@ -85,22 +94,21 @@ function stringify$1(value) {
         return result;
     }
     if (typeof (value) === "object" && typeof (value.toJSON) === "function") {
-        return stringify$1(value.toJSON());
+        return stringify$1(value.toJSON(), seen);
     }
     switch (typeof (value)) {
         case "boolean":
+        case "number":
         case "symbol":
             return value.toString();
         case "bigint":
             return BigInt(value).toString();
-        case "number":
-            return (value).toString();
         case "string":
             return JSON.stringify(value);
         case "object": {
             const keys = Object.keys(value);
             keys.sort();
-            return "{ " + keys.map((k) => `${stringify$1(k)}: ${stringify$1(value[k])}`).join(", ") + " }";
+            return "{ " + keys.map((k) => `${stringify$1(k, seen)}: ${stringify$1(value[k], seen)}`).join(", ") + " }";
         }
     }
     return `[ COULD NOT SERIALIZE ]`;
@@ -15279,7 +15287,7 @@ class TransactionResponse {
             return checkReceipt(receipt);
         }
         if (receipt) {
-            if ((await receipt.confirmations()) >= confirms) {
+            if (confirms === 1 || (await receipt.confirmations()) >= confirms) {
                 return checkReceipt(receipt);
             }
         }
@@ -21540,8 +21548,6 @@ class EtherscanProvider extends AbstractProvider {
         const network = Network.from(_network);
         this.#plugin = network.getPlugin(EtherscanPluginId);
         defineProperties(this, { apiKey, network });
-        // Test that the network is supported by Etherscan
-        this.getBaseUrl();
     }
     /**
      *  Returns the base URL.
@@ -21549,6 +21555,11 @@ class EtherscanProvider extends AbstractProvider {
      *  If an [[EtherscanPlugin]] is configured on the
      *  [[EtherscanBaseProvider_network]], returns the plugin's
      *  baseUrl.
+     *
+     *  Deprecated; for Etherscan v2 the base is no longer a simply
+     *  host, but instead a URL including a chainId parameter. Changing
+     *  this to return a URL prefix could break some libraries, so it
+     *  is left intact but will be removed in the future as it is unused.
      */
     getBaseUrl() {
         if (this.#plugin) {
@@ -21592,21 +21603,23 @@ class EtherscanProvider extends AbstractProvider {
      *  Returns the URL for the %%module%% and %%params%%.
      */
     getUrl(module, params) {
-        const query = Object.keys(params).reduce((accum, key) => {
+        let query = Object.keys(params).reduce((accum, key) => {
             const value = params[key];
             if (value != null) {
                 accum += `&${key}=${value}`;
             }
             return accum;
         }, "");
-        const apiKey = ((this.apiKey) ? `&apikey=${this.apiKey}` : "");
-        return `${this.getBaseUrl()}/api?module=${module}${query}${apiKey}`;
+        if (this.apiKey) {
+            query += `&apikey=${this.apiKey}`;
+        }
+        return `https:/\/api.etherscan.io/v2/api?chainid=${this.network.chainId}&module=${module}${query}`;
     }
     /**
      *  Returns the URL for using POST requests.
      */
     getPostUrl() {
-        return `${this.getBaseUrl()}/api`;
+        return `https:/\/api.etherscan.io/v2/api?chainid=${this.network.chainId}`;
     }
     /**
      *  Returns the parameters for using POST requests.
@@ -21614,6 +21627,7 @@ class EtherscanProvider extends AbstractProvider {
     getPostData(module, params) {
         params.module = module;
         params.apikey = this.apiKey;
+        params.chainid = this.network.chainId;
         return params;
     }
     async detectNetwork() {

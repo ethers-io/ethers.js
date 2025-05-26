@@ -1147,7 +1147,7 @@ class TransactionResponse {
             return checkReceipt(receipt);
         }
         if (receipt) {
-            if ((await receipt.confirmations()) >= confirms) {
+            if (confirms === 1 || (await receipt.confirmations()) >= confirms) {
                 return checkReceipt(receipt);
             }
         }

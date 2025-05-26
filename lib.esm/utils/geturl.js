@@ -87,10 +87,17 @@ export function createGetUrl(options) {
                     }
                 });
                 resp.on("end", () => {
-                    if (headers["content-encoding"] === "gzip" && body) {
-                        body = getBytes(gunzipSync(body));
+                    try {
+                        if (headers["content-encoding"] === "gzip" && body) {
+                            body = getBytes(gunzipSync(body));
+                        }
+                        resolve({ statusCode, statusMessage, headers, body });
                     }
-                    resolve({ statusCode, statusMessage, headers, body });
+                    catch (error) {
+                        reject(makeError("bad response data", "SERVER_ERROR", {
+                            request: req, info: { response: resp, error }
+                        }));
+                    }
                 });
                 resp.on("error", (error) => {
                     //@TODO: Should this just return nornal response with a server error?
