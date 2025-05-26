@@ -9,6 +9,7 @@ import {
     assert, assertArgument
 } from "../utils/index.js";
 
+import type { SignatureLike } from "../crypto/index.js"
 import type {
     BlockParams, LogParams,
     TransactionReceiptParams, TransactionResponseParams,
@@ -215,11 +216,25 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
 
         authorizationList: allowNull(arrayOf((v: any) => {
+            let sig: SignatureLike;
+            if (v.signature) {
+                sig = v.signature;
+
+            } else {
+                let yParity = v.yParity;
+                if (yParity === "0x1b") {
+                    yParity = 0;
+                } else if (yParity === "0x1c") {
+                    yParity = 1;
+                }
+                sig = Object.assign({ }, v, { yParity });
+            }
+
             return {
                 address: getAddress(v.address),
                 chainId: getBigInt(v.chainId),
                 nonce: getBigInt(v.nonce),
-                signature: Signature.from(v.signature ? v.signature: v)
+                signature: Signature.from(sig)
             };
         }, false), null),
 
