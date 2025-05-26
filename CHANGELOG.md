@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.14.3 (2025-05-26 18:55)
+---------------------------------
+
+  - Fixed non-normalized yParity on EIP-7702 JSON-RPC responses ([#4985](https://github.com/ethers-io/ethers.js/issues/4985); [a8803ca](https://github.com/ethers-io/ethers.js/commit/a8803ca4dce20d2dededed8da65e80f2a8770fb1)).
+
 ethers/v6.14.2 (2025-05-26 18:03)
 ---------------------------------
 

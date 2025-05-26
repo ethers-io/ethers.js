@@ -203,11 +203,25 @@ function formatTransactionResponse(value) {
         accessList: allowNull(index_js_3.accessListify, null),
         blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
         authorizationList: allowNull(arrayOf((v) => {
+            let sig;
+            if (v.signature) {
+                sig = v.signature;
+            }
+            else {
+                let yParity = v.yParity;
+                if (yParity === "0x1b") {
+                    yParity = 0;
+                }
+                else if (yParity === "0x1c") {
+                    yParity = 1;
+                }
+                sig = Object.assign({}, v, { yParity });
+            }
             return {
                 address: (0, index_js_1.getAddress)(v.address),
                 chainId: (0, index_js_4.getBigInt)(v.chainId),
                 nonce: (0, index_js_4.getBigInt)(v.nonce),
-                signature: index_js_2.Signature.from(v.signature ? v.signature : v)
+                signature: index_js_2.Signature.from(sig)
             };
         }, false), null),
         blockHash: allowNull(formatHash, null),
