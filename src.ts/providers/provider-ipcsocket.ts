@@ -57,7 +57,7 @@ export class IpcSocketProvider extends SocketProvider {
             messages.forEach((message) => {
                 this._processMessage(message);
             });
-            response = remaining;
+            response = Buffer.from(remaining);
         });
 
         this.socket.on("end", () => {
