@@ -986,7 +986,7 @@ export class AbstractProvider implements Provider {
 
          } catch (error: any) {
              // CCIP Read OffchainLookup
-             if (!this.disableCcipRead && isCallException(error) && error.data && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
+             if (!this.disableCcipRead && isCallException(error) && error.data && attempt >= 0 && blockTag === "latest" && transaction.to != null && getBytes(error.data).length >= 4 && dataSlice(error.data, 0, 4) === "0x556f1830") {
                  const data = error.data;
 
                  const txSender = await resolveAddress(transaction.to, this);
