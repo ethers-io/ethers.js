@@ -131,7 +131,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
             // Explicit Legacy or EIP-2930 transaction
 
             // We need to get fee data to determine things
-            const feeData = await provider.getFeeData();
+            const feeData = await provider.getFeeData(pop);
 
             assert(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
                 operation: "getGasPrice" });
@@ -142,7 +142,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
         } else {
 
             // We need to get fee data to determine things
-            const feeData = await provider.getFeeData();
+            const feeData = await provider.getFeeData(pop);
 
             if (pop.type == null) {
                 // We need to auto-detect the intended type of this transaction...
