@@ -263,6 +263,32 @@ _code: Getting legacy gas price  @lang<script>
   // v6
   (await provider.getFeeData()).gasPrice
 
+_null:
+
+The `lastBaseFeePerGas` field has been removed from the `FeeData` object in v6.
+This field was commonly used in v5 to calculate target gas prices by adding it
+to `maxPriorityFeePerGas`. In v6, this calculation is handled automatically.
+
+_code: Base fee handling  @lang<script>
+  // v5: Manual calculation using lastBaseFeePerGas
+  const feeData = await provider.getFeeData()
+  const targetGasPrice = feeData.maxPriorityFeePerGas.add(feeData.lastBaseFeePerGas)
+
+  // v6: Use maxFeePerGas (automatically calculated using EIP-1559 heuristics)
+  const feeData = await provider.getFeeData()
+  const targetGasPrice = feeData.maxFeePerGas
+
+  // v6: Alternative - get base fee from latest block if needed
+  const block = await provider.getBlock("latest")
+  const baseFeePerGas = block.baseFeePerGas  // This is the equivalent of lastBaseFeePerGas
+
+  // v6: Manual calculation (if you need the old behavior)
+  const [feeData, block] = await Promise.all([
+    provider.getFeeData(),
+    provider.getBlock("latest")
+  ])
+  const targetGasPrice = feeData.maxPriorityFeePerGas + block.baseFeePerGas
+
 
 _subsection: Signatures  @<migrate-signatures>
 
