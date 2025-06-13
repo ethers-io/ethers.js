@@ -3,7 +3,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 /**
  *  The current version of Ethers.
  */
-const version = "6.14.3";
+const version = "6.14.4";
 
 /**
  *  Property helper functions.
@@ -8655,8 +8655,8 @@ function formatAuthorizationList(value) {
             a.address,
             formatNumber(a.nonce, "nonce"),
             formatNumber(a.signature.yParity, "yParity"),
-            a.signature.r,
-            a.signature.s
+            toBeArray(a.signature.r),
+            toBeArray(a.signature.s)
         ];
     });
 }

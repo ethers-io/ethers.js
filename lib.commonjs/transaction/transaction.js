@@ -137,8 +137,8 @@ function formatAuthorizationList(value) {
             a.address,
             formatNumber(a.nonce, "nonce"),
             formatNumber(a.signature.yParity, "yParity"),
-            a.signature.r,
-            a.signature.s
+            (0, index_js_3.toBeArray)(a.signature.r),
+            (0, index_js_3.toBeArray)(a.signature.s)
         ];
     });
 }

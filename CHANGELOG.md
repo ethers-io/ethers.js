@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.14.4 (2025-06-12 23:16)
+---------------------------------
+
+  - Fixed serialization of EIP-7702 transactions with leading 0-bytes ([#4916](https://github.com/ethers-io/ethers.js/issues/4916); [389dc03](https://github.com/ethers-io/ethers.js/commit/389dc0381222206011037792fd575c36da25abbf)).
+
 ethers/v6.14.3 (2025-05-26 18:55)
 ---------------------------------
 
