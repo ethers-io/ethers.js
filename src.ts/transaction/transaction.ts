@@ -317,8 +317,8 @@ function formatAuthorizationList(value: Array<Authorization>): Array<Array<strin
             a.address,
             formatNumber(a.nonce, "nonce"),
             formatNumber(a.signature.yParity, "yParity"),
-            a.signature.r,
-            a.signature.s
+            toBeArray(a.signature.r),
+            toBeArray(a.signature.s)
         ];
     });
 }
