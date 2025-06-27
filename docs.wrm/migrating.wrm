@@ -16,6 +16,26 @@ so a lot of changes are largely internal.
 - [Utilities](migrate-utils)
 - [Removed Items](migrate-missing)
 
+_subsection: Codemods
+_heading Ethers v6 Codemods
+
+Run the following codemods to automatically update your code for Ethers v6 migration:
+
+_code: codemod migration recipe @lang<script>
+
+  npx codemod@latest Ethers/6/Migration-Recipe
+
+This wil run the following codemods from the Ethers Codemod repository:
+
+- [[Ethers/6/Big-Numbers]]
+- [[Ethers/6/Signatures]]
+- [[Ethers/6/Providers]]
+- [[Ethers/6/Importing]]
+- [[Ethers/6/Transactions]]
+- [[Ethers/6/Contracts/Ambiguous-Methods]]
+- [[Ethers/6/Contracts/Other-Method-Operations]]
+- [[Ethers/6/Contracts/Other-Method-Operations]]
+
 
 _subsection: Big Numbers  @<migrate-bigint>
 
@@ -61,6 +81,11 @@ _code: simple comparison on large numbers  @lang<script>
 
   // Using BigInt in v6
   isEqual = (value1 == value2)
+
+_note: Codemod transforms BigNumber to BigInt and also refactors addition and equality with:
+
+_code:
+  npx codemod@latest Ethers/6/Big-Numbers
 
 
 _subsection: Contracts @<migrate-contracts>
@@ -116,6 +141,11 @@ _code: contracts in v6  @lang<script>
   // allows providing typing information to the Contract:
   contract.foo(Typed.address(addr))
 
+_note: Codemod transforms the ambiguous function to TypedAPI function:
+
+_code:
+  npx codemod@latest Ethers/6/Contracts/Ambiguous-Methods
+
 _heading: Other Method Operations
 
 In v5, contracts contained a series of method buckets, which
@@ -164,6 +194,11 @@ _code: other operations in v6  @lang<script>
   // Populate a transaction
   contract.foo.populateTransaction(addr)
 
+_note: Codemod refactors all the functions mentioned above:
+
+_code:
+  npx codemod@latest Ethers/6/Contracts/Other-Method-Operations
+
 
 _subsection: Importing  @<migrate-importing>
 
@@ -195,6 +230,11 @@ _code: importing in v6  @lang<script>
 
   // The pkg.exports provides granular access
   import { InfuraProvider } from "ethers/providers"
+
+_note: Codemod updates import statements to new structure:
+
+_code:
+  npx codemod@latest Ethers/6/Importing
 
 
 _subsection: Providers  @<migrate-providers>
@@ -264,6 +304,11 @@ _code: Getting legacy gas price  @lang<script>
   (await provider.getFeeData()).gasPrice
 
 
+_note: Codemod updates provider class, transaction broadcasting method, static network providers, and fee data-retrieval to align with new structure:
+
+_code:
+  npx codemod@latest Ethers/6/Providers
+
 _subsection: Signatures  @<migrate-signatures>
 
 The Signature is now a class which facilitates all the parsing
@@ -277,6 +322,11 @@ _code: signature manipulation
   // v6
   splitSig = ethers.Signature.from(sigBytes)
   sigBytes = ethers.Signature.from(splitSig).serialized
+
+_note: Codemod replaces [[splitSignature]] and [[joinSignature]] with [[ethers.Signature]] class for parsing and serializing singatures:
+
+_code:
+  npx codemod@latest Ethers/6/Signatures
 
 
 _subsection: Transactions  @<migrate-transactions>
@@ -297,6 +347,11 @@ _code: parsing transactions  @lang<script>
 
   // v6 (the tx can optionally include the signature)
   txBytes = Transaction.from(tx).serialized
+
+_note: Codemod replaces [[parseTransaction]] and [[serializeTransaction]] with new [[Transaction]] class for parsing and serializing singatures:
+
+_code:
+  npx codemod@latest Ethers/6/Transactions
 
 
 _subsection: Utilities  @<migrate-utils>
@@ -426,6 +481,11 @@ _code: commify  @lang<script>
   }
 
   commify("1234.5");
+
+_note: Codemod refactors various utility methods mentioned above, constants, data manipualtion functions, and transaction handling:
+
+_code:
+  npx codemod@latest Ethers/6/Utilities
 
 _subsection: Removed Classes and functions  @<migrate-missing>
 
