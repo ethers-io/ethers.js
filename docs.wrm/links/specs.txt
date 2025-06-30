@@ -17,6 +17,7 @@ link-bip39-zh_tw [Tradional Chinese wordlist](https://github.com/bitcoin/bips/bl
 link-bip39-zh_cn [Simplified Chinese wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/chinese_simplified.txt)
 
 # EIPs; see https://eips.ethereum.org/all
+link-eip-2 [EIP-155](https://eips.ethereum.org/EIPS/eip-2)
 link-eip-155 [EIP-155](https://eips.ethereum.org/EIPS/eip-155)
 link-eip-191 [EIP-191](https://eips.ethereum.org/EIPS/eip-191)
 link-eip-609 [EIP-609](https://eips.ethereum.org/EIPS/eip-609)
