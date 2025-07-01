@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.14.4";
+    const version = "6.15.0";
 
     /**
      *  Property helper functions.
@@ -6668,12 +6668,28 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         /**
          *  The ``s`` value for a signature.
          */
-        get s() { return this.#s; }
+        get s() {
+            assertArgument(parseInt(this.#s.substring(0, 3)) < 8, "non-canonical s; use ._s", "s", this.#s);
+            return this.#s;
+        }
         set s(_value) {
             assertArgument(dataLength(_value) === 32, "invalid s", "value", _value);
-            const value = hexlify(_value);
-            assertArgument(parseInt(value.substring(0, 3)) < 8, "non-canonical s", "value", value);
-            this.#s = value;
+            this.#s = hexlify(_value);
+        }
+        /**
+         *  Return the s value, unchecked for EIP-2 compliance.
+         *
+         *  This should generally not be used and is for situations where
+         *  a non-canonical S value might be relevant, such as Frontier blocks
+         *  that were mined prior to EIP-2 or invalid Authorization List
+         *  signatures.
+         */
+        get _s() { return this.#s; }
+        /**
+         *  Returns true if the Signature is valid for [[link-eip-2]] signatures.
+         */
+        isValid() {
+            return (parseInt(this.#s.substring(0, 3)) < 8);
         }
         /**
          *  The ``v`` value for a signature.
@@ -6750,13 +6766,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#networkV = null;
         }
         [Symbol.for('nodejs.util.inspect.custom')]() {
-            return `Signature { r: "${this.r}", s: "${this.s}", yParity: ${this.yParity}, networkV: ${this.networkV} }`;
+            return `Signature { r: "${this.r}", s: "${this._s}"${this.isValid() ? "" : ', valid: "false"'}, yParity: ${this.yParity}, networkV: ${this.networkV} }`;
         }
         /**
          *  Returns a new identical [[Signature]].
          */
         clone() {
-            const clone = new Signature(_guard$3, this.r, this.s, this.v);
+            const clone = new Signature(_guard$3, this.r, this._s, this.v);
             if (this.networkV) {
                 clone.#networkV = this.networkV;
             }
@@ -6770,7 +6786,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return {
                 _type: "signature",
                 networkV: ((networkV != null) ? networkV.toString() : null),
-                r: this.r, s: this.s, v: this.v,
+                r: this.r, s: this._s, v: this.v,
             };
         }
         /**
@@ -6869,10 +6885,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 if (bytes.length === 65) {
                     const r = hexlify(bytes.slice(0, 32));
-                    const s = bytes.slice(32, 64);
-                    assertError((s[0] & 0x80) === 0, "non-canonical s");
+                    const s = hexlify(bytes.slice(32, 64));
                     const v = Signature.getNormalizedV(bytes[64]);
-                    return new Signature(_guard$3, r, hexlify(s), v);
+                    return new Signature(_guard$3, r, s, v);
                 }
                 assertError(false, "invalid raw signature length");
             }
@@ -6896,7 +6911,6 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 }
                 assertError(false, "missing s");
             })(sig.s, sig.yParityAndS);
-            assertError((getBytes(s)[0] & 0x80) == 0, "non-canonical s");
             // Get v; by any means necessary (we check consistency below)
             const { networkV, v } = (function (_v, yParityAndS, yParity) {
                 if (_v != null) {

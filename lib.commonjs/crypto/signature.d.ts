@@ -45,6 +45,19 @@ export declare class Signature {
     get s(): string;
     set s(_value: BytesLike);
     /**
+     *  Return the s value, unchecked for EIP-2 compliance.
+     *
+     *  This should generally not be used and is for situations where
+     *  a non-canonical S value might be relevant, such as Frontier blocks
+     *  that were mined prior to EIP-2 or invalid Authorization List
+     *  signatures.
+     */
+    get _s(): string;
+    /**
+     *  Returns true if the Signature is valid for [[link-eip-2]] signatures.
+     */
+    isValid(): boolean;
+    /**
      *  The ``v`` value for a signature.
      *
      *  Since a given ``x`` value for ``r`` has two possible values for

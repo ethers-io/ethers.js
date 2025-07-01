@@ -3,6 +3,11 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.15.0 (2025-07-01 11:24)
+---------------------------------
+
+  - Allow non-canonical S values in Signatures moving errors to access-time ([#5013](https://github.com/ethers-io/ethers.js/issues/5013); [9944ec9](https://github.com/ethers-io/ethers.js/commit/9944ec94b154b4f8fdfeefb81a1e47b28fd907bc)).
+
 ethers/v6.14.4 (2025-06-12 23:16)
 ---------------------------------
 
