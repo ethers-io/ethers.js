@@ -858,6 +858,13 @@ export class Log implements LogParams {
     readonly transactionIndex!: number;
 
     /**
+     *  The timestamp of the block that included this log (optional).
+     *  This is supported by newer versions of Geth as per updated
+     *  eth_getLogs specification.
+     */
+    readonly timestamp?: number;
+
+    /**
      *  @_ignore:
      */
     constructor(log: LogParams, provider: Provider) {
@@ -878,6 +885,7 @@ export class Log implements LogParams {
 
             index: log.index,
             transactionIndex: log.transactionIndex,
+            timestamp: log.timestamp,
         });
     }
 
@@ -887,13 +895,13 @@ export class Log implements LogParams {
     toJSON(): any {
         const {
             address, blockHash, blockNumber, data, index,
-            removed, topics, transactionHash, transactionIndex
+            removed, topics, transactionHash, transactionIndex, timestamp
         } = this;
 
         return {
             _type: "log",
             address, blockHash, blockNumber, data, index,
-            removed, topics, transactionHash, transactionIndex
+            removed, topics, transactionHash, transactionIndex, timestamp
         };
     }
 

@@ -101,6 +101,7 @@ const _formatLog = object({
     topics: arrayOf(formatHash),
     transactionHash: formatHash,
     transactionIndex: getNumber,
+    timestamp: allowNull(getNumber),
 }, {
     index: [ "logIndex" ]
 });
@@ -156,6 +157,7 @@ const _formatReceiptLog = object({
     data: formatData,
     index: getNumber,
     blockHash: formatHash,
+    timestamp: allowNull(getNumber),
 }, {
     index: [ "logIndex" ]
 });

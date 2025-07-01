@@ -173,6 +173,13 @@ export interface LogParams {
      *  The transaction index of this log.
      */
     transactionIndex: number;
+
+    /**
+     *  The timestamp of the block that included this log (optional).
+     *  This is supported by newer versions of Geth as per updated
+     *  eth_getLogs specification.
+     */
+    timestamp?: number;
 }
 
 
