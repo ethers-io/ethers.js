@@ -13,12 +13,13 @@ import {
     hexlify, isHexString, toBeHex,
     defineProperties, encodeBase58,
     assert, assertArgument, isError,
-    FetchRequest
+    FetchRequest,
+    getBigInt
 } from "../utils/index.js";
 
 import type { FunctionFragment } from "../abi/index.js";
 
-import type { BytesLike } from "../utils/index.js";
+import type { BigNumberish, BytesLike } from "../utils/index.js";
 
 import type { AbstractProvider, AbstractProviderPlugin } from "./abstract-provider.js";
 import type { EnsPlugin } from "./plugins-network.js";
@@ -188,6 +189,7 @@ export class EnsResolver {
             "function addr(bytes32, uint) view returns (bytes)",
             "function text(bytes32, string) view returns (string)",
             "function contenthash(bytes32) view returns (bytes)",
+            "function name(bytes32) view returns (string)",
         ], provider);
 
     }
@@ -311,6 +313,14 @@ export class EnsResolver {
             operation: `getAddress(${ coinType })`,
             info: { coinType, data }
         });
+    }
+
+    /**
+     *  Resolves to the ENSIP-3 name record for %%key%%, or ``null``
+     *  if unconfigured.
+     */
+    async getName(): Promise<null | string> {
+        return this.#fetch("name(bytes32)");
     }
 
     /**
@@ -534,6 +544,19 @@ export class EnsResolver {
         } catch (error) { }
 
         return { linkage, url: null };
+    }
+
+    static getReverseName(address: string, coinType: BigNumberish = 60) {
+        // https://docs.ens.domains/ensip/19
+        assertArgument(address.length > 2 && isHexString(address), "address must be non-empty hex string", "address", address);
+        coinType = getBigInt(coinType, "coinType");
+        return `${address.toLowerCase().slice(2)}.${
+            coinType == 60n
+              ? 'addr'
+              : coinType == 0x80000000n
+              ? 'default'
+              : coinType.toString(16)
+          }.reverse`;
     }
 
     static async getEnsAddress(provider: Provider): Promise<string> {
