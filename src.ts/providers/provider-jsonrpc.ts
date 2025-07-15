@@ -568,7 +568,9 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
 
                             // The response is an error
                             if ("error" in resp) {
-                                reject(this.getRpcError(payload, resp));
+                                const error = this.getRpcError(payload, resp);
+                                this.emit("error", error);
+                                reject(error);
                                 continue;
                             }
 
