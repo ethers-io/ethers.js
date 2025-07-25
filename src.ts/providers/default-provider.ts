@@ -10,6 +10,7 @@ import { EtherscanProvider } from "./provider-etherscan.js";
 import { InfuraProvider } from "./provider-infura.js";
 //import { PocketProvider } from "./provider-pocket.js";
 import { QuickNodeProvider } from "./provider-quicknode.js";
+import { HistoriProvider } from "./provider-histori.js";
 
 import { FallbackProvider } from "./provider-fallback.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
@@ -55,6 +56,7 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
  *  - ``"infura"``
  *  - ``"publicPolygon"``
  *  - ``"quicknode"``
+ *  - ``"histori"``
  *
  *  @example:
  *    // Connect to a local Geth node
@@ -64,11 +66,11 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
  *    // third-party services available
  *    provider = getDefaultProvider("mainnet");
  *
- *    // Connect to Polygon, but only allow Etherscan and
- *    // INFURA and use "MY_API_KEY" in calls to Etherscan.
+ *    // Connect to Polygon, but only allow Etherscan,
+ *    // INFURA and Histori and use "MY_API_KEY" in calls to Etherscan.
  *    provider = getDefaultProvider("matic", {
  *      etherscan: "MY_API_KEY",
- *      exclusive: [ "etherscan", "infura" ]
+ *      exclusive: [ "etherscan", "infura", "histori" ]
  *    });
  */
 export function getDefaultProvider(network?: string | Networkish | WebSocketLike, options?: any): AbstractProvider {
@@ -155,6 +157,13 @@ export function getDefaultProvider(network?: string | Networkish | WebSocketLike
                 projectId = projectId.projectId;
             }
             providers.push(new InfuraProvider(network, projectId, projectSecret));
+        } catch (error) { }
+    }
+
+    if (allowService("histori")) {
+        try {
+            let projectId = options.histori;
+            providers.push(new HistoriProvider(network, projectId));
         } catch (error) { }
     }
 /*
