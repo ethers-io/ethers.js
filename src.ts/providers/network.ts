@@ -9,13 +9,14 @@ import { accessListify } from "../transaction/index.js";
 import { getBigInt, assert, assertArgument } from "../utils/index.js";
 
 import {
-    EnsPlugin, FetchUrlFeeDataNetworkPlugin, GasCostPlugin
+    EnsPlugin, FetchUrlFeeDataNetworkPlugin, GasCostPlugin, FetchLineaFeeDataNetworkPlugin 
 } from "./plugins-network.js";
 
 import type { BigNumberish } from "../utils/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 
 import type { NetworkPlugin } from "./plugins-network.js";
+import { JsonRpcProvider } from "./provider-jsonrpc.js";
 
 
 /**
@@ -345,6 +346,50 @@ function getGasStationPlugin(url: string) {
         }
     });
 }
+// Used by Linea to get fee data
+function getLineaPricingPlugin(fallbackUrl: string) {
+    const BASE_FEE_PER_GAS_MARGIN = 1.35;
+    return new FetchLineaFeeDataNetworkPlugin(
+        fallbackUrl,
+        async (provider: any, tx) => {
+            const attemptEstimateGas = async (provider: any, tx: TransactionLike) => {
+                const formattedTx = {
+                    ...tx,
+                    chainId: tx.chainId?.toString(),
+                    gasLimit: tx.gasLimit?.toString(),
+                    maxFeePerGas: tx.maxFeePerGas?.toString(),
+                    maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toString(),
+                    value: tx.value?.toString(),
+                };
+
+                const estimateGas = await provider.send("linea_estimateGas", [
+                    formattedTx,
+                ]);
+                const { baseFeePerGas, priorityFeePerGas } = estimateGas;
+                const adjustedPriorityFeePerGas = BigInt(priorityFeePerGas);
+                const adjustedBaseFee =
+                    (BigInt(baseFeePerGas) * BigInt(BASE_FEE_PER_GAS_MARGIN * 100)) /
+                    BigInt(100);
+                const gasPrice = adjustedBaseFee + adjustedPriorityFeePerGas;
+
+                return {
+                    gasLimit: gasPrice,
+                    maxFeePerGas: gasPrice,
+                    maxPriorityFeePerGas: adjustedPriorityFeePerGas,
+                };
+            };
+
+            try {
+                // Try with the initial provider on first attempt
+                return await attemptEstimateGas(provider, tx);
+            } catch (error) {
+                console.log(`Retrying with fallback...`);
+                const provider = new JsonRpcProvider(fallbackUrl);
+                return await attemptEstimateGas(provider, tx);
+            }
+        }
+    );
+}
 
 // See: https://chainlist.org
 let injected = false;
@@ -406,9 +451,9 @@ function injectCommonNetworks(): void {
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, { });
 
-    registerEth("linea", 59144, { ensNetwork: 1 });
+    registerEth("linea", 59144, { ensNetwork: 1 ,plugins: [getLineaPricingPlugin("https://rpc.linea.build")],});
     registerEth("linea-goerli", 59140, { });
-    registerEth("linea-sepolia", 59141, { });
+    registerEth("linea-sepolia", 59141, {plugins: [getLineaPricingPlugin("https://rpc.sepolia.linea.build")],});
 
     registerEth("matic", 137, {
         ensNetwork: 1,

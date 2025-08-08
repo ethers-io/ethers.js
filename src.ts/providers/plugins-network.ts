@@ -4,6 +4,7 @@ import { assertArgument } from "../utils/index.js";
 
 import type { FeeData, Provider } from "./provider.js";
 import type { FetchRequest } from "../utils/fetch.js";
+import { TransactionLike } from "../ethers.js";
 
 
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
@@ -253,6 +254,63 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
 
     // We are immutable, so we can serve as our own clone
     clone(): FetchUrlFeeDataNetworkPlugin { return this; }
+}
+
+export class FetchLineaFeeDataNetworkPlugin extends NetworkPlugin {
+    readonly #fallbackUrl: string;
+    readonly #processFunc: (
+        p: Provider,
+        tx: TransactionLike
+    ) => Promise<{
+        gasPrice?: null | bigint;
+        maxFeePerGas?: null | bigint;
+        maxPriorityFeePerGas?: null | bigint;
+    }>;
+
+    
+    /**
+     *  The URL for rpc fallback.   
+     */
+    get fallbackUrl(): string { return this.#fallbackUrl; }
+
+    /**
+     *  The callback to use when computing the FeeData.
+     */
+    get processFunc(): (
+        p: Provider,
+        tx: TransactionLike
+    ) => Promise<{
+        gasPrice?: null | bigint;
+        maxFeePerGas?: null | bigint;
+        maxPriorityFeePerGas?: null | bigint;
+    }> {
+        return this.#processFunc;
+    }
+
+    /**
+     *  Creates a new **FetchLineaFeeDataNetworkPlugin** which will
+     *  be used when computing the fee data for the network.
+     */
+    constructor(
+        fallbackUrl: string,
+        processFunc: (
+        p: Provider,
+        tx: TransactionLike
+        ) => Promise<{
+        gasPrice?: null | bigint;
+        maxFeePerGas?: null | bigint;
+        maxPriorityFeePerGas?: null | bigint;
+        }>
+    ) {
+        super("org.ethers.plugins.network.FetchLineaFeeDataPlugin");
+        this.#fallbackUrl = fallbackUrl;
+        this.#processFunc = processFunc;
+    }
+
+    // We are immutable, so we can serve as our own clone
+    clone(): FetchLineaFeeDataNetworkPlugin {
+        return this;
+    }
 }
 
 /*

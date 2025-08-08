@@ -41,6 +41,7 @@ export {
     EnsPlugin,
     FeeDataNetworkPlugin,
     FetchUrlFeeDataNetworkPlugin,
+    FetchLineaFeeDataNetworkPlugin,
 } from "./plugins-network.js";
 
 export {
