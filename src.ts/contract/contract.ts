@@ -461,7 +461,7 @@ function isDeferred(value: any): value is DeferredTopicFilter {
       (typeof(value.getTopicFilter) === "function") && value.fragment);
 }
 
-async function getSubInfo(contract: BaseContract, event: ContractEventName): Promise<{ fragment: null | EventFragment, tag: string, topics: TopicFilter }> {
+export async function getSubInfo(contract: BaseContract, event: ContractEventName): Promise<{ fragment: null | EventFragment, tag: string, topics: TopicFilter }> {
     let topics: Array<null | string | Array<string>>;
     let fragment: null | EventFragment = null;
 
