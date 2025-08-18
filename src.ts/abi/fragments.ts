@@ -747,7 +747,7 @@ export class ParamType {
             // Convert the object into an array
             let result: Array<any>;
             if (Array.isArray(value)) {
-                result = value.slice();
+                result = [...value];
 
             } else {
                 if (value == null || typeof(value) !== "object") {
