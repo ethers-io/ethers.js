@@ -9,7 +9,7 @@
 // @TODO
 // Event coalescence
 //   When we register an event with an async value (e.g. address is a Signer
-//   or ENS name), we need to add it immeidately for the Event API, but also
+//   or ENS name), we need to add it immediately for the Event API, but also
 //   need time to resolve the address. Upon resolving the address, we need to
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
@@ -190,7 +190,7 @@ export interface Subscriber {
  */
 export class UnmanagedSubscriber implements Subscriber {
     /**
-     *  The name fof the event.
+     *  The name for the event.
      */
     name!: string;
 
@@ -1236,7 +1236,7 @@ export class AbstractProvider implements Provider {
                 return null;
             }
 
-            // Something reerted
+            // Something reverted
             if (isError(error, "CALL_EXCEPTION")) { return null; }
 
             throw error;
@@ -1548,7 +1548,7 @@ export class AbstractProvider implements Provider {
         // Stop all listeners
         this.removeAllListeners();
 
-        // Shut down all tiemrs
+        // Shut down all timers
         for (const timerId of this.#timers.keys()) {
             this._clearTimeout(timerId);
         }
@@ -1618,7 +1618,7 @@ export class AbstractProvider implements Provider {
             let timeout = timer.time;
             if (timeout < 0) { timeout = 0; }
 
-            // Start time (in cause paused, so we con compute remaininf time)
+            // Start time (in cause paused, so we con compute remaining time)
             timer.time = getTime();
 
             // Start the timer

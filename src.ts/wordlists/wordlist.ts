@@ -24,7 +24,7 @@ export abstract class Wordlist {
 
     /**
      *  Sub-classes may override this to provide a language-specific
-     *  method for spliting %%phrase%% into individual words.
+     *  method for splitting %%phrase%% into individual words.
      *
      *  By default, %%phrase%% is split using any sequences of
      *  white-space as defined by regular expressions (i.e. ``/\s+/``).
@@ -44,7 +44,7 @@ export abstract class Wordlist {
     }
 
     /**
-     *  Maps an 11-bit value into its coresponding word in the list.
+     *  Maps an 11-bit value into its corresponding word in the list.
      *
      *  Sub-classes MUST override this.
      */

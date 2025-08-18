@@ -17,7 +17,7 @@ null;
 
 /**
  *  An interface for objects which have an address, and can
- *  resolve it asyncronously.
+ *  resolve it asynchronously.
  *
  *  This allows objects such as [[Signer]] or [[Contract]] to
  *  be used most places an address can be, for example getting
@@ -42,7 +42,7 @@ export interface NameResolver {
     /**
      *  Resolve to the address for the ENS %%name%%.
      *
-     *  Resolves to ``null`` if the name is unconfigued. Use
+     *  Resolves to ``null`` if the name is unconfigured. Use
      *  [[resolveAddress]] (passing this object as %%resolver%%) to
      *  throw for names that are unconfigured.
      */

@@ -1,5 +1,5 @@
 /**
- *  A **Provider** provides a connection to the blockchain, whch can be
+ *  A **Provider** provides a connection to the blockchain, which can be
  *  used to query its current state, simulate execution and send transactions
  *  to update the state.
  *

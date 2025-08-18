@@ -1,7 +1,7 @@
 /**
  *  Generally the [[Wallet]] and [[JsonRpcSigner]] and their sub-classes
  *  are sufficent for most developers, but this is provided to
- *  fascilitate more complex Signers.
+ *  facilitate more complex Signers.
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
  */
@@ -53,7 +53,7 @@ async function populate(signer: AbstractSigner, tx: TransactionRequest): Promise
 
 
 /**
- *  An **AbstractSigner** includes most of teh functionality required
+ *  An **AbstractSigner** includes most of the functionality required
  *  to get a [[Signer]] working as expected, but requires a few
  *  Signer-specific methods be overridden.
  *
@@ -190,7 +190,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                     }
 
                     // Explicitly set untyped transaction to legacy
-                    // @TODO: Maybe this shold allow type 1?
+                    // @TODO: Maybe this should allow type 1?
                     pop.type = 0;
 
                } else {
@@ -213,7 +213,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
             }
         }
 
-//@TOOD: Don't await all over the place; save them up for
+//@TODO: Don't await all over the place; save them up for
 // the end for better batching
         return await resolveProperties(pop);
     }
@@ -267,7 +267,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
 }
 
 /**
- *  A **VoidSigner** is a class deisgned to allow an address to be used
+ *  A **VoidSigner** is a class designed to allow an address to be used
  *  in any API which accepts a Signer, but for which there are no
  *  credentials available to perform any actual signing.
  *

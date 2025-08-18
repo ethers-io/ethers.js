@@ -189,7 +189,7 @@ function getDecryptKdfParams<T>(data: any): KdfParams {
  *
  *  This method will block the event loop (freezing all UI) until decryption
  *  is complete, which can take quite some time, depending on the wallet
- *  paramters and platform.
+ *  parameters and platform.
  */
 export function decryptKeystoreJsonSync(json: string, _password: string | Uint8Array): KeystoreAccount {
     const data = JSON.parse(json);
@@ -219,7 +219,7 @@ function stall(duration: number): Promise<void> {
  *  %%password%%.
  *
  *  If provided, %%progress%% will be called periodically during the
- *  decrpytion to provide feedback, and if the function returns
+ *  decryption to provide feedback, and if the function returns
  *  ``false`` will halt decryption.
  *
  *  The %%progressCallback%% will **always** receive ``0`` before
@@ -358,7 +358,7 @@ function _encryptKeystore(key: Uint8Array, kdf: ScryptParams, account: KeystoreA
  *
  *  The %%options%% can be used to tune the password-based key
  *  derivation function parameters, explicitly set the random values
- *  used. Any provided [[ProgressCallback]] is ignord.
+ *  used. Any provided [[ProgressCallback]] is ignored.
  */
 export function encryptKeystoreJsonSync(account: KeystoreAccount, password: string | Uint8Array, options?: EncryptOptions): string {
     if (options == null) { options = { }; }
