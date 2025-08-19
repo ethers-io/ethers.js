@@ -9,6 +9,7 @@ export { ZeroHash } from "./hashes.js";
 export {
     N,
     WeiPerEther,
+    GWei,
     MaxUint256,
     MinInt256,
     MaxInt256
