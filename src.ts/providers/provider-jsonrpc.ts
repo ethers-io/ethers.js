@@ -967,7 +967,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             case "estimateGas": {
                 return {
                     method: "eth_estimateGas",
-                    args: [ this.getRpcTransaction(req.transaction) ]
+                    args: [ this.getRpcTransaction(req.transaction), req.blockTag ]
                 };
             }
 
