@@ -1,5 +1,8 @@
 /**
- *  Explain HD Wallets..
+ *  HD wallets are a common wallet pattern introduced in [[link-bip-32]]
+ *  whereby many private keys are generated from a single seed, often represented as a mnemonic phrase.
+ * 
+ *  [[HDNodeWallet]] is the primary class in this category, with the ability to derive child private keys.
  *
  *  @_subsection: api/wallet:HD Wallets  [hd-wallets]
  */
@@ -118,7 +121,7 @@ function derivePath<T extends HDNodeLike<T>>(node: T, path: string): T {
 
 /**
  *  An **HDNodeWallet** is a [[Signer]] backed by the private key derived
- *  from an HD Node using the [[link-bip-32]] stantard.
+ *  from an HD Node using the [[link-bip-32]] standard.
  *
  *  An HD Node forms a hierarchal structure with each HD Node having a
  *  private key and the ability to derive child HD Nodes, defined by
