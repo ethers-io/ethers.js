@@ -41,7 +41,7 @@ import type { CommunityResourcable } from "./community.js";
 import type { Networkish } from "./network.js";
 
 
-const defaultProjectId = "84842078b09946638c03157f83405213";
+const defaultAPIKey = "84842078b09946638c03157f83405213";
 
 function getHost(name: string): string {
     switch(name) {
@@ -104,9 +104,9 @@ function getHost(name: string): string {
 export class InfuraWebSocketProvider extends WebSocketProvider implements CommunityResourcable {
 
     /**
-     *  The Project ID for the INFURA connection.
+     *  The API key for the INFURA connection.
      */
-    readonly projectId!: string;
+    readonly APIKey!: string;
 
     /**
      *  The Project Secret.
@@ -119,8 +119,8 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
     /**
      *  Creates a new **InfuraWebSocketProvider**.
      */
-    constructor(network?: Networkish, projectId?: string) {
-        const provider = new InfuraProvider(network, projectId);
+    constructor(network?: Networkish, APIKey?: string) {
+        const provider = new InfuraProvider(network, APIKey);
 
         const req = provider._getConnection();
         assert(!req.credentials, "INFURA WebSocket project secrets unsupported",
@@ -130,13 +130,13 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
         super(url, provider._network);
 
         defineProperties<InfuraWebSocketProvider>(this, {
-            projectId: provider.projectId,
+            APIKey: provider.APIKey,
             projectSecret: provider.projectSecret
         });
     }
 
     isCommunityResource(): boolean {
-        return (this.projectId === defaultProjectId);
+        return (this.APIKey === defaultAPIKey);
     }
 }
 
@@ -151,9 +151,9 @@ export class InfuraWebSocketProvider extends WebSocketProvider implements Commun
  */
 export class InfuraProvider extends JsonRpcProvider implements CommunityResourcable {
     /**
-     *  The Project ID for the INFURA connection.
+     *  The API key for the INFURA connection.
      */
-    readonly projectId!: string;
+    readonly APIKey!: string;
 
     /**
      *  The Project Secret.
@@ -166,49 +166,49 @@ export class InfuraProvider extends JsonRpcProvider implements CommunityResourca
     /**
      *  Creates a new **InfuraProvider**.
      */
-    constructor(_network?: Networkish, projectId?: null | string, projectSecret?: null | string) {
+    constructor(_network?: Networkish, APIKey?: null | string, projectSecret?: null | string) {
         if (_network == null) { _network = "mainnet"; }
         const network = Network.from(_network);
-        if (projectId == null) { projectId = defaultProjectId; }
+        if (APIKey == null) { APIKey = defaultAPIKey; }
         if (projectSecret == null) { projectSecret = null; }
 
-        const request = InfuraProvider.getRequest(network, projectId, projectSecret);
+        const request = InfuraProvider.getRequest(network, APIKey, projectSecret);
         super(request, network, { staticNetwork: network });
 
-        defineProperties<InfuraProvider>(this, { projectId, projectSecret });
+        defineProperties<InfuraProvider>(this, { APIKey, projectSecret });
     }
 
     _getProvider(chainId: number): AbstractProvider {
         try {
-            return new InfuraProvider(chainId, this.projectId, this.projectSecret);
+            return new InfuraProvider(chainId, this.APIKey, this.projectSecret);
         } catch (error) { }
         return super._getProvider(chainId);
     }
 
     isCommunityResource(): boolean {
-        return (this.projectId === defaultProjectId);
+        return (this.APIKey === defaultAPIKey);
     }
 
     /**
      *  Creates a new **InfuraWebSocketProvider**.
      */
-    static getWebSocketProvider(network?: Networkish, projectId?: string): InfuraWebSocketProvider {
-        return new InfuraWebSocketProvider(network, projectId);
+    static getWebSocketProvider(network?: Networkish, APIKey?: string): InfuraWebSocketProvider {
+        return new InfuraWebSocketProvider(network, APIKey);
     }
 
     /**
      *  Returns a prepared request for connecting to %%network%%
-     *  with %%projectId%% and %%projectSecret%%.
+     *  with %%APIKey%% and %%projectSecret%%.
      */
-    static getRequest(network: Network, projectId?: null | string, projectSecret?: null | string): FetchRequest {
-        if (projectId == null) { projectId = defaultProjectId; }
+    static getRequest(network: Network, APIKey?: null | string, projectSecret?: null | string): FetchRequest {
+        if (APIKey == null) { APIKey = defaultAPIKey; }
         if (projectSecret == null) { projectSecret = null; }
 
-        const request = new FetchRequest(`https:/\/${ getHost(network.name) }/v3/${ projectId }`);
+        const request = new FetchRequest(`https:/\/${ getHost(network.name) }/v3/${ APIKey }`);
         request.allowGzip = true;
         if (projectSecret) { request.setCredentials("", projectSecret); }
 
-        if (projectId === defaultProjectId) {
+        if (APIKey === defaultAPIKey) {
             request.retryFunc = async (request, response, attempt) => {
                 showThrottleMessage("InfuraProvider");
                 return true;
