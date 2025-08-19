@@ -128,17 +128,18 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
             pop.type = 2;
 
         } else if (pop.type === 0 || pop.type === 1) {
-            // Explicit Legacy or EIP-2930 transaction
-
-            // We need to get fee data to determine things
-            const feeData = await provider.getFeeData();
-
-            assert(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
-                operation: "getGasPrice" });
-
-            // Populate missing gasPrice
-            if (pop.gasPrice == null) { pop.gasPrice = feeData.gasPrice; }
-
+            if (pop.gasPrice == null) {
+                // Explicit Legacy or EIP-2930 transaction
+                
+                // We need to get fee data to determine things
+                const feeData = await provider.getFeeData();
+                
+                assert(feeData.gasPrice != null, "network does not support gasPrice", "UNSUPPORTED_OPERATION", {
+                    operation: "getGasPrice" });
+                
+                // Populate missing gasPrice
+                pop.gasPrice = feeData.gasPrice;
+            }
         } else {
 
             // We need to get fee data to determine things
