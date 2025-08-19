@@ -3,6 +3,7 @@ import type { BigNumberish, BytesLike } from "../../utils/index.js";
  * @_ignore:
  */
 export declare const WordSize: number;
+type Cast<T, U> = T extends U ? T : U;
 /**
  *  A [[Result]] is a sub-class of Array, which allows accessing any
  *  of its values either positionally by its index or, if keys are
@@ -41,11 +42,11 @@ export declare class Result extends Array<any> {
     /**
      *  @_ignore
      */
-    filter(callback: (el: any, index: number, array: Result) => boolean, thisArg?: any): Result;
+    filter<This = undefined>(predicate: (this: This, value: any, index: number, array: this) => boolean, thisArg?: This): any[];
     /**
      *  @_ignore
      */
-    map<T extends any = any>(callback: (el: any, index: number, array: Result) => T, thisArg?: any): Array<T>;
+    map<U, This = undefined>(callbackfn: (this: This, value: any, index: number, array: this) => U, thisArg?: This): Cast<{ [K in keyof this]: U }, U[]>;
     /**
      *  Returns the value for %%name%%.
      *
