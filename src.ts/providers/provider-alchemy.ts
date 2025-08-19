@@ -19,6 +19,8 @@
  *  - Polygon (``matic``)
  *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
+ *  - Polygon ZKEVM (``polygonzkevm``)
+ *  - Astar (``astar``)
  *
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
@@ -66,6 +68,10 @@ function getHost(name: string): string {
             return "polygon-amoy.g.alchemy.com";
         case "matic-mumbai":
             return "polygon-mumbai.g.alchemy.com";
+        case "polygonzkevm":
+            return "polygonzkevm-mainnet.g.alchemy.com";
+        case "astar":
+            return "astar-mainnet.g.alchemy.com";
         case "optimism":
             return "opt-mainnet.g.alchemy.com";
         case "optimism-goerli":
