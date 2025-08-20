@@ -419,7 +419,7 @@ _code: listen for ERC-20 events  @lang<script>
   })
 
   // Listen for any Transfer to "ethers.eth"
-  filter = contract.filters.Transfer("ethers.eth")
+  filter = contract.filters.Transfer(null, "ethers.eth")
   contract.on(filter, (from, to, amount, event) => {
     // `to` will always be equal to the address of "ethers.eth"
   });
@@ -462,7 +462,7 @@ _code: query historic ERC-20 events  @lang<javascript>
   //_result:
 
   // Query all time for any transfer to ethers.eth
-  filter = contract.filters.Transfer("ethers.eth")
+  filter = contract.filters.Transfer(null, "ethers.eth")
   events = await contract.queryFilter(filter)
 
   // The first matching event

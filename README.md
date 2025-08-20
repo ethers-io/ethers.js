@@ -19,7 +19,7 @@ in [TypeScript](https://www.typescriptlang.org).
 - Import and export **JSON wallets** (Geth, Parity and crowdsale)
 - Import and export BIP 39 **mnemonic phrases** (12 word backup phrases) and **HD Wallets** (English as well as Czech, French, Italian, Japanese, Korean, Simplified Chinese, Spanish, Traditional Chinese)
 - Meta-classes create JavaScript objects from any contract ABI, including **ABIv2** and **Human-Readable ABI**
-- Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), [Alchemy](https://alchemyapi.io), [Ankr](https://ankr.com) or [MetaMask](https://metamask.io)
+- Connect to Ethereum nodes over [JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), [Alchemy](https://alchemyapi.io), [Ankr](https://ankr.com) or [MetaMask](https://metamask.io)
 - **ENS names** are first-class citizens; they can be used anywhere an Ethereum addresses can be used
 - **Small** (~144kb compressed; 460kb uncompressed)
 - **Tree-shaking** focused; include only what you need during bundling

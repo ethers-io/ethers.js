@@ -63,7 +63,7 @@ ethers/v6.13.6 (2025-03-21 18:21)
   - tests: added browser tests for sending ([afd613a](https://github.com/ethers-io/ethers.js/commit/afd613a2a0c9fb548805ed36e23ad9a5d4bcc239)).
   - tests: debugging browser tests failing to launch ([d1baa74](https://github.com/ethers-io/ethers.js/commit/d1baa741f6b272ba692e0e78787cacb1bd42a8b4)).
   - tests: fix assert call for browser assert ([1806bbd](https://github.com/ethers-io/ethers.js/commit/1806bbde27523933fb140ad985426f94e0286faf)).
-  - tests: inlcude more node tests in the browser tests ([92fd5d1](https://github.com/ethers-io/ethers.js/commit/92fd5d1f47c640caa7100bcccf0b133e866989e6)).
+  - tests: include more node tests in the browser tests ([92fd5d1](https://github.com/ethers-io/ethers.js/commit/92fd5d1f47c640caa7100bcccf0b133e866989e6)).
   - tests: move more tests to dev network ([996f30c](https://github.com/ethers-io/ethers.js/commit/996f30c674002cea316fa7aa3929f43409f934bc)).
   - tests: debugging CI browser failure ([ce7212d](https://github.com/ethers-io/ethers.js/commit/ce7212d03d6867081603794f0480f31d053823c4)).
   - tests: debugging CI browser failure ([f1821a6](https://github.com/ethers-io/ethers.js/commit/f1821a696763938ca9d44815bdcd5cc043eb3900)).
@@ -316,7 +316,7 @@ ethers/v6.5.0 (2023-06-06 22:41)
   - Fixed type guard for non-Typed instances ([#4087](https://github.com/ethers-io/ethers.js/issues/4087); [20c3d1b](https://github.com/ethers-io/ethers.js/commit/20c3d1b109743e33ab60a75d69bf7ede73b15ce2)).
   - Add confirmations to TransactionResponse ([#4094](https://github.com/ethers-io/ethers.js/issues/4094); [bb8685b](https://github.com/ethers-io/ethers.js/commit/bb8685b112ce1c689c740d4dbcb358c16fb9b22d)).
   - Fix stray promises when a node returns invalid results ([#4118](https://github.com/ethers-io/ethers.js/issues/4118); [3c1bad2](https://github.com/ethers-io/ethers.js/commit/3c1bad2fb7ad4a6ff90ff11f3e382fd18e41c800)).
-  - Added support to detect and stop providers spinning on intitial network detection ([#4015](https://github.com/ethers-io/ethers.js/issues/4015); [f37a52d](https://github.com/ethers-io/ethers.js/commit/f37a52da28ac130b7f4de52901618320994ea87a)).
+  - Added support to detect and stop providers spinning on initial network detection ([#4015](https://github.com/ethers-io/ethers.js/issues/4015); [f37a52d](https://github.com/ethers-io/ethers.js/commit/f37a52da28ac130b7f4de52901618320994ea87a)).
 
 ethers/v6.4.2 (2023-06-05 22:41)
 --------------------------------
@@ -344,7 +344,7 @@ ethers/v6.4.0 (2023-05-18 17:28)
   - Fix receipt gas price when effectiveGasPrice is 0 on testnets ([#4014](https://github.com/ethers-io/ethers.js/issues/4014); [2b0fe61](https://github.com/ethers-io/ethers.js/commit/2b0fe611335432aee334d777a64d8c7827881618)).
   - Added error event to provider ([#3970](https://github.com/ethers-io/ethers.js/issues/3970), [#3982](https://github.com/ethers-io/ethers.js/issues/3982); [af0291c](https://github.com/ethers-io/ethers.js/commit/af0291c01639674658f5049343da88a84da763a1)).
   - Removed superfluous parameters for internal transaction functions ([e848978](https://github.com/ethers-io/ethers.js/commit/e8489787585c2e69a23f6cdec6901f22b096aebe)).
-  - More aggresive tree-shaking ([076edad](https://github.com/ethers-io/ethers.js/commit/076edad81ef62474f48f2b4c8af0edc6e4fd64f2)).
+  - More aggressive tree-shaking ([076edad](https://github.com/ethers-io/ethers.js/commit/076edad81ef62474f48f2b4c8af0edc6e4fd64f2)).
   - More flexible static network checking ([#3834](https://github.com/ethers-io/ethers.js/issues/3834); [7c0465c](https://github.com/ethers-io/ethers.js/commit/7c0465c5fb834eba18d4e5535072685bdc1029f0)).
   - Support transitive dependants that use non-node16 moduleResolution ([#3920](https://github.com/ethers-io/ethers.js/issues/3920); [df685b1](https://github.com/ethers-io/ethers.js/commit/df685b1bd9ad346ee7863beb6c3ca3f4e94932a2)).
   - Populate any missing log.removed with false ([#3959](https://github.com/ethers-io/ethers.js/issues/3959); [4e478e6](https://github.com/ethers-io/ethers.js/commit/4e478e625d5648f2172631eef5fda5776ee776b0)).

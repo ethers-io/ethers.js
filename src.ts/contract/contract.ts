@@ -643,7 +643,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
      *  The target to connect to.
      *
      *  This can be an address, ENS name or any [[Addressable]], such as
-     *  another contract. To get the resovled address, use the ``getAddress``
+     *  another contract. To get the resolved address, use the ``getAddress``
      *  method.
      */
     readonly target!: string | Addressable;
@@ -841,7 +841,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
      *  resolve immediately if already deployed.
      */
     async waitForDeployment(): Promise<this> {
-        // We have the deployement transaction; just use that (throws if deployement fails)
+        // We have the deployment transaction; just use that (throws if deployment fails)
         const deployTx = this.deploymentTransaction();
         if (deployTx) {
             await deployTx.wait();
@@ -884,7 +884,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     /**
      *  Return the function for a given name. This is useful when a contract
      *  method name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T {
         if (typeof(key) !== "string") { key = key.format(); }
@@ -895,7 +895,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     /**
      *  Return the event for a given name. This is useful when a contract
      *  event name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getEvent(key: string | EventFragment): ContractEvent {
         if (typeof(key) !== "string") { key = key.format(); }
