@@ -57,6 +57,8 @@ export {
 export { FallbackProvider } from "./provider-fallback.js";
 export { JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from "./provider-jsonrpc.js"
 
+export { OtterscanProvider } from "./provider-otterscan.js";
+
 export { BrowserProvider } from "./provider-browser.js";
 
 export { AlchemyProvider } from "./provider-alchemy.js";
@@ -126,6 +128,15 @@ export type {
     JsonRpcApiProviderOptions,
     JsonRpcTransactionRequest,
 } from "./provider-jsonrpc.js";
+
+export type {
+    Hex,
+    OtsInternalOp,
+    OtsBlockDetails,
+    OtsBlockTxPage,
+    OtsSearchPage,
+    OtsContractCreator
+} from "./provider-otterscan.js";
 
 export type {
     WebSocketCreator, WebSocketLike
