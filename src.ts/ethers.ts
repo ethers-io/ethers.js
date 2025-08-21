@@ -66,7 +66,7 @@ export {
     AbstractProvider,
 
     FallbackProvider,
-    JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner,
+    JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, OtterscanProvider,
 
     BrowserProvider,
 
@@ -175,7 +175,9 @@ export type {
     ContractRunner, DebugEventBrowserProvider, Eip1193Provider,
     Eip6963ProviderInfo, EventFilter, Filter, FilterByBlockHash,
     GasCostParameters, JsonRpcApiProviderOptions, JsonRpcError,
-    JsonRpcPayload, JsonRpcResult, JsonRpcTransactionRequest, LogParams,
+    JsonRpcPayload, JsonRpcResult, JsonRpcTransactionRequest,
+    Hex, OtsInternalOp, OtsBlockDetails, OtsBlockTxPage, OtsSearchPage, OtsContractCreator,
+    LogParams,
     MinedBlock, MinedTransactionResponse, Networkish, OrphanFilter,
     PerformActionFilter, PerformActionRequest, PerformActionTransaction,
     PreparedTransactionRequest, ProviderEvent, Subscriber, Subscription,
