@@ -59,6 +59,12 @@ export { JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from "./provider-j
 
 export { OtterscanProvider } from "./provider-otterscan.js";
 
+export type {
+    OtsLog, OtsTransaction, OtsReceipt, OtsSearchResult,
+    OtsInternalOp, OtsBlockDetails, OtsBlockTxPage, OtsSearchPage,
+    OtsContractCreator
+} from "./provider-otterscan.js";
+
 export { BrowserProvider } from "./provider-browser.js";
 
 export { AlchemyProvider } from "./provider-alchemy.js";
@@ -129,14 +135,6 @@ export type {
     JsonRpcTransactionRequest,
 } from "./provider-jsonrpc.js";
 
-export type {
-    Hex,
-    OtsInternalOp,
-    OtsBlockDetails,
-    OtsBlockTxPage,
-    OtsSearchPage,
-    OtsContractCreator
-} from "./provider-otterscan.js";
 
 export type {
     WebSocketCreator, WebSocketLike
