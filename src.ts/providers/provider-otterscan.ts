@@ -7,7 +7,7 @@
  *  efficient access to transaction details, internal operations,
  *  and paginated transaction history.
  *
- * @_section: api/providers/otterscan:Otterscan Provider  [about-otterscanProvider]
+ * @_subsection: api/providers/thirdparty:Otterscan  [providers-otterscan]
  */
 
 import { Interface } from "../abi/index.js";
@@ -17,8 +17,84 @@ import { JsonRpcProvider } from "./provider-jsonrpc.js";
 import type { JsonRpcApiProviderOptions } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
 import type { FetchRequest } from "../utils/index.js";
+import type { BlockParams } from "./formatting.js";
+import type { Fragment } from "../abi/index.js";
+import type { AccessList } from "../transaction/index.js";
+import type { HexString } from "../utils/data.js";
 
-export type Hex = `0x${string}`;
+// Log entry in transaction receipts - matches ethers LogParams but with hex strings from raw RPC
+export interface OtsLog {
+    address: string;
+    topics: ReadonlyArray<string>;
+    data: string;
+    blockNumber: string; // hex string from RPC, not parsed number
+    transactionHash: string;
+    transactionIndex: string; // hex string from RPC, not parsed number
+    blockHash: string;
+    logIndex: string; // hex string from RPC, not parsed number
+    removed: boolean;
+}
+
+// Otterscan transaction type - raw RPC response with hex-encoded values
+export interface OtsTransaction {
+    // Core transaction fields (always present)
+    blockHash: string;
+    blockNumber: string; // hex-encoded number
+    from: string;
+    gas: string; // hex-encoded gasLimit
+    gasPrice: string; // hex-encoded bigint
+    hash: string;
+    input: string; // transaction data
+    nonce: string; // hex-encoded number
+    to: string;
+    transactionIndex: string; // hex-encoded number
+    value: string; // hex-encoded bigint
+    type: string; // hex-encoded transaction type (0x0, 0x1, 0x2, etc.)
+    chainId: string; // hex-encoded bigint
+
+    // Signature components (always present)
+    v: string; // hex-encoded
+    r: string; // hex signature component
+    s: string; // hex signature component
+
+    // EIP-1559 fields (present in type 0x2 transactions)
+    maxPriorityFeePerGas?: string; // hex-encoded bigint
+    maxFeePerGas?: string; // hex-encoded bigint
+    yParity?: string; // hex-encoded (0x0 or 0x1)
+
+    // EIP-2930/EIP-1559 field
+    accessList?: AccessList;
+}
+
+// Otterscan receipt type - raw RPC response format
+export interface OtsReceipt {
+    // Core receipt fields
+    blockHash: string;
+    blockNumber: string; // hex-encoded number
+    contractAddress: string | null; // null for non-contract-creating txs
+    cumulativeGasUsed: string; // hex-encoded bigint
+    effectiveGasPrice: string; // hex-encoded bigint
+    from: string;
+    gasUsed: string; // hex-encoded bigint
+    logs: OtsLog[];
+    logsBloom: string; // hex-encoded bloom filter
+    status: string; // hex-encoded: "0x1" success, "0x0" failure
+    to: string;
+    transactionHash: string;
+    transactionIndex: string; // hex-encoded number
+    type: string; // hex-encoded transaction type
+
+    // Otterscan-specific extension
+    timestamp: number; // Unix timestamp as actual number (not hex)
+}
+
+// Otterscan search page result
+export interface OtsSearchResult {
+    txs: OtsTransaction[];
+    receipts: OtsReceipt[];
+    firstPage: boolean;
+    lastPage: boolean;
+}
 
 /**
  * Internal operation types returned by ots_getInternalOperations
@@ -31,7 +107,7 @@ export interface OtsInternalOp {
     /** Target address (null for self-destruct operations) */
     to: string | null;
     /** Value transferred (hex quantity) */
-    value: Hex;
+    value: HexString;
 }
 
 /**
@@ -39,17 +115,17 @@ export interface OtsInternalOp {
  */
 export interface OtsBlockDetails {
     /** Raw block data */
-    block: any;
+    block: BlockParams;
     /** Number of transactions in the block */
     transactionCount: number;
     /** Block reward information (optional) */
     issuance?: {
-        blockReward: Hex;
-        uncleReward: Hex;
-        issuance: Hex;
+        blockReward: HexString;
+        uncleReward: HexString;
+        issuance: HexString;
     };
     /** Total fees collected in the block */
-    totalFees?: Hex;
+    totalFees?: HexString;
 }
 
 /**
@@ -57,9 +133,9 @@ export interface OtsBlockDetails {
  */
 export interface OtsBlockTxPage {
     /** Transaction bodies with input truncated to 4-byte selector */
-    transactions: Array<any>;
+    transactions: Array<OtsTransaction>;
     /** Receipts with logs and bloom set to null */
-    receipts: Array<any>;
+    receipts: Array<OtsReceipt>;
 }
 
 /**
@@ -67,9 +143,9 @@ export interface OtsBlockTxPage {
  */
 export interface OtsSearchPage {
     /** Array of transactions */
-    txs: Array<any>;
+    txs: OtsTransaction[];
     /** Array of corresponding receipts */
-    receipts: Array<any>;
+    receipts: OtsReceipt[];
     /** Whether this is the first page */
     firstPage: boolean;
     /** Whether this is the last page */
@@ -89,15 +165,14 @@ export interface OtsContractCreator {
 /**
  * The OtterscanProvider extends JsonRpcProvider to add support for
  * Erigon's OTS (Otterscan) namespace methods.
- * 
+ *
  * These methods provide efficient access to blockchain data optimized
  * for explorer applications.
- * 
+ *
  * **Note**: OTS methods are only available on Erigon nodes with the
  * ots namespace enabled via --http.api "eth,erigon,trace,ots"
  */
 export class OtterscanProvider extends JsonRpcProvider {
-    
     constructor(url?: string | FetchRequest, network?: Networkish, options?: JsonRpcApiProviderOptions) {
         super(url, network, options);
     }
@@ -135,7 +210,7 @@ export class OtterscanProvider extends JsonRpcProvider {
      * @param txHash - Transaction hash
      * @returns Raw revert data as hex string, "0x" if no error
      */
-    async getTransactionErrorData(txHash: string): Promise<Hex> {
+    async getTransactionErrorData(txHash: string): Promise<HexString> {
         return await this.send("ots_getTransactionError", [txHash]);
     }
 
@@ -145,7 +220,7 @@ export class OtterscanProvider extends JsonRpcProvider {
      * @param customAbi - Optional custom ABI for decoding custom errors
      * @returns Decoded error message or null if no error
      */
-    async getTransactionRevertReason(txHash: string, customAbi?: any[]): Promise<string | null> {
+    async getTransactionRevertReason(txHash: string, customAbi?: Fragment[]): Promise<string | null> {
         const data: string = await this.getTransactionErrorData(txHash);
         if (data === "0x") return null;
 
@@ -167,13 +242,15 @@ export class OtterscanProvider extends JsonRpcProvider {
                 const iface = new Interface(customAbi);
                 const parsed = iface.parseError(data);
                 if (parsed) {
-                    return `${parsed.name}(${parsed.args.map((a) => {
-                        try {
-                            return JSON.stringify(a);
-                        } catch {
-                            return String(a);
-                        }
-                    }).join(",")})`;
+                    return `${parsed.name}(${parsed.args
+                        .map(a => {
+                            try {
+                                return JSON.stringify(a);
+                            } catch {
+                                return String(a);
+                            }
+                        })
+                        .join(",")})`;
                 }
             } catch {
                 // Fall through to selector display
@@ -220,7 +297,7 @@ export class OtterscanProvider extends JsonRpcProvider {
      * @param pageSize - Maximum results to return
      * @returns Page of transactions
      */
-    async searchTransactionsBefore(address: string, blockNumber: number, pageSize: number): Promise<OtsSearchPage> {
+    async searchTransactionsBefore(address: string, blockNumber: number, pageSize: number): Promise<OtsSearchResult> {
         return await this.send("ots_searchTransactionsBefore", [address, blockNumber, pageSize]);
     }
 
@@ -231,7 +308,7 @@ export class OtterscanProvider extends JsonRpcProvider {
      * @param pageSize - Maximum results to return
      * @returns Page of transactions
      */
-    async searchTransactionsAfter(address: string, blockNumber: number, pageSize: number): Promise<OtsSearchPage> {
+    async searchTransactionsAfter(address: string, blockNumber: number, pageSize: number): Promise<OtsSearchResult> {
         return await this.send("ots_searchTransactionsAfter", [address, blockNumber, pageSize]);
     }
 
@@ -265,8 +342,9 @@ export class OtterscanProvider extends JsonRpcProvider {
             if (level < minLevel) {
                 throw new Error(`ots_getApiLevel ${level} < required ${minLevel}`);
             }
-        } catch (error: any) {
-            const err = new Error(`Erigon OTS namespace unavailable or too old: ${error?.message ?? error}`);
+        } catch (error: unknown) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            const err = new Error(`Erigon OTS namespace unavailable or too old: ${errorMsg}`);
             (err as any).code = "OTS_UNAVAILABLE";
             throw err;
         }
@@ -285,13 +363,14 @@ export class OtterscanProvider extends JsonRpcProvider {
         direction: "before" | "after",
         startBlock: number,
         pageSize: number = 500
-    ): AsyncGenerator<{ tx: any; receipt: any }, void, unknown> {
+    ): AsyncGenerator<{ tx: OtsTransaction; receipt: OtsReceipt }, void, unknown> {
         let currentBlock = startBlock;
 
         while (true) {
-            const page = direction === "before"
-                ? await this.searchTransactionsBefore(address, currentBlock, pageSize)
-                : await this.searchTransactionsAfter(address, currentBlock, pageSize);
+            const page =
+                direction === "before"
+                    ? await this.searchTransactionsBefore(address, currentBlock, pageSize)
+                    : await this.searchTransactionsAfter(address, currentBlock, pageSize);
 
             // Yield each transaction with its receipt
             for (let i = 0; i < page.txs.length; i++) {
@@ -309,12 +388,12 @@ export class OtterscanProvider extends JsonRpcProvider {
             if (!lastTx) break;
 
             const nextBlock = Number(lastTx.blockNumber);
-            
+
             // Prevent infinite loops from malformed API responses
             if (nextBlock === currentBlock) {
                 throw new Error(`Iterator stuck on block ${currentBlock}. API returned same block number.`);
             }
-            
+
             currentBlock = nextBlock;
         }
     }

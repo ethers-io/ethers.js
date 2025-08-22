@@ -4,12 +4,15 @@ import {
     FetchRequest,
     OtterscanProvider,
     JsonRpcProvider,
-    type OtsInternalOp,
-    type OtsBlockDetails,
-    type OtsBlockTxPage,
-    type OtsSearchPage,
-    type OtsContractCreator,
 } from "../index.js";
+
+import type {
+    OtsInternalOp,
+    OtsBlockDetails,
+    OtsBlockTxPage,
+    OtsSearchResult,
+    OtsContractCreator,
+} from "../providers/provider-otterscan.js";
 
 describe("Test Otterscan Provider", function() {
     // Mock OTS responses for testing
@@ -258,7 +261,7 @@ describe("Test Otterscan Provider", function() {
         const internalOps: OtsInternalOp[] = await provider.getInternalOperations("0x123");
         const blockDetails: OtsBlockDetails = await provider.getBlockDetails(4096);
         const blockTxs: OtsBlockTxPage = await provider.getBlockTransactions(4096, 0, 10);
-        const searchResults: OtsSearchPage = await provider.searchTransactionsBefore("0x123", 4096, 10);
+        const searchResults: OtsSearchResult = await provider.searchTransactionsBefore("0x123", 4096, 10);
         const creator: OtsContractCreator | null = await provider.getContractCreator("0x123");
         
         // Basic type assertions
