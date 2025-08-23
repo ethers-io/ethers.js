@@ -13,87 +13,17 @@
 import { Interface } from "../abi/index.js";
 import { dataSlice } from "../utils/index.js";
 import { JsonRpcProvider } from "./provider-jsonrpc.js";
+import { formatTransactionReceipt, formatTransactionResponse } from "./format.js";
 
 import type { JsonRpcApiProviderOptions } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
 import type { FetchRequest } from "../utils/index.js";
-import type { BlockParams } from "./formatting.js";
+import type { BlockParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
 import type { Fragment } from "../abi/index.js";
-import type { AccessList } from "../transaction/index.js";
-import type { HexString } from "../utils/data.js";
 
-// Log entry in transaction receipts - matches ethers LogParams but with hex strings from raw RPC
-export interface OtsLog {
-    address: string;
-    topics: ReadonlyArray<string>;
-    data: string;
-    blockNumber: string; // hex string from RPC, not parsed number
-    transactionHash: string;
-    transactionIndex: string; // hex string from RPC, not parsed number
-    blockHash: string;
-    logIndex: string; // hex string from RPC, not parsed number
-    removed: boolean;
-}
-
-// Otterscan transaction type - raw RPC response with hex-encoded values
-export interface OtsTransaction {
-    // Core transaction fields (always present)
-    blockHash: string;
-    blockNumber: string; // hex-encoded number
-    from: string;
-    gas: string; // hex-encoded gasLimit
-    gasPrice: string; // hex-encoded bigint
-    hash: string;
-    input: string; // transaction data
-    nonce: string; // hex-encoded number
-    to: string;
-    transactionIndex: string; // hex-encoded number
-    value: string; // hex-encoded bigint
-    type: string; // hex-encoded transaction type (0x0, 0x1, 0x2, etc.)
-    chainId: string; // hex-encoded bigint
-
-    // Signature components (always present)
-    v: string; // hex-encoded
-    r: string; // hex signature component
-    s: string; // hex signature component
-
-    // EIP-1559 fields (present in type 0x2 transactions)
-    maxPriorityFeePerGas?: string; // hex-encoded bigint
-    maxFeePerGas?: string; // hex-encoded bigint
-    yParity?: string; // hex-encoded (0x0 or 0x1)
-
-    // EIP-2930/EIP-1559 field
-    accessList?: AccessList;
-}
-
-// Otterscan receipt type - raw RPC response format
-export interface OtsReceipt {
-    // Core receipt fields
-    blockHash: string;
-    blockNumber: string; // hex-encoded number
-    contractAddress: string | null; // null for non-contract-creating txs
-    cumulativeGasUsed: string; // hex-encoded bigint
-    effectiveGasPrice: string; // hex-encoded bigint
-    from: string;
-    gasUsed: string; // hex-encoded bigint
-    logs: OtsLog[];
-    logsBloom: string; // hex-encoded bloom filter
-    status: string; // hex-encoded: "0x1" success, "0x0" failure
-    to: string;
-    transactionHash: string;
-    transactionIndex: string; // hex-encoded number
-    type: string; // hex-encoded transaction type
-
-    // Otterscan-specific extension
-    timestamp: number; // Unix timestamp as actual number (not hex)
-}
-
-// Otterscan search page result
-export interface OtsSearchResult {
-    txs: OtsTransaction[];
-    receipts: OtsReceipt[];
-    firstPage: boolean;
-    lastPage: boolean;
+// Formatted Otterscan receipt (extends standard receipt with timestamp)
+export interface OtsTransactionReceiptParams extends TransactionReceiptParams {
+    timestamp: number; // Otterscan adds a Unix timestamp
 }
 
 /**
@@ -107,45 +37,62 @@ export interface OtsInternalOp {
     /** Target address (null for self-destruct operations) */
     to: string | null;
     /** Value transferred (hex quantity) */
-    value: HexString;
+    value: string;
+}
+
+/**
+ * Block data for Otterscan (transactions list and logsBloom removed for efficiency)
+ */
+export interface OtsBlockParams extends Omit<BlockParams, "logsBloom" | "transactions"> {
+    /** Logs bloom set to null for bandwidth efficiency */
+    logsBloom: null;
 }
 
 /**
  * Block details with issuance and fee information
+ * Returns modified block data (log blooms set to null) plus Otterscan extensions
  */
 export interface OtsBlockDetails {
-    /** Raw block data */
-    block: BlockParams;
-    /** Number of transactions in the block */
-    transactionCount: number;
-    /** Block reward information (optional) */
+    /** Block data with transactions list removed and log blooms set to null for efficiency */
+    block: OtsBlockParams;
+    /** Block issuance information */
     issuance?: {
-        blockReward: HexString;
-        uncleReward: HexString;
-        issuance: HexString;
+        blockReward: string;
+        uncleReward: string;
+        issuance: string;
     };
     /** Total fees collected in the block */
-    totalFees?: HexString;
+    totalFees?: string;
 }
 
 /**
- * Paginated block transactions with receipts
+ * Receipt for block transactions (logs and logsBloom set to null for efficiency)
  */
-export interface OtsBlockTxPage {
+export interface OtsBlockTransactionReceipt extends Omit<TransactionReceiptParams, "logs" | "logsBloom"> {
+    /** Logs set to null for bandwidth efficiency */
+    logs: null;
+    /** Logs bloom set to null for bandwidth efficiency */
+    logsBloom: null;
+}
+
+/**
+ * Paginated block transactions with receipts (uses optimized receipt format)
+ */
+export interface OtsBlockTransactionsPage {
     /** Transaction bodies with input truncated to 4-byte selector */
-    transactions: Array<OtsTransaction>;
-    /** Receipts with logs and bloom set to null */
-    receipts: Array<OtsReceipt>;
+    transactions: Array<TransactionResponseParams>;
+    /** Receipts with logs and bloom set to null for bandwidth efficiency */
+    receipts: Array<OtsBlockTransactionReceipt>;
 }
 
 /**
- * Paginated search results for address transaction history
+ * Paginated search results for address transaction history (uses standard ethers types)
  */
-export interface OtsSearchPage {
+export interface OtsAddressTransactionsPage {
     /** Array of transactions */
-    txs: OtsTransaction[];
-    /** Array of corresponding receipts */
-    receipts: OtsReceipt[];
+    txs: TransactionResponseParams[];
+    /** Array of corresponding receipts with timestamps */
+    receipts: OtsTransactionReceiptParams[];
     /** Whether this is the first page */
     firstPage: boolean;
     /** Whether this is the last page */
@@ -186,10 +133,11 @@ export class OtterscanProvider extends JsonRpcProvider {
     }
 
     /**
-     * Check if an address has code at a specific block
+     * Check if an address has deployed code (is a contract vs EOA)
+     * More efficient than eth_getCode for checking contract vs EOA status
      * @param address - The address to check
      * @param blockTag - Block number or "latest"
-     * @returns True if address has code
+     * @returns True if address has code (is a contract)
      */
     async hasCode(address: string, blockTag: string | number | "latest" = "latest"): Promise<boolean> {
         const blockNumber = blockTag === "latest" ? "latest" : Number(blockTag);
@@ -210,7 +158,7 @@ export class OtterscanProvider extends JsonRpcProvider {
      * @param txHash - Transaction hash
      * @returns Raw revert data as hex string, "0x" if no error
      */
-    async getTransactionErrorData(txHash: string): Promise<HexString> {
+    async getTransactionErrorData(txHash: string): Promise<string> {
         return await this.send("ots_getTransactionError", [txHash]);
     }
 
@@ -272,6 +220,7 @@ export class OtterscanProvider extends JsonRpcProvider {
 
     /**
      * Get detailed block information including issuance and fees
+     * Tailor-made version of eth_getBlock - removes transaction list and log blooms for efficiency
      * @param blockNumber - Block number
      * @returns Block details with additional metadata
      */
@@ -280,40 +229,88 @@ export class OtterscanProvider extends JsonRpcProvider {
     }
 
     /**
+     * Get detailed block information including issuance and fees (by hash)
+     * Same as ots_getBlockDetails, but accepts a block hash as parameter
+     * @param blockHash - Block hash
+     * @returns Block details with additional metadata
+     */
+    async getBlockDetailsByHash(blockHash: string): Promise<OtsBlockDetails> {
+        return await this.send("ots_getBlockDetailsByHash", [blockHash]);
+    }
+
+    /**
      * Get paginated transactions for a block
+     * Removes verbose fields like logs from receipts to save bandwidth
      * @param blockNumber - Block number
      * @param page - Page number (0-based)
      * @param pageSize - Number of transactions per page
-     * @returns Page of transactions and receipts
+     * @returns Page of transactions and receipts (with logs removed)
      */
-    async getBlockTransactions(blockNumber: number, page: number, pageSize: number): Promise<OtsBlockTxPage> {
+    async getBlockTransactions(blockNumber: number, page: number, pageSize: number): Promise<OtsBlockTransactionsPage> {
         return await this.send("ots_getBlockTransactions", [blockNumber, page, pageSize]);
     }
 
     /**
-     * Search for transactions before a specific block for an address
+     * Search for inbound/outbound transactions before a specific block for an address
+     * Provides paginated transaction history with in-node search (no external indexer needed)
      * @param address - Address to search for
      * @param blockNumber - Starting block number
      * @param pageSize - Maximum results to return
-     * @returns Page of transactions
+     * @returns Page of transactions and receipts
      */
-    async searchTransactionsBefore(address: string, blockNumber: number, pageSize: number): Promise<OtsSearchResult> {
-        return await this.send("ots_searchTransactionsBefore", [address, blockNumber, pageSize]);
+    async searchTransactionsBefore(
+        address: string,
+        blockNumber: number,
+        pageSize: number
+    ): Promise<OtsAddressTransactionsPage> {
+        const result = (await this.send("ots_searchTransactionsBefore", [address, blockNumber, pageSize])) as {
+            txs: any[];
+            receipts: any[];
+            firstPage: boolean;
+            lastPage: boolean;
+        };
+        return {
+            ...result,
+            txs: result.txs.map((tx: any) => formatTransactionResponse(tx)),
+            receipts: result.receipts.map((receipt: any) => ({
+                ...formatTransactionReceipt(receipt),
+                timestamp: receipt.timestamp
+            }))
+        };
     }
 
     /**
-     * Search for transactions after a specific block for an address
+     * Search for inbound/outbound transactions after a specific block for an address
+     * Provides paginated transaction history with in-node search (no external indexer needed)
      * @param address - Address to search for
      * @param blockNumber - Starting block number
      * @param pageSize - Maximum results to return
-     * @returns Page of transactions
+     * @returns Page of transactions and receipts
      */
-    async searchTransactionsAfter(address: string, blockNumber: number, pageSize: number): Promise<OtsSearchResult> {
-        return await this.send("ots_searchTransactionsAfter", [address, blockNumber, pageSize]);
+    async searchTransactionsAfter(
+        address: string,
+        blockNumber: number,
+        pageSize: number
+    ): Promise<OtsAddressTransactionsPage> {
+        const result = (await this.send("ots_searchTransactionsAfter", [address, blockNumber, pageSize])) as {
+            txs: any[];
+            receipts: any[];
+            firstPage: boolean;
+            lastPage: boolean;
+        };
+        return {
+            ...result,
+            txs: result.txs.map((tx: any) => formatTransactionResponse(tx)),
+            receipts: result.receipts.map((receipt: any) => ({
+                ...formatTransactionReceipt(receipt),
+                timestamp: receipt.timestamp
+            }))
+        };
     }
 
     /**
      * Get transaction hash by sender address and nonce
+     * Enables navigation between nonces from the same sender (not available in standard JSON-RPC)
      * @param sender - Sender address
      * @param nonce - Transaction nonce
      * @returns Transaction hash or null if not found
@@ -323,7 +320,8 @@ export class OtterscanProvider extends JsonRpcProvider {
     }
 
     /**
-     * Get contract creator information
+     * Get contract creator information (transaction hash and creator address)
+     * Provides info not available through standard JSON-RPC API
      * @param address - Contract address
      * @returns Creator info or null if not a contract
      */
@@ -363,7 +361,7 @@ export class OtterscanProvider extends JsonRpcProvider {
         direction: "before" | "after",
         startBlock: number,
         pageSize: number = 500
-    ): AsyncGenerator<{ tx: OtsTransaction; receipt: OtsReceipt }, void, unknown> {
+    ): AsyncGenerator<{ tx: TransactionResponseParams; receipt: OtsTransactionReceiptParams }, void, unknown> {
         let currentBlock = startBlock;
 
         while (true) {
