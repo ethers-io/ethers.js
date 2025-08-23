@@ -60,9 +60,9 @@ export { JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from "./provider-j
 export { OtterscanProvider } from "./provider-otterscan.js";
 
 export type {
-    OtsLog, OtsTransaction, OtsReceipt, OtsSearchResult,
-    OtsInternalOp, OtsBlockDetails, OtsBlockTxPage, OtsSearchPage,
-    OtsContractCreator
+    OtsTransactionReceiptParams, OtsBlockTransactionReceipt,
+    OtsBlockParams, OtsInternalOp, OtsBlockDetails, OtsBlockTransactionsPage,
+    OtsAddressTransactionsPage, OtsContractCreator
 } from "./provider-otterscan.js";
 
 export { BrowserProvider } from "./provider-browser.js";
