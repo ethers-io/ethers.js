@@ -7,6 +7,7 @@ import type {
     OtsBlockDetails,
     OtsBlockTransactionsPage,
     OtsAddressTransactionsPage,
+    OtsTraceEntry,
     OtsContractCreator
 } from "../providers/provider-otterscan.js";
 
@@ -44,7 +45,32 @@ describe("Test Otterscan Provider", function () {
                     result = "0x";
                     break;
                 case "ots_traceTransaction":
-                    result = { calls: [] };
+                    result = [
+                        {
+                            type: "CALL",
+                            depth: 0,
+                            from: "0x737d16748aa3f93d6ff1b0aefa3eca7fffca868e",
+                            to: "0x545ec8c956d307cc3bf7f9ba1e413217eff1bc7a",
+                            value: "0x0",
+                            input: "0xff02000000000000001596d80c86b939000000000000000019cfaf37a98833fed61000a72a288205ead800f1978fc2d943013f0e9f56d3a1077a294dde1b09bb078844df40758a5d0f9a27017ed0000000011e00000300000191ccf22538c30f09d14be27569c5bdb61f99b3c9f33c0bb40d1bbf6eafaaea2adfb7d2d3ebc1e49c01857e0000000000000000"
+                        },
+                        {
+                            type: "DELEGATECALL",
+                            depth: 1,
+                            from: "0x545ec8c956d307cc3bf7f9ba1e413217eff1bc7a",
+                            to: "0x998f7f745f61a910da86d8aa65db60b67a40da6d",
+                            value: null,
+                            input: "0x5697217300000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000036a72a288205ead800f1978fc2d943013f0e9f56d3a1077a294dde1b09bb078844df40758a5d0f9a27017ed0000000011e000003000001"
+                        },
+                        {
+                            type: "STATICCALL", 
+                            depth: 2,
+                            from: "0x545ec8c956d307cc3bf7f9ba1e413217eff1bc7a",
+                            to: "0x91ccf22538c30f09d14be27569c5bdb61f99b3c9",
+                            value: null,
+                            input: "0x0902f1ac"
+                        }
+                    ];
                     break;
                 case "ots_getBlockDetails":
                     result = {
@@ -221,8 +247,24 @@ describe("Test Otterscan Provider", function () {
     it("should trace transaction", async function () {
         const provider = createMockOtsProvider();
         const trace = await provider.traceTransaction("0x123");
-        assert(typeof trace === "object", "should return trace object");
-        assert(Array.isArray(trace.calls), "should have calls array");
+        assert(Array.isArray(trace), "should return array of trace entries");
+        assert.strictEqual(trace.length, 3, "should have three trace entries");
+
+        const firstEntry = trace[0];
+        assert.strictEqual(firstEntry.type, "CALL", "first entry should be CALL");
+        assert.strictEqual(firstEntry.depth, 0, "first entry should have depth 0");
+        assert.strictEqual(firstEntry.from, "0x737d16748aa3f93d6ff1b0aefa3eca7fffca868e", "should have correct from");
+        assert.strictEqual(firstEntry.to, "0x545ec8c956d307cc3bf7f9ba1e413217eff1bc7a", "should have correct to");
+        assert.strictEqual(firstEntry.value, "0x0", "should have correct value");
+        assert(firstEntry.input?.startsWith("0xff02"), "should have input data");
+        
+        const delegateCall = trace[1];
+        assert.strictEqual(delegateCall.type, "DELEGATECALL", "second entry should be DELEGATECALL");
+        assert.strictEqual(delegateCall.value, null, "delegatecall should have null value");
+        
+        const staticCall = trace[2];
+        assert.strictEqual(staticCall.type, "STATICCALL", "third entry should be STATICCALL");
+        assert.strictEqual(staticCall.value, null, "staticcall should have null value");
     });
 
     it("should get block details", async function () {
@@ -319,6 +361,7 @@ describe("Test Otterscan Provider", function () {
         const blockDetails: OtsBlockDetails = await provider.getBlockDetails(4096);
         const blockTxs: OtsBlockTransactionsPage = await provider.getBlockTransactions(4096, 0, 10);
         const searchResults: OtsAddressTransactionsPage = await provider.searchTransactionsBefore("0x123", 4096, 10);
+        const traceEntries: OtsTraceEntry[] = await provider.traceTransaction("0x123");
         const creator: OtsContractCreator | null = await provider.getContractCreator("0x123");
 
         // Basic type assertions
@@ -328,6 +371,7 @@ describe("Test Otterscan Provider", function () {
         assert(typeof blockDetails === "object");
         assert(typeof blockTxs === "object" && Array.isArray(blockTxs.transactions));
         assert(typeof searchResults === "object" && Array.isArray(searchResults.txs));
+        assert(Array.isArray(traceEntries));
         assert(creator === null || typeof creator === "object");
     });
 });
