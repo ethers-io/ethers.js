@@ -100,6 +100,24 @@ export interface OtsAddressTransactionsPage {
 }
 
 /**
+ * Trace entry from ots_traceTransaction
+ */
+export interface OtsTraceEntry {
+    /** Type of operation (CALL, DELEGATECALL, STATICCALL, CREATE, etc.) */
+    type: string;
+    /** Call depth in the execution stack */
+    depth: number;
+    /** Source address */
+    from: string;
+    /** Target address */
+    to: string;
+    /** Value transferred (hex string, null for delegate/static calls) */
+    value: string | null;
+    /** Input data for the call */
+    input?: string;
+}
+
+/**
  * Contract creator information
  */
 export interface OtsContractCreator {
@@ -212,9 +230,9 @@ export class OtterscanProvider extends JsonRpcProvider {
     /**
      * Get execution trace for a transaction
      * @param txHash - Transaction hash
-     * @returns Trace data
+     * @returns Array of trace entries showing call execution flow
      */
-    async traceTransaction(txHash: string): Promise<any> {
+    async traceTransaction(txHash: string): Promise<OtsTraceEntry[]> {
         return await this.send("ots_traceTransaction", [txHash]);
     }
 
@@ -243,7 +261,7 @@ export class OtterscanProvider extends JsonRpcProvider {
      * Removes verbose fields like logs from receipts to save bandwidth
      * @param blockNumber - Block number
      * @param page - Page number (0-based)
-     * @param pageSize - Number of transactions per page
+     * @param pageSize - Soft limit on transactions per page (actual results may exceed this if a block contains more transactions)
      * @returns Page of transactions and receipts (with logs removed)
      */
     async getBlockTransactions(blockNumber: number, page: number, pageSize: number): Promise<OtsBlockTransactionsPage> {
@@ -255,7 +273,7 @@ export class OtterscanProvider extends JsonRpcProvider {
      * Provides paginated transaction history with in-node search (no external indexer needed)
      * @param address - Address to search for
      * @param blockNumber - Starting block number
-     * @param pageSize - Maximum results to return
+     * @param pageSize - Soft limit on results to return (actual results may exceed this if a block contains more transactions)
      * @returns Page of transactions and receipts
      */
     async searchTransactionsBefore(
@@ -263,16 +281,11 @@ export class OtterscanProvider extends JsonRpcProvider {
         blockNumber: number,
         pageSize: number
     ): Promise<OtsAddressTransactionsPage> {
-        const result = (await this.send("ots_searchTransactionsBefore", [address, blockNumber, pageSize])) as {
-            txs: any[];
-            receipts: any[];
-            firstPage: boolean;
-            lastPage: boolean;
-        };
+        const result = await this.send("ots_searchTransactionsBefore", [address, blockNumber, pageSize]) as OtsAddressTransactionsPage;
         return {
             ...result,
-            txs: result.txs.map((tx: any) => formatTransactionResponse(tx)),
-            receipts: result.receipts.map((receipt: any) => ({
+            txs: result.txs.map(tx => formatTransactionResponse(tx)),
+            receipts: result.receipts.map(receipt => ({
                 ...formatTransactionReceipt(receipt),
                 timestamp: receipt.timestamp
             }))
@@ -284,7 +297,7 @@ export class OtterscanProvider extends JsonRpcProvider {
      * Provides paginated transaction history with in-node search (no external indexer needed)
      * @param address - Address to search for
      * @param blockNumber - Starting block number
-     * @param pageSize - Maximum results to return
+     * @param pageSize - Soft limit on results to return (actual results may exceed this if a block contains more transactions)
      * @returns Page of transactions and receipts
      */
     async searchTransactionsAfter(
@@ -292,16 +305,11 @@ export class OtterscanProvider extends JsonRpcProvider {
         blockNumber: number,
         pageSize: number
     ): Promise<OtsAddressTransactionsPage> {
-        const result = (await this.send("ots_searchTransactionsAfter", [address, blockNumber, pageSize])) as {
-            txs: any[];
-            receipts: any[];
-            firstPage: boolean;
-            lastPage: boolean;
-        };
+        const result = await this.send("ots_searchTransactionsAfter", [address, blockNumber, pageSize]) as OtsAddressTransactionsPage;
         return {
             ...result,
-            txs: result.txs.map((tx: any) => formatTransactionResponse(tx)),
-            receipts: result.receipts.map((receipt: any) => ({
+            txs: result.txs.map(tx => formatTransactionResponse(tx)),
+            receipts: result.receipts.map(receipt => ({
                 ...formatTransactionReceipt(receipt),
                 timestamp: receipt.timestamp
             }))
@@ -353,14 +361,14 @@ export class OtterscanProvider extends JsonRpcProvider {
      * @param address - Address to search
      * @param direction - Search direction ("before" or "after")
      * @param startBlock - Starting block number
-     * @param pageSize - Results per page (default: 500)
+     * @param pageSize - Soft limit on results per page (default: 25, actual results may exceed this if a block contains more transactions)
      * @yields Object with tx and receipt for each transaction
      */
     async *iterateAddressHistory(
         address: string,
         direction: "before" | "after",
         startBlock: number,
-        pageSize: number = 500
+        pageSize: number = 25
     ): AsyncGenerator<{ tx: TransactionResponseParams; receipt: OtsTransactionReceiptParams }, void, unknown> {
         let currentBlock = startBlock;
 
@@ -379,7 +387,7 @@ export class OtterscanProvider extends JsonRpcProvider {
             }
 
             // Check if we've reached the end
-            if (page.lastPage) break;
+            if (direction === "before" ? page.lastPage : page.firstPage) break;
 
             // Update block cursor for next iteration
             const lastTx = page.txs[page.txs.length - 1];

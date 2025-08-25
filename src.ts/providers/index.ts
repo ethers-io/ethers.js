@@ -62,7 +62,7 @@ export { OtterscanProvider } from "./provider-otterscan.js";
 export type {
     OtsTransactionReceiptParams, OtsBlockTransactionReceipt,
     OtsBlockParams, OtsInternalOp, OtsBlockDetails, OtsBlockTransactionsPage,
-    OtsAddressTransactionsPage, OtsContractCreator
+    OtsAddressTransactionsPage, OtsTraceEntry, OtsContractCreator
 } from "./provider-otterscan.js";
 
 export { BrowserProvider } from "./provider-browser.js";

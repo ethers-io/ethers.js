@@ -180,7 +180,7 @@ export type {
     MinedBlock, MinedTransactionResponse, Networkish, OrphanFilter,
     OtsTransactionReceiptParams, OtsBlockTransactionReceipt,
     OtsBlockParams, OtsInternalOp, OtsBlockDetails, OtsBlockTransactionsPage,
-    OtsAddressTransactionsPage, OtsContractCreator,
+    OtsAddressTransactionsPage, OtsTraceEntry, OtsContractCreator,
     PerformActionFilter, PerformActionRequest, PerformActionTransaction,
     PreparedTransactionRequest, ProviderEvent, Subscriber, Subscription,
     TopicFilter, TransactionReceiptParams, TransactionRequest,
