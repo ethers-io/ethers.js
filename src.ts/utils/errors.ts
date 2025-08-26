@@ -147,7 +147,7 @@ export type ErrorCode =
     // Blockchain Errors
     "CALL_EXCEPTION" | "INSUFFICIENT_FUNDS" | "NONCE_EXPIRED" |
     "REPLACEMENT_UNDERPRICED" | "TRANSACTION_REPLACED" |
-    "UNCONFIGURED_NAME" | "OFFCHAIN_FAULT" |
+    "UNCONFIGURED_NAME" | "OFFCHAIN_FAULT" | "FILTER_NOT_FOUND" |
 
     // User Interaction
     "ACTION_REJECTED"
@@ -555,6 +555,16 @@ export interface UnconfiguredNameError extends EthersError<"UNCONFIGURED_NAME"> 
 }
 
 /**
+ *  This Error indicates that the filter whose changes was requested was not found.
+ */
+export interface FilterNotFoundError extends EthersError<"FILTER_NOT_FOUND"> {
+    /**
+     *  The filter ID that was requested
+     */
+    filterId: string;
+}
+
+/**
  *  This Error indicates a request was rejected by the user.
  *
  *  In most clients (such as MetaMask), when an operation requires user
@@ -610,6 +620,7 @@ export type CodedEthersError<T> =
     T extends "REPLACEMENT_UNDERPRICED" ? ReplacementUnderpricedError:
     T extends "TRANSACTION_REPLACED" ? TransactionReplacedError:
     T extends "UNCONFIGURED_NAME" ? UnconfiguredNameError:
+    T extends "FILTER_NOT_FOUND" ? FilterNotFoundError:
 
     T extends "ACTION_REJECTED" ? ActionRejectedError:
 

@@ -731,6 +731,9 @@ export class JsonRpcApiProvider extends AbstractProvider {
                 });
             }
         }
+        if (method === "eth_getFilterChanges" && message.match(/filter not found/i)) {
+            return makeError("filter not found", "FILTER_NOT_FOUND", { filterId: (payload.params)[0] });
+        }
         let unsupported = !!message.match(/the method .* does not exist/i);
         if (!unsupported) {
             if (error && error.details && error.details.startsWith("Unauthorized method:")) {
