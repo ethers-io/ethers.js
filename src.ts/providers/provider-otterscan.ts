@@ -21,6 +21,9 @@ import type { FetchRequest } from "../utils/index.js";
 import type { BlockParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
 import type { Fragment } from "../abi/index.js";
 
+// Maximum page size for Otterscan queries - API limitation
+const OTS_MAX_PAGE_SIZE = 25;
+
 // Formatted Otterscan receipt (extends standard receipt with timestamp)
 export interface OtsTransactionReceiptParams extends TransactionReceiptParams {
     timestamp: number; // Otterscan adds a Unix timestamp
@@ -357,39 +360,43 @@ export class OtterscanProvider extends JsonRpcProvider {
     }
 
     /**
-     * Iterate through transaction history for an address
+     * Iterate through transaction history for an address between block ranges
      * @param address - Address to search
-     * @param direction - Search direction ("before" or "after")
-     * @param startBlock - Starting block number
-     * @param pageSize - Soft limit on results per page (default: 25, actual results may exceed this if a block contains more transactions)
-     * @yields Object with tx and receipt for each transaction
+     * @param startBlock - Starting block number (inclusive)
+     * @param endBlock - Ending block number (inclusive)
+     * @yields Object with tx and receipt for each transaction in ascending block order
      */
     async *iterateAddressHistory(
         address: string,
-        direction: "before" | "after",
         startBlock: number,
-        pageSize: number = 25
+        endBlock: number
     ): AsyncGenerator<{ tx: TransactionResponseParams; receipt: OtsTransactionReceiptParams }, void, unknown> {
         let currentBlock = startBlock;
 
-        while (true) {
-            const page =
-                direction === "before"
-                    ? await this.searchTransactionsBefore(address, currentBlock, pageSize)
-                    : await this.searchTransactionsAfter(address, currentBlock, pageSize);
+        while (currentBlock <= endBlock) {
+            const page = await this.searchTransactionsAfter(address, currentBlock, OTS_MAX_PAGE_SIZE);
 
-            // Yield each transaction with its receipt
+            // Filter and yield transactions within our range
             for (let i = 0; i < page.txs.length; i++) {
-                yield {
-                    tx: page.txs[i],
-                    receipt: page.receipts[i]
-                };
+                const tx = page.txs[i];
+                const blockNum = Number(tx.blockNumber);
+
+                // Only yield transactions within the specified range
+                if (blockNum >= startBlock && blockNum <= endBlock) {
+                    yield {
+                        tx: tx,
+                        receipt: page.receipts[i]
+                    };
+                }
+
+                // Stop if we've gone past the end block
+                if (blockNum > endBlock) return;
             }
 
-            // Check if we've reached the end
-            if (direction === "before" ? page.lastPage : page.firstPage) break;
+            // Check if we've reached the end of available data
+            if (page.lastPage) break;
 
-            // Update block cursor for next iteration
+            // Move to the next block after the last transaction we saw
             const lastTx = page.txs[page.txs.length - 1];
             if (!lastTx) break;
 
@@ -400,7 +407,8 @@ export class OtterscanProvider extends JsonRpcProvider {
                 throw new Error(`Iterator stuck on block ${currentBlock}. API returned same block number.`);
             }
 
-            currentBlock = nextBlock;
+            // Move cursor forward
+            currentBlock = nextBlock + 1;
         }
     }
 }

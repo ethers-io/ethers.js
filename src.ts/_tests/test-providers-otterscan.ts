@@ -346,7 +346,7 @@ describe("Test Otterscan Provider", function () {
 
     it("should have async iterator for address history", function () {
         const provider = createMockOtsProvider();
-        const iterator = provider.iterateAddressHistory("0x123", "before", 4096);
+        const iterator = provider.iterateAddressHistory("0x123", 4000, 4096);
 
         assert(typeof iterator[Symbol.asyncIterator] === "function", "should be async iterable");
     });
