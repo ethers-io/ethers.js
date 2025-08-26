@@ -67,7 +67,7 @@ export type {
     NumericFaultError, InvalidArgumentError, MissingArgumentError, UnexpectedArgumentError,
     CallExceptionError, InsufficientFundsError, NonceExpiredError, OffchainFaultError,
     ReplacementUnderpricedError, TransactionReplacedError, UnconfiguredNameError,
-    ActionRejectedError,
+    ActionRejectedError, FilterNotFoundError,
 
     CallExceptionAction, CallExceptionTransaction,
 
