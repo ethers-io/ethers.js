@@ -18,7 +18,10 @@ const BN_2 = BigInt(2);
 const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
 const BN_35 = BigInt(35);
+const BN_N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+const BN_N_2 = BN_N / BN_2; // Must be integer (floor) division; do NOT shifts
 
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 
 const _guard = { };
 
@@ -103,7 +106,8 @@ export class Signature {
      *  Returns true if the Signature is valid for [[link-eip-2]] signatures.
      */
     isValid(): boolean {
-        return (parseInt(this.#s.substring(0, 3)) < 8);
+        const s = BigInt(this.#s);
+        return (s <= BN_N_2);
     }
 
     /**
@@ -184,8 +188,25 @@ export class Signature {
         this.#networkV = null;
     }
 
-    [Symbol.for('nodejs.util.inspect.custom')](): string {
-        return `Signature { r: "${ this.r }", s: "${ this._s }"${ this.isValid() ? "": ', valid: "false"'}, yParity: ${ this.yParity }, networkV: ${ this.networkV } }`;
+    /**
+     *  Returns the canonical signature.
+     *
+     *  This is only necessary when dealing with legacy transaction which
+     *  did not enforce canonical S values (i.e. [[link-eip-2]]. Most
+     *  developers should never require this.
+     */
+    getCanonical(): Signature {
+        if (this.isValid()) { return this; }
+
+        // Compute the canonical signature; s' = N - s, v = !v
+        const s = BN_N - BigInt(this._s);
+        const v = <27 | 28>(55 - this.v);
+        const result = new Signature(_guard, this.r, toUint256(s), v);
+
+        // Populate the networkV if necessary
+        if (this.networkV) { result.#networkV =  this.networkV; }
+
+        return result;
     }
 
     /**
@@ -207,6 +228,17 @@ export class Signature {
             networkV: ((networkV != null) ? networkV.toString(): null),
             r: this.r, s: this._s, v: this.v,
         };
+    }
+
+    [inspect](): string {
+        return this.toString();
+    }
+
+    toString(): string {
+        if (this.isValid()) {
+            return `Signature { r: ${ this.r }, s: ${ this._s }, v: ${ this.v } }`;
+        }
+        return `Signature { r: ${ this.r }, s: ${ this._s }, v: ${ this.v }, valid: false }`;
     }
 
     /**

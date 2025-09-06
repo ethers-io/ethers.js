@@ -20,13 +20,14 @@ import type {
     AccessList, AccessListish, Authorization, AuthorizationLike
 } from "./index.js";
 
-
 const BN_0 = BigInt(0);
 const BN_2 = BigInt(2);
 const BN_27 = BigInt(27)
 const BN_28 = BigInt(28)
 const BN_35 = BigInt(35);
 const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 
 const BLOB_SIZE = 4096 * 32;
 
@@ -318,7 +319,7 @@ function formatAuthorizationList(value: Array<Authorization>): Array<Array<strin
             formatNumber(a.nonce, "nonce"),
             formatNumber(a.signature.yParity, "yParity"),
             toBeArray(a.signature.r),
-            toBeArray(a.signature.s)
+            toBeArray(a.signature._s)
         ];
     });
 }
@@ -434,7 +435,7 @@ function _serializeLegacy(tx: Transaction, sig: null | Signature): string {
     // Add the signature
     fields.push(toBeArray(v));
     fields.push(toBeArray(sig.r));
-    fields.push(toBeArray(sig.s));
+    fields.push(toBeArray(sig._s));
 
     return encodeRlp(fields);
 }
@@ -895,6 +896,20 @@ export class Transaction implements TransactionLike<string> {
         this.#sig = (value == null) ? null: Signature.from(value);
     }
 
+    isValid(): boolean {
+        const sig = this.signature;
+        if (sig && !sig.isValid()) { return false; }
+
+        const auths = this.authorizationList;
+        if (auths) {
+            for (const auth of auths) {
+                if (!auth.signature.isValid()) { return false; }
+            }
+        }
+
+        return true;
+    }
+
     /**
      *  The access list.
      *
@@ -1104,7 +1119,7 @@ export class Transaction implements TransactionLike<string> {
      */
     get from(): null | string {
         if (this.signature == null) { return null; }
-        return recoverAddress(this.unsignedHash, this.signature);
+        return recoverAddress(this.unsignedHash, this.signature.getCanonical());
     }
 
     /**
@@ -1112,7 +1127,7 @@ export class Transaction implements TransactionLike<string> {
      */
     get fromPublicKey(): null | string {
         if (this.signature == null) { return null; }
-        return SigningKey.recoverPublicKey(this.unsignedHash, this.signature);
+        return SigningKey.recoverPublicKey(this.unsignedHash, this.signature.getCanonical());
     }
 
     /**
@@ -1313,6 +1328,53 @@ export class Transaction implements TransactionLike<string> {
             sig: this.signature ? this.signature.toJSON(): null,
             accessList: this.accessList
         };
+    }
+
+    [inspect](): string {
+        return this.toString();
+    }
+
+    toString(): string {
+        const output: Array<string> = [ ];
+        const add = (key: string) => {
+            let value = (<any>this)[key];
+            if (typeof(value) === "string") { value = JSON.stringify(value); }
+            output.push(`${ key }: ${ value }`);
+        };
+
+        if (this.type) { add("type"); }
+        add("to");
+        add("data");
+        add("nonce");
+        add("gasLimit");
+        add("value");
+        if (this.chainId != null) { add("chainId"); }
+        if (this.signature) {
+            add("from");
+            output.push(`signature: ${ this.signature.toString() }`);
+        }
+
+        // @TODO: accessList
+
+        // @TODO: blobs (might make output huge; maybe just include a flag?)
+
+        const auths = this.authorizationList;
+        if (auths) {
+            const outputAuths: Array<string> = [ ];
+            for (const auth of auths) {
+                const o: Array<string> = [ ];
+                o.push(`address: ${ JSON.stringify(auth.address) }`);
+                if (auth.nonce != null) { o.push(`nonce: ${ auth.nonce }`); }
+                if (auth.chainId != null) { o.push(`chainId: ${ auth.chainId }`); }
+                if (auth.signature) {
+                    o.push(`signature: ${ auth.signature.toString() }`);
+                }
+                outputAuths.push(`Authorization { ${ o.join(", ") } }`);
+            }
+            output.push(`authorizations: [ ${ outputAuths.join(", ") } ]`);
+        }
+
+        return `Transaction { ${ output.join(", ") } }`;
     }
 
     /**
