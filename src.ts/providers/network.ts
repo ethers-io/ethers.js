@@ -31,6 +31,7 @@ export type Networkish = Network | number | bigint | string | {
     //layerOneConnection?: Provider,
     ensAddress?: string,
     ensNetwork?: number
+    ensUniversalResolver?: string;
 };
 
 
@@ -253,8 +254,9 @@ export class Network {
 
             const custom = new Network(<string>(network.name), <number>(network.chainId));
 
-            if ((<any>network).ensAddress || (<any>network).ensNetwork != null) {
-                custom.attachPlugin(new EnsPlugin((<any>network).ensAddress, (<any>network).ensNetwork));
+            const n: any = network;
+            if (n.ensAddress || n.ensNetwork != null || n.ensUniversalResolver) {
+                custom.attachPlugin(new EnsPlugin(n.ensAddress, n.ensNetwork, n.ensUniversalResolver));
             }
 
             //if ((<any>network).layerOneConnection) {
@@ -284,6 +286,7 @@ export class Network {
 
 type Options = {
     ensNetwork?: number;
+    ensUniversalResolver?: string;
     altNames?: Array<string>;
     plugins?: Array<NetworkPlugin>;
 };
@@ -359,7 +362,7 @@ function injectCommonNetworks(): void {
 
             // We use 0 to disable ENS
             if (options.ensNetwork != null) {
-                network.attachPlugin(new EnsPlugin(null, options.ensNetwork));
+                network.attachPlugin(new EnsPlugin(null, options.ensNetwork, options.ensUniversalResolver));
             }
 
             network.attachPlugin(new GasCostPlugin());
@@ -382,12 +385,18 @@ function injectCommonNetworks(): void {
         }
     }
 
-    registerEth("mainnet", 1, { ensNetwork: 1, altNames: [ "homestead" ] });
+    const ensUniversalResolver = "0xce01f8eee7E479C928F8919abD53E553a36CeF67";
+
+    registerEth("mainnet", 1, {
+        ensUniversalResolver, ensNetwork: 1, altNames: [ "homestead" ]
+    });
     registerEth("ropsten", 3, { ensNetwork: 3 });
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });
     registerEth("kovan", 42, { ensNetwork: 42 });
-    registerEth("sepolia", 11155111, { ensNetwork: 11155111 });
+    registerEth("sepolia", 11155111, {
+        ensUniversalResolver, ensNetwork: 11155111
+    });
     registerEth("holesky", 17000, { ensNetwork: 17000 });
 
     registerEth("classic", 61, { });

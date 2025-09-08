@@ -175,11 +175,23 @@ export class EnsResolver {
     // For EIP-2544 names, the ancestor that provided the resolver
     #supports2544: null | Promise<boolean>;
 
-    #resolver: Contract;
+    readonly #resolver: Contract;
 
-    constructor(provider: AbstractProvider, address: string, name: string) {
+    readonly #universal: null | Contract;
+
+    constructor(provider: AbstractProvider, address: string, name: string, universalResolver?: boolean) {
         defineProperties<EnsResolver>(this, { provider, address, name });
-        this.#supports2544 = null;
+
+        if (universalResolver) {
+            this.#supports2544 = Promise.resolve(true);
+            this.#universal = new Contract(address, [
+                "function resolve(bytes name, bytes data) view returns (bytes, address)"
+            ], provider);;
+        } else {
+            this.#supports2544 = null;
+            this.#universal = null;
+        }
+
 
         this.#resolver = new Contract(address, [
             "function supportsInterface(bytes4) view returns (bool)",
@@ -243,7 +255,12 @@ export class EnsResolver {
         });
 
         try {
-            const result = await this.#resolver[funcName](...params);
+            let result;
+            if (this.#universal) {
+                result = (await this.#universal.resolve(...params))[0];
+            } else {
+                result = await this.#resolver[funcName](...params);
+            }
 
             if (fragment) {
                 return iface.decodeFunctionResult(fragment, result)[0];
@@ -577,6 +594,16 @@ export class EnsResolver {
      *  ``null`` if unconfigured.
      */
     static async fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver> {
+        // If the network supports the universal resolver, use it
+        {
+            const network = await provider.getNetwork();
+
+            const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.plugins.network.Ens");
+            if (ensPlugin && ensPlugin.universalResolver) {
+                return new EnsResolver(provider, ensPlugin.universalResolver, name, true);
+            }
+        }
+
 
         let currentName = name;
         while (true) {

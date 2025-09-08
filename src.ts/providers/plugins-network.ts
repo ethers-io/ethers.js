@@ -173,22 +173,29 @@ export class EnsPlugin extends NetworkPlugin {
     readonly targetNetwork!: number;
 
     /**
+     *  The Universal Resolver Contract Address.
+     */
+    readonly universalResolver?: string;
+
+    /**
      *  Creates a new **EnsPlugin** connected to %%address%% on the
      *  %%targetNetwork%%. The default ENS address and mainnet is used
      *  if unspecified.
      */
-    constructor(address?: null | string, targetNetwork?: null | number) {
+    constructor(address?: null | string, targetNetwork?: null | number, universalResolver?: string) {
         super("org.ethers.plugins.network.Ens");
         defineProperties<EnsPlugin>(this, {
             address: (address || EnsAddress),
-            targetNetwork: ((targetNetwork == null) ? 1: targetNetwork)
+            targetNetwork: ((targetNetwork == null) ? 1: targetNetwork),
+            universalResolver
         });
     }
 
     clone(): EnsPlugin {
-        return new EnsPlugin(this.address, this.targetNetwork);
+        return new EnsPlugin(this.address, this.targetNetwork, this.universalResolver);
     }
 }
+
 
 /**
  *  A **FeeDataNetworkPlugin** allows a network to provide and alternate
