@@ -589,21 +589,76 @@ export class EnsResolver {
         return null;
     }
 
+    static async lookupAddress(provider: AbstractProvider, address: string): Promise<null | string> {
+        const universal = await getUniversal(provider);
+
+        let node = `${ getAddress(address).substring(2) }.addr.reverse`;
+
+        // We have a Universal resolver, use it
+        if (universal) {
+            const contract = new Contract(universal, [
+                "function reverse(bytes name) view returns (string, address, address, address)"
+            ], provider);
+            const result = await contract.reverse(dnsEncode(node));
+
+            // Verify forward resolution matches reverse; @TODO: necessary?
+            if (result[1] !== address) { return null; }
+
+            if (result) { return result[0]; }
+            // @TODO: errors
+
+            return null;
+        }
+
+        // Use legacy reverse lookup
+
+        try {
+            // Legacy resolver uses namehash of the lowercase name
+            node = namehash(node.toLowerCase());
+
+            const ensAddr = await EnsResolver.getEnsAddress(provider);
+            const ensContract = new Contract(ensAddr, [
+                "function resolver(bytes32) view returns (address)"
+            ], provider);
+
+            const resolver = await ensContract.resolver(node);
+            if (resolver == null || resolver === ZeroAddress) { return null; }
+
+            const resolverContract = new Contract(resolver, [
+                "function name(bytes32) view returns (string)"
+            ], provider);
+
+            const name = await resolverContract.name(node);
+
+            // Failed forward resolution
+            const check = await provider.resolveName(name);
+            if (check !== address) { return null; }
+            return name;
+
+        } catch (error) {
+            // No data was returned from the resolver
+            if (isError(error, "BAD_DATA") && error.value === "0x") {
+                return null;
+            }
+
+            // Something reverted
+            if (isError(error, "CALL_EXCEPTION")) { return null; }
+
+            throw error;
+        }
+
+        return null;
+    }
+
     /**
      *  Resolve to the ENS resolver for %%name%% using %%provider%% or
      *  ``null`` if unconfigured.
      */
     static async fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver> {
-        // If the network supports the universal resolver, use it
-        {
-            const network = await provider.getNetwork();
-
-            const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.plugins.network.Ens");
-            if (ensPlugin && ensPlugin.universalResolver) {
-                return new EnsResolver(provider, ensPlugin.universalResolver, name, true);
-            }
+        const universal = await getUniversal(provider);
+        if (universal) {
+           return new EnsResolver(provider, universal, name, true);
         }
-
 
         let currentName = name;
         while (true) {
@@ -630,4 +685,15 @@ export class EnsResolver {
             currentName = currentName.split(".").slice(1).join(".");
         }
     }
+}
+
+async function getUniversal(provider: AbstractProvider): Promise<null | string> {
+    const network = await provider.getNetwork();
+
+    const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.plugins.network.Ens");
+    if (ensPlugin && ensPlugin.universalResolver) {
+        return ensPlugin.universalResolver;
+    }
+
+    return null;
 }
