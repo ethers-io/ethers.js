@@ -599,7 +599,10 @@ export class EnsResolver {
             const contract = new Contract(universal, [
                 "function reverse(bytes name) view returns (string, address, address, address)"
             ], provider);
-            const result = await contract.reverse(dnsEncode(node));
+
+            const result = await contract.reverse(dnsEncode(node), {
+                enableCcipRead: true
+            });
 
             // Verify forward resolution matches reverse; @TODO: necessary?
             if (result[1] !== address) { return null; }
