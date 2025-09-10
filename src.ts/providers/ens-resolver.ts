@@ -184,9 +184,7 @@ export class EnsResolver {
 
         if (universalResolver) {
             this.#supports2544 = Promise.resolve(true);
-            this.#universal = new Contract(address, [
-                "function resolve(bytes name, bytes data) view returns (bytes, address)"
-            ], provider);;
+            this.#universal = createUniversal(provider, address);
         } else {
             this.#supports2544 = null;
             this.#universal = null;
@@ -250,14 +248,12 @@ export class EnsResolver {
             funcName = "resolve(bytes,bytes)";
         }
 
-        params.push({
-            enableCcipRead: true
-        });
+        params.push({ enableCcipRead: true });
 
         try {
             let result;
             if (this.#universal) {
-                result = (await this.#universal.resolve(...params))[0];
+                result = (await this.#universal.resolve(...params)).result;
             } else {
                 result = await this.#resolver[funcName](...params);
             }
@@ -267,6 +263,7 @@ export class EnsResolver {
             }
 
             return result;
+
         } catch (error: any) {
             if (!isError(error, "CALL_EXCEPTION")) { throw error; }
         }
@@ -589,28 +586,25 @@ export class EnsResolver {
         return null;
     }
 
-    static async lookupAddress(provider: AbstractProvider, address: string): Promise<null | string> {
+    static async lookupAddress(provider: AbstractProvider, address: string, coinType?: number): Promise<null | string> {
         address = getAddress(address);
-
-        const universal = await getUniversal(provider);
+        if (coinType == null) { coinType = 60; }
 
         // We have a Universal resolver, use it
+        const universal = await getUniversal(provider);
         if (universal) {
-            const contract = new Contract(universal, [
-                "function reverse(bytes name, uint coinType) view returns (string, address, address)"
-            ], provider);
-
-            const result = await contract.reverse(address, 60, {
+            const result = await universal.reverse(address, coinType, {
                 enableCcipRead: true
             });
 
-            if (result) { return result[0]; }
-            // @TODO: errors
-
-            return null;
+            return result.primary || null;
         }
 
         // Use legacy reverse lookup
+
+        assert(coinType === 60, "lookupAddress coinType requires ENS Universal Resolver", "UNSUPPORTED_OPERATION", {
+            operation: "lookupAddress"
+        });
 
         try {
             // Legacy resolver uses namehash of the lowercase name
@@ -653,11 +647,24 @@ export class EnsResolver {
     /**
      *  Resolve to the ENS resolver for %%name%% using %%provider%% or
      *  ``null`` if unconfigured.
+     *
+     *  If %%preferUniversal%% and the network supports ENS Universal
+     *  Resolver, a resolver is always returned (even if the name doesn't
+     *  have one) and calls are resolved by it. The Universal Resolver is
+     *  more eth_call efficient, as it performs more on-chain, but is not
+     *  the actual resolver, if for example the setters are required.
      */
-    static async fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver> {
+    static async fromName(provider: AbstractProvider, name: string, preferUniversal?: boolean): Promise<null | EnsResolver> {
+
+        // We have a Universal Resolver, use it
         const universal = await getUniversal(provider);
         if (universal) {
-           return new EnsResolver(provider, universal, name, true);
+            if (preferUniversal) {
+                return new EnsResolver(provider, <string>universal.target, name, true);
+            }
+
+            const result = await universal.findResolver(dnsEncode(name));
+            return new EnsResolver(provider, result.resolver, name);
         }
 
         let currentName = name;
@@ -687,12 +694,21 @@ export class EnsResolver {
     }
 }
 
-async function getUniversal(provider: AbstractProvider): Promise<null | string> {
+function createUniversal(provider: AbstractProvider, address: string): Contract {
+    return new Contract(address, [
+        "function findResolver(bytes) view returns (address resolver, bytes32 node, uint offset)",
+        "function resolve(bytes name, bytes data) view returns (bytes result, address resolver)",
+        "function reverse(bytes name, uint coinType) view returns (string primary, address resolver, address reverseResolver)",
+        "error HttpError(uint16 statusCode, string statusMessage)"
+    ], provider);
+}
+
+async function getUniversal(provider: AbstractProvider): Promise<null | Contract> {
     const network = await provider.getNetwork();
 
     const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.plugins.network.Ens");
     if (ensPlugin && ensPlugin.universalResolver) {
-        return ensPlugin.universalResolver;
+        return createUniversal(provider, ensPlugin.universalResolver);
     }
 
     return null;

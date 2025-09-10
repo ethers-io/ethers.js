@@ -1186,18 +1186,18 @@ export class AbstractProvider implements Provider {
         });
     }
 
-    async getResolver(name: string): Promise<null | EnsResolver> {
-        return await EnsResolver.fromName(this, name);
+    async getResolver(name: string, preferUniversal?: boolean): Promise<null | EnsResolver> {
+        return await EnsResolver.fromName(this, name, preferUniversal);
     }
 
     async getAvatar(name: string): Promise<null | string> {
-        const resolver = await this.getResolver(name);
+        const resolver = await this.getResolver(name, true);
         if (resolver) { return await resolver.getAvatar(); }
         return null;
     }
 
     async resolveName(name: string): Promise<null | string>{
-        const resolver = await this.getResolver(name);
+        const resolver = await this.getResolver(name, true);
         if (resolver) { return await resolver.getAddress(); }
         return null;
     }
