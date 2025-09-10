@@ -432,4 +432,7 @@ function injectCommonNetworks(): void {
     registerEth("optimism-sepolia", 11155420, { });
 
     registerEth("xdai", 100, { ensNetwork: 1 });
+
+    registerEth("filecoin", 314, {});
+    registerEth("filecoin-calibration", 314159, {});
 }
