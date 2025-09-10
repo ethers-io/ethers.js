@@ -18033,6 +18033,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         registerEth("optimism-goerli", 420, {});
         registerEth("optimism-sepolia", 11155420, {});
         registerEth("xdai", 100, { ensNetwork: 1 });
+        registerEth("filecoin", 314, {});
+        registerEth("filecoin-calibration", 314159, {});
     }
 
     function copy$2(obj) {
