@@ -385,7 +385,8 @@ function injectCommonNetworks(): void {
         }
     }
 
-    const ensUniversalResolver = "0xce01f8eee7E479C928F8919abD53E553a36CeF67";
+    // Proxy address
+    const ensUniversalResolver = "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe";
 
     registerEth("mainnet", 1, {
         ensUniversalResolver, ensNetwork: 1, altNames: [ "homestead" ]

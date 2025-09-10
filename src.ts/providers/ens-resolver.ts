@@ -590,22 +590,19 @@ export class EnsResolver {
     }
 
     static async lookupAddress(provider: AbstractProvider, address: string): Promise<null | string> {
-        const universal = await getUniversal(provider);
+        address = getAddress(address);
 
-        let node = `${ getAddress(address).substring(2) }.addr.reverse`;
+        const universal = await getUniversal(provider);
 
         // We have a Universal resolver, use it
         if (universal) {
             const contract = new Contract(universal, [
-                "function reverse(bytes name) view returns (string, address, address, address)"
+                "function reverse(bytes name, uint coinType) view returns (string, address, address)"
             ], provider);
 
-            const result = await contract.reverse(dnsEncode(node), {
+            const result = await contract.reverse(address, 60, {
                 enableCcipRead: true
             });
-
-            // Verify forward resolution matches reverse; @TODO: necessary?
-            if (result[1] !== address) { return null; }
 
             if (result) { return result[0]; }
             // @TODO: errors
@@ -617,7 +614,7 @@ export class EnsResolver {
 
         try {
             // Legacy resolver uses namehash of the lowercase name
-            node = namehash(node.toLowerCase());
+            const node = namehash(`${ address.toLowerCase().substring(2) }.addr.reverse`);
 
             const ensAddr = await EnsResolver.getEnsAddress(provider);
             const ensContract = new Contract(ensAddr, [
