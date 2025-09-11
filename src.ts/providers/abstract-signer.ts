@@ -1,6 +1,6 @@
 /**
  *  Generally the [[Wallet]] and [[JsonRpcSigner]] and their sub-classes
- *  are sufficent for most developers, but this is provided to
+ *  are sufficient for most developers, but this is provided to
  *  fascilitate more complex Signers.
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
