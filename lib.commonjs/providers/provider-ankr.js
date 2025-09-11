@@ -9,8 +9,18 @@ exports.AnkrProvider = void 0;
  *
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
- *  - Polygon (``matic``)
+ *  - Sepolia Testnet (``sepolia``)
  *  - Arbitrum (``arbitrum``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB (``bnb``)
+ *  - BNB Testnet (``bnbt``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Ankr  [providers-ankr]
  */
@@ -25,10 +35,30 @@ function getHost(name) {
             return "rpc.ankr.com/eth";
         case "goerli":
             return "rpc.ankr.com/eth_goerli";
-        case "matic":
-            return "rpc.ankr.com/polygon";
+        case "sepolia":
+            return "rpc.ankr.com/eth_sepolia";
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
+        case "base":
+            return "rpc.ankr.com/base";
+        case "base-goerli":
+            return "rpc.ankr.com/base_goerli";
+        case "base-sepolia":
+            return "rpc.ankr.com/base_sepolia";
+        case "bnb":
+            return "rpc.ankr.com/bsc";
+        case "bnbt":
+            return "rpc.ankr.com/bsc_testnet_chapel";
+        case "matic":
+            return "rpc.ankr.com/polygon";
+        case "matic-mumbai":
+            return "rpc.ankr.com/polygon_mumbai";
+        case "optimism":
+            return "rpc.ankr.com/optimism";
+        case "optimism-goerli":
+            return "rpc.ankr.com/optimism_testnet";
+        case "optimism-sepolia":
+            return "rpc.ankr.com/optimism_sepolia";
     }
     (0, index_js_1.assertArgument)(false, "unsupported network", "network", name);
 }

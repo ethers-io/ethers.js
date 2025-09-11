@@ -17,6 +17,7 @@ link-bip39-zh_tw [Tradional Chinese wordlist](https://github.com/bitcoin/bips/bl
 link-bip39-zh_cn [Simplified Chinese wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/chinese_simplified.txt)
 
 # EIPs; see https://eips.ethereum.org/all
+link-eip-2 [EIP-155](https://eips.ethereum.org/EIPS/eip-2)
 link-eip-155 [EIP-155](https://eips.ethereum.org/EIPS/eip-155)
 link-eip-191 [EIP-191](https://eips.ethereum.org/EIPS/eip-191)
 link-eip-609 [EIP-609](https://eips.ethereum.org/EIPS/eip-609)
@@ -31,6 +32,10 @@ link-eip-2098 [EIP-2098](https://eips.ethereum.org/EIPS/eip-2098)
 link-eip-2304 [EIP-2304](https://eips.ethereum.org/EIPS/eip-2304)
 link-eip-2718 [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)
 link-eip-2930 [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
+link-eip-4788 [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788)
+link-eip-4844 [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
+link-eip-6963 [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963)
+link-eip-7702 [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
 
 # Open Standards
 link-base58 [Base58](https://en.bitcoinwiki.org/wiki/Base58)

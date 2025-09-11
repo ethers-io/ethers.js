@@ -50,7 +50,7 @@ export type FixedFormat = number | string | {
  *  If operations are performed that cause a value to become too small
  *  (close to zero), the value loses precison and is said to //underflow//.
  *
- *  For example, an value with 1 decimal place may store a number as small
+ *  For example, a value with 1 decimal place may store a number as small
  *  as ``0.1``, but the value of ``0.1 / 2`` is ``0.05``, which cannot fit
  *  into 1 decimal place, so underflow occurs which means precision is lost
  *  and the value becomes ``0``.

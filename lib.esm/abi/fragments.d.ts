@@ -197,7 +197,7 @@ export declare class ParamType {
      *  Walks the **ParamType** with %%value%%, asynchronously calling
      *  %%process%% on each type, destructing the %%value%% recursively.
      *
-     *  This can be used to resolve ENS naes by walking and resolving each
+     *  This can be used to resolve ENS names by walking and resolving each
      *  ``"address"`` type.
      */
     walkAsync(value: any, process: ParamTypeWalkAsyncFunc): Promise<any>;

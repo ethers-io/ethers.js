@@ -15,7 +15,7 @@ function _getBytes(value, name, copy) {
         }
         return value;
     }
-    if (typeof (value) === "string" && value.match(/^0x([0-9a-f][0-9a-f])*$/i)) {
+    if (typeof (value) === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
         const result = new Uint8Array((value.length - 2) / 2);
         let offset = 2;
         for (let i = 0; i < result.length; i++) {

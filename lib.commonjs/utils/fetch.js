@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FetchResponse = exports.FetchRequest = exports.FetchCancelSignal = void 0;
 /**
  *  Fetching content from the web is environment-specific, so Ethers
- *  provides an abstraction the each environment can implement to provide
+ *  provides an abstraction that each environment can implement to provide
  *  this service.
  *
  *  On [Node.js](link-node), the ``http`` and ``https`` libs are used to
@@ -11,10 +11,10 @@ exports.FetchResponse = exports.FetchRequest = exports.FetchCancelSignal = void 
  *  and populate the [[FetchResponse]].
  *
  *  In a browser, the [DOM fetch](link-js-fetch) is used, and the resulting
- *  ``Promise`` is waited on to retreive the payload.
+ *  ``Promise`` is waited on to retrieve the payload.
  *
  *  The [[FetchRequest]] is responsible for handling many common situations,
- *  such as redirects, server throttling, authentcation, etc.
+ *  such as redirects, server throttling, authentication, etc.
  *
  *  It also handles common gateways, such as IPFS and data URIs.
  *
@@ -29,7 +29,7 @@ const geturl_js_1 = require("./geturl.js");
 const MAX_ATTEMPTS = 12;
 const SLOT_INTERVAL = 250;
 // The global FetchGetUrlFunc implementation.
-let getUrlFunc = geturl_js_1.getUrl;
+let defaultGetUrlFunc = (0, geturl_js_1.createGetUrl)();
 const reData = new RegExp("^data:([^;:]*)?(;base64)?,(.*)$", "i");
 const reIpfs = new RegExp("^ipfs:/\/(ipfs/)?(.*)$", "i");
 // If locked, new Gateways cannot be added
@@ -143,8 +143,9 @@ class FetchRequest {
     #retry;
     #signal;
     #throttle;
+    #getUrlFunc;
     /**
-     *  The fetch URI to requrest.
+     *  The fetch URL to request.
      */
     get url() { return this.#url; }
     set url(url) {
@@ -158,15 +159,15 @@ class FetchRequest {
      *  header.
      *
      *  If %%body%% is null, the body is cleared (along with the
-     *  intrinsic ``Content-Type``) and the .
+     *  intrinsic ``Content-Type``).
      *
-     *  If %%body%% is a string, the intrincis ``Content-Type`` is set to
+     *  If %%body%% is a string, the intrinsic ``Content-Type`` is set to
      *  ``text/plain``.
      *
-     *  If %%body%% is a Uint8Array, the intrincis ``Content-Type`` is set to
+     *  If %%body%% is a Uint8Array, the intrinsic ``Content-Type`` is set to
      *  ``application/octet-stream``.
      *
-     *  If %%body%% is any other object, the intrincis ``Content-Type`` is
+     *  If %%body%% is any other object, the intrinsic ``Content-Type`` is
      *  set to ``application/json``.
      */
     get body() {
@@ -226,7 +227,7 @@ class FetchRequest {
      *  The headers that will be used when requesting the URI. All
      *  keys are lower-case.
      *
-     *  This object is a copy, so any chnages will **NOT** be reflected
+     *  This object is a copy, so any changes will **NOT** be reflected
      *  in the ``FetchRequest``.
      *
      *  To set a header entry, use the ``setHeader`` method.
@@ -319,7 +320,7 @@ class FetchRequest {
         this.#allowInsecure = !!value;
     }
     /**
-     *  The timeout (in milliseconds) to wait for a complere response.
+     *  The timeout (in milliseconds) to wait for a complete response.
      *  //(default: 5 minutes)//
      */
     get timeout() { return this.#timeout; }
@@ -366,6 +367,27 @@ class FetchRequest {
         this.#retry = retry;
     }
     /**
+     *  This function is called to fetch content from HTTP and
+     *  HTTPS URLs and is platform specific (e.g. nodejs vs
+     *  browsers).
+     *
+     *  This is by default the currently registered global getUrl
+     *  function, which can be changed using [[registerGetUrl]].
+     *  If this has been set, setting is to ``null`` will cause
+     *  this FetchRequest (and any future clones) to revert back to
+     *  using the currently registered global getUrl function.
+     *
+     *  Setting this is generally not necessary, but may be useful
+     *  for developers that wish to intercept requests or to
+     *  configurege a proxy or other agent.
+     */
+    get getUrlFunc() {
+        return this.#getUrlFunc || defaultGetUrlFunc;
+    }
+    set getUrlFunc(value) {
+        this.#getUrlFunc = value;
+    }
+    /**
      *  Create a new FetchRequest instance with default values.
      *
      *  Once created, each property may be set before issuing a
@@ -382,6 +404,7 @@ class FetchRequest {
             slotInterval: SLOT_INTERVAL,
             maxAttempts: MAX_ATTEMPTS
         };
+        this.#getUrlFunc = null;
     }
     toString() {
         return `<FetchRequest method=${JSON.stringify(this.method)} url=${JSON.stringify(this.url)} headers=${JSON.stringify(this.headers)} body=${this.#body ? (0, data_js_1.hexlify)(this.#body) : "null"}>`;
@@ -436,7 +459,7 @@ class FetchRequest {
         if (this.preflightFunc) {
             req = await this.preflightFunc(req);
         }
-        const resp = await getUrlFunc(req, checkSignal(_request.#signal));
+        const resp = await this.getUrlFunc(req, checkSignal(_request.#signal));
         let response = new FetchResponse(resp.statusCode, resp.statusMessage, resp.headers, resp.body, _request);
         if (response.statusCode === 301 || response.statusCode === 302) {
             // Redirect
@@ -505,7 +528,7 @@ class FetchRequest {
      *  to %%location%%.
      */
     redirect(location) {
-        // Redirection; for now we only support absolute locataions
+        // Redirection; for now we only support absolute locations
         const current = this.url.split(":")[0].toLowerCase();
         const target = location.split(":")[0].toLowerCase();
         // Don't allow redirecting:
@@ -557,6 +580,8 @@ class FetchRequest {
         clone.#preflight = this.#preflight;
         clone.#process = this.#process;
         clone.#retry = this.#retry;
+        clone.#throttle = Object.assign({}, this.#throttle);
+        clone.#getUrlFunc = this.#getUrlFunc;
         return clone;
     }
     /**
@@ -602,7 +627,21 @@ class FetchRequest {
         if (locked) {
             throw new Error("gateways locked");
         }
-        getUrlFunc = getUrl;
+        defaultGetUrlFunc = getUrl;
+    }
+    /**
+     *  Creates a getUrl function that fetches content from HTTP and
+     *  HTTPS URLs.
+     *
+     *  The available %%options%% are dependent on the platform
+     *  implementation of the default getUrl function.
+     *
+     *  This is not generally something that is needed, but is useful
+     *  when trying to customize simple behaviour when fetching HTTP
+     *  content.
+     */
+    static createGetUrlFunc(options) {
+        return (0, geturl_js_1.createGetUrl)(options);
     }
     /**
      *  Creates a function that can "fetch" data URIs.
@@ -630,7 +669,7 @@ class FetchRequest {
 exports.FetchRequest = FetchRequest;
 ;
 /**
- *  The response for a FetchREquest.
+ *  The response for a FetchRequest.
  */
 class FetchResponse {
     #statusCode;
@@ -760,7 +799,7 @@ class FetchResponse {
         return this.headers[key.toLowerCase()];
     }
     /**
-     *  Returns true of the response has a body.
+     *  Returns true if the response has a body.
      */
     hasBody() {
         return (this.#body != null);
@@ -786,8 +825,23 @@ class FetchResponse {
         if (message === "") {
             message = `server response ${this.statusCode} ${this.statusMessage}`;
         }
+        let requestUrl = null;
+        if (this.request) {
+            requestUrl = this.request.url;
+        }
+        let responseBody = null;
+        try {
+            if (this.#body) {
+                responseBody = (0, utf8_js_1.toUtf8String)(this.#body);
+            }
+        }
+        catch (e) { }
         (0, errors_js_1.assert)(false, message, "SERVER_ERROR", {
-            request: (this.request || "unknown request"), response: this, error
+            request: (this.request || "unknown request"), response: this, error,
+            info: {
+                requestUrl, responseBody,
+                responseStatus: `${this.statusCode} ${this.statusMessage}`
+            }
         });
     }
 }

@@ -1,7 +1,9 @@
 import assert from "assert";
 
-
 import { ethers } from "../index.js";
+
+import { getDevProvider } from "./create-provider.js";
+
 
 interface ContractAbi {
     mint: ethers.BaseContractMethod<[ ethers.AddressLike ], [ boolean ], ethers.ContractTransactionResponse>;
@@ -10,7 +12,7 @@ interface ContractAbi {
 }
 
 describe("Tests contract integration", function() {
-    const provider = new ethers.JsonRpcProvider("http:/\/127.0.0.1:8545");
+    const provider = getDevProvider();
 
     const abi = [
         "constructor(address owner, uint maxSupply)",

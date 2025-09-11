@@ -4,6 +4,8 @@ exports.getDefaultProvider = void 0;
 const index_js_1 = require("../utils/index.js");
 const provider_ankr_js_1 = require("./provider-ankr.js");
 const provider_alchemy_js_1 = require("./provider-alchemy.js");
+//import { BlockscoutProvider } from "./provider-blockscout.js";
+const provider_chainstack_js_1 = require("./provider-chainstack.js");
 const provider_cloudflare_js_1 = require("./provider-cloudflare.js");
 const provider_etherscan_js_1 = require("./provider-etherscan.js");
 const provider_infura_js_1 = require("./provider-infura.js");
@@ -18,6 +20,50 @@ function isWebSocketLike(value) {
         typeof (value.close) === "function");
 }
 const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goerli matic-mumbai bnbt".split(" ");
+/**
+ *  Returns a default provider for %%network%%.
+ *
+ *  If %%network%% is a [[WebSocketLike]] or string that begins with
+ *  ``"ws:"`` or ``"wss:"``, a [[WebSocketProvider]] is returned backed
+ *  by that WebSocket or URL.
+ *
+ *  If %%network%% is a string that begins with ``"HTTP:"`` or ``"HTTPS:"``,
+ *  a [[JsonRpcProvider]] is returned connected to that URL.
+ *
+ *  Otherwise, a default provider is created backed by well-known public
+ *  Web3 backends (such as [[link-infura]]) using community-provided API
+ *  keys.
+ *
+ *  The %%options%% allows specifying custom API keys per backend (setting
+ *  an API key to ``"-"`` will omit that provider) and ``options.exclusive``
+ *  can be set to either a backend name or and array of backend names, which
+ *  will whitelist **only** those backends.
+ *
+ *  Current backend strings supported are:
+ *  - ``"alchemy"``
+ *  - ``"ankr"``
+ *  - ``"cloudflare"``
+ *  - ``"chainstack"``
+ *  - ``"etherscan"``
+ *  - ``"infura"``
+ *  - ``"publicPolygon"``
+ *  - ``"quicknode"``
+ *
+ *  @example:
+ *    // Connect to a local Geth node
+ *    provider = getDefaultProvider("http://localhost:8545/");
+ *
+ *    // Connect to Ethereum mainnet with any current and future
+ *    // third-party services available
+ *    provider = getDefaultProvider("mainnet");
+ *
+ *    // Connect to Polygon, but only allow Etherscan and
+ *    // INFURA and use "MY_API_KEY" in calls to Etherscan.
+ *    provider = getDefaultProvider("matic", {
+ *      etherscan: "MY_API_KEY",
+ *      exclusive: [ "etherscan", "infura" ]
+ *    });
+ */
 function getDefaultProvider(network, options) {
     if (options == null) {
         options = {};
@@ -51,6 +97,9 @@ function getDefaultProvider(network, options) {
         if (staticNetwork.name === "matic") {
             providers.push(new provider_jsonrpc_js_1.JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
         }
+        else if (staticNetwork.name === "matic-amoy") {
+            providers.push(new provider_jsonrpc_js_1.JsonRpcProvider("https:/\/rpc-amoy.polygon.technology/", staticNetwork, { staticNetwork }));
+        }
     }
     if (allowService("alchemy")) {
         try {
@@ -61,6 +110,19 @@ function getDefaultProvider(network, options) {
     if (allowService("ankr") && options.ankr != null) {
         try {
             providers.push(new provider_ankr_js_1.AnkrProvider(network, options.ankr));
+        }
+        catch (error) { }
+    }
+    /* Temporarily remove until custom error issue is fixed
+        if (allowService("blockscout")) {
+            try {
+                providers.push(new BlockscoutProvider(network, options.blockscout));
+            } catch (error) { }
+        }
+    */
+    if (allowService("chainstack")) {
+        try {
+            providers.push(new provider_chainstack_js_1.ChainstackProvider(network, options.chainstack));
         }
         catch (error) { }
     }

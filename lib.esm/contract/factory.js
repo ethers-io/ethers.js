@@ -70,7 +70,7 @@ export class ContractFactory {
      *  Resolves to the Contract deployed by passing %%args%% into the
      *  constructor.
      *
-     *  This will resovle to the Contract before it has been deployed to the
+     *  This will resolve to the Contract before it has been deployed to the
      *  network, so the [[BaseContract-waitForDeployment]] should be used before
      *  sending any transactions to it.
      */

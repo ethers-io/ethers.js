@@ -145,6 +145,34 @@ export class OnBlockSubscriber {
     pause(dropWhilePaused) { this.stop(); }
     resume() { this.start(); }
 }
+export class PollingBlockTagSubscriber extends OnBlockSubscriber {
+    #tag;
+    #lastBlock;
+    constructor(provider, tag) {
+        super(provider);
+        this.#tag = tag;
+        this.#lastBlock = -2;
+    }
+    pause(dropWhilePaused) {
+        if (dropWhilePaused) {
+            this.#lastBlock = -2;
+        }
+        super.pause(dropWhilePaused);
+    }
+    async _poll(blockNumber, provider) {
+        const block = await provider.getBlock(this.#tag);
+        if (block == null) {
+            return;
+        }
+        if (this.#lastBlock === -2) {
+            this.#lastBlock = block.number;
+        }
+        else if (block.number > this.#lastBlock) {
+            provider.emit(this.#tag, block.number);
+            this.#lastBlock = block.number;
+        }
+    }
+}
 /**
  *  @_ignore:
  *

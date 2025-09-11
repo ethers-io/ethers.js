@@ -9,6 +9,7 @@ import {
     assert, assertArgument
 } from "../utils/index.js";
 
+import type { SignatureLike } from "../crypto/index.js"
 import type {
     BlockParams, LogParams,
     TransactionReceiptParams, TransactionResponseParams,
@@ -26,8 +27,9 @@ export function allowNull(format: FormatFunc, nullValue?: any): FormatFunc {
     });
 }
 
-export function arrayOf(format: FormatFunc): FormatFunc {
+export function arrayOf(format: FormatFunc, allowNull?: boolean): FormatFunc {
     return ((array: any) => {
+        if (allowNull && array == null) { return null; }
         if (!Array.isArray(array)) { throw new Error("not an array"); }
         return array.map((i) => format(i));
     });
@@ -110,6 +112,8 @@ export function formatLog(value: any): LogParams {
 const _formatBlock = object({
     hash: allowNull(formatHash),
     parentHash: formatHash,
+    parentBeaconBlockRoot: allowNull(formatHash, null),
+
     number: getNumber,
 
     timestamp: getNumber,
@@ -119,10 +123,19 @@ const _formatBlock = object({
     gasLimit: getBigInt,
     gasUsed: getBigInt,
 
+    stateRoot: allowNull(formatHash, null),
+    receiptsRoot: allowNull(formatHash, null),
+
+    blobGasUsed: allowNull(getBigInt, null),
+    excessBlobGas: allowNull(getBigInt, null),
+
     miner: allowNull(getAddress),
+    prevRandao: allowNull(formatHash, null),
     extraData: formatData,
 
     baseFeePerGas: allowNull(getBigInt)
+}, {
+    prevRandao: [ "mixHash" ]
 });
 
 export function formatBlock(value: any): BlockParams {
@@ -159,6 +172,7 @@ const _formatTransactionReceipt = object({
     index: getNumber,
     root: allowNull(hexlify),
     gasUsed: getBigInt,
+    blobGasUsed: allowNull(getBigInt, null),
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
     hash: formatHash,
@@ -167,6 +181,7 @@ const _formatTransactionReceipt = object({
     //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: getBigInt,
     effectiveGasPrice: allowNull(getBigInt),
+    blobGasPrice: allowNull(getBigInt, null),
     status: allowNull(getNumber),
     type: allowNull(getNumber, 0)
 }, {
@@ -190,17 +205,42 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
     const result = object({
         hash: formatHash,
 
+        // Some nodes do not return this, usually test nodes (like Ganache)
+        index: allowNull(getNumber, undefined),
+
         type: (value: any) => {
             if (value === "0x" || value == null) { return 0; }
             return getNumber(value);
         },
         accessList: allowNull(accessListify, null),
+        blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
+
+        authorizationList: allowNull(arrayOf((v: any) => {
+            let sig: SignatureLike;
+            if (v.signature) {
+                sig = v.signature;
+
+            } else {
+                let yParity = v.yParity;
+                if (yParity === "0x1b") {
+                    yParity = 0;
+                } else if (yParity === "0x1c") {
+                    yParity = 1;
+                }
+                sig = Object.assign({ }, v, { yParity });
+            }
+
+            return {
+                address: getAddress(v.address),
+                chainId: getBigInt(v.chainId),
+                nonce: getBigInt(v.nonce),
+                signature: Signature.from(sig)
+            };
+        }, false), null),
 
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),
-
-        //confirmations: allowNull(getNumber, null),
 
         from: getAddress,
 
@@ -208,6 +248,7 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         gasPrice: allowNull(getBigInt),
         maxPriorityFeePerGas: allowNull(getBigInt),
         maxFeePerGas: allowNull(getBigInt),
+        maxFeePerBlobGas: allowNull(getBigInt, null),
 
         gasLimit: getBigInt,
         to: allowNull(getAddress, null),
@@ -220,7 +261,8 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         chainId: allowNull(getBigInt, null)
     }, {
         data: [ "input" ],
-        gasLimit: [ "gas" ]
+        gasLimit: [ "gas" ],
+        index: [ "transactionIndex" ]
     })(value);
 
     // If to and creates are empty, populate the creates from the value

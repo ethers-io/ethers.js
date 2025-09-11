@@ -1,7 +1,7 @@
 import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
-import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
+import type { AccessList, AccessListish, Authorization, AuthorizationLike, BlobLike, KzgLibraryLike, TransactionLike } from "../transaction/index.js";
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
 /**
@@ -86,7 +86,7 @@ export interface TransactionRequest {
      */
     nonce?: null | number;
     /**
-     *  The maximum amount of gas to allow this transaction to consime.
+     *  The maximum amount of gas to allow this transaction to consume.
      */
     gasLimit?: null | BigNumberish;
     /**
@@ -144,6 +144,30 @@ export interface TransactionRequest {
      *  the fetch to unexpected parties.
      */
     enableCcipRead?: boolean;
+    /**
+     *  The blob versioned hashes (see [[link-eip-4844]]).
+     */
+    blobVersionedHashes?: null | Array<string>;
+    /**
+     *  The maximum fee per blob gas (see [[link-eip-4844]]).
+     */
+    maxFeePerBlobGas?: null | BigNumberish;
+    /**
+     *  Any blobs to include in the transaction (see [[link-eip-4844]]).
+     */
+    blobs?: null | Array<BlobLike>;
+    /**
+     *  An external library for computing the KZG commitments and
+     *  proofs necessary for EIP-4844 transactions (see [[link-eip-4844]]).
+     *
+     *  This is generally ``null``, unless you are creating BLOb
+     *  transactions.
+     */
+    kzg?: null | KzgLibraryLike;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: null | Array<AuthorizationLike>;
 }
 /**
  *  A **PreparedTransactionRequest** is identical to a [[TransactionRequest]]
@@ -167,7 +191,7 @@ export interface PreparedTransactionRequest {
      */
     nonce?: number;
     /**
-     *  The maximum amount of gas to allow this transaction to consime.
+     *  The maximum amount of gas to allow this transaction to consume.
      */
     gasLimit?: bigint;
     /**
@@ -204,6 +228,10 @@ export interface PreparedTransactionRequest {
      *  fetch is guaranteed, but then each additional access is cheaper.
      */
     accessList?: AccessList;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: Array<Authorization>;
     /**
      *  A custom object, which can be passed along for network-specific
      *  values.
@@ -294,6 +322,11 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     readonly parentHash: string;
     /**
+     *  The hash tree root of the parent beacon block for the given
+     *  execution block. See [[link-eip-4788]].
+     */
+    parentBeaconBlockRoot: null | string;
+    /**
      *  The nonce.
      *
      *  On legacy networks, this is the random number inserted which
@@ -319,10 +352,34 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     readonly gasUsed: bigint;
     /**
+     *  The root hash for the global state after applying changes
+     *  in this block.
+     */
+    readonly stateRoot: null | string;
+    /**
+     *  The hash of the transaction receipts trie.
+     */
+    readonly receiptsRoot: null | string;
+    /**
+     *  The total amount of blob gas consumed by the transactions
+     *  within the block. See [[link-eip-4844]].
+     */
+    readonly blobGasUsed: null | bigint;
+    /**
+     *  The running total of blob gas consumed in excess of the
+     *  target, prior to the block. See [[link-eip-4844]].
+     */
+    readonly excessBlobGas: null | bigint;
+    /**
      *  The miner coinbase address, wihch receives any subsidies for
      *  including this block.
      */
     readonly miner: string;
+    /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    readonly prevRandao: null | string;
     /**
      *  Any extra data the validator wished to include.
      */
@@ -343,12 +400,16 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     constructor(block: BlockParams, provider: Provider);
     /**
-     *  Returns the list of transaction hashes.
+     *  Returns the list of transaction hashes, in the order
+     *  they were executed within the block.
      */
     get transactions(): ReadonlyArray<string>;
     /**
-     *  Returns the complete transactions for blocks which
-     *  prefetched them, by passing ``true`` to %%prefetchTxs%%
+     *  Returns the complete transactions, in the order they
+     *  were executed within the block.
+     *
+     *  This is only available for blocks which prefetched
+     *  transactions, by passing ``true`` to %%prefetchTxs%%
      *  into [[Provider-getBlock]].
      */
     get prefetchedTransactions(): Array<TransactionResponse>;
@@ -490,7 +551,7 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
      */
     readonly provider: Provider;
     /**
-     *  The address the transaction was send to.
+     *  The address the transaction was sent to.
      */
     readonly to: null | string;
     /**
@@ -536,6 +597,10 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
      */
     readonly gasUsed: bigint;
     /**
+     *  The gas used for BLObs. See [[link-eip-4844]].
+     */
+    readonly blobGasUsed: null | bigint;
+    /**
      *  The amount of gas used by all transactions within the block for this
      *  and all transactions with a lower ``index``.
      *
@@ -551,6 +616,10 @@ export declare class TransactionReceipt implements TransactionReceiptParams, Ite
      *  fee is protocol-enforced.
      */
     readonly gasPrice: bigint;
+    /**
+     *  The price paid per BLOB in gas. See [[link-eip-4844]].
+     */
+    readonly blobGasPrice: null | bigint;
     /**
      *  The [[link-eip-2718]] transaction type.
      */
@@ -734,6 +803,10 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
      */
     readonly maxFeePerGas: null | bigint;
     /**
+     *  The [[link-eip-4844]] max fee per BLOb gas.
+     */
+    readonly maxFeePerBlobGas: null | bigint;
+    /**
      *  The data.
      */
     readonly data: string;
@@ -755,6 +828,14 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
      *  support it, otherwise ``null``.
      */
     readonly accessList: null | AccessList;
+    /**
+     *  The [[link-eip-4844]] BLOb versioned hashes.
+     */
+    readonly blobVersionedHashes: null | Array<string>;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    readonly authorizationList: null | Array<Authorization>;
     /**
      *  @_ignore:
      */
@@ -838,6 +919,17 @@ export declare class TransactionResponse implements TransactionLike<string>, Tra
         maxPriorityFeePerGas: bigint;
     });
     /**
+     *  Returns true if hte transaction is a Cancun (i.e. ``type == 3``)
+     *  transaction. See [[link-eip-4844]].
+     */
+    isCancun(): this is (TransactionResponse & {
+        accessList: AccessList;
+        maxFeePerGas: bigint;
+        maxPriorityFeePerGas: bigint;
+        maxFeePerBlobGas: bigint;
+        blobVersionedHashes: Array<string>;
+    });
+    /**
      *  Returns a filter which can be used to listen for orphan events
      *  that evict this transaction.
      */
@@ -910,7 +1002,7 @@ export type OrphanFilter = {
  *  queries.
  *
  *  Each field that is ``null`` matches **any** value, a field that is
- *  a ``string`` must match exactly that value and and ``array`` is
+ *  a ``string`` must match exactly that value and ``array`` is
  *  effectively an ``OR``-ed set, where any one of those values must
  *  match.
  */
@@ -1053,7 +1145,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     getStorage(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>;
     /**
-     *  Estimates the amount of gas required to executre %%tx%%.
+     *  Estimates the amount of gas required to execute %%tx%%.
      */
     estimateGas(tx: TransactionRequest): Promise<bigint>;
     /**

@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 export declare class RunResult {
     #private;
     constructor(progname: string, args: Array<string>, status: null | number, stdout: string | Buffer, stderr: string | Buffer);

@@ -1,7 +1,9 @@
 
 import type { Addressable, NameResolver } from "../address/index.js";
-import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
-import type { TransactionLike } from "../transaction/index.js";
+import type {
+    AuthorizationRequest, TypedDataDomain, TypedDataField
+} from "../hash/index.js";
+import type { Authorization, TransactionLike } from "../transaction/index.js";
 
 import type { ContractRunner } from "./contracts.js";
 import type { BlockTag, Provider, TransactionRequest, TransactionResponse } from "./provider.js";
@@ -131,7 +133,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
     sendTransaction(tx: TransactionRequest): Promise<TransactionResponse>;
 
     /**
-     *  Signers an [[link-eip-191]] prefixed personal message.
+     *  Signs an [[link-eip-191]] prefixed personal message.
      *
      *  If the %%message%% is a string, it is signed as UTF-8 encoded bytes. It is **not**
      *  interpretted as a [[BytesLike]]; so the string ``"0x1234"`` is signed as six
@@ -146,4 +148,19 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *  Signs the [[link-eip-712]] typed data.
      */
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
+
+    /**
+     *  Prepares an [[AuthorizationRequest]] for authorization by
+     *  populating any missing properties:
+     *  - resolves ``address`` (if an Addressable or ENS name)
+     *  - populates ``nonce`` via ``signer.getNonce("pending")``
+     *  - populates ``chainId`` via ``signer.provider.getNetwork()``
+     */
+    populateAuthorization(auth: AuthorizationRequest): Promise<AuthorizationRequest>;
+
+    /**
+     *  Signs an %%authorization%% to be used in [[link-eip-7702]]
+     *  transactions.
+     */
+    authorize(authorization: AuthorizationRequest): Promise<Authorization>;
 }

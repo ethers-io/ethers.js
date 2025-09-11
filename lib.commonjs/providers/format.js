@@ -18,8 +18,11 @@ function allowNull(format, nullValue) {
     });
 }
 exports.allowNull = allowNull;
-function arrayOf(format) {
+function arrayOf(format, allowNull) {
     return ((array) => {
+        if (allowNull && array == null) {
+            return null;
+        }
         if (!Array.isArray(array)) {
             throw new Error("not an array");
         }
@@ -107,15 +110,23 @@ exports.formatLog = formatLog;
 const _formatBlock = object({
     hash: allowNull(formatHash),
     parentHash: formatHash,
+    parentBeaconBlockRoot: allowNull(formatHash, null),
     number: index_js_4.getNumber,
     timestamp: index_js_4.getNumber,
     nonce: allowNull(formatData),
     difficulty: index_js_4.getBigInt,
     gasLimit: index_js_4.getBigInt,
     gasUsed: index_js_4.getBigInt,
+    stateRoot: allowNull(formatHash, null),
+    receiptsRoot: allowNull(formatHash, null),
+    blobGasUsed: allowNull(index_js_4.getBigInt, null),
+    excessBlobGas: allowNull(index_js_4.getBigInt, null),
     miner: allowNull(index_js_1.getAddress),
+    prevRandao: allowNull(formatHash, null),
     extraData: formatData,
     baseFeePerGas: allowNull(index_js_4.getBigInt)
+}, {
+    prevRandao: ["mixHash"]
 });
 function formatBlock(value) {
     const result = _formatBlock(value);
@@ -152,6 +163,7 @@ const _formatTransactionReceipt = object({
     index: index_js_4.getNumber,
     root: allowNull(index_js_4.hexlify),
     gasUsed: index_js_4.getBigInt,
+    blobGasUsed: allowNull(index_js_4.getBigInt, null),
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
     hash: formatHash,
@@ -160,6 +172,7 @@ const _formatTransactionReceipt = object({
     //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: index_js_4.getBigInt,
     effectiveGasPrice: allowNull(index_js_4.getBigInt),
+    blobGasPrice: allowNull(index_js_4.getBigInt, null),
     status: allowNull(index_js_4.getNumber),
     type: allowNull(index_js_4.getNumber, 0)
 }, {
@@ -179,6 +192,8 @@ function formatTransactionResponse(value) {
     }
     const result = object({
         hash: formatHash,
+        // Some nodes do not return this, usually test nodes (like Ganache)
+        index: allowNull(index_js_4.getNumber, undefined),
         type: (value) => {
             if (value === "0x" || value == null) {
                 return 0;
@@ -186,15 +201,38 @@ function formatTransactionResponse(value) {
             return (0, index_js_4.getNumber)(value);
         },
         accessList: allowNull(index_js_3.accessListify, null),
+        blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
+        authorizationList: allowNull(arrayOf((v) => {
+            let sig;
+            if (v.signature) {
+                sig = v.signature;
+            }
+            else {
+                let yParity = v.yParity;
+                if (yParity === "0x1b") {
+                    yParity = 0;
+                }
+                else if (yParity === "0x1c") {
+                    yParity = 1;
+                }
+                sig = Object.assign({}, v, { yParity });
+            }
+            return {
+                address: (0, index_js_1.getAddress)(v.address),
+                chainId: (0, index_js_4.getBigInt)(v.chainId),
+                nonce: (0, index_js_4.getBigInt)(v.nonce),
+                signature: index_js_2.Signature.from(sig)
+            };
+        }, false), null),
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(index_js_4.getNumber, null),
         transactionIndex: allowNull(index_js_4.getNumber, null),
-        //confirmations: allowNull(getNumber, null),
         from: index_js_1.getAddress,
         // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
         gasPrice: allowNull(index_js_4.getBigInt),
         maxPriorityFeePerGas: allowNull(index_js_4.getBigInt),
         maxFeePerGas: allowNull(index_js_4.getBigInt),
+        maxFeePerBlobGas: allowNull(index_js_4.getBigInt, null),
         gasLimit: index_js_4.getBigInt,
         to: allowNull(index_js_1.getAddress, null),
         value: index_js_4.getBigInt,
@@ -204,7 +242,8 @@ function formatTransactionResponse(value) {
         chainId: allowNull(index_js_4.getBigInt, null)
     }, {
         data: ["input"],
-        gasLimit: ["gas"]
+        gasLimit: ["gas"],
+        index: ["transactionIndex"]
     })(value);
     // If to and creates are empty, populate the creates from the value
     if (result.to == null && result.creates == null) {

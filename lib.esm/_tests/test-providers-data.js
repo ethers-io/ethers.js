@@ -1,6 +1,7 @@
 import assert from "assert";
 import { checkProvider, getProvider, setupProviders, providerNames } from "./create-provider.js";
 import { retryIt } from "./utils.js";
+import { JsonRpcProvider, Network } from "../index.js";
 import { networkFeatureAtBlock, networkNames, testAddress, testBlock, testReceipt, testTransaction } from "./blockchain-data.js";
 setupProviders();
 function forEach(prefix, tests, func) {
@@ -98,11 +99,24 @@ describe("Test Provider Address operations", function () {
 });
 function assertObj(prefix, actual, expected) {
     assert.ok(actual != null, `${prefix} is null`);
+    if (typeof (expected) !== "object") {
+        assert.equal(actual, expected, prefix);
+        return;
+    }
     for (const key in expected) {
         if (expected[key] === undefined) {
             continue;
         }
-        assert.equal(actual[key], expected[key], `${prefix}.${key}`);
+        if (Array.isArray(expected[key])) {
+            assert.ok(Array.isArray(actual[key]), `Array.isArray(${prefix}.${key})`);
+            assert.equal(actual[key].length, expected[key].length, `${prefix}.${key}.length`);
+            for (let i = 0; i < expected[key].length; i++) {
+                assertObj(`${prefix}[${i}]`, actual[key][i], expected[key][i]);
+            }
+        }
+        else {
+            assert.equal(actual[key], expected[key], `${prefix}.${key}`);
+        }
     }
 }
 function assertBlock(actual, expected) {
@@ -184,7 +198,10 @@ describe("Test Provider Transaction operations", function () {
             assert.ok(receipt != null, "receipt != null");
             // Cloudflare doesn't return the root in legacy receipts; but it isn't
             // *actually* that important, so we'll give it a pass...
-            if (providerName === "CloudflareProvider" || providerName === "AnkrProvider" || providerName === "PocketProvider") {
+            if (providerName === "CloudflareProvider" ||
+                providerName === "AnkrProvider" ||
+                providerName === "PocketProvider" ||
+                providerName === "BlockscoutProvider") {
                 test = Object.assign({}, test, { root: undefined });
             }
             //if (providerName === "PocketProvider") {
@@ -198,5 +215,35 @@ describe("Test Provider Transaction operations", function () {
             assert.ok(name == null, "name == null");
         };
     });
+});
+describe("Test Networks", function () {
+    const networks = [
+        "mainnet", "sepolia", "holesky",
+        "arbitrum", "arbitrum-sepolia",
+        "base", "base-sepolia",
+        "bnb", "bnbt",
+        "linea", "linea-sepolia",
+        "matic", "matic-amoy",
+        "optimism", "optimism-sepolia",
+        "xdai",
+    ];
+    const providerNames = [
+        "AlchemyProvider", "InfuraProvider", "AnkrProvider",
+        "QuickNodeProvider",
+    ];
+    for (const providerName of providerNames) {
+        for (const networkName of networks) {
+            const network = Network.from(networkName);
+            const provider = getProvider(providerName, networkName);
+            if (provider == null || !(provider instanceof JsonRpcProvider)) {
+                continue;
+            }
+            it(`checks network chainId: ${providerName}/${networkName}`, async function () {
+                this.timeout(10000);
+                const chainId = await provider.send("eth_chainId", []);
+                assert.equal(parseInt(chainId), network.chainId, "chainId");
+            });
+        }
+    }
 });
 //# sourceMappingURL=test-providers-data.js.map

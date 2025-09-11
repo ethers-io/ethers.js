@@ -1,6 +1,7 @@
 //import { resolveAddress } from "@ethersproject/address";
 import {
-    defineProperties, getBigInt, getNumber, hexlify, resolveProperties,
+    defineProperties, getBigInt, getNumber, hexlify, isBytesLike,
+    resolveProperties,
     assert, assertArgument, isError, makeError
 } from "../utils/index.js";
 import { accessListify } from "../transaction/index.js";
@@ -8,7 +9,10 @@ import { accessListify } from "../transaction/index.js";
 import type { AddressLike, NameResolver } from "../address/index.js";
 import type { BigNumberish, EventEmitterable } from "../utils/index.js";
 import type { Signature } from "../crypto/index.js";
-import type { AccessList, AccessListish, TransactionLike } from "../transaction/index.js";
+import type {
+    AccessList, AccessListish, Authorization, AuthorizationLike, BlobLike,
+    KzgLibraryLike, TransactionLike
+} from "../transaction/index.js";
 
 import type { ContractRunner } from "./contracts.js";
 import type { Network } from "./network.js";
@@ -143,7 +147,7 @@ export interface TransactionRequest {
     nonce?: null | number;
 
     /**
-     *  The maximum amount of gas to allow this transaction to consime.
+     *  The maximum amount of gas to allow this transaction to consume.
      */
     gasLimit?: null | BigNumberish;
 
@@ -214,6 +218,35 @@ export interface TransactionRequest {
      */
     enableCcipRead?: boolean;
 
+    /**
+     *  The blob versioned hashes (see [[link-eip-4844]]).
+     */
+    blobVersionedHashes?: null | Array<string>
+
+    /**
+     *  The maximum fee per blob gas (see [[link-eip-4844]]).
+     */
+    maxFeePerBlobGas?: null | BigNumberish;
+
+    /**
+     *  Any blobs to include in the transaction (see [[link-eip-4844]]).
+     */
+    blobs?: null | Array<BlobLike>;
+
+    /**
+     *  An external library for computing the KZG commitments and
+     *  proofs necessary for EIP-4844 transactions (see [[link-eip-4844]]).
+     *
+     *  This is generally ``null``, unless you are creating BLOb
+     *  transactions.
+     */
+    kzg?: null | KzgLibraryLike;
+
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: null | Array<AuthorizationLike>;
+
     // Todo?
     //gasMultiplier?: number;
 };
@@ -246,7 +279,7 @@ export interface PreparedTransactionRequest {
     nonce?: number;
 
     /**
-     *  The maximum amount of gas to allow this transaction to consime.
+     *  The maximum amount of gas to allow this transaction to consume.
      */
     gasLimit?: bigint;
 
@@ -293,6 +326,11 @@ export interface PreparedTransactionRequest {
     accessList?: AccessList;
 
     /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: Array<Authorization>;
+
+    /**
      *  A custom object, which can be passed along for network-specific
      *  values.
      */
@@ -332,7 +370,7 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 
     if (req.data) { result.data = hexlify(req.data); }
 
-    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
+    const bigIntKeys = "chainId,gasLimit,gasPrice,maxFeePerBlobGas,maxFeePerGas,maxPriorityFeePerGas,value".split(/,/);
     for (const key of bigIntKeys) {
         if (!(key in req) || (<any>req)[key] == null) { continue; }
         result[key] = getBigInt((<any>req)[key], `request.${ key }`);
@@ -348,6 +386,10 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
         result.accessList = accessListify(req.accessList);
     }
 
+    if (req.authorizationList) {
+        result.authorizationList = req.authorizationList.slice();
+    }
+
     if ("blockTag" in req) { result.blockTag = req.blockTag; }
 
     if ("enableCcipRead" in req) {
@@ -356,6 +398,19 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
 
     if ("customData" in req) {
         result.customData = req.customData;
+    }
+
+    if ("blobVersionedHashes" in req && req.blobVersionedHashes) {
+        result.blobVersionedHashes = req.blobVersionedHashes.slice();
+    }
+
+    if ("kzg" in req) { result.kzg = req.kzg; }
+
+    if ("blobs" in req && req.blobs) {
+        result.blobs = req.blobs.map((b) => {
+            if (isBytesLike(b)) { return hexlify(b); }
+            return Object.assign({ }, b);
+        });
     }
 
     return result;
@@ -437,6 +492,12 @@ export class Block implements BlockParams, Iterable<string> {
     readonly parentHash!: string;
 
     /**
+     *  The hash tree root of the parent beacon block for the given
+     *  execution block. See [[link-eip-4788]].
+     */
+    parentBeaconBlockRoot!: null | string;
+
+    /**
      *  The nonce.
      *
      *  On legacy networks, this is the random number inserted which
@@ -466,11 +527,41 @@ export class Block implements BlockParams, Iterable<string> {
      */
     readonly gasUsed!: bigint;
 
+
+    /**
+     *  The root hash for the global state after applying changes
+     *  in this block.
+     */
+    readonly stateRoot!: null | string;
+
+    /**
+     *  The hash of the transaction receipts trie.
+     */
+    readonly receiptsRoot!: null | string;
+
+    /**
+     *  The total amount of blob gas consumed by the transactions
+     *  within the block. See [[link-eip-4844]].
+     */
+    readonly blobGasUsed!: null | bigint;
+
+    /**
+     *  The running total of blob gas consumed in excess of the
+     *  target, prior to the block. See [[link-eip-4844]].
+     */
+    readonly excessBlobGas!: null | bigint;
+
     /**
      *  The miner coinbase address, wihch receives any subsidies for
      *  including this block.
      */
     readonly miner!: string;
+
+    /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    readonly prevRandao!: null | string;
 
     /**
      *  Any extra data the validator wished to include.
@@ -512,21 +603,29 @@ export class Block implements BlockParams, Iterable<string> {
             timestamp: block.timestamp,
 
             parentHash: block.parentHash,
+            parentBeaconBlockRoot: block.parentBeaconBlockRoot,
 
             nonce: block.nonce,
             difficulty: block.difficulty,
 
             gasLimit: block.gasLimit,
             gasUsed: block.gasUsed,
+            blobGasUsed: block.blobGasUsed,
+            excessBlobGas: block.excessBlobGas,
             miner: block.miner,
+            prevRandao: getValue(block.prevRandao),
             extraData: block.extraData,
 
-            baseFeePerGas: getValue(block.baseFeePerGas)
+            baseFeePerGas: getValue(block.baseFeePerGas),
+
+            stateRoot: block.stateRoot,
+            receiptsRoot: block.receiptsRoot,
         });
     }
 
     /**
-     *  Returns the list of transaction hashes.
+     *  Returns the list of transaction hashes, in the order
+     *  they were executed within the block.
      */
     get transactions(): ReadonlyArray<string> {
         return this.#transactions.map((tx) => {
@@ -536,8 +635,11 @@ export class Block implements BlockParams, Iterable<string> {
     }
 
     /**
-     *  Returns the complete transactions for blocks which
-     *  prefetched them, by passing ``true`` to %%prefetchTxs%%
+     *  Returns the complete transactions, in the order they
+     *  were executed within the block.
+     *
+     *  This is only available for blocks which prefetched
+     *  transactions, by passing ``true`` to %%prefetchTxs%%
      *  into [[Provider-getBlock]].
      */
     get prefetchedTransactions(): Array<TransactionResponse> {
@@ -560,7 +662,8 @@ export class Block implements BlockParams, Iterable<string> {
     toJSON(): any {
         const {
             baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash,
-            miner, nonce, number, parentHash, timestamp, transactions
+            miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot,
+            stateRoot, receiptsRoot, timestamp, transactions
         } = this;
 
         return {
@@ -570,7 +673,10 @@ export class Block implements BlockParams, Iterable<string> {
             extraData,
             gasLimit: toJson(gasLimit),
             gasUsed: toJson(gasUsed),
-            hash, miner, nonce, number, parentHash, timestamp,
+            blobGasUsed: toJson(this.blobGasUsed),
+            excessBlobGas: toJson(this.excessBlobGas),
+            hash, miner, prevRandao, nonce, number, parentHash, timestamp,
+            parentBeaconBlockRoot, stateRoot, receiptsRoot,
             transactions,
         };
     }
@@ -620,7 +726,7 @@ export class Block implements BlockParams, Iterable<string> {
                     tx = v;
                     break;
                 } else {
-                    if (v.hash === hash) { continue; }
+                    if (v.hash !== hash) { continue; }
                     tx = v;
                     break;
                 }
@@ -856,7 +962,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
     readonly provider!: Provider;
 
     /**
-     *  The address the transaction was send to.
+     *  The address the transaction was sent to.
      */
     readonly to!: null | string;
 
@@ -911,6 +1017,11 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
     readonly gasUsed!: bigint;
 
     /**
+     *  The gas used for BLObs. See [[link-eip-4844]].
+     */
+    readonly blobGasUsed!: null | bigint;
+
+    /**
      *  The amount of gas used by all transactions within the block for this
      *  and all transactions with a lower ``index``.
      *
@@ -927,6 +1038,11 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      *  fee is protocol-enforced.
      */
     readonly gasPrice!: bigint;
+
+    /**
+     *  The price paid per BLOB in gas. See [[link-eip-4844]].
+     */
+    readonly blobGasPrice!: null | bigint;
 
     /**
      *  The [[link-eip-2718]] transaction type.
@@ -985,7 +1101,9 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
             gasUsed: tx.gasUsed,
             cumulativeGasUsed: tx.cumulativeGasUsed,
+            blobGasUsed: tx.blobGasUsed,
             gasPrice,
+            blobGasPrice: tx.blobGasPrice,
 
             type: tx.type,
             //byzantium: tx.byzantium,
@@ -1004,7 +1122,8 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      */
     toJSON(): any {
         const {
-            to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom,
+            to, from, contractAddress, hash, index,
+            blockHash, blockNumber, logsBloom,
             logs, //byzantium, 
             status, root
         } = this;
@@ -1017,6 +1136,8 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
             gasPrice: toJson(this.gasPrice),
+            blobGasUsed: toJson(this.blobGasUsed),
+            blobGasPrice: toJson(this.blobGasPrice),
             gasUsed: toJson(this.gasUsed),
             hash, index, logs, logsBloom, root, status, to
         };
@@ -1233,6 +1354,11 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
     readonly maxFeePerGas!: null | bigint;
 
     /**
+     *  The [[link-eip-4844]] max fee per BLOb gas.
+     */
+    readonly maxFeePerBlobGas!: null | bigint;
+
+    /**
      *  The data.
      */
     readonly data!: string;
@@ -1258,6 +1384,16 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
      *  support it, otherwise ``null``.
      */
     readonly accessList!: null | AccessList;
+
+    /**
+     *  The [[link-eip-4844]] BLOb versioned hashes.
+     */
+    readonly blobVersionedHashes!: null | Array<string>;
+
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    readonly authorizationList!: null | Array<Authorization>;
 
     #startBlock: number;
 
@@ -1286,11 +1422,15 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         this.gasPrice = tx.gasPrice;
         this.maxPriorityFeePerGas = (tx.maxPriorityFeePerGas != null) ? tx.maxPriorityFeePerGas: null;
         this.maxFeePerGas = (tx.maxFeePerGas != null) ? tx.maxFeePerGas: null;
+        this.maxFeePerBlobGas = (tx.maxFeePerBlobGas != null) ? tx.maxFeePerBlobGas: null;
 
         this.chainId = tx.chainId;
         this.signature = tx.signature;
 
         this.accessList = (tx.accessList != null) ? tx.accessList: null;
+        this.blobVersionedHashes = (tx.blobVersionedHashes != null) ? tx.blobVersionedHashes: null;
+
+        this.authorizationList = (tx.authorizationList != null) ? tx.authorizationList: null;
 
         this.#startBlock = -1;
     }
@@ -1301,12 +1441,13 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
     toJSON(): any {
         const {
             blockNumber, blockHash, index, hash, type, to, from, nonce,
-            data, signature, accessList
+            data, signature, accessList, blobVersionedHashes
         } = this;
 
         return {
-            _type: "TransactionReceipt",
+            _type: "TransactionResponse",
             accessList, blockNumber, blockHash,
+            blobVersionedHashes,
             chainId: toJson(this.chainId),
             data, from,
             gasLimit: toJson(this.gasLimit),
@@ -1314,6 +1455,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
             hash,
             maxFeePerGas: toJson(this.maxFeePerGas),
             maxPriorityFeePerGas: toJson(this.maxPriorityFeePerGas),
+            maxFeePerBlobGas: toJson(this.maxFeePerBlobGas),
             nonce, signature, to, index, type,
             value: toJson(this.value),
         };
@@ -1478,7 +1620,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         if (confirms === 0) { return checkReceipt(receipt); }
 
         if (receipt) {
-            if ((await receipt.confirmations()) >= confirms) {
+            if (confirms === 1 || (await receipt.confirmations()) >= confirms) {
                 return checkReceipt(receipt);
             }
 
@@ -1596,6 +1738,14 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
     }
 
     /**
+     *  Returns true if hte transaction is a Cancun (i.e. ``type == 3``)
+     *  transaction. See [[link-eip-4844]].
+     */
+    isCancun(): this is (TransactionResponse & { accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint, maxFeePerBlobGas: bigint, blobVersionedHashes: Array<string> }){
+        return (this.type === 3);
+    }
+
+    /**
      *  Returns a filter which can be used to listen for orphan events
      *  that evict this transaction.
      */
@@ -1704,7 +1854,7 @@ function createRemovedLogFilter(log: { blockHash: string, transactionHash: strin
  *  queries.
  *
  *  Each field that is ``null`` matches **any** value, a field that is
- *  a ``string`` must match exactly that value and and ``array`` is
+ *  a ``string`` must match exactly that value and ``array`` is
  *  effectively an ``OR``-ed set, where any one of those values must
  *  match.
  */
@@ -1886,7 +2036,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     // Execution
 
     /**
-     *  Estimates the amount of gas required to executre %%tx%%.
+     *  Estimates the amount of gas required to execute %%tx%%.
      */
     estimateGas(tx: TransactionRequest): Promise<bigint>;
 

@@ -20,16 +20,22 @@ import type { FetchRequest, FetchResponse } from "./fetch.js";
 
 /**
  *  An error may contain additional properties, but those must not
- *  conflict with any impliciat properties.
+ *  conflict with any implicit properties.
  */
-export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
+export type ErrorInfo<T> = Omit<T, "code" | "name" | "message" | "shortMessage"> & { shortMessage?: string };
 
 
-function stringify(value: any): any {
+function stringify(value: any, seen?: Set<any>): any {
     if (value == null) { return "null"; }
 
+    if (seen == null) { seen = new Set(); }
+    if (typeof(value) === "object") {
+        if (seen.has(value)) { return "[Circular]"; }
+        seen.add(value);
+    }
+
     if (Array.isArray(value)) {
-        return "[ " + (value.map(stringify)).join(", ") + " ]";
+        return "[ " + (value.map((v) => stringify(v, seen))).join(", ") + " ]";
     }
 
     if (value instanceof Uint8Array) {
@@ -43,22 +49,20 @@ function stringify(value: any): any {
     }
 
     if (typeof(value) === "object" && typeof(value.toJSON) === "function") {
-        return stringify(value.toJSON());
+        return stringify(value.toJSON(), seen);
     }
 
     switch (typeof(value)) {
-        case "boolean": case "symbol":
+        case "boolean": case "number": case "symbol":
             return value.toString();
         case "bigint":
             return BigInt(value).toString();
-        case "number":
-            return (value).toString();
         case "string":
             return JSON.stringify(value);
         case "object": {
             const keys = Object.keys(value);
             keys.sort();
-            return "{ " + keys.map((k) => `${ stringify(k) }: ${ stringify(value[k]) }`).join(", ") + " }";
+            return "{ " + keys.map((k) => `${ stringify(k, seen) }: ${ stringify(value[k], seen) }`).join(", ") + " }";
         }
     }
 
@@ -67,7 +71,7 @@ function stringify(value: any): any {
 
 /**
  *  All errors emitted by ethers have an **ErrorCode** to help
- *  identify and coalesce errors to simplfy programatic analysis.
+ *  identify and coalesce errors to simplify programmatic analysis.
  *
  *  Each **ErrorCode** is the %%code%% proerty of a coresponding
  *  [[EthersError]].
@@ -160,6 +164,12 @@ export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
     code: ErrorCode;
 
     /**
+     *  A short message describing the error, with minimal additional
+     *  details.
+     */
+    shortMessage: string;
+
+    /**
      *  Additional info regarding the error that may be useful.
      *
      *  This is generally helpful mostly for human-based debugging.
@@ -196,7 +206,7 @@ export interface NotImplementedError extends EthersError<"NOT_IMPLEMENTED"> {
 /**
  *  This Error indicates that the attempted operation is not supported.
  *
- *  This could range from a specifc JSON-RPC end-point not supporting
+ *  This could range from a specific JSON-RPC end-point not supporting
  *  a feature to a specific configuration of an object prohibiting the
  *  operation.
  *
@@ -211,7 +221,7 @@ export interface UnsupportedOperationError extends EthersError<"UNSUPPORTED_OPER
 }
 
 /**
- *  This Error indicates a proplem connecting to a network.
+ *  This Error indicates a problem connecting to a network.
  */
 export interface NetworkError extends EthersError<"NETWORK_ERROR"> {
     /**
@@ -263,7 +273,7 @@ export interface TimeoutError extends EthersError<"TIMEOUT"> {
 
 /**
  *  This Error indicates that a provided set of data cannot
- *  be correctly interpretted.
+ *  be correctly interpreted.
  */
 export interface BadDataError extends EthersError<"BAD_DATA"> {
     /**
@@ -611,7 +621,7 @@ export type CodedEthersError<T> =
  *  Returns true if the %%error%% matches an error thrown by ethers
  *  that matches the error %%code%%.
  *
- *  In TypeScript envornoments, this can be used to check that %%error%%
+ *  In TypeScript environments, this can be used to check that %%error%%
  *  matches an EthersError type, which means the expected properties will
  *  be set.
  *
@@ -639,15 +649,17 @@ export function isCallException(error: any): error is CallExceptionError {
 
 /**
  *  Returns a new Error configured to the format ethers emits errors, with
- *  the %%message%%, [[api:ErrorCode]] %%code%% and additioanl properties
+ *  the %%message%%, [[api:ErrorCode]] %%code%% and additional properties
  *  for the corresponding EthersError.
  *
  *  Each error in ethers includes the version of ethers, a
- *  machine-readable [[ErrorCode]], and depneding on %%code%%, additional
- *  required properties. The error message will also include the %%meeage%%,
- *  ethers version, %%code%% and all aditional properties, serialized.
+ *  machine-readable [[ErrorCode]], and depending on %%code%%, additional
+ *  required properties. The error message will also include the %%message%%,
+ *  ethers version, %%code%% and all additional properties, serialized.
  */
 export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): T {
+    let shortMessage = message;
+
     {
         const details: Array<string> = [];
         if (info) {
@@ -655,6 +667,7 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
                 throw new Error(`value will overwrite populated values: ${ stringify(info) }`);
             }
             for (const key in info) {
+                if (key === "shortMessage") { continue; }
                 const value = <any>(info[<keyof ErrorInfo<T>>key]);
 //                try {
                     details.push(key + "=" + stringify(value));
@@ -689,6 +702,10 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
 
     if (info) { Object.assign(error, info); }
 
+    if ((<any>error).shortMessage == null) {
+        defineProperties<EthersError>(<EthersError>error, { shortMessage });
+    }
+
     return <T>error;
 }
 
@@ -718,12 +735,12 @@ export function assertArgumentCount(count: number, expectedCount: number, messag
     if (message == null) { message = ""; }
     if (message) { message = ": " + message; }
 
-    assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+    assert(count >= expectedCount, "missing argument" + message, "MISSING_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });
 
-    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+    assert(count <= expectedCount, "too many arguments" + message, "UNEXPECTED_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });

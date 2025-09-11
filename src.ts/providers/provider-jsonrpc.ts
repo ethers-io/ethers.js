@@ -18,10 +18,10 @@
 import { AbiCoder } from "../abi/index.js";
 import { getAddress, resolveAddress } from "../address/index.js";
 import { TypedDataEncoder } from "../hash/index.js";
-import { accessListify } from "../transaction/index.js";
+import { accessListify, authorizationify } from "../transaction/index.js";
 import {
     defineProperties, getBigInt, hexlify, isHexString, toQuantity, toUtf8Bytes,
-    makeError, assert, assertArgument,
+    isError, makeError, assert, assertArgument,
     FetchRequest, resolveProperties
 } from "../utils/index.js";
 
@@ -40,7 +40,6 @@ import type { Provider, TransactionRequest, TransactionResponse } from "./provid
 import type { Signer } from "./signer.js";
 
 type Timer = ReturnType<typeof setTimeout>;
-
 
 const Primitive = "bigint,boolean,function,number,string,symbol".split(/,/g);
 //const Methods = "getAddress,then".split(/,/g);
@@ -173,7 +172,7 @@ export type DebugEventJsonRpcApiProvider = {
  *  cannot change, such as when using INFURA (since the URL dictates the
  *  network). If the network is assumed static and it does change, this
  *  can have tragic consequences. For example, this **CANNOT** be used
- *  with MetaMask, since the used can select a new network from the
+ *  with MetaMask, since the user can select a new network from the
  *  drop-down at any time.
  *
  *  **``batchStallTime``** - how long (ms) to aggregate requests into a
@@ -190,7 +189,7 @@ export type DebugEventJsonRpcApiProvider = {
  */
 export type JsonRpcApiProviderOptions = {
     polling?: boolean;
-    staticNetwork?: null | Network;
+    staticNetwork?: null | boolean | Network;
     batchStallTime?: number;
     batchMaxSize?: number;
     batchMaxCount?: number;
@@ -278,6 +277,14 @@ export interface JsonRpcTransactionRequest {
       *  The transaction access list.
       */
      accessList?: Array<{ address: string, storageKeys: Array<string> }>;
+
+     /**
+      *  The transaction authorization list.
+      */
+     authorizationList?: Array<{
+         address: string, nonce: string, chainId: string,
+         yParity: string, r: string, s: string
+     }>;
 }
 
 // @TODO: Unchecked Signers
@@ -363,12 +370,49 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         // for it; it should show up very quickly
         return await (new Promise((resolve, reject) => {
             const timeouts = [ 1000, 100 ];
+            let invalids = 0;
+
             const checkTx = async () => {
-                // Try getting the transaction
-                const tx = await this.provider.getTransaction(hash);
-                if (tx != null) {
-                    resolve(tx.replaceableTransaction(blockNumber));
-                    return;
+
+                try {
+                    // Try getting the transaction
+                    const tx = await this.provider.getTransaction(hash);
+
+                    if (tx != null) {
+                        resolve(tx.replaceableTransaction(blockNumber));
+                        return;
+                    }
+
+                } catch (error) {
+
+                    // If we were cancelled: stop polling.
+                    // If the data is bad: the node returns bad transactions
+                    // If the network changed: calling again will also fail
+                    // If unsupported: likely destroyed
+                    if (isError(error, "CANCELLED") || isError(error, "BAD_DATA") ||
+                        isError(error, "NETWORK_ERROR") || isError(error, "UNSUPPORTED_OPERATION")) {
+
+                        if (error.info == null) { error.info = { }; }
+                        error.info.sendTransactionHash = hash;
+
+                        reject(error);
+                        return;
+                    }
+
+                    // Stop-gap for misbehaving backends; see #4513
+                    if (isError(error, "INVALID_ARGUMENT")) {
+                        invalids++;
+                        if (error.info == null) { error.info = { }; }
+                        error.info.sendTransactionHash = hash;
+                        if (invalids > 10) {
+                            reject(error);
+                            return;
+                        }
+                    }
+
+                    // Notify anyone that cares; but we will try again, since
+                    // it is likely an intermittent service error
+                    this.provider.emit("error", makeError("failed to fetch transation after sending (will try again)", "UNKNOWN_ERROR", { error }));
                 }
 
                 // Wait another 4 seconds
@@ -463,11 +507,12 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
     };
 
     #network: null | Network;
+    #pendingDetectNetwork: null | Promise<Network>;
 
     #scheduleDrain(): void {
         if (this.#drainTimer) { return; }
 
-        // If we aren't using batching, no hard in sending it immeidately
+        // If we aren't using batching, no harm in sending it immediately
         const stallTime = (this._getOption("batchMaxCount") === 1) ? 0: this._getOption("batchStallTime");
 
         this.#drainTimer = setTimeout(() => {
@@ -554,6 +599,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
         this.#drainTimer = null;
 
         this.#network = null;
+        this.#pendingDetectNetwork = null;
 
         {
             let resolve: null | ((value: void) => void) = null;
@@ -563,9 +609,15 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             this.#notReady = { promise, resolve };
         }
 
-        // Make sure any static network is compatbile with the provided netwrok
         const staticNetwork = this._getOption("staticNetwork");
-        if (staticNetwork) {
+        if (typeof(staticNetwork) === "boolean") {
+            assertArgument(!staticNetwork || network !== "any", "staticNetwork cannot be used on special network 'any'", "options", options);
+            if (staticNetwork && network != null) {
+                this.#network = Network.from(network);
+            }
+
+        } else if (staticNetwork) {
+            // Make sure any static network is compatbile with the provided netwrok
             assertArgument(network == null || staticNetwork.matches(network),
                 "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
@@ -605,12 +657,13 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
      *  and should generally call ``super._perform`` as a fallback.
      */
     async _perform(req: PerformActionRequest): Promise<any> {
+
         // Legacy networks do not like the type field being passed along (which
         // is fair), so we delete type if it is 0 and a non-EIP-1559 network
         if (req.method === "call" || req.method === "estimateGas") {
             let tx = req.transaction;
             if (tx && tx.type != null && getBigInt(tx.type)) {
-                // If there are no EIP-1559 properties, it might be non-EIP-a559
+                // If there are no EIP-1559 or newer properties, it might be pre-EIP-1559
                 if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                     const feeData = await this.getFeeData();
                     if (feeData.maxFeePerGas == null && feeData.maxPriorityFeePerGas == null) {
@@ -641,36 +694,61 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
      */
     async _detectNetwork(): Promise<Network> {
         const network = this._getOption("staticNetwork");
-        if (network) { return network; }
+        if (network) {
+            if (network === true) {
+                if (this.#network) { return this.#network; }
+            } else {
+                return network;
+            }
+        }
+
+        if (this.#pendingDetectNetwork) {
+            return await this.#pendingDetectNetwork;
+        }
 
         // If we are ready, use ``send``, which enabled requests to be batched
         if (this.ready) {
-            return Network.from(getBigInt(await this.send("eth_chainId", [ ])));
+            this.#pendingDetectNetwork = (async () => {
+                try {
+                    const result = Network.from(getBigInt(await this.send("eth_chainId", [ ])));
+                    this.#pendingDetectNetwork = null;
+                    return result;
+                } catch (error) {
+                    this.#pendingDetectNetwork = null;
+                    throw error;
+                }
+            })();
+            return await this.#pendingDetectNetwork;
         }
 
         // We are not ready yet; use the primitive _send
+        this.#pendingDetectNetwork = (async () => {
+            const payload: JsonRpcPayload = {
+                id: this.#nextId++, method: "eth_chainId", params: [ ], jsonrpc: "2.0"
+            };
 
-        const payload: JsonRpcPayload = {
-            id: this.#nextId++, method: "eth_chainId", params: [ ], jsonrpc: "2.0"
-        };
+            this.emit("debug", { action: "sendRpcPayload", payload });
 
-        this.emit("debug", { action: "sendRpcPayload", payload });
+            let result: JsonRpcResult | JsonRpcError;
+            try {
+                result = (await this._send(payload))[0];
+                this.#pendingDetectNetwork = null;
+            } catch (error) {
+                this.#pendingDetectNetwork = null;
+                this.emit("debug", { action: "receiveRpcError", error });
+                throw error;
+            }
 
-        let result: JsonRpcResult | JsonRpcError;
-        try {
-            result = (await this._send(payload))[0];
-        } catch (error) {
-            this.emit("debug", { action: "receiveRpcError", error });
-            throw error;
-        }
+            this.emit("debug", { action: "receiveRpcResult", result });
 
-        this.emit("debug", { action: "receiveRpcResult", result });
+            if ("result" in result) {
+                return Network.from(getBigInt(result.result));
+            }
 
-        if ("result" in result) {
-            return Network.from(getBigInt(result.result));
-        }
+            throw this.getRpcError(payload, result);
+        })();
 
-        throw this.getRpcError(payload, result);
+        return await this.#pendingDetectNetwork;
     }
 
     /**
@@ -775,6 +853,30 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             result["accessList"] = accessListify(tx.accessList);
         }
 
+        if (tx.blobVersionedHashes) {
+            // @TODO: Remove this <any> case once EIP-4844 added to prepared tx
+            (<any>result)["blobVersionedHashes"] = tx.blobVersionedHashes.map(h => h.toLowerCase());
+        }
+
+        if (tx.authorizationList) {
+            result["authorizationList"] = tx.authorizationList.map((_a) => {
+                const a = authorizationify(_a);
+                return {
+                    address: a.address,
+                    nonce: toQuantity(a.nonce),
+                    chainId: toQuantity(a.chainId),
+                    yParity: toQuantity(a.signature.yParity),
+                    r: toQuantity(a.signature.r),
+                    s: toQuantity(a.signature.s),
+                }
+            });
+        }
+
+        // @TODO: blobs should probably also be copied over, optionally
+        // accounting for the kzg property to backfill blobVersionedHashes
+        // using the commitment. Or should that be left as an exercise to
+        // the caller?
+
         return result;
     }
 
@@ -792,6 +894,9 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
 
             case "getGasPrice":
                 return { method: "eth_gasPrice", args: [] };
+
+            case "getPriorityFee":
+                return { method: "eth_maxPriorityFeePerGas", args: [ ] };
 
             case "getBalance":
                 return {
@@ -894,6 +999,11 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             const msg = error.message;
             if (!msg.match(/revert/i) && msg.match(/insufficient funds/i)) {
                 return makeError("insufficient funds", "INSUFFICIENT_FUNDS", {
+                    transaction: ((<any>payload).params[0]),
+                    info: { payload, error }
+                });
+            } else if (msg.match(/nonce/i) && msg.match(/too low/i)) {
+                return makeError("nonce has already been used", "NONCE_EXPIRED", {
                     transaction: ((<any>payload).params[0]),
                     info: { payload, error }
                 });
@@ -1089,7 +1199,10 @@ export abstract class JsonRpcApiPollingProvider extends JsonRpcApiProvider {
     constructor(network?: Networkish, options?: JsonRpcApiProviderOptions) {
         super(network, options);
 
-        this.#pollingInterval = 4000;
+        let pollingInterval = this._getOption("pollingInterval");
+        if (pollingInterval == null) { pollingInterval = defaultOptions.pollingInterval; }
+
+        this.#pollingInterval = pollingInterval;
     }
 
     _getSubscriber(sub: Subscription): Subscriber {
@@ -1155,7 +1268,6 @@ export class JsonRpcProvider extends JsonRpcApiPollingProvider {
         const request = this._getConnection();
         request.body = JSON.stringify(payload);
         request.setHeader("content-type", "application/json");
-
         const response = await request.send();
         response.assertOk();
 

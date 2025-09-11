@@ -8,12 +8,18 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Base (``base``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB Smart Chain Mainnet (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
@@ -93,6 +99,11 @@ export declare class EtherscanProvider extends AbstractProvider {
      *  If an [[EtherscanPlugin]] is configured on the
      *  [[EtherscanBaseProvider_network]], returns the plugin's
      *  baseUrl.
+     *
+     *  Deprecated; for Etherscan v2 the base is no longer a simply
+     *  host, but instead a URL including a chainId parameter. Changing
+     *  this to return a URL prefix could break some libraries, so it
+     *  is left intact but will be removed in the future as it is unused.
      */
     getBaseUrl(): string;
     /**

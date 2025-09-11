@@ -94,10 +94,12 @@ async function getSubscription(_event, provider) {
     if (typeof (_event) === "string") {
         switch (_event) {
             case "block":
-            case "pending":
             case "debug":
             case "error":
-            case "network": {
+            case "finalized":
+            case "network":
+            case "pending":
+            case "safe": {
                 return { type: _event, tag: _event };
             }
         }
@@ -290,7 +292,18 @@ class AbstractProvider {
             }
             this.emit("debug", { action: "sendCcipReadFetchRequest", request, index: i, urls });
             let errorMessage = "unknown error";
-            const resp = await request.send();
+            // Fetch the resource...
+            let resp;
+            try {
+                resp = await request.send();
+            }
+            catch (error) {
+                // ...low-level fetch error (missing host, bad SSL, etc.),
+                // so try next URL
+                errorMessages.push(error.message);
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result: { error } });
+                continue;
+            }
             try {
                 const result = resp.bodyJson;
                 if (result.data) {
@@ -395,10 +408,10 @@ class AbstractProvider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
+            case "finalized":
             case "latest":
             case "pending":
             case "safe":
-            case "finalized":
                 return blockTag;
         }
         if ((0, index_js_6.isHexString)(blockTag)) {
@@ -502,7 +515,7 @@ class AbstractProvider {
         return resolve(address, fromBlock, toBlock);
     }
     /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  Returns or resolves to a transaction for %%request%%, resolving
      *  any ENS names or [[Addressable]] and returning if already a valid
      *  transaction.
      */
@@ -513,7 +526,7 @@ class AbstractProvider {
             if (request[key] == null) {
                 return;
             }
-            const addr = (0, index_js_1.resolveAddress)(request[key]);
+            const addr = (0, index_js_1.resolveAddress)(request[key], this);
             if (isPromise(addr)) {
                 promises.push((async function () { request[key] = await addr; })());
             }
@@ -542,16 +555,19 @@ class AbstractProvider {
         // No explicit network was set and this is our first time
         if (this.#networkPromise == null) {
             // Detect the current network (shared with all calls)
-            const detectNetwork = this._detectNetwork().then((network) => {
-                this.emit("network", network, null);
-                return network;
-            }, (error) => {
-                // Reset the networkPromise on failure, so we will try again
-                if (this.#networkPromise === detectNetwork) {
-                    this.#networkPromise = null;
+            const detectNetwork = (async () => {
+                try {
+                    const network = await this._detectNetwork();
+                    this.emit("network", network, null);
+                    return network;
                 }
-                throw error;
-            });
+                catch (error) {
+                    if (this.#networkPromise === detectNetwork) {
+                        this.#networkPromise = null;
+                    }
+                    throw error;
+                }
+            })();
             this.#networkPromise = detectNetwork;
             return (await detectNetwork).clone();
         }
@@ -581,12 +597,20 @@ class AbstractProvider {
     async getFeeData() {
         const network = await this.getNetwork();
         const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await (0, index_js_6.resolveProperties)({
+            const { _block, gasPrice, priorityFee } = await (0, index_js_6.resolveProperties)({
                 _block: this.#getBlock("latest", false),
                 gasPrice: ((async () => {
                     try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return (0, index_js_6.getBigInt)(gasPrice, "%response");
+                        const value = await this.#perform({ method: "getGasPrice" });
+                        return (0, index_js_6.getBigInt)(value, "%response");
+                    }
+                    catch (error) { }
+                    return null;
+                })()),
+                priorityFee: ((async () => {
+                    try {
+                        const value = await this.#perform({ method: "getPriorityFee" });
+                        return (0, index_js_6.getBigInt)(value, "%response");
                     }
                     catch (error) { }
                     return null;
@@ -597,7 +621,7 @@ class AbstractProvider {
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
+                maxPriorityFeePerGas = (priorityFee != null) ? priorityFee : BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
             }
             return new provider_js_1.FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
@@ -975,6 +999,9 @@ class AbstractProvider {
                 subscriber.pollingInterval = this.pollingInterval;
                 return subscriber;
             }
+            case "safe":
+            case "finalized":
+                return new subscriber_polling_js_1.PollingBlockTagSubscriber(this, sub.type);
             case "event":
                 return new subscriber_polling_js_1.PollingEventSubscriber(this, sub.filter);
             case "transaction":

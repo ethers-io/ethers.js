@@ -49,6 +49,7 @@ export {
 export {
     id,
     ensNormalize, isValidName, namehash, dnsEncode,
+    hashAuthorization, verifyAuthorization,
     hashMessage, verifyMessage,
     solidityPacked, solidityPackedKeccak256, solidityPackedSha256,
     TypedDataEncoder,
@@ -69,8 +70,9 @@ export {
 
     BrowserProvider,
 
-    AlchemyProvider, AnkrProvider, CloudflareProvider, EtherscanProvider,
-    InfuraProvider, InfuraWebSocketProvider, PocketProvider, QuickNodeProvider,
+    AlchemyProvider, AnkrProvider, BlockscoutProvider, ChainstackProvider,
+    CloudflareProvider, EtherscanProvider, InfuraProvider,
+    InfuraWebSocketProvider, PocketProvider, QuickNodeProvider,
 
     IpcSocketProvider, SocketProvider, WebSocketProvider,
 
@@ -88,7 +90,7 @@ export {
 } from "./providers/index.js";
 
 export {
-    accessListify,
+    accessListify, authorizationify,
     computeAddress, recoverAddress,
     Transaction
 } from "./transaction/index.js";
@@ -158,25 +160,33 @@ export type {
 
 export type { ProgressCallback, SignatureLike } from "./crypto/index.js";
 
-export type { TypedDataDomain, TypedDataField } from "./hash/index.js";
+export type {
+    AuthorizationRequest, TypedDataDomain, TypedDataField
+} from "./hash/index.js";
 
 export type {
     Provider, Signer,
 
-    AbstractProviderOptions, FallbackProviderOptions,
+    CommunityResourcable,
 
-    AbstractProviderPlugin, BlockParams, BlockTag, ContractRunner, DebugEventBrowserProvider,
-    Eip1193Provider, EventFilter, Filter, FilterByBlockHash, GasCostParameters,
-    JsonRpcApiProviderOptions, JsonRpcError, JsonRpcPayload, JsonRpcResult,
-    JsonRpcTransactionRequest, LogParams, MinedBlock, MinedTransactionResponse, Networkish,
-    OrphanFilter, PerformActionFilter, PerformActionRequest, PerformActionTransaction,
-    PreparedTransactionRequest, ProviderEvent, Subscriber, Subscription, TopicFilter,
-    TransactionReceiptParams, TransactionRequest, TransactionResponseParams,
-    WebSocketCreator, WebSocketLike
+    AbstractProviderOptions, BrowserProviderOptions, FallbackProviderOptions,
+
+    AbstractProviderPlugin, BlockParams, BlockTag, BrowserDiscoverOptions,
+    ContractRunner, DebugEventBrowserProvider, Eip1193Provider,
+    Eip6963ProviderInfo, EventFilter, Filter, FilterByBlockHash,
+    GasCostParameters, JsonRpcApiProviderOptions, JsonRpcError,
+    JsonRpcPayload, JsonRpcResult, JsonRpcTransactionRequest, LogParams,
+    MinedBlock, MinedTransactionResponse, Networkish, OrphanFilter,
+    PerformActionFilter, PerformActionRequest, PerformActionTransaction,
+    PreparedTransactionRequest, ProviderEvent, Subscriber, Subscription,
+    TopicFilter, TransactionReceiptParams, TransactionRequest,
+    TransactionResponseParams, WebSocketCreator, WebSocketLike
 } from "./providers/index.js";
 
 export type {
     AccessList, AccessListish, AccessListEntry,
+    Authorization, AuthorizationLike,
+    Blob, BlobLike, KzgLibrary, KzgLibraryLike,
     TransactionLike
 } from "./transaction/index.js";
 
@@ -186,7 +196,7 @@ export type {
     ErrorCode,
     FixedFormat,
     Utf8ErrorFunc, UnicodeNormalizationForm, Utf8ErrorReason,
-    RlpStructuredData,
+    RlpStructuredData, RlpStructuredDataish,
 
     GetUrlResponse,
     FetchPreflightFunc, FetchProcessFunc, FetchRetryFunc,
@@ -208,3 +218,4 @@ export type {
     CrowdsaleAccount, KeystoreAccount, EncryptOptions
 } from "./wallet/index.js";
 
+// dummy change; to pick-up ws security issue changes

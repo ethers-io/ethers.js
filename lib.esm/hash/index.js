@@ -4,6 +4,7 @@
  *
  *  @_section: api/hashing:Hashing Utilities  [about-hashing]
  */
+export { hashAuthorization, verifyAuthorization } from "./authorization.js";
 export { id } from "./id.js";
 export { ensNormalize, isValidName, namehash, dnsEncode } from "./namehash.js";
 export { hashMessage, verifyMessage } from "./message.js";

@@ -8,12 +8,18 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Base (``base``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - BNB Smart Chain Mainnet (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
  *
  *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
  */
@@ -26,6 +32,7 @@ import {
     hexlify, toQuantity,
     FetchRequest,
     assert, assertArgument, isError,
+//    parseUnits,
     toUtf8String
  } from "../utils/index.js";
 
@@ -137,9 +144,6 @@ export class EtherscanProvider extends AbstractProvider {
         this.#plugin = network.getPlugin<EtherscanPlugin>(EtherscanPluginId);
 
         defineProperties<EtherscanProvider>(this, { apiKey, network });
-
-        // Test that the network is supported by Etherscan
-        this.getBaseUrl();
     }
 
     /**
@@ -148,6 +152,11 @@ export class EtherscanProvider extends AbstractProvider {
      *  If an [[EtherscanPlugin]] is configured on the
      *  [[EtherscanBaseProvider_network]], returns the plugin's
      *  baseUrl.
+     *
+     *  Deprecated; for Etherscan v2 the base is no longer a simply
+     *  host, but instead a URL including a chainId parameter. Changing
+     *  this to return a URL prefix could break some libraries, so it
+     *  is left intact but will be removed in the future as it is unused.
      */
     getBaseUrl(): string {
         if (this.#plugin) { return this.#plugin.baseUrl; }
@@ -159,24 +168,31 @@ export class EtherscanProvider extends AbstractProvider {
                 return "https:/\/api-goerli.etherscan.io";
             case "sepolia":
                 return "https:/\/api-sepolia.etherscan.io";
+            case "holesky":
+                return "https:/\/api-holesky.etherscan.io";
 
             case "arbitrum":
                 return "https:/\/api.arbiscan.io";
             case "arbitrum-goerli":
                 return "https:/\/api-goerli.arbiscan.io";
+           case "base":
+                return "https:/\/api.basescan.org";
+            case "base-sepolia":
+                return "https:/\/api-sepolia.basescan.org";
+            case "bnb":
+                return "https:/\/api.bscscan.com";
+            case "bnbt":
+                return "https:/\/api-testnet.bscscan.com";
             case "matic":
                 return "https:/\/api.polygonscan.com";
+            case "matic-amoy":
+                return "https:/\/api-amoy.polygonscan.com";
             case "matic-mumbai":
                 return "https:/\/api-testnet.polygonscan.com";
             case "optimism":
                 return "https:/\/api-optimistic.etherscan.io";
             case "optimism-goerli":
                 return "https:/\/api-goerli-optimistic.etherscan.io";
-
-            case "bnb":
-                return "http:/\/api.bscscan.com";
-            case "bnbt":
-                return "http:/\/api-testnet.bscscan.com";
 
             default:
         }
@@ -188,22 +204,22 @@ export class EtherscanProvider extends AbstractProvider {
      *  Returns the URL for the %%module%% and %%params%%.
      */
     getUrl(module: string, params: Record<string, string>): string {
-        const query = Object.keys(params).reduce((accum, key) => {
+        let query = Object.keys(params).reduce((accum, key) => {
             const value = params[key];
             if (value != null) {
                 accum += `&${ key }=${ value }`
             }
             return accum
         }, "");
-        const apiKey = ((this.apiKey) ? `&apikey=${ this.apiKey }`: "");
-        return `${ this.getBaseUrl() }/api?module=${ module }${ query }${ apiKey }`;
+        if (this.apiKey) { query += `&apikey=${ this.apiKey }`; }
+        return `https:/\/api.etherscan.io/v2/api?chainid=${ this.network.chainId }&module=${ module }${ query }`;
     }
 
     /**
      *  Returns the URL for using POST requests.
      */
     getPostUrl(): string {
-        return `${ this.getBaseUrl() }/api`;
+        return `https:/\/api.etherscan.io/v2/api?chainid=${ this.network.chainId }`;
     }
 
     /**
@@ -212,6 +228,7 @@ export class EtherscanProvider extends AbstractProvider {
     getPostData(module: string, params: Record<string, any>): Record<string, any> {
         params.module = module;
         params.apikey = this.apiKey;
+        params.chainid = this.network.chainId;
         return params;
     }
 
@@ -321,14 +338,26 @@ export class EtherscanProvider extends AbstractProvider {
             if ((<any>transaction)[key] == null) { continue; }
             let value = (<any>transaction)[key];
             if (key === "type" && value === 0) { continue; }
+            if (key === "blockTag" && value === "latest") { continue; }
 
             // Quantity-types require no leading zero, unless 0
             if ((<any>{ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true })[key]) {
                 value = toQuantity(value);
+
             } else if (key === "accessList") {
                 value = "[" + accessListify(value).map((set) => {
                     return `{address:"${ set.address }",storageKeys:["${ set.storageKeys.join('","') }"]}`;
                 }).join(",") + "]";
+
+            } else if (key === "blobVersionedHashes") {
+                if (value.length === 0) { continue; }
+
+                // @TODO: update this once the API supports blobs
+                assert(false, "Etherscan API does not support blobVersionedHashes", "UNSUPPORTED_OPERATION", {
+                    operation: "_getTransactionPostData",
+                    info: { transaction }
+                });
+
             } else {
                 value = hexlify(value);
             }
@@ -341,7 +370,6 @@ export class EtherscanProvider extends AbstractProvider {
      *  Throws the normalized Etherscan error.
      */
     _checkError(req: PerformActionRequest, error: Error, transaction: any): never {
-
         // Pull any message out if, possible
         let message = "";
         if (isError(error, "SERVER_ERROR")) {
@@ -419,6 +447,43 @@ export class EtherscanProvider extends AbstractProvider {
 
             case "getGasPrice":
                 return this.fetch("proxy", { action: "eth_gasPrice" });
+
+            case "getPriorityFee":
+                // This is temporary until Etherscan completes support
+                if (this.network.name === "mainnet") {
+                    return "1000000000";
+                } else if (this.network.name === "optimism") {
+                    return "1000000";
+                } else {
+                    throw new Error("fallback onto the AbstractProvider default");
+                }
+                /* Working with Etherscan to get this added:
+                try {
+                    const test = await this.fetch("proxy", {
+                        action: "eth_maxPriorityFeePerGas"
+                    });
+                    console.log(test);
+                    return test;
+                } catch (e) {
+                    console.log("DEBUG", e);
+                    throw e;
+                }
+                */
+                /* This might be safe; but due to rounding neither myself
+                   or Etherscan are necessarily comfortable with this. :)
+                try {
+                    const result = await this.fetch("gastracker", { action: "gasoracle" });
+                    console.log(result);
+                    const gasPrice = parseUnits(result.SafeGasPrice, "gwei");
+                    const baseFee = parseUnits(result.suggestBaseFee, "gwei");
+                    const priorityFee = gasPrice - baseFee;
+                    if (priorityFee < 0) { throw new Error("negative priority fee; defer to abstract provider default"); }
+                    return priorityFee;
+                } catch (error) {
+                    console.log("DEBUG", error);
+                    throw error;
+                }
+                */
 
             case "getBalance":
                 // Returns base-10 result

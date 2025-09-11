@@ -60,7 +60,7 @@ export type DebugEventAbstractProvider = {
  *  if they are modifying a low-level feature of how subscriptions operate.
  */
 export type Subscription = {
-    type: "block" | "close" | "debug" | "error" | "network" | "pending";
+    type: "block" | "close" | "debug" | "error" | "finalized" | "network" | "pending" | "safe";
     tag: string;
 } | {
     type: "transaction";
@@ -209,6 +209,8 @@ export type PerformActionRequest = {
     method: "getLogs";
     filter: PerformActionFilter;
 } | {
+    method: "getPriorityFee";
+} | {
     method: "getStorage";
     address: string;
     position: bigint;
@@ -340,7 +342,7 @@ export declare class AbstractProvider implements Provider {
      */
     _getFilter(filter: Filter | FilterByBlockHash): PerformActionFilter | Promise<PerformActionFilter>;
     /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  Returns or resolves to a transaction for %%request%%, resolving
      *  any ENS names or [[Addressable]] and returning if already a valid
      *  transaction.
      */

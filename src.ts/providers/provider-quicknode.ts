@@ -6,10 +6,19 @@
  *
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Holesky Testnet (``holesky``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base Mainnet (``base``);
+ *  - Base Goerli Testnet (``base-goerli``);
+ *  - Base Sepolia Testnet (``base-sepolia``);
+ *  - BNB Smart Chain Mainnet (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
  *  - Polygon (``matic``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
@@ -37,13 +46,27 @@ function getHost(name: string): string {
             return "ethers.quiknode.pro";
         case "goerli":
             return "ethers.ethereum-goerli.quiknode.pro";
-        //case "sepolia":
-        //    return "sepolia.infura.io";
+        case "sepolia":
+            return "ethers.ethereum-sepolia.quiknode.pro";
+        case "holesky":
+            return "ethers.ethereum-holesky.quiknode.pro";
 
         case "arbitrum":
             return "ethers.arbitrum-mainnet.quiknode.pro";
         case "arbitrum-goerli":
             return "ethers.arbitrum-goerli.quiknode.pro";
+        case "arbitrum-sepolia":
+            return "ethers.arbitrum-sepolia.quiknode.pro";
+        case "base":
+            return "ethers.base-mainnet.quiknode.pro";
+        case "base-goerli":
+            return "ethers.base-goerli.quiknode.pro";
+        case "base-spolia":
+            return "ethers.base-sepolia.quiknode.pro";
+        case "bnb":
+            return "ethers.bsc.quiknode.pro";
+        case "bnbt":
+            return "ethers.bsc-testnet.quiknode.pro";
         case "matic":
             return "ethers.matic.quiknode.pro";
         case "matic-mumbai":
@@ -52,10 +75,43 @@ function getHost(name: string): string {
             return "ethers.optimism.quiknode.pro";
         case "optimism-goerli":
             return "ethers.optimism-goerli.quiknode.pro";
+        case "optimism-sepolia":
+            return "ethers.optimism-sepolia.quiknode.pro";
+        case "xdai":
+            return "ethers.xdai.quiknode.pro";
     }
 
     assertArgument(false, "unsupported network", "network", name);
 }
+
+/*
+@TODO:
+  These networks are not currently present in the Network
+  default included networks. Research them and ensure they
+  are EVM compatible and work with ethers
+
+  http://ethers.matic-amoy.quiknode.pro
+
+  http://ethers.avalanche-mainnet.quiknode.pro
+  http://ethers.avalanche-testnet.quiknode.pro
+  http://ethers.blast-sepolia.quiknode.pro
+  http://ethers.celo-mainnet.quiknode.pro
+  http://ethers.fantom.quiknode.pro
+  http://ethers.imx-demo.quiknode.pro
+  http://ethers.imx-mainnet.quiknode.pro
+  http://ethers.imx-testnet.quiknode.pro
+  http://ethers.near-mainnet.quiknode.pro
+  http://ethers.near-testnet.quiknode.pro
+  http://ethers.nova-mainnet.quiknode.pro
+  http://ethers.scroll-mainnet.quiknode.pro
+  http://ethers.scroll-testnet.quiknode.pro
+  http://ethers.tron-mainnet.quiknode.pro
+  http://ethers.zkevm-mainnet.quiknode.pro
+  http://ethers.zkevm-testnet.quiknode.pro
+  http://ethers.zksync-mainnet.quiknode.pro
+  http://ethers.zksync-testnet.quiknode.pro
+*/
+
 
 
 /**

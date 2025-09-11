@@ -4,7 +4,7 @@
  *  @_section: api/providers/formatting:Formatting  [provider-formatting]
  */
 import type { Signature } from "../crypto/index.js";
-import type { AccessList } from "../transaction/index.js";
+import type { Authorization, AccessList } from "../transaction/index.js";
 /**
  *  a **BlockParams** encodes the minimal required properties for a
  *  formatted block.
@@ -29,13 +29,18 @@ export interface BlockParams {
      */
     parentHash: string;
     /**
+     *  The hash tree root of the parent beacon block for the given
+     *  execution block. See [[link-eip-4788]].
+     */
+    parentBeaconBlockRoot?: null | string;
+    /**
      *  A random sequence provided during the mining process for
      *  proof-of-work networks.
      */
     nonce: string;
     /**
      *  For proof-of-work networks, the difficulty target is used to
-     *  adjust the difficulty in mining to ensure a expected block rate.
+     *  adjust the difficulty in mining to ensure an expected block rate.
      */
     difficulty: bigint;
     /**
@@ -47,9 +52,24 @@ export interface BlockParams {
      */
     gasUsed: bigint;
     /**
+     *  The total amount of BLOb gas consumed by transactions within
+     *  the block. See [[link-eip4844].
+     */
+    blobGasUsed?: null | bigint;
+    /**
+     *  The running total of BLOb gas consumed in excess of the target
+     *  prior to the block. See [[link-eip-4844]].
+     */
+    excessBlobGas?: null | bigint;
+    /**
      *  The miner (or author) of a block.
      */
     miner: string;
+    /**
+     *  The latest RANDAO mix of the post beacon state of
+     *  the previous block.
+     */
+    prevRandao?: null | string;
     /**
      *  Additional data the miner choose to include.
      */
@@ -59,6 +79,15 @@ export interface BlockParams {
      *  block.
      */
     baseFeePerGas: null | bigint;
+    /**
+     *  The root hash for the global state after applying changes
+     *  in this block.
+     */
+    stateRoot?: null | string;
+    /**
+     *  The hash of the transaction receipts trie.
+     */
+    receiptsRoot?: null | string;
     /**
      *  The list of transactions in the block.
      */
@@ -159,6 +188,10 @@ export interface TransactionReceiptParams {
      */
     gasUsed: bigint;
     /**
+     *  The amount of BLOb gas used. See [[link-eip-4844]].
+     */
+    blobGasUsed?: null | bigint;
+    /**
      *  The total amount of gas consumed during the entire block up to
      *  and including this transaction.
      */
@@ -167,6 +200,10 @@ export interface TransactionReceiptParams {
      *  The actual gas price per gas charged for this transaction.
      */
     gasPrice?: null | bigint;
+    /**
+     *  The actual BLOb gas price that was charged. See [[link-eip-4844]].
+     */
+    blobGasPrice?: null | bigint;
     /**
      *  The actual gas price per gas charged for this transaction.
      */
@@ -245,6 +282,11 @@ export interface TransactionResponseParams {
      */
     maxFeePerGas: null | bigint;
     /**
+     *  For [[link-eip-4844]] transactions, this is the maximum fee that
+     *  will be paid per BLOb.
+     */
+    maxFeePerBlobGas?: null | bigint;
+    /**
      *  The transaction data.
      */
     data: string;
@@ -264,5 +306,13 @@ export interface TransactionResponseParams {
      *  The transaction access list.
      */
     accessList: null | AccessList;
+    /**
+     *  The [[link-eip-4844]] BLOb versioned hashes.
+     */
+    blobVersionedHashes?: null | Array<string>;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList: null | Array<Authorization>;
 }
 //# sourceMappingURL=formatting.d.ts.map

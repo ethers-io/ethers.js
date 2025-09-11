@@ -1,7 +1,7 @@
 import { Signature } from "../crypto/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { SignatureLike } from "../crypto/index.js";
-import type { AccessList, AccessListish } from "./index.js";
+import type { AccessList, AccessListish, Authorization, AuthorizationLike } from "./index.js";
 /**
  *  A **TransactionLike** is an object which is appropriate as a loose
  *  input for many operations which will populate missing properties of
@@ -64,7 +64,78 @@ export interface TransactionLike<A = string> {
      *  The access list for berlin and london transactions.
      */
     accessList?: null | AccessListish;
+    /**
+     *  The maximum fee per blob gas (see [[link-eip-4844]]).
+     */
+    maxFeePerBlobGas?: null | BigNumberish;
+    /**
+     *  The versioned hashes (see [[link-eip-4844]]).
+     */
+    blobVersionedHashes?: null | Array<string>;
+    /**
+     *  The blobs (if any) attached to this transaction (see [[link-eip-4844]]).
+     */
+    blobs?: null | Array<BlobLike>;
+    /**
+     *  An external library for computing the KZG commitments and
+     *  proofs necessary for EIP-4844 transactions (see [[link-eip-4844]]).
+     *
+     *  This is generally ``null``, unless you are creating BLOb
+     *  transactions.
+     */
+    kzg?: null | KzgLibraryLike;
+    /**
+     *  The [[link-eip-7702]] authorizations (if any).
+     */
+    authorizationList?: null | Array<Authorization>;
 }
+/**
+ *  A full-valid BLOb object for [[link-eip-4844]] transactions.
+ *
+ *  The commitment and proof should have been computed using a
+ *  KZG library.
+ */
+export interface Blob {
+    data: string;
+    proof: string;
+    commitment: string;
+}
+/**
+ *  A BLOb object that can be passed for [[link-eip-4844]]
+ *  transactions.
+ *
+ *  It may have had its commitment and proof already provided
+ *  or rely on an attached [[KzgLibrary]] to compute them.
+ */
+export type BlobLike = BytesLike | {
+    data: BytesLike;
+    proof: BytesLike;
+    commitment: BytesLike;
+};
+/**
+ *  A KZG Library with the necessary functions to compute
+ *  BLOb commitments and proofs.
+ */
+export interface KzgLibrary {
+    blobToKzgCommitment: (blob: Uint8Array) => Uint8Array;
+    computeBlobKzgProof: (blob: Uint8Array, commitment: Uint8Array) => Uint8Array;
+}
+/**
+ *  A KZG Library with any of the various API configurations.
+ *  As the library is still experimental and the API is not
+ *  stable, depending on the version used the method names and
+ *  signatures are still in flux.
+ *
+ *  This allows any of the versions to be passed into Transaction
+ *  while providing a stable external API.
+ */
+export type KzgLibraryLike = KzgLibrary | {
+    blobToKZGCommitment: (blob: string) => string;
+    computeBlobKZGProof: (blob: string, commitment: string) => string;
+} | {
+    blobToKzgCommitment: (blob: string) => string | Uint8Array;
+    computeBlobProof: (blob: string, commitment: string) => string | Uint8Array;
+};
 /**
  *  A **Transaction** describes an operation to be executed on
  *  Ethereum by an Externally Owned Account (EOA). It includes
@@ -157,6 +228,50 @@ export declare class Transaction implements TransactionLike<string> {
      */
     get accessList(): null | AccessList;
     set accessList(value: null | AccessListish);
+    get authorizationList(): null | Array<Authorization>;
+    set authorizationList(auths: null | Array<AuthorizationLike>);
+    /**
+     *  The max fee per blob gas for Cancun transactions.
+     */
+    get maxFeePerBlobGas(): null | bigint;
+    set maxFeePerBlobGas(value: null | BigNumberish);
+    /**
+     *  The BLOb versioned hashes for Cancun transactions.
+     */
+    get blobVersionedHashes(): null | Array<string>;
+    set blobVersionedHashes(value: null | Array<string>);
+    /**
+     *  The BLObs for the Transaction, if any.
+     *
+     *  If ``blobs`` is non-``null``, then the [[seriailized]]
+     *  will return the network formatted sidecar, otherwise it
+     *  will return the standard [[link-eip-2718]] payload. The
+     *  [[unsignedSerialized]] is unaffected regardless.
+     *
+     *  When setting ``blobs``, either fully valid [[Blob]] objects
+     *  may be specified (i.e. correctly padded, with correct
+     *  committments and proofs) or a raw [[BytesLike]] may
+     *  be provided.
+     *
+     *  If raw [[BytesLike]] are provided, the [[kzg]] property **must**
+     *  be already set. The blob will be correctly padded and the
+     *  [[KzgLibrary]] will be used to compute the committment and
+     *  proof for the blob.
+     *
+     *  A BLOb is a sequence of field elements, each of which must
+     *  be within the BLS field modulo, so some additional processing
+     *  may be required to encode arbitrary data to ensure each 32 byte
+     *  field is within the valid range.
+     *
+     *  Setting this automatically populates [[blobVersionedHashes]],
+     *  overwriting any existing values. Setting this to ``null``
+     *  does **not** remove the [[blobVersionedHashes]], leaving them
+     *  present.
+     */
+    get blobs(): null | Array<Blob>;
+    set blobs(_blobs: null | Array<BlobLike>);
+    get kzg(): null | KzgLibrary;
+    set kzg(kzg: null | KzgLibraryLike);
     /**
      *  Creates a new Transaction with default values.
      */
@@ -251,6 +366,22 @@ export declare class Transaction implements TransactionLike<string> {
         accessList: AccessList;
         maxFeePerGas: bigint;
         maxPriorityFeePerGas: bigint;
+    });
+    /**
+     *  Returns true if this transaction is an [[link-eip-4844]] BLOB
+     *  transaction.
+     *
+     *  This provides a Type Guard that the related properties are
+     *  non-null.
+     */
+    isCancun(): this is (Transaction & {
+        type: 3;
+        to: string;
+        accessList: AccessList;
+        maxFeePerGas: bigint;
+        maxPriorityFeePerGas: bigint;
+        maxFeePerBlobGas: bigint;
+        blobVersionedHashes: Array<string>;
     });
     /**
      *  Create a copy of this transaciton.

@@ -14,8 +14,11 @@ export function allowNull(format, nullValue) {
         return format(value);
     });
 }
-export function arrayOf(format) {
+export function arrayOf(format, allowNull) {
     return ((array) => {
+        if (allowNull && array == null) {
+            return null;
+        }
         if (!Array.isArray(array)) {
             throw new Error("not an array");
         }
@@ -96,15 +99,23 @@ export function formatLog(value) {
 const _formatBlock = object({
     hash: allowNull(formatHash),
     parentHash: formatHash,
+    parentBeaconBlockRoot: allowNull(formatHash, null),
     number: getNumber,
     timestamp: getNumber,
     nonce: allowNull(formatData),
     difficulty: getBigInt,
     gasLimit: getBigInt,
     gasUsed: getBigInt,
+    stateRoot: allowNull(formatHash, null),
+    receiptsRoot: allowNull(formatHash, null),
+    blobGasUsed: allowNull(getBigInt, null),
+    excessBlobGas: allowNull(getBigInt, null),
     miner: allowNull(getAddress),
+    prevRandao: allowNull(formatHash, null),
     extraData: formatData,
     baseFeePerGas: allowNull(getBigInt)
+}, {
+    prevRandao: ["mixHash"]
 });
 export function formatBlock(value) {
     const result = _formatBlock(value);
@@ -139,6 +150,7 @@ const _formatTransactionReceipt = object({
     index: getNumber,
     root: allowNull(hexlify),
     gasUsed: getBigInt,
+    blobGasUsed: allowNull(getBigInt, null),
     logsBloom: allowNull(formatData),
     blockHash: formatHash,
     hash: formatHash,
@@ -147,6 +159,7 @@ const _formatTransactionReceipt = object({
     //confirmations: allowNull(getNumber, null),
     cumulativeGasUsed: getBigInt,
     effectiveGasPrice: allowNull(getBigInt),
+    blobGasPrice: allowNull(getBigInt, null),
     status: allowNull(getNumber),
     type: allowNull(getNumber, 0)
 }, {
@@ -165,6 +178,8 @@ export function formatTransactionResponse(value) {
     }
     const result = object({
         hash: formatHash,
+        // Some nodes do not return this, usually test nodes (like Ganache)
+        index: allowNull(getNumber, undefined),
         type: (value) => {
             if (value === "0x" || value == null) {
                 return 0;
@@ -172,15 +187,38 @@ export function formatTransactionResponse(value) {
             return getNumber(value);
         },
         accessList: allowNull(accessListify, null),
+        blobVersionedHashes: allowNull(arrayOf(formatHash, true), null),
+        authorizationList: allowNull(arrayOf((v) => {
+            let sig;
+            if (v.signature) {
+                sig = v.signature;
+            }
+            else {
+                let yParity = v.yParity;
+                if (yParity === "0x1b") {
+                    yParity = 0;
+                }
+                else if (yParity === "0x1c") {
+                    yParity = 1;
+                }
+                sig = Object.assign({}, v, { yParity });
+            }
+            return {
+                address: getAddress(v.address),
+                chainId: getBigInt(v.chainId),
+                nonce: getBigInt(v.nonce),
+                signature: Signature.from(sig)
+            };
+        }, false), null),
         blockHash: allowNull(formatHash, null),
         blockNumber: allowNull(getNumber, null),
         transactionIndex: allowNull(getNumber, null),
-        //confirmations: allowNull(getNumber, null),
         from: getAddress,
         // either (gasPrice) or (maxPriorityFeePerGas + maxFeePerGas) must be set
         gasPrice: allowNull(getBigInt),
         maxPriorityFeePerGas: allowNull(getBigInt),
         maxFeePerGas: allowNull(getBigInt),
+        maxFeePerBlobGas: allowNull(getBigInt, null),
         gasLimit: getBigInt,
         to: allowNull(getAddress, null),
         value: getBigInt,
@@ -190,7 +228,8 @@ export function formatTransactionResponse(value) {
         chainId: allowNull(getBigInt, null)
     }, {
         data: ["input"],
-        gasLimit: ["gas"]
+        gasLimit: ["gas"],
+        index: ["transactionIndex"]
     })(value);
     // If to and creates are empty, populate the creates from the value
     if (result.to == null && result.creates == null) {

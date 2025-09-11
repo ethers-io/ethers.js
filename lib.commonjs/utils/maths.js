@@ -175,7 +175,7 @@ function toBeHex(_value, _width) {
     }
     else {
         const width = getNumber(_width, "width");
-        (0, errors_js_1.assert)(width * 2 >= result.length, `value exceeds width (${width} bits)`, "NUMERIC_FAULT", {
+        (0, errors_js_1.assert)(width * 2 >= result.length, `value exceeds width (${width} bytes)`, "NUMERIC_FAULT", {
             operation: "toBeHex",
             fault: "overflow",
             value: _value

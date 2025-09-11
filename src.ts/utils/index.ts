@@ -86,7 +86,7 @@ export type { FixedFormat } from "./fixednumber.js"
 
 export type { BigNumberish, Numeric } from "./maths.js";
 
-export type { RlpStructuredData } from "./rlp.js";
+export type { RlpStructuredData, RlpStructuredDataish } from "./rlp.js";
 
 export type {
     Utf8ErrorFunc,

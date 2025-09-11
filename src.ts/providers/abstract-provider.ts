@@ -36,12 +36,13 @@ import {
 import { Network } from "./network.js";
 import { copyRequest, Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
 import {
-    PollingBlockSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber
+    PollingBlockSubscriber, PollingBlockTagSubscriber, PollingEventSubscriber,
+    PollingOrphanSubscriber, PollingTransactionSubscriber
 } from "./subscriber-polling.js";
 
 import type { Addressable, AddressLike } from "../address/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
-import type { Listener } from "../utils/index.js";
+import type { FetchResponse, Listener } from "../utils/index.js";
 
 import type { Networkish } from "./network.js";
 import type { FetchUrlFeeDataNetworkPlugin } from "./plugins-network.js";
@@ -127,7 +128,7 @@ export type DebugEventAbstractProvider = {
  *  if they are modifying a low-level feature of how subscriptions operate.
  */
 export type Subscription = {
-    type: "block" | "close" | "debug" | "error" | "network" | "pending",
+    type: "block" | "close" | "debug" | "error" | "finalized" | "network" | "pending" | "safe",
     tag: string
 } | {
     type: "transaction",
@@ -235,7 +236,13 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
 
     if (typeof(_event) === "string") {
         switch (_event) {
-            case "block": case "pending": case "debug": case "error": case "network": {
+            case "block":
+            case "debug":
+            case "error":
+            case "finalized":
+            case "network":
+            case "pending":
+            case "safe": {
                 return { type: _event, tag: _event };
             }
         }
@@ -376,6 +383,8 @@ export type PerformActionRequest = {
 } | {
     method: "getLogs",
     filter: PerformActionFilter
+} | {
+    method: "getPriorityFee"
 } | {
     method: "getStorage",
     address: string, position: bigint, blockTag: BlockTag
@@ -595,15 +604,26 @@ export class AbstractProvider implements Provider {
 
             let errorMessage = "unknown error";
 
-            const resp = await request.send();
+            // Fetch the resource...
+            let resp: FetchResponse;
             try {
-                 const result = resp.bodyJson;
-                 if (result.data) {
-                     this.emit("debug", { action: "receiveCcipReadFetchResult", request, result });
-                     return result.data;
-                 }
-                 if (result.message) { errorMessage = result.message; }
-                 this.emit("debug", { action: "receiveCcipReadFetchError", request, result });
+                resp = await request.send();
+            } catch (error: any) {
+                // ...low-level fetch error (missing host, bad SSL, etc.),
+                // so try next URL
+                errorMessages.push(error.message);
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result: { error } });
+                continue;
+            }
+
+            try {
+                const result = resp.bodyJson;
+                if (result.data) {
+                    this.emit("debug", { action: "receiveCcipReadFetchResult", request, result });
+                    return result.data;
+                }
+                if (result.message) { errorMessage = result.message; }
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result });
             } catch (error) { }
 
             // 4xx indicates the result is not present; stop
@@ -708,7 +728,10 @@ export class AbstractProvider implements Provider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
-            case "latest": case "pending": case "safe": case "finalized":
+            case "finalized":
+            case "latest":
+            case "pending":
+            case "safe":
                 return blockTag;
         }
 
@@ -806,7 +829,7 @@ export class AbstractProvider implements Provider {
     }
 
     /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  Returns or resolves to a transaction for %%request%%, resolving
      *  any ENS names or [[Addressable]] and returning if already a valid
      *  transaction.
      */
@@ -817,7 +840,7 @@ export class AbstractProvider implements Provider {
         [ "to", "from" ].forEach((key) => {
             if ((<any>request)[key] == null) { return; }
 
-            const addr = resolveAddress((<any>request)[key]);
+            const addr = resolveAddress((<any>request)[key], this);
             if (isPromise(addr)) {
                 promises.push((async function() { (<any>request)[key] = await addr; })());
             } else {
@@ -850,16 +873,18 @@ export class AbstractProvider implements Provider {
         if (this.#networkPromise == null) {
 
             // Detect the current network (shared with all calls)
-            const detectNetwork = this._detectNetwork().then((network) => {
-                this.emit("network", network, null);
-                return network;
-            }, (error) => {
-                // Reset the networkPromise on failure, so we will try again
-                if (this.#networkPromise === detectNetwork) {
-                    this.#networkPromise = null;
+            const detectNetwork = (async () => {
+                try {
+                    const network = await this._detectNetwork();
+                    this.emit("network", network, null);
+                    return network;
+                } catch (error) {
+                    if (this.#networkPromise === detectNetwork!) {
+                        this.#networkPromise = null;
+                    }
+                    throw error;
                 }
-                throw error;
-            });
+            })();
 
             this.#networkPromise = detectNetwork;
             return (await detectNetwork).clone();
@@ -896,14 +921,21 @@ export class AbstractProvider implements Provider {
         const network = await this.getNetwork();
 
         const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await resolveProperties({
+            const { _block, gasPrice, priorityFee } = await resolveProperties({
                 _block: this.#getBlock("latest", false),
                 gasPrice: ((async () => {
                     try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return getBigInt(gasPrice, "%response");
+                        const value = await this.#perform({ method: "getGasPrice" });
+                        return getBigInt(value, "%response");
                     } catch (error) { }
                     return null
+                })()),
+                priorityFee: ((async () => {
+                    try {
+                        const value = await this.#perform({ method: "getPriorityFee" });
+                        return getBigInt(value, "%response");
+                    } catch (error) { }
+                    return null;
                 })())
             });
 
@@ -913,7 +945,7 @@ export class AbstractProvider implements Provider {
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
+                maxPriorityFeePerGas = (priorityFee != null) ? priorityFee: BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
             }
 
@@ -1319,6 +1351,8 @@ export class AbstractProvider implements Provider {
                 subscriber.pollingInterval = this.pollingInterval;
                 return subscriber;
             }
+            case "safe": case "finalized":
+                return new PollingBlockTagSubscriber(this, sub.type);
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":

@@ -113,6 +113,7 @@ export class PollingBlockSubscriber implements Subscriber {
     }
 }
 
+
 /**
  *  An **OnBlockSubscriber** can be sub-classed, with a [[_poll]]
  *  implmentation which will be called on every new block.
@@ -160,6 +161,35 @@ export class OnBlockSubscriber implements Subscriber {
     pause(dropWhilePaused?: boolean): void { this.stop(); }
     resume(): void { this.start(); }
 }
+
+export class PollingBlockTagSubscriber extends OnBlockSubscriber {
+    readonly #tag: string;
+    #lastBlock: number;
+
+    constructor(provider: AbstractProvider, tag: string) {
+        super(provider);
+        this.#tag = tag;
+        this.#lastBlock = -2;
+    }
+
+    pause(dropWhilePaused?: boolean): void {
+        if (dropWhilePaused) { this.#lastBlock = -2; }
+        super.pause(dropWhilePaused);
+    }
+
+    async _poll(blockNumber: number, provider: AbstractProvider): Promise<void> {
+        const block = await provider.getBlock(this.#tag);
+        if (block == null) { return; }
+
+        if (this.#lastBlock === -2) {
+            this.#lastBlock = block.number;
+        } else if (block.number > this.#lastBlock) {
+            provider.emit(this.#tag, block.number);
+            this.#lastBlock = block.number;
+        }
+    }
+}
+
 
 /**
  *  @_ignore:

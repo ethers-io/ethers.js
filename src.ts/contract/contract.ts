@@ -15,7 +15,7 @@ import {
 } from "./wrappers.js";
 
 import type { EventFragment, FunctionFragment, InterfaceAbi, ParamType, Result } from "../abi/index.js";
-import type { Addressable } from "../address/index.js";
+import type { Addressable, NameResolver } from "../address/index.js";
 import type { EventEmitterable, Listener } from "../utils/index.js";
 import type {
     BlockTag, ContractRunner, Provider, TransactionRequest, TopicFilter
@@ -66,6 +66,14 @@ function canResolve(value: any): value is ContractRunnerResolver {
 
 function canSend(value: any): value is ContractRunnerSender {
     return (value && typeof(value.sendTransaction) === "function");
+}
+
+function getResolver(value: any): undefined | NameResolver {
+    if (value != null) {
+        if (canResolve(value)) { return value; }
+        if (value.provider) { return value.provider; }
+    }
+    return undefined;
 }
 
 class PreparedTopicFilter implements DeferredTopicFilter {
@@ -146,9 +154,7 @@ export async function copyOverrides<O extends string = "data" | "to">(arg: any, 
       "cannot override data", "overrides.data", overrides.data);
 
     // Resolve any from
-    if (overrides.from) {
-        overrides.from = await resolveAddress(overrides.from);
-    }
+    if (overrides.from) { overrides.from = overrides.from; }
 
     return <Omit<ContractTransaction, O>>overrides;
 }
@@ -176,6 +182,10 @@ function buildWrappedFallback(contract: BaseContract): WrappedFallback {
 
         const tx: ContractTransaction = <any>(await copyOverrides<"data">(overrides, [ "data" ]));
         tx.to = await contract.getAddress();
+
+        if (tx.from) {
+            tx.from = await resolveAddress(tx.from, getResolver(contract.runner));
+        }
 
         const iface = contract.interface;
 
@@ -271,6 +281,10 @@ function buildWrappedMethod<A extends Array<any> = Array<any>, R = any, D extend
         let overrides: Omit<ContractTransaction, "data" | "to"> = { };
         if (fragment.inputs.length + 1 === args.length) {
             overrides = await copyOverrides(args.pop());
+
+            if (overrides.from) {
+                overrides.from = await resolveAddress(overrides.from, getResolver(contract.runner));
+            }
         }
 
         if (fragment.inputs.length !== args.length) {
@@ -1096,7 +1110,7 @@ export class BaseContract implements Addressable, EventEmitterable<ContractEvent
     }
 }
 
-function _ContractBase(): new (target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner) => BaseContract & Omit<ContractInterface, keyof BaseContract> {
+function _ContractBase(): new (target: string | Addressable, abi: Interface | InterfaceAbi, runner?: null | ContractRunner) => BaseContract & Omit<ContractInterface, keyof BaseContract> {
     return BaseContract as any;
 }
 

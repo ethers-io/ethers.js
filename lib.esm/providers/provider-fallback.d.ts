@@ -75,7 +75,7 @@ export type FallbackProviderOptions = {
 };
 /**
  *  A **FallbackProvider** manages several [[Providers]] providing
- *  resiliance by switching between slow or misbehaving nodes, security
+ *  resilience by switching between slow or misbehaving nodes, security
  *  by requiring multiple backends to aggree and performance by allowing
  *  faster backends to respond earlier.
  *

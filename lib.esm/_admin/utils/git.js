@@ -87,4 +87,11 @@ export async function getDiff(filename, tag0, tag1) {
     }
     return result.stdout.trim();
 }
+export async function getTags() {
+    const result = await run("git", ["tag"]);
+    if (!result.ok) {
+        throw new Error(`git log error`);
+    }
+    return result.stdout.trim().split("\n");
+}
 //# sourceMappingURL=git.js.map

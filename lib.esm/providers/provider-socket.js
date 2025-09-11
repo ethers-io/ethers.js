@@ -45,6 +45,9 @@ export class SocketSubscriber {
     }
     stop() {
         (this.#filterId).then((filterId) => {
+            if (this.#provider.destroyed) {
+                return;
+            }
             this.#provider.send("eth_unsubscribe", [filterId]);
         });
         this.#filterId = null;
@@ -157,8 +160,21 @@ export class SocketProvider extends JsonRpcApiProvider {
      *
      *  If unspecified, the network will be discovered.
      */
-    constructor(network) {
-        super(network, { batchMaxCount: 1 });
+    constructor(network, _options) {
+        // Copy the options
+        const options = Object.assign({}, (_options != null) ? _options : {});
+        // Support for batches is generally not supported for
+        // connection-base providers; if this changes in the future
+        // the _send should be updated to reflect this
+        assertArgument(options.batchMaxCount == null || options.batchMaxCount === 1, "sockets-based providers do not support batches", "options.batchMaxCount", _options);
+        options.batchMaxCount = 1;
+        // Socket-based Providers (generally) cannot change their network,
+        // since they have a long-lived connection; but let people override
+        // this if they have just cause.
+        if (options.staticNetwork == null) {
+            options.staticNetwork = true;
+        }
+        super(network, options);
         this.#callbacks = new Map();
         this.#subs = new Map();
         this.#pending = new Map();

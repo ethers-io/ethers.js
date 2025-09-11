@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "src.ts/**"
+      - "lib.esm/**"
+      - "lib.commonjs/**"
+      - "misc/test-browser/**"
 
 jobs:
   test-browser:
@@ -12,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     environment: ethers-tests
+    env:
+      FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
 
     strategy:
       fail-fast: false
@@ -20,7 +27,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 18.x
+          node-version: 20.x
 
       - name: Install and run Geth
         uses: ethers-io/run-geth-action@main
