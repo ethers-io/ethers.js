@@ -267,7 +267,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
 }
 
 /**
- *  A **VoidSigner** is a class deisgned to allow an address to be used
+ *  A **VoidSigner** is a class designed to allow an address to be used
  *  in any API which accepts a Signer, but for which there are no
  *  credentials available to perform any actual signing.
  *
