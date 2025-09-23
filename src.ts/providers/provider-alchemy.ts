@@ -19,7 +19,8 @@
  *  - Polygon (``matic``)
  *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
- *
+ *  - BNB Smart Chain (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
 
@@ -40,7 +41,7 @@ import type { Networkish } from "./network.js";
 const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 
 function getHost(name: string): string {
-    switch(name) {
+    switch (name) {
         case "mainnet":
             return "eth-mainnet.alchemyapi.io";
         case "goerli":
@@ -72,6 +73,11 @@ function getHost(name: string): string {
             return "opt-goerli.g.alchemy.com";
         case "optimism-sepolia":
             return "opt-sepolia.g.alchemy.com";
+        case "bnb":
+            return "bnb-mainnet.g.alchemy.com";
+        case "bnbt":
+            return "bnb-testnet.g.alchemy.com";
+
     }
 
     assertArgument(false, "unsupported network", "network", name);
@@ -114,7 +120,7 @@ export class AlchemyProvider extends JsonRpcProvider implements CommunityResourc
         // https://docs.alchemy.com/reference/trace-transaction
         if (req.method === "getTransactionResult") {
             const { trace, tx } = await resolveProperties({
-                trace: this.send("trace_transaction", [ req.hash ]),
+                trace: this.send("trace_transaction", [req.hash]),
                 tx: this.getTransaction(req.hash)
             });
             if (trace == null || tx == null) { return null; }
@@ -151,7 +157,7 @@ export class AlchemyProvider extends JsonRpcProvider implements CommunityResourc
     static getRequest(network: Network, apiKey?: string): FetchRequest {
         if (apiKey == null) { apiKey = defaultApiKey; }
 
-        const request = new FetchRequest(`https:/\/${ getHost(network.name) }/v2/${ apiKey }`);
+        const request = new FetchRequest(`https:/\/${getHost(network.name)}/v2/${apiKey}`);
         request.allowGzip = true;
 
         if (apiKey === defaultApiKey) {

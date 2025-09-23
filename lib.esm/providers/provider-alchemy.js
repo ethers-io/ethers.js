@@ -19,7 +19,8 @@
  *  - Polygon (``matic``)
  *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
- *
+ *  - BNB Smart Chain (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
 import { defineProperties, resolveProperties, assert, assertArgument, FetchRequest } from "../utils/index.js";
@@ -59,6 +60,10 @@ function getHost(name) {
             return "opt-goerli.g.alchemy.com";
         case "optimism-sepolia":
             return "opt-sepolia.g.alchemy.com";
+        case "bnb":
+            return "bnb-mainnet.g.alchemy.com";
+        case "bnbt":
+            return "bnb-testnet.g.alchemy.com";
     }
     assertArgument(false, "unsupported network", "network", name);
 }

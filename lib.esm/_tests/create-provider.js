@@ -8,14 +8,14 @@ JsonRpcProvider, FallbackProvider, isError, } from "../index.js";
 import { inspect } from "./utils-debug.js";
 import { INFURA_APIKEY } from "./utils.js";
 ;
-const ethNetworks = ["default", "mainnet", "sepolia"];
+const ethNetworks = ["default", "mainnet", "sepolia", "bnb", "bnbt",];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {
         name: "AlchemyProvider",
         networks: ethNetworks,
         create: function (network) {
-            return new AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
+            return new AlchemyProvider(network, "d-Gyo1Pogy5dRD562tK-tGyYWT0FvpvD");
         }
     },
     {
