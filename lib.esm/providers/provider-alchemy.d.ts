@@ -19,7 +19,8 @@
  *  - Polygon (``matic``)
  *  - Polygon Amoy Testnet (``matic-amoy``)
  *  - Polygon Mumbai Testnet (``matic-mumbai``)
- *
+ *  - BNB Smart Chain (``bnb``)
+ *  - BNB Smart Chain Testnet (``bnbt``)
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
 import { FetchRequest } from "../utils/index.js";

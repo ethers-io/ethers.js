@@ -1,13 +1,13 @@
 import {
     AlchemyProvider,
     BlockscoutProvider,
-//    AnkrProvider,
-//    CloudflareProvider,
+    //    AnkrProvider,
+    //    CloudflareProvider,
     ChainstackProvider,
     EtherscanProvider,
     InfuraProvider,
-//    PocketProvider,
-//    QuickNodeProvider,
+    //    PocketProvider,
+    //    QuickNodeProvider,
     JsonRpcProvider,
 
     FallbackProvider,
@@ -26,22 +26,22 @@ interface ProviderCreator {
     create: (network: string) => null | AbstractProvider;
 };
 
-const ethNetworks = [ "default", "mainnet", "sepolia" ];
+const ethNetworks = ["default", "mainnet", "sepolia", "bnb", "bnbt",];
 //const maticNetworks = [ "matic", "maticmum" ];
 
 const ProviderCreators: Array<ProviderCreator> = [
     {
         name: "AlchemyProvider",
         networks: ethNetworks,
-        create: function(network: string) {
-            return new AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
+        create: function (network: string) {
+            return new AlchemyProvider(network, "xxxxxxxxxxxxxxx");
         }
     },
     {
         name: "BlockscoutProvider",
         //networks: ethNetworks,  // @TODO: they are backfilling some Sepolia txs
-        networks: [ "mainnet" ],
-        create: function(network: string) {
+        networks: ["mainnet"],
+        create: function (network: string) {
             //return new BlockscoutProvider(network);
             return new BlockscoutProvider(network, "fdbfa288-1695-454e-a369-4501253a120");
         }
@@ -66,22 +66,22 @@ const ProviderCreators: Array<ProviderCreator> = [
     */
     {
         name: "ChainstackProvider",
-        networks: [ "default", "mainnet", "arbitrum", "bnb", "matic" ],
-        create: function(network: string) {
+        networks: ["default", "mainnet", "arbitrum", "bnb", "matic"],
+        create: function (network: string) {
             return new ChainstackProvider(network);
         }
     },
     {
         name: "EtherscanProvider",
         networks: ethNetworks,
-        create: function(network: string) {
+        create: function (network: string) {
             return new EtherscanProvider(network, "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7");
         }
     },
     {
         name: "InfuraProvider",
         networks: ethNetworks,
-        create: function(network: string) {
+        create: function (network: string) {
             return new InfuraProvider(network, INFURA_APIKEY || undefined);
         }
     },
@@ -94,30 +94,30 @@ const ProviderCreators: Array<ProviderCreator> = [
         }
     },
     */
-/*
-    {
-        name: "PocketProvider",
-        networks: ethNetworks,
-        create: function(network: string) {
-            return new PocketProvider(network);
-        }
-    },
-*/
-/*
-    {
-        name: "QuickNodeProvider",
-        networks: ethNetworks,
-        create: function(network: string) {
-            return new QuickNodeProvider(network);
-        }
-    },
-*/
+    /*
+        {
+            name: "PocketProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                return new PocketProvider(network);
+            }
+        },
+    */
+    /*
+        {
+            name: "QuickNodeProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                return new QuickNodeProvider(network);
+            }
+        },
+    */
     {
         name: "FallbackProvider",
         networks: ethNetworks,
-        create: function(network: string) {
+        create: function (network: string) {
             const providers: Array<AbstractProvider> = [];
-            for (const providerName of [ "AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider" ]) {
+            for (const providerName of ["AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider"]) {
                 const provider = getProvider(providerName, network);
                 if (provider) { providers.push(provider); }
             }
@@ -128,9 +128,9 @@ const ProviderCreators: Array<ProviderCreator> = [
 ];
 
 let setup = false;
-const cleanup: Array<() => void> = [ ];
+const cleanup: Array<() => void> = [];
 export function setupProviders(): void {
-    after(function() {
+    after(function () {
         for (const func of cleanup) { func(); }
     });
     setup = true;
@@ -147,7 +147,7 @@ function getCreator(provider: string): null | ProviderCreator {
 export function getProviderNetworks(provider: string): Array<string> {
     const creator = getCreator(provider);
     if (creator) { return creator.networks; }
-    return [ ];
+    return [];
 }
 
 export function getProvider(provider: string, network: string): null | AbstractProvider {
@@ -199,6 +199,6 @@ export function getDevProvider(): JsonRpcProvider {
 
 export function connect(network: string): AbstractProvider {
     const provider = getProvider("InfuraProvider", network);
-    if (provider == null) { throw new Error(`could not connect to ${ network }`); }
+    if (provider == null) { throw new Error(`could not connect to ${network}`); }
     return provider;
 }
