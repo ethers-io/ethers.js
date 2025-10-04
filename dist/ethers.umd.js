@@ -21270,7 +21270,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function getHost$4(name) {
         switch (name) {
             case "mainnet":
-                return "eth-mainnet.alchemyapi.io";
+                return "eth-mainnet.g.alchemy.com";
             case "goerli":
                 return "eth-goerli.g.alchemy.com";
             case "sepolia":
