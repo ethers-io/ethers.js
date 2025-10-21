@@ -13,8 +13,8 @@ import { Network } from "./network.js"
 
 import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js"
-import type { BlockParams } from './formatting.js';
-import { Block } from './provider.js';
+import type { BlockParams } from "./formatting.js";
+import { Block } from "./provider.js";
 
 const BN_1 = BigInt("1");
 const BN_2 = BigInt("2");

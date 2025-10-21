@@ -2,8 +2,8 @@ import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
-import type { BlockParams } from './formatting.js';
-import { Block } from './provider.js';
+import type { BlockParams } from "./formatting.js";
+import { Block } from "./provider.js";
 /**
  *  A configuration entry for how to use a [[Provider]].
  */
