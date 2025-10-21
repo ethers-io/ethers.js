@@ -2,6 +2,8 @@ import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
+import type { BlockParams } from './formatting.js';
+import { Block } from './provider.js';
 /**
  *  A configuration entry for how to use a [[Provider]].
  */
@@ -105,6 +107,7 @@ export declare class FallbackProvider extends AbstractProvider {
     constructor(providers: Array<AbstractProvider | FallbackProviderConfig>, network?: Networkish, options?: FallbackProviderOptions);
     get providerConfigs(): Array<FallbackProviderState>;
     _detectNetwork(): Promise<Network>;
+    _wrapBlock(value: BlockParams, network: Network): Block;
     /**
      *  Transforms a %%req%% into the correct method call on %%provider%%.
      */

@@ -10,6 +10,7 @@ exports.FallbackProvider = void 0;
 const index_js_1 = require("../utils/index.js");
 const abstract_provider_js_1 = require("./abstract-provider.js");
 const network_js_1 = require("./network.js");
+const provider_js_1 = require("./provider.js");
 const BN_1 = BigInt("1");
 const BN_2 = BigInt("2");
 function shuffle(array) {
@@ -285,6 +286,12 @@ class FallbackProvider extends abstract_provider_js_1.AbstractProvider {
     //_getSubscriber(sub: Subscription): Subscriber {
     //    throw new Error("@TODO");
     //}
+    _wrapBlock(value, network) {
+        if (value instanceof provider_js_1.Block) {
+            return value;
+        }
+        return super._wrapBlock(value, network);
+    }
     /**
      *  Transforms a %%req%% into the correct method call on %%provider%%.
      */

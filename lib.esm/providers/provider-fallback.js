@@ -7,6 +7,7 @@
 import { assert, assertArgument, getBigInt, getNumber, isError } from "../utils/index.js";
 import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
+import { Block } from './provider.js';
 const BN_1 = BigInt("1");
 const BN_2 = BigInt("2");
 function shuffle(array) {
@@ -282,6 +283,12 @@ export class FallbackProvider extends AbstractProvider {
     //_getSubscriber(sub: Subscription): Subscriber {
     //    throw new Error("@TODO");
     //}
+    _wrapBlock(value, network) {
+        if (value instanceof Block) {
+            return value;
+        }
+        return super._wrapBlock(value, network);
+    }
     /**
      *  Transforms a %%req%% into the correct method call on %%provider%%.
      */

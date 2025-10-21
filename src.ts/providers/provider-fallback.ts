@@ -13,6 +13,8 @@ import { Network } from "./network.js"
 
 import type { PerformActionRequest } from "./abstract-provider.js";
 import type { Networkish } from "./network.js"
+import type { BlockParams } from './formatting.js';
+import { Block } from './provider.js';
 
 const BN_1 = BigInt("1");
 const BN_2 = BigInt("2");
@@ -441,6 +443,13 @@ export class FallbackProvider extends AbstractProvider {
     //_getSubscriber(sub: Subscription): Subscriber {
     //    throw new Error("@TODO");
     //}
+
+    _wrapBlock(value: BlockParams, network: Network): Block {
+        if (value instanceof Block) {
+            return value;
+        }
+        return super._wrapBlock(value, network);
+    }
 
     /**
      *  Transforms a %%req%% into the correct method call on %%provider%%.
