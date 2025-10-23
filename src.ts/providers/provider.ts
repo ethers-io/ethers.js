@@ -404,6 +404,10 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
         result.blobVersionedHashes = req.blobVersionedHashes.slice();
     }
 
+    if ("blobVersion" in req && req.blobVersion != null) {
+        result.blobVersion = req.blobVersion;
+    }
+
     if ("kzg" in req) { result.kzg = req.kzg; }
 
     if ("blobs" in req && req.blobs) {

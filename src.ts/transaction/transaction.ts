@@ -110,6 +110,11 @@ export interface TransactionLike<A = string> {
     accessList?: null | AccessListish;
 
     /**
+     * The blob version (see [[link-eip-7594]]).
+     */
+    blobVersion?: null | number;
+
+    /**
      *  The maximum fee per blob gas (see [[link-eip-4844]]).
      */
     maxFeePerBlobGas?: null | BigNumberish;
@@ -147,7 +152,7 @@ export interface TransactionLike<A = string> {
  */
 export interface Blob {
     data: string;
-    proof: string;
+    proof: string | string[];
     commitment: string;
 }
 
@@ -160,7 +165,7 @@ export interface Blob {
  */
 export type BlobLike = BytesLike | {
     data: BytesLike;
-    proof: BytesLike;
+    proof: BytesLike | BytesLike[];
     commitment: BytesLike;
 };
 
@@ -170,6 +175,7 @@ export type BlobLike = BytesLike | {
  */
 export interface KzgLibrary {
     blobToKzgCommitment: (blob: Uint8Array) => Uint8Array;
+    computeCellsAndKzgProofs(blob: Uint8Array): [Uint8Array[], Uint8Array[]];
     computeBlobKzgProof: (blob: Uint8Array, commitment: Uint8Array) => Uint8Array;
 }
 
@@ -238,7 +244,15 @@ function getKzgLibrary(kzg: KzgLibraryLike): KzgLibrary {
         assertArgument(false, "unsupported KZG library", "kzg", kzg);
     };
 
-    return { blobToKzgCommitment, computeBlobKzgProof };
+    const computeCellsAndKzgProofs = (blob: Uint8Array): [Uint8Array[], Uint8Array[]] => {
+        if ("computeCellsAndKzgProofs" in kzg && typeof kzg.computeCellsAndKzgProofs === "function") {
+            return kzg.computeCellsAndKzgProofs(blob);
+        }
+
+        assertArgument(false, "unsupported KZG library", "kzg", kzg);
+    };
+
+    return { blobToKzgCommitment, computeBlobKzgProof, computeCellsAndKzgProofs };
 }
 
 function getVersionedHash(version: number, hash: BytesLike): string {
@@ -562,23 +576,53 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
     let typeName = "3";
 
     let blobs: null | Array<Blob> = null;
+    let blobVersion: null | number = null;
 
     // Parse the network format
-    if (fields.length === 4 && Array.isArray(fields[0])) {
+    if ((fields.length === 4 || fields.length === 5) && Array.isArray(fields[0])) {
         typeName = "3 (network format)";
-        const fBlobs = fields[1], fCommits = fields[2], fProofs = fields[3];
-        assertArgument(Array.isArray(fBlobs), "invalid network format: blobs not an array", "fields[1]", fBlobs);
-        assertArgument(Array.isArray(fCommits), "invalid network format: commitments not an array", "fields[2]", fCommits);
-        assertArgument(Array.isArray(fProofs), "invalid network format: proofs not an array", "fields[3]", fProofs);
-        assertArgument(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
-        assertArgument(fBlobs.length === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+        blobVersion = fields.length === 5 ? handleNumber(fields[1], "blobVersion") : null;
 
+        const fBlobs = fields.length === 5 ? fields[2] : fields[1],
+            fCommits = fields.length === 5 ? fields[3] : fields[2],
+            fProofs = fields.length === 5 ? fields[4] : fields[3];
+
+        assertArgument(
+            blobVersion === null || blobVersion === 1,
+            "invalid network format: unsupported blobVersion",
+            "fields[1]",
+            blobVersion
+        );
+        assertArgument(
+            Array.isArray(fBlobs),
+            "invalid network format: blobs not an array",
+            fields.length === 5 ? "fields[2]" : "fields[1]",
+            fBlobs
+        );
+        assertArgument(
+            Array.isArray(fCommits),
+            "invalid network format: commitments not an array",
+            fields.length === 5 ? "fields[3]" : "fields[2]",
+            fCommits
+        );
+        assertArgument(
+            Array.isArray(fProofs),
+            "invalid network format: proofs not an array",
+            fields.length === 5 ? "fields[4]" : "fields[3]",
+            fProofs
+        );
+        assertArgument(
+            (blobVersion === null && fBlobs.length === fProofs.length) || (blobVersion === 1 && fBlobs.length * 128 === fProofs.length),
+            "invalid network format: blobs/proofs length mismatch",
+            "fields",
+            fields
+        );
         blobs = [ ];
-        for (let i = 0; i < fields[1].length; i++) {
+        for (let i = 0; i < fBlobs.length; i++) {
             blobs.push({
                 data: fBlobs[i],
                 commitment: fCommits[i],
-                proof: fProofs[i],
+                proof: blobVersion === null ? fProofs[i] : fProofs.slice(i * 128, (i + 1) * 128),
             });
         }
 
@@ -601,7 +645,8 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
         data:                  hexlify(fields[7]),
         accessList:            handleAccessList(fields[8], "accessList"),
         maxFeePerBlobGas:      handleUint(fields[9], "maxFeePerBlobGas"),
-        blobVersionedHashes:   fields[10]
+        blobVersionedHashes:   fields[10],
+        blobVersion,
     };
 
     if (blobs) { tx.blobs = blobs; }
@@ -647,14 +692,21 @@ function _serializeEip4844(tx: Transaction, sig: null | Signature, blobs: null |
 
         // We have blobs; return the network wrapped format
         if (blobs) {
+            const withBlob: Array<any> = [fields]
+
+            // Add blobVersion if it's explicitly set
+            if (tx.blobVersion != null && tx.blobVersion != 0) {
+                withBlob.push(formatNumber(tx.blobVersion, "blobVersion"));
+            }
+
+            withBlob.push(
+                blobs.map((b) => b.data),
+                blobs.map((b) => b.commitment),
+                blobs.flatMap((b) => Array.isArray(b.proof) ? b.proof : [b.proof])
+            );
             return concat([
                 "0x03",
-                encodeRlp([
-                    fields,
-                    blobs.map((b) => b.data),
-                    blobs.map((b) => b.commitment),
-                    blobs.map((b) => b.proof),
-                ])
+                encodeRlp(withBlob),
             ]);
         }
 
@@ -741,6 +793,7 @@ export class Transaction implements TransactionLike<string> {
     #chainId: bigint;
     #sig: null | Signature;
     #accessList: null | AccessList;
+    #blobVersion: null | number;
     #maxFeePerBlobGas: null | bigint;
     #blobVersionedHashes: null | Array<string>;
     #kzg: null | KzgLibrary;
@@ -934,6 +987,30 @@ export class Transaction implements TransactionLike<string> {
     }
 
     /**
+     * The blob version for Cancun transactions.
+     */
+    get blobVersion(): null | number {
+        const value = this.#blobVersion;
+        if (value == null && this.type === 3) {
+            return 0;
+        }
+        return value;
+    }
+    set blobVersion(value: null | number) {
+        if (value == null) {
+            this.#blobVersion = null;
+            return;
+        }
+        assertArgument(
+            Number.isInteger(value) && value >= 0 && value <= 1,
+            "blobVersion must be an integer between 0 and 1",
+            "blobVersion",
+            value
+        );
+        this.#blobVersion = value;
+    }
+
+    /**
      *  The max fee per blob gas for Cancun transactions.
      */
     get maxFeePerBlobGas(): null | bigint {
@@ -1025,8 +1102,14 @@ export class Transaction implements TransactionLike<string> {
                 }
 
                 const commit = this.#kzg.blobToKzgCommitment(data);
-                const proof = hexlify(this.#kzg.computeBlobKzgProof(data, commit));
-
+                let proof: string | string[];
+                // Encode proof based on version
+                if (this.#blobVersion === 1) {
+                    const [, _proof] = this.#kzg.computeCellsAndKzgProofs(data);
+                    proof = _proof.map((p) => hexlify(p));
+                } else {
+                    proof = hexlify(this.#kzg.computeBlobKzgProof(data, commit));
+                }
                 blobs.push({
                     data: hexlify(data),
                     commitment: hexlify(commit),
@@ -1039,7 +1122,9 @@ export class Transaction implements TransactionLike<string> {
                 blobs.push({
                     data: hexlify(blob.data),
                     commitment: commit,
-                    proof: hexlify(blob.proof)
+                    proof: Array.isArray(blob.proof)
+                        ? blob.proof.map((p) => hexlify(p))
+                        : hexlify(blob.proof),
                 });
                 versionedHashes.push(getVersionedHash(1, commit));
             }
@@ -1074,6 +1159,7 @@ export class Transaction implements TransactionLike<string> {
         this.#chainId = BN_0;
         this.#sig = null;
         this.#accessList = null;
+        this.#blobVersion = null;
         this.#maxFeePerBlobGas = null;
         this.#blobVersionedHashes = null;
         this.#kzg = null;
@@ -1358,6 +1444,10 @@ export class Transaction implements TransactionLike<string> {
 
         // This will get overwritten by blobs, if present
         if (tx.blobVersionedHashes != null) { result.blobVersionedHashes = tx.blobVersionedHashes; }
+
+        if (tx.blobVersion != null) {
+            result.blobVersion = tx.blobVersion;
+        }
 
         // Make sure we assign the kzg before assigning blobs, which
         // require the library in the event raw blob data is provided.
