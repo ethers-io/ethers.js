@@ -18,6 +18,8 @@ import type { TransactionLike } from "../transaction/index.js";
 import type { NetworkPlugin } from "./plugins-network.js";
 
 
+const inspect = Symbol.for("nodejs.util.inspect.custom");
+
 /**
  *  A Networkish can be used to allude to a Network, by specifing:
  *  - a [[Network]] object
@@ -76,6 +78,16 @@ export class Network {
         this.#name = name;
         this.#chainId = getBigInt(chainId);
         this.#plugins = new Map();
+    }
+
+    [inspect](): string { return this.toString(); }
+
+    toString(): string {
+        const plugins: Array<string> = [ ];
+        for (const plugin of this.#plugins.values()) {
+            plugins.push(plugin.toString());
+        }
+        return `Network { name: ${ this.name }, chainId: ${ this.chainId }, plugins: [ ${ plugins.join(", ") } ] }`
     }
 
     /**
