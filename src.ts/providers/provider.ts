@@ -219,6 +219,11 @@ export interface TransactionRequest {
     enableCcipRead?: boolean;
 
     /**
+     * The blob version (see [[link-eip-7594]]).
+     */
+    blobVersion?: null | number;
+
+    /**
      *  The blob versioned hashes (see [[link-eip-4844]]).
      */
     blobVersionedHashes?: null | Array<string>
