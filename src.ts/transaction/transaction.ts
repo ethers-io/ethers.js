@@ -192,10 +192,12 @@ export type KzgLibraryLike  = KzgLibrary | {
     // kzg-wasm >= 0.5.0
     blobToKZGCommitment: (blob: string) => string;
     computeBlobKZGProof: (blob: string, commitment: string) => string;
+    computeCellsAndKZGProofs: (blob: string) => { cells: string[]; proofs: string[] };
 } | {
     // micro-ecc-signer
     blobToKzgCommitment: (blob: string) => string | Uint8Array;
     computeBlobProof: (blob: string, commitment: string) => string | Uint8Array;
+    computeCellsAndProofs: (blob: string) => [string[], string[]];
 };
 
 function getKzgLibrary(kzg: KzgLibraryLike): KzgLibrary {
@@ -245,8 +247,21 @@ function getKzgLibrary(kzg: KzgLibraryLike): KzgLibrary {
     };
 
     const computeCellsAndKzgProofs = (blob: Uint8Array): [Uint8Array[], Uint8Array[]] => {
-        if ("computeCellsAndKzgProofs" in kzg && typeof kzg.computeCellsAndKzgProofs === "function") {
+        // c-kzg >= v2.0.0
+        if ("computeCellsAndKzgProofs" in kzg && typeof(kzg.computeCellsAndKzgProofs) === "function") {
             return kzg.computeCellsAndKzgProofs(blob);
+        }
+
+        // kzg-wasm >= 1.0.0
+        if ("computeCellsAndKZGProofs" in kzg && typeof(kzg.computeCellsAndKZGProofs) === "function") {
+            const result = kzg.computeCellsAndKZGProofs(hexlify(blob));
+            return [result.cells.map((v) => getBytes(v)), result.proofs.map((v) => getBytes(v))];
+        }
+
+        // micro-ecc-signer >= 0.15.0
+        if ("computeCellsAndProofs" in kzg && typeof(kzg.computeCellsAndProofs) === "function") {
+            const [cells, proofs] = kzg.computeCellsAndProofs(hexlify(blob));
+            return [cells.map((v) => getBytes(v)), proofs.map((v) => getBytes(v))];
         }
 
         assertArgument(false, "unsupported KZG library", "kzg", kzg);
