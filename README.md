@@ -136,5 +136,9 @@ packages designed to further enhance the functionality and experience.
 License
 -------
 
-MIT License (including **all** dependencies).
+MIT License (including **all** dependencies).> Note: JsonRpcProvider uses polling under the hood, while WebSocketProvider
+> enables push-based subscriptions. When low-latency event streams are required
+> (e.g. pending transactions, log subscriptions), a WebSocketProvider is recommended.
+
+
 
