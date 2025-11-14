@@ -23,7 +23,8 @@ import {
     FetchRequest,
     toBeArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
-    toUtf8String
+    toUtf8String,
+    isError
 } from "../utils/index.js";
 
 import { EnsResolver } from "./ens-resolver.js";
@@ -54,14 +55,41 @@ import type {
     PreparedTransactionRequest, Provider, ProviderEvent,
     TransactionRequest
 } from "./provider.js";
+import { Interface } from "../abi/interface.js";
+import type { HexString } from "../utils/data.js";
+
+// https://docs.ens.domains/ensip/21
+const LOCAL_BATCH_GATEWAY_URL = 'x-batch-gateway:true';
+const LOCAL_BATCH_GATEWAY_ABI = new Interface([
+    "function query((address sender, string[] urls, bytes calldata)[]) view returns (bool[], bytes[])", // = query(CcipRequest[])
+    "error HttpError(uint16 status, string message)",
+    "error Error(string)",
+]);
+
+type CcipRequest = {
+    sender: HexString;
+    urls: string[];
+    calldata: HexString;
+}
+
+type CcipArgs = CcipRequest & {
+    selector: HexString;
+    extraData: HexString;
+};
+
+const ORDERED_CCIP_ARGS = ["sender", "urls", "calldata", "selector", "extraData"] as const;
+
+function toErrorArgs(args: CcipArgs) {
+    return ORDERED_CCIP_ARGS.map(x => args[x]);
+}
 
 type Timer = ReturnType<typeof setTimeout>;
-
 
 // Constants
 const BN_2 = BigInt(2);
 
 const MAX_CCIP_REDIRECTS = 10;
+const MAX_CCIP_FETCHES = 100;
 
 function isPromise<T = any>(value: any): value is Promise<T> {
     return (value && typeof(value.then) === "function");
@@ -115,6 +143,14 @@ export type DebugEventAbstractProvider = {
     action: "receiveCcipReadCallError",
     transaction: { to: string, data: string }
     error: Error
+} | {
+    action: "sendCcipReadBatchRequest",
+    requests: CcipRequest[],
+} | {
+    action: "receiveCcipReadBatchResult",
+    requests: CcipRequest[],
+    failures: boolean[],
+    responses: HexString[]
 };
 
 
@@ -425,15 +461,6 @@ const defaultOptions = {
     pollingInterval: 4000
 };
 
-type CcipArgs = {
-    sender: string;
-    urls: Array<string>;
-    calldata: string;
-    selector: string;
-    extraData: string;
-    errorArgs: Array<any>
-};
-
 /**
  *  An **AbstractProvider** provides a base class for other sub-classes to
  *  implement the [[Provider]] API by normalizing input arguments and
@@ -568,17 +595,44 @@ export class AbstractProvider implements Provider {
         return await perform;
     }
 
-    /**
-     *  Resolves to the data for executing the CCIP-read operations.
-     */
-    async ccipReadFetch(tx: PerformActionTransaction, calldata: string, urls: Array<string>): Promise<null | string> {
-        if (this.disableCcipRead || urls.length === 0 || tx.to == null) { return null; }
-
-        const sender = tx.to.toLowerCase();
-        const data = calldata.toLowerCase();
-
+    async #ccipReadFetch({sender, calldata: data, urls}: CcipRequest, counter = { count: 0 }): Promise<HexString> {
+        if (urls.includes(LOCAL_BATCH_GATEWAY_URL)) {
+            const requests: CcipRequest[] = LOCAL_BATCH_GATEWAY_ABI.decodeFunctionData('query', data);
+            this.emit("debug", { action: "sendCcipReadBatchRequest", requests });
+            const failures: boolean[] = []
+            const responses: HexString[] = []
+            await Promise.all(requests.map(async (request, i) => {
+                try {
+                    responses[i] = await this.#ccipReadFetch(request, counter);
+                    failures[i] = false;
+                } catch (error: unknown) {
+                    failures[i] = true;
+                    let errorMessage = 'unknown local batch gateway error';
+                    if (error instanceof Error) {
+                        errorMessage = error.message;
+                    }
+                    if (isError(error, 'OFFCHAIN_FAULT') && error.info && error.info.statusCode) {
+                        if (error.info.errorMessages) {
+                            errorMessage = error.info.errorMessages.join('\n');
+                        } else if (error.info.errorMessage) {
+                            errorMessage = error.info.errorMessage;
+                        }
+                        responses[i] = LOCAL_BATCH_GATEWAY_ABI.encodeErrorResult('HttpError', [
+                            error.info.statusCode,
+                            error.info.errorMessages?.join('\n') ?? error.info.errorMessage
+                        ]);
+                    } else {
+                        responses[i] = LOCAL_BATCH_GATEWAY_ABI.encodeErrorResult('Error', [errorMessage]);
+                    }
+                }
+            }));
+            this.emit("debug", { action: "receiveCcipReadBatchResult", requests, failures, responses });
+            return LOCAL_BATCH_GATEWAY_ABI.encodeFunctionResult('query', [failures, responses]);
+        }
+        assert(++counter.count > MAX_CCIP_FETCHES, `too many fetches during CCIP fetch`, 'OFFCHAIN_FAULT');
+        sender = sender.toLowerCase();
+        data = data.toLowerCase();
         const errorMessages: Array<string> = [ ];
-
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
 
@@ -625,16 +679,30 @@ export class AbstractProvider implements Provider {
 
             // 4xx indicates the result is not present; stop
             assert(resp.statusCode < 400 || resp.statusCode >= 500, `response not found during CCIP fetch: ${ errorMessage }`,
-                "OFFCHAIN_FAULT", { reason: "404_MISSING_RESOURCE", transaction: tx, info: { url, errorMessage } });
+                "OFFCHAIN_FAULT", { reason: "404_MISSING_RESOURCE", info: { url, errorMessage, statusCode: resp.statusCode } });
 
             // 5xx indicates server issue; try the next url
             errorMessages.push(errorMessage);
         }
-
-        assert(false, `error encountered during CCIP fetch: ${ errorMessages.map((m) => JSON.stringify(m)).join(", ") }`, "OFFCHAIN_FAULT", {
+        assert(false, `no response during CCIP fetch`, 'OFFCHAIN_FAULT', {
             reason: "500_SERVER_ERROR",
-            transaction: tx, info: { urls, errorMessages }
-        });
+            info: { urls, errorMessages, statusCode: 500 }
+        })
+    }
+
+    /**
+     *  Resolves to the data for executing the CCIP-read operations.
+     */
+    async ccipReadFetch(tx: PerformActionTransaction, calldata: HexString, urls: Array<string>): Promise<null | string> {
+        if (this.disableCcipRead || urls.length === 0 || tx.to == null) { return null; }
+        try {
+            return await this.#ccipReadFetch({sender: tx.to, calldata, urls});
+        } catch (err: unknown) {
+            if (isError(err, 'OFFCHAIN_FAULT')) {
+                err.transaction = tx;
+            }
+            throw err;
+        }
     }
 
     /**
@@ -1008,14 +1076,24 @@ export class AbstractProvider implements Provider {
                          revert: {
                              signature: "OffchainLookup(address,string[],bytes,bytes4,bytes)",
                              name: "OffchainLookup",
-                             args: ccipArgs.errorArgs
+                             args: toErrorArgs(ccipArgs)
                          }
                      });
 
-                 const ccipResult = await this.ccipReadFetch(transaction, ccipArgs.calldata, ccipArgs.urls);
-                 assert(ccipResult != null, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
-                     reason: "FETCH_FAILED", transaction, info: { data: error.data, errorArgs: ccipArgs.errorArgs } });
-
+                 let ccipResult: HexString;
+                 try {
+                    ccipResult = await this.#ccipReadFetch(ccipArgs);
+                 } catch (cause: unknown) {
+                    assert(false, "CCIP Read failed to fetch data", "OFFCHAIN_FAULT", {
+                         reason: "FETCH_FAILED",
+                         transaction,
+                         info: {
+                            data: error.data,
+                            errorArgs: toErrorArgs(ccipArgs),
+                            cause
+                        }
+                    });
+                 }
                  const tx = {
                      to: txSender,
                      data: concat([ ccipArgs.selector, encodeBytes([ ccipResult, ccipArgs.extraData ]) ])
@@ -1186,24 +1264,24 @@ export class AbstractProvider implements Provider {
         });
     }
 
-    async getResolver(name: string, preferUniversal?: boolean): Promise<null | EnsResolver> {
-        return await EnsResolver.fromName(this, name, preferUniversal);
+    async getResolver(name: string): Promise<null | EnsResolver> {
+        return EnsResolver.fromName(this, name);
     }
 
     async getAvatar(name: string): Promise<null | string> {
-        const resolver = await this.getResolver(name, true);
+        const resolver = await this.getResolver(name);
         if (resolver) { return await resolver.getAvatar(); }
         return null;
     }
 
-    async resolveName(name: string): Promise<null | string>{
-        const resolver = await this.getResolver(name, true);
-        if (resolver) { return await resolver.getAddress(); }
+    async resolveName(name: string, coinType?: BigNumberish): Promise<null | string>{
+        const resolver = await this.getResolver(name);
+        if (resolver) { return await resolver.getAddress(coinType); }
         return null;
     }
 
-    async lookupAddress(address: string): Promise<null | string> {
-        return await EnsResolver.lookupAddress(this, address);
+    async lookupAddress(address: HexString, coinType?: BigNumberish): Promise<null | string> {
+        return await EnsResolver.lookupAddress(this, address, coinType);
     }
 
     async waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt> {
@@ -1715,8 +1793,6 @@ function parseOffchainLookup(data: string): CcipArgs {
             reason: "corrupt OffchainLookup extraData"
         });
     }
-
-    result.errorArgs = "sender,urls,calldata,selector,extraData".split(/,/).map((k) => (<any>result)[k])
 
     return result;
 }

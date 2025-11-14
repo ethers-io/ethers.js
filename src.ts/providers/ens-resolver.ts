@@ -8,21 +8,24 @@
 import { getAddress } from "../address/index.js";
 import { ZeroAddress } from "../constants/index.js";
 import { Contract } from "../contract/index.js";
-import { dnsEncode, namehash } from "../hash/index.js";
+import { dnsEncode, ensNormalize, namehash } from "../hash/index.js";
 import {
-    hexlify, isHexString, toBeHex,
+    hexlify, toBeHex,
     defineProperties, encodeBase58,
     assert, assertArgument, isError,
-    FetchRequest
+    FetchRequest,
+    getBigInt
 } from "../utils/index.js";
 
 import type { FunctionFragment } from "../abi/index.js";
 
-import type { BytesLike } from "../utils/index.js";
+import type { BigNumberish, BytesLike } from "../utils/index.js";
 
-import type { AbstractProvider, AbstractProviderPlugin } from "./abstract-provider.js";
+import { AbstractProvider, type AbstractProviderPlugin } from "./abstract-provider.js";
 import type { EnsPlugin } from "./plugins-network.js";
 import type { Provider } from "./provider.js";
+import type { HexString } from "../utils/data.js";
+import { chainFromCoinType, coinTypeFromChain, isEVMCoinType } from "../utils/cointype.js";
 
 // @TODO: This should use the fetch-data:ipfs gateway
 // Trim off the ipfs:// prefix and return the default gateway URL
@@ -102,7 +105,7 @@ export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin 
         defineProperties<MulticoinProviderPlugin>(this, { name });
     }
 
-    connect(proivder: Provider): MulticoinProviderPlugin {
+    connect(provider: Provider): MulticoinProviderPlugin {
         return this;
     }
 
@@ -160,7 +163,7 @@ export class EnsResolver {
     /**
      *  The connected provider.
      */
-    provider!: AbstractProvider;
+    provider!: Provider;
 
     /**
      *  The address of the resolver.
@@ -177,19 +180,10 @@ export class EnsResolver {
 
     readonly #resolver: Contract;
 
-    readonly #universal: null | Contract;
-
-    constructor(provider: AbstractProvider, address: string, name: string, universalResolver?: boolean) {
+    constructor(provider: Provider, address: string, name: string, wildcard?: boolean) {
         defineProperties<EnsResolver>(this, { provider, address, name });
 
-        if (universalResolver) {
-            this.#supports2544 = Promise.resolve(true);
-            this.#universal = createUniversal(provider, address);
-        } else {
-            this.#supports2544 = null;
-            this.#universal = null;
-        }
-
+        this.#supports2544 = typeof wildcard === 'boolean' ? Promise.resolve(wildcard) : null;
 
         this.#resolver = new Contract(address, [
             "function supportsInterface(bytes4) view returns (bool)",
@@ -198,6 +192,7 @@ export class EnsResolver {
             "function addr(bytes32, uint) view returns (bytes)",
             "function text(bytes32, string) view returns (string)",
             "function contenthash(bytes32) view returns (bytes)",
+            "function name(bytes32) view returns (string)",
         ], provider);
 
     }
@@ -251,12 +246,7 @@ export class EnsResolver {
         params.push({ enableCcipRead: true });
 
         try {
-            let result;
-            if (this.#universal) {
-                result = (await this.#universal.resolve(...params)).result;
-            } else {
-                result = await this.#resolver[funcName](...params);
-            }
+            let result = await this.#resolver[funcName](...params);
 
             if (fragment) {
                 return iface.decodeFunctionResult(fragment, result)[0];
@@ -271,59 +261,58 @@ export class EnsResolver {
         return null;
     }
 
+    async getName(): Promise<string> {
+        return this.#fetch("name(bytes32)");
+    }
+
+    async getRawAddress(coinType: bigint): Promise<HexString> {
+        return coinType == 60n
+            ? this.#fetch("addr(bytes32)")
+            : this.#fetch("addr(bytes32,uint)", [coinType]);
+    }
+
+    async getEvmAddress(chain: number): Promise<HexString> {
+        const data = await this.getRawAddress(coinTypeFromChain(chain));
+        return data === '0x' ? ZeroAddress : getAddress(data);
+    }
+
     /**
      *  Resolves to the address for %%coinType%% or null if the
      *  provided %%coinType%% has not been configured.
      */
-    async getAddress(coinType?: number): Promise<null | string> {
-        if (coinType == null) { coinType = 60; }
-        if (coinType === 60) {
-            try {
-                const result = await this.#fetch("addr(bytes32)");
-
-                // No address
-                if (result == null || result === ZeroAddress) { return null; }
-
-                return result;
-            } catch (error: any) {
-                if (isError(error, "CALL_EXCEPTION")) { return null; }
-                throw error;
+    async getAddress(coinType: BigNumberish = 60): Promise<null | string> {
+        coinType = getBigInt(coinType, "coinType");
+        if (isEVMCoinType(coinType)) {
+            const chain = chainFromCoinType(coinType);
+            if (chain == 1) {
+                try {
+                    return nullIfZero(await this.getEvmAddress(chain));
+                } catch (error: any) {
+                    if (isError(error, "CALL_EXCEPTION")) { return null; }
+                    throw error;
+                }
+            } else {
+                return nullIfZero(await this.getEvmAddress(chain));
             }
         }
-
-        // Try decoding its EVM canonical chain as an EVM chain address first
-        if (coinType >= 0 && coinType < 0x80000000) {
-            let ethCoinType = coinType + 0x80000000;
-
-            const data = await this.#fetch("addr(bytes32,uint)", [ ethCoinType ]);
-            if (isHexString(data, 20)) { return getAddress(data); }
-        }
-
-        let coinPlugin: null | MulticoinProviderPlugin = null;
-        for (const plugin of this.provider.plugins) {
-            if (!(plugin instanceof MulticoinProviderPlugin)) { continue; }
-            if (plugin.supportsCoinType(coinType)) {
-                coinPlugin = plugin;
-                break;
+        if (coinType <= Number.MAX_SAFE_INTEGER && this.provider instanceof AbstractProvider) {
+            const coinNum = Number(coinType);
+            for (const coinPlugin of this.provider.plugins) {
+                if (coinPlugin instanceof MulticoinProviderPlugin && coinPlugin.supportsCoinType(coinNum)) {
+                    const data = await this.getRawAddress(coinType);
+                    if (data === '0x') return null;
+                    const decoded = await coinPlugin.decodeAddress(coinNum, data);
+                    assert(decoded, `invalid coin data`, "UNSUPPORTED_OPERATION", {
+                        operation: `getAddress(${ coinType })`,
+                        info: { coinType, coinPlugin, data }
+                    });
+                    return decoded;
+                }
             }
         }
-
-        if (coinPlugin == null) { return null; }
-
-        // keccak256("addr(bytes32,uint256")
-        const data = await this.#fetch("addr(bytes32,uint)", [ coinType ]);
-
-        // No address
-        if (data == null || data === "0x") { return null; }
-
-        // Compute the address
-        const address = await coinPlugin.decodeAddress(coinType, data);
-
-        if (address != null) { return address; }
-
-        assert(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
+        assert(false, `unknown coin type`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${ coinType })`,
-            info: { coinType, data }
+            info: { coinType }
         });
     }
 
@@ -586,23 +575,29 @@ export class EnsResolver {
         return null;
     }
 
-    static async lookupAddress(provider: AbstractProvider, address: string, coinType?: number): Promise<null | string> {
-        address = getAddress(address);
-        if (coinType == null) { coinType = 60; }
+    static async lookupAddress(provider: Provider, address: string, coinType: BigNumberish = 60): Promise<null | string> {
+        coinType = getBigInt(coinType, "coinType");
+        if (isEVMCoinType(coinType)) {
+            address = getAddress(address);
+        }
 
         // We have a Universal resolver, use it
         const universal = await getUniversal(provider);
         if (universal) {
-            const result = await universal.reverse(address, coinType, {
-                enableCcipRead: true
-            });
-
-            return result.primary || null;
+            try {
+                const [primary] = await universal.reverse(address, coinType, {enableCcipRead: true});
+                if (primary == ensNormalize(primary)) {
+                    return primary;
+                }
+            } catch (ignored: unknown) {
+                // can we surface these errors?
+            }
+            return null;
         }
 
         // Use legacy reverse lookup
-
-        assert(coinType === 60, "lookupAddress coinType requires ENS Universal Resolver", "UNSUPPORTED_OPERATION", {
+        
+        assert(coinType === 60n, "lookupAddress coinType requires ENS Universal Resolver", "UNSUPPORTED_OPERATION", {
             operation: "lookupAddress"
         });
 
@@ -618,14 +613,10 @@ export class EnsResolver {
             const resolver = await ensContract.resolver(node);
             if (resolver == null || resolver === ZeroAddress) { return null; }
 
-            const resolverContract = new Contract(resolver, [
-                "function name(bytes32) view returns (string)"
-            ], provider);
-
-            const name = await resolverContract.name(node);
+            const name = await resolver.getName(node);
 
             // Failed forward resolution
-            const check = await provider.resolveName(name);
+            const check = await provider.resolveName(name, coinType);
             if (check !== address) { return null; }
             return name;
 
@@ -640,8 +631,6 @@ export class EnsResolver {
 
             throw error;
         }
-
-        return null;
     }
 
     /**
@@ -654,17 +643,13 @@ export class EnsResolver {
      *  more eth_call efficient, as it performs more on-chain, but is not
      *  the actual resolver, if for example the setters are required.
      */
-    static async fromName(provider: AbstractProvider, name: string, preferUniversal?: boolean): Promise<null | EnsResolver> {
+    static async fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver> {
 
         // We have a Universal Resolver, use it
         const universal = await getUniversal(provider);
         if (universal) {
-            if (preferUniversal) {
-                return new EnsResolver(provider, <string>universal.target, name, true);
-            }
-
-            const result = await universal.findResolver(dnsEncode(name));
-            return new EnsResolver(provider, result.resolver, name);
+            const result: RequireResolverResult = await universal.requireResolver(dnsEncode(name, 255));
+            return new EnsResolver(provider, result.resolver, name, result.extended);
         }
 
         let currentName = name;
@@ -694,16 +679,25 @@ export class EnsResolver {
     }
 }
 
-function createUniversal(provider: AbstractProvider, address: string): Contract {
+type RequireResolverResult = {
+	resolver: HexString;
+	extended: boolean;
+}
+
+function createUniversal(provider: Provider, address: string): Contract {
     return new Contract(address, [
+        "function requireResolver(bytes) view returns ((bytes name, uint256 offset, bytes32 node, address resolver, bool extended))", // RequireResolverResult
         "function findResolver(bytes) view returns (address resolver, bytes32 node, uint offset)",
         "function resolve(bytes name, bytes data) view returns (bytes result, address resolver)",
         "function reverse(bytes name, uint coinType) view returns (string primary, address resolver, address reverseResolver)",
-        "error HttpError(uint16 statusCode, string statusMessage)"
+        "error ResolverNotFound(bytes name)",
+        "error ResolverNotContract(bytes name, address resolver)",
+        "error ReverseAddressMismatch(string primary, bytes primaryAddress)",
+        "error HttpError(uint16 statusCode, string statusMessage)",
     ], provider);
 }
 
-async function getUniversal(provider: AbstractProvider): Promise<null | Contract> {
+async function getUniversal(provider: Provider): Promise<null | Contract> {
     const network = await provider.getNetwork();
 
     const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.plugins.network.Ens");
@@ -712,4 +706,8 @@ async function getUniversal(provider: AbstractProvider): Promise<null | Contract
     }
 
     return null;
+}
+
+function nullIfZero(x: HexString): HexString | null {
+    return x === ZeroAddress ? null: x;
 }
