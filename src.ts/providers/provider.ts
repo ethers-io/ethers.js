@@ -2085,6 +2085,11 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
     getTransactionReceipt(hash: string): Promise<null | TransactionReceipt>;
 
     /**
+     *  Resolves to all transaction receipts for %%blockTag%%.
+     */
+    getBlockReceipts(blockTag: BlockTag | string): Promise<Array<TransactionReceipt>>;
+
+    /**
      *  Resolves to the result returned by the executions of %%hash%%.
      *
      *  This is only supported on nodes with archive access and with

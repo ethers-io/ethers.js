@@ -245,6 +245,90 @@ describe("Test Provider Transaction operations", function() {
     });
 });
 
+describe("Test getBlockReceipts", function() {
+    forEach("test getBlockReceipts(block)", testBlock, (providerName, test) => {
+        // Skip blocks without transactions
+        if (test.transactions.length === 0) { return null; }
+
+        // Skip providers that may not support eth_getBlockReceipts
+        // Etherscan doesn't support many RPC methods
+        if (providerName === "EtherscanProvider") { return null; }
+
+        return async (provider) => {
+            // Only test with JsonRpcProvider instances
+            if (!(provider instanceof JsonRpcProvider)) { return; }
+
+            const block = await provider.getBlock(test.number);
+            assert.ok(block != null, "block != null");
+            if (block == null) { return; }
+
+            const receipts = await provider.getBlockReceipts(block.number);
+
+            // Verify receipt count matches transaction count
+            assert.equal(receipts.length, block.transactions.length,
+                "receipt count matches transaction count");
+
+            // Verify each receipt matches its transaction
+            for (let i = 0; i < receipts.length; i++) {
+                const receipt = receipts[i];
+                const txHash = block.transactions[i];
+
+                assert.equal(receipt.hash, txHash, `receipt[${ i }].hash matches`);
+                assert.equal(receipt.blockNumber, block.number, `receipt[${ i }].blockNumber`);
+                assert.equal(receipt.blockHash, block.hash, `receipt[${ i }].blockHash`);
+            }
+
+            // If we have testReceipt data for any of these transactions,
+            // validate against it
+            for (const receipt of receipts) {
+                // Find matching test receipt data
+                const networkName = (await provider.getNetwork()).name;
+                const testReceiptData = testReceipt[networkName as TestBlockchainNetwork]?.find(
+                    (tr) => tr.hash === receipt.hash
+                );
+
+                if (testReceiptData) {
+                    // Handle provider-specific quirks
+                    let adjustedTest = testReceiptData;
+                    if (providerName === "CloudflareProvider" ||
+                        providerName === "AnkrProvider" ||
+                        providerName === "PocketProvider" ||
+                        providerName === "BlockscoutProvider") {
+                        adjustedTest = Object.assign({ }, adjustedTest, { root: undefined });
+                    }
+
+                    assertReceipt(receipt, adjustedTest);
+                }
+            }
+        };
+    });
+
+    // Test with a specific block that has known receipts
+    it("test getBlockReceipts with known receipts", async function() {
+        this.timeout(60000);
+
+        const provider = getProvider("JsonRpcProvider", "mainnet");
+        if (provider == null || !(provider instanceof JsonRpcProvider)) { this.skip(); }
+        assert.ok(provider != null, "provider != null");
+        if (provider == null) { return; }
+
+        // Use a block number from testReceipt data
+        const testReceiptData = testReceipt.mainnet[0]; // legacy receipt
+        const block = await provider.getBlock(testReceiptData.blockNumber);
+        assert.ok(block != null, "block != null");
+        if (block == null) { return; }
+
+        const receipts = await provider.getBlockReceipts(testReceiptData.blockNumber);
+
+        // Find the specific receipt we're testing
+        const receipt = receipts.find((r) => r.hash === testReceiptData.hash);
+        assert.ok(receipt != null, "found expected receipt");
+
+        // Validate using existing assertReceipt
+        assertReceipt(receipt, testReceiptData);
+    });
+});
+
 describe("Test Networks", function() {
     const networks = [
         "mainnet", "sepolia", "holesky",
