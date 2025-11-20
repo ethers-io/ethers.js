@@ -8,6 +8,7 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Sepolia Testnet (``sepolia``)
  *  - Holesky Testnet (``holesky``)
+ *  - Hoodi Testnet (``hoodi``)
  *  - Ethereum Classic (``classic``)
  *  - Arbitrum (``arbitrum``)
  *  - Base (``base``)
@@ -40,6 +41,8 @@ function getUrl(name: string): string {
             return "https:/\/eth-sepolia.blockscout.com/api/eth-rpc";
         case "holesky":
             return "https:/\/eth-holesky.blockscout.com/api/eth-rpc";
+        case "hoodi":
+            return "https:/\/eth-hoodi.blockscout.com/api/eth-rpc";
 
         case "classic":
             return "https:/\/etc.blockscout.com/api/eth-rpc";

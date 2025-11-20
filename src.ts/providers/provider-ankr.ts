@@ -7,6 +7,7 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Hoodi Testnet (``hoodi``)
  *  - Arbitrum (``arbitrum``)
  *  - Base (``base``)
  *  - Base Goerlia Testnet (``base-goerli``)
@@ -45,6 +46,8 @@ function getHost(name: string): string {
             return "rpc.ankr.com/eth_goerli";
         case "sepolia":
             return "rpc.ankr.com/eth_sepolia";
+        case "hoodi":
+            return "rpc.ankr.com/eth_hoodi";
 
         case "arbitrum":
             return "rpc.ankr.com/arbitrum";
