@@ -178,14 +178,17 @@ export class EnsResolver {
     // For EIP-2544 names, the ancestor that provided the resolver
     #supports2544: null | Promise<boolean>;
 
-    readonly #resolver: Contract;
+    /**
+     *  The resolver contract.
+     */
+    readonly resolver: Contract;
 
     constructor(provider: Provider, address: string, name: string, wildcard?: boolean) {
         defineProperties<EnsResolver>(this, { provider, address, name });
 
         this.#supports2544 = typeof wildcard === 'boolean' ? Promise.resolve(wildcard) : null;
 
-        this.#resolver = new Contract(address, [
+        this.resolver = new Contract(address, [
             "function supportsInterface(bytes4) view returns (bool)",
             "function resolve(bytes, bytes) view returns (bytes)",
             "function addr(bytes32) view returns (address)",
@@ -204,7 +207,7 @@ export class EnsResolver {
         if (this.#supports2544 == null) {
             this.#supports2544 = (async () => {
                 try {
-                    return await this.#resolver.supportsInterface("0x9061b923");
+                    return await this.resolver.supportsInterface("0x9061b923");
                 } catch (error) {
                     // Wildcard resolvers must understand supportsInterface
                     // and return true.
@@ -223,7 +226,7 @@ export class EnsResolver {
 
     async #fetch(funcName: string, params?: Array<any>): Promise<null | any> {
         params = (params || []).slice();
-        const iface = this.#resolver.interface;
+        const iface = this.resolver.interface;
 
         // The first parameters is always the nodehash
         params.unshift(namehash(this.name))
@@ -246,7 +249,7 @@ export class EnsResolver {
         params.push({ enableCcipRead: true });
 
         try {
-            let result = await this.#resolver[funcName](...params);
+            let result = await this.resolver[funcName](...params);
 
             if (fragment) {
                 return iface.decodeFunctionResult(fragment, result)[0];
@@ -677,6 +680,10 @@ export class EnsResolver {
             currentName = currentName.split(".").slice(1).join(".");
         }
     }
+
+	static async getUniversal(provider: AbstractProvider) {
+		return getUniversal(provider);
+	}
 }
 
 type RequireResolverResult = {

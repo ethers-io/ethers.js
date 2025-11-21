@@ -77,7 +77,7 @@ type CcipArgs = CcipRequest & {
     extraData: HexString;
 };
 
-const ORDERED_CCIP_ARGS = ["sender", "urls", "calldata", "selector", "extraData"] as const;
+const ORDERED_CCIP_ARGS = ["sender", "urls", "calldata", "selector", "extraData"] as const satisfies (keyof CcipArgs)[];
 
 function toErrorArgs(args: CcipArgs) {
     return ORDERED_CCIP_ARGS.map(x => args[x]);
@@ -597,7 +597,9 @@ export class AbstractProvider implements Provider {
 
     async #ccipReadFetch({sender, calldata: data, urls}: CcipRequest, counter = { count: 0 }): Promise<HexString> {
         if (urls.includes(LOCAL_BATCH_GATEWAY_URL)) {
-            const requests: CcipRequest[] = LOCAL_BATCH_GATEWAY_ABI.decodeFunctionData('query', data);
+            const requests: CcipRequest[] = LOCAL_BATCH_GATEWAY_ABI.decodeFunctionData('query', data)[0].map(
+                (tuple: any) => ({ sender: tuple[0], urls: tuple[1], calldata: tuple[2]})
+            );
             this.emit("debug", { action: "sendCcipReadBatchRequest", requests });
             const failures: boolean[] = []
             const responses: HexString[] = []
@@ -619,7 +621,7 @@ export class AbstractProvider implements Provider {
                         }
                         responses[i] = LOCAL_BATCH_GATEWAY_ABI.encodeErrorResult('HttpError', [
                             error.info.statusCode,
-                            error.info.errorMessages?.join('\n') ?? error.info.errorMessage
+                            errorMessage
                         ]);
                     } else {
                         responses[i] = LOCAL_BATCH_GATEWAY_ABI.encodeErrorResult('Error', [errorMessage]);
@@ -629,7 +631,7 @@ export class AbstractProvider implements Provider {
             this.emit("debug", { action: "receiveCcipReadBatchResult", requests, failures, responses });
             return LOCAL_BATCH_GATEWAY_ABI.encodeFunctionResult('query', [failures, responses]);
         }
-        assert(++counter.count > MAX_CCIP_FETCHES, `too many fetches during CCIP fetch`, 'OFFCHAIN_FAULT');
+        assert(++counter.count < MAX_CCIP_FETCHES, `too many fetches during CCIP fetch`, 'OFFCHAIN_FAULT');
         sender = sender.toLowerCase();
         data = data.toLowerCase();
         const errorMessages: Array<string> = [ ];
