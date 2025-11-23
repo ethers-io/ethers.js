@@ -21,8 +21,9 @@ import type { FetchRequest } from "../utils/index.js";
 import type { BlockParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
 import type { Fragment } from "../abi/index.js";
 
-// Maximum page size for Otterscan queries - API limitation
-const OTS_MAX_PAGE_SIZE = 25;
+// Otterscan default maximum page size for queries
+// This can be changed: https://docs.otterscan.io/install/erigon-optional
+const OTS_DEFAULT_PAGE_SIZE = 25;
 
 // Formatted Otterscan receipt (extends standard receipt with timestamp)
 export interface OtsTransactionReceiptParams extends TransactionReceiptParams {
@@ -369,19 +370,24 @@ export class OtterscanProvider extends JsonRpcProvider {
     async *iterateAddressHistory(
         address: string,
         startBlock: number,
-        endBlock: number
+        endBlock: number,
+        pageSize: number = OTS_DEFAULT_PAGE_SIZE
     ): AsyncGenerator<{ tx: TransactionResponseParams; receipt: OtsTransactionReceiptParams }, void, unknown> {
         let currentBlock = startBlock;
 
         while (currentBlock <= endBlock) {
-            const page = await this.searchTransactionsAfter(address, currentBlock, OTS_MAX_PAGE_SIZE);
+            const page = await this.searchTransactionsAfter(address, currentBlock, pageSize);
 
-            // Filter and yield transactions within our range
-            for (let i = 0; i < page.txs.length; i++) {
+            // Sort by block number ascending (API returns descending)
+            const sortedIndices = page.txs
+                .map((tx, index) => ({ blockNum: Number(tx.blockNumber), index }))
+                .sort((a, b) => a.blockNum - b.blockNum)
+                .map(item => item.index);
+
+            for (const i of sortedIndices) {
                 const tx = page.txs[i];
                 const blockNum = Number(tx.blockNumber);
 
-                // Only yield transactions within the specified range
                 if (blockNum >= startBlock && blockNum <= endBlock) {
                     yield {
                         tx: tx,
@@ -389,7 +395,6 @@ export class OtterscanProvider extends JsonRpcProvider {
                     };
                 }
 
-                // Stop if we've gone past the end block
                 if (blockNum > endBlock) return;
             }
 
