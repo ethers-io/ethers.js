@@ -243,6 +243,14 @@ export interface TransactionRequest {
     kzg?: null | KzgLibraryLike;
 
     /**
+     *  The [[link-eip-7594]] BLOb Wrapper Version used for PeerDAS.
+     *
+     *  For networks that use EIP-7594, this property is required to
+     *  serialize the sidecar correctly.
+     */
+    blobWrapperVersion?: null | number;
+
+    /**
      *  The [[link-eip-7702]] authorizations (if any).
      */
     authorizationList?: null | Array<AuthorizationLike>;
@@ -405,6 +413,8 @@ export function copyRequest(req: TransactionRequest): PreparedTransactionRequest
     }
 
     if ("kzg" in req) { result.kzg = req.kzg; }
+
+    if ("blobWrapperVersion" in req) { result.blobWrapperVersion = req.blobWrapperVersion; }
 
     if ("blobs" in req && req.blobs) {
         result.blobs = req.blobs.map((b) => {

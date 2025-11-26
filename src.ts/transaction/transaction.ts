@@ -135,6 +135,14 @@ export interface TransactionLike<A = string> {
     kzg?: null | KzgLibraryLike;
 
     /**
+     *  The [[link-eip-7594]] BLOb Wrapper Version used for PeerDAS.
+     *
+     *  For networks that use EIP-7594, this property is required to
+     *  serialize the sidecar correctly.
+     */
+    blobWrapperVersion?: null | number;
+
+    /**
      *  The [[link-eip-7702]] authorizations (if any).
      */
     authorizationList?: null | Array<Authorization>;
@@ -156,7 +164,7 @@ export interface Blob {
      * A EIP-4844 BLOb uses a string proof, while EIP-7594 use an
      * array of strings representing the cells of the proof.
      */
-    proof: string | Array<string>;
+    proof: string;
 
     /**
      *  The BLOb commitment.
@@ -173,7 +181,7 @@ export interface Blob {
  */
 export type BlobLike = BytesLike | {
     data: BytesLike;
-    proof: BytesLike | Array<BytesLike>;
+    proof: BytesLike;
     commitment: BytesLike;
 };
 
@@ -574,6 +582,8 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
 
     let typeName = "3";
 
+    let blobWrapperVersion: null | number = null;
+
     let blobs: null | Array<Blob> = null;
 
     // Parse the network format
@@ -581,6 +591,7 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
         // EIP-4844 format with sidecar
 
         typeName = "3 (network format)";
+
         const fBlobs = fields[1], fCommits = fields[2], fProofs = fields[3];
         assertArgument(Array.isArray(fBlobs), "invalid network format: blobs not an array", "fields[1]", fBlobs);
         assertArgument(Array.isArray(fCommits), "invalid network format: commitments not an array", "fields[2]", fCommits);
@@ -606,9 +617,11 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
         const cellCount = 128;
 
         typeName = "3 (EIP-7594 network format)";
-        const fVersion = getNumber(fields[1]), fBlobs = fields[2], fCommits = fields[3], fProofs = fields[4];
 
-        assertArgument(fVersion === 1, `unsupported EIP-7594 network format version: ${ fVersion }`, "fields[1]", fVersion);
+        blobWrapperVersion = getNumber(fields[1]);
+        const fBlobs = fields[2], fCommits = fields[3], fProofs = fields[4];
+
+        assertArgument(blobWrapperVersion === 1, `unsupported EIP-7594 network format version: ${ blobWrapperVersion }`, "fields[1]", blobWrapperVersion);
         assertArgument(Array.isArray(fBlobs), "invalid EIP-7594 network format: blobs not an array", "fields[2]", fBlobs);
         assertArgument(Array.isArray(fCommits), "invalid EIP-7594 network format: commitments not an array", "fields[3]", fCommits);
         assertArgument(Array.isArray(fProofs), "invalid EIP-7594 network format: proofs not an array", "fields[4]", fProofs);
@@ -617,10 +630,15 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
 
         blobs = [ ];
         for (let i = 0; i < fBlobs.length; i++) {
+            const proof = [ ];
+            for (let j = 0; j < cellCount; j++) {
+                proof.push(fProofs[(i * cellCount) + j]);
+            }
+
             blobs.push({
                 data: fBlobs[i],
                 commitment: fCommits[i],
-                proof: fProofs.slice(cellCount * i, cellCount * (i + 1))
+                proof: concat(proof)
             });
         }
 
@@ -643,7 +661,8 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
         data:                  hexlify(fields[7]),
         accessList:            handleAccessList(fields[8], "accessList"),
         maxFeePerBlobGas:      handleUint(fields[9], "maxFeePerBlobGas"),
-        blobVersionedHashes:   fields[10]
+        blobVersionedHashes:   fields[10],
+        blobWrapperVersion
     };
 
     if (blobs) { tx.blobs = blobs; }
@@ -691,14 +710,18 @@ function _serializeEip4844(tx: Transaction, sig: null | Signature, blobs: null |
         if (blobs) {
 
             // Use EIP-7594
-            const useCells = (blobs.filter((b) => Array.isArray(b.proof)).length > 0);
-            if (useCells) {
-                const wrapperVersion = toBeArray(1);
+            if (tx.blobWrapperVersion != null) {
+                const wrapperVersion = toBeArray(tx.blobWrapperVersion);
 
-                const cellProofs: any = [ ];
+                // The number of cells per blob
+                const cellCount = 128;
+
+                const cellProofs: Array<Uint8Array> = [ ];
                 for (const { proof } of blobs) {
-                    for (const cp of (proof || [])) {
-                        cellProofs.push(cp);
+                    const p = getBytes(proof);
+                    const cellSize = p.length / cellCount;
+                    for (let i = 0; i < p.length; i += cellSize) {
+                        cellProofs.push(p.subarray(i, i + cellSize));
                     }
                 }
 
@@ -815,6 +838,7 @@ export class Transaction implements TransactionLike<string> {
     #kzg: null | KzgLibrary;
     #blobs: null | Array<Blob>;
     #auths: null | Array<Authorization>;
+    #blobWrapperVersion: null | number;
 
     /**
      *  The transaction type.
@@ -1120,14 +1144,7 @@ export class Transaction implements TransactionLike<string> {
             } else {
                 const data = hexlify(blob.data);
                 const commitment = hexlify(blob.commitment);
-
-                let proof: string | Array<string>;
-                if (Array.isArray(blob.proof)) {
-                    proof = blob.proof.map(hexlify);
-                } else {
-                    proof = hexlify(blob.proof);
-                }
-
+                const proof = hexlify(blob.proof);
                 blobs.push({ data, commitment, proof });
 
                 versionedHashes.push(getVersionedHash(1, commitment));
@@ -1145,6 +1162,13 @@ export class Transaction implements TransactionLike<string> {
         } else {
             this.#kzg = getKzgLibrary(kzg);
         }
+    }
+
+    get blobWrapperVersion(): null | number {
+        return this.#blobWrapperVersion;
+    }
+    set blobWrapperVersion(value: null | number) {
+        this.#blobWrapperVersion = value;
     }
 
     /**
@@ -1168,6 +1192,7 @@ export class Transaction implements TransactionLike<string> {
         this.#kzg = null;
         this.#blobs = null;
         this.#auths = null;
+        this.#blobWrapperVersion = null;
     }
 
     /**
@@ -1498,6 +1523,7 @@ export class Transaction implements TransactionLike<string> {
         // Make sure we assign the kzg before assigning blobs, which
         // require the library in the event raw blob data is provided.
         if (tx.kzg != null) { result.kzg = tx.kzg; }
+        if (tx.blobWrapperVersion != null) { result.blobWrapperVersion = tx.blobWrapperVersion; }
         if (tx.blobs != null) { result.blobs = tx.blobs; }
 
         if (tx.hash != null) {
