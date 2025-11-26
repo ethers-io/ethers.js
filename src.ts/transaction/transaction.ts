@@ -147,8 +147,20 @@ export interface TransactionLike<A = string> {
  *  KZG library.
  */
 export interface Blob {
+    /**
+     *  The blob data.
+     */
     data: string;
-    proof: string;
+
+    /**
+     * A EIP-4844 BLOb uses a string proof, while EIP-7594 use an
+     * array of strings representing the cells of the proof.
+     */
+    proof: string | Array<string>;
+
+    /**
+     *  The BLOb commitment.
+     */
     commitment: string;
 }
 
@@ -161,7 +173,7 @@ export interface Blob {
  */
 export type BlobLike = BytesLike | {
     data: BytesLike;
-    proof: BytesLike;
+    proof: BytesLike | Array<BytesLike>;
     commitment: BytesLike;
 };
 
@@ -566,6 +578,8 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
 
     // Parse the network format
     if (fields.length === 4 && Array.isArray(fields[0])) {
+        // EIP-4844 format with sidecar
+
         typeName = "3 (network format)";
         const fBlobs = fields[1], fCommits = fields[2], fProofs = fields[3];
         assertArgument(Array.isArray(fBlobs), "invalid network format: blobs not an array", "fields[1]", fBlobs);
@@ -580,6 +594,33 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
                 data: fBlobs[i],
                 commitment: fCommits[i],
                 proof: fProofs[i],
+            });
+        }
+
+        fields = fields[0];
+
+    } else if (fields.length === 5 && Array.isArray(fields[0])) {
+        // EIP-7594 format with sidecar
+
+        // The number of cells per proof
+        const cellCount = 128;
+
+        typeName = "3 (EIP-7594 network format)";
+        const fVersion = getNumber(fields[1]), fBlobs = fields[2], fCommits = fields[3], fProofs = fields[4];
+
+        assertArgument(fVersion === 1, `unsupported EIP-7594 network format version: ${ fVersion }`, "fields[1]", fVersion);
+        assertArgument(Array.isArray(fBlobs), "invalid EIP-7594 network format: blobs not an array", "fields[2]", fBlobs);
+        assertArgument(Array.isArray(fCommits), "invalid EIP-7594 network format: commitments not an array", "fields[3]", fCommits);
+        assertArgument(Array.isArray(fProofs), "invalid EIP-7594 network format: proofs not an array", "fields[4]", fProofs);
+        assertArgument(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
+        assertArgument(fBlobs.length * cellCount === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+
+        blobs = [ ];
+        for (let i = 0; i < fBlobs.length; i++) {
+            blobs.push({
+                data: fBlobs[i],
+                commitment: fCommits[i],
+                proof: fProofs.slice(cellCount * i, cellCount * (i + 1))
             });
         }
 
@@ -648,6 +689,32 @@ function _serializeEip4844(tx: Transaction, sig: null | Signature, blobs: null |
 
         // We have blobs; return the network wrapped format
         if (blobs) {
+
+            // Use EIP-7594
+            const useCells = (blobs.filter((b) => Array.isArray(b.proof)).length > 0);
+            if (useCells) {
+                const wrapperVersion = toBeArray(1);
+
+                const cellProofs: any = [ ];
+                for (const { proof } of blobs) {
+                    for (const cp of (proof || [])) {
+                        cellProofs.push(cp);
+                    }
+                }
+
+                return concat([
+                    "0x03",
+                    encodeRlp([
+                        fields,
+                        wrapperVersion,
+                        blobs.map((b) => b.data),
+                        blobs.map((b) => b.commitment),
+                        cellProofs
+                    ])
+                ]);
+            }
+
+            // Fall back onto classic EIP-4844 behavior
             return concat([
                 "0x03",
                 encodeRlp([
@@ -657,6 +724,7 @@ function _serializeEip4844(tx: Transaction, sig: null | Signature, blobs: null |
                     blobs.map((b) => b.proof),
                 ])
             ]);
+
         }
 
     }
@@ -1050,13 +1118,19 @@ export class Transaction implements TransactionLike<string> {
                 versionedHashes.push(getVersionedHash(1, commit));
 
             } else {
-                const commit = hexlify(blob.commitment);
-                blobs.push({
-                    data: hexlify(blob.data),
-                    commitment: commit,
-                    proof: hexlify(blob.proof)
-                });
-                versionedHashes.push(getVersionedHash(1, commit));
+                const data = hexlify(blob.data);
+                const commitment = hexlify(blob.commitment);
+
+                let proof: string | Array<string>;
+                if (Array.isArray(blob.proof)) {
+                    proof = blob.proof.map(hexlify);
+                } else {
+                    proof = hexlify(blob.proof);
+                }
+
+                blobs.push({ data, commitment, proof });
+
+                versionedHashes.push(getVersionedHash(1, commitment));
             }
         }
 
