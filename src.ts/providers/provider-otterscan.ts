@@ -378,7 +378,13 @@ export class OtterscanProvider extends JsonRpcProvider {
         while (currentBlock <= endBlock) {
             const page = await this.searchTransactionsAfter(address, currentBlock, pageSize);
 
-            // Sort by block number ascending (API returns descending)
+            // No more transactions available
+            if (!page.txs || page.txs.length === 0) {
+                break;
+            }
+
+            // searchTransactionsAfter returns transactions in descending block order
+            // Yield them in ascending order for consistency
             const sortedIndices = page.txs
                 .map((tx, index) => ({ blockNum: Number(tx.blockNumber), index }))
                 .sort((a, b) => a.blockNum - b.blockNum)
@@ -388,6 +394,7 @@ export class OtterscanProvider extends JsonRpcProvider {
                 const tx = page.txs[i];
                 const blockNum = Number(tx.blockNumber);
 
+                // Only yield transactions within the requested range
                 if (blockNum >= startBlock && blockNum <= endBlock) {
                     yield {
                         tx: tx,
@@ -395,25 +402,36 @@ export class OtterscanProvider extends JsonRpcProvider {
                     };
                 }
 
-                if (blockNum > endBlock) return;
+                // Stop if we've exceeded the end block
+                if (blockNum > endBlock) {
+                    return;
+                }
             }
 
             // Check if we've reached the end of available data
-            if (page.lastPage) break;
-
-            // Move to the next block after the last transaction we saw
-            const lastTx = page.txs[page.txs.length - 1];
-            if (!lastTx) break;
-
-            const nextBlock = Number(lastTx.blockNumber);
-
-            // Prevent infinite loops from malformed API responses
-            if (nextBlock === currentBlock) {
-                throw new Error(`Iterator stuck on block ${currentBlock}. API returned same block number.`);
+            if (page.lastPage) {
+                break;
             }
 
-            // Move cursor forward
-            currentBlock = nextBlock + 1;
+            // Advance cursor from the HIGHEST block in this page
+            // Since searchTransactionsAfter returns descending order, highest is at index 0
+            const highestBlockInPage = Number(page.txs[0].blockNumber);
+
+            // Guard against infinite loops
+            if (highestBlockInPage < currentBlock) {
+                throw new Error(
+                    `Iterator error: searchTransactionsAfter(${currentBlock}) returned max block ${highestBlockInPage}. ` +
+                        `This indicates an API issue or incorrect pagination.`
+                );
+            }
+
+            // Move cursor past the highest block we just processed
+            currentBlock = highestBlockInPage + 1;
+
+            // Stop if we've exceeded the end block
+            if (currentBlock > endBlock) {
+                break;
+            }
         }
     }
 }
