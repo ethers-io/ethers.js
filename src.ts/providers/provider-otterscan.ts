@@ -363,7 +363,7 @@ export class OtterscanProvider extends JsonRpcProvider {
     /**
      * Iterate through transaction history for an address between block ranges
      * @param address - Address to search
-     * @param startBlock - Starting block number (inclusive)
+     * @param startBlock - Starting block number (exclusive)
      * @param endBlock - Ending block number (inclusive)
      * @yields Object with tx and receipt for each transaction in ascending block order
      */
@@ -425,8 +425,9 @@ export class OtterscanProvider extends JsonRpcProvider {
                 );
             }
 
-            // Move cursor past the highest block we just processed
-            currentBlock = highestBlockInPage + 1;
+            // Move cursor to the highest block we just processed
+            // (searchTransactionsAfter is exclusive of startBlock)
+            currentBlock = highestBlockInPage;
 
             // Stop if we've exceeded the end block
             if (currentBlock > endBlock) {
