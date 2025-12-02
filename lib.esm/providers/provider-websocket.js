@@ -13,6 +13,8 @@ import { SocketProvider } from "./provider-socket.js";
 export class WebSocketProvider extends SocketProvider {
     #connect;
     #websocket;
+    #pingTimeout;
+    #keepAliveInterval;
     get websocket() {
         if (this.#websocket == null) {
             throw new Error("websocket closed");
@@ -37,6 +39,7 @@ export class WebSocketProvider extends SocketProvider {
             try {
                 await this._start();
                 this.resume();
+                this.#startKeepAlive();
             }
             catch (error) {
                 console.log("failed to start WebsocketProvider", error);
@@ -46,26 +49,59 @@ export class WebSocketProvider extends SocketProvider {
         this.websocket.onmessage = (message) => {
             this._processMessage(message.data);
         };
-        /*
-                this.websocket.onclose = (event) => {
-                    // @TODO: What event.code should we reconnect on?
-                    const reconnect = false;
-                    if (reconnect) {
-                        this.pause(true);
-                        if (this.#connect) {
-                            this.#websocket = this.#connect();
-                            this.#websocket.onopen = ...
-                            // @TODO: this requires the super class to rebroadcast; move it there
-                        }
-                        this._reconnect();
+        this.websocket.onclose = (event) => {
+            this.#stopKeepAlive();
+            this.pause(true);
+            if (this.#connect) {
+                this.#websocket = this.#connect();
+                this.#websocket.onopen = this.websocket.onopen;
+                this.#websocket.onmessage = this.websocket.onmessage;
+                this.#websocket.onclose = this.websocket.onclose;
+                this.#websocket.onping = this.websocket.onping;
+                this.#websocket.onpong = this.websocket.onpong;
+            }
+        };
+        this.websocket.onping = () => {
+            if (this.#pingTimeout) {
+                clearTimeout(this.#pingTimeout);
+                this.#pingTimeout = null;
+            }
+            this.websocket.pong();
+        };
+        this.websocket.onpong = () => {
+            if (this.#pingTimeout) {
+                clearTimeout(this.#pingTimeout);
+                this.#pingTimeout = null;
+            }
+        };
+    }
+    #startKeepAlive() {
+        this.#keepAliveInterval = setInterval(() => {
+            if (this.#websocket && this.#websocket.readyState === 1) {
+                this.#websocket.ping();
+                this.#pingTimeout = setTimeout(() => {
+                    if (this.#websocket) {
+                        this.#websocket.close();
                     }
-                };
-        */
+                }, 15000);
+            }
+        }, 7500);
+    }
+    #stopKeepAlive() {
+        if (this.#keepAliveInterval) {
+            clearInterval(this.#keepAliveInterval);
+            this.#keepAliveInterval = null;
+        }
+        if (this.#pingTimeout) {
+            clearTimeout(this.#pingTimeout);
+            this.#pingTimeout = null;
+        }
     }
     async _write(message) {
         this.websocket.send(message);
     }
     async destroy() {
+        this.#stopKeepAlive();
         if (this.#websocket != null) {
             this.#websocket.close();
             this.#websocket = null;
@@ -73,4 +109,3 @@ export class WebSocketProvider extends SocketProvider {
         super.destroy();
     }
 }
-//# sourceMappingURL=provider-websocket.js.map
