@@ -30,6 +30,27 @@ const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffff
 const inspect = Symbol.for("nodejs.util.inspect.custom");
 
 const BLOB_SIZE = 4096 * 32;
+const CELL_COUNT = 128;
+
+
+/**
+ *  Returns a BLOb proof as its cells for [[link-eip-7594]] BLOb.
+ *
+ *  The default %%cellCount%% is 128.
+ */
+export function splitBlobCells(_proof: BytesLike, cellCount?: number): Array<string> {
+    if (cellCount == null) { cellCount = CELL_COUNT; }
+
+    const cellProofs: Array<string> = [ ];
+    const proof = getBytes(_proof);
+
+    const cellSize = proof.length / cellCount;
+    for (let i = 0; i < proof.length; i += cellSize) {
+        cellProofs.push(hexlify(proof.subarray(i, i + cellSize)));
+    }
+
+    return cellProofs;
+}
 
 // The BLS Modulo; each field within a BLOb must be less than this
 //const BLOB_BLS_MODULO = BigInt("0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001");
@@ -613,9 +634,6 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
     } else if (fields.length === 5 && Array.isArray(fields[0])) {
         // EIP-7594 format with sidecar
 
-        // The number of cells per proof
-        const cellCount = 128;
-
         typeName = "3 (EIP-7594 network format)";
 
         blobWrapperVersion = getNumber(fields[1]);
@@ -626,13 +644,13 @@ function _parseEip4844(data: Uint8Array): TransactionLike {
         assertArgument(Array.isArray(fCommits), "invalid EIP-7594 network format: commitments not an array", "fields[3]", fCommits);
         assertArgument(Array.isArray(fProofs), "invalid EIP-7594 network format: proofs not an array", "fields[4]", fProofs);
         assertArgument(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
-        assertArgument(fBlobs.length * cellCount === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+        assertArgument(fBlobs.length * CELL_COUNT === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
 
         blobs = [ ];
         for (let i = 0; i < fBlobs.length; i++) {
             const proof = [ ];
-            for (let j = 0; j < cellCount; j++) {
-                proof.push(fProofs[(i * cellCount) + j]);
+            for (let j = 0; j < CELL_COUNT; j++) {
+                proof.push(fProofs[(i * CELL_COUNT) + j]);
             }
 
             blobs.push({
@@ -713,13 +731,10 @@ function _serializeEip4844(tx: Transaction, sig: null | Signature, blobs: null |
             if (tx.blobWrapperVersion != null) {
                 const wrapperVersion = toBeArray(tx.blobWrapperVersion);
 
-                // The number of cells per blob
-                const cellCount = 128;
-
                 const cellProofs: Array<Uint8Array> = [ ];
                 for (const { proof } of blobs) {
                     const p = getBytes(proof);
-                    const cellSize = p.length / cellCount;
+                    const cellSize = p.length / CELL_COUNT;
                     for (let i = 0; i < p.length; i += cellSize) {
                         cellProofs.push(p.subarray(i, i + cellSize));
                     }
