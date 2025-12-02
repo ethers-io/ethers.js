@@ -11,6 +11,7 @@ const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
 const BN_35 = BigInt(35);
 const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 const BLOB_SIZE = 4096 * 32;
 function getKzgLibrary(kzg) {
     const blobToKzgCommitment = (blob) => {
@@ -135,7 +136,7 @@ function formatAuthorizationList(value) {
             formatNumber(a.nonce, "nonce"),
             formatNumber(a.signature.yParity, "yParity"),
             toBeArray(a.signature.r),
-            toBeArray(a.signature.s)
+            toBeArray(a.signature._s)
         ];
     });
 }
@@ -236,7 +237,7 @@ function _serializeLegacy(tx, sig) {
     // Add the signature
     fields.push(toBeArray(v));
     fields.push(toBeArray(sig.r));
-    fields.push(toBeArray(sig.s));
+    fields.push(toBeArray(sig._s));
     return encodeRlp(fields);
 }
 function _parseEipSignature(tx, fields) {
@@ -341,9 +342,11 @@ function _serializeEip2930(tx, sig) {
 function _parseEip4844(data) {
     let fields = decodeRlp(getBytes(data).slice(1));
     let typeName = "3";
+    let blobWrapperVersion = null;
     let blobs = null;
     // Parse the network format
     if (fields.length === 4 && Array.isArray(fields[0])) {
+        // EIP-4844 format with sidecar
         typeName = "3 (network format)";
         const fBlobs = fields[1], fCommits = fields[2], fProofs = fields[3];
         assertArgument(Array.isArray(fBlobs), "invalid network format: blobs not an array", "fields[1]", fBlobs);
@@ -357,6 +360,33 @@ function _parseEip4844(data) {
                 data: fBlobs[i],
                 commitment: fCommits[i],
                 proof: fProofs[i],
+            });
+        }
+        fields = fields[0];
+    }
+    else if (fields.length === 5 && Array.isArray(fields[0])) {
+        // EIP-7594 format with sidecar
+        // The number of cells per proof
+        const cellCount = 128;
+        typeName = "3 (EIP-7594 network format)";
+        blobWrapperVersion = getNumber(fields[1]);
+        const fBlobs = fields[2], fCommits = fields[3], fProofs = fields[4];
+        assertArgument(blobWrapperVersion === 1, `unsupported EIP-7594 network format version: ${blobWrapperVersion}`, "fields[1]", blobWrapperVersion);
+        assertArgument(Array.isArray(fBlobs), "invalid EIP-7594 network format: blobs not an array", "fields[2]", fBlobs);
+        assertArgument(Array.isArray(fCommits), "invalid EIP-7594 network format: commitments not an array", "fields[3]", fCommits);
+        assertArgument(Array.isArray(fProofs), "invalid EIP-7594 network format: proofs not an array", "fields[4]", fProofs);
+        assertArgument(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
+        assertArgument(fBlobs.length * cellCount === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+        blobs = [];
+        for (let i = 0; i < fBlobs.length; i++) {
+            const proof = [];
+            for (let j = 0; j < cellCount; j++) {
+                proof.push(fProofs[(i * cellCount) + j]);
+            }
+            blobs.push({
+                data: fBlobs[i],
+                commitment: fCommits[i],
+                proof: concat(proof)
             });
         }
         fields = fields[0];
@@ -375,7 +405,8 @@ function _parseEip4844(data) {
         data: hexlify(fields[7]),
         accessList: handleAccessList(fields[8], "accessList"),
         maxFeePerBlobGas: handleUint(fields[9], "maxFeePerBlobGas"),
-        blobVersionedHashes: fields[10]
+        blobVersionedHashes: fields[10],
+        blobWrapperVersion
     };
     if (blobs) {
         tx.blobs = blobs;
@@ -415,6 +446,31 @@ function _serializeEip4844(tx, sig, blobs) {
         fields.push(toBeArray(sig.s));
         // We have blobs; return the network wrapped format
         if (blobs) {
+            // Use EIP-7594
+            if (tx.blobWrapperVersion != null) {
+                const wrapperVersion = toBeArray(tx.blobWrapperVersion);
+                // The number of cells per blob
+                const cellCount = 128;
+                const cellProofs = [];
+                for (const { proof } of blobs) {
+                    const p = getBytes(proof);
+                    const cellSize = p.length / cellCount;
+                    for (let i = 0; i < p.length; i += cellSize) {
+                        cellProofs.push(p.subarray(i, i + cellSize));
+                    }
+                }
+                return concat([
+                    "0x03",
+                    encodeRlp([
+                        fields,
+                        wrapperVersion,
+                        blobs.map((b) => b.data),
+                        blobs.map((b) => b.commitment),
+                        cellProofs
+                    ])
+                ]);
+            }
+            // Fall back onto classic EIP-4844 behavior
             return concat([
                 "0x03",
                 encodeRlp([
@@ -503,6 +559,7 @@ export class Transaction {
     #kzg;
     #blobs;
     #auths;
+    #blobWrapperVersion;
     /**
      *  The transaction type.
      *
@@ -655,6 +712,21 @@ export class Transaction {
     set signature(value) {
         this.#sig = (value == null) ? null : Signature.from(value);
     }
+    isValid() {
+        const sig = this.signature;
+        if (sig && !sig.isValid()) {
+            return false;
+        }
+        const auths = this.authorizationList;
+        if (auths) {
+            for (const auth of auths) {
+                if (!auth.signature.isValid()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     /**
      *  The access list.
      *
@@ -790,13 +862,11 @@ export class Transaction {
                 versionedHashes.push(getVersionedHash(1, commit));
             }
             else {
-                const commit = hexlify(blob.commitment);
-                blobs.push({
-                    data: hexlify(blob.data),
-                    commitment: commit,
-                    proof: hexlify(blob.proof)
-                });
-                versionedHashes.push(getVersionedHash(1, commit));
+                const data = hexlify(blob.data);
+                const commitment = hexlify(blob.commitment);
+                const proof = hexlify(blob.proof);
+                blobs.push({ data, commitment, proof });
+                versionedHashes.push(getVersionedHash(1, commitment));
             }
         }
         this.#blobs = blobs;
@@ -810,6 +880,12 @@ export class Transaction {
         else {
             this.#kzg = getKzgLibrary(kzg);
         }
+    }
+    get blobWrapperVersion() {
+        return this.#blobWrapperVersion;
+    }
+    set blobWrapperVersion(value) {
+        this.#blobWrapperVersion = value;
     }
     /**
      *  Creates a new Transaction with default values.
@@ -832,6 +908,7 @@ export class Transaction {
         this.#kzg = null;
         this.#blobs = null;
         this.#auths = null;
+        this.#blobWrapperVersion = null;
     }
     /**
      *  The transaction hash, if signed. Otherwise, ``null``.
@@ -858,7 +935,7 @@ export class Transaction {
         if (this.signature == null) {
             return null;
         }
-        return recoverAddress(this.unsignedHash, this.signature);
+        return recoverAddress(this.unsignedHash, this.signature.getCanonical());
     }
     /**
      *  The public key of the sender, if signed. Otherwise, ``null``.
@@ -867,7 +944,7 @@ export class Transaction {
         if (this.signature == null) {
             return null;
         }
-        return SigningKey.recoverPublicKey(this.unsignedHash, this.signature);
+        return SigningKey.recoverPublicKey(this.unsignedHash, this.signature.getCanonical());
     }
     /**
      *  Returns true if signed.
@@ -1054,6 +1131,56 @@ export class Transaction {
             accessList: this.accessList
         };
     }
+    [inspect]() {
+        return this.toString();
+    }
+    toString() {
+        const output = [];
+        const add = (key) => {
+            let value = this[key];
+            if (typeof (value) === "string") {
+                value = JSON.stringify(value);
+            }
+            output.push(`${key}: ${value}`);
+        };
+        if (this.type) {
+            add("type");
+        }
+        add("to");
+        add("data");
+        add("nonce");
+        add("gasLimit");
+        add("value");
+        if (this.chainId != null) {
+            add("chainId");
+        }
+        if (this.signature) {
+            add("from");
+            output.push(`signature: ${this.signature.toString()}`);
+        }
+        // @TODO: accessList
+        // @TODO: blobs (might make output huge; maybe just include a flag?)
+        const auths = this.authorizationList;
+        if (auths) {
+            const outputAuths = [];
+            for (const auth of auths) {
+                const o = [];
+                o.push(`address: ${JSON.stringify(auth.address)}`);
+                if (auth.nonce != null) {
+                    o.push(`nonce: ${auth.nonce}`);
+                }
+                if (auth.chainId != null) {
+                    o.push(`chainId: ${auth.chainId}`);
+                }
+                if (auth.signature) {
+                    o.push(`signature: ${auth.signature.toString()}`);
+                }
+                outputAuths.push(`Authorization { ${o.join(", ")} }`);
+            }
+            output.push(`authorizations: [ ${outputAuths.join(", ")} ]`);
+        }
+        return `Transaction { ${output.join(", ")} }`;
+    }
     /**
      *  Create a **Transaction** from a serialized transaction or a
      *  Transaction-like object.
@@ -1126,6 +1253,9 @@ export class Transaction {
         // require the library in the event raw blob data is provided.
         if (tx.kzg != null) {
             result.kzg = tx.kzg;
+        }
+        if (tx.blobWrapperVersion != null) {
+            result.blobWrapperVersion = tx.blobWrapperVersion;
         }
         if (tx.blobs != null) {
             result.blobs = tx.blobs;

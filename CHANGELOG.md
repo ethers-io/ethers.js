@@ -3,6 +3,18 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.16.0 (2025-12-01 22:19)
+---------------------------------
+
+  - Update Alchemy URL endpoint for mainnet ([#5052](https://github.com/ethers-io/ethers.js/issues/5052); [719b01d](https://github.com/ethers-io/ethers.js/commit/719b01d72dad7525d3837a561fa1c803a773b44e)).
+  - Fail on unsupported Etherscan networks immediately to better support the default provider ([94b333b](https://github.com/ethers-io/ethers.js/commit/94b333b982a5c4ecb74d10c2bdf0ff23584c37fa)).
+  - Added Filecoin network and Ankr endpoints ([#5038](https://github.com/ethers-io/ethers.js/issues/5038); [986e827](https://github.com/ethers-io/ethers.js/commit/986e8272270fa7394a0acd0c15b3bf407dbc1fc4)).
+  - Moved to better API for EIP-7594 PeerDAS ([#5062](https://github.com/ethers-io/ethers.js/issues/5062); [452b422](https://github.com/ethers-io/ethers.js/commit/452b4227a4587a514ff83dc8a591eb02a0ba2d56)).
+  - Added initial EIP-7594 PeerDAS support ([#5054](https://github.com/ethers-io/ethers.js/issues/5054), [#5062](https://github.com/ethers-io/ethers.js/issues/5062); [6d64889](https://github.com/ethers-io/ethers.js/commit/6d64889388824823369cd95193fbc857bc0ee15c)).
+  - Support RegExp engines with string length limitations ([#4967](https://github.com/ethers-io/ethers.js/issues/4967); [f0dfbe1](https://github.com/ethers-io/ethers.js/commit/f0dfbe1c35128d581d95cbf81637c438d7bee00a)).
+  - Added Transaction and Signature support for non-canonical S values ([#4223](https://github.com/ethers-io/ethers.js/issues/4223), [#5013](https://github.com/ethers-io/ethers.js/issues/5013); [855d727](https://github.com/ethers-io/ethers.js/commit/855d72728aaa1cc0ec427f56ab7929daead0b253)).
+  - Allow zero-width big-endian data for toBeHex and allow widths fo toBeArray ([#5025](https://github.com/ethers-io/ethers.js/issues/5025); [540f30c](https://github.com/ethers-io/ethers.js/commit/540f30cbec0e745df1a38d51286f2c6326829581)).
+
 ethers/v6.15.0 (2025-07-01 11:24)
 ---------------------------------
 

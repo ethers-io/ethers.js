@@ -165,6 +165,13 @@ export interface TransactionRequest {
      */
     kzg?: null | KzgLibraryLike;
     /**
+     *  The [[link-eip-7594]] BLOb Wrapper Version used for PeerDAS.
+     *
+     *  For networks that use EIP-7594, this property is required to
+     *  serialize the sidecar correctly.
+     */
+    blobWrapperVersion?: null | number;
+    /**
      *  The [[link-eip-7702]] authorizations (if any).
      */
     authorizationList?: null | Array<AuthorizationLike>;

@@ -54,7 +54,7 @@ export declare function toBeHex(_value: BigNumberish, _width?: Numeric): string;
 /**
  *  Converts %%value%% to a Big Endian Uint8Array.
  */
-export declare function toBeArray(_value: BigNumberish): Uint8Array;
+export declare function toBeArray(_value: BigNumberish, _width?: Numeric): Uint8Array;
 /**
  *  Returns a [[HexString]] for %%value%% safe to use as a //Quantity//.
  *

@@ -1,4 +1,5 @@
 import type { BigNumberish, BytesLike } from "../utils/index.js";
+declare const inspect: unique symbol;
 /**
  *  A SignatureLike
  *
@@ -103,6 +104,14 @@ export declare class Signature {
      */
     constructor(guard: any, r: string, s: string, v: 27 | 28);
     /**
+     *  Returns the canonical signature.
+     *
+     *  This is only necessary when dealing with legacy transaction which
+     *  did not enforce canonical S values (i.e. [[link-eip-2]]. Most
+     *  developers should never require this.
+     */
+    getCanonical(): Signature;
+    /**
      *  Returns a new identical [[Signature]].
      */
     clone(): Signature;
@@ -110,6 +119,8 @@ export declare class Signature {
      *  Returns a representation that is compatible with ``JSON.stringify``.
      */
     toJSON(): any;
+    [inspect](): string;
+    toString(): string;
     /**
      *  Compute the chain ID from the ``v`` in a legacy EIP-155 transactions.
      *
@@ -168,4 +179,5 @@ export declare class Signature {
      */
     static from(sig?: SignatureLike): Signature;
 }
+export {};
 //# sourceMappingURL=signature.d.ts.map

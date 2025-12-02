@@ -128,6 +128,9 @@ function copyRequest(req) {
     if ("kzg" in req) {
         result.kzg = req.kzg;
     }
+    if ("blobWrapperVersion" in req) {
+        result.blobWrapperVersion = req.blobWrapperVersion;
+    }
     if ("blobs" in req && req.blobs) {
         result.blobs = req.blobs.map((b) => {
             if ((0, index_js_1.isBytesLike)(b)) {

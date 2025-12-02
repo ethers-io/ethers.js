@@ -13,6 +13,8 @@
  *  - Base Sepolia Testnet (``base-sepolia``)
  *  - BNB (``bnb``)
  *  - BNB Testnet (``bnbt``)
+ *  - Filecoin (``filecoin``)
+ *  - Filecoin Calibration Testnet (``filecoin-calibration``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Optimism Sepolia Testnet (``optimism-sepolia``)

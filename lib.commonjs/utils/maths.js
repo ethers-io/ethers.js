@@ -175,6 +175,10 @@ function toBeHex(_value, _width) {
     }
     else {
         const width = getNumber(_width, "width");
+        // Special case when both value and width are 0 (see: #5025)
+        if (width === 0 && value === BN_0) {
+            return "0x";
+        }
         (0, errors_js_1.assert)(width * 2 >= result.length, `value exceeds width (${width} bytes)`, "NUMERIC_FAULT", {
             operation: "toBeHex",
             fault: "overflow",
@@ -191,14 +195,26 @@ exports.toBeHex = toBeHex;
 /**
  *  Converts %%value%% to a Big Endian Uint8Array.
  */
-function toBeArray(_value) {
+function toBeArray(_value, _width) {
     const value = getUint(_value, "value");
     if (value === BN_0) {
-        return new Uint8Array([]);
+        const width = (_width != null) ? getNumber(_width, "width") : 0;
+        return new Uint8Array(width);
     }
     let hex = value.toString(16);
     if (hex.length % 2) {
         hex = "0" + hex;
+    }
+    if (_width != null) {
+        const width = getNumber(_width, "width");
+        while (hex.length < (width * 2)) {
+            hex = "00" + hex;
+        }
+        (0, errors_js_1.assert)((width * 2) === hex.length, `value exceeds width (${width} bytes)`, "NUMERIC_FAULT", {
+            operation: "toBeArray",
+            fault: "overflow",
+            value: _value
+        });
     }
     const result = new Uint8Array(hex.length / 2);
     for (let i = 0; i < result.length; i++) {

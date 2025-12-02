@@ -340,6 +340,8 @@ function injectCommonNetworks() {
     registerEth("base-sepolia", 84532, {});
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, {});
+    registerEth("filecoin", 314, {});
+    registerEth("filecoin-calibration", 314159, {});
     registerEth("linea", 59144, { ensNetwork: 1 });
     registerEth("linea-goerli", 59140, {});
     registerEth("linea-sepolia", 59141, {});
