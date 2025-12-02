@@ -35,6 +35,7 @@ link-eip-2930 [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
 link-eip-4788 [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788)
 link-eip-4844 [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
 link-eip-6963 [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963)
+link-eip-7594 [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594)
 link-eip-7702 [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
 
 # Open Standards
