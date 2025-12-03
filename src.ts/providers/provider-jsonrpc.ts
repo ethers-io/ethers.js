@@ -958,6 +958,12 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
                     args: [ req.hash ]
                 };
 
+            case "getBlockReceipts":
+                return {
+                    method: "eth_getBlockReceipts",
+                    args: [ req.blockTag ]
+                };
+
             case "call":
                 return {
                     method: "eth_call",
