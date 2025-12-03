@@ -247,13 +247,13 @@ export function toBeArray(_value: BigNumberish, _width?: Numeric): Uint8Array {
 /**
  *  Returns a [[HexString]] for %%value%% safe to use as a //Quantity//.
  *
- *  A //Quantity// does not have and leading 0 values unless the value is
+ *  A //Quantity// does not have any leading 0 values unless the value is
  *  the literal value `0x0`. This is most commonly used for JSSON-RPC
  *  numeric values.
  */
-export function toQuantity(value: BytesLike | BigNumberish): string {
+export function toQuantity(value: BytesLike | BigNumberish, keepPadding = false): string {
     let result = hexlify(isBytesLike(value) ? value: toBeArray(value)).substring(2);
-    while (result.startsWith("0")) { result = result.substring(1); }
+    while (!keepPadding && result.startsWith("0")) { result = result.substring(1); }
     if (result === "") { result = "0"; }
     return "0x" + result;
 }
