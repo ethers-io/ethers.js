@@ -7,6 +7,7 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Hoodi Testnet (``hoodi``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
  *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
@@ -47,6 +48,8 @@ function getHost(name: string): string {
             return "eth-goerli.g.alchemy.com";
         case "sepolia":
             return "eth-sepolia.g.alchemy.com";
+        case "hoodi":
+            return "eth-hoodi.g.alchemy.com";
 
         case "arbitrum":
             return "arb-mainnet.g.alchemy.com";

@@ -8,6 +8,7 @@
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
  *  - Holesky Testnet (``holesky``)
+ *  - Hoodi Testnet (``hoodi``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
  *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
@@ -50,6 +51,8 @@ function getHost(name: string): string {
             return "ethers.ethereum-sepolia.quiknode.pro";
         case "holesky":
             return "ethers.ethereum-holesky.quiknode.pro";
+        case "hoodi":
+            return "ethers.ethereum-hoodi.quiknode.pro";
 
         case "arbitrum":
             return "ethers.arbitrum-mainnet.quiknode.pro";

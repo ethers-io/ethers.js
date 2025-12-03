@@ -389,7 +389,7 @@ function injectCommonNetworks(): void {
     registerEth("kovan", 42, { ensNetwork: 42 });
     registerEth("sepolia", 11155111, { ensNetwork: 11155111 });
     registerEth("holesky", 17000, { ensNetwork: 17000 });
-
+    registerEth("hoodi", 560048, { ensNetwork: 560048 });
     registerEth("classic", 61, { });
     registerEth("classicKotti", 6, { });
 

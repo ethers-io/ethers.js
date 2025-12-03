@@ -7,6 +7,7 @@
  *  - Ethereum Mainnet (``mainnet``)
  *  - Goerli Testnet (``goerli``)
  *  - Sepolia Testnet (``sepolia``)
+ *  - Hoodi Testnet (``hoodi``)
  *  - Arbitrum (``arbitrum``)
  *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
  *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
@@ -51,6 +52,8 @@ function getHost(name: string): string {
             return "goerli.infura.io";
         case "sepolia":
             return "sepolia.infura.io";
+        case "hoodi":
+            return "hoodi.infura.io";
 
         case "arbitrum":
             return "arbitrum-mainnet.infura.io";
