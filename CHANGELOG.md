@@ -3,9 +3,10 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
-ethers/v6.16.0 (2025-12-01 22:19)
+ethers/v6.16.0 (2025-12-02 19:47)
 ---------------------------------
 
+  - Added utility method to split EIP-7594 BLOb proofs into its cells ([88dfe96](https://github.com/ethers-io/ethers.js/commit/88dfe96cf56ad41d0a18b1ef8cac4209aa80905e)).
   - Update Alchemy URL endpoint for mainnet ([#5052](https://github.com/ethers-io/ethers.js/issues/5052); [719b01d](https://github.com/ethers-io/ethers.js/commit/719b01d72dad7525d3837a561fa1c803a773b44e)).
   - Fail on unsupported Etherscan networks immediately to better support the default provider ([94b333b](https://github.com/ethers-io/ethers.js/commit/94b333b982a5c4ecb74d10c2bdf0ff23584c37fa)).
   - Added Filecoin network and Ankr endpoints ([#5038](https://github.com/ethers-io/ethers.js/issues/5038); [986e827](https://github.com/ethers-io/ethers.js/commit/986e8272270fa7394a0acd0c15b3bf407dbc1fc4)).

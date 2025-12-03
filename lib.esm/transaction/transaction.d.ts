@@ -4,6 +4,12 @@ import type { SignatureLike } from "../crypto/index.js";
 import type { AccessList, AccessListish, Authorization, AuthorizationLike } from "./index.js";
 declare const inspect: unique symbol;
 /**
+ *  Returns a BLOb proof as its cells for [[link-eip-7594]] BLOb.
+ *
+ *  The default %%cellCount%% is 128.
+ */
+export declare function splitBlobCells(_proof: BytesLike, cellCount?: number): Array<string>;
+/**
  *  A **TransactionLike** is an object which is appropriate as a loose
  *  input for many operations which will populate missing properties of
  *  a transaction.

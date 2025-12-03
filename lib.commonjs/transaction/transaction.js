@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Transaction = void 0;
+exports.Transaction = exports.splitBlobCells = void 0;
 const index_js_1 = require("../address/index.js");
 const addresses_js_1 = require("../constants/addresses.js");
 const index_js_2 = require("../crypto/index.js");
@@ -16,6 +16,25 @@ const BN_35 = BigInt(35);
 const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 const inspect = Symbol.for("nodejs.util.inspect.custom");
 const BLOB_SIZE = 4096 * 32;
+const CELL_COUNT = 128;
+/**
+ *  Returns a BLOb proof as its cells for [[link-eip-7594]] BLOb.
+ *
+ *  The default %%cellCount%% is 128.
+ */
+function splitBlobCells(_proof, cellCount) {
+    if (cellCount == null) {
+        cellCount = CELL_COUNT;
+    }
+    const cellProofs = [];
+    const proof = (0, index_js_3.getBytes)(_proof);
+    const cellSize = proof.length / cellCount;
+    for (let i = 0; i < proof.length; i += cellSize) {
+        cellProofs.push((0, index_js_3.hexlify)(proof.subarray(i, i + cellSize)));
+    }
+    return cellProofs;
+}
+exports.splitBlobCells = splitBlobCells;
 function getKzgLibrary(kzg) {
     const blobToKzgCommitment = (blob) => {
         if ("computeBlobProof" in kzg) {
@@ -369,8 +388,6 @@ function _parseEip4844(data) {
     }
     else if (fields.length === 5 && Array.isArray(fields[0])) {
         // EIP-7594 format with sidecar
-        // The number of cells per proof
-        const cellCount = 128;
         typeName = "3 (EIP-7594 network format)";
         blobWrapperVersion = (0, index_js_3.getNumber)(fields[1]);
         const fBlobs = fields[2], fCommits = fields[3], fProofs = fields[4];
@@ -379,12 +396,12 @@ function _parseEip4844(data) {
         (0, index_js_3.assertArgument)(Array.isArray(fCommits), "invalid EIP-7594 network format: commitments not an array", "fields[3]", fCommits);
         (0, index_js_3.assertArgument)(Array.isArray(fProofs), "invalid EIP-7594 network format: proofs not an array", "fields[4]", fProofs);
         (0, index_js_3.assertArgument)(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
-        (0, index_js_3.assertArgument)(fBlobs.length * cellCount === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+        (0, index_js_3.assertArgument)(fBlobs.length * CELL_COUNT === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
         blobs = [];
         for (let i = 0; i < fBlobs.length; i++) {
             const proof = [];
-            for (let j = 0; j < cellCount; j++) {
-                proof.push(fProofs[(i * cellCount) + j]);
+            for (let j = 0; j < CELL_COUNT; j++) {
+                proof.push(fProofs[(i * CELL_COUNT) + j]);
             }
             blobs.push({
                 data: fBlobs[i],
@@ -452,12 +469,10 @@ function _serializeEip4844(tx, sig, blobs) {
             // Use EIP-7594
             if (tx.blobWrapperVersion != null) {
                 const wrapperVersion = (0, index_js_3.toBeArray)(tx.blobWrapperVersion);
-                // The number of cells per blob
-                const cellCount = 128;
                 const cellProofs = [];
                 for (const { proof } of blobs) {
                     const p = (0, index_js_3.getBytes)(proof);
-                    const cellSize = p.length / cellCount;
+                    const cellSize = p.length / CELL_COUNT;
                     for (let i = 0; i < p.length; i += cellSize) {
                         cellProofs.push(p.subarray(i, i + cellSize));
                     }
