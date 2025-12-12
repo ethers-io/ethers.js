@@ -26,6 +26,7 @@ export interface TestBlockchainBlock {
     excessBlobGas?: bigint;
     parentBeaconBlockRoot?: string;
     stateRoot?: string;
+    transactionsRoot?: string;
     receiptsRoot?: string;
 }
 export interface TestBlockchainTransaction {

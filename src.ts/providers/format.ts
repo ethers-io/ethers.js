@@ -124,6 +124,7 @@ const _formatBlock = object({
     gasUsed: getBigInt,
 
     stateRoot: allowNull(formatHash, null),
+    transactionsRoot: allowNull(formatHash, null),
     receiptsRoot: allowNull(formatHash, null),
 
     blobGasUsed: allowNull(getBigInt, null),

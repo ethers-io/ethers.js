@@ -364,6 +364,10 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     readonly stateRoot: null | string;
     /**
+     *  The hash of the transactions trie.
+     */
+    readonly transactionsRoot: null | string;
+    /**
      *  The hash of the transaction receipts trie.
      */
     readonly receiptsRoot: null | string;

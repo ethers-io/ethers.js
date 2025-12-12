@@ -118,6 +118,7 @@ const _formatBlock = object({
     gasLimit: index_js_4.getBigInt,
     gasUsed: index_js_4.getBigInt,
     stateRoot: allowNull(formatHash, null),
+    transactionsRoot: allowNull(formatHash, null),
     receiptsRoot: allowNull(formatHash, null),
     blobGasUsed: allowNull(index_js_4.getBigInt, null),
     excessBlobGas: allowNull(index_js_4.getBigInt, null),

@@ -204,6 +204,10 @@ export class Block {
      */
     stateRoot;
     /**
+     *  The hash of the transactions trie.
+     */
+    transactionsRoot;
+    /**
      *  The hash of the transaction receipts trie.
      */
     receiptsRoot;
@@ -271,6 +275,7 @@ export class Block {
             extraData: block.extraData,
             baseFeePerGas: getValue(block.baseFeePerGas),
             stateRoot: block.stateRoot,
+            transactionsRoot: block.transactionsRoot,
             receiptsRoot: block.receiptsRoot,
         });
     }
@@ -310,7 +315,7 @@ export class Block {
      *  Returns a JSON-friendly value.
      */
     toJSON() {
-        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
+        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, transactionsRoot, receiptsRoot, timestamp, transactions } = this;
         return {
             _type: "Block",
             baseFeePerGas: toJson(baseFeePerGas),
@@ -321,7 +326,7 @@ export class Block {
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
             hash, miner, prevRandao, nonce, number, parentHash, timestamp,
-            parentBeaconBlockRoot, stateRoot, receiptsRoot,
+            parentBeaconBlockRoot, stateRoot, transactionsRoot, receiptsRoot,
             transactions,
         };
     }
