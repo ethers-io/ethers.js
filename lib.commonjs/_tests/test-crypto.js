@@ -475,4 +475,30 @@ describe("tests ECDH shared secret", function () {
         });
     }
 });
+describe("test signature", function () {
+    const tests = [
+        {
+            digest: '0x366710e3f7ad249e5ef32d5962042290562e3ca8554ca623aa803bd6690f4865',
+            signature: {
+                v: 28,
+                r: '0x051f9c2a849cc18c1548e9672432fd7b8f9fd372883a2832337b7dfb1af8c71f',
+                s: '0x34d373c80b53ce524e70a1b8a473a896d79d72ba8235490d4c09c10270bc038e',
+            },
+            address: '0x4a6f6B9fF1fc974096f9063a45Fd12bD5B928AD1',
+        }
+    ];
+    tests.forEach(({ digest, signature, address }) => {
+        it(`recovers the address: ${digest}`, function () {
+            assert_1.default.equal((0, index_js_2.recoverAddress)(digest, signature), address);
+        });
+        it(`recovers the address when bound: ${digest}`, function () {
+            const bound = index_js_2.Signature.from(signature).bind();
+            assert_1.default.equal((0, index_js_2.recoverAddress)(digest, bound), address);
+            const bound27 = index_js_2.Signature.from(signature).bind(27);
+            assert_1.default.equal((0, index_js_2.recoverAddress)(digest, bound27), address);
+            const bound28 = index_js_2.Signature.from(signature).bind(28);
+            assert_1.default.equal((0, index_js_2.recoverAddress)(digest, bound28), address);
+        });
+    });
+});
 //# sourceMappingURL=test-crypto.js.map

@@ -7143,7 +7143,7 @@ class SigningKey {
     static recoverPublicKey(digest, signature) {
         assertArgument(dataLength(digest) === 32, "invalid digest length", "digest", digest);
         const sig = Signature.from(signature);
-        let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig.s])));
+        let secpSig = secp256k1.Signature.fromCompact(getBytesCopy(concat([sig.r, sig._s])));
         secpSig = secpSig.addRecoveryBit(sig.yParity);
         const pubKey = secpSig.recoverPublicKey(getBytesCopy(digest));
         assertArgument(pubKey != null, "invalid signature for digest", "signature", signature);
