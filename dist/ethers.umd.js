@@ -6808,6 +6808,23 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             return result;
         }
         /**
+         * Returns the bound signature, binding `v`
+         *
+         * Bound signatures are valid for ecrecover but may be invalid for transactions.
+         * They are used for ERC-XXXX signature compression.
+         */
+        bind(v = 27) {
+            if (this.#v === v) {
+                return this;
+            }
+            const s = BN_N - BigInt(this._s);
+            const bound = new Signature(_guard$3, this.r, toUint256(s), v);
+            if (this.networkV) {
+                bound.#networkV = this.networkV;
+            }
+            return bound;
+        }
+        /**
          *  Returns a new identical [[Signature]].
          */
         clone() {

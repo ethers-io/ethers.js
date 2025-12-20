@@ -112,6 +112,13 @@ export declare class Signature {
      */
     getCanonical(): Signature;
     /**
+     * Returns the bound signature, binding `v`
+     *
+     * Bound signatures are valid for ecrecover but may be invalid for transactions.
+     * They are used for ERC-XXXX signature compression.
+     */
+    bind(v?: 27 | 28): Signature;
+    /**
      *  Returns a new identical [[Signature]].
      */
     clone(): Signature;
