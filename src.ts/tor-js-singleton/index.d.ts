@@ -1,4 +1,4 @@
-type Bytes<N extends number = number> = globalThis.Uint8Array<ArrayBuffer> & {
+type Bytes<N extends number = number> = globalThis.Uint8Array & {
     length: N;
 };
 
