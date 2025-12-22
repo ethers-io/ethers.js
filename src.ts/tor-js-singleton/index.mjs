@@ -3674,1102 +3674,6 @@ var CertificateRequest2 = class _CertificateRequest2 {
   }
 };
 
-// src/hazae41/result/catched.ts
-var Catched = class _Catched extends Error {
-  #class = _Catched;
-  name = this.#class.name;
-  static wrap(cause) {
-    if (cause instanceof Error) return cause;
-    return new _Catched(void 0, { cause });
-  }
-};
-
-// src/hazae41/result/err.ts
-var Err = class _Err {
-  #inner;
-  /**
-   * A failure
-   * @param inner
-   */
-  constructor(inner) {
-    this.#inner = inner;
-  }
-  /**
-   * Create an empty `Err`
-   * @returns `Err(void)`
-   */
-  static void() {
-    return new _Err(void 0);
-  }
-  /**
-   * Create an `Err`
-   * @param inner
-   * @returns `Err(inner)`
-   */
-  static create(inner) {
-    return new _Err(inner);
-  }
-  /**
-   * Create an `Err` with an `Error` inside
-   * @param message
-   * @param options
-   * @returns `Err<Error>`
-   */
-  static error(message, options) {
-    return new _Err(new Error(message, options));
-  }
-  get inner() {
-    return this.#inner;
-  }
-  [Symbol.dispose]() {
-    this.#inner[Symbol.dispose]();
-  }
-  async [Symbol.asyncDispose]() {
-    await this.#inner[Symbol.asyncDispose]();
-  }
-  /**
-   * Type guard for `Ok`
-   * @returns `true` if `Ok`, `false` if `Err`
-   */
-  isOk() {
-    return false;
-  }
-  /**
-   * Returns true if the result is `Ok` and the value inside of it matches a predicate
-   * @param _okPredicate
-   * @returns `true` if `Ok` and `await okPredicate(this.inner)`, `false` otherwise
-   */
-  isOkAnd(_okPredicate) {
-    return false;
-  }
-  /**
-   * Returns true if the result is `Ok` and the value inside of it matches a predicate
-   * @param _okPredicate
-   * @returns `true` if `Ok` and `await okPredicate(this.inner)`, `false` otherwise
-   */
-  isOkAndSync(_okPredicate) {
-    return false;
-  }
-  /**
-   * Type guard for `Err`
-   * @returns `true` if `Err`, `false` if `Ok`
-   */
-  isErr() {
-    return true;
-  }
-  /**
-   * Returns true if the result is `Err` and the value inside of it matches a predicate
-   * @param errPredicate
-   * @returns `true` if `Err` and `await errPredicate(this.inner)`, `false` otherwise
-   */
-  async isErrAnd(errPredicate) {
-    return await errPredicate(this.inner);
-  }
-  /**
-   * Returns true if the result is `Err` and the value inside of it matches a predicate
-   * @param errPredicate
-   * @returns `true` if `Err` and `await errPredicate(this.inner)`, `false` otherwise
-   */
-  isErrAndSync(errPredicate) {
-    return errPredicate(this.inner);
-  }
-  /**
-   * Compile-time safely get Ok's inner type
-   * @returns `this.inner`
-   * @throws if `this` is `Err`
-   */
-  get() {
-    throw new Error();
-  }
-  /**
-   * Compile-time safely get Err's inner type
-   * @returns `this.inner`
-   * @throws if `this` is `Ok`
-   */
-  getErr() {
-    return this.inner;
-  }
-  /**
-   * Get inner type
-   * @returns
-   */
-  getAny() {
-    return this.inner;
-  }
-  /**
-   * Transform `Result<T, E>` into `Option<T>`
-   * @returns `Some(this.inner)` if `Ok`, `None` if `Err`
-   */
-  ok() {
-    return new None();
-  }
-  /**
-   * Transform `Result<T, E>` into `Option<E>`
-   * @returns `Some(this.inner)` if `Err`, `None` if `Ok`
-   */
-  err() {
-    return new Some(this.inner);
-  }
-  /**
-   * Returns an iterator over the possibly contained value
-   * @yields `this.inner` if `Ok`
-   */
-  // eslint-disable-next-line require-yield
-  *[Symbol.iterator]() {
-    return;
-  }
-  /**
-   * Transform `Result<T,E>` into `[T,E]`
-   * @returns `[this.inner, undefined]` if `Ok`, `[undefined, this.inner]` if `Err`
-   */
-  split() {
-    return [void 0, this.inner];
-  }
-  /**
-   * Returns true if the result is an `Ok` value containing the given value
-   * @param _value
-   * @returns `true` if `Ok` and `this.inner === value`, `false` otherwise
-   */
-  contains(_value) {
-    return false;
-  }
-  /**
-   * Returns true if the result is an `Err` value containing the given value
-   * @param value
-   * @returns `true` if `Err` and `this.inner === value`, `false` otherwise
-   */
-  containsErr(value) {
-    return this.inner === value;
-  }
-  /**
-   * Get the inner value or throw to the closest `Result.unthrow`
-   * @param thrower The thrower from `Result.unthrow`
-   * @returns `this.inner` if `Ok`
-   * @throws `undefined` if `Err`
-   * @see Result.unthrow
-   * @see Result.unthrowSync
-   */
-  throw(thrower) {
-    thrower(this);
-    throw this;
-  }
-  /**
-   * Get the inner value if Ok or throw the inner error
-   * @returns `this.inner` if `Ok`
-   * @throws `this.inner` if `Err`
-   */
-  getOrThrow() {
-    throw this.inner;
-  }
-  /**
-   * Get the inner error if Err or throw the inner value
-   * @returns `this.inner` if `Err`
-   * @throws `this.inner` if `Ok`
-   */
-  getErrOrThrow() {
-    return this.inner;
-  }
-  /**
-   * Get the inner value if Ok or null if Err
-   * @returns `this.inner` if `Ok`, `null` if `Err`
-   */
-  getOrNull() {
-    return null;
-  }
-  /**
-   * Get the inner error if Err or null if Ok
-   * @returns `this.inner` if `Err`, `null` if `Ok`
-   */
-  getErrOrNull() {
-    return this.inner;
-  }
-  /**
-   * Get the inner value or a default one
-   * @param value
-   * @returns `this.inner` if `Ok`, `value` if `Err`
-   */
-  getOr(value) {
-    return value;
-  }
-  /**
-   * Get the inner value or compute a default one from the inner error
-   * @param errMapper
-   * @returns `this.inner` if `Ok`, `await errMapper(this.inner)` if `Err`
-   * @throws if `await errMapper(this.inner)` throws
-   */
-  async getOrElse(errMapper) {
-    return await errMapper(this.inner);
-  }
-  /**
-   * Get the inner value or compute a default one from the inner error
-   * @param errMapper
-   * @returns `this.inner` if `Ok`, `errMapper(this.inner)` if `Err`
-   * @throws if `errMapper(this.inner)` throws
-   */
-  getOrElseSync(errMapper) {
-    return errMapper(this.inner);
-  }
-  /**
-   * Get this if Ok or throw the inner error
-   * @returns
-   */
-  checkOrThrow() {
-    throw this.inner;
-  }
-  /**
-   * Get this if Err or throw the inner value
-   * @returns
-   */
-  checkErrOrThrow() {
-    return this;
-  }
-  /**
-   * Get this if Ok or return null
-   * @returns
-   */
-  checkOrNull() {
-    return null;
-  }
-  /**
-   * Get this if Err or return null
-   * @returns
-   */
-  checkErrOrNull() {
-    return this;
-  }
-  /**
-   * Transform Result<Promise<T>, E> into Promise<Result<T, E>>
-   * @returns `await this.inner` if `Ok`, `this` if `Err`
-   */
-  await() {
-    return this;
-  }
-  /**
-   * Transform Result<T, Promise<E>> into Promise<Result<T, E>>
-   * @returns `await this.inner` if `Err`, `this` if `Ok`
-   */
-  async awaitErr() {
-    return new _Err(await this.inner);
-  }
-  /**
-   * Transform Result<Promise<T>, Promise<E>> into Promise<Result<T, E>>
-   * @returns `await this.inner`
-   */
-  async awaitAll() {
-    return await this.awaitErr();
-  }
-  /**
-   * Transform `Result<T, E>` into `Result<void, E>`
-   * @returns `Ok<void>` if `Ok<T>`, `Err<E>` if `E<E>`
-   */
-  clear() {
-    return this;
-  }
-  /**
-   * Transform `Result<T, E>` into `Result<T, void>`
-   * @returns `Ok<T>` if `Ok<T>`, `Err<void>` if `E<E>`
-   */
-  clearErr() {
-    return _Err.void();
-  }
-  /**
-   * Calls the given callback with the inner value if `Ok`
-   * @param _okCallback
-   * @returns `this`
-   */
-  inspect(_okCallback) {
-    return this;
-  }
-  /**
-   * Calls the given callback with the inner value if `Ok`
-   * @param _okCallback
-   * @returns `this`
-   */
-  inspectSync(_okCallback) {
-    return this;
-  }
-  /**
-   * Calls the given callback with the inner value if `Err`
-   * @param errCallback
-   * @returns `this`
-   */
-  async inspectErr(errCallback) {
-    await errCallback(this.inner);
-    return this;
-  }
-  /**
-   * Calls the given callback with the inner value if `Err`
-   * @param errCallback
-   * @returns `this`
-   */
-  inspectErrSync(errCallback) {
-    errCallback(this.inner);
-    return this;
-  }
-  /**
-   * Return a new `Ok` but with the given `inner`
-   * @param _inner
-   * @returns `Ok(inner)` if `Ok`, `this` if `Err`
-   */
-  set(_inner) {
-    return this;
-  }
-  /**
-   * Return a new `Err` but with the given `inner`
-   * @param inner
-   * @returns `Err(inner)` if `Err`, `this` if `Ok`
-   */
-  setErr(inner) {
-    return new _Err(inner);
-  }
-  /**
-   * Map the inner value into another
-   * @param _okMapper
-   * @returns `Ok(await okMapper(this.inner))` if `Ok`, `this` if `Err`
-   * @throws if `await okMapper(this.inner)` throws
-   */
-  map(_okMapper) {
-    return this;
-  }
-  /**
-   * Map the inner value into another
-   * @param _okMapper
-   * @returns `Ok(okMapper(this.inner))` if `Ok`, `this` if `Err`
-   * @throws if `okMapper(this.inner)` throws
-   */
-  mapSync(_okMapper) {
-    return this;
-  }
-  /**
-   * Map the inner error into another
-   * @param errMapper
-   * @returns `Err(await errMapper(this.inner))` if `Err`, `this` if `Ok`
-   * @throws if `await errMapper(this.inner)` throws
-   */
-  async mapErr(errMapper) {
-    return new _Err(await errMapper(this.inner));
-  }
-  /**
-   * Map the inner error into another
-   * @param errMapper
-   * @returns `Err(errMapper(this.inner))` if `Err`, `this` if `Ok`
-   * @throws if `errMapper(this.inner)` throws
-   */
-  mapErrSync(errMapper) {
-    return new _Err(errMapper(this.inner));
-  }
-  /**
-   * Map the inner value into another, or a default one
-   * @param value
-   * @param _okMapper
-   * @returns `await okMapper(this.inner)` if `Ok`, `value` if `Err`
-   * @throws if `await okMapper(this.inner)` throws
-   */
-  mapOr(value, _okMapper) {
-    return value;
-  }
-  /**
-   * Map the inner value into another, or a default one
-   * @param value
-   * @param _okMapper
-   * @returns `okMapper(this.inner)` if `Ok`, `value` if `Err`
-   * @throws if `okMapper(this.inner)` throws
-   */
-  mapOrSync(value, _okMapper) {
-    return value;
-  }
-  /**
-   * Map the inner value into another, or a default one
-   * @param errMapper
-   * @param _okMapper
-   * @returns `await okMapper(this.inner)` if `Ok`, `await errMapper(this.inner)` if `Err`
-   * @throws if `await okMapper(this.inner)` or `await errMapper(this.inner)` throws
-   */
-  async mapOrElse(errMapper, _okMapper) {
-    return await errMapper(this.inner);
-  }
-  /**
-   * Map the inner value into another, or a default one
-   * @param errMapper
-   * @param _okMapper
-   * @returns `okMapper(this.inner)` if `Ok`, `errMapper(this.inner)` if `Err`
-   * @throws if `okMapper(this.inner)` or `errMapper(this.inner)` throws
-   */
-  mapOrElseSync(errMapper, _okMapper) {
-    return errMapper(this.inner);
-  }
-  /**
-   * Return `value` if `Ok`, return `this` if `Err`
-   * @param _value
-   * @returns `value` if `Ok`, `this` if `Err`
-   */
-  and(_value) {
-    return this;
-  }
-  /**
-   * Return `await okMapper(this.inner)` if `Ok`, return `this` if `Err`
-   * @param _okMapper
-   * @returns `await okMapper(this.inner)` if `Ok`, `this` if `Err`
-   * @throws if `await okMapper(this.inner)` throws
-   */
-  andThen(_okMapper) {
-    return this;
-  }
-  /**
-   * Return `okMapper(this.inner)` if `Ok`, return `this` if `Err`
-   * @param _okMapper
-   * @returns `okMapper(this.inner)` if `Ok`, `this` if `Err`
-   * @throws if `okMapper(this.inner)` throws
-   */
-  andThenSync(_okMapper) {
-    return this;
-  }
-  /**
-   * Return `value` if `Err`, return `this` if `Ok`
-   * @param value
-   * @returns `value` if `Err`, `this` if `Ok`
-   */
-  or(value) {
-    return value;
-  }
-  /**
-   * Return `await errMapper(this.inner)` if `Err`, return `this` if `Ok`
-   * @param errMapper
-   * @returns `await errMapper(this.inner)` if `Err`, `this` if `Ok`
-   * @throws if `await errMapper(this.inner)` throws
-   */
-  async orElse(errMapper) {
-    return await errMapper(this.inner);
-  }
-  /**
-   * Return `errMapper(this.inner)` if `Err`, return `this` if `Ok`
-   * @param errMapper
-   * @returns `errMapper(this.inner)` if `Err`, `this` if `Ok`
-   * @throws if `errMapper(this.inner)` throws
-   */
-  orElseSync(errMapper) {
-    return errMapper(this.inner);
-  }
-  /**
-   * Transform Result<Result<T, E1>, E2> into Result<T, E1 | E2>
-   * @param result
-   * @returns `this` if `Err`, `this.inner` if `Ok`
-   */
-  flatten() {
-    return this;
-  }
-};
-
-// src/hazae41/result/ok.ts
-var Ok = class _Ok {
-  #inner;
-  /**
-   * A success
-   * @param inner
-   */
-  constructor(inner) {
-    this.#inner = inner;
-  }
-  /**
-   * Create an empty `Ok`
-   * @returns `Ok(void)`
-   */
-  static void() {
-    return new _Ok(void 0);
-  }
-  /**
-   * Create an `Ok`
-   * @param inner
-   * @returns `Ok(inner)`
-   */
-  static create(inner) {
-    return new _Ok(inner);
-  }
-  get inner() {
-    return this.#inner;
-  }
-  [Symbol.dispose]() {
-    this.#inner[Symbol.dispose]();
-  }
-  async [Symbol.asyncDispose]() {
-    await this.#inner[Symbol.asyncDispose]();
-  }
-  /**
-   * Type guard for `Ok`
-   * @returns `true` if `Ok`, `false` if `Err`
-   */
-  isOk() {
-    return true;
-  }
-  /**
-   * Returns true if the result is `Ok` and the value inside of it matches a predicate
-   * @param okPredicate
-   * @returns `true` if `Ok` and `await okPredicate(this.inner)`, `false` otherwise
-   */
-  async isOkAnd(okPredicate) {
-    return await okPredicate(this.inner);
-  }
-  /**
-   * Returns true if the result is `Ok` and the value inside of it matches a predicate
-   * @param okPredicate
-   * @returns `true` if `Ok` and `await okPredicate(this.inner)`, `false` otherwise
-   */
-  isOkAndSync(okPredicate) {
-    return okPredicate(this.inner);
-  }
-  /**
-   * Type guard for `Err`
-   * @returns `true` if `Err`, `false` if `Ok`
-   */
-  isErr() {
-    return false;
-  }
-  /**
-   * Returns true if the result is `Err` and the value inside of it matches a predicate
-   * @param _errPredicate
-   * @returns `true` if `Err` and `await errPredicate(this.inner)`, `false` otherwise
-   */
-  isErrAnd(_errPredicate) {
-    return false;
-  }
-  /**
-   * Returns true if the result is `Err` and the value inside of it matches a predicate
-   * @param _errPredicate
-   * @returns `true` if `Err` and `await errPredicate(this.inner)`, `false` otherwise
-   */
-  isErrAndSync(_errPredicate) {
-    return false;
-  }
-  /**
-   * Compile-time safely get Ok's inner type
-   * @returns `this.inner`
-   * @throws if `this` is `Err`
-   */
-  get() {
-    return this.inner;
-  }
-  /**
-   * Compile-time safely get Err's inner type
-   * @returns `this.inner`
-   * @throws if `this` is `Ok`
-   */
-  getErr() {
-    throw new Error();
-  }
-  /**
-   * Get inner type
-   * @returns
-   */
-  getAny() {
-    return this.inner;
-  }
-  /**
-   * Transform `Result<T, E>` into `Option<T>`
-   * @returns `Some(this.inner)` if `Ok`, `None` if `Err`
-   */
-  ok() {
-    return new Some(this.inner);
-  }
-  /**
-   * Transform `Result<T, E>` into `Option<E>`
-   * @returns `Some(this.inner)` if `Err`, `None` if `Ok`
-   */
-  err() {
-    return new None();
-  }
-  /**
-   * Returns an iterator over the possibly contained value
-   * @yields `this.inner` if `Ok`
-   */
-  *[Symbol.iterator]() {
-    yield this.inner;
-  }
-  /**
-   * Transform `Result<T,E>` into `[T,E]`
-   * @returns `[this.inner, undefined]` if `Ok`, `[undefined, this.inner]` if `Err`
-   */
-  split() {
-    return [this.inner, void 0];
-  }
-  /**
-   * Returns true if the result is an `Ok` value containing the given value
-   * @param value
-   * @returns `true` if `Ok` and `this.inner === value`, `false` otherwise
-   */
-  contains(value) {
-    return this.inner === value;
-  }
-  /**
-   * Returns true if the result is an `Err` value containing the given value
-   * @param _value
-   * @returns `true` if `Err` and `this.inner === value`, `false` otherwise
-   */
-  containsErr(_value) {
-    return false;
-  }
-  /**
-   * Just like `unwrap` but it throws to the closest `Result.unthrow`
-   * @returns `this.inner` if `Ok`
-   * @throws `this` if `Err`
-   * @see Result.unthrow
-   * @see Result.unthrowSync
-   */
-  throw(_thrower) {
-    return this.inner;
-  }
-  /**
-   * Get the inner value if Ok or throw the inner error
-   * @returns `this.inner` if `Ok`
-   * @throws `this.inner` if `Err`
-   */
-  getOrThrow() {
-    return this.inner;
-  }
-  /**
-   * Get the inner error if Err or throw the inner value
-   * @returns `this.inner` if `Err`
-   * @throws `this.inner` if `Ok`
-   */
-  getErrOrThrow() {
-    throw this.inner;
-  }
-  /**
-   * Get the inner value if Ok or null if Err
-   * @returns `this.inner` if `Ok`, `null` if `Err`
-   */
-  getOrNull() {
-    return this.inner;
-  }
-  /**
-   * Get the inner error if Err or null if Ok
-   * @returns `this.inner` if `Err`, `null` if `Ok`
-   */
-  getErrOrNull() {
-    return null;
-  }
-  /**
-   * Get the inner value or a default one
-   * @param _value
-   * @returns `this.inner` if `Ok`, `value` if `Err`
-   */
-  getOr(_value) {
-    return this.inner;
-  }
-  /**
-   * Get the inner value or compute a default one from the inner error
-   * @param _errMapper
-   * @returns `this.inner` if `Ok`, `await errMapper(this.inner)` if `Err`
-   * @throws if `await errMapper(this.inner)` throws
-   */
-  getOrElse(_errMapper) {
-    return this.inner;
-  }
-  /**
-   * Get the inner value or compute a default one from the inner error
-   * @param _errMapper
-   * @returns `this.inner` if `Ok`, `errMapper(this.inner)` if `Err`
-   * @throws if `errMapper(this.inner)` throws
-   */
-  getOrElseSync(_errMapper) {
-    return this.inner;
-  }
-  /**
-   * Get this if Ok or throw the inner error
-   * @returns
-   */
-  checkOrThrow() {
-    return this;
-  }
-  /**
-   * Get this if Err or throw the inner value
-   */
-  checkErrOrThrow() {
-    throw this.inner;
-  }
-  /**
-   * Get this if Ok or return null
-   * @returns
-   */
-  checkOrNull() {
-    return this;
-  }
-  /**
-   * Get this if Err or return null
-   */
-  checkErrOrNull() {
-    return null;
-  }
-  /**
-   * Transform Result<Promise<T>, E> into Promise<Result<T, E>>
-   * @returns `await this.inner` if `Ok`, `this` if `Err`
-   */
-  async await() {
-    return new _Ok(await this.inner);
-  }
-  /**
-   * Transform Result<T, Promise<E>> into Promise<Result<T, E>>
-   * @returns `await this.inner` if `Err`, `this` if `Ok`
-   */
-  awaitErr() {
-    return this;
-  }
-  /**
-   * Transform Result<Promise<T>, Promise<E>> into Promise<Result<T, E>>
-   * @returns `await this.inner`
-   */
-  async awaitAll() {
-    return await this.await();
-  }
-  /**
-   * Transform `Result<T, E>` into `Result<void, E>`
-   * @returns `Ok<void>` if `Ok<T>`, `Err<E>` if `E<E>`
-   */
-  clear() {
-    return _Ok.void();
-  }
-  /**
-   * Transform `Result<T, E>` into `Result<T, void>`
-   * @returns `Ok<T>` if `Ok<T>`, `Err<void>` if `E<E>`
-   */
-  clearErr() {
-    return this;
-  }
-  /**
-   * Calls the given callback with the inner value if `Ok`
-   * @param okCallback
-   * @returns `this`
-   */
-  async inspect(okCallback) {
-    await okCallback(this.inner);
-    return this;
-  }
-  /**
-   * Calls the given callback with the inner value if `Ok`
-   * @param okCallback
-   * @returns `this`
-   */
-  inspectSync(okCallback) {
-    okCallback(this.inner);
-    return this;
-  }
-  /**
-   * Calls the given callback with the inner value if `Err`
-   * @param _errCallback
-   * @returns `this`
-   */
-  inspectErr(_errCallback) {
-    return this;
-  }
-  /**
-   * Calls the given callback with the inner value if `Err`
-   * @param _errCallback
-   * @returns `this`
-   */
-  inspectErrSync(_errCallback) {
-    return this;
-  }
-  /**
-   * Return a new `Ok` but with the given `inner`
-   * @param inner
-   * @returns `Ok(inner)` if `Ok`, `this` if `Err`
-   */
-  set(inner) {
-    return new _Ok(inner);
-  }
-  /**
-   * Return a new `Err` but with the given `inner`
-   * @param _inner
-   * @returns `Err(inner)` if `Err`, `this` if `Ok`
-   */
-  setErr(_inner) {
-    return this;
-  }
-  /**
-   * Map the inner value into another
-   * @param okMapper
-   * @returns `Ok(await okMapper(this.inner))` if `Ok`, `this` if `Err`
-   * @throws if `await okMapper(this.inner)` throws
-   */
-  async map(okMapper) {
-    return new _Ok(await okMapper(this.inner));
-  }
-  /**
-   * Map the inner value into another
-   * @param okMapper
-   * @returns `Ok(okMapper(this.inner))` if `Ok`, `this` if `Err`
-   * @throws if `okMapper(this.inner)` throws
-   */
-  mapSync(okMapper) {
-    return new _Ok(okMapper(this.inner));
-  }
-  /**
-   * Map the inner error into another
-   * @param _errMapper
-   * @returns `Err(await errMapper(this.inner))` if `Err`, `this` if `Ok`
-   * @throws if `await errMapper(this.inner)` throws
-   */
-  mapErr(_errMapper) {
-    return this;
-  }
-  /**
-   * Map the inner error into another
-   * @param _errMapper
-   * @returns `Err(errMapper(this.inner))` if `Err`, `this` if `Ok`
-   * @throws if `errMapper(this.inner)` throws
-   */
-  mapErrSync(_errMapper) {
-    return this;
-  }
-  /**
-   * Map the inner value into another, or a default one
-   * @param _value
-   * @param okMapper
-   * @returns `await okMapper(this.inner)` if `Ok`, `value` if `Err`
-   * @throws if `await okMapper(this.inner)` throws
-   */
-  async mapOr(_value, okMapper) {
-    return await okMapper(this.inner);
-  }
-  /**
-   * Map the inner value into another, or a default one
-   * @param _value
-   * @param okMapper
-   * @returns `okMapper(this.inner)` if `Ok`, `value` if `Err`
-   * @throws if `okMapper(this.inner)` throws
-   */
-  mapOrSync(_value, okMapper) {
-    return okMapper(this.inner);
-  }
-  /**
-   * Map the inner value into another, or a default one
-   * @param _errMapper
-   * @param okMapper
-   * @returns `await okMapper(this.inner)` if `Ok`, `await errMapper(this.inner)` if `Err`
-   * @throws if `await okMapper(this.inner)` or `await errMapper(this.inner)` throws
-   */
-  async mapOrElse(_errMapper, okMapper) {
-    return await okMapper(this.inner);
-  }
-  /**
-   * Map the inner value into another, or a default one
-   * @param _errMapper
-   * @param okMapper
-   * @returns `okMapper(this.inner)` if `Ok`, `errMapper(this.inner)` if `Err`
-   * @throws if `okMapper(this.inner)` or `errMapper(this.inner)` throws
-   */
-  mapOrElseSync(_errMapper, okMapper) {
-    return okMapper(this.inner);
-  }
-  /**
-   * Return `value` if `Ok`, return `this` if `Err`
-   * @param value
-   * @returns `value` if `Ok`, `this` if `Err`
-   */
-  and(value) {
-    return value;
-  }
-  /**
-   * Return `await okMapper(this.inner)` if `Ok`, return `this` if `Err`
-   * @param okMapper
-   * @returns `await okMapper(this.inner)` if `Ok`, `this` if `Err`
-   * @throws if `await okMapper(this.inner)` throws
-   */
-  async andThen(okMapper) {
-    return await okMapper(this.inner);
-  }
-  /**
-   * Return `okMapper(this.inner)` if `Ok`, return `this` if `Err`
-   * @param okMapper
-   * @returns `okMapper(this.inner)` if `Ok`, `this` if `Err`
-   * @throws if `okMapper(this.inner)` throws
-   */
-  andThenSync(okMapper) {
-    return okMapper(this.inner);
-  }
-  /**
-   * Return `value` if `Err`, return `this` if `Ok`
-   * @param _value
-   * @returns `value` if `Err`, `this` if `Ok`
-   */
-  or(_value) {
-    return this;
-  }
-  /**
-   * Return `await errMapper(this.inner)` if `Err`, return `this` if `Ok`
-   * @param _errMapper
-   * @returns `await errMapper(this.inner)` if `Err`, `this` if `Ok`
-   * @throws if `await errMapper(this.inner)` throws
-   */
-  orElse(_errMapper) {
-    return this;
-  }
-  /**
-   * Return `errMapper(this.inner)` if `Err`, return `this` if `Ok`
-   * @param _errMapper
-   * @returns `errMapper(this.inner)` if `Err`, `this` if `Ok`
-   * @throws if `errMapper(this.inner)` throws
-   */
-  orElseSync(_errMapper) {
-    return this;
-  }
-  /**
-   * Transform Result<Result<T, E1>, E2> into Result<T, E1 | E2>
-   * @param result
-   * @returns `this` if `Err`, `this.inner` if `Ok`
-   */
-  flatten() {
-    return this.inner;
-  }
-};
-
-// src/hazae41/result/result.ts
-var Result;
-((Result2) => {
-  function from(inner) {
-    if (inner instanceof Error) return new Err(inner);
-    else return new Ok(inner);
-  }
-  Result2.from = from;
-  function assert2(value) {
-    return value ? Ok.void() : Err.void();
-  }
-  Result2.assert = assert2;
-  function rewrap(wrapper) {
-    try {
-      return new Ok(wrapper.getOrThrow());
-    } catch (error) {
-      return new Err(error);
-    }
-  }
-  Result2.rewrap = rewrap;
-  async function unthrow(callback) {
-    let ref;
-    try {
-      return await callback((e) => ref = e);
-    } catch (e) {
-      if (ref !== void 0) return ref;
-      throw e;
-    }
-  }
-  Result2.unthrow = unthrow;
-  function unthrowSync(callback) {
-    let ref;
-    try {
-      return callback((e) => ref = e);
-    } catch (e) {
-      if (ref !== void 0) return ref;
-      throw e;
-    }
-  }
-  Result2.unthrowSync = unthrowSync;
-  async function runAndWrap(callback) {
-    try {
-      return new Ok(await callback());
-    } catch (e) {
-      return new Err(e);
-    }
-  }
-  Result2.runAndWrap = runAndWrap;
-  function runAndWrapSync(callback) {
-    try {
-      return new Ok(callback());
-    } catch (e) {
-      return new Err(e);
-    }
-  }
-  Result2.runAndWrapSync = runAndWrapSync;
-  async function runAndDoubleWrap(callback) {
-    try {
-      return new Ok(await callback());
-    } catch (e) {
-      return new Err(Catched.wrap(e));
-    }
-  }
-  Result2.runAndDoubleWrap = runAndDoubleWrap;
-  function runAndDoubleWrapSync(callback) {
-    try {
-      return new Ok(callback());
-    } catch (e) {
-      return new Err(Catched.wrap(e));
-    }
-  }
-  Result2.runAndDoubleWrapSync = runAndDoubleWrapSync;
-  async function runOrWrap(callback) {
-    try {
-      return await callback();
-    } catch (e) {
-      return new Err(e);
-    }
-  }
-  Result2.runOrWrap = runOrWrap;
-  function runOrWrapSync(callback) {
-    try {
-      return callback();
-    } catch (e) {
-      return new Err(e);
-    }
-  }
-  Result2.runOrWrapSync = runOrWrapSync;
-  async function runOrDoubleWrap(callback) {
-    try {
-      return await callback();
-    } catch (e) {
-      return new Err(Catched.wrap(e));
-    }
-  }
-  Result2.runOrDoubleWrap = runOrDoubleWrap;
-  function runOrDoubleWrapSync(callback) {
-    try {
-      return callback();
-    } catch (e) {
-      return new Err(Catched.wrap(e));
-    }
-  }
-  Result2.runOrDoubleWrapSync = runOrDoubleWrapSync;
-  function all(iterable) {
-    return collect(iterate(iterable));
-  }
-  Result2.all = all;
-  function maybeAll(iterable) {
-    return maybeCollect(maybeIterate(iterable));
-  }
-  Result2.maybeAll = maybeAll;
-  function* iterate(iterable) {
-    for (const result of iterable) {
-      if (result.isOk()) yield result.get();
-      else return result;
-    }
-    return Ok.void();
-  }
-  Result2.iterate = iterate;
-  function* maybeIterate(iterable) {
-    for (const result of iterable) {
-      if (result == null) return;
-      else if (result.isOk()) yield result.get();
-      else return result;
-    }
-    return Ok.void();
-  }
-  Result2.maybeIterate = maybeIterate;
-  function collect(iterator) {
-    const array = new Array();
-    let result = iterator.next();
-    for (; result.done !== true; result = iterator.next())
-      array.push(result.value);
-    return result.value.set(array);
-  }
-  Result2.collect = collect;
-  function maybeCollect(iterator) {
-    const array = new Array();
-    let result = iterator.next();
-    for (; result.done !== true; result = iterator.next())
-      array.push(result.value);
-    if (result.value == null) return;
-    return result.value.set(array);
-  }
-  Result2.maybeCollect = maybeCollect;
-})(Result || (Result = {}));
-
 // src/hazae41/option/mods/option/none.ts
 var NoneError = class extends Error {
   constructor() {
@@ -4871,37 +3775,6 @@ var None = class _None {
    */
   getOrElseSync(noneCallback) {
     return noneCallback();
-  }
-  /**
-   * Transform `Option<T>` into `Result<T, NoneError>`
-   * @returns `Ok(this.inner)` if `Some`, `Err(NoneError)` if `None`
-   */
-  ok() {
-    return new Err(new NoneError());
-  }
-  /**
-   * Transform `Option<T>` into `Result<T, E>`
-   * @param error
-   * @returns `Ok(this.inner)` if `Some`, `Err(error)` if `None`
-   */
-  okOr(error) {
-    return new Err(error);
-  }
-  /**
-   * Transforms the `Option<T>` into a `Result<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`
-   * @param noneCallback
-   * @returns `Ok(this.inner)` if `Some`, `Err(await noneCallback())` is `None`
-   */
-  async okOrElse(noneCallback) {
-    return new Err(await noneCallback());
-  }
-  /**
-   * Transforms the `Option<T>` into a `Result<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`
-   * @param noneCallback
-   * @returns `Ok(this.inner)` if `Some`, `Err(noneCallback())` is `None`
-   */
-  okOrElseSync(noneCallback) {
-    return new Err(noneCallback());
   }
   /**
    * Returns `None` if the option is `None`, otherwise calls `somePredicate` with the wrapped value
@@ -5164,37 +4037,6 @@ var Some = class _Some {
    */
   getOrElseSync(_noneCallback) {
     return this.inner;
-  }
-  /**
-   * Transform `Option<T>` into `Result<T, NoneError>`
-   * @returns `Ok(this.inner)` if `Some`, `Err(NoneError)` if `None`
-   */
-  ok() {
-    return new Ok(this.inner);
-  }
-  /**
-   * Transform `Option<T>` into `Result<T, E>`
-   * @param error
-   * @returns `Ok(this.inner)` if `Some`, `Err(error)` if `None`
-   */
-  okOr(_error) {
-    return new Ok(this.inner);
-  }
-  /**
-   * Transforms the `Option<T>` into a `Result<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`
-   * @param noneCallback
-   * @returns `Ok(this.inner)` if `Some`, `Err(await noneCallback())` is `None`
-   */
-  async okOrElse(_noneCallback) {
-    return new Ok(this.inner);
-  }
-  /**
-   * Transforms the `Option<T>` into a `Result<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`
-   * @param noneCallback
-   * @returns `Ok(this.inner)` if `Some`, `Err(noneCallback())` is `None`
-   */
-  okOrElseSync(_noneCallback) {
-    return new Ok(this.inner);
   }
   /**
    * Returns `None` if the option is `None`, otherwise calls `somePredicate` with the wrapped value
@@ -6768,38 +5610,6 @@ var ReadableServerKeyExchange2;
   }
 });
 
-// src/hazae41/asn1/mods/index.ts
-var mods_exports = {};
-__export(mods_exports, {
-  BitString: () => BitString,
-  Boolean: () => Boolean2,
-  Constructed: () => Constructed,
-  DER: () => DER,
-  DERCursor: () => DERCursor,
-  DERTriplet: () => DERTriplet,
-  GeneralizedTime: () => GeneralizedTime,
-  IA5String: () => IA5String,
-  Integer: () => Integer,
-  InvalidLengthError: () => InvalidLengthError,
-  InvalidTypeError: () => InvalidTypeError,
-  InvalidValueError: () => InvalidValueError,
-  Length: () => Length,
-  NotAnOID: () => NotAnOID,
-  Null: () => Null,
-  ObjectIdentifier: () => ObjectIdentifier,
-  OctetString: () => OctetString,
-  OpaqueTriplet: () => OpaqueTriplet,
-  PrintableString: () => PrintableString,
-  Sequence: () => Sequence,
-  Set: () => Set2,
-  TeletexString: () => TeletexString,
-  Type: () => Type,
-  UTCTime: () => UTCTime,
-  UTF8String: () => UTF8String,
-  Unimplemented: () => Unimplemented,
-  VLQ: () => VLQ
-});
-
 // src/hazae41/asn1/mods/errors/errors.ts
 var Unimplemented = class _Unimplemented extends Error {
   #class = _Unimplemented;
@@ -7552,14 +6362,6 @@ var VLQ = class _VLQ {
 })(VLQ || (VLQ = {}));
 
 // src/hazae41/asn1/mods/triplets/object_identifier/object_identifier.ts
-var NotAnOID = class _NotAnOID extends Error {
-  constructor(text) {
-    super(`${text} is not an OID`);
-    this.text = text;
-  }
-  #class = _NotAnOID;
-  name = this.#class.name;
-};
 var ObjectIdentifier = class _ObjectIdentifier {
   constructor(type, value) {
     this.type = type;
@@ -8319,8 +7121,8 @@ var Constructed = class _Constructed {
 })(Constructed || (Constructed = {}));
 
 // src/hazae41/x509/mods/index.ts
-var mods_exports2 = {};
-__export(mods_exports2, {
+var mods_exports = {};
+__export(mods_exports, {
   AlgorithmIdentifier: () => AlgorithmIdentifier,
   AttributeType: () => AttributeType,
   AttributeTypeAndValue: () => AttributeTypeAndValue,
@@ -9634,7 +8436,7 @@ var TlsClientHandshakeServerHelloState = class {
     const certificate = handshake.fragment.readIntoOrThrow(Certificate2);
     Console.debug(certificate);
     const server_certificates = certificate.certificate_list.value.array.map(
-      (it) => mods_exports2.readAndResolveFromBytesOrThrow(mods_exports2.Certificate, it.value.bytes)
+      (it) => mods_exports.readAndResolveFromBytesOrThrow(mods_exports.Certificate, it.value.bytes)
     );
     const now = /* @__PURE__ */ new Date();
     if (server_certificates.length === 0) throw new Error(`Empty certificates`);
@@ -9654,7 +8456,7 @@ var TlsClientHandshakeServerHelloState = class {
         const trusted2 = trusteds2[issuer];
         if (trusted2 == null) continue;
         const raw = Bytes.fromHexAllowMissing0(trusted2.certBase16);
-        const x509 = mods_exports2.readAndResolveFromBytesOrThrow(mods_exports2.Certificate, raw);
+        const x509 = mods_exports.readAndResolveFromBytesOrThrow(mods_exports.Certificate, raw);
         next = x509;
       }
       const subject = next.tbsCertificate.subject.toX501OrThrow();
@@ -9813,7 +8615,7 @@ var TlsClientHandshakeServerHelloState = class {
           throw new Error(
             `Unsupported hash algorithm ${signed_params.algorithm.hash.type}`
           );
-        const identitySpki = mods_exports2.writeToBytesOrThrow(
+        const identitySpki = mods_exports.writeToBytesOrThrow(
           this.server_certificates[0].tbsCertificate.subjectPublicKeyInfo
         );
         const identityAlgorithm = {
@@ -9850,7 +8652,7 @@ var TlsClientHandshakeServerHelloState = class {
           throw new Error(
             `Unsupported hash algorithm ${signed_params.algorithm.hash.type}`
           );
-        const identitySpki = mods_exports2.writeToBytesOrThrow(
+        const identitySpki = mods_exports.writeToBytesOrThrow(
           this.server_certificates[0].tbsCertificate.subjectPublicKeyInfo
         );
         const identityAlgorithm = { name: "ECDSA", namedCurve: "P-256" };
@@ -10738,43 +9540,6 @@ var HalfDuplex = class {
   }
 };
 
-// src/hazae41/future/mods/future/future.ts
-var Future = class _Future {
-  #resolve;
-  #reject;
-  promise;
-  /**
-   * Just a Promise with a resolve and reject function
-   */
-  constructor(promise) {
-    if (promise == null) {
-      const { promise: promise2, resolve, reject } = Promise.withResolvers();
-      this.promise = promise2;
-      this.#resolve = resolve;
-      this.#reject = reject;
-    } else {
-      this.promise = promise;
-      this.#resolve = () => {
-      };
-      this.#reject = () => {
-      };
-    }
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static resolve(value) {
-    return new _Future(Promise.resolve(value));
-  }
-  static reject(reason) {
-    return new _Future(Promise.reject(reason));
-  }
-  get resolve() {
-    return this.#resolve;
-  }
-  get reject() {
-    return this.#reject;
-  }
-};
-
 // src/hazae41/common/Resizer.ts
 var Resizer = class {
   constructor(minimum = 2 ** 10, maximum = 2 ** 20) {
@@ -10827,10 +9592,10 @@ var TlsClientDuplex = class {
   duplex;
   #buffer = new Resizer();
   state;
-  resolveOnStart = new Future();
-  resolveOnClose = new Future();
-  resolveOnError = new Future();
-  resolveOnHandshake = new Future();
+  resolveOnStart = Promise.withResolvers();
+  resolveOnClose = Promise.withResolvers();
+  resolveOnError = Promise.withResolvers();
+  resolveOnHandshake = Promise.withResolvers();
   [Symbol.dispose]() {
     this.close();
   }
@@ -10929,6 +9694,25 @@ __export(signals_exports, {
   rejectOnAbort: () => rejectOnAbort,
   resolveOnAbort: () => resolveOnAbort
 });
+
+// src/hazae41/box/index.ts
+var Pin = class _Pin {
+  constructor(value, clean) {
+    this.value = value;
+    this.clean = clean;
+  }
+  static with(value, clean) {
+    return new _Pin(value, () => clean(value));
+  }
+  [Symbol.dispose]() {
+    this.clean();
+  }
+  get() {
+    return this.value;
+  }
+};
+
+// src/hazae41/signals/mods/signals/index.ts
 var AbortError = class extends Error {
   constructor(signal) {
     super("Aborted", { cause: signal.reason });
@@ -10936,22 +9720,25 @@ var AbortError = class extends Error {
   }
 };
 function resolveOnAbort(signal) {
-  if (signal.aborted) return Promise.resolve(signal.reason);
-  const resolveOnAbort2 = new Future();
+  if (signal.aborted) return Pin.with(Promise.resolve(signal.reason), () => {
+  });
+  const resolveOnAbort2 = Promise.withResolvers();
   const onAbort = () => resolveOnAbort2.resolve(signal.reason);
   const onClean = () => signal.removeEventListener("abort", onAbort);
   signal.addEventListener("abort", onAbort, { passive: true });
-  resolveOnAbort2.promise.finally(onClean);
-  return resolveOnAbort2.promise;
+  resolveOnAbort2.promise.then(onClean);
+  return Pin.with(resolveOnAbort2.promise, onClean);
 }
 function rejectOnAbort(signal) {
-  if (signal.aborted) return Promise.reject(new AbortError(signal));
-  const rejectOnAbort2 = new Future();
+  if (signal.aborted)
+    return Pin.with(Promise.reject(new AbortError(signal)), () => {
+    });
+  const rejectOnAbort2 = Promise.withResolvers();
   const onAbort = () => rejectOnAbort2.reject(new AbortError(signal));
   const onClean = () => signal.removeEventListener("abort", onAbort);
   signal.addEventListener("abort", onAbort, { passive: true });
-  rejectOnAbort2.promise.finally(onClean);
-  return rejectOnAbort2.promise;
+  rejectOnAbort2.promise.catch(onClean);
+  return Pin.with(rejectOnAbort2.promise, onClean);
 }
 
 // src/hazae41/common/Strings.ts
@@ -11036,7 +9823,7 @@ var HttpClientDuplex = class _HttpClientDuplex {
   }
   #class = _HttpClientDuplex;
   duplex;
-  #resolveOnStart = new Future();
+  #resolveOnStart = Promise.withResolvers();
   #state = { type: "none" };
   [Symbol.dispose]() {
     this.close();
@@ -11348,33 +10135,6 @@ ${text}\r
   }
 };
 
-// src/hazae41/disposer/mods/dispose/dispose.ts
-var Disposer = class _Disposer {
-  constructor(inner, clean) {
-    this.inner = inner;
-    this.clean = clean;
-  }
-  static from(disposable) {
-    return new _Disposer(disposable, () => disposable[Symbol.dispose]());
-  }
-  [Symbol.dispose]() {
-    this.dispose();
-  }
-  dispose() {
-    this.clean(this.inner);
-  }
-  get() {
-    return this.inner;
-  }
-  async await() {
-    try {
-      return await this.get();
-    } finally {
-      this.dispose();
-    }
-  }
-};
-
 // src/hazae41/fleche/mods/fetch/fetch.ts
 var Requests;
 ((Requests2) => {
@@ -11394,14 +10154,19 @@ var Requests;
 var Pipe;
 ((Pipe2) => {
   function rejectOnError2(http, body) {
-    const rejectOnError3 = new Future();
+    const rejectOnError3 = Promise.withResolvers();
     const controller = new AbortController();
     const { signal } = controller;
     if (body != null)
       body.pipeTo(http.outer.writable, { signal }).catch((cause) => rejectOnError3.reject(new Error("Errored", { cause })));
     else
       http.outer.writable.close().catch((cause) => rejectOnError3.reject(new Error("Errored", { cause })));
-    return new Disposer(rejectOnError3.promise, () => controller.abort());
+    return {
+      promise: rejectOnError3.promise,
+      [Symbol.dispose]() {
+        controller.abort();
+      }
+    };
   }
   Pipe2.rejectOnError = rejectOnError2;
 })(Pipe || (Pipe = {}));
@@ -11421,9 +10186,9 @@ async function fetch2(input, init) {
       headers.set("Transfer-Encoding", "chunked");
     if (!headers.has("Accept-Encoding"))
       headers.set("Accept-Encoding", "gzip, deflate");
-    const resolveOnHead = new Future();
-    const rejectOnClose2 = new Future();
-    const rejectOnError2 = new Future();
+    const resolveOnHead = Promise.withResolvers();
+    const rejectOnClose2 = Promise.withResolvers();
+    const rejectOnError2 = Promise.withResolvers();
     const http = new HttpClientDuplex({
       method,
       target,
@@ -11447,14 +10212,14 @@ async function fetch2(input, init) {
     });
     http.inner.readable.pipeTo(stream.writable, { signal, preventClose, preventAbort }).catch(() => {
     });
-    const rejectPromise = rejectOnAbort(signal);
+    const rejectPin = __using(_stack, rejectOnAbort(signal));
     const rejectOnPipe = __using(_stack, Pipe.rejectOnError(http, body));
     return await Promise.race([
       resolveOnHead.promise,
       rejectOnClose2.promise,
       rejectOnError2.promise,
-      rejectPromise,
-      rejectOnPipe.get()
+      rejectPin.get(),
+      rejectOnPipe.promise
     ]);
   } catch (_) {
     var _error = _, _hasError = true;
@@ -11660,8 +10425,8 @@ var TorClientBase = class {
 };
 
 // src/hazae41/echalote/mods/index.ts
-var mods_exports9 = {};
-__export(mods_exports9, {
+var mods_exports8 = {};
+__export(mods_exports8, {
   Address4: () => Address4,
   Address6: () => Address6,
   AuthChallengeCell: () => AuthChallengeCell,
@@ -12138,7 +10903,7 @@ var SecretTurboDuplex = class _SecretTurboDuplex {
   reader;
   writer;
   client;
-  resolveOnStart = new Future();
+  resolveOnStart = Promise.withResolvers();
   get class() {
     return this.#class;
   }
@@ -12409,7 +11174,7 @@ var SecretKcpWriter = class {
       this.parent.output.enqueue(segment);
     }, lowDelay);
     const { resolveOnClose, resolveOnError } = this.parent;
-    const resolveOnAck = new Future();
+    const resolveOnAck = Promise.withResolvers();
     Promise.race([
       resolveOnAck.promise,
       resolveOnClose.promise,
@@ -12479,8 +11244,8 @@ var SecretKcpDuplex = class {
   reader;
   writer;
   conversation;
-  resolveOnClose = new Future();
-  resolveOnError = new Future();
+  resolveOnClose = Promise.withResolvers();
+  resolveOnError = Promise.withResolvers();
   resolveOnAckBySerial = /* @__PURE__ */ new Map();
   sendCounter = 0;
   recvCounter = 0;
@@ -12830,7 +11595,7 @@ var SecretSmuxDuplex = class {
   selfIncrement = 0;
   peerConsumed = 0;
   peerWindow = 65535;
-  resolveOnStart = new Future();
+  resolveOnStart = Promise.withResolvers();
   [Symbol.dispose]() {
     this.close();
   }
@@ -13731,8 +12496,8 @@ var Certs;
     );
     const length = certs.rsa_self.x509.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey.bytes.length;
     if (length !== 12 + 128) throw new InvalidCertError();
-    const signed = mods_exports2.writeToBytesOrThrow(certs.rsa_self.x509.tbsCertificate);
-    const publicKey = mods_exports2.writeToBytesOrThrow(
+    const signed = mods_exports.writeToBytesOrThrow(certs.rsa_self.x509.tbsCertificate);
+    const publicKey = mods_exports.writeToBytesOrThrow(
       certs.rsa_self.x509.tbsCertificate.subjectPublicKeyInfo
     );
     const signatureAlgorithm = {
@@ -13761,7 +12526,7 @@ var Certs;
       certs.rsa_to_ed.verifyOrThrow() === true,
       `Could not verify ID_TO_ED cert`
     );
-    const publicKeyBytes = mods_exports2.writeToBytesOrThrow(
+    const publicKeyBytes = mods_exports.writeToBytesOrThrow(
       certs.rsa_self.x509.tbsCertificate.subjectPublicKeyInfo
     );
     const publicKeyMemory = new RsaBigInt.Memory(publicKeyBytes);
@@ -13969,7 +12734,7 @@ var RsaCert = class _RsaCert {
     RSA_TO_AUTH: 3
   };
   async sha1OrThrow() {
-    const publicKey = mods_exports2.writeToBytesOrThrow(
+    const publicKey = mods_exports.writeToBytesOrThrow(
       this.x509.tbsCertificate.subjectPublicKeyInfo
     );
     return Bytes.from(
@@ -13996,7 +12761,7 @@ var RsaCert = class _RsaCert {
     const type = cursor.readUint8OrThrow();
     const length = cursor.readUint16OrThrow();
     const data = cursor.readAndCopyOrThrow(length);
-    const x509 = mods_exports2.readAndResolveFromBytesOrThrow(mods_exports2.Certificate, data);
+    const x509 = mods_exports.readAndResolveFromBytesOrThrow(mods_exports.Certificate, data);
     return new _RsaCert(type, data, x509);
   }
 };
@@ -15390,8 +14155,8 @@ var WebCryptoAes128Ctr = class {
 };
 
 // src/hazae41/plume/mods/index.ts
-var mods_exports8 = {};
-__export(mods_exports8, {
+var mods_exports7 = {};
+__export(mods_exports7, {
   SuperEventTarget: () => SuperEventTarget,
   rejectOnClose: () => rejectOnClose,
   rejectOnError: () => rejectOnError,
@@ -15414,94 +14179,6 @@ function rejectOnError(target) {
     (future, ...[cause]) => future.reject(new Error("Errored", { cause }))
   );
 }
-
-// src/hazae41/box/mods/auto/index.ts
-(class _Auto {
-  /**
-   * A reference that will be disposed when garbage collected
-   * @param value
-   */
-  constructor(value) {
-    this.value = value;
-    _Auto.registry.register(this, value, this);
-  }
-  static cleanup = (x) => x[Symbol.dispose]();
-  static registry = new FinalizationRegistry(_Auto.cleanup);
-  [Symbol.dispose]() {
-    _Auto.registry.unregister(this);
-  }
-  async [Symbol.asyncDispose]() {
-    this[Symbol.dispose]();
-  }
-  get() {
-    return this.value;
-  }
-});
-(class _AsyncAuto {
-  /**
-   * A reference that will be disposed when garbage collected
-   * @param value
-   */
-  constructor(value) {
-    this.value = value;
-    _AsyncAuto.registry.register(this, value, this);
-  }
-  static cleanup = (x) => x[Symbol.asyncDispose]().then(void 0, console.error);
-  static registry = new FinalizationRegistry(_AsyncAuto.cleanup);
-  [Symbol.dispose]() {
-    _AsyncAuto.registry.unregister(this);
-  }
-  async [Symbol.asyncDispose]() {
-    this[Symbol.dispose]();
-  }
-  get() {
-    return this.value;
-  }
-});
-
-// src/hazae41/box/mods/deferred/index.ts
-var Deferred = class _Deferred {
-  constructor(value) {
-    this.value = value;
-  }
-  static void() {
-    return new _Deferred(() => {
-    });
-  }
-  [Symbol.dispose]() {
-    this.value();
-  }
-  async [Symbol.asyncDispose]() {
-    this[Symbol.dispose]();
-  }
-  get() {
-    return this.value;
-  }
-};
-
-// src/hazae41/box/mods/pin/index.ts
-var Pin = class _Pin {
-  constructor(value, clean) {
-    this.value = value;
-    this.clean = clean;
-  }
-  static from(value) {
-    return new _Pin(value, value);
-  }
-  static with(value, clean) {
-    return new _Pin(value, new Deferred(() => clean(value)));
-  }
-  [Symbol.dispose]() {
-    this.clean[Symbol.dispose]();
-  }
-  get() {
-    return this.value;
-  }
-  getAndDispose() {
-    this[Symbol.dispose]();
-    return this.value;
-  }
-};
 
 // src/hazae41/plume/mods/target.ts
 var SuperEventTarget = class {
@@ -15596,7 +14273,7 @@ var SuperEventTarget = class {
    * @returns
    */
   wait(type, callback) {
-    const future = new Future();
+    const future = Promise.withResolvers();
     const dispose = this.on(
       type,
       async (...params) => {
@@ -15612,9 +14289,9 @@ var SuperEventTarget = class {
 async function waitOrThrow(target, type, callback, signal = new AbortController().signal) {
   var _stack = [];
   try {
-    const abort = signals_exports.rejectOnAbort(signal);
+    const abort = __using(_stack, signals_exports.rejectOnAbort(signal));
     const event = __using(_stack, target.wait(type, callback));
-    return await Promise.race([abort, event.get()]);
+    return await Promise.race([abort.get(), event.get()]);
   } catch (_) {
     var _error = _, _hasError = true;
   } finally {
@@ -15624,11 +14301,16 @@ async function waitOrThrow(target, type, callback, signal = new AbortController(
 async function waitWithCloseAndErrorOrThrow(target, type, callback, signal = new AbortController().signal) {
   var _stack = [];
   try {
-    const abort = signals_exports.rejectOnAbort(signal);
+    const abort = __using(_stack, signals_exports.rejectOnAbort(signal));
     const error = __using(_stack, rejectOnError(target));
     const close = __using(_stack, rejectOnClose(target));
     const event = __using(_stack, target.wait(type, callback));
-    return await Promise.race([abort, error.get(), close.get(), event.get()]);
+    return await Promise.race([
+      abort.get(),
+      error.get(),
+      close.get(),
+      event.get()
+    ]);
   } catch (_) {
     var _error = _, _hasError = true;
   } finally {
@@ -16194,7 +14876,7 @@ var SecretCircuit = class _SecretCircuit {
       relay_extend2
     );
     this.tor.output.enqueue(await relay_early_cell.cellOrThrow());
-    const msg_extended2 = await mods_exports8.waitWithCloseAndErrorOrThrow(
+    const msg_extended2 = await mods_exports7.waitWithCloseAndErrorOrThrow(
       this.events,
       "RELAY_EXTENDED2",
       (future, e) => {
@@ -16258,7 +14940,7 @@ var SecretCircuit = class _SecretCircuit {
     );
     const cell = await relay_truncate_cell.cellOrThrow();
     this.tor.output.enqueue(cell);
-    await mods_exports8.waitWithCloseAndErrorOrThrow(
+    await mods_exports7.waitWithCloseAndErrorOrThrow(
       this.events,
       "RELAY_TRUNCATED",
       (future, e) => {
@@ -16288,7 +14970,7 @@ var SecretCircuit = class _SecretCircuit {
     const cell = await begin_cell.cellOrThrow();
     this.tor.output.enqueue(cell);
     if (!params.wait) return new TorStreamDuplex(stream);
-    await mods_exports8.waitWithCloseAndErrorOrThrow(
+    await mods_exports7.waitWithCloseAndErrorOrThrow(
       stream.events,
       "connected",
       (future) => {
@@ -16321,7 +15003,7 @@ var SecretCircuit = class _SecretCircuit {
     const cell = await begin_cell.cellOrThrow();
     this.tor.output.enqueue(cell);
     if (!params.wait) return new TorStreamDuplex(stream);
-    await mods_exports8.waitWithCloseAndErrorOrThrow(
+    await mods_exports7.waitWithCloseAndErrorOrThrow(
       stream.events,
       "connected",
       (future) => {
@@ -16635,8 +15317,8 @@ var SecretTorClientDuplex = class {
   events = new SuperEventTarget();
   circuits = new Mutex(/* @__PURE__ */ new Map());
   #buffer = new Resizer();
-  #resolveOnStart = new Future();
-  #resolveOnTlsCertificates = new Future();
+  #resolveOnStart = Promise.withResolvers();
+  #resolveOnTlsCertificates = Promise.withResolvers();
   #state = { type: "none" };
   [Symbol.dispose]() {
     this.close();
@@ -16676,7 +15358,7 @@ var SecretTorClientDuplex = class {
     this.output.enqueue(
       OldCell.Circuitless.from(void 0, new VersionsCell([5]))
     );
-    await mods_exports8.waitWithCloseAndErrorOrThrow(
+    await mods_exports7.waitWithCloseAndErrorOrThrow(
       this.events,
       "handshaked",
       (future) => future.resolve()
@@ -16927,7 +15609,7 @@ var SecretTorClientDuplex = class {
   }
   async waitOrThrow(signal = new AbortController().signal) {
     if (this.state.type === "handshaked") return;
-    await mods_exports8.waitWithCloseAndErrorOrThrow(
+    await mods_exports7.waitWithCloseAndErrorOrThrow(
       this.events,
       "handshaked",
       (future) => future.resolve(),
@@ -16949,7 +15631,7 @@ var SecretTorClientDuplex = class {
     });
   }
   async #waitCreatedFast(circuit, signal = new AbortController().signal) {
-    return await mods_exports8.waitWithCloseAndErrorOrThrow(
+    return await mods_exports7.waitWithCloseAndErrorOrThrow(
       this.events,
       "CREATED_FAST",
       async (future, e) => {
@@ -17528,24 +16210,24 @@ directory-signature `;
       const signed = Bytes.encodeUtf8(consensus.preimage);
       const hashed = Bytes.from(await crypto.subtle.digest("SHA-256", signed));
       const signingKey = Bytes.fromBase64(certificate.signingKey);
-      const algorithmAsn1 = mods_exports.ObjectIdentifier.create(
+      const algorithmAsn1 = ObjectIdentifier.create(
         void 0,
         OIDs.keys.rsaEncryption
       ).toDER();
-      const algorithmId = new mods_exports2.AlgorithmIdentifier(
+      const algorithmId = new mods_exports.AlgorithmIdentifier(
         algorithmAsn1,
-        mods_exports.Null.create().toDER()
+        Null.create().toDER()
       );
-      const subjectPublicKey = mods_exports.BitString.create(
+      const subjectPublicKey = BitString.create(
         void 0,
         0,
         signingKey
       ).toDER();
-      const subjectPublicKeyInfo = new mods_exports2.SubjectPublicKeyInfo(
+      const subjectPublicKeyInfo = new mods_exports.SubjectPublicKeyInfo(
         algorithmId,
         subjectPublicKey
       );
-      const publicKey = mods_exports2.writeToBytesOrThrow(subjectPublicKeyInfo);
+      const publicKey = mods_exports.writeToBytesOrThrow(subjectPublicKeyInfo);
       const signature = Bytes.fromBase64(it.signature);
       const signatureM = new RsaBigInt.Memory(signature);
       const hashedM = new RsaBigInt.Memory(hashed);
@@ -17602,24 +16284,24 @@ directory-signature `;
       );
       const signed = Bytes.encodeUtf8(cert.preimage);
       const hashed = Bytes.from(await crypto.subtle.digest("SHA-1", signed));
-      const algorithmAsn1 = mods_exports.ObjectIdentifier.create(
+      const algorithmAsn1 = ObjectIdentifier.create(
         void 0,
         OIDs.keys.rsaEncryption
       ).toDER();
-      const algorithmId = new mods_exports2.AlgorithmIdentifier(
+      const algorithmId = new mods_exports.AlgorithmIdentifier(
         algorithmAsn1,
-        mods_exports.Null.create().toDER()
+        Null.create().toDER()
       );
-      const subjectPublicKey = mods_exports.BitString.create(
+      const subjectPublicKey = BitString.create(
         void 0,
         0,
         identityKey
       ).toDER();
-      const subjectPublicKeyInfo = new mods_exports2.SubjectPublicKeyInfo(
+      const subjectPublicKeyInfo = new mods_exports.SubjectPublicKeyInfo(
         algorithmId,
         subjectPublicKey
       );
-      const publicKey = mods_exports2.writeToBytesOrThrow(subjectPublicKeyInfo);
+      const publicKey = mods_exports.writeToBytesOrThrow(subjectPublicKeyInfo);
       const signature = Bytes.fromBase64(cert.signature);
       const hashedM = new RsaBigInt.Memory(hashed);
       const publicKeyM = new RsaBigInt.Memory(publicKey);
@@ -17894,7 +16576,7 @@ var CertificateManager = class {
       return cached;
     }
     this.log.info(`Fetching certificate for ${fingerprint} from network`);
-    const certificate = await mods_exports9.Consensus.Certificate.fetchOrThrow(
+    const certificate = await mods_exports8.Consensus.Certificate.fetchOrThrow(
       circuit,
       fingerprint
     );
@@ -17932,7 +16614,7 @@ var CertificateManager = class {
       );
       const fetchedCertificates = await Promise.all(
         uncachedFingerprints.map(
-          (fingerprint) => mods_exports9.Consensus.Certificate.fetchOrThrow(circuit, fingerprint)
+          (fingerprint) => mods_exports8.Consensus.Certificate.fetchOrThrow(circuit, fingerprint)
         )
       );
       await Promise.all(
@@ -18100,7 +16782,7 @@ var CertificateManager = class {
         expires: new Date(data.expires)
       };
     } catch {
-      const certificates = mods_exports9.Consensus.Certificate.parseOrThrow(text);
+      const certificates = mods_exports8.Consensus.Certificate.parseOrThrow(text);
       if (certificates.length === 0) {
         throw new Error("No certificate found in text");
       }
@@ -18146,7 +16828,7 @@ var MicrodescManager = class {
     this.log.info(
       `Fetching microdesc for ${ref.identity.slice(0, 8)} from network`
     );
-    const microdesc = await mods_exports9.Consensus.Microdesc.fetchOrThrow(
+    const microdesc = await mods_exports8.Consensus.Microdesc.fetchOrThrow(
       circuit,
       ref
     );
@@ -18191,7 +16873,7 @@ var MicrodescManager = class {
     }
     if (uncachedRefs.length > 0) {
       this.log.info(`Fetching ${uncachedRefs.length} microdescs from network`);
-      const fetchedMicrodescs = await mods_exports9.Consensus.Microdesc.fetchManyOrThrow(
+      const fetchedMicrodescs = await mods_exports8.Consensus.Microdesc.fetchManyOrThrow(
         circuit,
         uncachedRefs
       );
@@ -18413,7 +17095,7 @@ var ConsensusManager = class {
     const cache = await this.loadCache();
     this.log.info("Fetching consensus from network");
     const circuit = await this.circuitManager.getBaseCircuit();
-    const consensus = await mods_exports9.Consensus.fetchOrThrow(
+    const consensus = await mods_exports8.Consensus.fetchOrThrow(
       this.log.child("Consensus"),
       circuit,
       cache,
@@ -18437,7 +17119,7 @@ var ConsensusManager = class {
       await this.cacheLoading;
       return this.consensusCache;
     }
-    const cacheLoadingFuture = new Future();
+    const cacheLoadingFuture = Promise.withResolvers();
     this.cacheLoading = cacheLoadingFuture.promise;
     try {
       this.log.info("Loading cached consensuses from storage");
@@ -18453,7 +17135,7 @@ var ConsensusManager = class {
         try {
           const data = await this.storage.read(key);
           const text = new TextDecoder().decode(data);
-          const consensus = await mods_exports9.Consensus.parseOrThrow(
+          const consensus = await mods_exports8.Consensus.parseOrThrow(
             this.log.child("Consensus"),
             text
           );
@@ -18684,7 +17366,7 @@ async function decodeOnionStylePubKey(encodedKey) {
 
 // src/keynet/decodeKeynetPubkey.ts
 async function decodeKeynetPubKey(host) {
-  assert(host.endsWith(".keynet"), "not a .keynet address");
+  assert(host.toLowerCase().endsWith(".keynet"), "not a .keynet address");
   const encodedKey = host.slice(0, -".keynet".length);
   return await decodeOnionStylePubKey(encodedKey);
 }
@@ -19353,7 +18035,7 @@ var CircuitManager = class {
    */
   async allocateCircuitToHost(hostname) {
     let circuit;
-    if (!hostname.endsWith(".keynet")) {
+    if (!hostname.toLowerCase().endsWith(".keynet")) {
       this.log.info(`[${hostname}] Allocating circuit from pool`);
       circuit = await this.circuitPool.acquire();
       this.log.info(`[${hostname}] Allocated circuit from pool`);
@@ -20138,8 +18820,8 @@ var CCADB = class _CCADB {
     for (const base64 of base64Certs) {
       try {
         const derBytes = Bytes.fromBase64(base64);
-        const x509 = mods_exports2.readAndResolveFromBytesOrThrow(
-          mods_exports2.Certificate,
+        const x509 = mods_exports.readAndResolveFromBytesOrThrow(
+          mods_exports.Certificate,
           derBytes
         );
         const spki = Writable.writeToBytesOrThrow(
