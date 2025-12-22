@@ -19001,7 +19001,7 @@ async function fetchCerts(log, source) {
 }
 
 // src/storage/getStorageName.ts
-var PACKAGE_VERSION = "0.2.2";
+var PACKAGE_VERSION = "0.2.3";
 function getStorageName() {
   return `tor-js-${PACKAGE_VERSION}-cache`;
 }
