@@ -1,4 +1,6 @@
+import { tor } from "../tor-js-singleton/index.js";
 import { assert, makeError } from "./errors.js";
+import { isKeynet } from "./isKeynet.js";
 export function createGetUrl(options) {
     async function getUrl(req, _signal) {
         assert(_signal == null || !_signal.cancelled, "request cancelled before sending", "CANCELLED");
@@ -30,7 +32,12 @@ export function createGetUrl(options) {
         });
         let resp;
         try {
-            resp = await fetch(req.url, init);
+            if (isKeynet(req.url)) {
+                resp = await tor.fetch(req.url, init);
+            }
+            else {
+                resp = await fetch(req.url, init);
+            }
         }
         catch (_error) {
             clearTimeout(timer);

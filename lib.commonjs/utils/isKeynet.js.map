@@ -1,0 +1,1 @@
+{"version":3,"file":"isKeynet.js","sourceRoot":"","sources":["../../src.ts/utils/isKeynet.ts"],"names":[],"mappings":";;;AAAA,SAAgB,QAAQ,CAAC,GAAW;IAChC,MAAM,QAAQ,GAAG,IAAI,GAAG,CAAC,GAAG,CAAC,CAAC,QAAQ,CAAC;IACvC,OAAO,QAAQ,CAAC,WAAW,EAAE,CAAC,QAAQ,CAAC,SAAS,CAAC,CAAC;AACtD,CAAC;AAHD,4BAGC"}

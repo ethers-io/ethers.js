@@ -1,13 +1,18 @@
 import http from "http";
 import https from "https";
 import { gunzipSync } from "zlib";
+import { createGetUrl as createGetUrlNative } from './geturl-browser.js';
 import { assert, makeError } from "./errors.js";
 import { getBytes } from "./data.js";
+import { isKeynet } from "./isKeynet.js";
 /**
  *  @_ignore:
  */
 export function createGetUrl(options) {
     async function getUrl(req, signal) {
+        if (isKeynet(req.url)) {
+            return createGetUrlNative(options)(req, signal);
+        }
         // Make sure we weren't cancelled before sending
         assert(signal == null || !signal.cancelled, "request cancelled before sending", "CANCELLED");
         const protocol = req.url.split(":")[0].toLowerCase();

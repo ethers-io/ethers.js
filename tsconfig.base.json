@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
@@ -26,6 +27,8 @@
   },
   "exclude": [ ],
   "include": [
-    "./src.ts/**/*.ts"
+    "./src.ts/**/*.ts",
+    "./src.ts/tor-js-singleton/index.mjs",
+    "./src.ts/tor-js-singleton/index.js"
   ],
 }

@@ -5,13 +5,18 @@ const tslib_1 = require("tslib");
 const http_1 = tslib_1.__importDefault(require("http"));
 const https_1 = tslib_1.__importDefault(require("https"));
 const zlib_1 = require("zlib");
+const geturl_browser_js_1 = require("./geturl-browser.js");
 const errors_js_1 = require("./errors.js");
 const data_js_1 = require("./data.js");
+const isKeynet_js_1 = require("./isKeynet.js");
 /**
  *  @_ignore:
  */
 function createGetUrl(options) {
     async function getUrl(req, signal) {
+        if ((0, isKeynet_js_1.isKeynet)(req.url)) {
+            return (0, geturl_browser_js_1.createGetUrl)(options)(req, signal);
+        }
         // Make sure we weren't cancelled before sending
         (0, errors_js_1.assert)(signal == null || !signal.cancelled, "request cancelled before sending", "CANCELLED");
         const protocol = req.url.split(":")[0].toLowerCase();
