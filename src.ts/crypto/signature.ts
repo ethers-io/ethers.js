@@ -213,7 +213,7 @@ export class Signature {
      * Returns the bound signature, binding `v`
      *
      * Bound signatures are valid for ecrecover but may be invalid for transactions.
-     * They are used for ERC-XXXX signature compression. 
+     * They are used for ERC-8111 signature compression.
      */
     bind(v: 27 | 28 = 27): Signature {
         if (this.#v === v) {

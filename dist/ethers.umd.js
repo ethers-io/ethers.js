@@ -6811,7 +6811,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          * Returns the bound signature, binding `v`
          *
          * Bound signatures are valid for ecrecover but may be invalid for transactions.
-         * They are used for ERC-XXXX signature compression.
+         * They are used for ERC-8111 signature compression.
          */
         bind(v = 27) {
             if (this.#v === v) {
