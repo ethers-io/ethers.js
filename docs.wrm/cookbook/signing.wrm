@@ -128,7 +128,7 @@ _code: Solidity @lang<solidity>
 // For more info, see: https://docs.ethers.org
 
 
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.33;
 
 // Returns the decimal string representation of value
 function itoa(uint value) pure returns (string memory) {
