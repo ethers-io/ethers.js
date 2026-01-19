@@ -5,7 +5,7 @@ import https from "https";
 import { gunzipSync } from "zlib";
 import { parse } from "url"
 
-import { arrayify, concat } from "@ethersproject/bytes";
+import { arrayify } from "@ethersproject/bytes";
 import { shallowCopy } from "@ethersproject/properties";
 
 import type { GetUrlResponse, Options } from "./types";
@@ -32,18 +32,30 @@ function getResponse(request: http.ClientRequest): Promise<GetUrlResponse> {
                 }, <{ [ name: string ]: string }>{ }),
                 body: null
             };
+            const chunks: Uint8Array[] = [];
+            let size = 0;
             //resp.setEncoding("utf8");
 
             resp.on("data", (chunk: Uint8Array) => {
-                if (response.body == null) { response.body = new Uint8Array(0); }
-                response.body = concat([ response.body, chunk ]);
+                chunks.push(chunk);
+                size += chunk.length;
             });
 
             resp.on("end", () => {
+                const body = new Uint8Array(size);
+                let offset = 0;
+
+                for (const chunk of chunks) {
+                    body.set(chunk, offset);
+                    offset += chunk.length;
+                }
+
                 if (response.headers["content-encoding"] === "gzip") {
                     //const size = response.body.length;
-                    response.body = arrayify(gunzipSync(response.body));
+                    response.body = arrayify(gunzipSync(body));
                     //console.log("Delta:", response.body.length - size, Buffer.from(response.body).toString());
+                } else {
+                    response.body = body;
                 }
                 resolve(response);
             });
