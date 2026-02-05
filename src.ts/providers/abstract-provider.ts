@@ -54,7 +54,7 @@ import type {
 
 import type {
     BlockTag, EventFilter, Filter, FilterByBlockHash, OrphanFilter,
-    PreparedTransactionRequest, Provider, ProviderEvent,
+    PreparedTransactionRequest, Provider, ProviderEvent, StorageProof,
     TransactionRequest
 } from "./provider.js";
 
@@ -389,6 +389,9 @@ export type PerformActionRequest = {
     method: "getStorage",
     address: string, position: bigint, blockTag: BlockTag
 } | {
+    method: "getStorageProof",
+    address: string, storageKeys: Array<bigint>, blockTag: BlockTag
+} | {
     method: "getTransaction",
     hash: string
 } | {
@@ -406,6 +409,8 @@ type _PerformAccountRequest = {
     method: "getBalance" | "getTransactionCount" | "getCode"
 } | {
     method: "getStorage", position: bigint
+} | {
+    method: "getStorageProof", storageKeys: Array<bigint>
 }
 
 /**
@@ -1083,6 +1088,27 @@ export class AbstractProvider implements Provider {
     async getStorage(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string> {
         const position = getBigInt(_position, "position");
         return hexlify(await this.#getAccountValue({ method: "getStorage", position }, address, blockTag));
+    }
+
+    async getStorageProof(address: AddressLike, _storageKeys: Array<BigNumberish>, blockTag?: BlockTag): Promise<StorageProof> {
+        const storageKeys = _storageKeys.map(key => getBigInt(key, "storageKey"));
+        const result = await this.#getAccountValue({ method: "getStorageProof", storageKeys }, address, blockTag);
+
+        const cleanup = (v: string) => v === "0x0" ? "0x00": v;
+
+        return {
+            address: hexlify(result.address),
+            accountProof: result.accountProof.map(hexlify),
+            balance: getBigInt(result.balance, "%response"),
+            codeHash: hexlify(result.codeHash),
+            nonce: getNumber(cleanup(result.nonce), "%response"),
+            storageHash: hexlify(result.storageHash),
+            storageProof: result.storageProof.map((p: any) => ({
+                key: getBigInt(cleanup(p.key), "storageKey"),
+                value: hexlify(cleanup(p.value)),
+                proof: p.proof.map(hexlify)
+            }))
+        };
     }
 
     // Write

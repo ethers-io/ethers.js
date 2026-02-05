@@ -313,6 +313,8 @@ export class FallbackProvider extends AbstractProvider {
                 return await provider.getLogs(req.filter);
             case "getStorage":
                 return await provider.getStorage(req.address, req.position, req.blockTag);
+            case "getStorageProof":
+                return await provider.getStorageProof(req.address, req.storageKeys, req.blockTag);
             case "getTransaction":
                 return await provider.getTransaction(req.hash);
             case "getTransactionCount":
@@ -470,6 +472,7 @@ export class FallbackProvider extends AbstractProvider {
             case "getTransactionCount":
             case "getCode":
             case "getStorage":
+            case "getStorageProof":
             case "getTransaction":
             case "getTransactionReceipt":
             case "getLogs":

@@ -736,6 +736,24 @@ export class AbstractProvider {
         const position = getBigInt(_position, "position");
         return hexlify(await this.#getAccountValue({ method: "getStorage", position }, address, blockTag));
     }
+    async getStorageProof(address, _storageKeys, blockTag) {
+        const storageKeys = _storageKeys.map(key => getBigInt(key, "storageKey"));
+        const result = await this.#getAccountValue({ method: "getStorageProof", storageKeys }, address, blockTag);
+        const cleanup = (v) => v === "0x0" ? "0x00" : v;
+        return {
+            address: hexlify(result.address),
+            accountProof: result.accountProof.map(hexlify),
+            balance: getBigInt(result.balance, "%response"),
+            codeHash: hexlify(result.codeHash),
+            nonce: getNumber(cleanup(result.nonce), "%response"),
+            storageHash: hexlify(result.storageHash),
+            storageProof: result.storageProof.map((p) => ({
+                key: getBigInt(cleanup(p.key), "storageKey"),
+                value: hexlify(cleanup(p.value)),
+                proof: p.proof.map(hexlify)
+            }))
+        };
+    }
     // Write
     async broadcastTransaction(signedTx) {
         const { blockNumber, hash, network } = await resolveProperties({

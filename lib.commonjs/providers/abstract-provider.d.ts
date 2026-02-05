@@ -14,7 +14,7 @@ import type { BigNumberish } from "../utils/index.js";
 import type { Listener } from "../utils/index.js";
 import type { Networkish } from "./network.js";
 import type { BlockParams, LogParams, TransactionReceiptParams, TransactionResponseParams } from "./formatting.js";
-import type { BlockTag, EventFilter, Filter, FilterByBlockHash, OrphanFilter, PreparedTransactionRequest, Provider, ProviderEvent, TransactionRequest } from "./provider.js";
+import type { BlockTag, EventFilter, Filter, FilterByBlockHash, OrphanFilter, PreparedTransactionRequest, Provider, ProviderEvent, StorageProof, TransactionRequest } from "./provider.js";
 /**
  *  The types of additional event values that can be emitted for the
  *  ``"debug"`` event.
@@ -216,6 +216,11 @@ export type PerformActionRequest = {
     position: bigint;
     blockTag: BlockTag;
 } | {
+    method: "getStorageProof";
+    address: string;
+    storageKeys: Array<bigint>;
+    blockTag: BlockTag;
+} | {
     method: "getTransaction";
     hash: string;
 } | {
@@ -355,6 +360,7 @@ export declare class AbstractProvider implements Provider {
     getTransactionCount(address: AddressLike, blockTag?: BlockTag): Promise<number>;
     getCode(address: AddressLike, blockTag?: BlockTag): Promise<string>;
     getStorage(address: AddressLike, _position: BigNumberish, blockTag?: BlockTag): Promise<string>;
+    getStorageProof(address: AddressLike, _storageKeys: Array<BigNumberish>, blockTag?: BlockTag): Promise<StorageProof>;
     broadcastTransaction(signedTx: string): Promise<TransactionResponse>;
     getBlock(block: BlockTag | string, prefetchTxs?: boolean): Promise<null | Block>;
     getTransaction(hash: string): Promise<null | TransactionResponse>;

@@ -613,6 +613,15 @@ class JsonRpcApiProvider extends abstract_provider_js_1.AbstractProvider {
                         req.blockTag
                     ]
                 };
+            case "getStorageProof":
+                return {
+                    method: "eth_getProof",
+                    args: [
+                        getLowerCase(req.address),
+                        req.storageKeys.map(storageKey => "0x" + storageKey.toString(16)),
+                        req.blockTag
+                    ]
+                };
             case "broadcastTransaction":
                 return {
                     method: "eth_sendRawTransaction",

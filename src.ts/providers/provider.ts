@@ -203,7 +203,7 @@ export interface TransactionRequest {
     /**
      *  When using ``call`` or ``estimateGas``, this allows a specific
      *  block to be queried. Many backends do not support this and when
-     *  unsupported errors are silently squelched and ``"latest"`` is used. 
+     *  unsupported errors are silently squelched and ``"latest"`` is used.
      */
     blockTag?: BlockTag;
 
@@ -349,7 +349,7 @@ export interface PreparedTransactionRequest {
     /**
      *  When using ``call`` or ``estimateGas``, this allows a specific
      *  block to be queried. Many backends do not support this and when
-     *  unsupported errors are silently squelched and ``"latest"`` is used. 
+     *  unsupported errors are silently squelched and ``"latest"`` is used.
      */
     blockTag?: BlockTag;
 
@@ -1134,14 +1134,14 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
         const {
             to, from, contractAddress, hash, index,
             blockHash, blockNumber, logsBloom,
-            logs, //byzantium, 
+            logs, //byzantium,
             status, root
         } = this;
 
         return {
             _type: "TransactionReceipt",
             blockHash, blockNumber,
-            //byzantium, 
+            //byzantium,
             contractAddress,
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
@@ -1910,6 +1910,23 @@ export interface FilterByBlockHash extends EventFilter {
     blockHash?: string;
 }
 
+//////////////////////
+// StorageProof
+//
+// Keep here?
+export interface StorageProof {
+    address: string;
+    accountProof: string[];
+    balance: bigint;
+    codeHash: string;
+    nonce: number;
+    storageHash: string;
+    storageProof: {
+        key: bigint;
+        value: string;
+        proof: string[];
+    }[];
+}
 
 //////////////////////
 // ProviderEvent
@@ -2041,6 +2058,13 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      */
     getStorage(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>
 
+    /**
+     *  Get proof of the storage slot value for %%address%% at slots %%storageKeys%%.
+     *
+     *  @note On nodes without archive access enabled, the %%blockTag%% may be
+     *        **silently ignored** by the node, which may cause issues if relied on.
+     */
+    getStorageProof(address: AddressLike, storageKeys: Array<BigNumberish>, blockTag?: BlockTag): Promise<StorageProof>
 
     ////////////////////
     // Execution

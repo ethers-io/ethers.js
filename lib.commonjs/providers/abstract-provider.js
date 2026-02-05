@@ -740,6 +740,24 @@ class AbstractProvider {
         const position = (0, index_js_6.getBigInt)(_position, "position");
         return (0, index_js_6.hexlify)(await this.#getAccountValue({ method: "getStorage", position }, address, blockTag));
     }
+    async getStorageProof(address, _storageKeys, blockTag) {
+        const storageKeys = _storageKeys.map(key => (0, index_js_6.getBigInt)(key, "storageKey"));
+        const result = await this.#getAccountValue({ method: "getStorageProof", storageKeys }, address, blockTag);
+        const cleanup = (v) => v === "0x0" ? "0x00" : v;
+        return {
+            address: (0, index_js_6.hexlify)(result.address),
+            accountProof: result.accountProof.map(index_js_6.hexlify),
+            balance: (0, index_js_6.getBigInt)(result.balance, "%response"),
+            codeHash: (0, index_js_6.hexlify)(result.codeHash),
+            nonce: (0, index_js_6.getNumber)(cleanup(result.nonce), "%response"),
+            storageHash: (0, index_js_6.hexlify)(result.storageHash),
+            storageProof: result.storageProof.map((p) => ({
+                key: (0, index_js_6.getBigInt)(cleanup(p.key), "storageKey"),
+                value: (0, index_js_6.hexlify)(cleanup(p.value)),
+                proof: p.proof.map(index_js_6.hexlify)
+            }))
+        };
+    }
     // Write
     async broadcastTransaction(signedTx) {
         const { blockNumber, hash, network } = await (0, index_js_6.resolveProperties)({

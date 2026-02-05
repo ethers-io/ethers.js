@@ -926,6 +926,16 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
                     ]
                 };
 
+            case "getStorageProof":
+                return {
+                    method: "eth_getProof",
+                    args: [
+                        getLowerCase(req.address),
+                        req.storageKeys.map(storageKey => "0x" + storageKey.toString(16)),
+                        req.blockTag
+                    ]
+                };
+
             case "broadcastTransaction":
                 return {
                     method: "eth_sendRawTransaction",

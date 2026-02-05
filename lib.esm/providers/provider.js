@@ -712,12 +712,12 @@ export class TransactionReceipt {
      *  Returns a JSON-compatible representation.
      */
     toJSON() {
-        const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
+        const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium,
         status, root } = this;
         return {
             _type: "TransactionReceipt",
             blockHash, blockNumber,
-            //byzantium, 
+            //byzantium,
             contractAddress,
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
