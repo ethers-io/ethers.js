@@ -95,6 +95,7 @@ const _formatLog = object({
     address: getAddress,
     blockHash: formatHash,
     blockNumber: getNumber,
+    blockTimestamp: allowNull(getNumber, undefined),
     data: formatData,
     index: getNumber,
     removed: allowNull(formatBoolean, false),
@@ -150,6 +151,7 @@ export function formatBlock(value: any): BlockParams {
 const _formatReceiptLog = object({
     transactionIndex: getNumber,
     blockNumber: getNumber,
+    blockTimestamp: allowNull(getNumber, undefined),
     transactionHash: formatHash,
     address: getAddress,
     topics: arrayOf(formatHash),

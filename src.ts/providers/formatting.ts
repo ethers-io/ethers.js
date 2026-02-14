@@ -144,6 +144,12 @@ export interface LogParams {
     blockNumber: number;
 
     /**
+     *  The timestamp of the block that included the transaction for this
+     *  log.
+     */
+    blockTimestamp?: number;
+
+    /**
      *  Whether this log was removed due to the transaction it was included
      *  in being removed dur to an orphaned block.
      */
@@ -414,5 +420,3 @@ export interface TransactionResponseParams {
      */
     authorizationList: null | Array<Authorization>;
 };
-
-

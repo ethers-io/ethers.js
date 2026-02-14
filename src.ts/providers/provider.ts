@@ -830,6 +830,12 @@ export class Log implements LogParams {
     readonly blockNumber!: number;
 
     /**
+     *  The timestamp of the block that included the transaction for this
+     *  log.
+     */
+    readonly blockTimestamp?: number;
+
+    /**
      *  If the **Log** represents a block that was removed due to an orphaned
      *  block, this will be true.
      *
@@ -878,6 +884,7 @@ export class Log implements LogParams {
             transactionHash: log.transactionHash,
             blockHash: log.blockHash,
             blockNumber: log.blockNumber,
+            blockTimestamp: log.blockTimestamp,
 
             removed: log.removed,
 
@@ -900,11 +907,17 @@ export class Log implements LogParams {
             removed, topics, transactionHash, transactionIndex
         } = this;
 
-        return {
+        const result: any = {
             _type: "log",
             address, blockHash, blockNumber, data, index,
             removed, topics, transactionHash, transactionIndex
         };
+
+        if (this.blockTimestamp != null) {
+            result.blockTimestamp = this.blockTimestamp;
+        }
+
+        return result;
     }
 
     /**
