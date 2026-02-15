@@ -31,6 +31,7 @@ export interface TestBlockchainBlock {
 
     parentBeaconBlockRoot?: string;
     stateRoot?: string;
+    transactionsRoot?: string;
     receiptsRoot?: string;
 }
 
@@ -140,6 +141,7 @@ export const testBlock: Record<TestBlockchainNetwork, Array<TestBlockchainBlock>
             miner: "0x5088D623ba0fcf0131E0897a91734A4D83596AA0",
             extraData: "0x476574682f76312e302e302d66633739643332642f6c696e75782f676f312e34",
             stateRoot: '0x76ab0b899e8387436ff2658e2988f83cbf1af1590b9fe9feca3714f8d1824940',
+            transactionsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
             receiptsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
             transactions: [ ]
         },
@@ -157,6 +159,7 @@ export const testBlock: Record<TestBlockchainNetwork, Array<TestBlockchainBlock>
             extraData: "0x706f6f6c696e2e636f6d21f7092f019bb92a76",
             baseFeePerGas: BigInt("40911884304"),
             stateRoot: '0xd08663f630cfcf2d7d8fe4d52f7685ad09798b7e6150cabea5eeceb1d89e11c2',
+            transactionsRoot: '0xa3fceebbe1f63ba17026d95ac10bc8e466049845efc7f26fcea1cab819d9aec3',
             receiptsRoot: '0x473e83ec3df279f44c4fc6da50fe1d0c5a18f1929b90de8917bdcdb88a132750',
             transactions: [
                 "0x1c3a398933db10634631f54b435c40c8805c13f12bbac7c3dab858ca44213fa2",
@@ -209,6 +212,7 @@ export const testBlock: Record<TestBlockchainNetwork, Array<TestBlockchainBlock>
             blobGasUsed: BigInt("524288"),
             excessBlobGas: BigInt("79691776"),
             stateRoot: '0xa78ad0e0f5d2b3383fdb13f4ad0523723816863556be3a5414536862f4d217df',
+            transactionsRoot: '0x7a680941fd602a5ecfff7cf8294e588d02d6e572c0ef57988df2a55179108372',
             receiptsRoot: '0xa254ed337328248b77011c70c2b85d6575f965f2fe65ed233c27e3750c0b7170',
             transactions: [
                 "0xe8a096a98cd7b8d783cbb30687c3adc8e59f1e9563c0454623cc8af59f8bcab1",

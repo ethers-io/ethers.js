@@ -107,6 +107,11 @@ export interface BlockParams {
     stateRoot?: null | string;
 
     /**
+     *  The hash of the transactions trie.
+     */
+    transactionsRoot?: null | string;
+
+    /**
      *  The hash of the transaction receipts trie.
      */
     receiptsRoot?: null | string;
