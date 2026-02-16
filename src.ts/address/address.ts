@@ -165,6 +165,66 @@ export function getAddress(address: string): string {
  *    getIcapAddress("XE65GB6LDNXYOFTX0NSV3FUWKOWIXAMJK37");
  *    //_error:
  */
+/**
+ *  Returns a normalized and checksumed address for %%address%%,
+ *  or ``null`` if %%address%% is not a valid address.
+ *
+ *  This is a safe alternative to [[getAddress]] that does not throw.
+ *
+ *  @example:
+ *    safeGetAddress("0x8ba1f109551bd432803012645ac136ddd64dba72")
+ *    //_result:
+ *
+ *    safeGetAddress("not-an-address")
+ *    //_result:
+ */
+export function safeGetAddress(address: string): string | null {
+    try {
+        return getAddress(address);
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ *  Compares two addresses for equality, ignoring case and checksum.
+ *
+ *  Returns ``false`` if either address is invalid.
+ *
+ *  @example:
+ *    addressEquals("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "0x8BA1F109551BD432803012645AC136DDD64DBA72")
+ *    //_result:
+ *
+ *    addressEquals("0x8ba1f109551bD432803012645Ac136ddd64DBA72", "0x0000000000000000000000000000000000000000")
+ *    //_result:
+ */
+export function addressEquals(a: string, b: string): boolean {
+    try {
+        return getAddress(a) === getAddress(b);
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ *  Returns ``true`` if %%address%% is the zero address
+ *  (``0x0000000000000000000000000000000000000000``).
+ *
+ *  @example:
+ *    isZeroAddress("0x0000000000000000000000000000000000000000")
+ *    //_result:
+ *
+ *    isZeroAddress("0x8ba1f109551bD432803012645Ac136ddd64DBA72")
+ *    //_result:
+ */
+export function isZeroAddress(address: string): boolean {
+    try {
+        return getAddress(address) === "0x0000000000000000000000000000000000000000";
+    } catch (e) {
+        return false;
+    }
+}
+
 export function getIcapAddress(address: string): string {
     //let base36 = _base16To36(getAddress(address).substring(2)).toUpperCase();
     let base36 = BigInt(getAddress(address)).toString(36).toUpperCase();

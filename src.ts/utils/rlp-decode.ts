@@ -93,6 +93,54 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
 }
 
 /**
+ *  Returns ``true`` if %%data%% is valid RLP-encoded data.
+ *
+ *  This attempts to decode the data and returns ``false`` if
+ *  decoding fails for any reason (malformed data, trailing bytes, etc.).
+ *
+ *  @example:
+ *    isValidRlp("0xc0")
+ *    //_result:
+ *
+ *    isValidRlp("0xff")
+ *    //_result:
+ */
+export function isValidRlp(_data: BytesLike): boolean {
+    try {
+        const data = getBytes(_data, "data");
+        const decoded = _decode(data, 0);
+        return decoded.consumed === data.length;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ *  Returns the number of top-level items in the RLP-encoded %%data%%,
+ *  or ``-1`` if the data is not a valid RLP list.
+ *
+ *  If the data is a single item (not a list), returns ``0``.
+ *
+ *  @example:
+ *    // An empty list
+ *    rlpItemCount("0xc0")
+ *    //_result:
+ */
+export function rlpItemCount(_data: BytesLike): number {
+    try {
+        const data = getBytes(_data, "data");
+        const decoded = _decode(data, 0);
+        if (decoded.consumed !== data.length) { return -1; }
+        if (Array.isArray(decoded.result)) {
+            return decoded.result.length;
+        }
+        return 0;
+    } catch (e) {
+        return -1;
+    }
+}
+
+/**
  *  Decodes %%data%% into the structured data it represents.
  */
 export function decodeRlp(_data: BytesLike): RlpStructuredData {

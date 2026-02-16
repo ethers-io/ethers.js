@@ -35,10 +35,10 @@ export {
 
 export { resolveProperties, defineProperties} from "./properties.js";
 
-export { decodeRlp } from "./rlp-decode.js";
+export { decodeRlp, isValidRlp, rlpItemCount } from "./rlp-decode.js";
 export { encodeRlp } from "./rlp-encode.js";
 
-export { formatEther, parseEther, formatUnits, parseUnits } from "./units.js";
+export { formatEther, parseEther, formatGwei, parseGwei, formatUnits, parseUnits, convertUnits, isValidDecimalString } from "./units.js";
 
 export {
     toUtf8Bytes,
@@ -49,6 +49,13 @@ export {
 } from "./utf8.js";
 
 export { uuidV4 } from "./uuid.js";
+
+export {
+    isValidPrivateKey, isValidBytes32, isValidTransactionHash,
+    isValidBlockTag, normalizeHexData, isValidSolidityType,
+    clampBigInt, getIntegerRange, fitsInType,
+    assertDataLength, safeToNumber, safeToBigInt
+} from "./validators.js";
 
 /////////////////////////////
 // Types
