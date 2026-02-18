@@ -6,7 +6,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SigningKey = void 0;
-const secp256k1_1 = require("@noble/curves/secp256k1");
+const secp256k1_1 = require("@noble/curves/secp256k1.js");
 const index_js_1 = require("../utils/index.js");
 const signature_js_1 = require("./signature.js");
 /**

@@ -3,7 +3,7 @@
  *
  *  @_subsection: api/crypto:Signing  [about-signing]
  */
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { concat, dataLength, getBytes, getBytesCopy, hexlify, toBeHex, assertArgument } from "../utils/index.js";
 import { Signature } from "./signature.js";
 /**
