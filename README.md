@@ -59,7 +59,7 @@ For the latest changes, see the
 
 
 
-Installing
+Installation
 ----------
 
 **NodeJS**
