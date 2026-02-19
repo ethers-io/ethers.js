@@ -1213,6 +1213,7 @@ export class Interface {
      *  If the matching event cannot be found, returns null.
      */
     parseLog(log: { topics: ReadonlyArray<string>, data: string}): null | LogDescription {
+        if (!log.topics || log.topics.length === 0) { return null; }
         const fragment = this.getEvent(log.topics[0]);
 
         if (!fragment || fragment.anonymous) { return null; }
