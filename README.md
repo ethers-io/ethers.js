@@ -128,7 +128,7 @@ packages designed to further enhance the functionality and experience.
 
 - [MulticallProvider](https://github.com/ethers-io/ext-provider-multicall) - A Provider which bundles multiple call requests into a single `call` to reduce latency and backend request capacity
 - [MulticoinPlugin](https://github.com/ethers-io/ext-provider-plugin-multicoin) - A Provider plugin to expand the support of ENS coin types
-- [GanaceProvider](https://github.com/ethers-io/ext-provider-ganache) - A Provider for in-memory node instances, for fast debugging, testing and simulating blockchain operations
+- [GanacheProvider](https://github.com/ethers-io/ext-provider-ganache) - A Provider for in-memory node instances, for fast debugging, testing and simulating blockchain operations
 - [Optimism Utilities](https://github.com/ethers-io/ext-utils-optimism) - A collection of Optimism utilities
 - [LedgerSigner](https://github.com/ethers-io/ext-signer-ledger) - A Signer to interact directly with Ledger Hardware Wallets
 
