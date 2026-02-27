@@ -3,6 +3,19 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.16.0 (2025-12-02 19:47)
+---------------------------------
+
+  - Added utility method to split EIP-7594 BLOb proofs into its cells ([88dfe96](https://github.com/ethers-io/ethers.js/commit/88dfe96cf56ad41d0a18b1ef8cac4209aa80905e)).
+  - Update Alchemy URL endpoint for mainnet ([#5052](https://github.com/ethers-io/ethers.js/issues/5052); [719b01d](https://github.com/ethers-io/ethers.js/commit/719b01d72dad7525d3837a561fa1c803a773b44e)).
+  - Fail on unsupported Etherscan networks immediately to better support the default provider ([94b333b](https://github.com/ethers-io/ethers.js/commit/94b333b982a5c4ecb74d10c2bdf0ff23584c37fa)).
+  - Added Filecoin network and Ankr endpoints ([#5038](https://github.com/ethers-io/ethers.js/issues/5038); [986e827](https://github.com/ethers-io/ethers.js/commit/986e8272270fa7394a0acd0c15b3bf407dbc1fc4)).
+  - Moved to better API for EIP-7594 PeerDAS ([#5062](https://github.com/ethers-io/ethers.js/issues/5062); [452b422](https://github.com/ethers-io/ethers.js/commit/452b4227a4587a514ff83dc8a591eb02a0ba2d56)).
+  - Added initial EIP-7594 PeerDAS support ([#5054](https://github.com/ethers-io/ethers.js/issues/5054), [#5062](https://github.com/ethers-io/ethers.js/issues/5062); [6d64889](https://github.com/ethers-io/ethers.js/commit/6d64889388824823369cd95193fbc857bc0ee15c)).
+  - Support RegExp engines with string length limitations ([#4967](https://github.com/ethers-io/ethers.js/issues/4967); [f0dfbe1](https://github.com/ethers-io/ethers.js/commit/f0dfbe1c35128d581d95cbf81637c438d7bee00a)).
+  - Added Transaction and Signature support for non-canonical S values ([#4223](https://github.com/ethers-io/ethers.js/issues/4223), [#5013](https://github.com/ethers-io/ethers.js/issues/5013); [855d727](https://github.com/ethers-io/ethers.js/commit/855d72728aaa1cc0ec427f56ab7929daead0b253)).
+  - Allow zero-width big-endian data for toBeHex and allow widths fo toBeArray ([#5025](https://github.com/ethers-io/ethers.js/issues/5025); [540f30c](https://github.com/ethers-io/ethers.js/commit/540f30cbec0e745df1a38d51286f2c6326829581)).
+
 ethers/v6.15.0 (2025-07-01 11:24)
 ---------------------------------
 
@@ -63,7 +76,7 @@ ethers/v6.13.6 (2025-03-21 18:21)
   - tests: added browser tests for sending ([afd613a](https://github.com/ethers-io/ethers.js/commit/afd613a2a0c9fb548805ed36e23ad9a5d4bcc239)).
   - tests: debugging browser tests failing to launch ([d1baa74](https://github.com/ethers-io/ethers.js/commit/d1baa741f6b272ba692e0e78787cacb1bd42a8b4)).
   - tests: fix assert call for browser assert ([1806bbd](https://github.com/ethers-io/ethers.js/commit/1806bbde27523933fb140ad985426f94e0286faf)).
-  - tests: inlcude more node tests in the browser tests ([92fd5d1](https://github.com/ethers-io/ethers.js/commit/92fd5d1f47c640caa7100bcccf0b133e866989e6)).
+  - tests: include more node tests in the browser tests ([92fd5d1](https://github.com/ethers-io/ethers.js/commit/92fd5d1f47c640caa7100bcccf0b133e866989e6)).
   - tests: move more tests to dev network ([996f30c](https://github.com/ethers-io/ethers.js/commit/996f30c674002cea316fa7aa3929f43409f934bc)).
   - tests: debugging CI browser failure ([ce7212d](https://github.com/ethers-io/ethers.js/commit/ce7212d03d6867081603794f0480f31d053823c4)).
   - tests: debugging CI browser failure ([f1821a6](https://github.com/ethers-io/ethers.js/commit/f1821a696763938ca9d44815bdcd5cc043eb3900)).
@@ -316,7 +329,7 @@ ethers/v6.5.0 (2023-06-06 22:41)
   - Fixed type guard for non-Typed instances ([#4087](https://github.com/ethers-io/ethers.js/issues/4087); [20c3d1b](https://github.com/ethers-io/ethers.js/commit/20c3d1b109743e33ab60a75d69bf7ede73b15ce2)).
   - Add confirmations to TransactionResponse ([#4094](https://github.com/ethers-io/ethers.js/issues/4094); [bb8685b](https://github.com/ethers-io/ethers.js/commit/bb8685b112ce1c689c740d4dbcb358c16fb9b22d)).
   - Fix stray promises when a node returns invalid results ([#4118](https://github.com/ethers-io/ethers.js/issues/4118); [3c1bad2](https://github.com/ethers-io/ethers.js/commit/3c1bad2fb7ad4a6ff90ff11f3e382fd18e41c800)).
-  - Added support to detect and stop providers spinning on intitial network detection ([#4015](https://github.com/ethers-io/ethers.js/issues/4015); [f37a52d](https://github.com/ethers-io/ethers.js/commit/f37a52da28ac130b7f4de52901618320994ea87a)).
+  - Added support to detect and stop providers spinning on initial network detection ([#4015](https://github.com/ethers-io/ethers.js/issues/4015); [f37a52d](https://github.com/ethers-io/ethers.js/commit/f37a52da28ac130b7f4de52901618320994ea87a)).
 
 ethers/v6.4.2 (2023-06-05 22:41)
 --------------------------------
@@ -344,7 +357,7 @@ ethers/v6.4.0 (2023-05-18 17:28)
   - Fix receipt gas price when effectiveGasPrice is 0 on testnets ([#4014](https://github.com/ethers-io/ethers.js/issues/4014); [2b0fe61](https://github.com/ethers-io/ethers.js/commit/2b0fe611335432aee334d777a64d8c7827881618)).
   - Added error event to provider ([#3970](https://github.com/ethers-io/ethers.js/issues/3970), [#3982](https://github.com/ethers-io/ethers.js/issues/3982); [af0291c](https://github.com/ethers-io/ethers.js/commit/af0291c01639674658f5049343da88a84da763a1)).
   - Removed superfluous parameters for internal transaction functions ([e848978](https://github.com/ethers-io/ethers.js/commit/e8489787585c2e69a23f6cdec6901f22b096aebe)).
-  - More aggresive tree-shaking ([076edad](https://github.com/ethers-io/ethers.js/commit/076edad81ef62474f48f2b4c8af0edc6e4fd64f2)).
+  - More aggressive tree-shaking ([076edad](https://github.com/ethers-io/ethers.js/commit/076edad81ef62474f48f2b4c8af0edc6e4fd64f2)).
   - More flexible static network checking ([#3834](https://github.com/ethers-io/ethers.js/issues/3834); [7c0465c](https://github.com/ethers-io/ethers.js/commit/7c0465c5fb834eba18d4e5535072685bdc1029f0)).
   - Support transitive dependants that use non-node16 moduleResolution ([#3920](https://github.com/ethers-io/ethers.js/issues/3920); [df685b1](https://github.com/ethers-io/ethers.js/commit/df685b1bd9ad346ee7863beb6c3ca3f4e94932a2)).
   - Populate any missing log.removed with false ([#3959](https://github.com/ethers-io/ethers.js/issues/3959); [4e478e6](https://github.com/ethers-io/ethers.js/commit/4e478e625d5648f2172631eef5fda5776ee776b0)).

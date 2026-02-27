@@ -15,15 +15,17 @@ const ProviderCreators = [
             return new index_js_1.AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
         }
     },
+    /*
     {
         name: "BlockscoutProvider",
         //networks: ethNetworks,  // @TODO: they are backfilling some Sepolia txs
-        networks: ["mainnet"],
-        create: function (network) {
+        networks: [ "mainnet" ],
+        create: function(network: string) {
             //return new BlockscoutProvider(network);
-            return new index_js_1.BlockscoutProvider(network, "fdbfa288-1695-454e-a369-4501253a120");
+            return new BlockscoutProvider(network, "fdbfa288-1695-454e-a369-4501253a120");
         }
     },
+    */
     /*
     {
         name: "AnkrProvider",

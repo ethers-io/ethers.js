@@ -234,7 +234,7 @@ export interface TransactionReceiptParams {
     logs: ReadonlyArray<LogParams>;
 
     /**
-     *  The amount of gas consumed executing this transaciton.
+     *  The amount of gas consumed executing this transaction.
      */
     gasUsed: bigint;
 

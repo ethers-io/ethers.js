@@ -2,6 +2,13 @@ import { Signature } from "../crypto/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { SignatureLike } from "../crypto/index.js";
 import type { AccessList, AccessListish, Authorization, AuthorizationLike } from "./index.js";
+declare const inspect: unique symbol;
+/**
+ *  Returns a BLOb proof as its cells for [[link-eip-7594]] BLOb.
+ *
+ *  The default %%cellCount%% is 128.
+ */
+export declare function splitBlobCells(_proof: BytesLike, cellCount?: number): Array<string>;
 /**
  *  A **TransactionLike** is an object which is appropriate as a loose
  *  input for many operations which will populate missing properties of
@@ -85,6 +92,13 @@ export interface TransactionLike<A = string> {
      */
     kzg?: null | KzgLibraryLike;
     /**
+     *  The [[link-eip-7594]] BLOb Wrapper Version used for PeerDAS.
+     *
+     *  For networks that use EIP-7594, this property is required to
+     *  serialize the sidecar correctly.
+     */
+    blobWrapperVersion?: null | number;
+    /**
      *  The [[link-eip-7702]] authorizations (if any).
      */
     authorizationList?: null | Array<Authorization>;
@@ -96,8 +110,18 @@ export interface TransactionLike<A = string> {
  *  KZG library.
  */
 export interface Blob {
+    /**
+     *  The blob data.
+     */
     data: string;
+    /**
+     * A EIP-4844 BLOb uses a string proof, while EIP-7594 use an
+     * array of strings representing the cells of the proof.
+     */
     proof: string;
+    /**
+     *  The BLOb commitment.
+     */
     commitment: string;
 }
 /**
@@ -220,6 +244,7 @@ export declare class Transaction implements TransactionLike<string> {
      */
     get signature(): null | Signature;
     set signature(value: null | SignatureLike);
+    isValid(): boolean;
     /**
      *  The access list.
      *
@@ -272,6 +297,8 @@ export declare class Transaction implements TransactionLike<string> {
     set blobs(_blobs: null | Array<BlobLike>);
     get kzg(): null | KzgLibrary;
     set kzg(kzg: null | KzgLibraryLike);
+    get blobWrapperVersion(): null | number;
+    set blobWrapperVersion(value: null | number);
     /**
      *  Creates a new Transaction with default values.
      */
@@ -391,10 +418,13 @@ export declare class Transaction implements TransactionLike<string> {
      *  Return a JSON-friendly object.
      */
     toJSON(): any;
+    [inspect](): string;
+    toString(): string;
     /**
      *  Create a **Transaction** from a serialized transaction or a
      *  Transaction-like object.
      */
     static from(tx?: string | TransactionLike<string>): Transaction;
 }
+export {};
 //# sourceMappingURL=transaction.d.ts.map

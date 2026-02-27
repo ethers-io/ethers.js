@@ -22,7 +22,6 @@ link-quicknode [QuickNode](https://www.quicknode.com/ethers)
 link-react-native [React Native](https://reactnative.dev)
 link-semver [semver](https://semver.org)
 link-solidity [Solidity](https://solidity.readthedocs.io/)
-link-tally [Tally](https://tallyho.org)
 
 # Project-specific
 link-alchemy-signup [Alchemy Signup](https://dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d)

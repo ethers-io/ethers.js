@@ -16,7 +16,7 @@
 // is encountered.
 //
 // The fold operation can be repeated for large sets as even within
-// each folded set, there is substatial overlap in prefix. With the
+// each folded set, there is substantial overlap in prefix. With the
 // second special symbol ";", we get:
 //   [ ; x 13, other, :, ple, ricot, :, ; x 18, ead ]
 // which can be further compressed by using numbers instead of the
@@ -31,7 +31,7 @@
 //
 // Once the entire latin-1 set has been collapsed, we use the remaining
 // printable characters (except " and \, which require 2 bytes to represent
-// in string) to substiture for the most common 2-letter pairs of letters
+// in string) to substitute for the most common 2-letter pairs of letters
 // in the string.
 //
 // OWLA Accent Format
@@ -55,7 +55,7 @@
 //   00 10 01 01 10  =  001001 1010xx
 //
 // The base-64 set used has all number replaced with their
-// shifted-counterparts to prevent comflicting with the numbers used in
+// shifted-counterparts to prevent conflicting with the numbers used in
 // the fold operation to indicate the number of ";".
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.encodeOwl = exports.extractAccents = exports.BitWriter = void 0;

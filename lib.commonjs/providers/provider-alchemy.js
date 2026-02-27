@@ -33,7 +33,7 @@ const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC";
 function getHost(name) {
     switch (name) {
         case "mainnet":
-            return "eth-mainnet.alchemyapi.io";
+            return "eth-mainnet.g.alchemy.com";
         case "goerli":
             return "eth-goerli.g.alchemy.com";
         case "sepolia":

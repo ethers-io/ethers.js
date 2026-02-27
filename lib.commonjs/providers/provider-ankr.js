@@ -16,6 +16,8 @@ exports.AnkrProvider = void 0;
  *  - Base Sepolia Testnet (``base-sepolia``)
  *  - BNB (``bnb``)
  *  - BNB Testnet (``bnbt``)
+ *  - Filecoin (``filecoin``)
+ *  - Filecoin Calibration Testnet (``filecoin-calibration``)
  *  - Optimism (``optimism``)
  *  - Optimism Goerli Testnet (``optimism-goerli``)
  *  - Optimism Sepolia Testnet (``optimism-sepolia``)
@@ -49,6 +51,10 @@ function getHost(name) {
             return "rpc.ankr.com/bsc";
         case "bnbt":
             return "rpc.ankr.com/bsc_testnet_chapel";
+        case "filecoin":
+            return "rpc.ankr.com/filecoin";
+        case "filecoin-calibration":
+            return "rpc.ankr.com/filecoin_testnet";
         case "matic":
             return "rpc.ankr.com/polygon";
         case "matic-mumbai":
