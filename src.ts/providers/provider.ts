@@ -562,7 +562,7 @@ export class Block implements BlockParams, Iterable<string> {
     readonly excessBlobGas!: null | bigint;
 
     /**
-     *  The miner coinbase address, wihch receives any subsidies for
+     *  The miner coinbase address, which receives any subsidies for
      *  including this block.
      */
     readonly miner!: string;
