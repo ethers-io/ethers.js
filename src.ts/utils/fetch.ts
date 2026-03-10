@@ -550,6 +550,15 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
             // Things won't get any better on another attempt; abort
             return response;
 
+        } else if (response.statusCode === 307 || response.statusCode === 308) {
+            try {
+                const location = response.headers.location || "";
+                // clone without resetting method/body
+                const redirected = req.clone();
+                redirected.url = location;
+                return redirected.#send(attempt + 1, expires, 0, _request, response);
+            } catch (error) { }
+            return response;
         } else if (response.statusCode === 429) {
 
             // Throttle
