@@ -33,6 +33,13 @@ import { AbstractProvider } from "./abstract-provider.js";
 import { Network } from "./network.js";
 import { NetworkPlugin } from "./plugins-network.js";
 import { showThrottleMessage } from "./community.js";
+// See: https://docs.etherscan.io/supported-chains
+const Supported = ("1 11155111 17000 560048 2741 11124 33111 33139 42170 " +
+    "42161 421614 43114 43113 8453 84532 80069 80094 199 1029 81457 " +
+    "168587773 56 97 42220 11142220 252 2523 100 999 737373 747474 " +
+    "59144 59141 5000 5003 43521 143 10143 1287 1284 1285 10 " +
+    "11155420 204 5611 80002 137 534352 534351 1329 1328 146 14601 " +
+    "988 2201 1923 1924 167013 167000 130 1301 480 4801 51 50 324 300").split(/ /g);
 const THROTTLE = 2000;
 function isPromise(value) {
     return (value && typeof (value.then) === "function");
@@ -90,6 +97,7 @@ export class EtherscanProvider extends AbstractProvider {
         const apiKey = (_apiKey != null) ? _apiKey : null;
         super();
         const network = Network.from(_network);
+        assertArgument(Supported.indexOf(`${network.chainId}`) >= 0, "unsupported network", "network", network);
         this.#plugin = network.getPlugin(EtherscanPluginId);
         defineProperties(this, { apiKey, network });
     }

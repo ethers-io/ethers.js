@@ -504,7 +504,7 @@ export class BaseContract {
      *  The target to connect to.
      *
      *  This can be an address, ENS name or any [[Addressable]], such as
-     *  another contract. To get the resovled address, use the ``getAddress``
+     *  another contract. To get the resolved address, use the ``getAddress``
      *  method.
      */
     target;
@@ -679,7 +679,7 @@ export class BaseContract {
      *  resolve immediately if already deployed.
      */
     async waitForDeployment() {
-        // We have the deployement transaction; just use that (throws if deployement fails)
+        // We have the deployment transaction; just use that (throws if deployment fails)
         const deployTx = this.deploymentTransaction();
         if (deployTx) {
             await deployTx.wait();
@@ -721,7 +721,7 @@ export class BaseContract {
     /**
      *  Return the function for a given name. This is useful when a contract
      *  method name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getFunction(key) {
         if (typeof (key) !== "string") {
@@ -733,7 +733,7 @@ export class BaseContract {
     /**
      *  Return the event for a given name. This is useful when a contract
      *  event name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getEvent(key) {
         if (typeof (key) !== "string") {

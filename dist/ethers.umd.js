@@ -9,7 +9,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  The current version of Ethers.
      */
-    const version = "6.15.0";
+    const version = "6.16.0";
 
     /**
      *  Property helper functions.
@@ -308,7 +308,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             }
             return value;
         }
-        if (typeof (value) === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
+        if (typeof (value) === "string" && (value.length % 2) === 0 &&
+            value.match(/^0x[0-9a-f]*$/i)) {
             const result = new Uint8Array((value.length - 2) / 2);
             let offset = 2;
             for (let i = 0; i < result.length; i++) {
@@ -628,6 +629,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         else {
             const width = getNumber(_width, "width");
+            // Special case when both value and width are 0 (see: #5025)
+            if (width === 0 && value === BN_0$a) {
+                return "0x";
+            }
             assert(width * 2 >= result.length, `value exceeds width (${width} bytes)`, "NUMERIC_FAULT", {
                 operation: "toBeHex",
                 fault: "overflow",
@@ -643,14 +648,26 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     /**
      *  Converts %%value%% to a Big Endian Uint8Array.
      */
-    function toBeArray(_value) {
+    function toBeArray(_value, _width) {
         const value = getUint(_value, "value");
         if (value === BN_0$a) {
-            return new Uint8Array([]);
+            const width = (_width != null) ? getNumber(_width, "width") : 0;
+            return new Uint8Array(width);
         }
         let hex = value.toString(16);
         if (hex.length % 2) {
             hex = "0" + hex;
+        }
+        if (_width != null) {
+            const width = getNumber(_width, "width");
+            while (hex.length < (width * 2)) {
+                hex = "00" + hex;
+            }
+            assert((width * 2) === hex.length, `value exceeds width (${width} bytes)`, "NUMERIC_FAULT", {
+                operation: "toBeArray",
+                fault: "overflow",
+                value: _value
+            });
         }
         const result = new Uint8Array(hex.length / 2);
         for (let i = 0; i < result.length; i++) {
@@ -6639,6 +6656,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const BN_27$1 = BigInt(27);
     const BN_28$1 = BigInt(28);
     const BN_35$1 = BigInt(35);
+    const BN_N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+    const BN_N_2 = BN_N / BN_2$3; // Must be integer (floor) division; do NOT shifts
+    const inspect$1 = Symbol.for("nodejs.util.inspect.custom");
     const _guard$3 = {};
     function toUint256(value) {
         return zeroPadValue(toBeArray(value), 32);
@@ -6689,7 +6709,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  Returns true if the Signature is valid for [[link-eip-2]] signatures.
          */
         isValid() {
-            return (parseInt(this.#s.substring(0, 3)) < 8);
+            const s = BigInt(this.#s);
+            return (s <= BN_N_2);
         }
         /**
          *  The ``v`` value for a signature.
@@ -6765,8 +6786,26 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#v = v;
             this.#networkV = null;
         }
-        [Symbol.for('nodejs.util.inspect.custom')]() {
-            return `Signature { r: "${this.r}", s: "${this._s}"${this.isValid() ? "" : ', valid: "false"'}, yParity: ${this.yParity}, networkV: ${this.networkV} }`;
+        /**
+         *  Returns the canonical signature.
+         *
+         *  This is only necessary when dealing with legacy transaction which
+         *  did not enforce canonical S values (i.e. [[link-eip-2]]. Most
+         *  developers should never require this.
+         */
+        getCanonical() {
+            if (this.isValid()) {
+                return this;
+            }
+            // Compute the canonical signature; s' = N - s, v = !v
+            const s = BN_N - BigInt(this._s);
+            const v = (55 - this.v);
+            const result = new Signature(_guard$3, this.r, toUint256(s), v);
+            // Populate the networkV if necessary
+            if (this.networkV) {
+                result.#networkV = this.networkV;
+            }
+            return result;
         }
         /**
          *  Returns a new identical [[Signature]].
@@ -6788,6 +6827,15 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 networkV: ((networkV != null) ? networkV.toString() : null),
                 r: this.r, s: this._s, v: this.v,
             };
+        }
+        [inspect$1]() {
+            return this.toString();
+        }
+        toString() {
+            if (this.isValid()) {
+                return `Signature { r: ${this.r}, s: ${this._s}, v: ${this.v} }`;
+            }
+            return `Signature { r: ${this.r}, s: ${this._s}, v: ${this.v}, valid: false }`;
         }
         /**
          *  Compute the chain ID from the ``v`` in a legacy EIP-155 transactions.
@@ -8552,7 +8600,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     const BN_28 = BigInt(28);
     const BN_35 = BigInt(35);
     const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    const inspect = Symbol.for("nodejs.util.inspect.custom");
     const BLOB_SIZE = 4096 * 32;
+    const CELL_COUNT = 128;
     function getKzgLibrary(kzg) {
         const blobToKzgCommitment = (blob) => {
             if ("computeBlobProof" in kzg) {
@@ -8676,7 +8726,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 formatNumber(a.nonce, "nonce"),
                 formatNumber(a.signature.yParity, "yParity"),
                 toBeArray(a.signature.r),
-                toBeArray(a.signature.s)
+                toBeArray(a.signature._s)
             ];
         });
     }
@@ -8777,7 +8827,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         // Add the signature
         fields.push(toBeArray(v));
         fields.push(toBeArray(sig.r));
-        fields.push(toBeArray(sig.s));
+        fields.push(toBeArray(sig._s));
         return encodeRlp(fields);
     }
     function _parseEipSignature(tx, fields) {
@@ -8882,9 +8932,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function _parseEip4844(data) {
         let fields = decodeRlp(getBytes(data).slice(1));
         let typeName = "3";
+        let blobWrapperVersion = null;
         let blobs = null;
         // Parse the network format
         if (fields.length === 4 && Array.isArray(fields[0])) {
+            // EIP-4844 format with sidecar
             typeName = "3 (network format)";
             const fBlobs = fields[1], fCommits = fields[2], fProofs = fields[3];
             assertArgument(Array.isArray(fBlobs), "invalid network format: blobs not an array", "fields[1]", fBlobs);
@@ -8898,6 +8950,31 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     data: fBlobs[i],
                     commitment: fCommits[i],
                     proof: fProofs[i],
+                });
+            }
+            fields = fields[0];
+        }
+        else if (fields.length === 5 && Array.isArray(fields[0])) {
+            // EIP-7594 format with sidecar
+            typeName = "3 (EIP-7594 network format)";
+            blobWrapperVersion = getNumber(fields[1]);
+            const fBlobs = fields[2], fCommits = fields[3], fProofs = fields[4];
+            assertArgument(blobWrapperVersion === 1, `unsupported EIP-7594 network format version: ${blobWrapperVersion}`, "fields[1]", blobWrapperVersion);
+            assertArgument(Array.isArray(fBlobs), "invalid EIP-7594 network format: blobs not an array", "fields[2]", fBlobs);
+            assertArgument(Array.isArray(fCommits), "invalid EIP-7594 network format: commitments not an array", "fields[3]", fCommits);
+            assertArgument(Array.isArray(fProofs), "invalid EIP-7594 network format: proofs not an array", "fields[4]", fProofs);
+            assertArgument(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
+            assertArgument(fBlobs.length * CELL_COUNT === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+            blobs = [];
+            for (let i = 0; i < fBlobs.length; i++) {
+                const proof = [];
+                for (let j = 0; j < CELL_COUNT; j++) {
+                    proof.push(fProofs[(i * CELL_COUNT) + j]);
+                }
+                blobs.push({
+                    data: fBlobs[i],
+                    commitment: fCommits[i],
+                    proof: concat(proof)
                 });
             }
             fields = fields[0];
@@ -8916,7 +8993,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             data: hexlify(fields[7]),
             accessList: handleAccessList(fields[8], "accessList"),
             maxFeePerBlobGas: handleUint(fields[9], "maxFeePerBlobGas"),
-            blobVersionedHashes: fields[10]
+            blobVersionedHashes: fields[10],
+            blobWrapperVersion
         };
         if (blobs) {
             tx.blobs = blobs;
@@ -8956,6 +9034,29 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             fields.push(toBeArray(sig.s));
             // We have blobs; return the network wrapped format
             if (blobs) {
+                // Use EIP-7594
+                if (tx.blobWrapperVersion != null) {
+                    const wrapperVersion = toBeArray(tx.blobWrapperVersion);
+                    const cellProofs = [];
+                    for (const { proof } of blobs) {
+                        const p = getBytes(proof);
+                        const cellSize = p.length / CELL_COUNT;
+                        for (let i = 0; i < p.length; i += cellSize) {
+                            cellProofs.push(p.subarray(i, i + cellSize));
+                        }
+                    }
+                    return concat([
+                        "0x03",
+                        encodeRlp([
+                            fields,
+                            wrapperVersion,
+                            blobs.map((b) => b.data),
+                            blobs.map((b) => b.commitment),
+                            cellProofs
+                        ])
+                    ]);
+                }
+                // Fall back onto classic EIP-4844 behavior
                 return concat([
                     "0x03",
                     encodeRlp([
@@ -9044,6 +9145,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         #kzg;
         #blobs;
         #auths;
+        #blobWrapperVersion;
         /**
          *  The transaction type.
          *
@@ -9196,6 +9298,21 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         set signature(value) {
             this.#sig = (value == null) ? null : Signature.from(value);
         }
+        isValid() {
+            const sig = this.signature;
+            if (sig && !sig.isValid()) {
+                return false;
+            }
+            const auths = this.authorizationList;
+            if (auths) {
+                for (const auth of auths) {
+                    if (!auth.signature.isValid()) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
         /**
          *  The access list.
          *
@@ -9331,13 +9448,11 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     versionedHashes.push(getVersionedHash(1, commit));
                 }
                 else {
-                    const commit = hexlify(blob.commitment);
-                    blobs.push({
-                        data: hexlify(blob.data),
-                        commitment: commit,
-                        proof: hexlify(blob.proof)
-                    });
-                    versionedHashes.push(getVersionedHash(1, commit));
+                    const data = hexlify(blob.data);
+                    const commitment = hexlify(blob.commitment);
+                    const proof = hexlify(blob.proof);
+                    blobs.push({ data, commitment, proof });
+                    versionedHashes.push(getVersionedHash(1, commitment));
                 }
             }
             this.#blobs = blobs;
@@ -9351,6 +9466,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             else {
                 this.#kzg = getKzgLibrary(kzg);
             }
+        }
+        get blobWrapperVersion() {
+            return this.#blobWrapperVersion;
+        }
+        set blobWrapperVersion(value) {
+            this.#blobWrapperVersion = value;
         }
         /**
          *  Creates a new Transaction with default values.
@@ -9373,6 +9494,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             this.#kzg = null;
             this.#blobs = null;
             this.#auths = null;
+            this.#blobWrapperVersion = null;
         }
         /**
          *  The transaction hash, if signed. Otherwise, ``null``.
@@ -9399,7 +9521,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (this.signature == null) {
                 return null;
             }
-            return recoverAddress(this.unsignedHash, this.signature);
+            return recoverAddress(this.unsignedHash, this.signature.getCanonical());
         }
         /**
          *  The public key of the sender, if signed. Otherwise, ``null``.
@@ -9408,7 +9530,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             if (this.signature == null) {
                 return null;
             }
-            return SigningKey.recoverPublicKey(this.unsignedHash, this.signature);
+            return SigningKey.recoverPublicKey(this.unsignedHash, this.signature.getCanonical());
         }
         /**
          *  Returns true if signed.
@@ -9595,6 +9717,56 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 accessList: this.accessList
             };
         }
+        [inspect]() {
+            return this.toString();
+        }
+        toString() {
+            const output = [];
+            const add = (key) => {
+                let value = this[key];
+                if (typeof (value) === "string") {
+                    value = JSON.stringify(value);
+                }
+                output.push(`${key}: ${value}`);
+            };
+            if (this.type) {
+                add("type");
+            }
+            add("to");
+            add("data");
+            add("nonce");
+            add("gasLimit");
+            add("value");
+            if (this.chainId != null) {
+                add("chainId");
+            }
+            if (this.signature) {
+                add("from");
+                output.push(`signature: ${this.signature.toString()}`);
+            }
+            // @TODO: accessList
+            // @TODO: blobs (might make output huge; maybe just include a flag?)
+            const auths = this.authorizationList;
+            if (auths) {
+                const outputAuths = [];
+                for (const auth of auths) {
+                    const o = [];
+                    o.push(`address: ${JSON.stringify(auth.address)}`);
+                    if (auth.nonce != null) {
+                        o.push(`nonce: ${auth.nonce}`);
+                    }
+                    if (auth.chainId != null) {
+                        o.push(`chainId: ${auth.chainId}`);
+                    }
+                    if (auth.signature) {
+                        o.push(`signature: ${auth.signature.toString()}`);
+                    }
+                    outputAuths.push(`Authorization { ${o.join(", ")} }`);
+                }
+                output.push(`authorizations: [ ${outputAuths.join(", ")} ]`);
+            }
+            return `Transaction { ${output.join(", ")} }`;
+        }
         /**
          *  Create a **Transaction** from a serialized transaction or a
          *  Transaction-like object.
@@ -9667,6 +9839,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             // require the library in the event raw blob data is provided.
             if (tx.kzg != null) {
                 result.kzg = tx.kzg;
+            }
+            if (tx.blobWrapperVersion != null) {
+                result.blobWrapperVersion = tx.blobWrapperVersion;
             }
             if (tx.blobs != null) {
                 result.blobs = tx.blobs;
@@ -14292,6 +14467,9 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         if ("kzg" in req) {
             result.kzg = req.kzg;
         }
+        if ("blobWrapperVersion" in req) {
+            result.blobWrapperVersion = req.blobWrapperVersion;
+        }
         if ("blobs" in req && req.blobs) {
             result.blobs = req.blobs.map((b) => {
                 if (isBytesLike(b)) {
@@ -16152,7 +16330,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  The target to connect to.
          *
          *  This can be an address, ENS name or any [[Addressable]], such as
-         *  another contract. To get the resovled address, use the ``getAddress``
+         *  another contract. To get the resolved address, use the ``getAddress``
          *  method.
          */
         target;
@@ -16327,7 +16505,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
          *  resolve immediately if already deployed.
          */
         async waitForDeployment() {
-            // We have the deployement transaction; just use that (throws if deployement fails)
+            // We have the deployment transaction; just use that (throws if deployment fails)
             const deployTx = this.deploymentTransaction();
             if (deployTx) {
                 await deployTx.wait();
@@ -16369,7 +16547,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         /**
          *  Return the function for a given name. This is useful when a contract
          *  method name conflicts with a JavaScript name such as ``prototype`` or
-         *  when using a Contract programatically.
+         *  when using a Contract programmatically.
          */
         getFunction(key) {
             if (typeof (key) !== "string") {
@@ -16381,7 +16559,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         /**
          *  Return the event for a given name. This is useful when a contract
          *  event name conflicts with a JavaScript name such as ``prototype`` or
-         *  when using a Contract programatically.
+         *  when using a Contract programmatically.
          */
         getEvent(key) {
             if (typeof (key) !== "string") {
@@ -18010,6 +18188,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         registerEth("base-sepolia", 84532, {});
         registerEth("bnb", 56, { ensNetwork: 1 });
         registerEth("bnbt", 97, {});
+        registerEth("filecoin", 314, {});
+        registerEth("filecoin-calibration", 314159, {});
         registerEth("linea", 59144, { ensNetwork: 1 });
         registerEth("linea-goerli", 59140, {});
         registerEth("linea-sepolia", 59141, {});
@@ -19704,7 +19884,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
 
     /**
      *  Generally the [[Wallet]] and [[JsonRpcSigner]] and their sub-classes
-     *  are sufficent for most developers, but this is provided to
+     *  are sufficient for most developers, but this is provided to
      *  fascilitate more complex Signers.
      *
      *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
@@ -19904,7 +20084,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
     }
     /**
-     *  A **VoidSigner** is a class deisgned to allow an address to be used
+     *  A **VoidSigner** is a class designed to allow an address to be used
      *  in any API which accepts a Signer, but for which there are no
      *  credentials available to perform any actual signing.
      *
@@ -21128,6 +21308,8 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *  - Base Sepolia Testnet (``base-sepolia``)
      *  - BNB (``bnb``)
      *  - BNB Testnet (``bnbt``)
+     *  - Filecoin (``filecoin``)
+     *  - Filecoin Calibration Testnet (``filecoin-calibration``)
      *  - Optimism (``optimism``)
      *  - Optimism Goerli Testnet (``optimism-goerli``)
      *  - Optimism Sepolia Testnet (``optimism-sepolia``)
@@ -21157,6 +21339,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                 return "rpc.ankr.com/bsc";
             case "bnbt":
                 return "rpc.ankr.com/bsc_testnet_chapel";
+            case "filecoin":
+                return "rpc.ankr.com/filecoin";
+            case "filecoin-calibration":
+                return "rpc.ankr.com/filecoin_testnet";
             case "matic":
                 return "rpc.ankr.com/polygon";
             case "matic-mumbai":
@@ -21270,7 +21456,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
     function getHost$4(name) {
         switch (name) {
             case "mainnet":
-                return "eth-mainnet.alchemyapi.io";
+                return "eth-mainnet.g.alchemy.com";
             case "goerli":
                 return "eth-goerli.g.alchemy.com";
             case "sepolia":
@@ -21523,6 +21709,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      *
      *  @_subsection api/providers/thirdparty:Etherscan  [providers-etherscan]
      */
+    // See: https://docs.etherscan.io/supported-chains
+    const Supported = ("1 11155111 17000 560048 2741 11124 33111 33139 42170 " +
+        "42161 421614 43114 43113 8453 84532 80069 80094 199 1029 81457 " +
+        "168587773 56 97 42220 11142220 252 2523 100 999 737373 747474 " +
+        "59144 59141 5000 5003 43521 143 10143 1287 1284 1285 10 " +
+        "11155420 204 5611 80002 137 534352 534351 1329 1328 146 14601 " +
+        "988 2201 1923 1924 167013 167000 130 1301 480 4801 51 50 324 300").split(/ /g);
     const THROTTLE = 2000;
     function isPromise(value) {
         return (value && typeof (value.then) === "function");
@@ -21580,6 +21773,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             const apiKey = (_apiKey != null) ? _apiKey : null;
             super();
             const network = Network.from(_network);
+            assertArgument(Supported.indexOf(`${network.chainId}`) >= 0, "unsupported network", "network", network);
             this.#plugin = network.getPlugin(EtherscanPluginId);
             defineProperties(this, { apiKey, network });
         }

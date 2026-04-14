@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoidSigner = exports.AbstractSigner = void 0;
 /**
  *  Generally the [[Wallet]] and [[JsonRpcSigner]] and their sub-classes
- *  are sufficent for most developers, but this is provided to
+ *  are sufficient for most developers, but this is provided to
  *  fascilitate more complex Signers.
  *
  *  @_section: api/providers/abstract-signer: Subclassing Signer [abstract-signer]
@@ -208,7 +208,7 @@ class AbstractSigner {
 }
 exports.AbstractSigner = AbstractSigner;
 /**
- *  A **VoidSigner** is a class deisgned to allow an address to be used
+ *  A **VoidSigner** is a class designed to allow an address to be used
  *  in any API which accepts a Signer, but for which there are no
  *  credentials available to perform any actual signing.
  *

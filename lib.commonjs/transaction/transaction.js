@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Transaction = void 0;
+exports.Transaction = exports.splitBlobCells = void 0;
 const index_js_1 = require("../address/index.js");
 const addresses_js_1 = require("../constants/addresses.js");
 const index_js_2 = require("../crypto/index.js");
@@ -14,7 +14,27 @@ const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
 const BN_35 = BigInt(35);
 const BN_MAX_UINT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 const BLOB_SIZE = 4096 * 32;
+const CELL_COUNT = 128;
+/**
+ *  Returns a BLOb proof as its cells for [[link-eip-7594]] BLOb.
+ *
+ *  The default %%cellCount%% is 128.
+ */
+function splitBlobCells(_proof, cellCount) {
+    if (cellCount == null) {
+        cellCount = CELL_COUNT;
+    }
+    const cellProofs = [];
+    const proof = (0, index_js_3.getBytes)(_proof);
+    const cellSize = proof.length / cellCount;
+    for (let i = 0; i < proof.length; i += cellSize) {
+        cellProofs.push((0, index_js_3.hexlify)(proof.subarray(i, i + cellSize)));
+    }
+    return cellProofs;
+}
+exports.splitBlobCells = splitBlobCells;
 function getKzgLibrary(kzg) {
     const blobToKzgCommitment = (blob) => {
         if ("computeBlobProof" in kzg) {
@@ -138,7 +158,7 @@ function formatAuthorizationList(value) {
             formatNumber(a.nonce, "nonce"),
             formatNumber(a.signature.yParity, "yParity"),
             (0, index_js_3.toBeArray)(a.signature.r),
-            (0, index_js_3.toBeArray)(a.signature.s)
+            (0, index_js_3.toBeArray)(a.signature._s)
         ];
     });
 }
@@ -239,7 +259,7 @@ function _serializeLegacy(tx, sig) {
     // Add the signature
     fields.push((0, index_js_3.toBeArray)(v));
     fields.push((0, index_js_3.toBeArray)(sig.r));
-    fields.push((0, index_js_3.toBeArray)(sig.s));
+    fields.push((0, index_js_3.toBeArray)(sig._s));
     return (0, index_js_3.encodeRlp)(fields);
 }
 function _parseEipSignature(tx, fields) {
@@ -344,9 +364,11 @@ function _serializeEip2930(tx, sig) {
 function _parseEip4844(data) {
     let fields = (0, index_js_3.decodeRlp)((0, index_js_3.getBytes)(data).slice(1));
     let typeName = "3";
+    let blobWrapperVersion = null;
     let blobs = null;
     // Parse the network format
     if (fields.length === 4 && Array.isArray(fields[0])) {
+        // EIP-4844 format with sidecar
         typeName = "3 (network format)";
         const fBlobs = fields[1], fCommits = fields[2], fProofs = fields[3];
         (0, index_js_3.assertArgument)(Array.isArray(fBlobs), "invalid network format: blobs not an array", "fields[1]", fBlobs);
@@ -360,6 +382,31 @@ function _parseEip4844(data) {
                 data: fBlobs[i],
                 commitment: fCommits[i],
                 proof: fProofs[i],
+            });
+        }
+        fields = fields[0];
+    }
+    else if (fields.length === 5 && Array.isArray(fields[0])) {
+        // EIP-7594 format with sidecar
+        typeName = "3 (EIP-7594 network format)";
+        blobWrapperVersion = (0, index_js_3.getNumber)(fields[1]);
+        const fBlobs = fields[2], fCommits = fields[3], fProofs = fields[4];
+        (0, index_js_3.assertArgument)(blobWrapperVersion === 1, `unsupported EIP-7594 network format version: ${blobWrapperVersion}`, "fields[1]", blobWrapperVersion);
+        (0, index_js_3.assertArgument)(Array.isArray(fBlobs), "invalid EIP-7594 network format: blobs not an array", "fields[2]", fBlobs);
+        (0, index_js_3.assertArgument)(Array.isArray(fCommits), "invalid EIP-7594 network format: commitments not an array", "fields[3]", fCommits);
+        (0, index_js_3.assertArgument)(Array.isArray(fProofs), "invalid EIP-7594 network format: proofs not an array", "fields[4]", fProofs);
+        (0, index_js_3.assertArgument)(fBlobs.length === fCommits.length, "invalid network format: blobs/commitments length mismatch", "fields", fields);
+        (0, index_js_3.assertArgument)(fBlobs.length * CELL_COUNT === fProofs.length, "invalid network format: blobs/proofs length mismatch", "fields", fields);
+        blobs = [];
+        for (let i = 0; i < fBlobs.length; i++) {
+            const proof = [];
+            for (let j = 0; j < CELL_COUNT; j++) {
+                proof.push(fProofs[(i * CELL_COUNT) + j]);
+            }
+            blobs.push({
+                data: fBlobs[i],
+                commitment: fCommits[i],
+                proof: (0, index_js_3.concat)(proof)
             });
         }
         fields = fields[0];
@@ -378,7 +425,8 @@ function _parseEip4844(data) {
         data: (0, index_js_3.hexlify)(fields[7]),
         accessList: handleAccessList(fields[8], "accessList"),
         maxFeePerBlobGas: handleUint(fields[9], "maxFeePerBlobGas"),
-        blobVersionedHashes: fields[10]
+        blobVersionedHashes: fields[10],
+        blobWrapperVersion
     };
     if (blobs) {
         tx.blobs = blobs;
@@ -418,6 +466,29 @@ function _serializeEip4844(tx, sig, blobs) {
         fields.push((0, index_js_3.toBeArray)(sig.s));
         // We have blobs; return the network wrapped format
         if (blobs) {
+            // Use EIP-7594
+            if (tx.blobWrapperVersion != null) {
+                const wrapperVersion = (0, index_js_3.toBeArray)(tx.blobWrapperVersion);
+                const cellProofs = [];
+                for (const { proof } of blobs) {
+                    const p = (0, index_js_3.getBytes)(proof);
+                    const cellSize = p.length / CELL_COUNT;
+                    for (let i = 0; i < p.length; i += cellSize) {
+                        cellProofs.push(p.subarray(i, i + cellSize));
+                    }
+                }
+                return (0, index_js_3.concat)([
+                    "0x03",
+                    (0, index_js_3.encodeRlp)([
+                        fields,
+                        wrapperVersion,
+                        blobs.map((b) => b.data),
+                        blobs.map((b) => b.commitment),
+                        cellProofs
+                    ])
+                ]);
+            }
+            // Fall back onto classic EIP-4844 behavior
             return (0, index_js_3.concat)([
                 "0x03",
                 (0, index_js_3.encodeRlp)([
@@ -506,6 +577,7 @@ class Transaction {
     #kzg;
     #blobs;
     #auths;
+    #blobWrapperVersion;
     /**
      *  The transaction type.
      *
@@ -658,6 +730,21 @@ class Transaction {
     set signature(value) {
         this.#sig = (value == null) ? null : index_js_2.Signature.from(value);
     }
+    isValid() {
+        const sig = this.signature;
+        if (sig && !sig.isValid()) {
+            return false;
+        }
+        const auths = this.authorizationList;
+        if (auths) {
+            for (const auth of auths) {
+                if (!auth.signature.isValid()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     /**
      *  The access list.
      *
@@ -793,13 +880,11 @@ class Transaction {
                 versionedHashes.push(getVersionedHash(1, commit));
             }
             else {
-                const commit = (0, index_js_3.hexlify)(blob.commitment);
-                blobs.push({
-                    data: (0, index_js_3.hexlify)(blob.data),
-                    commitment: commit,
-                    proof: (0, index_js_3.hexlify)(blob.proof)
-                });
-                versionedHashes.push(getVersionedHash(1, commit));
+                const data = (0, index_js_3.hexlify)(blob.data);
+                const commitment = (0, index_js_3.hexlify)(blob.commitment);
+                const proof = (0, index_js_3.hexlify)(blob.proof);
+                blobs.push({ data, commitment, proof });
+                versionedHashes.push(getVersionedHash(1, commitment));
             }
         }
         this.#blobs = blobs;
@@ -813,6 +898,12 @@ class Transaction {
         else {
             this.#kzg = getKzgLibrary(kzg);
         }
+    }
+    get blobWrapperVersion() {
+        return this.#blobWrapperVersion;
+    }
+    set blobWrapperVersion(value) {
+        this.#blobWrapperVersion = value;
     }
     /**
      *  Creates a new Transaction with default values.
@@ -835,6 +926,7 @@ class Transaction {
         this.#kzg = null;
         this.#blobs = null;
         this.#auths = null;
+        this.#blobWrapperVersion = null;
     }
     /**
      *  The transaction hash, if signed. Otherwise, ``null``.
@@ -861,7 +953,7 @@ class Transaction {
         if (this.signature == null) {
             return null;
         }
-        return (0, address_js_1.recoverAddress)(this.unsignedHash, this.signature);
+        return (0, address_js_1.recoverAddress)(this.unsignedHash, this.signature.getCanonical());
     }
     /**
      *  The public key of the sender, if signed. Otherwise, ``null``.
@@ -870,7 +962,7 @@ class Transaction {
         if (this.signature == null) {
             return null;
         }
-        return index_js_2.SigningKey.recoverPublicKey(this.unsignedHash, this.signature);
+        return index_js_2.SigningKey.recoverPublicKey(this.unsignedHash, this.signature.getCanonical());
     }
     /**
      *  Returns true if signed.
@@ -1057,6 +1149,56 @@ class Transaction {
             accessList: this.accessList
         };
     }
+    [inspect]() {
+        return this.toString();
+    }
+    toString() {
+        const output = [];
+        const add = (key) => {
+            let value = this[key];
+            if (typeof (value) === "string") {
+                value = JSON.stringify(value);
+            }
+            output.push(`${key}: ${value}`);
+        };
+        if (this.type) {
+            add("type");
+        }
+        add("to");
+        add("data");
+        add("nonce");
+        add("gasLimit");
+        add("value");
+        if (this.chainId != null) {
+            add("chainId");
+        }
+        if (this.signature) {
+            add("from");
+            output.push(`signature: ${this.signature.toString()}`);
+        }
+        // @TODO: accessList
+        // @TODO: blobs (might make output huge; maybe just include a flag?)
+        const auths = this.authorizationList;
+        if (auths) {
+            const outputAuths = [];
+            for (const auth of auths) {
+                const o = [];
+                o.push(`address: ${JSON.stringify(auth.address)}`);
+                if (auth.nonce != null) {
+                    o.push(`nonce: ${auth.nonce}`);
+                }
+                if (auth.chainId != null) {
+                    o.push(`chainId: ${auth.chainId}`);
+                }
+                if (auth.signature) {
+                    o.push(`signature: ${auth.signature.toString()}`);
+                }
+                outputAuths.push(`Authorization { ${o.join(", ")} }`);
+            }
+            output.push(`authorizations: [ ${outputAuths.join(", ")} ]`);
+        }
+        return `Transaction { ${output.join(", ")} }`;
+    }
     /**
      *  Create a **Transaction** from a serialized transaction or a
      *  Transaction-like object.
@@ -1129,6 +1271,9 @@ class Transaction {
         // require the library in the event raw blob data is provided.
         if (tx.kzg != null) {
             result.kzg = tx.kzg;
+        }
+        if (tx.blobWrapperVersion != null) {
+            result.blobWrapperVersion = tx.blobWrapperVersion;
         }
         if (tx.blobs != null) {
             result.blobs = tx.blobs;
