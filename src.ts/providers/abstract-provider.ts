@@ -1186,24 +1186,24 @@ export class AbstractProvider implements Provider {
         });
     }
 
-    async getResolver(name: string, preferUniversal?: boolean): Promise<null | EnsResolver> {
-        return await EnsResolver.fromName(this, name, preferUniversal);
+    async getResolver(name: string): Promise<null | EnsResolver> {
+        return await EnsResolver.fromName(this, name);
     }
 
     async getAvatar(name: string): Promise<null | string> {
-        const resolver = await this.getResolver(name, true);
+        const resolver = await this.getResolver(name);
         if (resolver) { return await resolver.getAvatar(); }
         return null;
     }
 
-    async resolveName(name: string): Promise<null | string>{
-        const resolver = await this.getResolver(name, true);
-        if (resolver) { return await resolver.getAddress(); }
+    async resolveName(name: string, coinType?: BigNumberish): Promise<null | string>{
+        const resolver = await this.getResolver(name);
+        if (resolver) { return await resolver.getAddress(coinType); }
         return null;
     }
 
-    async lookupAddress(address: string): Promise<null | string> {
-        return await EnsResolver.lookupAddress(this, address);
+    async lookupAddress(address: string, coinType?: BigNumberish): Promise<null | string> {
+        return await EnsResolver.lookupAddress(this, address, coinType);
     }
 
     async waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt> {

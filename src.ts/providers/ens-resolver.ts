@@ -265,9 +265,9 @@ export class EnsResolver {
      *  Resolves to the address for %%coinType%% or null if the
      *  provided %%coinType%% has not been configured.
      */
-    async getAddress(coinType?: number): Promise<null | string> {
-        if (coinType == null) { coinType = 60; }
-        if (coinType === 60) {
+    async getAddress(coinType: BigNumberish = 60n): Promise<null | string> {
+         coinType = getBigInt(coinType, "coinType");
+        if (coinType === 60n) {
             try {
                 const result = await this.#fetch("addr(bytes32)");
 
@@ -281,18 +281,32 @@ export class EnsResolver {
             }
         }
 
+        if (isEVMCoinType(coinType)) {
+            const data = await this.#fetch("addr(bytes32,uint)", [ coinType ]);
+            return !data || data === '0x' ? ZeroAddress : getAddress(data);
+        }
+
         // Try decoding its EVM canonical chain as an EVM chain address first
-        if (coinType >= 0 && coinType < 0x80000000) {
-            let ethCoinType = coinType + 0x80000000;
+        if (coinType >= 0n && coinType < 0x80000000) {
+            let ethCoinType = coinType + 0x80000000n;
 
             const data = await this.#fetch("addr(bytes32,uint)", [ ethCoinType ]);
             if (isHexString(data, 20)) { return getAddress(data); }
         }
 
+        if (coinType > Number.MAX_SAFE_INTEGER) {
+            assert(false, `unknown coin type`, "UNSUPPORTED_OPERATION", {
+                operation: `getAddress(${ coinType })`,
+                info: { coinType }
+            });
+        }
+
+        const coinNum = Number(coinType);
+
         let coinPlugin: null | MulticoinProviderPlugin = null;
         for (const plugin of this.provider.plugins) {
             if (!(plugin instanceof MulticoinProviderPlugin)) { continue; }
-            if (plugin.supportsCoinType(coinType)) {
+            if (plugin.supportsCoinType(coinNum)) {
                 coinPlugin = plugin;
                 break;
             }
@@ -301,13 +315,13 @@ export class EnsResolver {
         if (coinPlugin == null) { return null; }
 
         // keccak256("addr(bytes32,uint256")
-        const data = await this.#fetch("addr(bytes32,uint)", [ coinType ]);
+        const data = await this.#fetch("addr(bytes32,uint)", [ coinNum ]);
 
         // No address
         if (data == null || data === "0x") { return null; }
 
         // Compute the address
-        const address = await coinPlugin.decodeAddress(coinType, data);
+        const address = await coinPlugin.decodeAddress(coinNum, data);
 
         if (address != null) { return address; }
 
@@ -637,7 +651,7 @@ export class EnsResolver {
      *  more eth_call efficient, as it performs more on-chain, but is not
      *  the actual resolver, if for example the setters are required.
      */
-    static async fromName(provider: AbstractProvider, name: string, preferUniversal?: boolean): Promise<null | EnsResolver> {
+    static async fromName(provider: AbstractProvider, name: string): Promise<null | EnsResolver> {
 
         // We have a Universal Resolver, use it
         const universal = await getUniversal(provider);
