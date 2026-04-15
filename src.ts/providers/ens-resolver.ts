@@ -8,17 +8,20 @@
 import { getAddress } from "../address/index.js";
 import { ZeroAddress } from "../constants/index.js";
 import { Contract } from "../contract/index.js";
-import { dnsEncode, namehash } from "../hash/index.js";
+import { dnsEncode, ensNormalize, isValidName, namehash } from "../hash/index.js";
 import {
     hexlify, isHexString, toBeHex,
     defineProperties, encodeBase58,
     assert, assertArgument, isError,
-    FetchRequest
+    FetchRequest,
+    getBigInt
 } from "../utils/index.js";
+import { isEVMCoinType } from "../utils/cointype.js";
 
 import type { FunctionFragment } from "../abi/index.js";
 
-import type { BytesLike } from "../utils/index.js";
+import type { BigNumberish, BytesLike } from "../utils/index.js";
+import type { HexString } from "../utils/data.js";
 
 import type { AbstractProvider, AbstractProviderPlugin } from "./abstract-provider.js";
 import type { EnsPlugin } from "./plugins-network.js";
@@ -102,7 +105,7 @@ export abstract class MulticoinProviderPlugin implements AbstractProviderPlugin 
         defineProperties<MulticoinProviderPlugin>(this, { name });
     }
 
-    connect(proivder: Provider): MulticoinProviderPlugin {
+    connect(provider: Provider): MulticoinProviderPlugin {
         return this;
     }
 
@@ -177,19 +180,10 @@ export class EnsResolver {
 
     readonly #resolver: Contract;
 
-    readonly #universal: null | Contract;
-
-    constructor(provider: AbstractProvider, address: string, name: string, universalResolver?: boolean) {
+    constructor(provider: AbstractProvider, address: string, name: string, wildcard?: boolean) {
         defineProperties<EnsResolver>(this, { provider, address, name });
 
-        if (universalResolver) {
-            this.#supports2544 = Promise.resolve(true);
-            this.#universal = createUniversal(provider, address);
-        } else {
-            this.#supports2544 = null;
-            this.#universal = null;
-        }
-
+        this.#supports2544 = typeof wildcard === 'boolean' ? Promise.resolve(wildcard) : null;
 
         this.#resolver = new Contract(address, [
             "function supportsInterface(bytes4) view returns (bool)",
@@ -198,6 +192,7 @@ export class EnsResolver {
             "function addr(bytes32, uint) view returns (bytes)",
             "function text(bytes32, string) view returns (string)",
             "function contenthash(bytes32) view returns (bytes)",
+            "function name(bytes32) view returns (string)",
         ], provider);
 
     }
@@ -251,12 +246,7 @@ export class EnsResolver {
         params.push({ enableCcipRead: true });
 
         try {
-            let result;
-            if (this.#universal) {
-                result = (await this.#universal.resolve(...params)).result;
-            } else {
-                result = await this.#resolver[funcName](...params);
-            }
+            const result = await this.#resolver[funcName](...params);
 
             if (fragment) {
                 return iface.decodeFunctionResult(fragment, result)[0];
@@ -338,7 +328,7 @@ export class EnsResolver {
     }
 
     /**
-     *  Rsolves to the content-hash or ``null`` if unconfigured.
+     *  Resolves to the content-hash or ``null`` if unconfigured.
      */
     async getContentHash(): Promise<null | string> {
         // keccak256("contenthash()")
@@ -367,6 +357,13 @@ export class EnsResolver {
             operation: "getContentHash()",
             info: { data }
         });
+    }
+
+    /**
+     *  Resolves to the ENSIP-3 name or ``null`` if unconfigured.
+     */
+    async getName(): Promise<string> {
+        return (await this.#fetch("name(bytes32)")) || null;
     }
 
     /**
@@ -582,48 +579,36 @@ export class EnsResolver {
             // so probably a link error
             throw error;
         }
-
-        return null;
     }
 
-    static async lookupAddress(provider: AbstractProvider, address: string, coinType?: number): Promise<null | string> {
-        address = getAddress(address);
-        if (coinType == null) { coinType = 60; }
+    static async lookupAddress(provider: AbstractProvider, address: string, coinType: BigNumberish = 60n): Promise<null | string> {
+        coinType = getBigInt(coinType, "coinType");
+        if (isEVMCoinType(coinType)) {
+            address = getAddress(address);
+        }
 
         // We have a Universal resolver, use it
         const universal = await getUniversal(provider);
         if (universal) {
-            const result = await universal.reverse(address, coinType, {
+            const result: ReverseResult = await universal.reverse(address, coinType, {
                 enableCcipRead: true
             });
-
-            return result.primary || null;
+            if (!isValidName(result.primary)) { return null; }
+            return result.primary;
         }
 
         // Use legacy reverse lookup
 
-        assert(coinType === 60, "lookupAddress coinType requires ENS Universal Resolver", "UNSUPPORTED_OPERATION", {
+        assert(coinType === 60n, "lookupAddress coinType requires ENS Universal Resolver", "UNSUPPORTED_OPERATION", {
             operation: "lookupAddress"
         });
 
         try {
             // Legacy resolver uses namehash of the lowercase name
-            const node = namehash(`${ address.toLowerCase().substring(2) }.addr.reverse`);
-
-            const ensAddr = await EnsResolver.getEnsAddress(provider);
-            const ensContract = new Contract(ensAddr, [
-                "function resolver(bytes32) view returns (address)"
-            ], provider);
-
-            const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroAddress) { return null; }
-
-            const resolverContract = new Contract(resolver, [
-                "function name(bytes32) view returns (string)"
-            ], provider);
-
-            const name = await resolverContract.name(node);
-
+            const resolver = await EnsResolver.fromName(provider, `${ address.toLowerCase().substring(2) }.addr.reverse`);
+            if (!resolver) { return null; }
+            const name = await resolver.getName();
+            if (!isValidName(name)) { return null; }
             // Failed forward resolution
             const check = await provider.resolveName(name);
             if (check !== address) { return null; }
@@ -640,8 +625,6 @@ export class EnsResolver {
 
             throw error;
         }
-
-        return null;
     }
 
     /**
@@ -659,12 +642,20 @@ export class EnsResolver {
         // We have a Universal Resolver, use it
         const universal = await getUniversal(provider);
         if (universal) {
-            if (preferUniversal) {
-                return new EnsResolver(provider, <string>universal.target, name, true);
+            let dnsName!: string;
+            try {
+                name = ensNormalize(name);
+                dnsName = dnsEncode(name, 255);
+            } catch {
+                return null;
             }
-
-            const result = await universal.findResolver(dnsEncode(name));
-            return new EnsResolver(provider, result.resolver, name);
+            try {
+                const result: RequireResolverResult = await universal.requireResolver(dnsName);
+                return new EnsResolver(provider, result.resolver, name, result.extended);
+            } catch (error) {
+                if (isError(error, "CALL_EXCEPTION")) { return null; }
+                throw error;
+            }
         }
 
         let currentName = name;
@@ -692,14 +683,33 @@ export class EnsResolver {
             currentName = currentName.split(".").slice(1).join(".");
         }
     }
+
+    public static async getUniversal(provider: AbstractProvider) {
+		return getUniversal(provider);
+	}
+}
+
+type RequireResolverResult = {
+	resolver: HexString;
+	extended: boolean;
+}
+
+type ReverseResult = {
+    primary: string;
+    resolver: HexString;
+    reverseResolver: HexString;
 }
 
 function createUniversal(provider: AbstractProvider, address: string): Contract {
     return new Contract(address, [
+        "function requireResolver(bytes) view returns ((bytes name, uint256 offset, bytes32 node, address resolver, bool extended))", // RequireResolverResult
         "function findResolver(bytes) view returns (address resolver, bytes32 node, uint offset)",
         "function resolve(bytes name, bytes data) view returns (bytes result, address resolver)",
-        "function reverse(bytes name, uint coinType) view returns (string primary, address resolver, address reverseResolver)",
-        "error HttpError(uint16 statusCode, string statusMessage)"
+        "function reverse(bytes name, uint coinType) view returns (string primary, address resolver, address reverseResolver)", // ReverseResult
+        "error ResolverNotFound(bytes name)",
+        "error ResolverNotContract(bytes name, address resolver)",
+        "error ReverseAddressMismatch(string primary, bytes primaryAddress)",
+        "error HttpError(uint16 statusCode, string statusMessage)",
     ], provider);
 }
 
