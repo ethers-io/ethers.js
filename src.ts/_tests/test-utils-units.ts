@@ -2,7 +2,7 @@ import assert from "assert";
 
 import { loadTests } from "./utils.js";
 
-import { formatEther, formatUnits, parseEther, parseUnits } from "../index.js";
+import { FixedNumber, formatEther, formatUnits, parseEther, parseUnits } from "../index.js";
 
 import type { TestCaseUnit } from "./types.js";
 
@@ -68,6 +68,34 @@ describe("Tests bad unit conversion", function() {
             parseUnits("3", "foobar");
         }, (error: any) => {
             return error.message.startsWith("invalid unit");
+        });
+    });
+
+    it("correctly fails to convert negative decimal counts", function() {
+        assert.throws(() => {
+            formatUnits(123n, -1);
+        }, (error: any) => {
+            return error.message.startsWith("invalid FixedNumber decimals");
+        });
+
+        assert.throws(() => {
+            parseUnits("1.23", -1);
+        }, (error: any) => {
+            return error.message.startsWith("invalid FixedNumber decimals");
+        });
+    });
+
+    it("correctly fails to create FixedNumber values with negative decimals", function() {
+        assert.throws(() => {
+            FixedNumber.fromValue(1, -1);
+        }, (error: any) => {
+            return error.message.startsWith("invalid FixedNumber decimals");
+        });
+
+        assert.throws(() => {
+            FixedNumber.fromString("1.23", { decimals: -1, width: 128 });
+        }, (error: any) => {
+            return error.message.startsWith("invalid FixedNumber decimals");
         });
     });
 });
