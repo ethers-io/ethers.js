@@ -1452,8 +1452,21 @@ export class AbstractProvider implements Provider {
         });
 
         if (sub.listeners.length === 0) {
-            if (sub.started) { sub.subscriber.stop(); }
-            this.#subs.delete(sub.tag);
+            // Defer teardown to allow once-listeners (e.g. waitForTransaction)
+            // to re-subscribe before the underlying subscriber is stopped.
+            // Without this, socket-based providers (WebSocket) would
+            // eth_unsubscribe and immediately need to eth_subscribe again on
+            // every block during waitForTransaction, and depending on timing
+            // the re-subscription could be lost entirely, causing subsequent
+            // waitForTransaction calls to hang forever.
+            const tag = sub.tag;
+            this._setTimeout(() => {
+                const s = this.#subs.get(tag);
+                if (s && s.listeners.length === 0) {
+                    if (s.started) { s.subscriber.stop(); }
+                    this.#subs.delete(tag);
+                }
+            }, this.pollingInterval);
         }
 
         return (count > 0);
