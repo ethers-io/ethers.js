@@ -466,6 +466,8 @@ export class AbstractProvider implements Provider {
 
     #disableCcipRead: boolean;
 
+    #ccipReadFetchTimeout: number;
+
     #options: Required<AbstractProviderOptions>;
 
     /**
@@ -503,6 +505,7 @@ export class AbstractProvider implements Provider {
         this.#timers = new Map();
 
         this.#disableCcipRead = false;
+        this.#ccipReadFetchTimeout = 0;
     }
 
     get pollingInterval(): number { return this.#options.pollingInterval; }
@@ -544,6 +547,18 @@ export class AbstractProvider implements Provider {
      */
     get disableCcipRead(): boolean { return this.#disableCcipRead; }
     set disableCcipRead(value: boolean) { this.#disableCcipRead = !!value; }
+
+    /**
+     *  The timeout (in milliseconds) for each CCIP-read fetch request.
+     *  If set to a value greater than 0, this overrides the default
+     *  FetchRequest timeout for CCIP operations. A value of ``0`` uses
+     *  the default timeout.
+     */
+    get ccipReadFetchTimeout(): number { return this.#ccipReadFetchTimeout; }
+    set ccipReadFetchTimeout(timeout: number) {
+        assertArgument(timeout >= 0, "timeout must be non-negative", "timeout", timeout);
+        this.#ccipReadFetchTimeout = timeout;
+    }
 
     // Shares multiple identical requests made during the same 250ms
     async #perform<T = any>(req: PerformActionRequest): Promise<T> {
@@ -598,6 +613,10 @@ export class AbstractProvider implements Provider {
             const request = new FetchRequest(href);
             if (url.indexOf("{data}") === -1) {
                 request.body = { data, sender };
+            }
+
+            if (this.#ccipReadFetchTimeout > 0) {
+                request.timeout = this.#ccipReadFetchTimeout;
             }
 
             this.emit("debug", { action: "sendCcipReadFetchRequest", request, index: i, urls });
