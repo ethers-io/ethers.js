@@ -827,7 +827,7 @@ export class Interface {
 
     /**
      *  Encodes the transaction revert data for a call result that
-     *  reverted from the the Contract with the sepcified %%error%%
+     *  reverted from the Contract with the specified %%error%%
      *  (see [[getError]] for valid values for %%fragment%%) with the %%values%%.
      *
      *  This is generally not used by most developers, unless trying to mock

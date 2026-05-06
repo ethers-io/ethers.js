@@ -95,7 +95,7 @@ export interface FallbackProviderState extends Required<FallbackProviderConfig> 
     errorResponses: number;
 
     /**
-     *  The number of responses that occured after the result resolved.
+     *  The number of responses that occurred after the result resolved.
      */
     lateResponses: number;
 

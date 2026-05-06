@@ -936,8 +936,8 @@ export abstract class Fragment {
     abstract format(format?: FormatType): string;
 
     /**
-     *  Creates a new **Fragment** for %%obj%%, wich can be any supported
-     *  ABI frgament type.
+     *  Creates a new **Fragment** for %%obj%%, which can be any supported
+     *  ABI fragment type.
      */
     static from(obj: any): Fragment {
         if (typeof(obj) === "string") {
@@ -984,7 +984,7 @@ export abstract class Fragment {
             });
         }
 
-        assertArgument(false, "unsupported frgament object", "obj", obj);
+        assertArgument(false, "unsupported fragment object", "obj", obj);
     }
 
     /**

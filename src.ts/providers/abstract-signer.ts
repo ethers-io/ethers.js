@@ -53,7 +53,7 @@ async function populate(signer: AbstractSigner, tx: TransactionRequest): Promise
 
 
 /**
- *  An **AbstractSigner** includes most of teh functionality required
+ *  An **AbstractSigner** includes most of the functionality required
  *  to get a [[Signer]] working as expected, but requires a few
  *  Signer-specific methods be overridden.
  *
