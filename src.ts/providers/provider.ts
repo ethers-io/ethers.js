@@ -862,14 +862,18 @@ export class Log implements LogParams {
     readonly topics!: ReadonlyArray<string>;
 
     /**
-     *  The index within the block this log occurred at. This is generally
-     *  not useful to developers, but can be used with the various roots
-     *  to proof inclusion within a block.
+     *  The index of this log within the block it was emitted in (i.e. the
+     *  ``logIndex`` in the JSON-RPC receipt). This is generally not useful
+     *  to developers, but can be used with the various roots to proof
+     *  inclusion within a block.
      */
     readonly index!: number;
 
     /**
-     *  The index within the transaction of this log.
+     *  The index of the transaction that emitted this log within its block
+     *  (i.e. the ``transactionIndex`` in the JSON-RPC receipt). This is
+     *  **not** the log's position within the transaction — use
+     *  [[Log-index]] for that.
      */
     readonly transactionIndex!: number;
 
