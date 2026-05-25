@@ -189,7 +189,7 @@ function getDecryptKdfParams<T>(data: any): KdfParams {
  *
  *  This method will block the event loop (freezing all UI) until decryption
  *  is complete, which can take quite some time, depending on the wallet
- *  paramters and platform.
+ *  parameters and platform.
  */
 export function decryptKeystoreJsonSync(json: string, _password: string | Uint8Array): KeystoreAccount {
     const data = JSON.parse(json);
@@ -386,4 +386,3 @@ export async function encryptKeystoreJson(account: KeystoreAccount, password: st
     const key = await scrypt(passwordBytes, kdf.salt, kdf.N, kdf.r, kdf.p, 64, options.progressCallback);
     return _encryptKeystore(getBytes(key), kdf, account, options);
 }
-

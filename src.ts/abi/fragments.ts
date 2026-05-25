@@ -936,8 +936,8 @@ export abstract class Fragment {
     abstract format(format?: FormatType): string;
 
     /**
-     *  Creates a new **Fragment** for %%obj%%, wich can be any supported
-     *  ABI frgament type.
+     *  Creates a new **Fragment** for %%obj%%, which can be any supported
+     *  ABI fragment type.
      */
     static from(obj: any): Fragment {
         if (typeof(obj) === "string") {
@@ -1614,4 +1614,3 @@ export class StructFragment extends NamedFragment {
         return (value && value[internal] === StructFragmentInternal);
     }
 }
-
