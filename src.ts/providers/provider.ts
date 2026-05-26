@@ -869,7 +869,7 @@ export class Log implements LogParams {
     readonly index!: number;
 
     /**
-     *  The index within the transaction of this log.
+     *  The index of the transaction that generated this log within its block.
      */
     readonly transactionIndex!: number;
 
