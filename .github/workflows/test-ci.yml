@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -41,7 +41,7 @@ jobs:
         uses: ethers-io/run-geth-action@main
 
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: npm ci
@@ -67,7 +67,7 @@ jobs:
     continue-on-error: true
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v6
         with:
           node-version: 26.x
 
@@ -75,7 +75,7 @@ jobs:
         uses: ethers-io/run-geth-action@main
 
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: npm ci
