@@ -1046,6 +1046,19 @@ export interface FilterByBlockHash extends EventFilter {
      */
     blockHash?: string;
 }
+export interface StorageProof {
+    address: string;
+    accountProof: string[];
+    balance: bigint;
+    codeHash: string;
+    nonce: number;
+    storageHash: string;
+    storageProof: {
+        key: bigint;
+        value: string;
+        proof: string[];
+    }[];
+}
 /**
  *  A **ProviderEvent** provides the types of events that can be subscribed
  *  to on a [[Provider]].
@@ -1151,6 +1164,13 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *        **silently ignored** by the node, which may cause issues if relied on.
      */
     getStorage(address: AddressLike, position: BigNumberish, blockTag?: BlockTag): Promise<string>;
+    /**
+     *  Get proof of the storage slot value for %%address%% at slots %%storageKeys%%.
+     *
+     *  @note On nodes without archive access enabled, the %%blockTag%% may be
+     *        **silently ignored** by the node, which may cause issues if relied on.
+     */
+    getStorageProof(address: AddressLike, storageKeys: Array<BigNumberish>, blockTag?: BlockTag): Promise<StorageProof>;
     /**
      *  Estimates the amount of gas required to execute %%tx%%.
      */

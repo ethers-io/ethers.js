@@ -15049,12 +15049,12 @@ class TransactionReceipt {
      *  Returns a JSON-compatible representation.
      */
     toJSON() {
-        const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium, 
+        const { to, from, contractAddress, hash, index, blockHash, blockNumber, logsBloom, logs, //byzantium,
         status, root } = this;
         return {
             _type: "TransactionReceipt",
             blockHash, blockNumber,
-            //byzantium, 
+            //byzantium,
             contractAddress,
             cumulativeGasUsed: toJson(this.cumulativeGasUsed),
             from,
@@ -19211,6 +19211,24 @@ class AbstractProvider {
         const position = getBigInt(_position, "position");
         return hexlify(await this.#getAccountValue({ method: "getStorage", position }, address, blockTag));
     }
+    async getStorageProof(address, _storageKeys, blockTag) {
+        const storageKeys = _storageKeys.map(key => getBigInt(key, "storageKey"));
+        const result = await this.#getAccountValue({ method: "getStorageProof", storageKeys }, address, blockTag);
+        const cleanup = (v) => v === "0x0" ? "0x00" : v;
+        return {
+            address: hexlify(result.address),
+            accountProof: result.accountProof.map(hexlify),
+            balance: getBigInt(result.balance, "%response"),
+            codeHash: hexlify(result.codeHash),
+            nonce: getNumber(cleanup(result.nonce), "%response"),
+            storageHash: hexlify(result.storageHash),
+            storageProof: result.storageProof.map((p) => ({
+                key: getBigInt(cleanup(p.key), "storageKey"),
+                value: hexlify(cleanup(p.value)),
+                proof: p.proof.map(hexlify)
+            }))
+        };
+    }
     // Write
     async broadcastTransaction(signedTx) {
         const { blockNumber, hash, network } = await resolveProperties({
@@ -20925,6 +20943,15 @@ class JsonRpcApiProvider extends AbstractProvider {
                         req.blockTag
                     ]
                 };
+            case "getStorageProof":
+                return {
+                    method: "eth_getProof",
+                    args: [
+                        getLowerCase(req.address),
+                        req.storageKeys.map(storageKey => "0x" + storageKey.toString(16)),
+                        req.blockTag
+                    ]
+                };
             case "broadcastTransaction":
                 return {
                     method: "eth_sendRawTransaction",
@@ -22115,6 +22142,10 @@ class EtherscanProvider extends AbstractProvider {
                     position: req.position,
                     tag: req.blockTag
                 });
+            case "getStorageProof":
+                assert(false, "getStorageProof not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                    operation: "getStorageProof(account,storageKeys,tag)"
+                });
             case "broadcastTransaction":
                 return this.fetch("proxy", {
                     action: "eth_sendRawTransaction",
@@ -23257,6 +23288,8 @@ class FallbackProvider extends AbstractProvider {
                 return await provider.getLogs(req.filter);
             case "getStorage":
                 return await provider.getStorage(req.address, req.position, req.blockTag);
+            case "getStorageProof":
+                return await provider.getStorageProof(req.address, req.storageKeys, req.blockTag);
             case "getTransaction":
                 return await provider.getTransaction(req.hash);
             case "getTransactionCount":
@@ -23414,6 +23447,7 @@ class FallbackProvider extends AbstractProvider {
             case "getTransactionCount":
             case "getCode":
             case "getStorage":
+            case "getStorageProof":
             case "getTransaction":
             case "getTransactionReceipt":
             case "getLogs":

@@ -446,6 +446,10 @@ export class EtherscanProvider extends AbstractProvider {
                     position: req.position,
                     tag: req.blockTag
                 });
+            case "getStorageProof":
+                assert(false, "getStorageProof not supported by Etherscan", "UNSUPPORTED_OPERATION", {
+                    operation: "getStorageProof(account,storageKeys,tag)"
+                });
             case "broadcastTransaction":
                 return this.fetch("proxy", {
                     action: "eth_sendRawTransaction",
