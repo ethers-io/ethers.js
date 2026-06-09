@@ -4,10 +4,68 @@ import {
     concat, dataLength,
     keccak256,
     toBeArray,
-    isCallException, isError
+    isCallException, isError, makeError,
+    AbstractProvider, Network,
 } from "../index.js";
 
+import type { PerformActionRequest } from "../index.js";
+
 import { connect, setupProviders } from "./create-provider.js";
+
+// Minimal mock provider for unit tests that avoids network calls.
+class MockCallProvider extends AbstractProvider {
+    #response: () => Promise<any>;
+
+    constructor(response: () => Promise<any>) {
+        super(Network.from("mainnet"), { cacheTimeout: -1 });
+        this.#response = response;
+    }
+
+    async _detectNetwork(): Promise<Network> { return Network.from("mainnet"); }
+
+    async _perform(req: PerformActionRequest): Promise<any> {
+        if (req.method === "getBlockNumber") { return 1; }
+        if (req.method === "call") { return await this.#response(); }
+        throw new Error(`unhandled method: ${ req.method }`);
+    }
+}
+
+describe("Test CCIP short error.data (issue #4982)", function() {
+
+    // These error.data values are shorter than 4 bytes; previously they caused
+    // a BUFFER_OVERRUN because dataSlice(data, 0, 4) was called unconditionally.
+    const shortDataCases: Array<{ label: string, data: string }> = [
+        { label: "empty (0x)", data: "0x" },
+        { label: "1-byte",     data: "0x55" },
+        { label: "2-byte",     data: "0x556f" },
+        { label: "3-byte",     data: "0x556f18" },
+    ];
+
+    for (const { label, data } of shortDataCases) {
+        it(`re-throws original CALL_EXCEPTION without BUFFER_OVERRUN for ${ label } error.data`, async function() {
+            const provider = new MockCallProvider(async () => {
+                throw makeError("execution reverted", "CALL_EXCEPTION", {
+                    action: "call",
+                    data,
+                    reason: null,
+                    transaction: { to: "0x0000000000000000000000000000000000000001", data: "0x" },
+                    invocation: null,
+                    revert: null,
+                });
+            });
+            provider.disableCcipRead = false;
+
+            await assert.rejects(
+                () => provider.call({ to: "0x0000000000000000000000000000000000000001", data: "0x", enableCcipRead: true }),
+                (error: unknown) => {
+                    // Must be the original CALL_EXCEPTION, not a BUFFER_OVERRUN
+                    assert.ok(isCallException(error), "expected a CALL_EXCEPTION, not a BUFFER_OVERRUN");
+                    return true;
+                }
+            );
+        });
+    }
+});
 
 setupProviders();
 
