@@ -170,7 +170,8 @@ const _formatTransactionReceipt = object({
     from: allowNull(getAddress, null),
     contractAddress: allowNull(getAddress, null),
     // should be allowNull(hash), but broken-EIP-658 support is handled in receipt
-    index: getNumber,
+    // Some RPCs (e.g. wallet injections) omit transactionIndex; tolerate null
+    index: allowNull(getNumber, null),
     root: allowNull(hexlify),
     gasUsed: getBigInt,
     blobGasUsed: allowNull(getBigInt, null),

@@ -213,9 +213,11 @@ export interface TransactionReceiptParams {
     hash: string;
 
     /**
-     *  The transaction index.
+     *  The transaction index. Some RPC providers omit this field; it may
+     *  be ``null`` when the receipt originates from a wallet-injected
+     *  provider that does not populate all standard receipt fields.
      */
-    index: number;
+    index: null | number;
 
     /**
      *  The block hash of the block that included this transaction.
