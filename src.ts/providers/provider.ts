@@ -1930,6 +1930,9 @@ export interface FilterByBlockHash extends EventFilter {
  *  **``"block"``** - calls the listener with the current block number on each
  *  new block.
  *
+ *  **``"close"``** - calls the listener when a socket provider's underlying
+ *  connection closes.
+ *
  *  **``"error"``** - calls the listener on each async error that occurs during
  *  the event loop, with the error.
  *

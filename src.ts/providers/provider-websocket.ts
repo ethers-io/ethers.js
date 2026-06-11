@@ -14,6 +14,7 @@ export interface WebSocketLike {
     onopen: null | ((...args: Array<any>) => any);
     onmessage: null | ((...args: Array<any>) => any);
     onerror: null | ((...args: Array<any>) => any);
+    onclose?: null | ((...args: Array<any>) => any);
 
     readyState: number;
 
@@ -72,21 +73,10 @@ export class WebSocketProvider extends SocketProvider {
         this.websocket.onmessage = (message: { data: string }) => {
             this._processMessage(message.data);
         };
-/*
+
         this.websocket.onclose = (event) => {
-            // @TODO: What event.code should we reconnect on?
-            const reconnect = false;
-            if (reconnect) {
-                this.pause(true);
-                if (this.#connect) {
-                    this.#websocket = this.#connect();
-                    this.#websocket.onopen = ...
-                    // @TODO: this requires the super class to rebroadcast; move it there
-                }
-                this._reconnect();
-            }
+            this.emit("close", event);
         };
-*/
     }
 
     async _write(message: string): Promise<void> {

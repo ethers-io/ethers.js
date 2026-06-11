@@ -234,6 +234,7 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
     if (typeof(_event) === "string") {
         switch (_event) {
             case "block":
+            case "close":
             case "debug":
             case "error":
             case "finalized":
