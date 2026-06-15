@@ -31,8 +31,8 @@ import { Network } from "./network.js";
 import { FilterIdEventSubscriber, FilterIdPendingSubscriber } from "./subscriber-filterid.js";
 import { PollingEventSubscriber } from "./subscriber-polling.js";
 
-import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
-import type { TransactionLike } from "../transaction/index.js";
+import type { AuthorizationRequest, TypedDataDomain, TypedDataField } from "../hash/index.js";
+import type { Authorization, TransactionLike } from "../transaction/index.js";
 
 import type { PerformActionRequest, Subscriber, Subscription } from "./abstract-provider.js";
 import type { Networkish } from "./network.js";
@@ -460,6 +460,41 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
             this.address.toLowerCase(),
             JSON.stringify(TypedDataEncoder.getPayload(populated.domain, types, populated.value))
         ]);
+    }
+
+    /**
+     *  Signs the [[link-eip-7702]] authorization %%req%% using
+     *  ``eth_signAuthorization``.
+     *
+     *  The %%address%% in %%req%% is the address of the contract code to
+     *  delegate the account to; the account that signs is the address of
+     *  this Signer.
+     *
+     *  Any missing %%nonce%% and %%chainId%% are populated.
+     *
+     *  The returned [[Authorization]] can be included in a type-4
+     *  transaction via [[TransactionRequest-authorizationList]].
+     */
+    async authorize(_auth: AuthorizationRequest): Promise<Authorization> {
+        const address = getAddress(await resolveAddress(_auth.address, this.provider));
+
+        const populated = await this.populateAuthorization(
+            Object.assign({ }, _auth, { address })
+        );
+
+        const chainId = getBigInt(populated.chainId ?? 0);
+        const nonce = getBigInt(populated.nonce ?? 0);
+
+        const signature = await this.provider.send("eth_signAuthorization", [
+            this.address.toLowerCase(),
+            {
+                chainId: toQuantity(chainId),
+                address,
+                nonce: toQuantity(nonce)
+            }
+        ]);
+
+        return authorizationify({ address, nonce, chainId, signature });
     }
 
     async unlock(password: string): Promise<boolean> {
