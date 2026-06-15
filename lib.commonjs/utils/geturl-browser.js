@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUrl = exports.createGetUrl = void 0;
+const index_js_1 = require("../tor-js-singleton/index.js");
 const errors_js_1 = require("./errors.js");
+const isKeynet_js_1 = require("./isKeynet.js");
 function createGetUrl(options) {
     async function getUrl(req, _signal) {
         (0, errors_js_1.assert)(_signal == null || !_signal.cancelled, "request cancelled before sending", "CANCELLED");
@@ -33,7 +35,12 @@ function createGetUrl(options) {
         });
         let resp;
         try {
-            resp = await fetch(req.url, init);
+            if ((0, isKeynet_js_1.isKeynet)(req.url)) {
+                resp = await index_js_1.tor.fetch(req.url, init);
+            }
+            else {
+                resp = await fetch(req.url, init);
+            }
         }
         catch (_error) {
             clearTimeout(timer);

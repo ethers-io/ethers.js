@@ -2,12 +2,14 @@ import http from "http";
 import https from "https";
 import { gunzipSync } from "zlib";
 
+import { createGetUrl as createGetUrlNative } from './geturl-browser.js';
 import { assert, makeError } from "./errors.js";
 import { getBytes } from "./data.js";
 
 import type {
     FetchGetUrlFunc, FetchRequest, FetchCancelSignal, GetUrlResponse
 } from "./fetch.js";
+import { isKeynet } from "./isKeynet.js";
 
 /**
  *  @_ignore:
@@ -15,6 +17,10 @@ import type {
 export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
 
     async function getUrl(req: FetchRequest, signal?: FetchCancelSignal): Promise<GetUrlResponse> {
+        if (isKeynet(req.url)) {
+            return createGetUrlNative(options)(req, signal);
+        }
+
         // Make sure we weren't cancelled before sending
         assert(signal == null || !signal.cancelled, "request cancelled before sending", "CANCELLED");
 
@@ -138,4 +144,3 @@ const defaultGetUrl: FetchGetUrlFunc = createGetUrl({ });
 export async function getUrl(req: FetchRequest, signal?: FetchCancelSignal): Promise<GetUrlResponse> {
     return defaultGetUrl(req, signal);
 }
-

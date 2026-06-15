@@ -1,8 +1,10 @@
+import { tor } from "../tor-js-singleton/index.js";
 import { assert, makeError } from "./errors.js";
 
 import type {
     FetchGetUrlFunc, FetchRequest, FetchCancelSignal, GetUrlResponse
 } from "./fetch.js";
+import { isKeynet } from "./isKeynet.js";
 
 export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
 
@@ -45,7 +47,11 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
 
         let resp: Awaited<ReturnType<typeof fetch>>;
         try {
-            resp = await fetch(req.url, init);
+            if (isKeynet(req.url)) {
+                resp = await tor.fetch(req.url, init);
+            } else {
+                resp = await fetch(req.url, init);
+            }
         } catch (_error) {
             clearTimeout(timer);
             if (error) { throw error; }
