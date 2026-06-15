@@ -141,6 +141,10 @@ export function getAddress(address: string): string {
 
         let result = fromBase36(address.substring(4)).toString(16);
         while (result.length < 40) { result = "0" + result; }
+        // An ICAP body can decode to a value >= 2**160, which would produce a
+        // result longer than 40 nibbles. Reject it instead of returning a
+        // malformed "address" that isAddress() and getAddress() both reject.
+        assertArgument(result.length === 40, "invalid icap address", "address", address);
         return  getChecksumAddress("0x" + result);
     }
 
