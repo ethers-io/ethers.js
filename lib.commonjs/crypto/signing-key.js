@@ -144,7 +144,7 @@ class SigningKey {
     static recoverPublicKey(digest, signature) {
         (0, index_js_1.assertArgument)((0, index_js_1.dataLength)(digest) === 32, "invalid digest length", "digest", digest);
         const sig = signature_js_1.Signature.from(signature);
-        let secpSig = secp256k1_1.secp256k1.Signature.fromCompact((0, index_js_1.getBytesCopy)((0, index_js_1.concat)([sig.r, sig.s])));
+        let secpSig = secp256k1_1.secp256k1.Signature.fromCompact((0, index_js_1.getBytesCopy)((0, index_js_1.concat)([sig.r, sig._s])));
         secpSig = secpSig.addRecoveryBit(sig.yParity);
         const pubKey = secpSig.recoverPublicKey((0, index_js_1.getBytesCopy)(digest));
         (0, index_js_1.assertArgument)(pubKey != null, "invalid signature for digest", "signature", signature);
