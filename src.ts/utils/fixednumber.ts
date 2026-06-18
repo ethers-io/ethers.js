@@ -146,6 +146,7 @@ function getFormat(value?: FixedFormat): _FixedFormat {
     }
 
     assertArgument((width % 8) === 0, "invalid FixedNumber width (not byte aligned)", "format.width", width);
+    assertArgument(decimals >= 0, "invalid FixedNumber decimals (negative)", "format.decimals", decimals);
     assertArgument(decimals <= 80, "invalid FixedNumber decimals (too large)", "format.decimals", decimals);
 
     const name = (signed ? "": "u") + "fixed" + String(width) + "x" + String(decimals);
@@ -567,6 +568,7 @@ export class FixedNumber {
      */
     static fromValue(_value: BigNumberish, _decimals?: Numeric, _format?: FixedFormat): FixedNumber {
         const decimals = (_decimals == null) ? 0: getNumber(_decimals);
+        assertArgument(decimals >= 0, "invalid FixedNumber decimals (negative)", "decimals", decimals);
         const format = getFormat(_format);
 
         let value = getBigInt(_value, "value");
