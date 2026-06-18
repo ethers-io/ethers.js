@@ -75,22 +75,28 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
      *  into the constructor.
      */
     async getDeployTransaction(...args: ContractMethodArgs<A>): Promise<ContractDeployTransaction> {
-        let overrides: Omit<ContractDeployTransaction, "data"> = { };
+        try {
+          let overrides: Omit<ContractDeployTransaction, "data"> = {};
 
-        const fragment = this.interface.deploy;
+          const fragment = this.interface.deploy;
 
-        if (fragment.inputs.length + 1 === args.length) {
-            overrides = await copyOverrides(args.pop());
+          if (fragment.inputs.length + 1 === args.length) {
+              overrides = await copyOverrides(args.pop());
+          }
+
+          if (fragment.inputs.length !== args.length) {
+              throw new Error("incorrect number of arguments to constructor");
+          }
+          const resolvedArgs = await resolveArgs(this.runner, fragment.inputs, args);
+
+          const data = concat([this.bytecode, this.interface.encodeDeploy(resolvedArgs)]);
+
+          return Object.assign({}, overrides, { data });
+        } catch (error: any) {
+          error.message = `ContractFactory deploy: ${error.message}`;
+
+          throw error;
         }
-
-        if (fragment.inputs.length !== args.length) {
-            throw new Error("incorrect number of arguments to constructor");
-        }
-
-        const resolvedArgs = await resolveArgs(this.runner, fragment.inputs, args);
-
-        const data = concat([ this.bytecode, this.interface.encodeDeploy(resolvedArgs) ]);
-        return Object.assign({ }, overrides, { data });
     }
 
     /**
