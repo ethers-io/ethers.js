@@ -138,3 +138,4 @@ License
 
 MIT License (including **all** dependencies).
 
+> Tip: If you face issues installing ethers, try running `npm cache clean --force` before reinstalling.
