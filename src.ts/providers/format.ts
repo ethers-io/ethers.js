@@ -91,6 +91,17 @@ export function formatUint256(value: any): string {
     return zeroPadValue(value, 32);
 }
 
+// Some nodes omit nonce or return non-numeric placeholder strings (e.g.
+// "undefined"); return null instead of throwing when parsing the response.
+function formatTransactionNonce(value: any): null | number {
+    if (value == null) { return null; }
+    if (typeof(value) === "string") {
+        const t = value.trim();
+        if (t === "" || t === "undefined" || t === "null") { return null; }
+    }
+    return getNumber(value);
+}
+
 const _formatLog = object({
     address: getAddress,
     blockHash: formatHash,
@@ -254,7 +265,7 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         gasLimit: getBigInt,
         to: allowNull(getAddress, null),
         value: getBigInt,
-        nonce: getNumber,
+        nonce: formatTransactionNonce,
         data: formatData,
 
         creates: allowNull(getAddress, null),
@@ -267,7 +278,7 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
     })(value);
 
     // If to and creates are empty, populate the creates from the value
-    if (result.to == null && result.creates == null) {
+    if (result.to == null && result.creates == null && result.nonce != null) {
         result.creates = getCreateAddress(result);
     }
 

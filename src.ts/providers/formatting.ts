@@ -353,8 +353,11 @@ export interface TransactionResponseParams {
 
     /**
      *  The nonce of the transaction, used for replay protection.
+     *
+     *  May be ``null`` when the backend omits or returns an unusable
+     *  ``nonce`` field.
      */
-    nonce: number;
+    nonce: null | number;
 
     /**
      *  The maximum amount of gas this transaction is authorized to consume.

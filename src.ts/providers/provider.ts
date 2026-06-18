@@ -1332,8 +1332,10 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
      *
      *  When sending a transaction, this must be equal to the number of
      *  transactions ever sent by [[from]].
+     *
+     *  May be ``null`` if the node did not return a valid nonce.
      */
-    readonly nonce!: number;
+    readonly nonce!: null | number;
 
     /**
      *  The maximum units of gas this transaction can consume. If execution
@@ -1431,7 +1433,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
         this.to = tx.to || null;
 
         this.gasLimit = tx.gasLimit;
-        this.nonce = tx.nonce;
+        this.nonce = tx.nonce ?? null;
         this.data = tx.data;
         this.value = tx.value;
 
@@ -1549,7 +1551,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
             // No transaction or our nonce has not been mined yet; but we
             // can start scanning later when we do start
-            if (nonce < this.nonce) {
+            if (this.nonce != null && nonce < this.nonce) {
                 startBlock = blockNumber;
                 return;
             }
@@ -1584,7 +1586,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
                 for (let i = 0; i < block.length; i++) {
                     const tx: TransactionResponse = await block.getTransaction(i);
 
-                    if (tx.from === this.from && tx.nonce === this.nonce) {
+                    if (this.nonce != null && tx.from === this.from && tx.nonce === this.nonce) {
                         // Get the receipt
                         if (stopScanning) { return null; }
                         const receipt = await this.provider.getTransactionReceipt(tx.hash);

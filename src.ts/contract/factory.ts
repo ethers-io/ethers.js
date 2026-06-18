@@ -109,7 +109,11 @@ export class ContractFactory<A extends Array<any> = Array<any>, I = BaseContract
             operation: "sendTransaction" });
 
         const sentTx = await this.runner.sendTransaction(tx);
-        const address = getCreateAddress(sentTx);
+        const deployNonce = sentTx.nonce;
+        assertArgument(deployNonce != null,
+            "cannot compute CREATE address without transaction nonce; try again after the RPC returns a full transaction payload",
+            "sentTx.nonce", sentTx.nonce);
+        const address = getCreateAddress({ from: sentTx.from, nonce: deployNonce });
         return new (<any>BaseContract)(address, this.interface, this.runner, sentTx);
     }
 
