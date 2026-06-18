@@ -206,6 +206,7 @@ export class InfuraProvider extends JsonRpcProvider implements CommunityResourca
 
         const request = new FetchRequest(`https:/\/${ getHost(network.name) }/v3/${ projectId }`);
         request.allowGzip = true;
+        request.setHeader('Enable-Failover', 'true');
         if (projectSecret) { request.setCredentials("", projectSecret); }
 
         if (projectId === defaultProjectId) {
