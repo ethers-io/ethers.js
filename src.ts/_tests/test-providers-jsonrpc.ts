@@ -3,7 +3,8 @@ import assert from "assert";
 import {
     id, isError, makeError, toUtf8Bytes, toUtf8String,
     FetchRequest,
-    JsonRpcProvider, Transaction, Wallet
+    JsonRpcProvider, Transaction, Wallet,
+    hashAuthorization, verifyAuthorization
 } from "../index.js";
 
 const StatusMessages: Record<number, string> = {
@@ -202,6 +203,50 @@ describe("Ensure Catchable Errors", function() {
         const tx = await signer.sendTransaction(txInfo);
         assert.ok(!!tx, "we got a transaction");
         assert.ok(!!missingV, "missing v error present");
+    });
+});
+
+describe("EIP-7702 Authorization Signing (JSON-RPC)", function() {
+    it("Signs and verifies an authorization via eth_signAuthorization", async function() {
+        this.timeout(15000);
+
+        const contractAddress = "0x" + "33".repeat(20);
+
+        const provider = createProvider((method, params) => {
+            switch (method) {
+                case "eth_getTransactionCount":
+                    return "0x5";
+
+                case "eth_signAuthorization": {
+                    const [ from, auth ] = <[ string, any ]>params;
+                    assert.strictEqual(from, wallet.address.toLowerCase(),
+                        "signer address sent to node");
+
+                    const signature = wallet.signingKey.sign(hashAuthorization({
+                        address: auth.address,
+                        chainId: auth.chainId,
+                        nonce: auth.nonce
+                    }));
+                    return signature.serialized;
+                }
+            }
+            return undefined;
+        });
+
+        const signer = await provider.getSigner();
+        const auth = await signer.authorize({ address: contractAddress });
+
+        assert.ok(auth, "received an authorization");
+        assert.strictEqual(auth.address, contractAddress, "delegate address preserved");
+        assert.strictEqual(auth.nonce, 5n, "nonce populated");
+        assert.strictEqual(auth.chainId, 0x1337n, "chainId populated");
+        assert.ok(auth.signature.r && auth.signature.s, "signature present");
+
+        // The authorization must verify to the signing account
+        const authority = verifyAuthorization({
+            address: auth.address, nonce: auth.nonce, chainId: auth.chainId
+        }, auth.signature);
+        assert.strictEqual(authority, wallet.address, "authority recovered");
     });
 });
 
