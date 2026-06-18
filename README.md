@@ -1,6 +1,7 @@
 The Ethers Project
 ==================
 
+
 [![npm (tag)](https://img.shields.io/npm/v/ethers)](https://www.npmjs.com/package/ethers)
 [![CI Tests](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml/badge.svg?branch=main)](https://github.com/ethers-io/ethers.js/actions/workflows/test-ci.yml)
 ![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/ethers)
