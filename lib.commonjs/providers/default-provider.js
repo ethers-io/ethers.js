@@ -46,7 +46,6 @@ const Testnets = "goerli kovan sepolia classicKotti optimism-goerli arbitrum-goe
  *  - ``"chainstack"``
  *  - ``"etherscan"``
  *  - ``"infura"``
- *  - ``"publicPolygon"``
  *  - ``"quicknode"``
  *
  *  @example:
@@ -93,14 +92,6 @@ function getDefaultProvider(network, options) {
     }
     catch (error) { }
     const providers = [];
-    if (allowService("publicPolygon") && staticNetwork) {
-        if (staticNetwork.name === "matic") {
-            providers.push(new provider_jsonrpc_js_1.JsonRpcProvider("https:/\/polygon-rpc.com/", staticNetwork, { staticNetwork }));
-        }
-        else if (staticNetwork.name === "matic-amoy") {
-            providers.push(new provider_jsonrpc_js_1.JsonRpcProvider("https:/\/rpc-amoy.polygon.technology/", staticNetwork, { staticNetwork }));
-        }
-    }
     if (allowService("alchemy")) {
         try {
             providers.push(new provider_alchemy_js_1.AlchemyProvider(network, options.alchemy));
