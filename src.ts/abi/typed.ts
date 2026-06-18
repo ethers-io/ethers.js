@@ -13,7 +13,7 @@
  *  @_subsection: api/abi:Typed Values
  */
 
-import { assertPrivate, defineProperties } from "../utils/index.js";
+import { assertPrivate, assertArgument, defineProperties } from "../utils/index.js";
 
 import type { Addressable } from "../address/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
@@ -132,6 +132,11 @@ export class Typed {
      *  @_ignore:
      */
     constructor(gaurd: any, type: string, value: any, options?: any) {
+        if(Typed.isTyped(value)) {
+            assertArgument(value.type === type, `Invalid incapsulation of ${value.type} in ${type}`, 'value', value);
+            return value;
+        }
+
         if (options == null) { options = null; }
         assertPrivate(_gaurd, gaurd, "Typed");
         defineProperties<Typed>(this, { _typedSymbol, type, value });
