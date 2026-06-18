@@ -25,16 +25,17 @@ import { getNumber } from "./maths.js";
 
 import type { BigNumberish, Numeric } from "../utils/index.js";
 
-
-const names = [
-    "wei",
-    "kwei",
-    "mwei",
-    "gwei",
-    "szabo",
-    "finney",
-    "ether",
-];
+const unitNames = {
+    'wei': 0,
+    'kwei': 3,
+    'mwei': 6,
+    'gwei': 9,
+    'szabo': 12,
+    'finney': 15,
+    'ether': 18,
+} as const;
+export type UnitNameType = keyof typeof unitNames;
+export type UnitType = UnitNameType | Numeric;
 
 /**
  *  Converts %%value%% into a //decimal string//, assuming %%unit%% decimal
@@ -42,12 +43,11 @@ const names = [
  *  a unit (e.g. ``"gwei"`` for 9 decimal places).
  *
  */
-export function formatUnits(value: BigNumberish, unit?: string | Numeric): string {
+export function formatUnits(value: BigNumberish, unit?: UnitType): string {
     let decimals = 18;
-    if (typeof(unit) === "string") {
-        const index = names.indexOf(unit);
-        assertArgument(index >= 0, "invalid unit", "unit", unit);
-        decimals = 3 * index;
+    if (typeof (unit) === "string") {
+        assertArgument(unitNames[unit] >= 0, "invalid unit", "unit", unit);
+        decimals = unitNames[unit];
     } else if (unit != null) {
         decimals = getNumber(unit, "unit");
     }
@@ -60,14 +60,13 @@ export function formatUnits(value: BigNumberish, unit?: string | Numeric): strin
  *  %%unit%% decimal places. The %%unit%% may the number of decimal places
  *  or the name of a unit (e.g. ``"gwei"`` for 9 decimal places).
  */
-export function parseUnits(value: string, unit?: string | Numeric): bigint {
-    assertArgument(typeof(value) === "string", "value must be a string", "value", value);
+export function parseUnits(value: string, unit?: UnitType): bigint {
+    assertArgument(typeof (value) === "string", "value must be a string", "value", value);
 
     let decimals = 18;
-    if (typeof(unit) === "string") {
-        const index = names.indexOf(unit);
-        assertArgument(index >= 0, "invalid unit", "unit", unit);
-        decimals = 3 * index;
+    if (typeof (unit) === "string") {
+        assertArgument(unitNames[unit] >= 0, "invalid unit", "unit", unit);
+        decimals = unitNames[unit];
     } else if (unit != null) {
         decimals = getNumber(unit, "unit");
     }
