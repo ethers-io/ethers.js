@@ -153,9 +153,6 @@ export async function copyOverrides<O extends string = "data" | "to">(arg: any, 
     assertArgument(overrides.data == null || (allowed || [ ]).indexOf("data") >= 0,
       "cannot override data", "overrides.data", overrides.data);
 
-    // Resolve any from
-    if (overrides.from) { overrides.from = overrides.from; }
-
     return <Omit<ContractTransaction, O>>overrides;
 }
 
