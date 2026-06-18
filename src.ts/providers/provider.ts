@@ -1003,8 +1003,11 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
 
     /**
      *  The index of this transaction within the block transactions.
+     *
+     *  This is ``null`` when the receipt comes from an RPC provider that
+     *  does not populate the ``transactionIndex`` field.
      */
-    readonly index!: number;
+    readonly index!: null | number;
 
     /**
      *  The block hash of the [[Block]] this transaction was included in.

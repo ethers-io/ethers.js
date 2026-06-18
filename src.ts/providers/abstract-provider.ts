@@ -1031,7 +1031,7 @@ export class AbstractProvider implements Provider {
 
          } catch (error: any) {
              // CCIP Read OffchainLookup
-             if (!this.disableCcipRead && isCallException(error) && error.data && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataSlice(error.data, 0, 4) === "0x556f1830") {
+             if (!this.disableCcipRead && isCallException(error) && error.data && attempt >= 0 && blockTag === "latest" && transaction.to != null && dataLength(error.data) >= 4 && dataSlice(error.data, 0, 4) === "0x556f1830") {
                  const data = error.data;
 
                  const txSender = await resolveAddress(transaction.to, this);
@@ -1275,8 +1275,15 @@ export class AbstractProvider implements Provider {
                             return;
                         }
                     }
-                } catch (error) {
-                    console.log("EEE", error);
+                } catch (error: any) {
+                    // Geth nodes return this while they are still indexing a
+                    // fresh chain; treat it as "not yet available" and retry
+                    // on the next block rather than surfacing a confusing error.
+                    const msg: string = error?.message ?? "";
+                    if (!msg.match(/transaction indexing is in progress/i)) {
+                        reject(error);
+                        return;
+                    }
                 }
                 this.once("block", listener);
             });

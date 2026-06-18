@@ -108,7 +108,9 @@ export class FilterIdSubscriber implements Subscriber {
 
             const result = await this.#provider.send("eth_getFilterChanges", [ filterId ]);
             await this._emitResults(this.#provider, result);
-        } catch (error) { console.log("@TODO", error); }
+        } catch (error) {
+            this.#provider.emit("error", error);
+        }
 
         this.#provider.once("block", this.#poller);
     }
