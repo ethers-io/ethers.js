@@ -135,7 +135,7 @@ export class BrowserProvider extends JsonRpcApiPollingProvider {
 
         this.#request = async (method: string, params: Array<any> | Record<string, any>) => {
             const payload = { method, params };
-            this.emit("debug", { action: "sendEip1193Request", payload });
+            this.emit("debug", { action: "sendEip1193Payload", payload });
             try {
                 const result = await ethereum.request(payload);
                 this.emit("debug", { action: "receiveEip1193Result", result });
