@@ -144,6 +144,8 @@ export class AbiCoder {
                 return new StringCoder(param.name);
             case "bytes":
                 return new BytesCoder(param.name);
+            case "function":
+                return new FixedBytesCoder(24, param.name);
             case "":
                 return new NullCoder(param.name);
         }
