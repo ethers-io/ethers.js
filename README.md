@@ -62,7 +62,7 @@ For the latest changes, see the
 Installing
 ----------
 
-**NodeJS**
+**Node.js**
 
 ```
 /home/ricmoo/some_project> npm install ethers
