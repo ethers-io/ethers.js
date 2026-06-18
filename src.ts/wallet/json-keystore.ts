@@ -295,7 +295,7 @@ function _encryptKeystore(key: Uint8Array, kdf: ScryptParams, account: KeystoreA
     // Compute the message authentication code, used to check the password
     const mac = keccak256(concat([ macPrefix, ciphertext ]))
 
-    // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+    // See: https://ethereum.org/developers/docs/data-structures-and-encoding/web3-secret-storage/
     const data: { [key: string]: any } = {
         address: account.address.substring(2).toLowerCase(),
         id: uuidV4(uuidRandom),
