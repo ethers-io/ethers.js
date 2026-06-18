@@ -89,3 +89,76 @@ export function formatEther(wei: BigNumberish): string {
 export function parseEther(ether: string): bigint {
     return parseUnits(ether, 18);
 }
+
+/**
+ *  Converts %%value%% into a //decimal string// using the number of
+ *  decimal places for the given %%unit%% name (e.g. ``"gwei"``).
+ *
+ *  This is a convenience function that resolves unit names.
+ *
+ *  @example:
+ *    formatGwei(1000000000n)
+ *    //_result:
+ *
+ *    formatGwei(1500000000n)
+ *    //_result:
+ */
+export function formatGwei(wei: BigNumberish): string {
+    return formatUnits(wei, "gwei");
+}
+
+/**
+ *  Converts the //decimal string// %%value%% to a BigInt, using 9
+ *  decimal places (gwei).
+ *
+ *  @example:
+ *    parseGwei("1.0")
+ *    //_result:
+ *
+ *    parseGwei("20.5")
+ *    //_result:
+ */
+export function parseGwei(value: string): bigint {
+    return parseUnits(value, "gwei");
+}
+
+/**
+ *  Converts %%value%% from one unit to another.
+ *
+ *  The %%fromUnit%% and %%toUnit%% can be unit names (e.g. ``"gwei"``,
+ *  ``"ether"``) or decimal counts.
+ *
+ *  @example:
+ *    // Convert 1 ether to gwei
+ *    convertUnits("1.0", "ether", "gwei")
+ *    //_result:
+ *
+ *    // Convert 1000000000 gwei to ether
+ *    convertUnits("1000000000", "gwei", "ether")
+ *    //_result:
+ */
+export function convertUnits(value: string, fromUnit: string | Numeric, toUnit: string | Numeric): string {
+    assertArgument(typeof value === "string", "value must be a string", "value", value);
+    // Parse from fromUnit to base (wei), then format in toUnit
+    const baseValue = parseUnits(value, fromUnit);
+    return formatUnits(baseValue, toUnit);
+}
+
+/**
+ *  Returns ``true`` if %%value%% is a valid decimal string that
+ *  can be parsed by [[parseUnits]].
+ *
+ *  @example:
+ *    isValidDecimalString("1.5")
+ *    //_result:
+ *
+ *    isValidDecimalString("abc")
+ *    //_result:
+ *
+ *    isValidDecimalString("1.2.3")
+ *    //_result:
+ */
+export function isValidDecimalString(value: string): boolean {
+    if (typeof value !== "string") { return false; }
+    return !!value.match(/^-?[0-9]+(\.[0-9]+)?$/);
+}

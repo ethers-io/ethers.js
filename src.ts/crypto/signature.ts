@@ -315,6 +315,45 @@ export class Signature {
     }
 
     /**
+     *  Returns ``true`` if %%sig%% is a valid signature format that
+     *  can be parsed by [[Signature.from]].
+     *
+     *  This does not validate the signature against a specific digest,
+     *  only that the format is correct.
+     *
+     *  @example:
+     *    Signature.isSignatureLike("0x" + "ab".repeat(65))
+     *    //_result:
+     *
+     *    Signature.isSignatureLike("0x1234")
+     *    //_result:
+     */
+    static isSignatureLike(sig: any): sig is SignatureLike {
+        try {
+            Signature.from(sig);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     *  Returns ``true`` if %%sig%% is a valid [[link-eip-2098]] compact
+     *  signature (64 bytes).
+     */
+    static isCompactSignature(sig: any): boolean {
+        if (typeof sig !== "string") { return false; }
+        try {
+            const bytes = getBytes(sig, "signature");
+            if (bytes.length !== 64) { return false; }
+            Signature.from(sig);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
      *  Creates a new [[Signature]].
      *
      *  If no %%sig%% is provided, a new [[Signature]] is created

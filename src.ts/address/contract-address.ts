@@ -67,6 +67,42 @@ export function getCreateAddress(tx: { from: string, nonce: BigNumberish }): str
  *    getCreate2Address(from, salt, initCodeHash)
  *    //_result:
  */
+/**
+ *  Returns the addresses that would result from ``CREATE`` operations
+ *  for the given %%from%% address starting at %%startNonce%% for
+ *  %%count%% sequential nonces.
+ *
+ *  This is useful for predicting multiple contract deployment addresses.
+ *
+ *  @example
+ *    from = "0x8ba1f109551bD432803012645Ac136ddd64DBA72";
+ *    getCreateAddressRange({ from, startNonce: 0, count: 3 });
+ *    //_result:
+ */
+export function getCreateAddressRange(tx: { from: string, startNonce: BigNumberish, count: number }): Array<string> {
+    const from = getAddress(tx.from);
+    const startNonce = getBigInt(tx.startNonce, "tx.startNonce");
+    const count = tx.count;
+
+    assertArgument(Number.isInteger(count) && count > 0, "count must be a positive integer", "tx.count", count);
+    assertArgument(startNonce >= BigInt(0), "startNonce must be non-negative", "tx.startNonce", tx.startNonce);
+
+    const addresses: Array<string> = [];
+    for (let i = 0; i < count; i++) {
+        const nonce = startNonce + BigInt(i);
+        let nonceHex = nonce.toString(16);
+        if (nonceHex === "0") {
+            nonceHex = "0x";
+        } else if (nonceHex.length % 2) {
+            nonceHex = "0x0" + nonceHex;
+        } else {
+            nonceHex = "0x" + nonceHex;
+        }
+        addresses.push(getAddress(dataSlice(keccak256(encodeRlp([ from, nonceHex ])), 12)));
+    }
+    return addresses;
+}
+
 export function getCreate2Address(_from: string, _salt: BytesLike, _initCodeHash: BytesLike): string {
     const from = getAddress(_from);
     const salt = getBytes(_salt, "salt");
