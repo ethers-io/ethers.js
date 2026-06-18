@@ -457,4 +457,6 @@ function injectCommonNetworks(): void {
     registerEth("optimism-sepolia", 11155420, { });
 
     registerEth("xdai", 100, { ensNetwork: 1 });
+    registerEth("ink-sepolia", 763373, { });
+    registerEth("ink", 57073, { });
 }
