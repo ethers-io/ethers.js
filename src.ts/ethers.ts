@@ -23,7 +23,7 @@ export {
 
 export {
     ZeroAddress,
-    WeiPerEther, MaxUint256, MinInt256, MaxInt256, N,
+    WeiPerEther, GWei, MaxUint256, MinInt256, MaxInt256, N,
     ZeroHash,
     EtherSymbol, MessagePrefix
 } from "./constants/index.js";
