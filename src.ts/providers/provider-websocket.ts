@@ -1,5 +1,3 @@
-
-
 import { WebSocket as _WebSocket } from "./ws.js"; /*-browser*/
 
 import { SocketProvider } from "./provider-socket.js";
@@ -14,11 +12,15 @@ export interface WebSocketLike {
     onopen: null | ((...args: Array<any>) => any);
     onmessage: null | ((...args: Array<any>) => any);
     onerror: null | ((...args: Array<any>) => any);
+    onclose: null | ((...args: Array<any>) => any);
+    onping: null | ((...args: Array<any>) => any);
+    onpong: null | ((...args: Array<any>) => any);
 
     readyState: number;
 
     send(payload: any): void;
     close(code?: number, reason?: string): void;
+    ping(): void;
 }
 
 /**
@@ -46,6 +48,9 @@ export class WebSocketProvider extends SocketProvider {
         return this.#websocket;
     }
 
+    #pingTimeout: null | ReturnType<typeof setTimeout>;
+    #keepAliveInterval: null | ReturnType<typeof setInterval>;
+
     constructor(url: string | WebSocketLike | WebSocketCreator, network?: Networkish, options?: JsonRpcApiProviderOptions) {
         super(network, options);
         if (typeof(url) === "string") {
@@ -63,6 +68,7 @@ export class WebSocketProvider extends SocketProvider {
             try {
                 await this._start()
                 this.resume();
+                this.#startKeepAlive();
             } catch (error) {
                 console.log("failed to start WebsocketProvider", error);
                 // @TODO: now what? Attempt reconnect?
@@ -72,21 +78,58 @@ export class WebSocketProvider extends SocketProvider {
         this.websocket.onmessage = (message: { data: string }) => {
             this._processMessage(message.data);
         };
-/*
+
         this.websocket.onclose = (event) => {
-            // @TODO: What event.code should we reconnect on?
-            const reconnect = false;
-            if (reconnect) {
-                this.pause(true);
-                if (this.#connect) {
-                    this.#websocket = this.#connect();
-                    this.#websocket.onopen = ...
-                    // @TODO: this requires the super class to rebroadcast; move it there
-                }
-                this._reconnect();
+            this.#stopKeepAlive();
+            this.pause(true);
+            if (this.#connect) {
+                this.#websocket = this.#connect();
+                this.#websocket.onopen = this.websocket.onopen;
+                this.#websocket.onmessage = this.websocket.onmessage;
+                this.#websocket.onclose = this.websocket.onclose;
+                this.#websocket.onping = this.websocket.onping;
+                this.#websocket.onpong = this.websocket.onpong;
             }
         };
-*/
+
+        this.websocket.onping = () => {
+            if (this.#pingTimeout) {
+                clearTimeout(this.#pingTimeout);
+                this.#pingTimeout = null;
+            }
+            this.websocket.pong();
+        };
+
+        this.websocket.onpong = () => {
+            if (this.#pingTimeout) {
+                clearTimeout(this.#pingTimeout);
+                this.#pingTimeout = null;
+            }
+        };
+    }
+
+    #startKeepAlive() {
+        this.#keepAliveInterval = setInterval(() => {
+            if (this.#websocket && this.#websocket.readyState === 1) {
+                this.#websocket.ping();
+                this.#pingTimeout = setTimeout(() => {
+                    if (this.#websocket) {
+                        this.#websocket.close();
+                    }
+                }, 15000);
+            }
+        }, 7500);
+    }
+
+    #stopKeepAlive() {
+        if (this.#keepAliveInterval) {
+            clearInterval(this.#keepAliveInterval);
+            this.#keepAliveInterval = null;
+        }
+        if (this.#pingTimeout) {
+            clearTimeout(this.#pingTimeout);
+            this.#pingTimeout = null;
+        }
     }
 
     async _write(message: string): Promise<void> {
@@ -94,6 +137,7 @@ export class WebSocketProvider extends SocketProvider {
     }
 
     async destroy(): Promise<void> {
+        this.#stopKeepAlive();
         if (this.#websocket != null) {
             this.#websocket.close();
             this.#websocket = null;
