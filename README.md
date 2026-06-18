@@ -1,3 +1,4 @@
+```
 The Ethers Project
 ==================
 
@@ -79,6 +80,43 @@ The bundled library is available in the `./dist/` folder in this repo.
 ```
 
 
+Quick Start Example
+-------------------
+
+Below is a beginner-friendly example that checks the ETH balance of a wallet.
+
+**Step 1 – Install ethers**
+
+```bash
+npm install ethers
+```
+
+**Step 2 – Create file `check-balance.js`**
+
+**Step 3 – Add code**
+
+```javascript
+import { ethers } from "ethers";
+
+const provider = new ethers.JsonRpcProvider("https://rpc.ankr.com/eth");
+const address = "vitalik.eth";
+
+async function main() {
+  const balanceWei = await provider.getBalance(address);
+  const balanceEth = ethers.formatEther(balanceWei);
+  console.log(`Balance of ${address}: ${balanceEth} ETH`);
+}
+
+main();
+```
+
+**Step 4 – Run**
+
+```bash
+node check-balance.js
+```
+
+
 Documentation
 -------------
 
@@ -87,7 +125,6 @@ Browse the [documentation](https://docs.ethers.org) online:
 - [Getting Started](https://docs.ethers.org/v6/getting-started/)
 - [Full API Documentation](https://docs.ethers.org/v6/api/)
 - [Various Ethereum Articles](https://blog.ricmoo.com/)
-
 
 
 Providers
@@ -137,4 +174,4 @@ License
 -------
 
 MIT License (including **all** dependencies).
-
+```
