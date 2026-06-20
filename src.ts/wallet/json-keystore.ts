@@ -154,7 +154,7 @@ function getDecryptKdfParams<T>(data: any): KdfParams {
             assertArgument(r > 0 && p > 0, "invalid kdf", "kdf", kdf);
 
             const dkLen = spelunk<number>(data, "crypto.kdfparams.dklen:int!");
-            assertArgument(dkLen === 32, "invalid kdf.dklen", "kdf.dflen", dkLen);
+            assertArgument(dkLen === 32, "invalid kdf.dklen", "kdf.dklen", dkLen);
 
             return { name: "scrypt", salt, N, r, p, dkLen: 64 };
 
@@ -164,7 +164,7 @@ function getDecryptKdfParams<T>(data: any): KdfParams {
 
             const prf = spelunk<string>(data, "crypto.kdfparams.prf:string!");
             const algorithm = prf.split("-").pop();
-            assertArgument(algorithm === "sha256" || algorithm === "sha512", "invalid kdf.pdf", "kdf.pdf", prf);
+            assertArgument(algorithm === "sha256" || algorithm === "sha512", "invalid kdf.prf", "kdf.prf", prf);
 
             const count = spelunk<number>(data, "crypto.kdfparams.c:int!");
 
@@ -386,4 +386,3 @@ export async function encryptKeystoreJson(account: KeystoreAccount, password: st
     const key = await scrypt(passwordBytes, kdf.salt, kdf.N, kdf.r, kdf.p, 64, options.progressCallback);
     return _encryptKeystore(getBytes(key), kdf, account, options);
 }
-
