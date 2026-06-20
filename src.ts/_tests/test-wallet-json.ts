@@ -184,4 +184,31 @@ describe("Tests Extra JSON Wallet Functions", function() {
         assert.ok(await encryptKeystoreJson(account, password));
     });
 
+    it("tests invalid keystore KDF fields", function() {
+        const json = encryptKeystoreJsonSync(account, password, { scrypt: { N: 64 } });
+        const data = JSON.parse(json);
+
+        const badScrypt = JSON.parse(JSON.stringify(data));
+        badScrypt.Crypto.kdfparams.dklen = 64;
+        assert.throws(() => {
+            decryptKeystoreJsonSync(JSON.stringify(badScrypt), password);
+        }, (error: any) => {
+            return (isError(error, "INVALID_ARGUMENT") &&
+                error.message.startsWith("invalid kdf.dklen") &&
+                error.argument === "kdf.dklen");
+        });
+
+        const badPbkdf2 = JSON.parse(JSON.stringify(data));
+        badPbkdf2.Crypto.kdf = "pbkdf2";
+        badPbkdf2.Crypto.kdfparams.c = 1;
+        badPbkdf2.Crypto.kdfparams.prf = "hmac-sha1";
+        assert.throws(() => {
+            decryptKeystoreJsonSync(JSON.stringify(badPbkdf2), password);
+        }, (error: any) => {
+            return (isError(error, "INVALID_ARGUMENT") &&
+                error.message.startsWith("invalid kdf.prf") &&
+                error.argument === "kdf.prf");
+        });
+    });
+
 });
