@@ -329,7 +329,7 @@ export class HDNodeWallet extends BaseWallet {
      *
      *  If the %%extendedKey%% will either have a prefix or ``xpub`` or
      *  ``xpriv``, returning a neutered HD Node ([[HDNodeVoidWallet]])
-     *  or full HD Node ([[HDNodeWallet) respectively.
+     *  or full HD Node ([[HDNodeWallet]]) respectively.
      */
     static fromExtendedKey(extendedKey: string): HDNodeWallet | HDNodeVoidWallet {
         const bytes = toBeArray(decodeBase58(extendedKey)); // @TODO: redact
@@ -404,9 +404,9 @@ export class HDNodeWallet extends BaseWallet {
  *  A **HDNodeVoidWallet** cannot sign, but provides access to
  *  the children nodes of a [[link-bip-32]] HD wallet addresses.
  *
- *  The can be created by using an extended ``xpub`` key to
+ *  It can be created by using an extended ``xpub`` key to
  *  [[HDNodeWallet_fromExtendedKey]] or by 
- *  [nuetering](HDNodeWallet-neuter) a [[HDNodeWallet]].
+ *  [neutering](HDNodeWallet-neuter) a [[HDNodeWallet]].
  */
 export class HDNodeVoidWallet extends VoidSigner {
     /**
