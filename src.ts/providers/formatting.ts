@@ -112,6 +112,11 @@ export interface BlockParams {
     receiptsRoot?: null | string;
 
     /**
+     *  The hash of the transactions.
+     */
+    transactionsRoot?: null | string;
+
+    /**
      *  The list of transactions in the block.
      */
     transactions: ReadonlyArray<string | TransactionResponseParams>;

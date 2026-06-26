@@ -60,6 +60,12 @@ function getHost(name: string): string {
             return "base-goerli.g.alchemy.com";
         case "base-sepolia":
             return "base-sepolia.g.alchemy.com";
+
+        case "bnb":
+            return "bnb-mainnet.g.alchemy.com";
+        case "bnbt":
+            return "bnb-testnet.g.alchemy.com";
+
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
         case "matic-amoy":

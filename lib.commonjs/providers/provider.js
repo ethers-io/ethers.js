@@ -213,6 +213,10 @@ class Block {
      */
     receiptsRoot;
     /**
+     *  The hash of the transactions.
+     */
+    transactionsRoot;
+    /**
      *  The total amount of blob gas consumed by the transactions
      *  within the block. See [[link-eip-4844]].
      */
@@ -277,6 +281,7 @@ class Block {
             baseFeePerGas: getValue(block.baseFeePerGas),
             stateRoot: block.stateRoot,
             receiptsRoot: block.receiptsRoot,
+            transactionsRoot: block.transactionsRoot,
         });
     }
     /**
@@ -315,7 +320,7 @@ class Block {
      *  Returns a JSON-friendly value.
      */
     toJSON() {
-        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, timestamp, transactions } = this;
+        const { baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash, miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot, stateRoot, receiptsRoot, transactionsRoot, timestamp, transactions } = this;
         return {
             _type: "Block",
             baseFeePerGas: toJson(baseFeePerGas),
@@ -326,7 +331,7 @@ class Block {
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
             hash, miner, prevRandao, nonce, number, parentHash, timestamp,
-            parentBeaconBlockRoot, stateRoot, receiptsRoot,
+            parentBeaconBlockRoot, stateRoot, receiptsRoot, transactionsRoot,
             transactions,
         };
     }

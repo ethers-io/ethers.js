@@ -1,6 +1,6 @@
 import {
     AlchemyProvider,
-//    BlockscoutProvider,
+    BlockscoutProvider,
 //    AnkrProvider,
 //    CloudflareProvider,
     ChainstackProvider,
@@ -18,7 +18,7 @@ import { inspect } from "./utils-debug.js";
 
 import type { AbstractProvider } from "../index.js";
 
-import { INFURA_APIKEY } from "./utils.js";
+import { ALCHEMY_APIKEY, INFURA_APIKEY } from "./utils.js";
 
 interface ProviderCreator {
     name: string;
@@ -34,20 +34,21 @@ const ProviderCreators: Array<ProviderCreator> = [
         name: "AlchemyProvider",
         networks: ethNetworks,
         create: function(network: string) {
-            return new AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
+            const provider = new AlchemyProvider(network, ALCHEMY_APIKEY);
+            provider._requestRate = 1;
+            return provider;
         }
     },
-    /*
     {
         name: "BlockscoutProvider",
         //networks: ethNetworks,  // @TODO: they are backfilling some Sepolia txs
         networks: [ "mainnet" ],
         create: function(network: string) {
-            //return new BlockscoutProvider(network);
-            return new BlockscoutProvider(network, "fdbfa288-1695-454e-a369-4501253a120");
+            const provider = new BlockscoutProvider(network);
+            provider._requestRate = 1;
+            return provider;
         }
     },
-    */
     /*
     {
         name: "AnkrProvider",
@@ -84,7 +85,9 @@ const ProviderCreators: Array<ProviderCreator> = [
         name: "InfuraProvider",
         networks: ethNetworks,
         create: function(network: string) {
-            return new InfuraProvider(network, INFURA_APIKEY || undefined);
+            const provider = new InfuraProvider(network, INFURA_APIKEY || undefined);
+            provider._requestRate = 1;
+            return provider;
         }
     },
     /*
@@ -119,12 +122,15 @@ const ProviderCreators: Array<ProviderCreator> = [
         networks: ethNetworks,
         create: function(network: string) {
             const providers: Array<AbstractProvider> = [];
-            for (const providerName of [ "AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider" ]) {
+            //for (const providerName of [ "AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider" ])
+            for (const providerName of [ "AnkrProvider", "EtherscanProvider", "InfuraProvider" ]) {
                 const provider = getProvider(providerName, network);
                 if (provider) { providers.push(provider); }
             }
             if (providers.length === 0) { throw new Error("UNSUPPORTED NETWORK"); }
-            return new FallbackProvider(providers);
+            const provider = new FallbackProvider(providers);
+            provider._requestRate = 1;
+            return provider;
         }
     },
 ];

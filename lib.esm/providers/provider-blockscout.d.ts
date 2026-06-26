@@ -32,7 +32,7 @@ import type { JsonRpcPayload, JsonRpcError } from "./provider-jsonrpc.js";
  *  By default, a highly-throttled API key is used, which is
  *  appropriate for quick prototypes and simple scripts. To
  *  gain access to an increased rate-limit, it is highly
- *  recommended to [sign up here](link-blockscout).
+ *  recommended to [sign up here](link-blockscout-signup).
  */
 export declare class BlockscoutProvider extends JsonRpcProvider implements CommunityResourcable {
     /**

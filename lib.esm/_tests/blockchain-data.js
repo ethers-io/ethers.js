@@ -39,6 +39,7 @@ export const testBlock = {
             extraData: "0x476574682f76312e302e302d66633739643332642f6c696e75782f676f312e34",
             stateRoot: '0x76ab0b899e8387436ff2658e2988f83cbf1af1590b9fe9feca3714f8d1824940',
             receiptsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+            transactionsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
             transactions: []
         },
         {
@@ -56,6 +57,7 @@ export const testBlock = {
             baseFeePerGas: BigInt("40911884304"),
             stateRoot: '0xd08663f630cfcf2d7d8fe4d52f7685ad09798b7e6150cabea5eeceb1d89e11c2',
             receiptsRoot: '0x473e83ec3df279f44c4fc6da50fe1d0c5a18f1929b90de8917bdcdb88a132750',
+            transactionsRoot: '0xa3fceebbe1f63ba17026d95ac10bc8e466049845efc7f26fcea1cab819d9aec3',
             transactions: [
                 "0x1c3a398933db10634631f54b435c40c8805c13f12bbac7c3dab858ca44213fa2",
                 "0xd98947cbdd892cc7f679c903903e6d18a5c5afb19e94437beba79372ad71c347",
@@ -107,6 +109,7 @@ export const testBlock = {
             excessBlobGas: BigInt("79691776"),
             stateRoot: '0xa78ad0e0f5d2b3383fdb13f4ad0523723816863556be3a5414536862f4d217df',
             receiptsRoot: '0xa254ed337328248b77011c70c2b85d6575f965f2fe65ed233c27e3750c0b7170',
+            transactionsRoot: '0x7a680941fd602a5ecfff7cf8294e588d02d6e572c0ef57988df2a55179108372',
             transactions: [
                 "0xe8a096a98cd7b8d783cbb30687c3adc8e59f1e9563c0454623cc8af59f8bcab1",
                 "0x5aac2d50b15e177e8edaae4819e989650a6cdb335dd8924b5a7a7ed1675d15e7",

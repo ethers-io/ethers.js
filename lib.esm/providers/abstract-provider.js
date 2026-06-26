@@ -12,12 +12,9 @@
 //   need time to resolve the address. Upon resolving the address, we need to
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
-import { getAddress, resolveAddress } from "../address/index.js";
-import { ZeroAddress } from "../constants/index.js";
-import { Contract } from "../contract/index.js";
-import { namehash } from "../hash/index.js";
+import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
-import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, isError, makeError, assert, assertArgument, FetchRequest, toBeArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
+import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, makeError, assert, assertArgument, FetchRequest, toBeArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { formatBlock, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
 import { Network } from "./network.js";
@@ -26,6 +23,9 @@ import { PollingBlockSubscriber, PollingBlockTagSubscriber, PollingEventSubscrib
 // Constants
 const BN_2 = BigInt(2);
 const MAX_CCIP_REDIRECTS = 10;
+function stall(duration) {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
+}
 function isPromise(value) {
     return (value && typeof (value.then) === "function");
 }
@@ -175,6 +175,8 @@ export class AbstractProvider {
     #nextTimer;
     #timers;
     #disableCcipRead;
+    #requestRate;
+    #requestTimes;
     #options;
     /**
      *  Create a new **AbstractProvider** connected to %%network%%, or
@@ -206,6 +208,24 @@ export class AbstractProvider {
         this.#nextTimer = 1;
         this.#timers = new Map();
         this.#disableCcipRead = false;
+        this.#requestRate = 0;
+        this.#requestTimes = [];
+    }
+    /**
+     *  Limit the number of requests per second. (default: no limit)
+     */
+    get _requestRate() {
+        const value = this.#requestRate;
+        if (value == 0) {
+            return null;
+        }
+        return value;
+    }
+    set _requestRate(value) {
+        if (value == null || value < 0) {
+            value = 0;
+        }
+        this.#requestRate = getNumber(value);
     }
     get pollingInterval() { return this.#options.pollingInterval; }
     /**
@@ -241,17 +261,43 @@ export class AbstractProvider {
      */
     get disableCcipRead() { return this.#disableCcipRead; }
     set disableCcipRead(value) { this.#disableCcipRead = !!value; }
+    #getDelay() {
+        let requestRate = this.#requestRate;
+        if (requestRate === 0) {
+            return 0;
+        }
+        // Remove all too-old request times
+        const requests = this.#requestTimes;
+        const now = getTime();
+        requests.push(now);
+        const scanTime = now - 1000;
+        while (requests.length && requests[0] < scanTime) {
+            requests.shift();
+        }
+        if (requests.length < requestRate) {
+            return 0;
+        }
+        return (requests[0] + 1000) - now;
+    }
     // Shares multiple identical requests made during the same 250ms
     async #perform(req) {
         const timeout = this.#options.cacheTimeout;
         // Caching disabled
         if (timeout < 0) {
+            const delay = this.#getDelay();
+            if (delay) {
+                await stall(delay);
+            }
             return await this._perform(req);
         }
         // Create a tag
         const tag = getTag(req.method, req);
         let perform = this.#performCache.get(tag);
         if (!perform) {
+            const delay = this.#getDelay();
+            if (delay) {
+                await stall(delay);
+            }
             perform = this._perform(req);
             this.#performCache.set(tag, perform);
             setTimeout(() => {
@@ -648,6 +694,10 @@ export class AbstractProvider {
         // This came in as a PerformActionTransaction, so to/from are safe; we can cast
         const transaction = copyRequest(tx);
         try {
+            const delay = this.#getDelay();
+            if (delay) {
+                await stall(delay);
+            }
             return hexlify(await this._perform({ method: "call", transaction, blockTag }));
         }
         catch (error) {
@@ -845,48 +895,15 @@ export class AbstractProvider {
         }
         return null;
     }
-    async resolveName(name) {
+    async resolveName(name, coinType) {
         const resolver = await this.getResolver(name);
         if (resolver) {
-            return await resolver.getAddress();
+            return await resolver.getAddress(coinType);
         }
         return null;
     }
-    async lookupAddress(address) {
-        address = getAddress(address);
-        const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
-        try {
-            const ensAddr = await EnsResolver.getEnsAddress(this);
-            const ensContract = new Contract(ensAddr, [
-                "function resolver(bytes32) view returns (address)"
-            ], this);
-            const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroAddress) {
-                return null;
-            }
-            const resolverContract = new Contract(resolver, [
-                "function name(bytes32) view returns (string)"
-            ], this);
-            const name = await resolverContract.name(node);
-            // Failed forward resolution
-            const check = await this.resolveName(name);
-            if (check !== address) {
-                return null;
-            }
-            return name;
-        }
-        catch (error) {
-            // No data was returned from the resolver
-            if (isError(error, "BAD_DATA") && error.value === "0x") {
-                return null;
-            }
-            // Something reerted
-            if (isError(error, "CALL_EXCEPTION")) {
-                return null;
-            }
-            throw error;
-        }
-        return null;
+    async lookupAddress(address, coinType) {
+        return await EnsResolver.lookupAddress(this, address, coinType);
     }
     async waitForTransaction(hash, _confirms, timeout) {
         const confirms = (_confirms != null) ? _confirms : 1;

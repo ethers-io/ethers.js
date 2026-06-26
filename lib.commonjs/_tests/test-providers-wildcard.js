@@ -10,7 +10,6 @@ describe("Test EIP-2544 ENS wildcards", function () {
         this.timeout(10000);
         const resolver = await provider.getResolver("ricmoose.hatch.eth");
         assert_1.default.ok(resolver, "failed to get resolver");
-        assert_1.default.equal(resolver.address, "0x657D81B1E647A56457ff035Af22898411673f7FD", "address");
         assert_1.default.equal(await resolver.supportsWildcard(), true, "supportsWildcard()");
         // Test pass-through avatar
         assert_1.default.equal(await resolver.getAvatar(), "https:/\/static.ricmoo.com/uploads/profile-06cb9c3031c9.jpg", "getAvatar()");

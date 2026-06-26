@@ -7,6 +7,7 @@
 import type { BigNumberish } from "../utils/index.js";
 import type { TransactionLike } from "../transaction/index.js";
 import type { NetworkPlugin } from "./plugins-network.js";
+declare const inspect: unique symbol;
 /**
  *  A Networkish can be used to allude to a Network, by specifing:
  *  - a [[Network]] object
@@ -19,6 +20,7 @@ export type Networkish = Network | number | bigint | string | {
     chainId?: number;
     ensAddress?: string;
     ensNetwork?: number;
+    ensUniversalResolver?: string;
 };
 /**
  *  A **Network** provides access to a chain's properties and allows
@@ -30,6 +32,8 @@ export declare class Network {
      *  Creates a new **Network** for %%name%% and %%chainId%%.
      */
     constructor(name: string, chainId: BigNumberish);
+    [inspect](): string;
+    toString(): string;
     /**
      *  Returns a JSON-compatible representation of a Network.
      */
@@ -96,4 +100,5 @@ export declare class Network {
      */
     static register(nameOrChainId: string | number | bigint, networkFunc: () => Network): void;
 }
+export {};
 //# sourceMappingURL=network.d.ts.map
