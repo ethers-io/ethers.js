@@ -277,6 +277,7 @@ const TestData = (function() {
   data.push(``);
 
   data.push(`export const FAUCET_PRIVATEKEY = ${ JSON.stringify(process.env.FAUCET_PRIVATEKEY) };`);
+  data.push(`export const ALCHEMY_APIKEY = ${ JSON.stringify(process.env.ALCHEMY_APIKEY) };`);
   data.push(`export const INFURA_APIKEY = ${ JSON.stringify(process.env.INFURA_APIKEY) };`);
   data.push(``);
 

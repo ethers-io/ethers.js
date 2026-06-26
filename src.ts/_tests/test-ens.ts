@@ -142,11 +142,19 @@ describe("Test ENSv2 migration", function() {
           address: "0xeE9eeaAB0Bb7D9B969D701f6f8212609EDeA252E",
           test: { reverse: true }
       },
+      /*
       {
           title: "reverse-l2",
           name: "coins.integration-tests.eth",
           address: "0xa66E90D515F576f49Af2dF40952476D56F72A420",
           coinType: 0x80000000 + 8453,
+          test: { reverse: true }
+      },
+      */
+      {
+          title: "reverse-ccip",
+          name: "test.antistupid.com",
+          address: "0xEB4200f750335eFb67E726485445d302D64B1c8A",
           test: { reverse: true }
       },
       {

@@ -2129,7 +2129,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  Resolves to the address configured for the %%ensName%% or
      *  ``null`` if unconfigured.
      */
-    resolveName(ensName: string, coinType?: number): Promise<null | string>;
+    resolveName(ensName: string, coinType?: BigNumberish): Promise<null | string>;
 
     /**
      *  Resolves to the ENS name associated for the %%address%% or
@@ -2138,7 +2138,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  Users must perform additional steps to configure a //primary name//,
      *  which is not currently common.
      */
-    lookupAddress(address: string, coinType?: number): Promise<null | string>;
+    lookupAddress(address: string, coinType?: BigNumberish): Promise<null | string>;
 
     /**
      *  Waits until the transaction %%hash%% is mined and has %%confirms%%

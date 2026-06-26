@@ -12,7 +12,7 @@ import {
     dnsEncode, ensNormalize, isValidName, namehash
 } from "../hash/index.js";
 import {
-    getNumber, hexlify, isHexString, toBeHex,
+    getBigInt, hexlify, isHexString, toBeHex,
     defineProperties, encodeBase58,
     assert, assertArgument, isError,
     FetchRequest
@@ -20,11 +20,13 @@ import {
 
 import type { FunctionFragment } from "../abi/index.js";
 
-import type { BytesLike } from "../utils/index.js";
+import type { BigNumberish, BytesLike } from "../utils/index.js";
 
 import type { AbstractProvider, AbstractProviderPlugin } from "./abstract-provider.js";
 import type { EnsPlugin } from "./plugins-network.js";
 import type { Provider } from "./provider.js";
+
+const BN_60 = BigInt(60);
 
 
 // @TODO: This should use the fetch-data:ipfs gateway
@@ -155,8 +157,8 @@ const matchers = [
     new RegExp("^eip155:[0-9]+/(erc[0-9]+):(.*)$", "i"),
 ];
 
-function isEvmCoinType(coinType: number) {
-    return (coinType === 60) ||
+function isEvmCoinType(coinType: bigint) {
+    return (coinType === BN_60) ||
       (coinType >= 0x80000000 && coinType <= 0xffffffff);
 }
 
@@ -269,9 +271,9 @@ export class EnsResolver {
      *  Resolves to the address for %%coinType%% or null if the
      *  provided %%coinType%% has not been configured.
      */
-    async getAddress(coinType?: number): Promise<null | string> {
-        coinType = (coinType == null) ? 60: getNumber(coinType);
-        if (coinType === 60) {
+    async getAddress(_coinType?: BigNumberish): Promise<null | string> {
+        const coinType = (_coinType == null) ? BN_60: getBigInt(_coinType);
+        if (coinType === BN_60) {
             try {
                 const result = await this.#fetch("addr(bytes32)");
 
@@ -293,7 +295,7 @@ export class EnsResolver {
 
         // Try decoding its EVM canonical chain as an EVM chain address first
         if (coinType >= 0 && coinType < 0x80000000) {
-            let ethCoinType = coinType + 0x80000000;
+            let ethCoinType = coinType + BigInt(0x80000000);
 
             const data = await this.#fetch("addr(bytes32,uint)", [ ethCoinType ]);
             if (isHexString(data, 20)) { return getAddress(data); }
@@ -305,7 +307,7 @@ export class EnsResolver {
         let coinPlugin: null | MulticoinProviderPlugin = null;
         for (const plugin of this.provider.plugins) {
             if (!(plugin instanceof MulticoinProviderPlugin)) { continue; }
-            if (plugin.supportsCoinType(coinType)) {
+            if (coinType <= 0x80000000 && plugin.supportsCoinType(Number(coinType))) {
                 coinPlugin = plugin;
                 break;
             }
@@ -319,10 +321,13 @@ export class EnsResolver {
         // No address
         if (data == null || data === "0x") { return null; }
 
-        // Compute the address
-        const address = await coinPlugin.decodeAddress(coinType, data);
+        if (coinType < 0x80000000) {
 
-        if (address != null) { return address; }
+            // Compute the address
+            const address = await coinPlugin.decodeAddress(Number(coinType), data);
+
+            if (address != null) { return address; }
+        }
 
         assert(false, `invalid coin data`, "UNSUPPORTED_OPERATION", {
             operation: `getAddress(${ coinType })`,
@@ -604,26 +609,33 @@ export class EnsResolver {
         return null;
     }
 
-    static async lookupAddress(provider: AbstractProvider, address: string, coinType?: number): Promise<null | string> {
-        coinType = (coinType == null) ? 60: getNumber(coinType);
+    static async lookupAddress(provider: AbstractProvider, address: string, _coinType?: BigNumberish): Promise<null | string> {
+        const coinType = (_coinType == null) ? BN_60: getBigInt(_coinType);
         if (isEvmCoinType(coinType)) { address = getAddress(address); }
 
         // We have a Universal resolver, use it
         const universal = await createUniversal(provider);
         if (universal) {
-            const result = await universal.reverse(address, coinType, {
-                enableCcipRead: true
-            });
+            try {
+                const result = await universal.reverse(address, coinType, {
+                    enableCcipRead: true
+                });
 
-            const addr = result.primary;
-            if (!isValidName(addr)) { return null; }
+                const addr = result.primary;
+                if (!isValidName(addr)) { return null; }
 
-            return addr;
+                return addr;
+            } catch (e) {
+                if (isError(e, "CALL_EXCEPTION") && e.reason === "ResolverNotFound(bytes)") {
+                    return null;
+                }
+                throw e;
+            }
         }
 
         // Use legacy reverse lookup
 
-        assert(coinType === 60, "lookupAddress coinType requires ENS Universal Resolver", "UNSUPPORTED_OPERATION", {
+        assert(coinType === BN_60, "lookupAddress coinType requires ENS Universal Resolver", "UNSUPPORTED_OPERATION", {
             operation: "lookupAddress"
         });
 

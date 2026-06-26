@@ -23,12 +23,12 @@ jobs:
 
     steps:
       - name: Use Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v6
         with:
           node-version: 26.x
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: "faux_modules/ethers"
 
@@ -63,12 +63,12 @@ jobs:
 
     steps:
       - name: Use Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v6
         with:
           node-version: 26.x
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: "faux_modules/ethers"
 

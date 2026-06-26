@@ -1,6 +1,7 @@
 import { defineProperties } from "../utils/properties.js";
 import { assertArgument } from "../utils/index.js";
 const EnsAddress = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 /**
  *  A **NetworkPlugin** provides additional functionality on a [[Network]].
  */
@@ -17,6 +18,10 @@ export class NetworkPlugin {
      */
     constructor(name) {
         defineProperties(this, { name });
+    }
+    [inspect]() { return this.toString(); }
+    toString() {
+        return `${this.name} { }`;
     }
     /**
      *  Creates a copy of this plugin.
@@ -88,6 +93,9 @@ export class GasCostPlugin extends NetworkPlugin {
         set("txAccessListAddress", 2400);
         defineProperties(this, props);
     }
+    toString() {
+        return `${this.name} { txBase: ${this.txBase}, txCreate: ${this.txCreate}, txDataZero: ${this.txDataZero}, txAccessListStorageKey: ${this.txAccessListStorageKey}, txAccessListAddress: ${this.txAccessListAddress} }`;
+    }
     clone() {
         return new GasCostPlugin(this.effectiveBlock, this);
     }
@@ -111,19 +119,27 @@ export class EnsPlugin extends NetworkPlugin {
      */
     targetNetwork;
     /**
+     *  The Universal Resolver Contract Address.
+     */
+    universalResolver;
+    /**
      *  Creates a new **EnsPlugin** connected to %%address%% on the
      *  %%targetNetwork%%. The default ENS address and mainnet is used
      *  if unspecified.
      */
-    constructor(address, targetNetwork) {
+    constructor(address, targetNetwork, universalResolver) {
         super("org.ethers.plugins.network.Ens");
         defineProperties(this, {
             address: (address || EnsAddress),
-            targetNetwork: ((targetNetwork == null) ? 1 : targetNetwork)
+            targetNetwork: ((targetNetwork == null) ? 1 : targetNetwork),
+            universalResolver
         });
     }
+    toString() {
+        return `${this.name} { address: ${this.address}, targetNetwork: ${this.targetNetwork}, universalResolver: ${this.universalResolver} }`;
+    }
     clone() {
-        return new EnsPlugin(this.address, this.targetNetwork);
+        return new EnsPlugin(this.address, this.targetNetwork, this.universalResolver);
     }
 }
 /**
@@ -177,6 +193,9 @@ export class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
         super("org.ethers.plugins.network.FetchUrlFeeDataPlugin");
         this.#url = url;
         this.#processFunc = processFunc;
+    }
+    toString() {
+        return `${this.name} { url: ${this.url} }`;
     }
     // We are immutable, so we can serve as our own clone
     clone() { return this; }
