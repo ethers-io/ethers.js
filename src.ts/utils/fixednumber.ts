@@ -484,7 +484,7 @@ export class FixedNumber {
     floor(): FixedNumber {
         let val = this.#val;
         if (this.#val < BN_0) { val -= this.#tens - BN_1; }
-        val = (this.#val / this.#tens) * this.#tens;
+        val = (val / this.#tens) * this.#tens;
         return this.#checkValue(val, "floor");
     }
 
@@ -497,7 +497,7 @@ export class FixedNumber {
     ceiling(): FixedNumber {
         let val = this.#val;
         if (this.#val > BN_0) { val += this.#tens - BN_1; }
-        val = (this.#val / this.#tens) * this.#tens;
+        val = (val / this.#tens) * this.#tens;
         return this.#checkValue(val, "ceiling");
     }
 
