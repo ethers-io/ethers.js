@@ -1506,4 +1506,4 @@ class LangZh extends Wordlist {
 }
 
 export { LangCz, LangEs, LangFr, LangIt, LangJa, LangKo, LangPt, LangZh };
-//# sourceMappingURL=wordlists-extra.js.map
+//# sourceMappingURL=wordlists-extra.js.map 
