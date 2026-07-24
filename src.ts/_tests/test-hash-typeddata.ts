@@ -1,7 +1,7 @@
 import assert from "assert";
 import { loadTests } from "./utils.js";
 import type { TestCaseTypedData } from "./types.js";
-import { TypedDataEncoder } from "../index.js";
+import { id, TypedDataEncoder } from "../index.js";
 
 
 describe("Tests Typed Data (EIP-712)", function() {
@@ -166,5 +166,43 @@ describe("Tests Typed Data (EIP-712) aliases", function() {
 
         const encoded = "0x87a4bfff36f1a2ecde6468d6acd51ecc5ef8f3a15d8115a412c686d82d3fdbe4628fc3080b86a044fb60153bb7dc3f904e9ed1cebadf35c17099a060ba4df90b1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8";
         assert.equal(data, encoded, "encoded");
+    });
+});
+
+describe("Tests Typed Data (EIP-712) getTypeHash", function() {
+    const types = {
+        Person: [
+            { name: "name", type: "string" },
+            { name: "wallet", type: "address" },
+        ],
+        Mail: [
+            { name: "from", type: "Person" },
+            { name: "to", type: "Person" },
+            { name: "contents", type: "string" },
+        ],
+    };
+
+    // Type hashes from the EIP-712 specification example
+    const typeHashes: Record<string, string> = {
+        Person: "0xb9d8c78acf9b987311de6c7b45bb6a9c8e1bf361fa7fd3467a2163f994c79500",
+        Mail: "0xa0cedeb2dc280ba39b857546d74f5549c3a1d7bdc2dd96bf881f76108e23dac2",
+    };
+
+    it("computes the type hash from the static method", function() {
+        for (const name in typeHashes) {
+            assert.equal(TypedDataEncoder.getTypeHash(name, types), typeHashes[name], name);
+        }
+    });
+
+    it("computes the type hash from an encoder instance", function() {
+        const encoder = TypedDataEncoder.from(types);
+        for (const name in typeHashes) {
+            assert.equal(encoder.getTypeHash(name), typeHashes[name], name);
+        }
+    });
+
+    it("matches keccak256 of the encoded type", function() {
+        const encoder = TypedDataEncoder.from(types);
+        assert.equal(encoder.getTypeHash("Mail"), id(encoder.encodeType("Mail")), "Mail");
     });
 });

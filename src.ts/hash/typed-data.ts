@@ -407,6 +407,13 @@ export class TypedDataEncoder {
     }
 
     /**
+     *  Return the type hash for %%name%%.
+     */
+    getTypeHash(name: string): string {
+        return id(this.encodeType(name));
+    }
+
+    /**
      *  Return the encoded %%value%% for the %%type%%.
      */
     encodeData(type: string, value: any): string {
@@ -486,6 +493,13 @@ export class TypedDataEncoder {
      */
     static getPrimaryType(types: Record<string, Array<TypedDataField>>): string {
         return TypedDataEncoder.from(types).primaryType;
+    }
+
+    /**
+     *  Return the type hash for %%name%% using %%types%%.
+     */
+    static getTypeHash(name: string, types: Record<string, Array<TypedDataField>>): string {
+        return TypedDataEncoder.from(types).getTypeHash(name);
     }
 
     /**
