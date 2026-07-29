@@ -1146,6 +1146,8 @@ export class AbstractProvider implements Provider {
             throw new Error("@TODO: the returned hash did not match");
         }
 
+        this.#performCache.clear();
+
         return this._wrapTransactionResponse(<any>tx, network).replaceableTransaction(blockNumber);
     }
 
