@@ -4,7 +4,7 @@ The ethers.js library aims to be a complete and compact library
 for interacting with the Ethereum Blockchain and its ecosystem.
 
 It is often used to create decentralized applications (dapps),
-wallets (such as [[link-metamask]] and [[link-tally]]) and
+wallets (such as [[link-metamask]]) and
 other tools and simple scripts that require reading and writing
 to the blockchain.
 

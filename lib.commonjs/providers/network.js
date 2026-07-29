@@ -10,6 +10,7 @@ exports.Network = void 0;
 const index_js_1 = require("../transaction/index.js");
 const index_js_2 = require("../utils/index.js");
 const plugins_network_js_1 = require("./plugins-network.js");
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 /* * * *
 // Networks which operation against an L2 can use this plugin to
 // specify how to access L1, for the purpose of resolving ENS,
@@ -43,6 +44,14 @@ class Network {
         this.#name = name;
         this.#chainId = (0, index_js_2.getBigInt)(chainId);
         this.#plugins = new Map();
+    }
+    [inspect]() { return this.toString(); }
+    toString() {
+        const plugins = [];
+        for (const plugin of this.#plugins.values()) {
+            plugins.push(plugin.toString());
+        }
+        return `Network { name: ${this.name}, chainId: ${this.chainId}, plugins: [ ${plugins.join(", ")} ] }`;
     }
     /**
      *  Returns a JSON-compatible representation of a Network.
@@ -209,8 +218,9 @@ class Network {
         if (typeof (network) === "object") {
             (0, index_js_2.assertArgument)(typeof (network.name) === "string" && typeof (network.chainId) === "number", "invalid network object name or chainId", "network", network);
             const custom = new Network((network.name), (network.chainId));
-            if (network.ensAddress || network.ensNetwork != null) {
-                custom.attachPlugin(new plugins_network_js_1.EnsPlugin(network.ensAddress, network.ensNetwork));
+            const n = network;
+            if (n.ensAddress || n.ensNetwork != null || n.ensUniversalResolver) {
+                custom.attachPlugin(new plugins_network_js_1.EnsPlugin(n.ensAddress, n.ensNetwork, n.ensUniversalResolver));
             }
             //if ((<any>network).layerOneConnection) {
             //    custom.attachPlugin(new LayerOneConnectionPlugin((<any>network).layerOneConnection));
@@ -291,23 +301,6 @@ function getGasStationPlugin(url) {
         }
     });
 }
-// Used by Optimism for a custom priority fee
-function getPriorityFeePlugin(maxPriorityFeePerGas) {
-    return new plugins_network_js_1.FetchUrlFeeDataNetworkPlugin("data:", async (fetchFeeData, provider, request) => {
-        const feeData = await fetchFeeData();
-        // This should always fail
-        if (feeData.maxFeePerGas == null || feeData.maxPriorityFeePerGas == null) {
-            return feeData;
-        }
-        // Compute the corrected baseFee to recompute the updated values
-        const baseFee = feeData.maxFeePerGas - feeData.maxPriorityFeePerGas;
-        return {
-            gasPrice: feeData.gasPrice,
-            maxFeePerGas: (baseFee + maxPriorityFeePerGas),
-            maxPriorityFeePerGas
-        };
-    });
-}
 // See: https://chainlist.org
 let injected = false;
 function injectCommonNetworks() {
@@ -321,7 +314,7 @@ function injectCommonNetworks() {
             const network = new Network(name, chainId);
             // We use 0 to disable ENS
             if (options.ensNetwork != null) {
-                network.attachPlugin(new plugins_network_js_1.EnsPlugin(null, options.ensNetwork));
+                network.attachPlugin(new plugins_network_js_1.EnsPlugin(null, options.ensNetwork, options.ensUniversalResolver));
             }
             network.attachPlugin(new plugins_network_js_1.GasCostPlugin());
             (options.plugins || []).forEach((plugin) => {
@@ -338,28 +331,43 @@ function injectCommonNetworks() {
             });
         }
     }
-    registerEth("mainnet", 1, { ensNetwork: 1, altNames: ["homestead"] });
+    // Proxy address
+    const ensUniversalResolver = "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe";
+    registerEth("mainnet", 1, {
+        ensUniversalResolver, ensNetwork: 1, altNames: ["homestead"]
+    });
     registerEth("ropsten", 3, { ensNetwork: 3 });
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });
     registerEth("kovan", 42, { ensNetwork: 42 });
-    registerEth("sepolia", 11155111, {});
+    registerEth("sepolia", 11155111, {
+        ensUniversalResolver, ensNetwork: 11155111
+    });
+    registerEth("holesky", 17000, { ensNetwork: 17000 });
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});
     registerEth("arbitrum", 42161, {
         ensNetwork: 1,
     });
     registerEth("arbitrum-goerli", 421613, {});
+    registerEth("arbitrum-sepolia", 421614, {});
+    registerEth("base", 8453, { ensNetwork: 1 });
+    registerEth("base-goerli", 84531, {});
+    registerEth("base-sepolia", 84532, {});
     registerEth("bnb", 56, { ensNetwork: 1 });
     registerEth("bnbt", 97, {});
+    registerEth("filecoin", 314, {});
+    registerEth("filecoin-calibration", 314159, {});
     registerEth("linea", 59144, { ensNetwork: 1 });
     registerEth("linea-goerli", 59140, {});
+    registerEth("linea-sepolia", 59141, {});
     registerEth("matic", 137, {
         ensNetwork: 1,
         plugins: [
             getGasStationPlugin("https:/\/gasstation.polygon.technology/v2")
         ]
     });
+    registerEth("matic-amoy", 80002, {});
     registerEth("matic-mumbai", 80001, {
         altNames: ["maticMumbai", "maticmum"],
         plugins: [
@@ -368,11 +376,10 @@ function injectCommonNetworks() {
     });
     registerEth("optimism", 10, {
         ensNetwork: 1,
-        plugins: [
-            getPriorityFeePlugin(BigInt("1000000"))
-        ]
+        plugins: []
     });
     registerEth("optimism-goerli", 420, {});
+    registerEth("optimism-sepolia", 11155420, {});
     registerEth("xdai", 100, { ensNetwork: 1 });
 }
 //# sourceMappingURL=network.js.map

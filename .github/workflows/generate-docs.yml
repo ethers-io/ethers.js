@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - ".github/workflows/**"
       - "src.ts/**"
       - "docs.wrm/**"
 
@@ -17,14 +18,15 @@ jobs:
     environment: ethers-tests
     env:
       FAUCET_PRIVATEKEY: ${{ secrets.FAUCET_PRIVATEKEY }}
+      INFURA_APIKEY: ${{ secrets.INFURA_APIKEY }}
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v6
         with:
-          node-version: 18.x
+          node-version: 26.x
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: "0"
 

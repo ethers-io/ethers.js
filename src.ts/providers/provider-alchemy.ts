@@ -1,8 +1,28 @@
 /**
- *  About Alchemy
+ *  [[link-alchemy]] provides a third-party service for connecting to
+ *  various blockchains over JSON-RPC.
+ *
+ *  **Supported Networks**
+ *
+ *  - Ethereum Mainnet (``mainnet``)
+ *  - Goerli Testnet (``goerli``)
+ *  - Sepolia Testnet (``sepolia``)
+ *  - Arbitrum (``arbitrum``)
+ *  - Arbitrum Goerli Testnet (``arbitrum-goerli``)
+ *  - Arbitrum Sepolia Testnet (``arbitrum-sepolia``)
+ *  - Base (``base``)
+ *  - Base Goerlia Testnet (``base-goerli``)
+ *  - Base Sepolia Testnet (``base-sepolia``)
+ *  - Optimism (``optimism``)
+ *  - Optimism Goerli Testnet (``optimism-goerli``)
+ *  - Optimism Sepolia Testnet (``optimism-sepolia``)
+ *  - Polygon (``matic``)
+ *  - Polygon Amoy Testnet (``matic-amoy``)
+ *  - Polygon Mumbai Testnet (``matic-mumbai``)
  *
  *  @_subsection: api/providers/thirdparty:Alchemy  [providers-alchemy]
  */
+
 import {
     defineProperties, resolveProperties, assert, assertArgument,
     FetchRequest
@@ -22,7 +42,7 @@ const defaultApiKey = "_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC"
 function getHost(name: string): string {
     switch(name) {
         case "mainnet":
-            return "eth-mainnet.alchemyapi.io";
+            return "eth-mainnet.g.alchemy.com";
         case "goerli":
             return "eth-goerli.g.alchemy.com";
         case "sepolia":
@@ -32,14 +52,32 @@ function getHost(name: string): string {
             return "arb-mainnet.g.alchemy.com";
         case "arbitrum-goerli":
             return "arb-goerli.g.alchemy.com";
+        case "arbitrum-sepolia":
+            return "arb-sepolia.g.alchemy.com";
+        case "base":
+            return "base-mainnet.g.alchemy.com";
+        case "base-goerli":
+            return "base-goerli.g.alchemy.com";
+        case "base-sepolia":
+            return "base-sepolia.g.alchemy.com";
+
+        case "bnb":
+            return "bnb-mainnet.g.alchemy.com";
+        case "bnbt":
+            return "bnb-testnet.g.alchemy.com";
+
         case "matic":
             return "polygon-mainnet.g.alchemy.com";
+        case "matic-amoy":
+            return "polygon-amoy.g.alchemy.com";
         case "matic-mumbai":
             return "polygon-mumbai.g.alchemy.com";
         case "optimism":
             return "opt-mainnet.g.alchemy.com";
         case "optimism-goerli":
             return "opt-goerli.g.alchemy.com";
+        case "optimism-sepolia":
+            return "opt-sepolia.g.alchemy.com";
     }
 
     assertArgument(false, "unsupported network", "network", name);

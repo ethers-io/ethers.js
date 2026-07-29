@@ -53,7 +53,7 @@ const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 
 
 let defaultCoder: null | AbiCoder = null;
-
+let defaultMaxInflation = 1024;
 
 function getBuiltinCallException(action: CallExceptionAction, tx: { to?: null | string, from?: null | string, data?: string }, data: null | BytesLike, abiCoder: AbiCoder): CallExceptionError {
     let message = "missing revert data";
@@ -206,7 +206,12 @@ export class AbiCoder {
     decode(types: ReadonlyArray<string | ParamType>, data: BytesLike, loose?: boolean): Result {
         const coders: Array<Coder> = types.map((type) => this.#getCoder(ParamType.from(type)));
         const coder = new TupleCoder(coders, "_");
-        return coder.decode(new Reader(data, loose));
+        return coder.decode(new Reader(data, loose, defaultMaxInflation));
+    }
+
+    static _setDefaultMaxInflation(value: number): void {
+        assertArgument(typeof(value) === "number" && Number.isInteger(value), "invalid defaultMaxInflation factor", "value", value);
+        defaultMaxInflation = value;
     }
 
     /**

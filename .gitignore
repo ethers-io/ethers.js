@@ -1,6 +1,11 @@
 node_modules/**
 output/**
 
+**/*.save
 **/*.swp
 **/*.tgz
 dist/*.gz
+
+**/.DS_Store
+
+.iterm2-project

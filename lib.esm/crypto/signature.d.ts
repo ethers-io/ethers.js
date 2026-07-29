@@ -1,4 +1,5 @@
 import type { BigNumberish, BytesLike } from "../utils/index.js";
+declare const inspect: unique symbol;
 /**
  *  A SignatureLike
  *
@@ -32,7 +33,7 @@ export type SignatureLike = Signature | string | {
 export declare class Signature {
     #private;
     /**
-     *  The ``r`` value for a signautre.
+     *  The ``r`` value for a signature.
      *
      *  This represents the ``x`` coordinate of a "reference" or
      *  challenge point, from which the ``y`` can be computed.
@@ -44,6 +45,19 @@ export declare class Signature {
      */
     get s(): string;
     set s(_value: BytesLike);
+    /**
+     *  Return the s value, unchecked for EIP-2 compliance.
+     *
+     *  This should generally not be used and is for situations where
+     *  a non-canonical S value might be relevant, such as Frontier blocks
+     *  that were mined prior to EIP-2 or invalid Authorization List
+     *  signatures.
+     */
+    get _s(): string;
+    /**
+     *  Returns true if the Signature is valid for [[link-eip-2]] signatures.
+     */
+    isValid(): boolean;
     /**
      *  The ``v`` value for a signature.
      *
@@ -90,6 +104,14 @@ export declare class Signature {
      */
     constructor(guard: any, r: string, s: string, v: 27 | 28);
     /**
+     *  Returns the canonical signature.
+     *
+     *  This is only necessary when dealing with legacy transaction which
+     *  did not enforce canonical S values (i.e. [[link-eip-2]]. Most
+     *  developers should never require this.
+     */
+    getCanonical(): Signature;
+    /**
      *  Returns a new identical [[Signature]].
      */
     clone(): Signature;
@@ -97,6 +119,8 @@ export declare class Signature {
      *  Returns a representation that is compatible with ``JSON.stringify``.
      */
     toJSON(): any;
+    [inspect](): string;
+    toString(): string;
     /**
      *  Compute the chain ID from the ``v`` in a legacy EIP-155 transactions.
      *
@@ -155,4 +179,5 @@ export declare class Signature {
      */
     static from(sig?: SignatureLike): Signature;
 }
+export {};
 //# sourceMappingURL=signature.d.ts.map

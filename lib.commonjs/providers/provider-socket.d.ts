@@ -11,7 +11,7 @@
 import { JsonRpcApiProvider } from "./provider-jsonrpc.js";
 import type { Subscriber, Subscription } from "./abstract-provider.js";
 import type { EventFilter } from "./provider.js";
-import type { JsonRpcError, JsonRpcPayload, JsonRpcResult } from "./provider-jsonrpc.js";
+import type { JsonRpcApiProviderOptions, JsonRpcError, JsonRpcPayload, JsonRpcResult } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
 /**
  *  A **SocketSubscriber** uses a socket transport to handle events and
@@ -91,7 +91,7 @@ export declare class SocketProvider extends JsonRpcApiProvider {
      *
      *  If unspecified, the network will be discovered.
      */
-    constructor(network?: Networkish);
+    constructor(network?: Networkish, _options?: JsonRpcApiProviderOptions);
     _getSubscriber(sub: Subscription): Subscriber;
     /**
      *  Register a new subscriber. This is used internalled by Subscribers

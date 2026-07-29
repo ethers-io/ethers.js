@@ -1,7 +1,7 @@
 "use strict";
 /**
  *  Addresses are a fundamental part of interacting with Ethereum. They
- *  represent the gloabal identity of Externally Owned Accounts (accounts
+ *  represent the global identity of Externally Owned Accounts (accounts
  *  backed by a private key) and contracts.
  *
  *  The Ethereum Naming Service (ENS) provides an interconnected ecosystem

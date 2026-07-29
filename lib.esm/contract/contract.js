@@ -18,6 +18,17 @@ function canResolve(value) {
 function canSend(value) {
     return (value && typeof (value.sendTransaction) === "function");
 }
+function getResolver(value) {
+    if (value != null) {
+        if (canResolve(value)) {
+            return value;
+        }
+        if (value.provider) {
+            return value.provider;
+        }
+    }
+    return undefined;
+}
 class PreparedTopicFilter {
     #filter;
     fragment;
@@ -89,7 +100,7 @@ export async function copyOverrides(arg, allowed) {
     assertArgument(overrides.data == null || (allowed || []).indexOf("data") >= 0, "cannot override data", "overrides.data", overrides.data);
     // Resolve any from
     if (overrides.from) {
-        overrides.from = await resolveAddress(overrides.from);
+        overrides.from = overrides.from;
     }
     return overrides;
 }
@@ -115,6 +126,9 @@ function buildWrappedFallback(contract) {
         // If an overrides was passed in, copy it and normalize the values
         const tx = (await copyOverrides(overrides, ["data"]));
         tx.to = await contract.getAddress();
+        if (tx.from) {
+            tx.from = await resolveAddress(tx.from, getResolver(contract.runner));
+        }
         const iface = contract.interface;
         const noValue = (getBigInt((tx.value || BN_0), "overrides.value") === BN_0);
         const noData = ((tx.data || "0x") === "0x");
@@ -183,6 +197,9 @@ function buildWrappedMethod(contract, key) {
         let overrides = {};
         if (fragment.inputs.length + 1 === args.length) {
             overrides = await copyOverrides(args.pop());
+            if (overrides.from) {
+                overrides.from = await resolveAddress(overrides.from, getResolver(contract.runner));
+            }
         }
         if (fragment.inputs.length !== args.length) {
             throw new Error("internal error: fragment inputs doesn't match arguments; should not happen");
@@ -487,7 +504,7 @@ export class BaseContract {
      *  The target to connect to.
      *
      *  This can be an address, ENS name or any [[Addressable]], such as
-     *  another contract. To get the resovled address, use the ``getAddress``
+     *  another contract. To get the resolved address, use the ``getAddress``
      *  method.
      */
     target;
@@ -662,7 +679,7 @@ export class BaseContract {
      *  resolve immediately if already deployed.
      */
     async waitForDeployment() {
-        // We have the deployement transaction; just use that (throws if deployement fails)
+        // We have the deployment transaction; just use that (throws if deployment fails)
         const deployTx = this.deploymentTransaction();
         if (deployTx) {
             await deployTx.wait();
@@ -704,7 +721,7 @@ export class BaseContract {
     /**
      *  Return the function for a given name. This is useful when a contract
      *  method name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getFunction(key) {
         if (typeof (key) !== "string") {
@@ -716,7 +733,7 @@ export class BaseContract {
     /**
      *  Return the event for a given name. This is useful when a contract
      *  event name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getEvent(key) {
         if (typeof (key) !== "string") {

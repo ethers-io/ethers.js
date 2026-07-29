@@ -68,11 +68,11 @@ const domainChecks = {
 function getBaseEncoder(type) {
     // intXX and uintXX
     {
-        const match = type.match(/^(u?)int(\d*)$/);
+        const match = type.match(/^(u?)int(\d+)$/);
         if (match) {
             const signed = (match[1] === "");
-            const width = parseInt(match[2] || "256");
-            (0, index_js_4.assertArgument)(width % 8 === 0 && width !== 0 && width <= 256 && (match[2] == null || match[2] === String(width)), "invalid numeric width", "type", type);
+            const width = parseInt(match[2]);
+            (0, index_js_4.assertArgument)(width % 8 === 0 && width !== 0 && width <= 256 && match[2] === String(width), "invalid numeric width", "type", type);
             const boundsUpper = (0, index_js_4.mask)(BN_MAX_UINT256, signed ? (width - 1) : width);
             const boundsLower = signed ? ((boundsUpper + BN_1) * BN__1) : BN_0;
             return function (_value) {
@@ -114,6 +114,23 @@ function getBaseEncoder(type) {
 function encodeType(name, fields) {
     return `${name}(${fields.map(({ name, type }) => (type + " " + name)).join(",")})`;
 }
+// foo[][3] => { base: "foo", index: "[][3]", array: {
+//     base: "foo", prefix: "foo[]", count: 3 } }
+function splitArray(type) {
+    const match = type.match(/^([^\x5b]*)((\x5b\d*\x5d)*)(\x5b(\d*)\x5d)$/);
+    if (match) {
+        return {
+            base: match[1],
+            index: (match[2] + match[4]),
+            array: {
+                base: match[1],
+                prefix: (match[1] + match[2]),
+                count: (match[5] ? parseInt(match[5]) : -1),
+            }
+        };
+    }
+    return { base: type };
+}
 /**
  *  A **TypedDataEncode** prepares and encodes [[link-eip-712]] payloads
  *  for signed typed data.
@@ -148,8 +165,7 @@ class TypedDataEncoder {
      *  do not violate the [[link-eip-712]] structural constraints as
      *  well as computes the [[primaryType]].
      */
-    constructor(types) {
-        this.#types = JSON.stringify(types);
+    constructor(_types) {
         this.#fullTypes = new Map();
         this.#encoderCache = new Map();
         // Link struct types to their direct child structs
@@ -158,26 +174,39 @@ class TypedDataEncoder {
         const parents = new Map();
         // Link all subtypes within a given struct
         const subtypes = new Map();
-        Object.keys(types).forEach((type) => {
+        const types = {};
+        Object.keys(_types).forEach((type) => {
+            types[type] = _types[type].map(({ name, type }) => {
+                // Normalize the base type (unless name conflict)
+                let { base, index } = splitArray(type);
+                if (base === "int" && !_types["int"]) {
+                    base = "int256";
+                }
+                if (base === "uint" && !_types["uint"]) {
+                    base = "uint256";
+                }
+                return { name, type: (base + (index || "")) };
+            });
             links.set(type, new Set());
             parents.set(type, []);
             subtypes.set(type, new Set());
         });
+        this.#types = JSON.stringify(types);
         for (const name in types) {
             const uniqueNames = new Set();
             for (const field of types[name]) {
                 // Check each field has a unique name
-                (0, index_js_4.assertArgument)(!uniqueNames.has(field.name), `duplicate variable name ${JSON.stringify(field.name)} in ${JSON.stringify(name)}`, "types", types);
+                (0, index_js_4.assertArgument)(!uniqueNames.has(field.name), `duplicate variable name ${JSON.stringify(field.name)} in ${JSON.stringify(name)}`, "types", _types);
                 uniqueNames.add(field.name);
                 // Get the base type (drop any array specifiers)
-                const baseType = (field.type.match(/^([^\x5b]*)(\x5b|$)/))[1] || null;
-                (0, index_js_4.assertArgument)(baseType !== name, `circular type reference to ${JSON.stringify(baseType)}`, "types", types);
+                const baseType = splitArray(field.type).base;
+                (0, index_js_4.assertArgument)(baseType !== name, `circular type reference to ${JSON.stringify(baseType)}`, "types", _types);
                 // Is this a base encoding type?
                 const encoder = getBaseEncoder(baseType);
                 if (encoder) {
                     continue;
                 }
-                (0, index_js_4.assertArgument)(parents.has(baseType), `unknown type ${JSON.stringify(baseType)}`, "types", types);
+                (0, index_js_4.assertArgument)(parents.has(baseType), `unknown type ${JSON.stringify(baseType)}`, "types", _types);
                 // Add linkage
                 parents.get(baseType).push(name);
                 links.get(name).add(baseType);
@@ -185,12 +214,12 @@ class TypedDataEncoder {
         }
         // Deduce the primary type
         const primaryTypes = Array.from(parents.keys()).filter((n) => (parents.get(n).length === 0));
-        (0, index_js_4.assertArgument)(primaryTypes.length !== 0, "missing primary type", "types", types);
-        (0, index_js_4.assertArgument)(primaryTypes.length === 1, `ambiguous primary types or unused types: ${primaryTypes.map((t) => (JSON.stringify(t))).join(", ")}`, "types", types);
+        (0, index_js_4.assertArgument)(primaryTypes.length !== 0, "missing primary type", "types", _types);
+        (0, index_js_4.assertArgument)(primaryTypes.length === 1, `ambiguous primary types or unused types: ${primaryTypes.map((t) => (JSON.stringify(t))).join(", ")}`, "types", _types);
         (0, index_js_4.defineProperties)(this, { primaryType: primaryTypes[0] });
         // Check for circular type references
         function checkCircular(type, found) {
-            (0, index_js_4.assertArgument)(!found.has(type), `circular type reference to ${JSON.stringify(type)}`, "types", types);
+            (0, index_js_4.assertArgument)(!found.has(type), `circular type reference to ${JSON.stringify(type)}`, "types", _types);
             found.add(type);
             for (const child of links.get(type)) {
                 if (!parents.has(child)) {
@@ -233,12 +262,12 @@ class TypedDataEncoder {
             }
         }
         // Array
-        const match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
-        if (match) {
-            const subtype = match[1];
+        const array = splitArray(type).array;
+        if (array) {
+            const subtype = array.prefix;
             const subEncoder = this.getEncoder(subtype);
             return (value) => {
-                (0, index_js_4.assertArgument)(!match[3] || parseInt(match[3]) === value.length, `array length mismatch; expected length ${parseInt(match[3])}`, "value", value);
+                (0, index_js_4.assertArgument)(array.count === -1 || array.count === value.length, `array length mismatch; expected length ${array.count}`, "value", value);
                 let result = value.map(subEncoder);
                 if (this.#fullTypes.has(subtype)) {
                     result = result.map(index_js_2.keccak256);
@@ -308,10 +337,10 @@ class TypedDataEncoder {
             }
         }
         // Array
-        const match = type.match(/^(.*)(\x5b(\d*)\x5d)$/);
-        if (match) {
-            (0, index_js_4.assertArgument)(!match[3] || parseInt(match[3]) === value.length, `array length mismatch; expected length ${parseInt(match[3])}`, "value", value);
-            return value.map((v) => this._visit(match[1], v, callback));
+        const array = splitArray(type).array;
+        if (array) {
+            (0, index_js_4.assertArgument)(array.count === -1 || array.count === value.length, `array length mismatch; expected length ${array.count}`, "value", value);
+            return value.map((v) => this._visit(array.prefix, v, callback));
         }
         // Struct
         const fields = this.types[type];
@@ -450,6 +479,8 @@ class TypedDataEncoder {
             domainTypes.push({ name, type: domainFieldTypes[name] });
         });
         const encoder = TypedDataEncoder.from(types);
+        // Get the normalized types
+        types = encoder.types;
         const typesWithDomain = Object.assign({}, types);
         (0, index_js_4.assertArgument)(typesWithDomain.EIP712Domain == null, "types must not contain EIP712Domain type", "types.EIP712Domain", types);
         typesWithDomain.EIP712Domain = domainTypes;

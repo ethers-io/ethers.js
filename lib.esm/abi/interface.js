@@ -245,7 +245,7 @@ export class Interface {
                 frags.push(Fragment.from(a));
             }
             catch (error) {
-                console.log("EE", error);
+                console.log(`[Warning] Invalid Fragment ${JSON.stringify(a)}:`, error.message);
             }
         }
         defineProperties(this, {
@@ -1060,7 +1060,7 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
      *  Parses a revert data, finding the matching error and extracts
      *  the parameter values along with other useful error details.
      *
-     *  If the matching event cannot be found, returns null.
+     *  If the matching error cannot be found, returns null.
      */
     parseError(data) {
         const hexData = hexlify(data);
@@ -1086,7 +1086,11 @@ getSelector(fragment: ErrorFragment | FunctionFragment): string {
         if (typeof (value) === "string") {
             return new Interface(JSON.parse(value));
         }
-        // Maybe an interface from an older version, or from a symlinked copy
+        // An Interface; possibly from another v6 instance
+        if (typeof (value.formatJson) === "function") {
+            return new Interface(value.formatJson());
+        }
+        // A legacy Interface; from an older version
         if (typeof (value.format) === "function") {
             return new Interface(value.format("json"));
         }

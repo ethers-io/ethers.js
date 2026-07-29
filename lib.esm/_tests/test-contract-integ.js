@@ -1,7 +1,8 @@
 import assert from "assert";
 import { ethers } from "../index.js";
+import { getDevProvider } from "./create-provider.js";
 describe("Tests contract integration", function () {
-    const provider = new ethers.JsonRpcProvider("http:/\/127.0.0.1:8545");
+    const provider = getDevProvider();
     const abi = [
         "constructor(address owner, uint maxSupply)",
         "function mint(address target) returns (bool minted)",

@@ -60,7 +60,7 @@ export type DebugEventAbstractProvider = {
  *  if they are modifying a low-level feature of how subscriptions operate.
  */
 export type Subscription = {
-    type: "block" | "close" | "debug" | "error" | "network" | "pending";
+    type: "block" | "close" | "debug" | "error" | "finalized" | "network" | "pending" | "safe";
     tag: string;
 } | {
     type: "transaction";
@@ -209,6 +209,8 @@ export type PerformActionRequest = {
     method: "getLogs";
     filter: PerformActionFilter;
 } | {
+    method: "getPriorityFee";
+} | {
     method: "getStorage";
     address: string;
     position: bigint;
@@ -255,6 +257,11 @@ export declare class AbstractProvider implements Provider {
      *  [[Network]] if necessary.
      */
     constructor(_network?: "any" | Networkish, options?: AbstractProviderOptions);
+    /**
+     *  Limit the number of requests per second. (default: no limit)
+     */
+    get _requestRate(): null | number;
+    set _requestRate(value: null | number);
     get pollingInterval(): number;
     /**
      *  Returns ``this``, to allow an **AbstractProvider** to implement
@@ -340,7 +347,7 @@ export declare class AbstractProvider implements Provider {
      */
     _getFilter(filter: Filter | FilterByBlockHash): PerformActionFilter | Promise<PerformActionFilter>;
     /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  Returns or resolves to a transaction for %%request%%, resolving
      *  any ENS names or [[Addressable]] and returning if already a valid
      *  transaction.
      */
@@ -362,8 +369,8 @@ export declare class AbstractProvider implements Provider {
     _getProvider(chainId: number): AbstractProvider;
     getResolver(name: string): Promise<null | EnsResolver>;
     getAvatar(name: string): Promise<null | string>;
-    resolveName(name: string): Promise<null | string>;
-    lookupAddress(address: string): Promise<null | string>;
+    resolveName(name: string, coinType?: BigNumberish): Promise<null | string>;
+    lookupAddress(address: string, coinType?: BigNumberish): Promise<null | string>;
     waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt>;
     waitForBlock(blockTag?: BlockTag): Promise<Block>;
     /**

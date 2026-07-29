@@ -82,7 +82,7 @@ export declare class ContractTransactionResponse extends TransactionResponse {
      *  and the transaction has not been mined, otherwise this will
      *  wait until enough confirmations have completed.
      */
-    wait(confirms?: number): Promise<null | ContractTransactionReceipt>;
+    wait(confirms?: number, timeout?: number): Promise<null | ContractTransactionReceipt>;
 }
 /**
  *  A **ContractUnknownEventPayload** is included as the last parameter to

@@ -18,19 +18,22 @@ export declare class Result extends Array<any> {
      */
     constructor(...args: Array<any>);
     /**
-     *  Returns the Result as a normal Array.
+     *  Returns the Result as a normal Array. If %%deep%%, any children
+     *  which are Result objects are also converted to a normal Array.
      *
      *  This will throw if there are any outstanding deferred
      *  errors.
      */
-    toArray(): Array<any>;
+    toArray(deep?: boolean): Array<any>;
     /**
-     *  Returns the Result as an Object with each name-value pair.
+     *  Returns the Result as an Object with each name-value pair. If
+     *  %%deep%%, any children which are Result objects are also
+     *  converted to an Object.
      *
      *  This will throw if any value is unnamed, or if there are
      *  any outstanding deferred errors.
      */
-    toObject(): Record<string, any>;
+    toObject(deep?: boolean): Record<string, any>;
     /**
      *  @_ignore
      */
@@ -108,7 +111,7 @@ export declare class Writer {
 export declare class Reader {
     #private;
     readonly allowLoose: boolean;
-    constructor(data: BytesLike, allowLoose?: boolean);
+    constructor(data: BytesLike, allowLoose?: boolean, maxInflation?: number);
     get data(): string;
     get dataLength(): number;
     get consumed(): number;

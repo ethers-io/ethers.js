@@ -9,12 +9,21 @@
  */
 import { version } from "../_version.js";
 import { defineProperties } from "./properties.js";
-function stringify(value) {
+function stringify(value, seen) {
     if (value == null) {
         return "null";
     }
+    if (seen == null) {
+        seen = new Set();
+    }
+    if (typeof (value) === "object") {
+        if (seen.has(value)) {
+            return "[Circular]";
+        }
+        seen.add(value);
+    }
     if (Array.isArray(value)) {
-        return "[ " + (value.map(stringify)).join(", ") + " ]";
+        return "[ " + (value.map((v) => stringify(v, seen))).join(", ") + " ]";
     }
     if (value instanceof Uint8Array) {
         const HEX = "0123456789abcdef";
@@ -26,22 +35,21 @@ function stringify(value) {
         return result;
     }
     if (typeof (value) === "object" && typeof (value.toJSON) === "function") {
-        return stringify(value.toJSON());
+        return stringify(value.toJSON(), seen);
     }
     switch (typeof (value)) {
         case "boolean":
+        case "number":
         case "symbol":
             return value.toString();
         case "bigint":
             return BigInt(value).toString();
-        case "number":
-            return (value).toString();
         case "string":
             return JSON.stringify(value);
         case "object": {
             const keys = Object.keys(value);
             keys.sort();
-            return "{ " + keys.map((k) => `${stringify(k)}: ${stringify(value[k])}`).join(", ") + " }";
+            return "{ " + keys.map((k) => `${stringify(k, seen)}: ${stringify(value[k], seen)}`).join(", ") + " }";
         }
     }
     return `[ COULD NOT SERIALIZE ]`;
@@ -50,7 +58,7 @@ function stringify(value) {
  *  Returns true if the %%error%% matches an error thrown by ethers
  *  that matches the error %%code%%.
  *
- *  In TypeScript envornoments, this can be used to check that %%error%%
+ *  In TypeScript environments, this can be used to check that %%error%%
  *  matches an EthersError type, which means the expected properties will
  *  be set.
  *
@@ -76,15 +84,16 @@ export function isCallException(error) {
 }
 /**
  *  Returns a new Error configured to the format ethers emits errors, with
- *  the %%message%%, [[api:ErrorCode]] %%code%% and additioanl properties
+ *  the %%message%%, [[api:ErrorCode]] %%code%% and additional properties
  *  for the corresponding EthersError.
  *
  *  Each error in ethers includes the version of ethers, a
- *  machine-readable [[ErrorCode]], and depneding on %%code%%, additional
- *  required properties. The error message will also include the %%meeage%%,
- *  ethers version, %%code%% and all aditional properties, serialized.
+ *  machine-readable [[ErrorCode]], and depending on %%code%%, additional
+ *  required properties. The error message will also include the %%message%%,
+ *  ethers version, %%code%% and all additional properties, serialized.
  */
 export function makeError(message, code, info) {
+    let shortMessage = message;
     {
         const details = [];
         if (info) {
@@ -92,6 +101,9 @@ export function makeError(message, code, info) {
                 throw new Error(`value will overwrite populated values: ${stringify(info)}`);
             }
             for (const key in info) {
+                if (key === "shortMessage") {
+                    continue;
+                }
                 const value = (info[key]);
                 //                try {
                 details.push(key + "=" + stringify(value));
@@ -123,6 +135,9 @@ export function makeError(message, code, info) {
     if (info) {
         Object.assign(error, info);
     }
+    if (error.shortMessage == null) {
+        defineProperties(error, { shortMessage });
+    }
     return error;
 }
 /**
@@ -153,11 +168,11 @@ export function assertArgumentCount(count, expectedCount, message) {
     if (message) {
         message = ": " + message;
     }
-    assert(count >= expectedCount, "missing arguemnt" + message, "MISSING_ARGUMENT", {
+    assert(count >= expectedCount, "missing argument" + message, "MISSING_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });
-    assert(count <= expectedCount, "too many arguemnts" + message, "UNEXPECTED_ARGUMENT", {
+    assert(count <= expectedCount, "too many arguments" + message, "UNEXPECTED_ARGUMENT", {
         count: count,
         expectedCount: expectedCount
     });

@@ -5,6 +5,7 @@
  */
 null;
 export { accessListify } from "./accesslist.js";
+export { authorizationify } from "./authorization.js";
 export { computeAddress, recoverAddress } from "./address.js";
 export { Transaction } from "./transaction.js";
 //# sourceMappingURL=index.js.map

@@ -13,7 +13,7 @@
  */
 export interface CommunityResourcable {
     /**
-     *  Returns true of the instance is connected using the community
+     *  Returns true if the instance is connected using the community
      *  credentials.
      */
     isCommunityResource(): boolean;
@@ -23,7 +23,7 @@ export interface CommunityResourcable {
 const shown: Set<string> = new Set();
 
 /**
- *  Displays a warning in tht console when the community resource is
+ *  Displays a warning in the console when the community resource is
  *  being used too heavily by the app, recommending the developer
  *  acquire their own credentials instead of using the community
  *  credentials.

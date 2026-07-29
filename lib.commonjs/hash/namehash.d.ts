@@ -16,5 +16,5 @@ export declare function namehash(name: string): string;
  *  This is used for various parts of ENS name resolution, such
  *  as the wildcard resolution.
  */
-export declare function dnsEncode(name: string): string;
+export declare function dnsEncode(name: string, _maxLength?: number): string;
 //# sourceMappingURL=namehash.d.ts.map

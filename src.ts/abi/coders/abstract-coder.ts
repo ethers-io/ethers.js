@@ -3,6 +3,7 @@ import {
     defineProperties, concat, getBytesCopy, getNumber, hexlify,
     toBeArray, toBigInt, toNumber,
     assert, assertArgument
+    /*, isError*/
 } from "../../utils/index.js";
 
 import type { BigNumberish, BytesLike } from "../../utils/index.js";
@@ -19,11 +20,43 @@ const passProperties = [ "then" ];
 
 const _guard = { };
 
+const resultNames: WeakMap<Result, ReadonlyArray<null | string>> = new WeakMap();
+
+function getNames(result: Result): ReadonlyArray<null | string> {
+    return resultNames.get(result)!;
+}
+function setNames(result: Result, names: ReadonlyArray<null | string>): void {
+    resultNames.set(result, names);
+}
+
 function throwError(name: string, error: Error): never {
     const wrapped = new Error(`deferred error during ABI decoding triggered accessing ${ name }`);
     (<any>wrapped).error = error;
     throw wrapped;
 }
+
+function toObject(names: ReadonlyArray<null | string>, items: Result, deep?: boolean): Record<string, any> | Array<any> {
+    if (names.indexOf(null) >= 0) {
+        return items.map((item, index) => {
+            if (item instanceof Result) {
+                return toObject(getNames(item), item, deep);
+            }
+            return item;
+        });
+    }
+
+    return (<Array<string>>names).reduce((accum, name, index) => {
+        let item = items.getValue(name);
+        if (!(name in accum)) {
+            if (deep && item instanceof Result) {
+                item = toObject(getNames(item), item, deep);
+            }
+            accum[name] = item;
+        }
+        return accum;
+    }, <Record<string, any>>{ });
+}
+
 
 /**
  *  A [[Result]] is a sub-class of Array, which allows accessing any
@@ -33,6 +66,9 @@ function throwError(name: string, error: Error): never {
  *  @_docloc: api/abi
  */
 export class Result extends Array<any> {
+    // No longer used; but cannot be removed as it will remove the
+    // #private field from the .d.ts which may break backwards
+    // compatibility
     readonly #names: ReadonlyArray<null | string>;
 
     [ K: string | number ]: any
@@ -73,13 +109,17 @@ export class Result extends Array<any> {
         }, <Map<string, number>>(new Map()));
 
         // Remove any key thats not unique
-        this.#names = Object.freeze(items.map((item, index) => {
+        setNames(this, Object.freeze(items.map((item, index) => {
             const name = names[index];
             if (name != null && nameCounts.get(name) === 1) {
                 return name;
             }
             return null;
-        }));
+        })));
+
+        // Dummy operations to prevent TypeScript from complaining
+        this.#names = [ ];
+        if (this.#names == null) { void(this.#names); }
 
         if (!wrap) { return; }
 
@@ -87,7 +127,7 @@ export class Result extends Array<any> {
         Object.freeze(this);
 
         // Proxy indices and names so we can trap deferred errors
-        return new Proxy(this, {
+        const proxy = new Proxy(this, {
             get: (target, prop, receiver) => {
                 if (typeof(prop) === "string") {
 
@@ -127,41 +167,46 @@ export class Result extends Array<any> {
                 return Reflect.get(target, prop, receiver);
             }
         });
+        setNames(proxy, getNames(this));
+        return proxy;
     }
 
     /**
-     *  Returns the Result as a normal Array.
+     *  Returns the Result as a normal Array. If %%deep%%, any children
+     *  which are Result objects are also converted to a normal Array.
      *
      *  This will throw if there are any outstanding deferred
      *  errors.
      */
-    toArray(): Array<any> {
+    toArray(deep?: boolean): Array<any> {
         const result: Array<any> = [ ];
         this.forEach((item, index) => {
             if (item instanceof Error) { throwError(`index ${ index }`, item); }
+            if (deep && item instanceof Result) {
+                item = item.toArray(deep);
+            }
             result.push(item);
         });
         return result;
     }
 
     /**
-     *  Returns the Result as an Object with each name-value pair.
+     *  Returns the Result as an Object with each name-value pair. If
+     *  %%deep%%, any children which are Result objects are also
+     *  converted to an Object.
      *
      *  This will throw if any value is unnamed, or if there are
      *  any outstanding deferred errors.
      */
-    toObject(): Record<string, any> {
-        return this.#names.reduce((accum, name, index) => {
-            assert(name != null, "value at index ${ index } unnamed", "UNSUPPORTED_OPERATION", {
+    toObject(deep?: boolean): Record<string, any> {
+        const names = getNames(this);
+        return names.reduce((accum, name, index) => {
+
+            assert(name != null, `value at index ${ index } unnamed`, "UNSUPPORTED_OPERATION", {
                 operation: "toObject()"
             });
 
-            // Add values for names that don't conflict
-            if (!(name in accum)) {
-                accum[name] = this.getValue(name);
-            }
-
-            return accum;
+            return toObject(names, this, deep);
         }, <Record<string, any>>{});
     }
 
@@ -182,10 +227,12 @@ export class Result extends Array<any> {
         }
         if (end > this.length) { end = this.length; }
 
+        const _names = getNames(this);
+
         const result: Array<any> = [ ], names: Array<null | string> = [ ];
         for (let i = start; i < end; i++) {
             result.push(this[i]);
-            names.push(this.#names[i]);
+            names.push(_names[i]);
         }
 
         return new Result(_guard, result, names);
@@ -195,6 +242,8 @@ export class Result extends Array<any> {
      *  @_ignore
      */
     filter(callback: (el: any, index: number, array: Result) => boolean, thisArg?: any): Result {
+        const _names = getNames(this);
+
         const result: Array<any> = [ ], names: Array<null | string> = [ ];
         for (let i = 0; i < this.length; i++) {
             const item = this[i];
@@ -204,7 +253,7 @@ export class Result extends Array<any> {
 
             if (callback.call(thisArg, item, i, this)) {
                 result.push(item);
-                names.push(this.#names[i]);
+                names.push(_names[i]);
             }
         }
 
@@ -238,7 +287,7 @@ export class Result extends Array<any> {
      *  accessible by name.
      */
     getValue(name: string): any {
-        const index = this.#names.indexOf(name);
+        const index = getNames(this).indexOf(name);
         if (index === -1) { return undefined; }
 
         const value = this[index];
@@ -414,10 +463,17 @@ export class Reader {
     readonly #data: Uint8Array;
     #offset: number;
 
-    constructor(data: BytesLike, allowLoose?: boolean) {
+    #bytesRead: number;
+    #parent: null | Reader;
+    #maxInflation: number;
+
+    constructor(data: BytesLike, allowLoose?: boolean, maxInflation?: number) {
         defineProperties<Reader>(this, { allowLoose: !!allowLoose });
 
         this.#data = getBytesCopy(data);
+        this.#bytesRead = 0;
+        this.#parent = null;
+        this.#maxInflation = (maxInflation != null) ? maxInflation: 1024;
 
         this.#offset = 0;
     }
@@ -426,6 +482,21 @@ export class Reader {
     get dataLength(): number { return this.#data.length; }
     get consumed(): number { return this.#offset; }
     get bytes(): Uint8Array { return new Uint8Array(this.#data); }
+
+    #incrementBytesRead(count: number): void {
+        if (this.#parent) { return this.#parent.#incrementBytesRead(count); }
+
+        this.#bytesRead += count;
+
+        // Check for excessive inflation (see: #4537)
+        assert(this.#maxInflation < 1 || this.#bytesRead <= this.#maxInflation * this.dataLength, `compressed ABI data exceeds inflation ratio of ${ this.#maxInflation } ( see: https:/\/github.com/ethers-io/ethers.js/issues/4537 )`,  "BUFFER_OVERRUN", {
+            buffer: getBytesCopy(this.#data), offset: this.#offset,
+            length: count, info: {
+                bytesRead: this.#bytesRead,
+                dataLength: this.dataLength
+            }
+        });
+    }
 
     #peekBytes(offset: number, length: number, loose?: boolean): Uint8Array {
         let alignedLength = Math.ceil(length / WordSize) * WordSize;
@@ -445,12 +516,15 @@ export class Reader {
 
     // Create a sub-reader with the same underlying data, but offset
     subReader(offset: number): Reader {
-        return new Reader(this.#data.slice(this.#offset + offset), this.allowLoose);
+        const reader = new Reader(this.#data.slice(this.#offset + offset), this.allowLoose, this.#maxInflation);
+        reader.#parent = this;
+        return reader;
     }
 
     // Read bytes
     readBytes(length: number, loose?: boolean): Uint8Array {
         let bytes = this.#peekBytes(0, length, !!loose);
+        this.#incrementBytesRead(length);
         this.#offset += bytes.length;
         // @TODO: Make sure the length..end bytes are all 0?
         return bytes.slice(0, length);

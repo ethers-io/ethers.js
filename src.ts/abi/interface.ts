@@ -342,8 +342,8 @@ export class Interface {
         for (const a of abi) {
             try {
                 frags.push(Fragment.from(a));
-            } catch (error) {
-                console.log("EE", error);
+            } catch (error: any) {
+                console.log(`[Warning] Invalid Fragment ${ JSON.stringify(a) }:`, error.message);
             }
         }
 
@@ -1212,7 +1212,7 @@ export class Interface {
      *
      *  If the matching event cannot be found, returns null.
      */
-    parseLog(log: { topics: Array<string>, data: string}): null | LogDescription {
+    parseLog(log: { topics: ReadonlyArray<string>, data: string}): null | LogDescription {
         const fragment = this.getEvent(log.topics[0]);
 
         if (!fragment || fragment.anonymous) { return null; }
@@ -1229,7 +1229,7 @@ export class Interface {
      *  Parses a revert data, finding the matching error and extracts
      *  the parameter values along with other useful error details.
      *
-     *  If the matching event cannot be found, returns null.
+     *  If the matching error cannot be found, returns null.
      */
     parseError(data: BytesLike): null | ErrorDescription {
         const hexData = hexlify(data);
@@ -1255,7 +1255,12 @@ export class Interface {
         // JSON
         if (typeof(value) === "string") { return new Interface(JSON.parse(value)); }
 
-        // Maybe an interface from an older version, or from a symlinked copy
+        // An Interface; possibly from another v6 instance
+        if (typeof((<any>value).formatJson) === "function") {
+            return new Interface((<any>value).formatJson());
+        }
+
+        // A legacy Interface; from an older version
         if (typeof((<any>value).format) === "function") {
             return new Interface((<any>value).format("json"));
         }

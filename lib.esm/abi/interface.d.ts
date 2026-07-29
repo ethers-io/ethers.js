@@ -361,14 +361,14 @@ export declare class Interface {
      *  If the matching event cannot be found, returns null.
      */
     parseLog(log: {
-        topics: Array<string>;
+        topics: ReadonlyArray<string>;
         data: string;
     }): null | LogDescription;
     /**
      *  Parses a revert data, finding the matching error and extracts
      *  the parameter values along with other useful error details.
      *
-     *  If the matching event cannot be found, returns null.
+     *  If the matching error cannot be found, returns null.
      */
     parseError(data: BytesLike): null | ErrorDescription;
     /**

@@ -32,6 +32,9 @@ function ensNameSplit(name) {
  */
 export function ensNormalize(name) {
     try {
+        if (name.length === 0) {
+            throw new Error("empty label");
+        }
         return ens_normalize(name);
     }
     catch (error) {
@@ -53,6 +56,7 @@ export function isValidName(name) {
  */
 export function namehash(name) {
     assertArgument(typeof (name) === "string", "invalid ENS name; not a string", "name", name);
+    assertArgument(name.length, `invalid ENS name (empty label)`, "name", name);
     let result = Zeros;
     const comps = ensNameSplit(name);
     while (comps.length) {
@@ -66,12 +70,11 @@ export function namehash(name) {
  *  This is used for various parts of ENS name resolution, such
  *  as the wildcard resolution.
  */
-export function dnsEncode(name) {
+export function dnsEncode(name, _maxLength) {
+    const length = (_maxLength != null) ? _maxLength : 63;
+    assertArgument(length <= 255, "DNS encoded label cannot exceed 255", "length", length);
     return hexlify(concat(ensNameSplit(name).map((comp) => {
-        // DNS does not allow components over 63 bytes in length
-        if (comp.length > 63) {
-            throw new Error("invalid DNS encoded entry; length exceeds 63 bytes");
-        }
+        assertArgument(comp.length <= length, `label ${JSON.stringify(name)} exceeds ${length} bytes`, "name", name);
         const bytes = new Uint8Array(comp.length + 1);
         bytes.set(comp, 1);
         bytes[0] = bytes.length - 1;

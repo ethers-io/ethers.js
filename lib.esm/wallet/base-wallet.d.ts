@@ -1,7 +1,8 @@
 import { AbstractSigner } from "../providers/index.js";
 import type { SigningKey } from "../crypto/index.js";
-import type { TypedDataDomain, TypedDataField } from "../hash/index.js";
+import type { AuthorizationRequest, TypedDataDomain, TypedDataField } from "../hash/index.js";
 import type { Provider, TransactionRequest } from "../providers/index.js";
+import type { Authorization } from "../transaction/index.js";
 /**
  *  The **BaseWallet** is a stream-lined implementation of a
  *  [[Signer]] that operates with a private key.
@@ -43,6 +44,14 @@ export declare class BaseWallet extends AbstractSigner {
      *  Returns the signature for %%message%% signed with this wallet.
      */
     signMessageSync(message: string | Uint8Array): string;
+    /**
+     *  Returns the Authorization for %%auth%%.
+     */
+    authorizeSync(auth: AuthorizationRequest): Authorization;
+    /**
+     *  Resolves to the Authorization for %%auth%%.
+     */
+    authorize(auth: AuthorizationRequest): Promise<Authorization>;
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
 //# sourceMappingURL=base-wallet.d.ts.map
