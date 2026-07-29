@@ -3,6 +3,28 @@ Change Log
 
 This change log is maintained by `src.ts/_admin/update-changelog.ts` but may also be manually updated.
 
+ethers/v6.17.0 (2026-06-17 23:50)
+---------------------------------
+
+  - Add requestRate throttle to calls ([b48bfe3](https://github.com/ethers-io/ethers.js/commit/b48bfe34b11e059c4418718f9cad4e6cbe4c0680)).
+  - Added provider requestRate throttle support ([b74b6d3](https://github.com/ethers-io/ethers.js/commit/b74b6d39d413afb950ad20ca34d93aa735229d1b)).
+  - Disable AlchemyProvider which does not provide the necessary API capacity for tests ([1523ca8](https://github.com/ethers-io/ethers.js/commit/1523ca8af25c13c78588842404aea1e61a96fc26)).
+  - Map ResolverNotFound error to null for reverse lookup ([d07cfb6](https://github.com/ethers-io/ethers.js/commit/d07cfb67c750089d3a9ef4123eeb7e4634f04e08)).
+  - Use bigint for coinType instead of number values ([4f6ec03](https://github.com/ethers-io/ethers.js/commit/4f6ec037f886f719d991ec74dc0a182e91488e5a)).
+  - Updated AlchemyProvider endpoints for BNB ([9bec2f9](https://github.com/ethers-io/ethers.js/commit/9bec2f98f62fae84be8aebacc9d21fe7afc620fc)).
+  - Added basic ENSv2 tests and fixed issues with EVM cointypes ([0e9a73d](https://github.com/ethers-io/ethers.js/commit/0e9a73dc446572634ae004749d00d78b00f92b76)).
+  - Adding ENSv2 integrations from adraffy ([a2d0af4](https://github.com/ethers-io/ethers.js/commit/a2d0af4a2ecfe207f02e5497ef2fa95a83dba92a)).
+  - Update Blockscout deffault API key and links ([5647ae3](https://github.com/ethers-io/ethers.js/commit/5647ae3e7c06854c60e822616eb00575ee88bc89)).
+  - Added transactionsRoot to Block ([#5077](https://github.com/ethers-io/ethers.js/issues/5077), [#5078](https://github.com/ethers-io/ethers.js/issues/5078); [5bd2ce9](https://github.com/ethers-io/ethers.js/commit/5bd2ce9e50cc85bb93e3d6840a0fc2f434180a9f)).
+  - Preserve 301/302 method and support 307/308 ([#3106](https://github.com/ethers-io/ethers.js/issues/3106), [#5115](https://github.com/ethers-io/ethers.js/issues/5115); [999af5f](https://github.com/ethers-io/ethers.js/commit/999af5f5a8cc7211bd70d9e8414e1898b147636f)).
+  - Fix maxFeePerGas property for EtherscanProvider transactions ([#5080](https://github.com/ethers-io/ethers.js/issues/5080); [ca45d23](https://github.com/ethers-io/ethers.js/commit/ca45d2388944f098a7e1a341f6ccccab7bf0aba2)).
+  - Added rich inspection for Network and Plugins ([f2ffb86](https://github.com/ethers-io/ethers.js/commit/f2ffb865c5197d933b196f5039105df225c2d954)).
+  - Tweaking API for Universal Resolver to be completely backward compatible ([9a5c4b5](https://github.com/ethers-io/ethers.js/commit/9a5c4b5b97310cbb7ba95d9c90fe7f101d6c2442)).
+  - Updated ENS Universal Resolver to latest API ([0b3b12b](https://github.com/ethers-io/ethers.js/commit/0b3b12bc0b5581fe9ae9b269c8fcf1ea852e5122)).
+  - Added CCIP to ENS Universal Resolver reverse resolution ([982eef2](https://github.com/ethers-io/ethers.js/commit/982eef2561158d4a3a656ef4fd37073322983dc0)).
+  - Added reverse lookup for ENS UniversalResolver ([9a9a11d](https://github.com/ethers-io/ethers.js/commit/9a9a11d3da06f58653758b1739bca0681508f247)).
+  - Initial forward resolution using ENS UniversalResolver ([51df7b9](https://github.com/ethers-io/ethers.js/commit/51df7b95d04a33db6efe1807c4cd810f92dfdf49)).
+
 ethers/v6.16.0 (2025-12-02 19:47)
 ---------------------------------
 

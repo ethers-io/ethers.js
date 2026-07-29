@@ -69,7 +69,7 @@ contract = new Contract(contractAddress, [
   "function recoverStringFromVRS(string message, uint8 v, bytes32 r, bytes32 s) pure returns (address)",
   "function recoverStringFromRaw(string message, bytes sig) pure returns (address)",
   "function recoverHashFromCompact(bytes32 hash, (bytes32 r, bytes32 yParityAndS) sig) pure returns (address)"
-], new ethers.InfuraProvider("sepolia"));
+], new ethers.InfuraProvider("sepolia", INFURA_APIKEY));
 
 // The Signer; it does not need to be connected to a Provider to sign
 signer = new Wallet(id("foobar"));

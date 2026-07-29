@@ -550,6 +550,11 @@ export class Block implements BlockParams, Iterable<string> {
     readonly receiptsRoot!: null | string;
 
     /**
+     *  The hash of the transactions.
+     */
+    readonly transactionsRoot!: null | string;
+
+    /**
      *  The total amount of blob gas consumed by the transactions
      *  within the block. See [[link-eip-4844]].
      */
@@ -630,6 +635,7 @@ export class Block implements BlockParams, Iterable<string> {
 
             stateRoot: block.stateRoot,
             receiptsRoot: block.receiptsRoot,
+            transactionsRoot: block.transactionsRoot,
         });
     }
 
@@ -673,7 +679,7 @@ export class Block implements BlockParams, Iterable<string> {
         const {
             baseFeePerGas, difficulty, extraData, gasLimit, gasUsed, hash,
             miner, prevRandao, nonce, number, parentHash, parentBeaconBlockRoot,
-            stateRoot, receiptsRoot, timestamp, transactions
+            stateRoot, receiptsRoot, transactionsRoot, timestamp, transactions
         } = this;
 
         return {
@@ -686,7 +692,7 @@ export class Block implements BlockParams, Iterable<string> {
             blobGasUsed: toJson(this.blobGasUsed),
             excessBlobGas: toJson(this.excessBlobGas),
             hash, miner, prevRandao, nonce, number, parentHash, timestamp,
-            parentBeaconBlockRoot, stateRoot, receiptsRoot,
+            parentBeaconBlockRoot, stateRoot, receiptsRoot, transactionsRoot,
             transactions,
         };
     }
@@ -2119,7 +2125,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  Resolves to the address configured for the %%ensName%% or
      *  ``null`` if unconfigured.
      */
-    resolveName(ensName: string): Promise<null | string>;
+    resolveName(ensName: string, coinType?: BigNumberish): Promise<null | string>;
 
     /**
      *  Resolves to the ENS name associated for the %%address%% or
@@ -2128,7 +2134,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  Users must perform additional steps to configure a //primary name//,
      *  which is not currently common.
      */
-    lookupAddress(address: string): Promise<null | string>;
+    lookupAddress(address: string, coinType?: BigNumberish): Promise<null | string>;
 
     /**
      *  Waits until the transaction %%hash%% is mined and has %%confirms%%

@@ -14,15 +14,12 @@
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 
-import { getAddress, resolveAddress } from "../address/index.js";
-import { ZeroAddress } from "../constants/index.js";
-import { Contract } from "../contract/index.js";
-import { namehash } from "../hash/index.js";
+import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
     getBigInt, getBytes, getNumber,
-    isCallException, isError, makeError, assert, assertArgument,
+    isCallException, makeError, assert, assertArgument,
     FetchRequest,
     toBeArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
@@ -65,6 +62,10 @@ type Timer = ReturnType<typeof setTimeout>;
 const BN_2 = BigInt(2);
 
 const MAX_CCIP_REDIRECTS = 10;
+
+function stall(duration: number): Promise<void> {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
+}
 
 function isPromise<T = any>(value: any): value is Promise<T> {
     return (value && typeof(value.then) === "function");
@@ -466,6 +467,9 @@ export class AbstractProvider implements Provider {
 
     #disableCcipRead: boolean;
 
+    #requestRate: number;
+    #requestTimes: Array<number>;
+
     #options: Required<AbstractProviderOptions>;
 
     /**
@@ -503,7 +507,24 @@ export class AbstractProvider implements Provider {
         this.#timers = new Map();
 
         this.#disableCcipRead = false;
+
+        this.#requestRate = 0;
+        this.#requestTimes = [ ];
     }
+
+    /**
+     *  Limit the number of requests per second. (default: no limit)
+     */
+    get _requestRate(): null | number {
+        const value = this.#requestRate;
+        if (value == 0) { return null; }
+        return value;
+    }
+    set _requestRate(value: null | number) {
+        if (value == null || value < 0) { value = 0; }
+        this.#requestRate = getNumber(value);
+    }
+
 
     get pollingInterval(): number { return this.#options.pollingInterval; }
 
@@ -545,18 +566,40 @@ export class AbstractProvider implements Provider {
     get disableCcipRead(): boolean { return this.#disableCcipRead; }
     set disableCcipRead(value: boolean) { this.#disableCcipRead = !!value; }
 
+    #getDelay(): number {
+        let requestRate = this.#requestRate;
+        if (requestRate === 0) { return 0; }
+
+        // Remove all too-old request times
+        const requests = this.#requestTimes;
+        const now = getTime();
+        requests.push(now);
+        const scanTime = now - 1000;
+        while (requests.length && requests[0] < scanTime) { requests.shift(); }
+
+        if (requests.length < requestRate) { return 0; }
+
+        return (requests[0] + 1000) - now;
+    }
+
     // Shares multiple identical requests made during the same 250ms
     async #perform<T = any>(req: PerformActionRequest): Promise<T> {
         const timeout = this.#options.cacheTimeout;
 
         // Caching disabled
-        if (timeout < 0) { return await this._perform(req); }
+        if (timeout < 0) {
+            const delay = this.#getDelay();
+            if (delay) { await stall(delay); }
+            return await this._perform(req);
+        }
 
         // Create a tag
         const tag = getTag(req.method, req);
 
         let perform = this.#performCache.get(tag);
         if (!perform) {
+            const delay = this.#getDelay();
+            if (delay) { await stall(delay); }
             perform = this._perform(req);
 
             this.#performCache.set(tag, perform);
@@ -982,6 +1025,8 @@ export class AbstractProvider implements Provider {
          const transaction = <PerformActionTransaction>copyRequest(tx);
 
          try {
+             const delay = this.#getDelay();
+             if (delay) { await stall(delay); }
              return hexlify(await this._perform({ method: "call", transaction, blockTag }));
 
          } catch (error: any) {
@@ -1199,50 +1244,14 @@ export class AbstractProvider implements Provider {
         return null;
     }
 
-    async resolveName(name: string): Promise<null | string>{
+    async resolveName(name: string, coinType?: BigNumberish): Promise<null | string>{
         const resolver = await this.getResolver(name);
-        if (resolver) { return await resolver.getAddress(); }
+        if (resolver) { return await resolver.getAddress(coinType); }
         return null;
     }
 
-    async lookupAddress(address: string): Promise<null | string> {
-        address = getAddress(address);
-        const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
-
-        try {
-
-            const ensAddr = await EnsResolver.getEnsAddress(this);
-            const ensContract = new Contract(ensAddr, [
-                "function resolver(bytes32) view returns (address)"
-            ], this);
-
-            const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroAddress) { return null; }
-
-            const resolverContract = new Contract(resolver, [
-                "function name(bytes32) view returns (string)"
-            ], this);
-            const name = await resolverContract.name(node);
-
-            // Failed forward resolution
-            const check = await this.resolveName(name);
-            if (check !== address) { return null; }
-
-            return name;
-
-        } catch (error) {
-            // No data was returned from the resolver
-            if (isError(error, "BAD_DATA") && error.value === "0x") {
-                return null;
-            }
-
-            // Something reerted
-            if (isError(error, "CALL_EXCEPTION")) { return null; }
-
-            throw error;
-        }
-
-        return null;
+    async lookupAddress(address: string, coinType?: BigNumberish): Promise<null | string> {
+        return await EnsResolver.lookupAddress(this, address, coinType);
     }
 
     async waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt> {

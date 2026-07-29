@@ -3,4 +3,4 @@
 /**
  *  The current version of Ethers.
  */
-export const version: string = "6.16.0";
+export const version: string = "6.17.0";

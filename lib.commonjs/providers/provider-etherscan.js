@@ -287,7 +287,7 @@ class EtherscanProvider extends abstract_provider_js_1.AbstractProvider {
                 continue;
             }
             // Quantity-types require no leading zero, unless 0
-            if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGs: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
+            if ({ type: true, gasLimit: true, gasPrice: true, maxFeePerGas: true, maxPriorityFeePerGas: true, nonce: true, value: true }[key]) {
                 value = (0, index_js_4.toQuantity)(value);
             }
             else if (key === "accessList") {

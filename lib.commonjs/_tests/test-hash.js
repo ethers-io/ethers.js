@@ -24,7 +24,7 @@ describe("Tests Namehash", function () {
             it(`correctly fails to hash ENS name: ${test.error} ${JSON.stringify(test.name)}`, function () {
                 assert_1.default.throws(function () {
                     const actual = (0, index_js_1.namehash)(test.ensName);
-                    console.log("Failed to throw", actual);
+                    console.log("Failed to throw", actual, test);
                 }, (error) => {
                     return ((0, index_js_1.isError)(error, "INVALID_ARGUMENT") &&
                         error.argument === "name" && error.value === test.ensName);

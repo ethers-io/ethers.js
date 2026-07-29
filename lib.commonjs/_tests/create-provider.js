@@ -12,20 +12,21 @@ const ProviderCreators = [
         name: "AlchemyProvider",
         networks: ethNetworks,
         create: function (network) {
-            return new index_js_1.AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
+            const provider = new index_js_1.AlchemyProvider(network, utils_js_1.ALCHEMY_APIKEY);
+            provider._requestRate = 1;
+            return provider;
         }
     },
-    /*
     {
         name: "BlockscoutProvider",
         //networks: ethNetworks,  // @TODO: they are backfilling some Sepolia txs
-        networks: [ "mainnet" ],
-        create: function(network: string) {
-            //return new BlockscoutProvider(network);
-            return new BlockscoutProvider(network, "fdbfa288-1695-454e-a369-4501253a120");
+        networks: ["mainnet"],
+        create: function (network) {
+            const provider = new index_js_1.BlockscoutProvider(network);
+            provider._requestRate = 1;
+            return provider;
         }
     },
-    */
     /*
     {
         name: "AnkrProvider",
@@ -62,7 +63,9 @@ const ProviderCreators = [
         name: "InfuraProvider",
         networks: ethNetworks,
         create: function (network) {
-            return new index_js_1.InfuraProvider(network, utils_js_1.INFURA_APIKEY || undefined);
+            const provider = new index_js_1.InfuraProvider(network, utils_js_1.INFURA_APIKEY || undefined);
+            provider._requestRate = 1;
+            return provider;
         }
     },
     /*
@@ -97,7 +100,8 @@ const ProviderCreators = [
         networks: ethNetworks,
         create: function (network) {
             const providers = [];
-            for (const providerName of ["AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider"]) {
+            //for (const providerName of [ "AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider" ])
+            for (const providerName of ["AnkrProvider", "EtherscanProvider", "InfuraProvider"]) {
                 const provider = getProvider(providerName, network);
                 if (provider) {
                     providers.push(provider);
@@ -106,7 +110,9 @@ const ProviderCreators = [
             if (providers.length === 0) {
                 throw new Error("UNSUPPORTED NETWORK");
             }
-            return new index_js_1.FallbackProvider(providers);
+            const provider = new index_js_1.FallbackProvider(providers);
+            provider._requestRate = 1;
+            return provider;
         }
     },
 ];

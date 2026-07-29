@@ -7,6 +7,7 @@
 import { accessListify } from "../transaction/index.js";
 import { getBigInt, assert, assertArgument } from "../utils/index.js";
 import { EnsPlugin, FetchUrlFeeDataNetworkPlugin, GasCostPlugin } from "./plugins-network.js";
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 /* * * *
 // Networks which operation against an L2 can use this plugin to
 // specify how to access L1, for the purpose of resolving ENS,
@@ -40,6 +41,14 @@ export class Network {
         this.#name = name;
         this.#chainId = getBigInt(chainId);
         this.#plugins = new Map();
+    }
+    [inspect]() { return this.toString(); }
+    toString() {
+        const plugins = [];
+        for (const plugin of this.#plugins.values()) {
+            plugins.push(plugin.toString());
+        }
+        return `Network { name: ${this.name}, chainId: ${this.chainId}, plugins: [ ${plugins.join(", ")} ] }`;
     }
     /**
      *  Returns a JSON-compatible representation of a Network.
@@ -206,8 +215,9 @@ export class Network {
         if (typeof (network) === "object") {
             assertArgument(typeof (network.name) === "string" && typeof (network.chainId) === "number", "invalid network object name or chainId", "network", network);
             const custom = new Network((network.name), (network.chainId));
-            if (network.ensAddress || network.ensNetwork != null) {
-                custom.attachPlugin(new EnsPlugin(network.ensAddress, network.ensNetwork));
+            const n = network;
+            if (n.ensAddress || n.ensNetwork != null || n.ensUniversalResolver) {
+                custom.attachPlugin(new EnsPlugin(n.ensAddress, n.ensNetwork, n.ensUniversalResolver));
             }
             //if ((<any>network).layerOneConnection) {
             //    custom.attachPlugin(new LayerOneConnectionPlugin((<any>network).layerOneConnection));
@@ -300,7 +310,7 @@ function injectCommonNetworks() {
             const network = new Network(name, chainId);
             // We use 0 to disable ENS
             if (options.ensNetwork != null) {
-                network.attachPlugin(new EnsPlugin(null, options.ensNetwork));
+                network.attachPlugin(new EnsPlugin(null, options.ensNetwork, options.ensUniversalResolver));
             }
             network.attachPlugin(new GasCostPlugin());
             (options.plugins || []).forEach((plugin) => {
@@ -317,12 +327,18 @@ function injectCommonNetworks() {
             });
         }
     }
-    registerEth("mainnet", 1, { ensNetwork: 1, altNames: ["homestead"] });
+    // Proxy address
+    const ensUniversalResolver = "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe";
+    registerEth("mainnet", 1, {
+        ensUniversalResolver, ensNetwork: 1, altNames: ["homestead"]
+    });
     registerEth("ropsten", 3, { ensNetwork: 3 });
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });
     registerEth("kovan", 42, { ensNetwork: 42 });
-    registerEth("sepolia", 11155111, { ensNetwork: 11155111 });
+    registerEth("sepolia", 11155111, {
+        ensUniversalResolver, ensNetwork: 11155111
+    });
     registerEth("holesky", 17000, { ensNetwork: 17000 });
     registerEth("classic", 61, {});
     registerEth("classicKotti", 6, {});

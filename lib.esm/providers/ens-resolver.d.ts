@@ -4,7 +4,7 @@
  *
  *  @_section: api/providers/ens-resolver:ENS Resolver  [about-ens-rsolver]
  */
-import type { BytesLike } from "../utils/index.js";
+import type { BigNumberish, BytesLike } from "../utils/index.js";
 import type { AbstractProvider, AbstractProviderPlugin } from "./abstract-provider.js";
 import type { Provider } from "./provider.js";
 /**
@@ -57,7 +57,7 @@ export declare abstract class MulticoinProviderPlugin implements AbstractProvide
      *  Creates a new **MulticoinProviderPluing** for %%name%%.
      */
     constructor(name: string);
-    connect(proivder: Provider): MulticoinProviderPlugin;
+    connect(provider: Provider): MulticoinProviderPlugin;
     /**
      *  Returns ``true`` if %%coinType%% is supported by this plugin.
      */
@@ -100,7 +100,7 @@ export declare class EnsResolver {
      *  The name this resolver was resolved against.
      */
     name: string;
-    constructor(provider: AbstractProvider, address: string, name: string);
+    constructor(provider: AbstractProvider, address: string, name: string, supportsWildcard?: boolean);
     /**
      *  Resolves to true if the resolver supports wildcard resolution.
      */
@@ -109,7 +109,7 @@ export declare class EnsResolver {
      *  Resolves to the address for %%coinType%% or null if the
      *  provided %%coinType%% has not been configured.
      */
-    getAddress(coinType?: number): Promise<null | string>;
+    getAddress(_coinType?: BigNumberish): Promise<null | string>;
     /**
      *  Resolves to the EIP-634 text record for %%key%%, or ``null``
      *  if unconfigured.
@@ -119,6 +119,7 @@ export declare class EnsResolver {
      *  Rsolves to the content-hash or ``null`` if unconfigured.
      */
     getContentHash(): Promise<null | string>;
+    getName(): Promise<null | string>;
     /**
      *  Resolves to the avatar url or ``null`` if the avatar is either
      *  unconfigured or incorrectly configured (e.g. references an NFT
@@ -138,6 +139,8 @@ export declare class EnsResolver {
      */
     _getAvatar(): Promise<AvatarResult>;
     static getEnsAddress(provider: Provider): Promise<string>;
+    static getUniversalResolverAddress(provider: Provider): Promise<null | string>;
+    static lookupAddress(provider: AbstractProvider, address: string, _coinType?: BigNumberish): Promise<null | string>;
     /**
      *  Resolve to the ENS resolver for %%name%% using %%provider%% or
      *  ``null`` if unconfigured.

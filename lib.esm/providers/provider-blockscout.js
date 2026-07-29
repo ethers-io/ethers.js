@@ -48,6 +48,7 @@ function getUrl(name) {
     }
     assertArgument(false, "unsupported network", "network", name);
 }
+const defaultApiKey = "proapi_gwcAAagyQKJ4r2KrAATyyCshiyUEpWfr2x7aKDOWFc56ZY8mBFcT9KZuP5Ce2jIfr_kHzUm";
 /**
  *  The **BlockscoutProvider** connects to the [[link-blockscout]]
  *  JSON-RPC end-points.
@@ -55,7 +56,7 @@ function getUrl(name) {
  *  By default, a highly-throttled API key is used, which is
  *  appropriate for quick prototypes and simple scripts. To
  *  gain access to an increased rate-limit, it is highly
- *  recommended to [sign up here](link-blockscout).
+ *  recommended to [sign up here](link-blockscout-signup).
  */
 export class BlockscoutProvider extends JsonRpcProvider {
     /**
@@ -71,7 +72,7 @@ export class BlockscoutProvider extends JsonRpcProvider {
         }
         const network = Network.from(_network);
         if (apiKey == null) {
-            apiKey = null;
+            apiKey = defaultApiKey;
         }
         const request = BlockscoutProvider.getRequest(network);
         super(request, network, { staticNetwork: network });

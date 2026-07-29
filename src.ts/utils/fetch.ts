@@ -539,7 +539,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         const resp = await this.getUrlFunc(req, checkSignal(_request.#signal));
         let response = new FetchResponse(resp.statusCode, resp.statusMessage, resp.headers, resp.body, _request);
 
-        if (response.statusCode === 301 || response.statusCode === 302) {
+        if ([301, 302, 307, 308].indexOf(response.statusCode) >= 0) {
 
             // Redirect
             try {
@@ -615,16 +615,15 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
         const target = location.split(":")[0].toLowerCase();
 
         // Don't allow redirecting:
-        // - non-GET requests
         // - downgrading the security (e.g. https => http)
         // - to non-HTTP (or non-HTTPS) protocols [this could be relaxed?]
-        assert(this.method === "GET" && (current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
+        assert((current !== "https" || target !== "http") && location.match(/^https?:/), `unsupported redirect`, "UNSUPPORTED_OPERATION", {
             operation: `redirect(${ this.method } ${ JSON.stringify(this.url) } => ${ JSON.stringify(location) })`
         });
 
         // Create a copy of this request, with a new URL
         const req = new FetchRequest(location);
-        req.method = "GET";
+        req.method = this.method;
         req.allowGzip = this.allowGzip;
         req.timeout = this.timeout;
         req.#headers = Object.assign({ }, this.#headers);

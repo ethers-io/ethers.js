@@ -368,6 +368,10 @@ export declare class Block implements BlockParams, Iterable<string> {
      */
     readonly receiptsRoot: null | string;
     /**
+     *  The hash of the transactions.
+     */
+    readonly transactionsRoot: null | string;
+    /**
      *  The total amount of blob gas consumed by the transactions
      *  within the block. See [[link-eip-4844]].
      */
@@ -1205,7 +1209,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  Resolves to the address configured for the %%ensName%% or
      *  ``null`` if unconfigured.
      */
-    resolveName(ensName: string): Promise<null | string>;
+    resolveName(ensName: string, coinType?: BigNumberish): Promise<null | string>;
     /**
      *  Resolves to the ENS name associated for the %%address%% or
      *  ``null`` if the //primary name// is not configured.
@@ -1213,7 +1217,7 @@ export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent
      *  Users must perform additional steps to configure a //primary name//,
      *  which is not currently common.
      */
-    lookupAddress(address: string): Promise<null | string>;
+    lookupAddress(address: string, coinType?: BigNumberish): Promise<null | string>;
     /**
      *  Waits until the transaction %%hash%% is mined and has %%confirms%%
      *  confirmations.

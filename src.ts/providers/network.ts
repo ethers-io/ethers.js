@@ -18,6 +18,8 @@ import type { TransactionLike } from "../transaction/index.js";
 import type { NetworkPlugin } from "./plugins-network.js";
 
 
+const inspect = Symbol.for("nodejs.util.inspect.custom");
+
 /**
  *  A Networkish can be used to allude to a Network, by specifing:
  *  - a [[Network]] object
@@ -31,6 +33,7 @@ export type Networkish = Network | number | bigint | string | {
     //layerOneConnection?: Provider,
     ensAddress?: string,
     ensNetwork?: number
+    ensUniversalResolver?: string;
 };
 
 
@@ -75,6 +78,16 @@ export class Network {
         this.#name = name;
         this.#chainId = getBigInt(chainId);
         this.#plugins = new Map();
+    }
+
+    [inspect](): string { return this.toString(); }
+
+    toString(): string {
+        const plugins: Array<string> = [ ];
+        for (const plugin of this.#plugins.values()) {
+            plugins.push(plugin.toString());
+        }
+        return `Network { name: ${ this.name }, chainId: ${ this.chainId }, plugins: [ ${ plugins.join(", ") } ] }`
     }
 
     /**
@@ -253,8 +266,9 @@ export class Network {
 
             const custom = new Network(<string>(network.name), <number>(network.chainId));
 
-            if ((<any>network).ensAddress || (<any>network).ensNetwork != null) {
-                custom.attachPlugin(new EnsPlugin((<any>network).ensAddress, (<any>network).ensNetwork));
+            const n: any = network;
+            if (n.ensAddress || n.ensNetwork != null || n.ensUniversalResolver) {
+                custom.attachPlugin(new EnsPlugin(n.ensAddress, n.ensNetwork, n.ensUniversalResolver));
             }
 
             //if ((<any>network).layerOneConnection) {
@@ -284,6 +298,7 @@ export class Network {
 
 type Options = {
     ensNetwork?: number;
+    ensUniversalResolver?: string;
     altNames?: Array<string>;
     plugins?: Array<NetworkPlugin>;
 };
@@ -359,7 +374,7 @@ function injectCommonNetworks(): void {
 
             // We use 0 to disable ENS
             if (options.ensNetwork != null) {
-                network.attachPlugin(new EnsPlugin(null, options.ensNetwork));
+                network.attachPlugin(new EnsPlugin(null, options.ensNetwork, options.ensUniversalResolver));
             }
 
             network.attachPlugin(new GasCostPlugin());
@@ -382,12 +397,19 @@ function injectCommonNetworks(): void {
         }
     }
 
-    registerEth("mainnet", 1, { ensNetwork: 1, altNames: [ "homestead" ] });
+    // Proxy address
+    const ensUniversalResolver = "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe";
+
+    registerEth("mainnet", 1, {
+        ensUniversalResolver, ensNetwork: 1, altNames: [ "homestead" ]
+    });
     registerEth("ropsten", 3, { ensNetwork: 3 });
     registerEth("rinkeby", 4, { ensNetwork: 4 });
     registerEth("goerli", 5, { ensNetwork: 5 });
     registerEth("kovan", 42, { ensNetwork: 42 });
-    registerEth("sepolia", 11155111, { ensNetwork: 11155111 });
+    registerEth("sepolia", 11155111, {
+        ensUniversalResolver, ensNetwork: 11155111
+    });
     registerEth("holesky", 17000, { ensNetwork: 17000 });
 
     registerEth("classic", 61, { });

@@ -27,6 +27,7 @@ export interface TestBlockchainBlock {
     parentBeaconBlockRoot?: string;
     stateRoot?: string;
     receiptsRoot?: string;
+    transactionsRoot?: string;
 }
 export interface TestBlockchainTransaction {
     test: string;
