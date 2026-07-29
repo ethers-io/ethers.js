@@ -49,6 +49,12 @@ export declare class OnBlockSubscriber implements Subscriber {
     pause(dropWhilePaused?: boolean): void;
     resume(): void;
 }
+export declare class PollingBlockTagSubscriber extends OnBlockSubscriber {
+    #private;
+    constructor(provider: AbstractProvider, tag: string);
+    pause(dropWhilePaused?: boolean): void;
+    _poll(blockNumber: number, provider: AbstractProvider): Promise<void>;
+}
 /**
  *  @_ignore:
  *

@@ -29,8 +29,8 @@ class IpcSocketProvider extends provider_socket_js_1.SocketProvider {
      *  The connected socket.
      */
     get socket() { return this.#socket; }
-    constructor(path, network) {
-        super(network);
+    constructor(path, network, options) {
+        super(network, options);
         this.#socket = (0, net_1.connect)(path);
         this.socket.on("ready", async () => {
             try {
@@ -62,6 +62,9 @@ class IpcSocketProvider extends provider_socket_js_1.SocketProvider {
         super.destroy();
     }
     async _write(message) {
+        if (!message.endsWith("\n")) {
+            message += "\n";
+        }
         this.socket.write(message);
     }
 }

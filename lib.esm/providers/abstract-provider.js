@@ -12,20 +12,20 @@
 //   need time to resolve the address. Upon resolving the address, we need to
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
-import { getAddress, resolveAddress } from "../address/index.js";
-import { ZeroAddress } from "../constants/index.js";
-import { Contract } from "../contract/index.js";
-import { namehash } from "../hash/index.js";
+import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
-import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, isError, makeError, assert, assertArgument, FetchRequest, toBeArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
+import { concat, dataLength, dataSlice, hexlify, isHexString, getBigInt, getBytes, getNumber, isCallException, makeError, assert, assertArgument, FetchRequest, toBeArray, toQuantity, defineProperties, EventPayload, resolveProperties, toUtf8String } from "../utils/index.js";
 import { EnsResolver } from "./ens-resolver.js";
 import { formatBlock, formatLog, formatTransactionReceipt, formatTransactionResponse } from "./format.js";
 import { Network } from "./network.js";
 import { copyRequest, Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
-import { PollingBlockSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber } from "./subscriber-polling.js";
+import { PollingBlockSubscriber, PollingBlockTagSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber } from "./subscriber-polling.js";
 // Constants
 const BN_2 = BigInt(2);
 const MAX_CCIP_REDIRECTS = 10;
+function stall(duration) {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
+}
 function isPromise(value) {
     return (value && typeof (value.then) === "function");
 }
@@ -90,10 +90,12 @@ async function getSubscription(_event, provider) {
     if (typeof (_event) === "string") {
         switch (_event) {
             case "block":
-            case "pending":
             case "debug":
             case "error":
-            case "network": {
+            case "finalized":
+            case "network":
+            case "pending":
+            case "safe": {
                 return { type: _event, tag: _event };
             }
         }
@@ -173,6 +175,8 @@ export class AbstractProvider {
     #nextTimer;
     #timers;
     #disableCcipRead;
+    #requestRate;
+    #requestTimes;
     #options;
     /**
      *  Create a new **AbstractProvider** connected to %%network%%, or
@@ -204,6 +208,24 @@ export class AbstractProvider {
         this.#nextTimer = 1;
         this.#timers = new Map();
         this.#disableCcipRead = false;
+        this.#requestRate = 0;
+        this.#requestTimes = [];
+    }
+    /**
+     *  Limit the number of requests per second. (default: no limit)
+     */
+    get _requestRate() {
+        const value = this.#requestRate;
+        if (value == 0) {
+            return null;
+        }
+        return value;
+    }
+    set _requestRate(value) {
+        if (value == null || value < 0) {
+            value = 0;
+        }
+        this.#requestRate = getNumber(value);
     }
     get pollingInterval() { return this.#options.pollingInterval; }
     /**
@@ -239,17 +261,43 @@ export class AbstractProvider {
      */
     get disableCcipRead() { return this.#disableCcipRead; }
     set disableCcipRead(value) { this.#disableCcipRead = !!value; }
+    #getDelay() {
+        let requestRate = this.#requestRate;
+        if (requestRate === 0) {
+            return 0;
+        }
+        // Remove all too-old request times
+        const requests = this.#requestTimes;
+        const now = getTime();
+        requests.push(now);
+        const scanTime = now - 1000;
+        while (requests.length && requests[0] < scanTime) {
+            requests.shift();
+        }
+        if (requests.length < requestRate) {
+            return 0;
+        }
+        return (requests[0] + 1000) - now;
+    }
     // Shares multiple identical requests made during the same 250ms
     async #perform(req) {
         const timeout = this.#options.cacheTimeout;
         // Caching disabled
         if (timeout < 0) {
+            const delay = this.#getDelay();
+            if (delay) {
+                await stall(delay);
+            }
             return await this._perform(req);
         }
         // Create a tag
         const tag = getTag(req.method, req);
         let perform = this.#performCache.get(tag);
         if (!perform) {
+            const delay = this.#getDelay();
+            if (delay) {
+                await stall(delay);
+            }
             perform = this._perform(req);
             this.#performCache.set(tag, perform);
             setTimeout(() => {
@@ -286,7 +334,18 @@ export class AbstractProvider {
             }
             this.emit("debug", { action: "sendCcipReadFetchRequest", request, index: i, urls });
             let errorMessage = "unknown error";
-            const resp = await request.send();
+            // Fetch the resource...
+            let resp;
+            try {
+                resp = await request.send();
+            }
+            catch (error) {
+                // ...low-level fetch error (missing host, bad SSL, etc.),
+                // so try next URL
+                errorMessages.push(error.message);
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result: { error } });
+                continue;
+            }
             try {
                 const result = resp.bodyJson;
                 if (result.data) {
@@ -391,10 +450,10 @@ export class AbstractProvider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
+            case "finalized":
             case "latest":
             case "pending":
             case "safe":
-            case "finalized":
                 return blockTag;
         }
         if (isHexString(blockTag)) {
@@ -498,7 +557,7 @@ export class AbstractProvider {
         return resolve(address, fromBlock, toBlock);
     }
     /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  Returns or resolves to a transaction for %%request%%, resolving
      *  any ENS names or [[Addressable]] and returning if already a valid
      *  transaction.
      */
@@ -509,7 +568,7 @@ export class AbstractProvider {
             if (request[key] == null) {
                 return;
             }
-            const addr = resolveAddress(request[key]);
+            const addr = resolveAddress(request[key], this);
             if (isPromise(addr)) {
                 promises.push((async function () { request[key] = await addr; })());
             }
@@ -538,16 +597,19 @@ export class AbstractProvider {
         // No explicit network was set and this is our first time
         if (this.#networkPromise == null) {
             // Detect the current network (shared with all calls)
-            const detectNetwork = this._detectNetwork().then((network) => {
-                this.emit("network", network, null);
-                return network;
-            }, (error) => {
-                // Reset the networkPromise on failure, so we will try again
-                if (this.#networkPromise === detectNetwork) {
-                    this.#networkPromise = null;
+            const detectNetwork = (async () => {
+                try {
+                    const network = await this._detectNetwork();
+                    this.emit("network", network, null);
+                    return network;
                 }
-                throw error;
-            });
+                catch (error) {
+                    if (this.#networkPromise === detectNetwork) {
+                        this.#networkPromise = null;
+                    }
+                    throw error;
+                }
+            })();
             this.#networkPromise = detectNetwork;
             return (await detectNetwork).clone();
         }
@@ -577,12 +639,20 @@ export class AbstractProvider {
     async getFeeData() {
         const network = await this.getNetwork();
         const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await resolveProperties({
+            const { _block, gasPrice, priorityFee } = await resolveProperties({
                 _block: this.#getBlock("latest", false),
                 gasPrice: ((async () => {
                     try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return getBigInt(gasPrice, "%response");
+                        const value = await this.#perform({ method: "getGasPrice" });
+                        return getBigInt(value, "%response");
+                    }
+                    catch (error) { }
+                    return null;
+                })()),
+                priorityFee: ((async () => {
+                    try {
+                        const value = await this.#perform({ method: "getPriorityFee" });
+                        return getBigInt(value, "%response");
                     }
                     catch (error) { }
                     return null;
@@ -593,7 +663,7 @@ export class AbstractProvider {
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
+                maxPriorityFeePerGas = (priorityFee != null) ? priorityFee : BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
             }
             return new FeeData(gasPrice, maxFeePerGas, maxPriorityFeePerGas);
@@ -624,6 +694,10 @@ export class AbstractProvider {
         // This came in as a PerformActionTransaction, so to/from are safe; we can cast
         const transaction = copyRequest(tx);
         try {
+            const delay = this.#getDelay();
+            if (delay) {
+                await stall(delay);
+            }
             return hexlify(await this._perform({ method: "call", transaction, blockTag }));
         }
         catch (error) {
@@ -821,48 +895,15 @@ export class AbstractProvider {
         }
         return null;
     }
-    async resolveName(name) {
+    async resolveName(name, coinType) {
         const resolver = await this.getResolver(name);
         if (resolver) {
-            return await resolver.getAddress();
+            return await resolver.getAddress(coinType);
         }
         return null;
     }
-    async lookupAddress(address) {
-        address = getAddress(address);
-        const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
-        try {
-            const ensAddr = await EnsResolver.getEnsAddress(this);
-            const ensContract = new Contract(ensAddr, [
-                "function resolver(bytes32) view returns (address)"
-            ], this);
-            const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroAddress) {
-                return null;
-            }
-            const resolverContract = new Contract(resolver, [
-                "function name(bytes32) view returns (string)"
-            ], this);
-            const name = await resolverContract.name(node);
-            // Failed forward resolution
-            const check = await this.resolveName(name);
-            if (check !== address) {
-                return null;
-            }
-            return name;
-        }
-        catch (error) {
-            // No data was returned from the resolver
-            if (isError(error, "BAD_DATA") && error.value === "0x") {
-                return null;
-            }
-            // Something reerted
-            if (isError(error, "CALL_EXCEPTION")) {
-                return null;
-            }
-            throw error;
-        }
-        return null;
+    async lookupAddress(address, coinType) {
+        return await EnsResolver.lookupAddress(this, address, coinType);
     }
     async waitForTransaction(hash, _confirms, timeout) {
         const confirms = (_confirms != null) ? _confirms : 1;
@@ -971,6 +1012,9 @@ export class AbstractProvider {
                 subscriber.pollingInterval = this.pollingInterval;
                 return subscriber;
             }
+            case "safe":
+            case "finalized":
+                return new PollingBlockTagSubscriber(this, sub.type);
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":

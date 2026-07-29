@@ -40,6 +40,7 @@ export declare class AbiCoder {
      *  padded event data emitted from ``external`` functions.
      */
     decode(types: ReadonlyArray<string | ParamType>, data: BytesLike, loose?: boolean): Result;
+    static _setDefaultMaxInflation(value: number): void;
     /**
      *  Returns the shared singleton instance of a default [[AbiCoder]].
      *

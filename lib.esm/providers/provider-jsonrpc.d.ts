@@ -100,7 +100,7 @@ export type DebugEventJsonRpcApiProvider = {
  *  cannot change, such as when using INFURA (since the URL dictates the
  *  network). If the network is assumed static and it does change, this
  *  can have tragic consequences. For example, this **CANNOT** be used
- *  with MetaMask, since the used can select a new network from the
+ *  with MetaMask, since the user can select a new network from the
  *  drop-down at any time.
  *
  *  **``batchStallTime``** - how long (ms) to aggregate requests into a
@@ -117,7 +117,7 @@ export type DebugEventJsonRpcApiProvider = {
  */
 export type JsonRpcApiProviderOptions = {
     polling?: boolean;
-    staticNetwork?: null | Network;
+    staticNetwork?: null | boolean | Network;
     batchStallTime?: number;
     batchMaxSize?: number;
     batchMaxCount?: number;
@@ -182,6 +182,17 @@ export interface JsonRpcTransactionRequest {
     accessList?: Array<{
         address: string;
         storageKeys: Array<string>;
+    }>;
+    /**
+     *  The transaction authorization list.
+     */
+    authorizationList?: Array<{
+        address: string;
+        nonce: string;
+        chainId: string;
+        yParity: string;
+        r: string;
+        s: string;
     }>;
 }
 export declare class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {

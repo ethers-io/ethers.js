@@ -100,6 +100,9 @@ class FilterIdSubscriber {
         if (filterIdPromise) {
             this.#filterIdPromise = null;
             filterIdPromise.then((filterId) => {
+                if (this.#provider.destroyed) {
+                    return;
+                }
                 this.#provider.send("eth_uninstallFilter", [filterId]);
             });
         }

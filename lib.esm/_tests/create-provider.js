@@ -1,18 +1,33 @@
-import { AlchemyProvider, 
+import { AlchemyProvider, BlockscoutProvider, 
 //    AnkrProvider,
 //    CloudflareProvider,
-EtherscanProvider, InfuraProvider, 
+ChainstackProvider, EtherscanProvider, InfuraProvider, 
 //    PocketProvider,
-QuickNodeProvider, FallbackProvider, isError, } from "../index.js";
+//    QuickNodeProvider,
+JsonRpcProvider, FallbackProvider, isError, } from "../index.js";
+import { inspect } from "./utils-debug.js";
+import { ALCHEMY_APIKEY, INFURA_APIKEY } from "./utils.js";
 ;
-const ethNetworks = ["default", "mainnet", "goerli"];
+const ethNetworks = ["default", "mainnet", "sepolia"];
 //const maticNetworks = [ "matic", "maticmum" ];
 const ProviderCreators = [
     {
         name: "AlchemyProvider",
         networks: ethNetworks,
         create: function (network) {
-            return new AlchemyProvider(network, "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM");
+            const provider = new AlchemyProvider(network, ALCHEMY_APIKEY);
+            provider._requestRate = 1;
+            return provider;
+        }
+    },
+    {
+        name: "BlockscoutProvider",
+        //networks: ethNetworks,  // @TODO: they are backfilling some Sepolia txs
+        networks: ["mainnet"],
+        create: function (network) {
+            const provider = new BlockscoutProvider(network);
+            provider._requestRate = 1;
+            return provider;
         }
     },
     /*
@@ -34,6 +49,13 @@ const ProviderCreators = [
     },
     */
     {
+        name: "ChainstackProvider",
+        networks: ["default", "mainnet", "arbitrum", "bnb", "matic"],
+        create: function (network) {
+            return new ChainstackProvider(network);
+        }
+    },
+    {
         name: "EtherscanProvider",
         networks: ethNetworks,
         create: function (network) {
@@ -44,16 +66,20 @@ const ProviderCreators = [
         name: "InfuraProvider",
         networks: ethNetworks,
         create: function (network) {
-            return new InfuraProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
+            const provider = new InfuraProvider(network, INFURA_APIKEY || undefined);
+            provider._requestRate = 1;
+            return provider;
         }
     },
+    /*
     {
         name: "InfuraWebsocketProvider",
         networks: ethNetworks,
-        create: function (network) {
+        create: function(network: string) {
             return InfuraProvider.getWebSocketProvider(network, "49a0efa3aaee4fd99797bfa94d8ce2f1");
         }
     },
+    */
     /*
         {
             name: "PocketProvider",
@@ -63,19 +89,22 @@ const ProviderCreators = [
             }
         },
     */
-    {
-        name: "QuickNodeProvider",
-        networks: ethNetworks,
-        create: function (network) {
-            return new QuickNodeProvider(network);
-        }
-    },
+    /*
+        {
+            name: "QuickNodeProvider",
+            networks: ethNetworks,
+            create: function(network: string) {
+                return new QuickNodeProvider(network);
+            }
+        },
+    */
     {
         name: "FallbackProvider",
         networks: ethNetworks,
         create: function (network) {
             const providers = [];
-            for (const providerName of ["AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider"]) {
+            //for (const providerName of [ "AlchemyProvider", "AnkrProvider", "EtherscanProvider", "InfuraProvider" ])
+            for (const providerName of ["AnkrProvider", "EtherscanProvider", "InfuraProvider"]) {
                 const provider = getProvider(providerName, network);
                 if (provider) {
                     providers.push(provider);
@@ -84,7 +113,9 @@ const ProviderCreators = [
             if (providers.length === 0) {
                 throw new Error("UNSUPPORTED NETWORK");
             }
-            return new FallbackProvider(providers);
+            const provider = new FallbackProvider(providers);
+            provider._requestRate = 1;
+            return provider;
         }
     },
 ];
@@ -136,7 +167,27 @@ export function getProvider(provider, network) {
 }
 export function checkProvider(provider, network) {
     const creator = getCreator(provider);
-    return (creator != null);
+    return (creator != null && creator.networks.indexOf(network) >= 0);
+}
+export function getDevProvider() {
+    class HikackEnsProvider extends JsonRpcProvider {
+        async resolveName(name) {
+            if (name === "tests.eth") {
+                return "0x228568EA92aC5Bc281c1E30b1893735c60a139F1";
+            }
+            return super.resolveName(name);
+        }
+    }
+    const provider = new HikackEnsProvider("http:/\/127.0.0.1:8545");
+    provider.on("error", (error) => {
+        setTimeout(() => {
+            if (error && error.event === "initial-network-discovery") {
+                console.log(inspect(error));
+            }
+            provider.off("error");
+        }, 100);
+    });
+    return provider;
 }
 export function connect(network) {
     const provider = getProvider("InfuraProvider", network);

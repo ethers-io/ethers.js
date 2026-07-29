@@ -1,6 +1,6 @@
 import { JsonRpcApiPollingProvider } from "./provider-jsonrpc.js";
 import type { JsonRpcError, JsonRpcPayload, JsonRpcResult, JsonRpcSigner } from "./provider-jsonrpc.js";
-import type { Networkish } from "./network.js";
+import type { Network, Networkish } from "./network.js";
 /**
  *  The interface to an [[link-eip-1193]] provider, which is a standard
  *  used by most injected providers, which the [[BrowserProvider]] accepts
@@ -33,6 +33,51 @@ export type DebugEventBrowserProvider = {
     error: Error;
 };
 /**
+ *  Provider info provided by the [[link-eip-6963]] discovery mechanism.
+ */
+export interface Eip6963ProviderInfo {
+    uuid: string;
+    name: string;
+    icon: string;
+    rdns: string;
+}
+export type BrowserProviderOptions = {
+    polling?: boolean;
+    staticNetwork?: null | boolean | Network;
+    cacheTimeout?: number;
+    pollingInterval?: number;
+    providerInfo?: Eip6963ProviderInfo;
+};
+/**
+ *  Specifies how [[link-eip-6963]] discovery should proceed.
+ *
+ *  See: [[BrowserProvider-discover]]
+ */
+export interface BrowserDiscoverOptions {
+    /**
+     *  Override provider detection with this provider.
+     */
+    provider?: Eip1193Provider;
+    /**
+     *  Duration to wait to detect providers. (default: 300ms)
+     */
+    timeout?: number;
+    /**
+     *  Return the first detected provider. Otherwise wait for %%timeout%%
+     *  and allowing filtering before selecting the desired provider.
+     */
+    anyProvider?: boolean;
+    /**
+     *  Use the provided window context. Useful in non-standard
+     *  environments or to hijack where a provider comes from.
+     */
+    window?: any;
+    /**
+     *  Explicitly choose which provider to used once scanning is complete.
+     */
+    filter?: (found: Array<Eip6963ProviderInfo>) => null | BrowserProvider | Eip6963ProviderInfo;
+}
+/**
  *  A **BrowserProvider** is intended to wrap an injected provider which
  *  adheres to the [[link-eip-1193]] standard, which most (if not all)
  *  currently do.
@@ -40,10 +85,11 @@ export type DebugEventBrowserProvider = {
 export declare class BrowserProvider extends JsonRpcApiPollingProvider {
     #private;
     /**
-     *  Connnect to the %%ethereum%% provider, optionally forcing the
+     *  Connect to the %%ethereum%% provider, optionally forcing the
      *  %%network%%.
      */
-    constructor(ethereum: Eip1193Provider, network?: Networkish);
+    constructor(ethereum: Eip1193Provider, network?: Networkish, _options?: BrowserProviderOptions);
+    get providerInfo(): null | Eip6963ProviderInfo;
     send(method: string, params: Array<any> | Record<string, any>): Promise<any>;
     _send(payload: JsonRpcPayload | Array<JsonRpcPayload>): Promise<Array<JsonRpcResult | JsonRpcError>>;
     getRpcError(payload: JsonRpcPayload, error: JsonRpcError): Error;
@@ -52,5 +98,11 @@ export declare class BrowserProvider extends JsonRpcApiPollingProvider {
      */
     hasSigner(address: number | string): Promise<boolean>;
     getSigner(address?: number | string): Promise<JsonRpcSigner>;
+    /**
+     *  Discover and connect to a Provider in the Browser using the
+     *  [[link-eip-6963]] discovery mechanism. If no providers are
+     *  present, ``null`` is resolved.
+     */
+    static discover(options?: BrowserDiscoverOptions): Promise<null | BrowserProvider>;
 }
 //# sourceMappingURL=provider-browser.d.ts.map

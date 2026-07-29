@@ -20,7 +20,7 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
      *  The target to connect to.
      *
      *  This can be an address, ENS name or any [[Addressable]], such as
-     *  another contract. To get the resovled address, use the ``getAddress``
+     *  another contract. To get the resolved address, use the ``getAddress``
      *  method.
      */
     readonly target: string | Addressable;
@@ -87,13 +87,13 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
     /**
      *  Return the function for a given name. This is useful when a contract
      *  method name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
     /**
      *  Return the event for a given name. This is useful when a contract
      *  event name conflicts with a JavaScript name such as ``prototype`` or
-     *  when using a Contract programatically.
+     *  when using a Contract programmatically.
      */
     getEvent(key: string | EventFragment): ContractEvent;
     /**
@@ -158,7 +158,7 @@ export declare class BaseContract implements Addressable, EventEmitterable<Contr
      */
     static from<T = ContractInterface>(target: string, abi: Interface | InterfaceAbi, runner?: null | ContractRunner): BaseContract & Omit<T, keyof BaseContract>;
 }
-declare const Contract_base: new (target: string, abi: Interface | InterfaceAbi, runner?: ContractRunner | null | undefined) => BaseContract & Omit<ContractInterface, keyof BaseContract>;
+declare const Contract_base: new (target: string | Addressable, abi: Interface | InterfaceAbi, runner?: ContractRunner | null | undefined) => BaseContract & Omit<ContractInterface, keyof BaseContract>;
 /**
  *  A [[BaseContract]] with no type guards on its methods or events.
  */

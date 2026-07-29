@@ -19,7 +19,7 @@ in [TypeScript](https://www.typescriptlang.org).
 - Import and export **JSON wallets** (Geth, Parity and crowdsale)
 - Import and export BIP 39 **mnemonic phrases** (12 word backup phrases) and **HD Wallets** (English as well as Czech, French, Italian, Japanese, Korean, Simplified Chinese, Spanish, Traditional Chinese)
 - Meta-classes create JavaScript objects from any contract ABI, including **ABIv2** and **Human-Readable ABI**
-- Connect to Ethereum nodes over [JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), [Alchemy](https://alchemyapi.io), [Ankr](https://ankr.com) or [MetaMask](https://metamask.io)
+- Connect to Ethereum nodes over [JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/), [INFURA](https://infura.io), [Etherscan](https://etherscan.io), [Alchemy](https://alchemyapi.io), [Ankr](https://ankr.com) or [MetaMask](https://metamask.io)
 - **ENS names** are first-class citizens; they can be used anywhere an Ethereum addresses can be used
 - **Small** (~144kb compressed; 460kb uncompressed)
 - **Tree-shaking** focused; include only what you need during bundling
@@ -47,6 +47,7 @@ For the latest changes, see the
 
 **Summaries**
 
+- [August 2023](https://blog.ricmoo.com/highlights-ethers-js-august-2023-fb68354c576c)
 - [September 2022](https://blog.ricmoo.com/highlights-ethers-js-september-2022-d7bda0fc37ed)
 - [June 2022](https://blog.ricmoo.com/highlights-ethers-js-june-2022-f5328932e35d)
 - [March 2022](https://blog.ricmoo.com/highlights-ethers-js-march-2022-f511fe1e88a1)
@@ -116,7 +117,6 @@ A special thanks to these services for providing community resources:
 - [Etherscan](https://etherscan.io/)
 - [INFURA](https://infura.io/)
 - [Alchemy](https://dashboard.alchemyapi.io/signup?referral=55a35117-028e-4b7c-9e47-e275ad0acc6d)
-- [Pocket](https://pokt.network/pocket-gateway-ethereum-mainnet/)
 
 
 Extension Packages
@@ -126,8 +126,11 @@ The `ethers` package only includes the most common and most core
 functionality to interact with Ethereum. There are many other
 packages designed to further enhance the functionality and experience.
 
-- Hardware Wallets (coming soon)
-- Account Abstraction (coming soon)
+- [MulticallProvider](https://github.com/ethers-io/ext-provider-multicall) - A Provider which bundles multiple call requests into a single `call` to reduce latency and backend request capacity
+- [MulticoinPlugin](https://github.com/ethers-io/ext-provider-plugin-multicoin) - A Provider plugin to expand the support of ENS coin types
+- [GanaceProvider](https://github.com/ethers-io/ext-provider-ganache) - A Provider for in-memory node instances, for fast debugging, testing and simulating blockchain operations
+- [Optimism Utilities](https://github.com/ethers-io/ext-utils-optimism) - A collection of Optimism utilities
+- [LedgerSigner](https://github.com/ethers-io/ext-signer-ledger) - A Signer to interact directly with Ledger Hardware Wallets
 
 
 License

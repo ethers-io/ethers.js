@@ -14,15 +14,12 @@
 //   migrate the listener to the static event. We also need to maintain a map
 //   of Signer/ENS name to address so we can sync respond to listenerCount.
 
-import { getAddress, resolveAddress } from "../address/index.js";
-import { ZeroAddress } from "../constants/index.js";
-import { Contract } from "../contract/index.js";
-import { namehash } from "../hash/index.js";
+import { resolveAddress } from "../address/index.js";
 import { Transaction } from "../transaction/index.js";
 import {
     concat, dataLength, dataSlice, hexlify, isHexString,
     getBigInt, getBytes, getNumber,
-    isCallException, isError, makeError, assert, assertArgument,
+    isCallException, makeError, assert, assertArgument,
     FetchRequest,
     toBeArray, toQuantity,
     defineProperties, EventPayload, resolveProperties,
@@ -36,12 +33,13 @@ import {
 import { Network } from "./network.js";
 import { copyRequest, Block, FeeData, Log, TransactionReceipt, TransactionResponse } from "./provider.js";
 import {
-    PollingBlockSubscriber, PollingEventSubscriber, PollingOrphanSubscriber, PollingTransactionSubscriber
+    PollingBlockSubscriber, PollingBlockTagSubscriber, PollingEventSubscriber,
+    PollingOrphanSubscriber, PollingTransactionSubscriber
 } from "./subscriber-polling.js";
 
 import type { Addressable, AddressLike } from "../address/index.js";
 import type { BigNumberish, BytesLike } from "../utils/index.js";
-import type { Listener } from "../utils/index.js";
+import type { FetchResponse, Listener } from "../utils/index.js";
 
 import type { Networkish } from "./network.js";
 import type { FetchUrlFeeDataNetworkPlugin } from "./plugins-network.js";
@@ -64,6 +62,10 @@ type Timer = ReturnType<typeof setTimeout>;
 const BN_2 = BigInt(2);
 
 const MAX_CCIP_REDIRECTS = 10;
+
+function stall(duration: number): Promise<void> {
+    return new Promise((resolve) => { setTimeout(resolve, duration); });
+}
 
 function isPromise<T = any>(value: any): value is Promise<T> {
     return (value && typeof(value.then) === "function");
@@ -127,7 +129,7 @@ export type DebugEventAbstractProvider = {
  *  if they are modifying a low-level feature of how subscriptions operate.
  */
 export type Subscription = {
-    type: "block" | "close" | "debug" | "error" | "network" | "pending",
+    type: "block" | "close" | "debug" | "error" | "finalized" | "network" | "pending" | "safe",
     tag: string
 } | {
     type: "transaction",
@@ -235,7 +237,13 @@ async function getSubscription(_event: ProviderEvent, provider: AbstractProvider
 
     if (typeof(_event) === "string") {
         switch (_event) {
-            case "block": case "pending": case "debug": case "error": case "network": {
+            case "block":
+            case "debug":
+            case "error":
+            case "finalized":
+            case "network":
+            case "pending":
+            case "safe": {
                 return { type: _event, tag: _event };
             }
         }
@@ -377,6 +385,8 @@ export type PerformActionRequest = {
     method: "getLogs",
     filter: PerformActionFilter
 } | {
+    method: "getPriorityFee"
+} | {
     method: "getStorage",
     address: string, position: bigint, blockTag: BlockTag
 } | {
@@ -457,6 +467,9 @@ export class AbstractProvider implements Provider {
 
     #disableCcipRead: boolean;
 
+    #requestRate: number;
+    #requestTimes: Array<number>;
+
     #options: Required<AbstractProviderOptions>;
 
     /**
@@ -494,7 +507,24 @@ export class AbstractProvider implements Provider {
         this.#timers = new Map();
 
         this.#disableCcipRead = false;
+
+        this.#requestRate = 0;
+        this.#requestTimes = [ ];
     }
+
+    /**
+     *  Limit the number of requests per second. (default: no limit)
+     */
+    get _requestRate(): null | number {
+        const value = this.#requestRate;
+        if (value == 0) { return null; }
+        return value;
+    }
+    set _requestRate(value: null | number) {
+        if (value == null || value < 0) { value = 0; }
+        this.#requestRate = getNumber(value);
+    }
+
 
     get pollingInterval(): number { return this.#options.pollingInterval; }
 
@@ -536,18 +566,40 @@ export class AbstractProvider implements Provider {
     get disableCcipRead(): boolean { return this.#disableCcipRead; }
     set disableCcipRead(value: boolean) { this.#disableCcipRead = !!value; }
 
+    #getDelay(): number {
+        let requestRate = this.#requestRate;
+        if (requestRate === 0) { return 0; }
+
+        // Remove all too-old request times
+        const requests = this.#requestTimes;
+        const now = getTime();
+        requests.push(now);
+        const scanTime = now - 1000;
+        while (requests.length && requests[0] < scanTime) { requests.shift(); }
+
+        if (requests.length < requestRate) { return 0; }
+
+        return (requests[0] + 1000) - now;
+    }
+
     // Shares multiple identical requests made during the same 250ms
     async #perform<T = any>(req: PerformActionRequest): Promise<T> {
         const timeout = this.#options.cacheTimeout;
 
         // Caching disabled
-        if (timeout < 0) { return await this._perform(req); }
+        if (timeout < 0) {
+            const delay = this.#getDelay();
+            if (delay) { await stall(delay); }
+            return await this._perform(req);
+        }
 
         // Create a tag
         const tag = getTag(req.method, req);
 
         let perform = this.#performCache.get(tag);
         if (!perform) {
+            const delay = this.#getDelay();
+            if (delay) { await stall(delay); }
             perform = this._perform(req);
 
             this.#performCache.set(tag, perform);
@@ -595,15 +647,26 @@ export class AbstractProvider implements Provider {
 
             let errorMessage = "unknown error";
 
-            const resp = await request.send();
+            // Fetch the resource...
+            let resp: FetchResponse;
             try {
-                 const result = resp.bodyJson;
-                 if (result.data) {
-                     this.emit("debug", { action: "receiveCcipReadFetchResult", request, result });
-                     return result.data;
-                 }
-                 if (result.message) { errorMessage = result.message; }
-                 this.emit("debug", { action: "receiveCcipReadFetchError", request, result });
+                resp = await request.send();
+            } catch (error: any) {
+                // ...low-level fetch error (missing host, bad SSL, etc.),
+                // so try next URL
+                errorMessages.push(error.message);
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result: { error } });
+                continue;
+            }
+
+            try {
+                const result = resp.bodyJson;
+                if (result.data) {
+                    this.emit("debug", { action: "receiveCcipReadFetchResult", request, result });
+                    return result.data;
+                }
+                if (result.message) { errorMessage = result.message; }
+                this.emit("debug", { action: "receiveCcipReadFetchError", request, result });
             } catch (error) { }
 
             // 4xx indicates the result is not present; stop
@@ -708,7 +771,10 @@ export class AbstractProvider implements Provider {
         switch (blockTag) {
             case "earliest":
                 return "0x0";
-            case "latest": case "pending": case "safe": case "finalized":
+            case "finalized":
+            case "latest":
+            case "pending":
+            case "safe":
                 return blockTag;
         }
 
@@ -806,7 +872,7 @@ export class AbstractProvider implements Provider {
     }
 
     /**
-     *  Returns or resovles to a transaction for %%request%%, resolving
+     *  Returns or resolves to a transaction for %%request%%, resolving
      *  any ENS names or [[Addressable]] and returning if already a valid
      *  transaction.
      */
@@ -817,7 +883,7 @@ export class AbstractProvider implements Provider {
         [ "to", "from" ].forEach((key) => {
             if ((<any>request)[key] == null) { return; }
 
-            const addr = resolveAddress((<any>request)[key]);
+            const addr = resolveAddress((<any>request)[key], this);
             if (isPromise(addr)) {
                 promises.push((async function() { (<any>request)[key] = await addr; })());
             } else {
@@ -850,16 +916,18 @@ export class AbstractProvider implements Provider {
         if (this.#networkPromise == null) {
 
             // Detect the current network (shared with all calls)
-            const detectNetwork = this._detectNetwork().then((network) => {
-                this.emit("network", network, null);
-                return network;
-            }, (error) => {
-                // Reset the networkPromise on failure, so we will try again
-                if (this.#networkPromise === detectNetwork) {
-                    this.#networkPromise = null;
+            const detectNetwork = (async () => {
+                try {
+                    const network = await this._detectNetwork();
+                    this.emit("network", network, null);
+                    return network;
+                } catch (error) {
+                    if (this.#networkPromise === detectNetwork!) {
+                        this.#networkPromise = null;
+                    }
+                    throw error;
                 }
-                throw error;
-            });
+            })();
 
             this.#networkPromise = detectNetwork;
             return (await detectNetwork).clone();
@@ -896,14 +964,21 @@ export class AbstractProvider implements Provider {
         const network = await this.getNetwork();
 
         const getFeeDataFunc = async () => {
-            const { _block, gasPrice } = await resolveProperties({
+            const { _block, gasPrice, priorityFee } = await resolveProperties({
                 _block: this.#getBlock("latest", false),
                 gasPrice: ((async () => {
                     try {
-                        const gasPrice = await this.#perform({ method: "getGasPrice" });
-                        return getBigInt(gasPrice, "%response");
+                        const value = await this.#perform({ method: "getGasPrice" });
+                        return getBigInt(value, "%response");
                     } catch (error) { }
                     return null
+                })()),
+                priorityFee: ((async () => {
+                    try {
+                        const value = await this.#perform({ method: "getPriorityFee" });
+                        return getBigInt(value, "%response");
+                    } catch (error) { }
+                    return null;
                 })())
             });
 
@@ -913,7 +988,7 @@ export class AbstractProvider implements Provider {
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
             if (block && block.baseFeePerGas) {
-                maxPriorityFeePerGas = BigInt("1000000000");
+                maxPriorityFeePerGas = (priorityFee != null) ? priorityFee: BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
             }
 
@@ -950,6 +1025,8 @@ export class AbstractProvider implements Provider {
          const transaction = <PerformActionTransaction>copyRequest(tx);
 
          try {
+             const delay = this.#getDelay();
+             if (delay) { await stall(delay); }
              return hexlify(await this._perform({ method: "call", transaction, blockTag }));
 
          } catch (error: any) {
@@ -1167,50 +1244,14 @@ export class AbstractProvider implements Provider {
         return null;
     }
 
-    async resolveName(name: string): Promise<null | string>{
+    async resolveName(name: string, coinType?: BigNumberish): Promise<null | string>{
         const resolver = await this.getResolver(name);
-        if (resolver) { return await resolver.getAddress(); }
+        if (resolver) { return await resolver.getAddress(coinType); }
         return null;
     }
 
-    async lookupAddress(address: string): Promise<null | string> {
-        address = getAddress(address);
-        const node = namehash(address.substring(2).toLowerCase() + ".addr.reverse");
-
-        try {
-
-            const ensAddr = await EnsResolver.getEnsAddress(this);
-            const ensContract = new Contract(ensAddr, [
-                "function resolver(bytes32) view returns (address)"
-            ], this);
-
-            const resolver = await ensContract.resolver(node);
-            if (resolver == null || resolver === ZeroAddress) { return null; }
-
-            const resolverContract = new Contract(resolver, [
-                "function name(bytes32) view returns (string)"
-            ], this);
-            const name = await resolverContract.name(node);
-
-            // Failed forward resolution
-            const check = await this.resolveName(name);
-            if (check !== address) { return null; }
-
-            return name;
-
-        } catch (error) {
-            // No data was returned from the resolver
-            if (isError(error, "BAD_DATA") && error.value === "0x") {
-                return null;
-            }
-
-            // Something reerted
-            if (isError(error, "CALL_EXCEPTION")) { return null; }
-
-            throw error;
-        }
-
-        return null;
+    async lookupAddress(address: string, coinType?: BigNumberish): Promise<null | string> {
+        return await EnsResolver.lookupAddress(this, address, coinType);
     }
 
     async waitForTransaction(hash: string, _confirms?: null | number, timeout?: null | number): Promise<null | TransactionReceipt> {
@@ -1319,6 +1360,8 @@ export class AbstractProvider implements Provider {
                 subscriber.pollingInterval = this.pollingInterval;
                 return subscriber;
             }
+            case "safe": case "finalized":
+                return new PollingBlockTagSubscriber(this, sub.type);
             case "event":
                 return new PollingEventSubscriber(this, sub.filter);
             case "transaction":

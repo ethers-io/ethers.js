@@ -94,26 +94,70 @@ export class CDPSession {
                     return;
                 }
                 if (msg.error) {
+                    console.log(`ERROR: ${msg.error}`);
                     responder.reject(new Error(msg.error));
                 }
                 else {
                     responder.resolve(msg.result);
                 }
+                return;
             }
-            else {
-                if (msg.method === "Console.messageAdded") {
+            switch (msg.method) {
+                case "Console.messageAdded": {
                     const text = msg.params.message.text;
                     if (text.startsWith("#status")) {
                         this.#exit(parseInt(text.split("=").pop()));
                     }
                     console.log(text);
                     //console.log(msg.params.message.text, `${ msg.params.message.url }:${ msg.params.message.line }`);
+                    break;
                 }
-                else if (msg.method === "Target.attachedToTarget") {
+                case "Page.frameNavigated":
+                    console.log("Visit:", msg.params.frame.url);
+                    break;
+                case "Runtime.exceptionThrown": {
+                    console.log("Runtime Exception");
+                    let url = "";
+                    try {
+                        const e = msg.params.exceptionDetails;
+                        url = e.url;
+                        console.log(`Runtime Exception: ${e.text} (${url}:${e.lineNumber}:${e.columnNumber})`);
+                        for (const frame of e.stackTrace.callFrames) {
+                            let loc = `${frame.lineNumber}:${frame.columnNumber}`;
+                            if (frame.url != url) {
+                                url = frame.url;
+                                loc = `${url}:${loc}`;
+                            }
+                            console.log(`  - ${frame.functionName} (${loc})`);
+                        }
+                    }
+                    catch (error) {
+                        console.log("ERROR:", error);
+                        console.log("MESSAGE:", msg);
+                        console.log("PARAMS:", msg.params);
+                    }
+                    break;
                 }
-                else {
+                case "Debugger.scriptFailedToParse":
+                    // @TODO: Is this important? It can happens a LOT
+                    //        when there is a runtime error complaining
+                    //        "from" is a bad function; maybe when trying
+                    //        to interpret ESM as legacy JavaScript?
+                    break;
+                case "Debugger.scriptParsed":
+                case "Page.frameResized":
+                case "Page.frameStoppedLoading":
+                case "Page.loadEventFired":
+                case "Page.domContentEventFired":
+                case "Page.frameStartedLoading":
+                case "Target.attachedToTarget":
+                case "Runtime.consoleAPICalled": // Handled above
+                case "Runtime.executionContextsCleared":
+                case "Runtime.executionContextCreated":
+                    // Ignore
+                    break;
+                default:
                     console.log(`WARN: Unhandled event - ${JSON.stringify(msg)}`);
-                }
             }
         };
         this.websocket.onerror = (error) => {
@@ -177,6 +221,11 @@ const TestData = (function () {
     data.push(`  inflate(ethers.decodeBase64(comps[1]), result);`);
     data.push(`  return JSON.parse(ethers.toUtf8String(result))`);
     data.push(`}`);
+    data.push(``);
+    data.push(`export const FAUCET_PRIVATEKEY = ${JSON.stringify(process.env.FAUCET_PRIVATEKEY)};`);
+    data.push(`export const ALCHEMY_APIKEY = ${JSON.stringify(process.env.ALCHEMY_APIKEY)};`);
+    data.push(`export const INFURA_APIKEY = ${JSON.stringify(process.env.INFURA_APIKEY)};`);
+    data.push(``);
     return data.join("\n");
 })();
 export function start(_root, options) {
@@ -284,6 +333,7 @@ export function start(_root, options) {
 (async function () {
     await start(resolve("."), { port: 8000 });
     const cmds = [
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
         "/usr/bin/chromium"
     ].filter((f) => { try {
@@ -297,15 +347,20 @@ export function start(_root, options) {
         throw new Error("no installed browser found");
     }
     const cmd = cmds[0];
-    const args = ["--headless", "--disable-gpu", "--remote-debugging-port=8022"];
+    const args = [
+        "--headless", "--no-sandbox", "--disable-gpu",
+        "--remote-debugging-port=8022"
+    ];
+    console.log("Running:", cmd, args.join(" "));
     const browser = child_process.spawn(cmd, args);
     let url = await new Promise((resolve, reject) => {
         browser.stdout.on("data", (data) => {
-            console.log("OUT", data.toString());
+            console.log(">>>", data.toString());
         });
         browser.stderr.on("data", (data) => {
             const text = data.toString();
             for (const line of text.split("\n")) {
+                console.log("!!!", line);
                 const match = line.match(/^DevTools listening on (.*)$/);
                 if (match) {
                     resolve(match[1]);
@@ -318,9 +373,15 @@ export function start(_root, options) {
     const session = new CDPSession(url);
     await session.ready;
     await session.send("Console.enable", {});
+    await session.send("Debugger.enable", {});
+    await session.send("Page.enable", {});
+    await session.send("Runtime.enable", {});
     await session.navigate("http:/\/localhost:8000");
     const status = await session.done;
     console.log("STATUS:", status);
     process.exit(status);
-})();
+})().catch((error) => {
+    console.log("ERROR");
+    console.log(error);
+});
 //# sourceMappingURL=test-browser.js.map

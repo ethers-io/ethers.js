@@ -1,5 +1,5 @@
 /**
- *  A **Provider** provides a connection to the blockchain, whch can be
+ *  A **Provider** provides a connection to the blockchain, which can be
  *  used to query its current state, simulate execution and send transactions
  *  to update the state.
  *
@@ -24,8 +24,10 @@ export { FallbackProvider } from "./provider-fallback.js";
 export { JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from "./provider-jsonrpc.js";
 export { BrowserProvider } from "./provider-browser.js";
 export { AlchemyProvider } from "./provider-alchemy.js";
+export { BlockscoutProvider } from "./provider-blockscout.js";
 export { AnkrProvider } from "./provider-ankr.js";
 export { CloudflareProvider } from "./provider-cloudflare.js";
+export { ChainstackProvider } from "./provider-chainstack.js";
 export { EtherscanProvider, EtherscanPlugin } from "./provider-etherscan.js";
 export { InfuraProvider, InfuraWebSocketProvider } from "./provider-infura.js";
 export { PocketProvider } from "./provider-pocket.js";

@@ -36,11 +36,19 @@ const BN_58 = BigInt(58);
  *  Encode %%value%% as a Base58-encoded string.
  */
 function encodeBase58(_value) {
-    let value = (0, maths_js_1.toBigInt)((0, data_js_1.getBytes)(_value));
+    const bytes = (0, data_js_1.getBytes)(_value);
+    let value = (0, maths_js_1.toBigInt)(bytes);
     let result = "";
     while (value) {
         result = Alphabet[Number(value % BN_58)] + result;
         value /= BN_58;
+    }
+    // Account for leading padding zeros
+    for (let i = 0; i < bytes.length; i++) {
+        if (bytes[i]) {
+            break;
+        }
+        result = Alphabet[0] + result;
     }
     return result;
 }

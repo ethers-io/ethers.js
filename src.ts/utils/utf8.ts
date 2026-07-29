@@ -247,6 +247,7 @@ function getUtf8CodePoints(_bytes: BytesLike, onError?: Utf8ErrorFunc): Array<nu
  *  If %%form%% is specified, the string is normalized.
  */
 export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8Array {
+    assertArgument(typeof(str) === "string", "invalid string value", "str", str);
 
     if (form != null) {
         assertNormalize(form);

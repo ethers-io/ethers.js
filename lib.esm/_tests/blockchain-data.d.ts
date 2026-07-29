@@ -1,4 +1,4 @@
-export type TestBlockchainNetwork = "mainnet" | "goerli";
+export type TestBlockchainNetwork = "mainnet" | "goerli" | "sepolia";
 export interface TestBlockchainAddress {
     test: string;
     address: string;
@@ -22,12 +22,19 @@ export interface TestBlockchainBlock {
     extraData: string;
     transactions: Array<string>;
     baseFeePerGas?: bigint;
+    blobGasUsed?: bigint;
+    excessBlobGas?: bigint;
+    parentBeaconBlockRoot?: string;
+    stateRoot?: string;
+    receiptsRoot?: string;
+    transactionsRoot?: string;
 }
 export interface TestBlockchainTransaction {
     test: string;
     hash: string;
     blockHash: string;
     blockNumber: number;
+    index: number;
     type: number;
     from: string;
     gasPrice: bigint;
@@ -40,7 +47,7 @@ export interface TestBlockchainTransaction {
         r: string;
         s: string;
         yParity: 0 | 1;
-        v: number;
+        v?: number;
         networkV: null | bigint;
     };
     creates: null | string;
@@ -48,6 +55,8 @@ export interface TestBlockchainTransaction {
     accessList?: Array<Record<string, Array<string>>>;
     maxPriorityFeePerGas?: bigint;
     maxFeePerGas?: bigint;
+    maxFeePerBlobGas?: bigint;
+    blobVersionedHashes?: Array<string>;
 }
 export interface TestBlockchainReceipt {
     test: string;
@@ -75,6 +84,8 @@ export interface TestBlockchainReceipt {
     to: string;
     hash: string;
     index: number;
+    blobGasUsed?: bigint;
+    blobGasPrice?: bigint;
 }
 export declare const testAddress: Record<TestBlockchainNetwork, Array<TestBlockchainAddress>>;
 export declare const testBlock: Record<TestBlockchainNetwork, Array<TestBlockchainBlock>>;

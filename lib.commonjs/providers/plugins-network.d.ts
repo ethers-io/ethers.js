@@ -1,5 +1,6 @@
 import type { FeeData, Provider } from "./provider.js";
 import type { FetchRequest } from "../utils/fetch.js";
+declare const inspect: unique symbol;
 /**
  *  A **NetworkPlugin** provides additional functionality on a [[Network]].
  */
@@ -15,6 +16,8 @@ export declare class NetworkPlugin {
      *  Creates a new **NetworkPlugin**.
      */
     constructor(name: string);
+    [inspect](): string;
+    toString(): string;
     /**
      *  Creates a copy of this plugin.
      */
@@ -91,6 +94,7 @@ export declare class GasCostPlugin extends NetworkPlugin implements GasCostParam
      *  with the associated %%costs%%.
      */
     constructor(effectiveBlock?: number, costs?: GasCostParameters);
+    toString(): string;
     clone(): GasCostPlugin;
 }
 /**
@@ -112,11 +116,16 @@ export declare class EnsPlugin extends NetworkPlugin {
      */
     readonly targetNetwork: number;
     /**
+     *  The Universal Resolver Contract Address.
+     */
+    readonly universalResolver?: string;
+    /**
      *  Creates a new **EnsPlugin** connected to %%address%% on the
      *  %%targetNetwork%%. The default ENS address and mainnet is used
      *  if unspecified.
      */
-    constructor(address?: null | string, targetNetwork?: null | number);
+    constructor(address?: null | string, targetNetwork?: null | number, universalResolver?: string);
+    toString(): string;
     clone(): EnsPlugin;
 }
 /**
@@ -165,6 +174,8 @@ export declare class FetchUrlFeeDataNetworkPlugin extends NetworkPlugin {
         maxFeePerGas?: null | bigint;
         maxPriorityFeePerGas?: null | bigint;
     }>);
+    toString(): string;
     clone(): FetchUrlFeeDataNetworkPlugin;
 }
+export {};
 //# sourceMappingURL=plugins-network.d.ts.map

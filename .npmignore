@@ -25,6 +25,7 @@ testcases/**
 
 # Ignore random junk
 .DS_Store
+.iterm2-project
 node_modules/**
 misc/**
 **/*.tgz

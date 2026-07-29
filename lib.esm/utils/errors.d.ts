@@ -11,12 +11,14 @@ import type { TransactionRequest, TransactionReceipt, TransactionResponse } from
 import type { FetchRequest, FetchResponse } from "./fetch.js";
 /**
  *  An error may contain additional properties, but those must not
- *  conflict with any impliciat properties.
+ *  conflict with any implicit properties.
  */
-export type ErrorInfo<T> = Omit<T, "code" | "name" | "message">;
+export type ErrorInfo<T> = Omit<T, "code" | "name" | "message" | "shortMessage"> & {
+    shortMessage?: string;
+};
 /**
  *  All errors emitted by ethers have an **ErrorCode** to help
- *  identify and coalesce errors to simplfy programatic analysis.
+ *  identify and coalesce errors to simplify programmatic analysis.
  *
  *  Each **ErrorCode** is the %%code%% proerty of a coresponding
  *  [[EthersError]].
@@ -86,6 +88,11 @@ export interface EthersError<T extends ErrorCode = ErrorCode> extends Error {
      */
     code: ErrorCode;
     /**
+     *  A short message describing the error, with minimal additional
+     *  details.
+     */
+    shortMessage: string;
+    /**
      *  Additional info regarding the error that may be useful.
      *
      *  This is generally helpful mostly for human-based debugging.
@@ -116,7 +123,7 @@ export interface NotImplementedError extends EthersError<"NOT_IMPLEMENTED"> {
 /**
  *  This Error indicates that the attempted operation is not supported.
  *
- *  This could range from a specifc JSON-RPC end-point not supporting
+ *  This could range from a specific JSON-RPC end-point not supporting
  *  a feature to a specific configuration of an object prohibiting the
  *  operation.
  *
@@ -130,7 +137,7 @@ export interface UnsupportedOperationError extends EthersError<"UNSUPPORTED_OPER
     operation: string;
 }
 /**
- *  This Error indicates a proplem connecting to a network.
+ *  This Error indicates a problem connecting to a network.
  */
 export interface NetworkError extends EthersError<"NETWORK_ERROR"> {
     /**
@@ -176,7 +183,7 @@ export interface TimeoutError extends EthersError<"TIMEOUT"> {
 }
 /**
  *  This Error indicates that a provided set of data cannot
- *  be correctly interpretted.
+ *  be correctly interpreted.
  */
 export interface BadDataError extends EthersError<"BAD_DATA"> {
     /**
@@ -444,7 +451,7 @@ export type CodedEthersError<T> = T extends "UNKNOWN_ERROR" ? UnknownError : T e
  *  Returns true if the %%error%% matches an error thrown by ethers
  *  that matches the error %%code%%.
  *
- *  In TypeScript envornoments, this can be used to check that %%error%%
+ *  In TypeScript environments, this can be used to check that %%error%%
  *  matches an EthersError type, which means the expected properties will
  *  be set.
  *
@@ -466,13 +473,13 @@ export declare function isError<K extends ErrorCode, T extends CodedEthersError<
 export declare function isCallException(error: any): error is CallExceptionError;
 /**
  *  Returns a new Error configured to the format ethers emits errors, with
- *  the %%message%%, [[api:ErrorCode]] %%code%% and additioanl properties
+ *  the %%message%%, [[api:ErrorCode]] %%code%% and additional properties
  *  for the corresponding EthersError.
  *
  *  Each error in ethers includes the version of ethers, a
- *  machine-readable [[ErrorCode]], and depneding on %%code%%, additional
- *  required properties. The error message will also include the %%meeage%%,
- *  ethers version, %%code%% and all aditional properties, serialized.
+ *  machine-readable [[ErrorCode]], and depending on %%code%%, additional
+ *  required properties. The error message will also include the %%message%%,
+ *  ethers version, %%code%% and all additional properties, serialized.
  */
 export declare function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): T;
 /**

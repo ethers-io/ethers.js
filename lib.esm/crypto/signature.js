@@ -7,6 +7,9 @@ const BN_2 = BigInt(2);
 const BN_27 = BigInt(27);
 const BN_28 = BigInt(28);
 const BN_35 = BigInt(35);
+const BN_N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+const BN_N_2 = BN_N / BN_2; // Must be integer (floor) division; do NOT shifts
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 const _guard = {};
 function toUint256(value) {
     return zeroPadValue(toBeArray(value), 32);
@@ -23,7 +26,7 @@ export class Signature {
     #v;
     #networkV;
     /**
-     *  The ``r`` value for a signautre.
+     *  The ``r`` value for a signature.
      *
      *  This represents the ``x`` coordinate of a "reference" or
      *  challenge point, from which the ``y`` can be computed.
@@ -36,12 +39,29 @@ export class Signature {
     /**
      *  The ``s`` value for a signature.
      */
-    get s() { return this.#s; }
+    get s() {
+        assertArgument(parseInt(this.#s.substring(0, 3)) < 8, "non-canonical s; use ._s", "s", this.#s);
+        return this.#s;
+    }
     set s(_value) {
         assertArgument(dataLength(_value) === 32, "invalid s", "value", _value);
-        const value = hexlify(_value);
-        assertArgument(parseInt(value.substring(0, 3)) < 8, "non-canonical s", "value", value);
-        this.#s = value;
+        this.#s = hexlify(_value);
+    }
+    /**
+     *  Return the s value, unchecked for EIP-2 compliance.
+     *
+     *  This should generally not be used and is for situations where
+     *  a non-canonical S value might be relevant, such as Frontier blocks
+     *  that were mined prior to EIP-2 or invalid Authorization List
+     *  signatures.
+     */
+    get _s() { return this.#s; }
+    /**
+     *  Returns true if the Signature is valid for [[link-eip-2]] signatures.
+     */
+    isValid() {
+        const s = BigInt(this.#s);
+        return (s <= BN_N_2);
     }
     /**
      *  The ``v`` value for a signature.
@@ -117,14 +137,32 @@ export class Signature {
         this.#v = v;
         this.#networkV = null;
     }
-    [Symbol.for('nodejs.util.inspect.custom')]() {
-        return `Signature { r: "${this.r}", s: "${this.s}", yParity: ${this.yParity}, networkV: ${this.networkV} }`;
+    /**
+     *  Returns the canonical signature.
+     *
+     *  This is only necessary when dealing with legacy transaction which
+     *  did not enforce canonical S values (i.e. [[link-eip-2]]. Most
+     *  developers should never require this.
+     */
+    getCanonical() {
+        if (this.isValid()) {
+            return this;
+        }
+        // Compute the canonical signature; s' = N - s, v = !v
+        const s = BN_N - BigInt(this._s);
+        const v = (55 - this.v);
+        const result = new Signature(_guard, this.r, toUint256(s), v);
+        // Populate the networkV if necessary
+        if (this.networkV) {
+            result.#networkV = this.networkV;
+        }
+        return result;
     }
     /**
      *  Returns a new identical [[Signature]].
      */
     clone() {
-        const clone = new Signature(_guard, this.r, this.s, this.v);
+        const clone = new Signature(_guard, this.r, this._s, this.v);
         if (this.networkV) {
             clone.#networkV = this.networkV;
         }
@@ -138,8 +176,17 @@ export class Signature {
         return {
             _type: "signature",
             networkV: ((networkV != null) ? networkV.toString() : null),
-            r: this.r, s: this.s, v: this.v,
+            r: this.r, s: this._s, v: this.v,
         };
+    }
+    [inspect]() {
+        return this.toString();
+    }
+    toString() {
+        if (this.isValid()) {
+            return `Signature { r: ${this.r}, s: ${this._s}, v: ${this.v} }`;
+        }
+        return `Signature { r: ${this.r}, s: ${this._s}, v: ${this.v}, valid: false }`;
     }
     /**
      *  Compute the chain ID from the ``v`` in a legacy EIP-155 transactions.
@@ -238,10 +285,9 @@ export class Signature {
             }
             if (bytes.length === 65) {
                 const r = hexlify(bytes.slice(0, 32));
-                const s = bytes.slice(32, 64);
-                assertError((s[0] & 0x80) === 0, "non-canonical s");
+                const s = hexlify(bytes.slice(32, 64));
                 const v = Signature.getNormalizedV(bytes[64]);
-                return new Signature(_guard, r, hexlify(s), v);
+                return new Signature(_guard, r, s, v);
             }
             assertError(false, "invalid raw signature length");
         }
@@ -265,7 +311,6 @@ export class Signature {
             }
             assertError(false, "missing s");
         })(sig.s, sig.yParityAndS);
-        assertError((getBytes(s)[0] & 0x80) == 0, "non-canonical s");
         // Get v; by any means necessary (we check consistency below)
         const { networkV, v } = (function (_v, yParityAndS, yParity) {
             if (_v != null) {

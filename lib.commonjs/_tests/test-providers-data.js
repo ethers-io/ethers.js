@@ -4,6 +4,7 @@ const tslib_1 = require("tslib");
 const assert_1 = tslib_1.__importDefault(require("assert"));
 const create_provider_js_1 = require("./create-provider.js");
 const utils_js_1 = require("./utils.js");
+const index_js_1 = require("../index.js");
 const blockchain_data_js_1 = require("./blockchain-data.js");
 (0, create_provider_js_1.setupProviders)();
 function forEach(prefix, tests, func) {
@@ -101,11 +102,24 @@ describe("Test Provider Address operations", function () {
 });
 function assertObj(prefix, actual, expected) {
     assert_1.default.ok(actual != null, `${prefix} is null`);
+    if (typeof (expected) !== "object") {
+        assert_1.default.equal(actual, expected, prefix);
+        return;
+    }
     for (const key in expected) {
         if (expected[key] === undefined) {
             continue;
         }
-        assert_1.default.equal(actual[key], expected[key], `${prefix}.${key}`);
+        if (Array.isArray(expected[key])) {
+            assert_1.default.ok(Array.isArray(actual[key]), `Array.isArray(${prefix}.${key})`);
+            assert_1.default.equal(actual[key].length, expected[key].length, `${prefix}.${key}.length`);
+            for (let i = 0; i < expected[key].length; i++) {
+                assertObj(`${prefix}[${i}]`, actual[key][i], expected[key][i]);
+            }
+        }
+        else {
+            assert_1.default.equal(actual[key], expected[key], `${prefix}.${key}`);
+        }
     }
 }
 function assertBlock(actual, expected) {
@@ -187,7 +201,11 @@ describe("Test Provider Transaction operations", function () {
             assert_1.default.ok(receipt != null, "receipt != null");
             // Cloudflare doesn't return the root in legacy receipts; but it isn't
             // *actually* that important, so we'll give it a pass...
-            if (providerName === "CloudflareProvider" || providerName === "AnkrProvider" || providerName === "PocketProvider") {
+            if (providerName === "CloudflareProvider" ||
+                providerName === "AnkrProvider" ||
+                providerName === "AlchemyProvider" ||
+                providerName === "PocketProvider" ||
+                providerName === "BlockscoutProvider") {
                 test = Object.assign({}, test, { root: undefined });
             }
             //if (providerName === "PocketProvider") {
@@ -201,5 +219,35 @@ describe("Test Provider Transaction operations", function () {
             assert_1.default.ok(name == null, "name == null");
         };
     });
+});
+describe("Test Networks", function () {
+    const networks = [
+        "mainnet", "sepolia", "holesky",
+        "arbitrum", "arbitrum-sepolia",
+        "base", "base-sepolia",
+        "bnb", "bnbt",
+        "linea", "linea-sepolia",
+        "matic", "matic-amoy",
+        "optimism", "optimism-sepolia",
+        "xdai",
+    ];
+    const providerNames = [
+        "AlchemyProvider", "InfuraProvider", "AnkrProvider",
+        "QuickNodeProvider",
+    ];
+    for (const providerName of providerNames) {
+        for (const networkName of networks) {
+            const network = index_js_1.Network.from(networkName);
+            const provider = (0, create_provider_js_1.getProvider)(providerName, networkName);
+            if (provider == null || !(provider instanceof index_js_1.JsonRpcProvider)) {
+                continue;
+            }
+            it(`checks network chainId: ${providerName}/${networkName}`, async function () {
+                this.timeout(10000);
+                const chainId = await provider.send("eth_chainId", []);
+                assert_1.default.equal(parseInt(chainId), network.chainId, "chainId");
+            });
+        }
+    }
 });
 //# sourceMappingURL=test-providers-data.js.map
