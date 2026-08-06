@@ -241,6 +241,64 @@ function getUtf8CodePoints(_bytes: BytesLike, onError?: Utf8ErrorFunc): Array<nu
 
 // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
 
+// Below this length the fixed per-call cost of TextEncoder.encode exceeds
+// the loop in toUtf8Bytes; the measured crossover is ~64 code units.
+const nativeEncodeThreshold = 128;
+
+// undefined means "not probed yet"; null means "probed, unusable"
+let _utf8Decoder: undefined | null | InstanceType<typeof TextDecoder> = undefined;
+let _utf8Encoder: undefined | null | InstanceType<typeof TextEncoder> = undefined;
+
+function getUtf8Decoder(): null | InstanceType<typeof TextDecoder> {
+    if (_utf8Decoder === undefined && typeof TextDecoder !== "undefined") {
+        _utf8Decoder = null;
+        try {
+            const decoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
+
+            // A lone continuation byte throws only where fatal is honoured and
+            // a BOM survives only where ignoreBOM is; an engine that accepts
+            // the options but implements neither would silently change the
+            // behaviour of toUtf8String, so it gets the pure-JS path.
+            try {
+                decoder.decode(new Uint8Array([ 0x80 ]));
+            } catch (error) {
+                if (decoder.decode(new Uint8Array([ 0xef, 0xbb, 0xbf ])) === "\ufeff") {
+                    _utf8Decoder = decoder;
+                }
+            }
+        } catch (error) { }
+    }
+    return _utf8Decoder || null;
+}
+
+function getUtf8Encoder(): null | InstanceType<typeof TextEncoder> {
+    if (_utf8Encoder === undefined && typeof TextEncoder !== "undefined") {
+        _utf8Encoder = null;
+        try {
+            _utf8Encoder = new TextEncoder();
+        } catch (error) { }
+    }
+    return _utf8Encoder || null;
+}
+
+// TextEncoder takes a USVString, so it replaces lone surrogates with U+FFFD
+// rather than throwing; detect them first and use the pure-JS path, which
+// preserves the existing behaviour (a lone high surrogate throws, while a
+// lone low surrogate is encoded).
+function hasLoneSurrogates(str: string): boolean {
+    for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        if (c >= 0xd800 && c <= 0xdbff) {
+            const c2 = (i + 1 < str.length) ? str.charCodeAt(i + 1): 0;
+            if (c2 < 0xdc00 || c2 > 0xdfff) { return true; }
+            i++;
+        } else if (c >= 0xdc00 && c <= 0xdfff) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  *  Returns the UTF-8 byte representation of %%str%%.
  *
@@ -252,6 +310,11 @@ export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8
     if (form != null) {
         assertNormalize(form);
         str = str.normalize(form);
+    }
+
+    if (str.length >= nativeEncodeThreshold) {
+        const encoder = getUtf8Encoder();
+        if (encoder != null && !hasLoneSurrogates(str)) { return encoder.encode(str); }
     }
 
     let result: Array<number> = [];
@@ -309,9 +372,23 @@ function _toUtf8String(codePoints: Array<number>): string {
  *  When %%onError%% function is specified, it is called on UTF-8
  *  errors allowing recovery using the [[Utf8ErrorFunc]] API.
  *  (default: [error](Utf8ErrorFuncs))
+ *
+ *  When no %%onError%% is provided a native ``TextDecoder`` is used where
+ *  available; providing %%onError%% always uses the slower pure-JS decoder.
  */
 export function toUtf8String(bytes: BytesLike, onError?: Utf8ErrorFunc): string {
-    return _toUtf8String(getUtf8CodePoints(bytes, onError));
+    const data = getBytes(bytes, "bytes");
+
+    if (onError == null) {
+        const decoder = getUtf8Decoder();
+        if (decoder != null) {
+            try {
+                return decoder.decode(data);
+            } catch (error) { }
+        }
+    }
+
+    return _toUtf8String(getUtf8CodePoints(data, onError));
 }
 
 /**
