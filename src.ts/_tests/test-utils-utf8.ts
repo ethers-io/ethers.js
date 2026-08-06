@@ -135,6 +135,27 @@ describe("Tests UTF-8 bad strings", function() {
         assert.equal(result[1], 0xb0, "data[1]");
         assert.equal(result[2], 0x80, "data[2]");
     });
+
+    // A lone surrogate must behave the same whether the string is short enough
+    // for the pure-JS loop or long enough to reach the native encoder
+    const prefixes = [ { name: "short", prefix: "AB" }, { name: "long", prefix: "A".repeat(256) } ];
+
+    for (const { name, prefix } of prefixes) {
+        it(`correctly fails to get UTF-8 bytes from a mid-string incomplete surrogate: ${ name }`, function() {
+            assert.throws(() => {
+                const result = toUtf8Bytes(prefix + String.fromCharCode(0xd800) + "CD");
+                console.log(result);
+            }, (error: any) => {
+                return (error.message.startsWith("invalid surrogate pair"));
+            });
+        });
+
+        it(`correctly encodes a mid-string lone low surrogate: ${ name }`, function() {
+            const result = toUtf8Bytes(prefix + String.fromCharCode(0xdc00) + "CD");
+            assert.deepEqual(Array.from(result.slice(prefix.length)),
+                [ 0xed, 0xb0, 0x80, 0x43, 0x44 ], "data");
+        });
+    }
 });
 
 describe("Tests UTF-8 edge cases", function() {
@@ -167,6 +188,16 @@ describe("Tests UTF-8 edge cases", function() {
         {
             name: "BOM prefix",
             text: "\ufeffHello"
+        },
+        {
+            // Long enough to use the native encoder; the cases above are
+            // short enough to use the pure-JS loop
+            name: "long ASCII string",
+            text: "The quick brown fox jumps over the lazy dog. ".repeat(8)
+        },
+        {
+            name: "long multi-byte string",
+            text: "AB\u20ac\u{1f600}\ufeff".repeat(64)
         }
     ];
 
@@ -174,16 +205,18 @@ describe("Tests UTF-8 edge cases", function() {
         it(`round-trips: ${ name }`, function() {
             assert.equal(toUtf8String(toUtf8Bytes(text)), text);
         });
-    }
 
-    it("round-trips a large ASCII buffer", function() {
-        const text = "x".repeat(4 * 1024 * 1024);
-        assert.equal(toUtf8String(toUtf8Bytes(text)), text);
-    });
+        // Passing onError bypasses the native decoder, so this pins the
+        // native and pure-JS decoders to the same output
+        it(`decodes identically with and without onError: ${ name }`, function() {
+            const bytes = toUtf8Bytes(text);
+            assert.equal(toUtf8String(bytes), toUtf8String(bytes, Utf8ErrorFuncs.error));
+        });
+    }
 
 });
 
-describe("Tests UTF-8 bad strings", function() {
+describe("Tests UTF-8 code points", function() {
 
     const tests: Array<TestCaseCodePoints> = [
         {
