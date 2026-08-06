@@ -127,6 +127,60 @@ describe("Tests UTF-8 bad strings", function() {
             return (error.message.startsWith("invalid surrogate pair"));
         });
     });
+
+    it("correctly encodes a lone low surrogate", function() {
+        const result = toUtf8Bytes(String.fromCharCode(0xdc00));
+        assert.equal(result.length, 3, "data.length");
+        assert.equal(result[0], 0xed, "data[0]");
+        assert.equal(result[1], 0xb0, "data[1]");
+        assert.equal(result[2], 0x80, "data[2]");
+    });
+});
+
+describe("Tests UTF-8 edge cases", function() {
+
+    const tests = [
+        {
+            name: "empty string",
+            text: ""
+        },
+        {
+            name: "NUL and control characters",
+            text: "\u0000\u0001\u001f\u007f"
+        },
+        {
+            name: "Euro symbol",
+            text: "AB\u20acC"
+        },
+        {
+            name: "astral pair",
+            text: "A\u{1f600}B"
+        },
+        {
+            name: "maximum code point",
+            text: "\u{10ffff}"
+        },
+        {
+            name: "noncharacters",
+            text: "\ufffe\uffff"
+        },
+        {
+            name: "BOM prefix",
+            text: "\ufeffHello"
+        }
+    ];
+
+    for (const { name, text } of tests) {
+        it(`round-trips: ${ name }`, function() {
+            assert.equal(toUtf8String(toUtf8Bytes(text)), text);
+        });
+    }
+
+    it("round-trips a large ASCII buffer", function() {
+        const text = "x".repeat(4 * 1024 * 1024);
+        assert.equal(toUtf8String(toUtf8Bytes(text)), text);
+    });
+
 });
 
 describe("Tests UTF-8 bad strings", function() {
