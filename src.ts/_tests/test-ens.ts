@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import { EnsResolver } from "../index.js";
+import { EnsResolver, JsonRpcProvider, Network, isError } from "../index.js";
 
 import { connect, setupProviders } from "./create-provider.js";
 
@@ -194,4 +194,91 @@ describe("Test ENSv2 migration", function() {
         });
     }
 
+});
+
+describe("Test ENS on networks without an ENS registry", function() {
+
+    // These providers are never actually connected to; every operation
+    // must fail on the network config alone, before any RPC call
+    function makeProvider(network: Network): JsonRpcProvider {
+        return new JsonRpcProvider("http:/\/127.0.0.1:0", network, {
+            staticNetwork: true
+        });
+    }
+
+    const networks: Array<{ title: string, network: Network }> = [
+        // No ENS plugin at all
+        { title: "no ENS plugin", network: new Network("custom", 1337) },
+
+        // Polygon; registered with ensNetwork: 1, so the ENS contracts
+        // are on mainnet and cannot be reached from a Polygon provider.
+        // See: ethers-io/ethers.js#5137
+        { title: "matic", network: Network.from(137) },
+    ];
+
+    function checkError(error: any): boolean {
+        return (isError(error, "UNSUPPORTED_OPERATION")
+            && error.operation === "getEnsAddress");
+    }
+
+    for (const { title, network } of networks) {
+        it(`getEnsAddress rejects (${ title })`, async function() {
+            const provider = makeProvider(network);
+            try {
+                await assert.rejects(async function() {
+                    await EnsResolver.getEnsAddress(provider);
+                }, checkError);
+            } finally { provider.destroy(); }
+        });
+
+        it(`getResolver rejects (${ title })`, async function() {
+            const provider = makeProvider(network);
+            try {
+                await assert.rejects(async function() {
+                    await provider.getResolver("vitalik.eth");
+                }, checkError);
+            } finally { provider.destroy(); }
+        });
+
+        it(`resolveName rejects (${ title })`, async function() {
+            const provider = makeProvider(network);
+            try {
+                await assert.rejects(async function() {
+                    await provider.resolveName("vitalik.eth");
+                }, checkError);
+            } finally { provider.destroy(); }
+        });
+
+        it(`lookupAddress rejects (${ title })`, async function() {
+            const provider = makeProvider(network);
+            try {
+                await assert.rejects(async function() {
+                    await provider.lookupAddress("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
+                }, checkError);
+            } finally { provider.destroy(); }
+        });
+    }
+
+    it("allows a custom network to host its own ENS registry", async function() {
+        const ensAddress = "0x0000000000000000000000000000000000001234";
+        const network = Network.from({ name: "custom", chainId: 1337, ensAddress });
+        const provider = makeProvider(network);
+        try {
+            assert.equal(await EnsResolver.getEnsAddress(provider), ensAddress);
+        } finally { provider.destroy(); }
+    });
+
+    it("still rejects when a custom network points ENS elsewhere", async function() {
+        const network = Network.from({
+            name: "custom", chainId: 1337,
+            ensAddress: "0x0000000000000000000000000000000000001234",
+            ensNetwork: 1
+        });
+        const provider = makeProvider(network);
+        try {
+            await assert.rejects(async function() {
+                await EnsResolver.getEnsAddress(provider);
+            }, checkError);
+        } finally { provider.destroy(); }
+    });
 });
