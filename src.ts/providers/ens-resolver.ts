@@ -571,6 +571,14 @@ export class EnsResolver {
         assert(ensPlugin, "network does not support ENS", "UNSUPPORTED_OPERATION", {
             operation: "getEnsAddress", info: { network } });
 
+        // The ENS contracts live on another network, which this provider
+        // cannot reach. Reading the ENS address on *this* network would
+        // hit an unrelated (or non-existent) contract, so refuse instead
+        // of returning a bogus (or null) result.
+        assert(BigInt(ensPlugin.targetNetwork) === network.chainId,
+            "network does not support ENS", "UNSUPPORTED_OPERATION", {
+            operation: "getEnsAddress", info: { network } });
+
         return ensPlugin.address;
     }
 
@@ -578,7 +586,7 @@ export class EnsResolver {
         const network = await provider.getNetwork();
 
         const ensPlugin = network.getPlugin<EnsPlugin>("org.ethers.plugins.network.Ens");
-        if (ensPlugin && ensPlugin.universalResolver) {
+        if (ensPlugin && ensPlugin.universalResolver && BigInt(ensPlugin.targetNetwork) === network.chainId) {
             return ensPlugin.universalResolver;
         }
 

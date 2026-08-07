@@ -268,7 +268,10 @@ export class Network {
 
             const n: any = network;
             if (n.ensAddress || n.ensNetwork != null || n.ensUniversalResolver) {
-                custom.attachPlugin(new EnsPlugin(n.ensAddress, n.ensNetwork, n.ensUniversalResolver));
+                // Without an explicit ensNetwork, the ENS contracts are
+                // assumed to be on the network being described, not mainnet
+                const ensNetwork = (n.ensNetwork != null) ? n.ensNetwork: <number>(network.chainId);
+                custom.attachPlugin(new EnsPlugin(n.ensAddress, ensNetwork, n.ensUniversalResolver));
             }
 
             //if ((<any>network).layerOneConnection) {
