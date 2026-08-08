@@ -168,11 +168,13 @@ describe("Ensure Catchable Errors", function() {
                 case "eth_getTransactionByHash": {
                     count++;
 
-                    // The fully valid tx response
+                    // The fully valid tx response; a node returns the
+                    // signature as loose r/s/v, so drop the nested copies
+                    // toJSON includes or there is nothing to recover from
                     const result = Object.assign({ },
                         txObj.toJSON(),
                         txObj.signature!.toJSON(),
-                        { hash: txObj.hash, from: wallet.address, sig: null });
+                        { hash: txObj.hash, from: wallet.address, sig: null, signature: null });
 
                     // First time; fail with a missing v!
                     if (count < 2) { delete result.v; }
