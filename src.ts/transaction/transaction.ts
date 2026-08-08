@@ -1420,12 +1420,20 @@ export class Transaction implements TransactionLike<string> {
 
     /**
      *  Return a JSON-friendly object.
+     *
+     *  The result may be passed back to [[from]] to recreate this
+     *  Transaction; the [[blobs]] and [[kzg]] are not included, so a
+     *  BLOb sidecar cannot survive the round-trip.
      */
     toJSON(): any {
         const s = (v: null | bigint) => {
             if (v == null) { return null; }
             return v.toString();
         };
+
+        const sig = this.signature ? this.signature.toJSON(): null;
+
+        const auths = this.authorizationList;
 
         return {
             type: this.type,
@@ -1439,8 +1447,22 @@ export class Transaction implements TransactionLike<string> {
             maxFeePerGas: s(this.maxFeePerGas),
             value: s(this.value),
             chainId: s(this.chainId),
-            sig: this.signature ? this.signature.toJSON(): null,
-            accessList: this.accessList
+
+            // The "sig" key is what v6 has always emitted; "signature" is
+            // the name from TransactionLike, which is what from() reads
+            sig, signature: sig,
+
+            accessList: this.accessList,
+
+            maxFeePerBlobGas: s(this.maxFeePerBlobGas),
+            blobVersionedHashes: this.blobVersionedHashes,
+
+            authorizationList: (auths == null) ? null: auths.map((a) => ({
+                address: a.address,
+                nonce: s(a.nonce),
+                chainId: s(a.chainId),
+                signature: a.signature.toJSON()
+            }))
         };
     }
 
