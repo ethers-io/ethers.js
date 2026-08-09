@@ -21,7 +21,7 @@ import { decodeBase64, encodeBase64 } from "./base64.js";
 import { hexlify } from "./data.js";
 import { assert, assertArgument } from "./errors.js";
 import { defineProperties } from "./properties.js";
-import { toUtf8Bytes, toUtf8String } from "./utf8.js";
+import { toUtf8Bytes } from "./utf8.js";
 
 import { createGetUrl } from "./geturl.js";
 
@@ -810,7 +810,8 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
      */
     get bodyText(): string {
         try {
-            return (this.#body == null) ? "": toUtf8String(this.#body);
+            if (this.#body == null) { return ""; }
+            return new TextDecoder("utf-8", { fatal: true }).decode(this.#body);
         } catch (error) {
             assert(false, "response body is not valid UTF-8 data", "UNSUPPORTED_OPERATION", {
                 operation: "bodyText", info: { response: this }
@@ -943,7 +944,7 @@ export class FetchResponse implements Iterable<[ key: string, value: string ]> {
 
         let responseBody: null | string = null;
         try {
-            if (this.#body) { responseBody = toUtf8String(this.#body); }
+            if (this.#body) { responseBody = new TextDecoder("utf-8", { fatal: true }).decode(this.#body); }
         } catch (e) { }
 
         assert(false, message, "SERVER_ERROR", {
