@@ -457,3 +457,38 @@ describe("Tests Transaction Parameters", function() {
 
     }
 });
+
+describe("Tests Arbitrum priority fee serialization", function() {
+
+    // On chains that use a zero base fee (e.g. Arbitrum One) a valid
+    // EIP-1559 transaction may have maxPriorityFeePerGas > maxFeePerGas;
+    // see https://github.com/ethers-io/ethers.js/issues/4771
+    function arbitrumTx(): Transaction {
+        return Transaction.from({
+            type: 2,
+            chainId: 42161,
+            nonce: 0,
+            gasLimit: 100000,
+            to: "0x0000000000000000000000000000000000000000",
+            value: 0,
+            data: "0x",
+            maxFeePerGas: 50000000,
+            maxPriorityFeePerGas: 100000000
+        });
+    }
+
+    it("serializes a type-2 transaction where maxPriorityFeePerGas exceeds maxFeePerGas", function() {
+        const tx = arbitrumTx();
+        const serialized = tx.unsignedSerialized;
+
+        const parsed = Transaction.from(serialized);
+        assert.equal(parsed.maxFeePerGas, BigInt(50000000), "maxFeePerGas");
+        assert.equal(parsed.maxPriorityFeePerGas, BigInt(100000000), "maxPriorityFeePerGas");
+        assert.equal(parsed.type, 2, "type");
+    });
+
+    it("infers type 2 without throwing for such a transaction", function() {
+        const tx = arbitrumTx();
+        assert.equal(tx.inferType(), 2, "inferType");
+    });
+});

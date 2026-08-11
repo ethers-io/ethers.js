@@ -1324,9 +1324,11 @@ export class Transaction implements TransactionLike<string> {
         //    throw new Error("transaction cannot have gasPrice and maxFeePerGas");
         //}
 
-        if (this.maxFeePerGas != null && this.maxPriorityFeePerGas != null) {
-            assert(this.maxFeePerGas >= this.maxPriorityFeePerGas, "priorityFee cannot be more than maxFee", "BAD_DATA", { value: this });
-        }
+        // Do not require maxPriorityFeePerGas <= maxFeePerGas here. On chains
+        // that use a zero base fee (e.g. Arbitrum One) the priority fee may
+        // legitimately exceed the max fee, so such a transaction is valid and
+        // must remain serializable; the ordering is a chain-level concern and
+        // is not a serialization invariant.
 
         //if (this.type === 2 && hasGasPrice) {
         //    throw new Error("eip-1559 transaction cannot have gasPrice");
