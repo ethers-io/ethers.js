@@ -8,7 +8,7 @@ import { encode as base64Encode } from "@ethersproject/base64";
 import { Base58 } from "@ethersproject/basex";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { arrayify, BytesLike, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString, zeroPad } from "@ethersproject/bytes";
-import { HashZero } from "@ethersproject/constants";
+import { AddressZero, HashZero } from "@ethersproject/constants";
 import { dnsEncode, ensNormalize, namehash } from "@ethersproject/hash";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
 import { Deferrable, defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
@@ -296,8 +296,8 @@ function numPad(value: number): Uint8Array {
     return padded;
 }
 
-// ABI Encodes a series of (bytes, bytes, ...)
-function encodeBytes(datas: Array<BytesLike | BigNumber>) {
+// ABI Encodes a series of (bytes|bigint, ...)
+function encodeBytesAndWords(datas: Array<BytesLike | BigNumber>) {
     const chunks: Array<BytesLike> = [ ];
     chunks.length = datas.length;
     let byteCount = datas.length << 5;
@@ -375,7 +375,7 @@ export class Resolver implements EnsResolver {
             parseBytes = true;
 
             // selector("resolve(bytes,bytes)")
-            tx.data = hexConcat([ "0x9061b923", encodeBytes([ dnsEncode(this.name), tx.data ]) ]);
+            tx.data = hexConcat([ "0x9061b923", encodeBytesAndWords([ dnsEncode(this.name), tx.data ]) ]);
         }
 
         try {
@@ -402,8 +402,9 @@ export class Resolver implements EnsResolver {
     _getAddress(coinType: BigNumberish, hexBytes: string): string {
         coinType = BigNumber.from(coinType);
 
+        // https://docs.ens.domains/ensip/19/#definitions
         if (coinType.eq(60) || (coinType.gte(0x8000_0000) && coinType.lte(0xFFFF_FFFF))) {
-            return this.provider.formatter.address(hexBytes);
+            return hexBytes === '0x' ? AddressZero : this.provider.formatter.address(hexBytes);
         }
 
         const coinInfo = coinInfos[coinType.toString()];
@@ -1700,7 +1701,7 @@ export class BaseProvider extends Provider implements EnsProvider {
 
                 const tx = {
                     to: txSender,
-                    data: hexConcat([ callbackSelector, encodeBytes([ ccipResult, extraData ]) ])
+                    data: hexConcat([ callbackSelector, encodeBytesAndWords([ ccipResult, extraData ]) ])
                 };
 
                 return this._call(tx, blockTag, attempt + 1);
@@ -1968,14 +1969,15 @@ export class BaseProvider extends Provider implements EnsProvider {
                     //   address resolver;
                     //   bool extended; // IExtendedResolver
                     // }
-                    data: hexConcat([ '0xc285238a', encodeBytes([ dnsEncode(name) ])])
+                    data: hexConcat([ '0xc285238a', encodeBytesAndWords([ dnsEncode(name) ])])
                 });
             } catch (err: any) {
                 if (err.code === Logger.errors.CALL_EXCEPTION) return null; // call failed
                 throw err;
             }
-            const resolverAddress = hexDataSlice(result, 108, 128); // address
-            const isExtended = !BigNumber.from(hexDataSlice(result, 128, 160)).isZero(); // boolean
+            const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+            const resolverAddress = hexDataSlice(result, offset + 108, offset + 128); // address
+            const isExtended = !BigNumber.from(hexDataSlice(result, offset + 128, offset + 160)).isZero(); // boolean
             const resolver = new Resolver(this, resolverAddress, name);
             resolver._supportsEip2544 = Promise.resolve(isExtended); // inject
             return resolver;
@@ -2068,7 +2070,7 @@ export class BaseProvider extends Provider implements EnsProvider {
                     to: network.ensUniversalResolver,
                     ccipReadEnabled: true,
                     // reverse(bytes addressBytes, uint256 coinType) returns (string name, address forwardResolver, address reverseResolver)
-                    data: hexConcat(['0x5d78a217', encodeBytes([ address, coinType ])])
+                    data: hexConcat(['0x5d78a217', encodeBytesAndWords([ address, coinType ])])
                  });
             } catch (err: any) {
                  if (err.code === Logger.errors.CALL_EXCEPTION) return null; // call failed
@@ -2236,6 +2238,7 @@ export class BaseProvider extends Provider implements EnsProvider {
     }
 }
 
+// https://docs.ens.domains/ensip/19/#reverse-resolution
 function getReverseLabel(coinType: BigNumber): string {
     if (coinType.eq(60)) {
         return "addr";
@@ -2244,4 +2247,4 @@ function getReverseLabel(coinType: BigNumber): string {
     } else {
         return coinType.toHexString().slice(2);
     }
- }
+}
