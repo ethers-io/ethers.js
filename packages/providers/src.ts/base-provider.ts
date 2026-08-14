@@ -7,9 +7,9 @@ import {
 import { encode as base64Encode } from "@ethersproject/base64";
 import { Base58 } from "@ethersproject/basex";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { arrayify, BytesLike, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString } from "@ethersproject/bytes";
-import { HashZero } from "@ethersproject/constants";
-import { dnsEncode, namehash } from "@ethersproject/hash";
+import { arrayify, BytesLike, concat, hexConcat, hexDataLength, hexDataSlice, hexlify, hexValue, hexZeroPad, isHexString, zeroPad } from "@ethersproject/bytes";
+import { AddressZero, HashZero } from "@ethersproject/constants";
+import { dnsEncode, ensNormalize, namehash } from "@ethersproject/hash";
 import { getNetwork, Network, Networkish } from "@ethersproject/networks";
 import { Deferrable, defineReadOnly, getStatic, resolveProperties } from "@ethersproject/properties";
 import { Transaction } from "@ethersproject/transactions";
@@ -214,8 +214,8 @@ export interface EnsResolver {
 };
 
 export interface EnsProvider {
-    resolveName(name: string): Promise<null | string>;
-    lookupAddress(address: string): Promise<null | string>;
+    resolveName(name: string, coinType?: BigNumberish): Promise<null | string>;
+    lookupAddress(address: string, coinType?: BigNumberish): Promise<null | string>;
     getResolver(name: string): Promise<null | EnsResolver>;
 }
 
@@ -232,12 +232,11 @@ const coinInfos: { [ coinType: string ]: CoinInfo } = {
     "0":   { symbol: "btc",  p2pkh: 0x00, p2sh: 0x05, prefix: "bc" },
     "2":   { symbol: "ltc",  p2pkh: 0x30, p2sh: 0x32, prefix: "ltc" },
     "3":   { symbol: "doge", p2pkh: 0x1e, p2sh: 0x16 },
-    "60":  { symbol: "eth",  ilk: "eth" },
     "61":  { symbol: "etc",  ilk: "eth" },
     "700": { symbol: "xdai", ilk: "eth" },
 };
 
-function bytes32ify(value: number): string {
+function bytes32ify(value: number | BigNumber): string {
     return hexZeroPad(BigNumber.from(value).toHexString(), 32);
 }
 
@@ -297,39 +296,30 @@ function numPad(value: number): Uint8Array {
     return padded;
 }
 
-function bytesPad(value: Uint8Array): Uint8Array {
-    if ((value.length % 32) === 0) { return value; }
-
-    const result = new Uint8Array(Math.ceil(value.length / 32) * 32);
-    result.set(value);
-    return result;
-}
-
-// ABI Encodes a series of (bytes, bytes, ...)
-function encodeBytes(datas: Array<BytesLike>) {
-    const result: Array<Uint8Array> = [ ];
-
-    let byteCount = 0;
-
-    // Add place-holders for pointers as we add items
+// ABI Encodes a series of (bytes|bigint, ...)
+function encodeBytesAndWords(datas: Array<BytesLike | BigNumber>) {
+    const chunks: Array<BytesLike> = [ ];
+    chunks.length = datas.length;
+    let byteCount = datas.length << 5;
     for (let i = 0; i < datas.length; i++) {
-        result.push(null);
-        byteCount += 32;
+        const data = datas[i];
+        if (data instanceof BigNumber) {
+            chunks[i] = zeroPad(data.toHexString(), 32);
+        } else {
+            chunks[i] = numPad(byteCount); // update offset
+            let v = arrayify(data);
+            chunks.push(numPad(v.length));
+            const extra = v.length & 31; // check if ragged
+            if (extra) {
+                const padded = new Uint8Array(v.length + 32 - extra);
+                padded.set(v); // right pad
+                v = padded;
+            }
+            chunks.push(v);
+            byteCount += 32 + v.length;
+        }
     }
-
-    for (let i = 0; i < datas.length; i++) {
-        const data = arrayify(datas[i]);
-
-        // Update the bytes offset
-        result[i] = numPad(byteCount);
-
-        // The length and padded value of data
-        result.push(numPad(data.length));
-        result.push(bytesPad(data));
-        byteCount += 32 + Math.ceil(data.length / 32) * 32;
-    }
-
-    return hexConcat(result);
+    return hexConcat(chunks);
 }
 
 export class Resolver implements EnsResolver {
@@ -385,7 +375,7 @@ export class Resolver implements EnsResolver {
             parseBytes = true;
 
             // selector("resolve(bytes,bytes)")
-            tx.data = hexConcat([ "0x9061b923", encodeBytes([ dnsEncode(this.name), tx.data ]) ]);
+            tx.data = hexConcat([ "0x9061b923", encodeBytesAndWords([ dnsEncode(this.name), tx.data ]) ]);
         }
 
         try {
@@ -409,8 +399,15 @@ export class Resolver implements EnsResolver {
         return null;
     }
 
-    _getAddress(coinType: number, hexBytes: string): string {
-        const coinInfo = coinInfos[String(coinType)];
+    _getAddress(coinType: BigNumberish, hexBytes: string): string {
+        coinType = BigNumber.from(coinType);
+
+        // https://docs.ens.domains/ensip/19/#definitions
+        if (coinType.eq(60) || (coinType.gte(0x8000_0000) && coinType.lte(0xFFFF_FFFF))) {
+            return hexBytes === '0x' ? AddressZero : this.provider.formatter.address(hexBytes);
+        }
+
+        const coinInfo = coinInfos[coinType.toString()];
 
         if (coinInfo == null) {
             logger.throwError(`unsupported coin type: ${ coinType }`, Logger.errors.UNSUPPORTED_OPERATION, {
@@ -470,15 +467,21 @@ export class Resolver implements EnsResolver {
         return null;
     }
 
+    async getName(): Promise<string | null> {
+        try {   
+            const result = await this._fetchBytes("0x691f3431"); // name(bytes32) returns (string)
+            if (result) return toUtf8String(result);
+        } catch {}
+        return null;
+    }
 
-    async getAddress(coinType?: number): Promise<string> {
-        if (coinType == null) { coinType = 60; }
-
+    async getAddress(coinType: BigNumberish = 60): Promise<string | null> {
+        coinType = BigNumber.from(coinType);
+ 
         // If Ethereum, use the standard `addr(bytes32)`
-        if (coinType === 60) {
-            try {
-                // keccak256("addr(bytes32)")
-                const result = await this._fetch("0x3b3b57de");
+        if (coinType.eq(60)) {
+           try {
+                const result = await this._fetch("0x3b3b57de"); // addr(bytes32) returns (address)
 
                 // No address
                 if (result === "0x" || result === HashZero) { return null; }
@@ -1698,7 +1701,7 @@ export class BaseProvider extends Provider implements EnsProvider {
 
                 const tx = {
                     to: txSender,
-                    data: hexConcat([ callbackSelector, encodeBytes([ ccipResult, extraData ]) ])
+                    data: hexConcat([ callbackSelector, encodeBytesAndWords([ ccipResult, extraData ]) ])
                 };
 
                 return this._call(tx, blockTag, attempt + 1);
@@ -1950,8 +1953,35 @@ export class BaseProvider extends Provider implements EnsProvider {
         return this.formatter.blockTag(blockTag);
     }
 
-
-    async getResolver(name: string): Promise<null | Resolver> {
+    async getResolver(name: string): Promise<Resolver | null> {
+        const network = await this.getNetwork();
+        if (network.ensUniversalResolver) {
+            let result: string;
+            try {
+                result = await this.call({
+                    to: this.network.ensUniversalResolver,
+                    ccipReadEnabled: true,
+                    // requireResolver(bytes name) returns (struct ResolverInfo)
+                    // struct ResolverInfo {
+                    //   bytes name; // dns-encoded name (safe to decode)
+                    //   uint256 offset; // byte offset into name used for resolver
+                    //   bytes32 node; // namehash(name)
+                    //   address resolver;
+                    //   bool extended; // IExtendedResolver
+                    // }
+                    data: hexConcat([ '0xc285238a', encodeBytesAndWords([ dnsEncode(name) ])])
+                });
+            } catch (err: any) {
+                if (err.code === Logger.errors.CALL_EXCEPTION) return null; // call failed
+                throw err;
+            }
+            const offset = BigNumber.from(hexDataSlice(result, 0, 32)).toNumber();
+            const resolverAddress = hexDataSlice(result, offset + 108, offset + 128); // address
+            const isExtended = !BigNumber.from(hexDataSlice(result, offset + 128, offset + 160)).isZero(); // boolean
+            const resolver = new Resolver(this, resolverAddress, name);
+            resolver._supportsEip2544 = Promise.resolve(isExtended); // inject
+            return resolver;
+        }
         let currentName = name;
         while (true) {
             if (currentName === "" || currentName === ".") { return null; }
@@ -1979,7 +2009,7 @@ export class BaseProvider extends Provider implements EnsProvider {
 
     }
 
-    async _getResolver(name: string, operation?: string): Promise<string> {
+    async _getResolver(name: string, operation?: string): Promise<string | null> {
         if (operation == null) { operation = "ENS"; }
 
         const network = await this.getNetwork();
@@ -2007,7 +2037,7 @@ export class BaseProvider extends Provider implements EnsProvider {
         return null;
     }
 
-    async resolveName(name: string | Promise<string>): Promise<null | string> {
+    async resolveName(name: string | Promise<string>, coinType: BigNumberish = 60): Promise<null | string> {
         name = await name;
 
         // If it is already an address, nothing to resolve
@@ -2026,73 +2056,65 @@ export class BaseProvider extends Provider implements EnsProvider {
         const resolver = await this.getResolver(name);
         if (!resolver) { return null; }
 
-        return await resolver.getAddress();
+        return resolver.getAddress(coinType);
     }
 
-    async lookupAddress(address: string | Promise<string>): Promise<null | string> {
-        address = await address;
-        address = this.formatter.address(address);
-
-        const node = address.substring(2).toLowerCase() + ".addr.reverse";
-
-        const resolverAddr = await this._getResolver(node, "lookupAddress");
-        if (resolverAddr == null) { return null; }
-
-        // keccak("name(bytes32)")
-        const name = _parseString(await this.call({
-            to: resolverAddr,
-            data: ("0x691f3431" + namehash(node).substring(2))
-        }), 0);
-
-        const addr = await this.resolveName(name);
-        if (addr != address) { return null; }
-
+    async lookupAddress(address: string | Promise<string>, coinType: BigNumberish = 60): Promise<string | null> {
+        address = this.formatter.hex(await address, true);
+        coinType = BigNumber.from(coinType);
+        const network = await this.getNetwork();
+        if (network.ensUniversalResolver) {
+            let result: string;
+            try {
+                 result = await this.call({
+                    to: network.ensUniversalResolver,
+                    ccipReadEnabled: true,
+                    // reverse(bytes addressBytes, uint256 coinType) returns (string name, address forwardResolver, address reverseResolver)
+                    data: hexConcat(['0x5d78a217', encodeBytesAndWords([ address, coinType ])])
+                 });
+            } catch (err: any) {
+                 if (err.code === Logger.errors.CALL_EXCEPTION) return null; // call failed
+                 return null;
+            }
+            const name = _parseString(result, 0);
+            if (!name) return null; // no primary
+            try {
+                if (name === ensNormalize(name)) {
+                    return name; // normalized
+                }
+            } catch {
+                return null; // not normalized
+            }
+        }
+        const reverseName = `${address.slice(2)}.${getReverseLabel(coinType)}.reverse`;
+        const reverseResolver = await this.getResolver(reverseName);
+        if (!reverseResolver) return null; // no reverse resolver
+        let name = await reverseResolver.getName();
+        if (!name) return null; // no primary name
+        try {
+            name = ensNormalize(name);
+        } catch {
+            return null; // not normalized
+        }
+        const resolver = await this.getResolver(name);
+        if (!resolver) return null; // no forward resolver
+        const addr = await resolver.getAddress(coinType);
+        if (!addr || address !== addr.toLowerCase()) return null; // address mismatch
         return name;
     }
 
     async getAvatar(nameOrAddress: string): Promise<null | string> {
-        let resolver: Resolver = null;
         if (isHexString(nameOrAddress)) {
-            // Address; reverse lookup
-            const address = this.formatter.address(nameOrAddress);
-
-            const node = address.substring(2).toLowerCase() + ".addr.reverse";
-
-            const resolverAddress = await this._getResolver(node, "getAvatar");
-            if (!resolverAddress) { return null; }
-
-            // Try resolving the avatar against the addr.reverse resolver
-            resolver = new Resolver(this, resolverAddress, node);
-            try {
-                const avatar = await resolver.getAvatar();
-                if (avatar) { return avatar.url; }
-            } catch (error) {
-                if (error.code !== Logger.errors.CALL_EXCEPTION) { throw error; }
-            }
-
-            // Try getting the name and performing forward lookup; allowing wildcards
-            try {
-                // keccak("name(bytes32)")
-                const name = _parseString(await this.call({
-                    to: resolverAddress,
-                    data: ("0x691f3431" + namehash(node).substring(2))
-                }), 0);
-                resolver = await this.getResolver(name);
-            } catch (error) {
-                if (error.code !== Logger.errors.CALL_EXCEPTION) { throw error; }
-                return null;
-            }
-
-        } else {
-            // ENS name; forward lookup with wildcard
-            resolver = await this.getResolver(nameOrAddress);
-            if (!resolver) { return null; }
+            const name = await this.lookupAddress(nameOrAddress);
+            if (!name) return null;
+            nameOrAddress = name;
         }
-
+        const resolver = await this.getResolver(nameOrAddress);
+        if (!resolver) {
+            return null;
+        }
         const avatar = await resolver.getAvatar();
-        if (avatar == null) { return null; }
-
-        return avatar.url;
+        return avatar ? avatar.url : null;
     }
 
     perform(method: string, params: any): Promise<any> {
@@ -2213,5 +2235,16 @@ export class BaseProvider extends Provider implements EnsProvider {
         stopped.forEach((event) => { this._stopEvent(event); });
 
         return this;
+    }
+}
+
+// https://docs.ens.domains/ensip/19/#reverse-resolution
+function getReverseLabel(coinType: BigNumber): string {
+    if (coinType.eq(60)) {
+        return "addr";
+    } else if (coinType.eq(0x80000000)) {
+        return "default";
+    } else {
+        return coinType.toHexString().slice(2);
     }
 }

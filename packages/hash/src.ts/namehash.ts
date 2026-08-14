@@ -70,8 +70,8 @@ export function namehash(name: string): string {
 export function dnsEncode(name: string): string {
     return hexlify(concat(ensNameSplit(name).map((comp) => {
         // DNS does not allow components over 63 bytes in length
-        if (comp.length > 63) {
-            throw new Error("invalid DNS encoded entry; length exceeds 63 bytes");
+        if (comp.length > 255) {
+            throw new Error("invalid DNS encoded entry; length exceeds 255 bytes");
         }
 
         const bytes = new Uint8Array(comp.length + 1);
