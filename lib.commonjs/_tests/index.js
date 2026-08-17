@@ -13,6 +13,7 @@ require("./test-providers-ccip.js");
 //import "./test-providers-errors.js";
 //import "./test-providers-extra.js";
 require("./test-providers-fallback.js");
+require("./test-providers-format.js");
 require("./test-providers-jsonrpc.js");
 require("./test-providers-send.js");
 require("./test-providers-wildcard.js");

@@ -11,6 +11,7 @@ import "./test-providers-ccip.js";
 //import "./test-providers-errors.js";
 //import "./test-providers-extra.js";
 import "./test-providers-fallback.js";
+import "./test-providers-format.js";
 import "./test-providers-jsonrpc.js";
 import "./test-providers-send.js";
 import "./test-providers-wildcard.js";
