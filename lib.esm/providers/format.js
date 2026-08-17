@@ -67,6 +67,12 @@ export function formatBoolean(value) {
     assertArgument(false, `invalid boolean; ${JSON.stringify(value)}`, "value", value);
 }
 export function formatData(value) {
+    // Some nodes return "" instead of "0x" for empty calldata / extraData.
+    // Treat that as empty hex data so getTransaction/wait() does not throw
+    // BAD_DATA after a successful send (see #4853).
+    if (value === "") {
+        value = "0x";
+    }
     assertArgument(isHexString(value, true), "invalid data", "value", value);
     return value;
 }
