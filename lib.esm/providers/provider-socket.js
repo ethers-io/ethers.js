@@ -38,9 +38,12 @@ export class SocketSubscriber {
     }
     start() {
         this.#filterId = this.#provider.send("eth_subscribe", this.filter).then((filterId) => {
-            ;
             this.#provider._register(filterId, this);
             return filterId;
+        }, (error) => {
+            this.#filterId = null;
+            this.#provider.emit("error", error);
+            return undefined;
         });
     }
     stop() {
