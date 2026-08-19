@@ -65,6 +65,10 @@ export class SocketSubscriber implements Subscriber {
             this.#provider._register(filterId, this);
             return filterId;
         });
+        this.#filterId.catch((error) => {
+            this.#filterId = null;
+            this.#provider.emit("error", error);
+        });
     }
 
     stop(): void {
