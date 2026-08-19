@@ -170,7 +170,15 @@ export class FilterIdEventSubscriber extends FilterIdSubscriber {
     }
 
     async _subscribe(provider: JsonRpcApiProvider): Promise<string> {
-        const filterId = await provider.send("eth_newFilter", [ this.#event ]);
+        const filter: Record<string, any> = copy(this.#event);
+        // eth_newFilter defaults fromBlock to "latest" in the JSON-RPC spec.
+        // Some providers (e.g. Chainstack) reject a missing fromBlock as an
+        // unbounded historical range. Make the default explicit so live
+        // listeners do not hit those limits. See #5061.
+        if (filter.fromBlock == null) {
+            filter.fromBlock = "latest";
+        }
+        const filterId = await provider.send("eth_newFilter", [ filter ]);
         return filterId;
     }
 

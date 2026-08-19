@@ -205,3 +205,49 @@ describe("Ensure Catchable Errors", function() {
     });
 });
 
+describe("FilterIdEventSubscriber", function() {
+    it("includes fromBlock latest on eth_newFilter when listening for events", async function() {
+        this.timeout(15000);
+
+        let newFilterParams: any = null;
+        const provider = createProvider((method, params) => {
+            switch (method) {
+                case "eth_newFilter":
+                    newFilterParams = (params as any)[0];
+                    return "0x01";
+                case "eth_getFilterChanges":
+                    return [ ];
+                case "eth_uninstallFilter":
+                    return true;
+            }
+            return undefined;
+        });
+
+        const address = "0x8909dc15e40173ff4699343b6eb8132c65e18ec6";
+        const handler = () => { };
+        await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(() => {
+                reject(new Error("timed out waiting for eth_newFilter"));
+            }, 5000);
+            provider.on({ address }, handler);
+            const check = () => {
+                if (newFilterParams != null) {
+                    clearTimeout(timer);
+                    resolve();
+                    return;
+                }
+                setTimeout(check, 20);
+            };
+            check();
+        });
+
+        assert.equal(newFilterParams.fromBlock, "latest");
+        const filterAddress = Array.isArray(newFilterParams.address)
+            ? newFilterParams.address[0]
+            : newFilterParams.address;
+        assert.equal(String(filterAddress).toLowerCase(), address);
+
+        provider.off({ address }, handler);
+    });
+});
+
