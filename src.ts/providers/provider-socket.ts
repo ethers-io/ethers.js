@@ -61,17 +61,26 @@ export class SocketSubscriber implements Subscriber {
     }
 
     start(): void {
-        this.#filterId = this.#provider.send("eth_subscribe", this.filter).then((filterId) => {;
+        const promise = this.#provider.send("eth_subscribe", this.filter).then((filterId) => {
             this.#provider._register(filterId, this);
             return filterId;
+        }, (error) => {
+            if (this.#filterId === promise) { this.#filterId = null; }
+            this.#provider.emit("error", makeError("failed to subscribe", "UNKNOWN_ERROR", {
+                error, info: { filter: this.filter }
+            }));
+            return null as any;
         });
+        this.#filterId = promise;
     }
 
     stop(): void {
-        (<Promise<number>>(this.#filterId)).then((filterId) => {
-            if (this.#provider.destroyed) { return; }
-            this.#provider.send("eth_unsubscribe", [ filterId ]);
-        });
+        if (this.#filterId != null) {
+            this.#filterId.then((filterId) => {
+                if (filterId == null || this.#provider.destroyed) { return; }
+                this.#provider.send("eth_unsubscribe", [ filterId ]);
+            }).catch(() => { });
+        }
         this.#filterId = null;
     }
 
