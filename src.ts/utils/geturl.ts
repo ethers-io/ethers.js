@@ -79,6 +79,7 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
                 }, <{ [ name: string ]: string }>{ });
 
                 let body: null | Uint8Array = null;
+                const chunks: Array<Uint8Array> = [ ];
                 //resp.setEncoding("utf8");
 
                 resp.on("data", (chunk: Uint8Array) => {
@@ -90,18 +91,15 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
                         }
                     }
 
-                    if (body == null) {
-                        body = chunk;
-                    } else {
-                        const newBody = new Uint8Array(body.length + chunk.length);
-                        newBody.set(body, 0);
-                        newBody.set(chunk, body.length);
-                        body = newBody;
-                    }
+                    chunks.push(chunk);
                 });
 
                 resp.on("end", () => {
                     try {
+                        if (chunks.length) {
+                            body = getBytes(Buffer.concat(chunks));
+                        }
+
                         if (headers["content-encoding"] === "gzip" && body) {
                             body = getBytes(gunzipSync(body));
                         }
