@@ -1,0 +1,3 @@
+diff --git a/src.ts/providers/provider-multicall.ts b/src.ts/providers/provider-multicall.ts
++const MAX_BATCH_SIZE = 50;
++for (let i = 0; i < calls.length; i += MAX_BATCH_SIZE) { ... }
