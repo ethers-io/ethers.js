@@ -317,7 +317,7 @@ function handleAuthorizationList(value: any, param: string): Array<Authorization
                 nonce: handleUint(auth[2], "nonce"),
                 chainId: handleUint(auth[0], "chainId"),
                 signature: Signature.from({
-                    yParity: <0 | 1>handleNumber(auth[3], "yParity"),
+                    yParity: handleNumber(auth[3], "yParity"),
                     r: zeroPadValue(auth[4], 32),
                     s: zeroPadValue(auth[5], 32)
                 })
@@ -358,7 +358,7 @@ function formatAuthorizationList(value: Array<Authorization>): Array<Array<strin
             formatNumber(a.chainId, "chainId"),
             a.address,
             formatNumber(a.nonce, "nonce"),
-            formatNumber(a.signature.yParity, "yParity"),
+            formatNumber(a.signature._yParity, "yParity"),
             toBeArray(a.signature.r),
             toBeArray(a.signature._s)
         ];
