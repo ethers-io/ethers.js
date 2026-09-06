@@ -36,18 +36,18 @@ export type SignatureLike = Signature | string | {
     r: string;
     s: string;
     v: BigNumberish;
-    yParity?: 0 | 1;
+    yParity?: number;
     yParityAndS?: string;
 } | {
     r: string;
     yParityAndS: string;
-    yParity?: 0 | 1;
+    yParity?: number;
     s?: string;
     v?: number;
 } | {
     r: string;
     s: string;
-    yParity: 0 | 1;
+    yParity: number;
     v?: BigNumberish;
     yParityAndS?: string;
 };
@@ -67,6 +67,7 @@ export class Signature {
     #s: string;
     #v: 27 | 28;
     #networkV: null | bigint;
+    #yParity: number;
 
     /**
      *  The ``r`` value for a signature.
@@ -107,7 +108,7 @@ export class Signature {
      */
     isValid(): boolean {
         const s = BigInt(this.#s);
-        return (s <= BN_N_2);
+        return (s <= BN_N_2) && (this.#yParity === 0 || this.#yParity === 1);
     }
 
     /**
@@ -147,10 +148,23 @@ export class Signature {
      *  The ``yParity`` for the signature.
      *
      *  See ``v`` for more details on how this value is used.
+     *
+     *  This asserts the value is ``0`` or ``1``. For a possibly
+     *  non-canonical value (for example an Authorization List entry),
+     *  use [[Signature-_yParity]].
      */
     get yParity(): 0 | 1 {
-        return (this.v === 27) ? 0: 1;
+        assertArgument(this.#yParity === 0 || this.#yParity === 1, "non-canonical yParity; use ._yParity", "yParity", this.#yParity);
+        return <0 | 1>this.#yParity;
     }
+
+    /**
+     *  Return the yParity value without requiring it to be ``0`` or ``1``.
+     *
+     *  Prefer [[Signature-yParity]] unless you need the raw wire value,
+     *  such as when re-encoding Authorization List signatures for attestation.
+     */
+    get _yParity(): number { return this.#yParity; }
 
     /**
      *  The [[link-eip-2098]] compact representation of the ``yParity``
@@ -180,12 +194,13 @@ export class Signature {
     /**
      *  @private
      */
-    constructor(guard: any, r: string, s: string, v: 27 | 28) {
+    constructor(guard: any, r: string, s: string, v: 27 | 28, yParity?: number) {
         assertPrivate(guard, _guard, "Signature");
         this.#r = r;
         this.#s = s;
         this.#v = v;
         this.#networkV = null;
+        this.#yParity = (yParity != null) ? yParity : ((v === 27) ? 0 : 1);
     }
 
     /**
@@ -213,7 +228,7 @@ export class Signature {
      *  Returns a new identical [[Signature]].
      */
     clone(): Signature {
-        const clone = new Signature(_guard, this.r, this._s, this.v);
+        const clone = new Signature(_guard, this.r, this._s, this.v, this.#yParity);
         if (this.networkV) { clone.#networkV = this.networkV; }
         return clone;
     }
@@ -226,7 +241,7 @@ export class Signature {
         return {
             _type: "signature",
             networkV: ((networkV != null) ? networkV.toString(): null),
-            r: this.r, s: this._s, v: this.v,
+            r: this.r, s: this._s, v: this.v, yParity: this.#yParity,
         };
     }
 
@@ -373,6 +388,7 @@ export class Signature {
         })(sig.s, sig.yParityAndS);
 
         // Get v; by any means necessary (we check consistency below)
+        let yParityRaw: number | undefined = (sig.yParity != null) ? getNumber(sig.yParity, "sig.yParity"): undefined;
         const { networkV, v } = (function(_v?: BigNumberish, yParityAndS?: string, yParity?: Numeric): { networkV?: bigint, v: 27 | 28 } {
             if (_v != null) {
                 const v = getBigInt(_v);
@@ -388,21 +404,21 @@ export class Signature {
             }
 
             if (yParity != null) {
-                switch (getNumber(yParity, "sig.yParity")) {
-                    case 0: return { v: 27 };
-                    case 1: return { v: 28 };
-                }
-                assertError(false, "invalid yParity");
+                const yp = getNumber(yParity, "sig.yParity");
+                if (yp === 0 || yp === 27) { return { v: 27 }; }
+                if (yp === 1 || yp === 28) { return { v: 28 }; }
+                // Preserve non-canonical yParity for ._yParity (Authorization List / attestation).
+                return { v: ((yp & 1) ? 28: 27) };
             }
 
             assertError(false, "missing v");
         })(sig.v, sig.yParityAndS, sig.yParity);
 
-        const result = new Signature(_guard, r, s, v);
+        const result = new Signature(_guard, r, s, v, yParityRaw);
         if (networkV) { result.#networkV =  networkV; }
 
         // If multiple of v, yParity, yParityAndS we given, check they match
-        assertError(sig.yParity == null || getNumber(sig.yParity, "sig.yParity") === result.yParity, "yParity mismatch");
+        assertError(sig.yParity == null || getNumber(sig.yParity, "sig.yParity") === result._yParity, "yParity mismatch");
         assertError(sig.yParityAndS == null || sig.yParityAndS === result.yParityAndS, "yParityAndS mismatch");
 
         return result;
