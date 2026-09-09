@@ -800,6 +800,7 @@ export class AbstractProvider {
         if (tx.hash !== hash) {
             throw new Error("@TODO: the returned hash did not match");
         }
+        this.#performCache.clear();
         return this._wrapTransactionResponse(tx, network).replaceableTransaction(blockNumber);
     }
     async #getBlock(block, includeTransactions) {
