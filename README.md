@@ -107,7 +107,7 @@ responses, more capacity, analytics and other features like archival
 data.
 
 When you are ready to sign up and start using for your own keys, please
-check out the [Provider API Keys](https://docs.ethers.org/v5/api-keys/) in
+check out the [Provider API Keys](https://docs.ethers.org/v6/getting-started/#getting-started--api-keys) in
 the documentation.
 
 A special thanks to these services for providing community resources:
