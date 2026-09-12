@@ -79,6 +79,7 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
                 }, <{ [ name: string ]: string }>{ });
 
                 let body: null | Uint8Array = null;
+                const chunks: Array<Uint8Array> = [ ];
                 //resp.setEncoding("utf8");
 
                 resp.on("data", (chunk: Uint8Array) => {
@@ -90,18 +91,15 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
                         }
                     }
 
-                    if (body == null) {
-                        body = chunk;
-                    } else {
-                        const newBody = new Uint8Array(body.length + chunk.length);
-                        newBody.set(body, 0);
-                        newBody.set(chunk, body.length);
-                        body = newBody;
-                    }
+                    chunks.push(chunk);
                 });
 
                 resp.on("end", () => {
                     try {
+                        if (chunks.length) {
+                            body = getBytes(Buffer.concat(chunks));
+                        }
+
                         if (headers["content-encoding"] === "gzip" && body) {
                             body = getBytes(gunzipSync(body));
                         }
@@ -116,7 +114,11 @@ export function createGetUrl(options?: Record<string, any>): FetchGetUrlFunc {
                 });
 
                 resp.on("error", (error) => {
-                //@TODO: Should this just return nornal response with a server error?
+                //@TODO: Should this just return normal response with a server error?
+                    if (body == null && chunks.length) {
+                        body = getBytes(Buffer.concat(chunks));
+                    }
+
                     (<any>error).response = { statusCode, statusMessage, headers, body };
                     reject(error);
                 });
