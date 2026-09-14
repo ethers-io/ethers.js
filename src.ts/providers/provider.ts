@@ -52,6 +52,12 @@ function toJson(value: null | bigint): null | string {
     return value.toString();
 }
 
+// Any backend properties ethers does not process are kept verbatim;
+// a fresh, frozen copy is used so the original cannot be mutated
+function getDetails(details?: Record<string, any>): Record<string, any> {
+    return Object.freeze(Object.assign({ }, details));
+}
+
 // @TODO? <T extends FeeData = { }> implements Required<T>
 
 /**
@@ -592,6 +598,15 @@ export class Block implements BlockParams, Iterable<string> {
      */
     readonly baseFeePerGas!: null | bigint;
 
+    /**
+     *  Any properties the backend returned which ethers does not
+     *  otherwise process.
+     *
+     *  These values are kept verbatim, exactly as the backend provided
+     *  them (usually as hex strings), and are not normalized in any way.
+     */
+    readonly details!: Record<string, any>;
+
     readonly #transactions: Array<string | TransactionResponse>;
 
     /**
@@ -636,6 +651,8 @@ export class Block implements BlockParams, Iterable<string> {
             stateRoot: block.stateRoot,
             receiptsRoot: block.receiptsRoot,
             transactionsRoot: block.transactionsRoot,
+
+            details: getDetails(block.details),
         });
     }
 
@@ -694,6 +711,7 @@ export class Block implements BlockParams, Iterable<string> {
             hash, miner, prevRandao, nonce, number, parentHash, timestamp,
             parentBeaconBlockRoot, stateRoot, receiptsRoot, transactionsRoot,
             transactions,
+            details: this.details,
         };
     }
 
@@ -874,6 +892,15 @@ export class Log implements LogParams {
     readonly transactionIndex!: number;
 
     /**
+     *  Any properties the backend returned which ethers does not
+     *  otherwise process.
+     *
+     *  These values are kept verbatim, exactly as the backend provided
+     *  them (usually as hex strings), and are not normalized in any way.
+     */
+    readonly details!: Record<string, any>;
+
+    /**
      *  @_ignore:
      */
     constructor(log: LogParams, provider: Provider) {
@@ -894,6 +921,8 @@ export class Log implements LogParams {
 
             index: log.index,
             transactionIndex: log.transactionIndex,
+
+            details: getDetails(log.details),
         });
     }
 
@@ -909,7 +938,8 @@ export class Log implements LogParams {
         return {
             _type: "log",
             address, blockHash, blockNumber, data, index,
-            removed, topics, transactionHash, transactionIndex
+            removed, topics, transactionHash, transactionIndex,
+            details: this.details,
         };
     }
 
@@ -1083,6 +1113,20 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      */
     readonly root!: null | string;
 
+    /**
+     *  Any properties the backend returned which ethers does not
+     *  otherwise process.
+     *
+     *  This is where network-specific extensions end up, such as the
+     *  Optimism ``l1Fee``, ``l1GasUsed`` and ``l1GasPrice``.
+     *
+     *  These values are kept verbatim, exactly as the backend provided
+     *  them (usually as hex strings), and are not normalized in any way,
+     *  so they generally require coercing before use. For example:
+     *  ``getBigInt(receipt.details.l1Fee)``.
+     */
+    readonly details!: Record<string, any>;
+
     readonly #logs: ReadonlyArray<Log>;
 
     /**
@@ -1124,7 +1168,9 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             type: tx.type,
             //byzantium: tx.byzantium,
             status: tx.status,
-            root: tx.root
+            root: tx.root,
+
+            details: getDetails(tx.details),
         });
     }
 
@@ -1155,7 +1201,8 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
             blobGasUsed: toJson(this.blobGasUsed),
             blobGasPrice: toJson(this.blobGasPrice),
             gasUsed: toJson(this.gasUsed),
-            hash, index, logs, logsBloom, root, status, to
+            hash, index, logs, logsBloom, root, status, to,
+            details: this.details,
         };
     }
 
@@ -1411,6 +1458,15 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
      */
     readonly authorizationList!: null | Array<Authorization>;
 
+    /**
+     *  Any properties the backend returned which ethers does not
+     *  otherwise process.
+     *
+     *  These values are kept verbatim, exactly as the backend provided
+     *  them (usually as hex strings), and are not normalized in any way.
+     */
+    readonly details!: Record<string, any>;
+
     #startBlock: number;
 
     /**
@@ -1448,6 +1504,8 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
 
         this.authorizationList = (tx.authorizationList != null) ? tx.authorizationList: null;
 
+        this.details = getDetails(tx.details);
+
         this.#startBlock = -1;
     }
 
@@ -1474,6 +1532,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
             maxFeePerBlobGas: toJson(this.maxFeePerBlobGas),
             nonce, signature, to, index, type,
             value: toJson(this.value),
+            details: this.details,
         };
     }
 

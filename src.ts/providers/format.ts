@@ -38,7 +38,24 @@ export function arrayOf(format: FormatFunc, allowNull?: boolean): FormatFunc {
 // Requires an object which matches a fleet of other formatters
 // Any FormatFunc may return `undefined` to have the value omitted
 // from the result object. Calls preserve `this`.
-export function object(format: Record<string, FormatFunc>, altNames?: Record<string, Array<string>>): FormatFunc {
+//
+// Any property present on the value which no formatter consumes (and
+// which is not listed in %%ignoreKeys%%, for properties the caller
+// handles itself) is preserved, verbatim, in the `details` property.
+// This allows network-specific extensions (such as the Optimism `l1Fee`
+// on a receipt) to survive formatting without needing to be known here.
+export function object(format: Record<string, FormatFunc>, altNames?: Record<string, Array<string>>, ignoreKeys?: Array<string>): FormatFunc {
+
+    // Every key that is accounted for; anything else lands in details
+    const consumed = new Set<string>(ignoreKeys || [ ]);
+    consumed.add("details");
+    for (const key in format) {
+        consumed.add(key);
+        if (altNames && key in altNames) {
+            for (const altKey of altNames[key]) { consumed.add(altKey); }
+        }
+    }
+
     return ((value: any) => {
         const result: any = { };
         for (const key in format) {
@@ -60,6 +77,16 @@ export function object(format: Record<string, FormatFunc>, altNames?: Record<str
                 assert(false, `invalid value for value.${ key } (${ message })`, "BAD_DATA", { value })
             }
         }
+
+        // Keep any unrecognized properties; already-formatted values are
+        // merged rather than nested, so formatting remains idempotent
+        const details: Record<string, any> = Object.assign({ }, value.details);
+        for (const key in value) {
+            if (consumed.has(key)) { continue; }
+            details[key] = value[key];
+        }
+        result.details = details;
+
         return result;
     });
 }
@@ -137,7 +164,10 @@ const _formatBlock = object({
     baseFeePerGas: allowNull(getBigInt)
 }, {
     prevRandao: [ "mixHash" ]
-});
+}, [
+    // Handled by formatBlock
+    "transactions"
+]);
 
 export function formatBlock(value: any): BlockParams {
     const result = _formatBlock(value);
@@ -264,7 +294,10 @@ export function formatTransactionResponse(value: any): TransactionResponseParams
         data: [ "input" ],
         gasLimit: [ "gas" ],
         index: [ "transactionIndex" ]
-    })(value);
+    }, [
+        // Folded into the signature below
+        "signature", "v", "r", "s", "yParity"
+    ])(value);
 
     // If to and creates are empty, populate the creates from the value
     if (result.to == null && result.creates == null) {

@@ -120,6 +120,13 @@ export interface BlockParams {
      *  The list of transactions in the block.
      */
     transactions: ReadonlyArray<string | TransactionResponseParams>;
+
+    /**
+     *  Any properties the backend returned which ethers does not
+     *  otherwise process; these values are kept verbatim, exactly as
+     *  the backend provided them, and are not normalized in any way.
+     */
+    details?: Record<string, any>;
 };
 
 
@@ -178,6 +185,13 @@ export interface LogParams {
      *  The transaction index of this log.
      */
     transactionIndex: number;
+
+    /**
+     *  Any properties the backend returned which ethers does not
+     *  otherwise process; these values are kept verbatim, exactly as
+     *  the backend provided them, and are not normalized in any way.
+     */
+    details?: Record<string, any>;
 }
 
 
@@ -289,6 +303,13 @@ export interface TransactionReceiptParams {
      */
     root: null | string;
 
+    /**
+     *  Any properties the backend returned which ethers does not
+     *  otherwise process, such as the Optimism ``l1Fee``; these values
+     *  are kept verbatim, exactly as the backend provided them, and are
+     *  not normalized in any way.
+     */
+    details?: Record<string, any>;
 }
 
 /*
@@ -418,6 +439,13 @@ export interface TransactionResponseParams {
      *  The [[link-eip-7702]] authorizations (if any).
      */
     authorizationList: null | Array<Authorization>;
+
+    /**
+     *  Any properties the backend returned which ethers does not
+     *  otherwise process; these values are kept verbatim, exactly as
+     *  the backend provided them, and are not normalized in any way.
+     */
+    details?: Record<string, any>;
 };
 
 
