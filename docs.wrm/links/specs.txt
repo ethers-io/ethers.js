@@ -17,7 +17,7 @@ link-bip39-zh_tw [Tradional Chinese wordlist](https://github.com/bitcoin/bips/bl
 link-bip39-zh_cn [Simplified Chinese wordlist](https://github.com/bitcoin/bips/blob/master/bip-0039/chinese_simplified.txt)
 
 # EIPs; see https://eips.ethereum.org/all
-link-eip-2 [EIP-155](https://eips.ethereum.org/EIPS/eip-2)
+link-eip-2 [EIP-2](https://eips.ethereum.org/EIPS/eip-2)
 link-eip-155 [EIP-155](https://eips.ethereum.org/EIPS/eip-155)
 link-eip-191 [EIP-191](https://eips.ethereum.org/EIPS/eip-191)
 link-eip-609 [EIP-609](https://eips.ethereum.org/EIPS/eip-609)
@@ -27,7 +27,7 @@ link-eip-1014 [EIP-1014](https://eips.ethereum.org/EIPS/eip-1014)
 link-eip-1193 [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)
 link-eip-1559 [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
 link-eip-1577 [EIP-1577](https://eips.ethereum.org/EIPS/eip-1577)
-link-eip-2070 [EIP-2930](https://eips.ethereum.org/EIPS/eip-2070)
+link-eip-2070 [EIP-2070](https://eips.ethereum.org/EIPS/eip-2070)
 link-eip-2098 [EIP-2098](https://eips.ethereum.org/EIPS/eip-2098)
 link-eip-2304 [EIP-2304](https://eips.ethereum.org/EIPS/eip-2304)
 link-eip-2718 [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)
