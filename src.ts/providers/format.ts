@@ -117,6 +117,8 @@ const _formatBlock = object({
     number: getNumber,
 
     timestamp: getNumber,
+    slotNumber: allowNull(getBigInt, null),
+    blockAccessListHash: allowNull(formatHash, null),
     nonce: allowNull(formatData),
     difficulty: getBigInt,
 

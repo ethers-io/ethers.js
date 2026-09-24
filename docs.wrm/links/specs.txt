@@ -37,6 +37,8 @@ link-eip-4844 [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
 link-eip-6963 [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963)
 link-eip-7594 [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594)
 link-eip-7702 [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
+link-eip-7843 [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843)
+link-eip-7928 [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928)
 
 # Open Standards
 link-base58 [Base58](https://en.bitcoinwiki.org/wiki/Base58)

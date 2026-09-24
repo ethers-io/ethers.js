@@ -33,6 +33,18 @@ export interface BlockParams {
     timestamp: number;
 
     /**
+     *  The beacon slot number for this block. See [[link-eip-7843]].
+     *  This is null if unavailable.
+     */
+    slotNumber?: null | bigint;
+
+    /**
+     *  The keccak256 hash of the RLP-encoded block access list.
+     *  See [[link-eip-7928]]. This is null if unavailable.
+     */
+    blockAccessListHash?: null | string;
+
+    /**
      *  The hash of the previous block in the blockchain. The genesis block
      *  has the parentHash of the [[ZeroHash]].
      */
