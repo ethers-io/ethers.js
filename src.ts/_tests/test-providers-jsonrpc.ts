@@ -3,8 +3,11 @@ import assert from "assert";
 import {
     id, isError, makeError, toUtf8Bytes, toUtf8String,
     FetchRequest,
-    JsonRpcProvider, Transaction, Wallet
+    Block, JsonRpcProvider, Transaction, Wallet
 } from "../index.js";
+
+import { formatBlock } from "../providers/format.js";
+import type { BlockParams } from "../index.js";
 
 const StatusMessages: Record<number, string> = {
   200: "OK",
@@ -16,6 +19,15 @@ const StatusMessages: Record<number, string> = {
 type ProcessRequest = (method: string, params: Array<string>, blockNumber: number) => any;
 
 const wallet = new Wallet(id("test"));
+
+const blockHeader = {
+    hash: id("block"), parentHash: id("parent"), number: "0x1",
+    timestamp: "0x1234", nonce: "0x0000000000000000", difficulty: "0x0",
+    gasLimit: "0x1c9c380", gasUsed: "0x5208", miner: wallet.address,
+    extraData: "0x", transactions: [ ]
+};
+
+const emptyBlockAccessListHash = "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347";
 
 function createProvider(testFunc: ProcessRequest): JsonRpcProvider {
 
@@ -77,6 +89,112 @@ function createProvider(testFunc: ProcessRequest): JsonRpcProvider {
 
     return new JsonRpcProvider(req, undefined, { cacheTimeout: -1 });
 }
+
+describe("EIP-7843 and EIP-7928 block fields", function() {
+    const cases: Array<{
+        name: string;
+        fields: { slotNumber?: null | string, blockAccessListHash?: null | string };
+        slotNumber: null | bigint;
+        blockAccessListHash: null | string;
+    }> = [
+        { name: "omitted", fields: { }, slotNumber: null, blockAccessListHash: null },
+        {
+            name: "null", fields: { slotNumber: null, blockAccessListHash: null },
+            slotNumber: null, blockAccessListHash: null
+        },
+        {
+            name: "zero slot only", fields: { slotNumber: "0x0" },
+            slotNumber: BigInt(0), blockAccessListHash: null
+        },
+        {
+            name: "hash only", fields: { blockAccessListHash: id("BAL") },
+            slotNumber: null, blockAccessListHash: id("BAL")
+        },
+        {
+            name: "unsafe number", fields: { slotNumber: "0x20000000000001" },
+            slotNumber: BigInt("9007199254740993"), blockAccessListHash: null
+        },
+        {
+            name: "uint64 maximum and empty BAL",
+            fields: { slotNumber: "0xffffffffffffffff", blockAccessListHash: emptyBlockAccessListHash },
+            slotNumber: BigInt("18446744073709551615"), blockAccessListHash: emptyBlockAccessListHash
+        }
+    ];
+
+    function checkBlock(block: Block, test: typeof cases[number]): void {
+        assert.strictEqual(block.slotNumber, test.slotNumber);
+        assert.strictEqual(block.blockAccessListHash, test.blockAccessListHash);
+        for (const json of [ block.toJSON(), JSON.parse(JSON.stringify(block)) ]) {
+            assert.strictEqual(json.slotNumber, test.slotNumber == null ? null: test.slotNumber.toString());
+            assert.strictEqual(json.blockAccessListHash, test.blockAccessListHash);
+        }
+    }
+
+    for (const test of cases) {
+        it(`constructs and serializes a block: ${ test.name }`, function() {
+            const provider = createProvider(() => undefined);
+            try {
+                // Also test callers which construct BlockParams directly, without RPC formatting.
+                const params: BlockParams = formatBlock(blockHeader);
+                delete params.slotNumber;
+                delete params.blockAccessListHash;
+                if ("slotNumber" in test.fields) { params.slotNumber = test.slotNumber; }
+                if ("blockAccessListHash" in test.fields) { params.blockAccessListHash = test.blockAccessListHash; }
+                checkBlock(new Block(params, provider), test);
+            } finally {
+                provider.destroy();
+            }
+        });
+
+        for (const byHash of [ false, true ]) {
+            for (const prefetch of [ false, true ]) {
+                it(`gets a block: ${ test.name }, byHash=${ byHash }, prefetch=${ prefetch }`, async function() {
+                    const transaction = {
+                        hash: id("transaction"), blockHash: blockHeader.hash,
+                        blockNumber: "0x1", transactionIndex: "0x0", type: "0x0",
+                        from: wallet.address, to: wallet.address, nonce: "0x0",
+                        gas: "0x5208", gasPrice: "0x1", value: "0x0", input: "0x",
+                        v: "0x1b", r: "0x1", s: "0x2"
+                    };
+                    const method = byHash ? "eth_getBlockByHash": "eth_getBlockByNumber";
+                    const selector = byHash ? blockHeader.hash: "0x1";
+                    const provider = createProvider((requestMethod, params) => {
+                        if (requestMethod !== method) { return undefined; }
+                        assert.deepStrictEqual(params, [ selector, prefetch ]);
+                        return Object.assign({ }, blockHeader, test.fields, {
+                            transactions: [ prefetch ? transaction: transaction.hash ]
+                        });
+                    });
+                    try {
+                        const block = await provider.getBlock(byHash ? blockHeader.hash: 1, prefetch);
+                        assert.ok(block);
+                        checkBlock(block, test);
+                        assert.deepStrictEqual(block.transactions, [ transaction.hash ]);
+                        if (prefetch) {
+                            assert.strictEqual(block.prefetchedTransactions[0].hash, transaction.hash);
+                            assert.strictEqual(block.prefetchedTransactions[0].gasLimit, BigInt(21000));
+                        }
+                    } finally {
+                        provider.destroy();
+                    }
+                });
+            }
+        }
+    }
+
+    for (const [ field, values ] of Object.entries({
+        slotNumber: [ "invalid", "0xgg", "1.5", 1.5, Number.MAX_SAFE_INTEGER + 1 ],
+        blockAccessListHash: [ "0x", "0x1234", "0x" + "11".repeat(33), "0x" + "gg".repeat(32) ]
+    })) {
+        for (const value of values) {
+            it(`rejects invalid ${ field }: ${ value }`, function() {
+                assert.throws(() => formatBlock({ ...blockHeader, [field]: value }), (error: any) => {
+                    return isError(error, "BAD_DATA") && error.message.includes(`value.${ field }`);
+                });
+            });
+        }
+    }
+});
 
 describe("Ensure Catchable Errors", function() {
     it("Can catch bad broadcast replies", async function() {
@@ -204,4 +322,3 @@ describe("Ensure Catchable Errors", function() {
         assert.ok(!!missingV, "missing v error present");
     });
 });
-

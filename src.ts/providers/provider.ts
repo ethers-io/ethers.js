@@ -497,6 +497,18 @@ export class Block implements BlockParams, Iterable<string> {
     readonly timestamp!: number;
 
     /**
+     *  The beacon slot number for this block. See [[link-eip-7843]].
+     *  This is null if unavailable.
+     */
+    readonly slotNumber!: null | bigint;
+
+    /**
+     *  The keccak256 hash of the RLP-encoded block access list.
+     *  See [[link-eip-7928]]. This is null if unavailable.
+     */
+    readonly blockAccessListHash!: null | string;
+
+    /**
      *  The block hash of the parent block.
      */
     readonly parentHash!: string;
@@ -616,6 +628,8 @@ export class Block implements BlockParams, Iterable<string> {
 
             number: block.number,
             timestamp: block.timestamp,
+            slotNumber: getValue(block.slotNumber),
+            blockAccessListHash: getValue(block.blockAccessListHash),
 
             parentHash: block.parentHash,
             parentBeaconBlockRoot: block.parentBeaconBlockRoot,
@@ -684,6 +698,8 @@ export class Block implements BlockParams, Iterable<string> {
 
         return {
             _type: "Block",
+            slotNumber: toJson(this.slotNumber),
+            blockAccessListHash: this.blockAccessListHash,
             baseFeePerGas: toJson(baseFeePerGas),
             difficulty: toJson(difficulty),
             extraData,
