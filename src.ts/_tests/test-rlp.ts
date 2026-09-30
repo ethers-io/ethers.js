@@ -83,6 +83,39 @@ describe("Test bad RLP Data", function() {
                 error.length === 7)
         });
     });
+
+    it ("correctlyfails decoding non-canonical long-form list length", function() {
+        assert.throws(() => {
+            // f9 0000: long-form list header encoding length 0; must be 0xc0
+            decodeRlp("0xf90000");
+        }, (error: any) => {
+            return (error.code === "INVALID_ARGUMENT" &&
+                error.message.match(/^non-canonical rlp/) &&
+                error.argument === "data")
+        });
+    });
+
+    it ("correctlyfails decoding non-canonical long-form string length", function() {
+        assert.throws(() => {
+            // b8 01 42: long-form string header encoding length 1; must be 0x8142
+            decodeRlp("0xb80142");
+        }, (error: any) => {
+            return (error.code === "INVALID_ARGUMENT" &&
+                error.message.match(/^non-canonical rlp/) &&
+                error.argument === "data")
+        });
+    });
+
+    it ("correctlyfails decoding length with leading zero byte", function() {
+        assert.throws(() => {
+            // f9 0038 ...: length-of-length has a leading zero byte
+            decodeRlp("0xf90038" + "00".repeat(56));
+        }, (error: any) => {
+            return (error.code === "INVALID_ARGUMENT" &&
+                error.message.match(/^non-canonical rlp/) &&
+                error.argument === "data")
+        });
+    });
 });
 
 /*
