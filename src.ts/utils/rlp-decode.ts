@@ -60,7 +60,16 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
         const lengthLength = data[offset] - 0xf7;
         checkOffset(offset + 1 + lengthLength);
 
+        // The length-of-length must itself be minimally encoded
+        assertArgument(data[offset + 1] !== 0x00,
+            "non-canonical rlp: leading zero in length", "data", hexlify(data));
+
         const length = unarrayifyInteger(data, offset + 1, lengthLength);
+
+        // The long form must only be used when the short form cannot hold the length
+        assertArgument(length >= 56,
+            "non-canonical rlp: short length form must be used", "data", hexlify(data));
+
         checkOffset(offset + 1 + lengthLength + length);
 
         return _decodeChildren(data, offset, offset + 1 + lengthLength, lengthLength + length);
@@ -75,7 +84,16 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
         const lengthLength = data[offset] - 0xb7;
         checkOffset(offset + 1 + lengthLength);
 
+        // The length-of-length must itself be minimally encoded
+        assertArgument(data[offset + 1] !== 0x00,
+            "non-canonical rlp: leading zero in length", "data", hexlify(data));
+
         const length = unarrayifyInteger(data, offset + 1, lengthLength);
+
+        // The long form must only be used when the short form cannot hold the length
+        assertArgument(length >= 56,
+            "non-canonical rlp: short length form must be used", "data", hexlify(data));
+
         checkOffset(offset + 1 + lengthLength + length);
 
         const result = hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
