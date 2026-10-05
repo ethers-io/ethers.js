@@ -78,12 +78,20 @@ function _decode(data: Uint8Array, offset: number): { consumed: number, result: 
         const length = unarrayifyInteger(data, offset + 1, lengthLength);
         checkOffset(offset + 1 + lengthLength + length);
 
+        // A single byte below 0x80 is encoded as itself; wrapping it
+        // in a string header is a second, non-canonical encoding
+        assertArgument(length !== 1 || data[offset + 1 + lengthLength] >= 0x80,
+            "non-canonical rlp: single byte below 0x80 must be encoded as itself", "data", hexlify(data));
+
         const result = hexlify(data.slice(offset + 1 + lengthLength, offset + 1 + lengthLength + length));
         return { consumed: (1 + lengthLength + length), result: result }
 
     } else if (data[offset] >= 0x80) {
         const length = data[offset] - 0x80;
         checkOffset(offset + 1 + length);
+
+        assertArgument(length !== 1 || data[offset + 1] >= 0x80,
+            "non-canonical rlp: single byte below 0x80 must be encoded as itself", "data", hexlify(data));
 
         const result = hexlify(data.slice(offset + 1, offset + 1 + length));
         return { consumed: (1 + length), result: result }

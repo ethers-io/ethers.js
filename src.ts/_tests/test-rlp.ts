@@ -83,6 +83,37 @@ describe("Test bad RLP Data", function() {
                 error.length === 7)
         });
     });
+
+    it ("correctlyfails decoding a single byte wrapped in a string header", function() {
+        assert.throws(() => {
+            // 81 18: the byte 0x18 is encoded as itself; the string
+            // header makes this a second encoding of the same value
+            decodeRlp("0x8118");
+        }, (error: any) => {
+            return (error.code === "INVALID_ARGUMENT" &&
+                error.message.match(/^non-canonical rlp/) &&
+                error.argument === "data")
+        });
+    });
+
+    it ("correctlyfails decoding a wrapped single byte nested in a list", function() {
+        assert.throws(() => {
+            // c2 8118: the wrapped byte appears as a list element
+            decodeRlp("0xc28118");
+        }, (error: any) => {
+            return (error.code === "INVALID_ARGUMENT" &&
+                error.message.match(/^non-canonical rlp/) &&
+                error.argument === "data")
+        });
+    });
+
+    it ("correctly decodes a wrapped byte at or above 0x80", function() {
+        // Bytes >= 0x80 cannot be encoded as themselves, so the
+        // string header is the canonical encoding for them
+        assert.equal(decodeRlp("0x8180"), "0x80");
+        assert.equal(decodeRlp("0x81ff"), "0xff");
+        assert.equal(decodeRlp("0x18"), "0x18");
+    });
 });
 
 /*
