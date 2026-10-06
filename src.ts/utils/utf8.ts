@@ -15,7 +15,7 @@ import type { BytesLike } from "./index.js";
 ///////////////////////////////
 
 /**
- *  The stanard normalization forms.
+ *  The standard normalization forms.
  */
 export type UnicodeNormalizationForm = "NFC" | "NFD" | "NFKC" | "NFKD";
 

@@ -596,7 +596,7 @@ async function getSub(contract: BaseContract, operation: string, event: Contract
 
 // We use this to ensure one emit resolves before firing the next to
 // ensure correct ordering (note this cannot throw and just adds the
-// notice to the event queu using setTimeout).
+// notice to the event queue using setTimeout).
 let lastEmit: Promise<any> = Promise.resolve();
 
 type PayloadFunc = (listener: null | Listener) => ContractUnknownEventPayload;

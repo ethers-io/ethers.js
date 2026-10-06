@@ -6,7 +6,7 @@ import type { BytesLike } from "../utils/index.js";
 
 /**
  *  A callback during long-running operations to update any
- *  UI or provide programatic access to the progress.
+ *  UI or provide programmatic access to the progress.
  *
  *  The %%percent%% is a value between ``0`` and ``1``.
  *
@@ -46,7 +46,7 @@ let __scryptSync: (passwd: Uint8Array, salt: Uint8Array, N: number, r: number, p
  *
  *  For this reason, if building a UI which involved decrypting or
  *  encrypting datsa using scrypt, it is recommended to use a
- *  [[ProgressCallback]] (as event short periods can seem lik an eternity
+ *  [[ProgressCallback]] (as event short periods can seem like an eternity
  *  if the UI freezes). Including the phrase //"decrypting"// in the UI
  *  can also help, assuring the user their waiting is for a good reason.
  *

@@ -669,7 +669,7 @@ export class ParamType {
     /**
      *  Returns true if %%this%% is an Array type.
      *
-     *  This provides a type gaurd ensuring that [[arrayChildren]]
+     *  This provides a type guard ensuring that [[arrayChildren]]
      *  and [[arrayLength]] are non-null.
      */
     isArray(): this is (ParamType & { arrayChildren: ParamType, arrayLength: number }) {
@@ -679,7 +679,7 @@ export class ParamType {
     /**
      *  Returns true if %%this%% is a Tuple type.
      *
-     *  This provides a type gaurd ensuring that [[components]]
+     *  This provides a type guard ensuring that [[components]]
      *  is non-null.
      */
     isTuple(): this is (ParamType & { components: ReadonlyArray<ParamType> }) {
@@ -689,7 +689,7 @@ export class ParamType {
     /**
      *  Returns true if %%this%% is an Indexable type.
      *
-     *  This provides a type gaurd ensuring that [[indexed]]
+     *  This provides a type guard ensuring that [[indexed]]
      *  is non-null.
      */
     isIndexable(): this is (ParamType & { indexed: boolean }) {
@@ -936,8 +936,8 @@ export abstract class Fragment {
     abstract format(format?: FormatType): string;
 
     /**
-     *  Creates a new **Fragment** for %%obj%%, wich can be any supported
-     *  ABI frgament type.
+     *  Creates a new **Fragment** for %%obj%%, which can be any supported
+     *  ABI fragment type.
      */
     static from(obj: any): Fragment {
         if (typeof(obj) === "string") {
@@ -984,7 +984,7 @@ export abstract class Fragment {
             });
         }
 
-        assertArgument(false, "unsupported frgament object", "obj", obj);
+        assertArgument(false, "unsupported fragment object", "obj", obj);
     }
 
     /**
@@ -1264,7 +1264,7 @@ export class ConstructorFragment extends Fragment {
             try {
                 return ConstructorFragment.from(lex(obj));
             } catch (error) {
-                assertArgument(false, "invalid constuctor fragment", "obj", obj);
+                assertArgument(false, "invalid constructor fragment", "obj", obj);
             }
 
         } else if (obj instanceof TokenString) {

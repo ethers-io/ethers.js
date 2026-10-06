@@ -1,7 +1,7 @@
 /**
  *  The Interface class is a low-level class that accepts an
  *  ABI and provides all the necessary functionality to encode
- *  and decode paramaters to and results from methods, events
+ *  and decode parameters to and results from methods, events
  *  and errors.
  *
  *  It also provides several convenience methods to automatically
@@ -277,7 +277,7 @@ function checkNames(fragment: Fragment, type: "input" | "output", params: Array<
  *  signature and is introduced in [this blog entry](link-ricmoo-humanreadableabi).
  *  For example, ``function balanceOf(address) view returns (uint)``.
  *
- *  A **Parsed JSON Fragment** is a JavaScript Object desribed in the
+ *  A **Parsed JSON Fragment** is a JavaScript Object described in the
  *  [Solidity documentation](link-solc-jsonabi).
  */
 export type InterfaceAbi = string | ReadonlyArray<Fragment | JsonFragment | string>;
@@ -419,7 +419,7 @@ export class Interface {
     /**
      *  Returns the entire Human-Readable ABI, as an array of
      *  signatures, optionally as %%minimal%% strings, which
-     *  removes parameter names and unneceesary spaces.
+     *  removes parameter names and unnecessary spaces.
      */
     format(minimal?: boolean): Array<string> {
         const format = (minimal ? "minimal": "full");
@@ -827,7 +827,7 @@ export class Interface {
 
     /**
      *  Encodes the transaction revert data for a call result that
-     *  reverted from the the Contract with the sepcified %%error%%
+     *  reverted from the Contract with the specified %%error%%
      *  (see [[getError]] for valid values for %%fragment%%) with the %%values%%.
      *
      *  This is generally not used by most developers, unless trying to mock
@@ -939,7 +939,7 @@ export class Interface {
                     error.reason = error.revert.signature;
                     error.message = `execution reverted: ${ error.reason }`
                  } catch (e) {
-                    error.message = `execution reverted (coult not decode custom error)`
+                    error.message = `execution reverted (could not decode custom error)`
                 }
             }
         }

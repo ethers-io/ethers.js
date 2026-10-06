@@ -30,7 +30,7 @@ const BN_0 = BigInt(0);
  *  or a decimal of hex string.
  *
  *  **blockhash** - specifies a specific block by its blockhash; this allows
- *  potentially orphaned blocks to be specifed, without ambiguity, but many
+ *  potentially orphaned blocks to be specified, without ambiguity, but many
  *  backends do not support this for some operations.
  */
 export type BlockTag = BigNumberish | string;
@@ -79,7 +79,7 @@ export class FeeData {
     readonly maxFeePerGas!: null | bigint;
 
     /**
-     *  The additional amout to pay per gas to encourage a validator
+     *  The additional amount to pay per gas to encourage a validator
      *  to include the transaction.
      *
      *  The purpose of this is to compensate the validator for the
@@ -567,7 +567,7 @@ export class Block implements BlockParams, Iterable<string> {
     readonly excessBlobGas!: null | bigint;
 
     /**
-     *  The miner coinbase address, wihch receives any subsidies for
+     *  The miner coinbase address, which receives any subsidies for
      *  including this block.
      */
     readonly miner!: string;
@@ -932,7 +932,7 @@ export class Log implements LogParams {
     }
 
     /**
-     *  Returns the transaction receipt fot the transaction that this
+     *  Returns the transaction receipt for the transaction that this
      *  log occurred in.
      */
     async getTransactionReceipt(): Promise<TransactionReceipt> {
@@ -1050,7 +1050,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      *  The actual gas price used during execution.
      *
      *  Due to the complexity of [[link-eip-1559]] this value can only
-     *  be caluclated after the transaction has been mined, snce the base
+     *  be calculated after the transaction has been mined, snce the base
      *  fee is protocol-enforced.
      */
     readonly gasPrice!: bigint;
@@ -1229,7 +1229,7 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
      *  @_ignore:
      */
     reorderedEvent(other?: TransactionResponse): OrphanFilter {
-        assert(!other || other.isMined(), "unmined 'other' transction cannot be orphaned",
+        assert(!other || other.isMined(), "unmined 'other' transaction cannot be orphaned",
             "UNSUPPORTED_OPERATION", { operation: "reorderedEvent(other)" });
         return createReorderedTransactionFilter(this, other);
     }
@@ -1754,7 +1754,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
     }
 
     /**
-     *  Returns true if hte transaction is a Cancun (i.e. ``type == 3``)
+     *  Returns true if the transaction is a Cancun (i.e. ``type == 3``)
      *  transaction. See [[link-eip-4844]].
      */
     isCancun(): this is (TransactionResponse & { accessList: AccessList, maxFeePerGas: bigint, maxPriorityFeePerGas: bigint, maxFeePerBlobGas: bigint, blobVersionedHashes: Array<string> }){
@@ -1766,7 +1766,7 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
      *  that evict this transaction.
      */
     removedEvent(): OrphanFilter {
-        assert(this.isMined(), "unmined transaction canot be orphaned",
+        assert(this.isMined(), "unmined transaction cannot be orphaned",
             "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
         return createRemovedTransactionFilter(this);
     }
@@ -1776,10 +1776,10 @@ export class TransactionResponse implements TransactionLike<string>, Transaction
      *  that re-order this event against %%other%%.
      */
     reorderedEvent(other?: TransactionResponse): OrphanFilter {
-        assert(this.isMined(), "unmined transaction canot be orphaned",
+        assert(this.isMined(), "unmined transaction cannot be orphaned",
             "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
 
-        assert(!other || other.isMined(), "unmined 'other' transaction canot be orphaned",
+        assert(!other || other.isMined(), "unmined 'other' transaction cannot be orphaned",
             "UNSUPPORTED_OPERATION", { operation: "removeEvent()" });
 
         return createReorderedTransactionFilter(this, other);
@@ -1866,7 +1866,7 @@ function createRemovedLogFilter(log: { blockHash: string, transactionHash: strin
 // EventFilter
 
 /**
- *  A **TopicFilter** provides a struture to define bloom-filter
+ *  A **TopicFilter** provides a structure to define bloom-filter
  *  queries.
  *
  *  Each field that is ``null`` matches **any** value, a field that is
@@ -1889,7 +1889,7 @@ export interface EventFilter {
 }
 
 /**
- *  A **Filter** allows searching a specific range of blocks for mathcing
+ *  A **Filter** allows searching a specific range of blocks for matching
  *  logs.
  */
 export interface Filter extends EventFilter {
@@ -1906,7 +1906,7 @@ export interface Filter extends EventFilter {
 }
 
 /**
- *  A **FilterByBlockHash** allows searching a specific block for mathcing
+ *  A **FilterByBlockHash** allows searching a specific block for matching
  *  logs.
  */
 export interface FilterByBlockHash extends EventFilter {
@@ -1973,7 +1973,7 @@ export type ProviderEvent = string | Array<string | Array<string>> | EventFilter
 export interface Provider extends ContractRunner, EventEmitterable<ProviderEvent>, NameResolver {
 
     /**
-     *  The provider iteself.
+     *  The provider itself.
      *
      *  This is part of the necessary API for executing a contract, as
      *  it provides a common property on any [[ContractRunner]] that

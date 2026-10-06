@@ -116,7 +116,7 @@ export class PollingBlockSubscriber implements Subscriber {
 
 /**
  *  An **OnBlockSubscriber** can be sub-classed, with a [[_poll]]
- *  implmentation which will be called on every new block.
+ *  implementation which will be called on every new block.
  *
  *  @_docloc: api/providers/abstract-provider
  */

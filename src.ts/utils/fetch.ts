@@ -146,7 +146,7 @@ export class FetchCancelSignal {
     }
 
     addListener(listener: () => void): void {
-        assert(!this.#cancelled, "singal already cancelled", "UNSUPPORTED_OPERATION", {
+        assert(!this.#cancelled, "signal already cancelled", "UNSUPPORTED_OPERATION", {
             operation: "fetchCancelSignal.addCancelListener"
         });
         this.#listeners.push(listener);
@@ -740,7 +740,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
      *  data URIs, so it is not necessary to register it.
      *
      *  This is not generally something that is needed, but may
-     *  be useful in a wrapper to perfom custom data URI functionality.
+     *  be useful in a wrapper to perform custom data URI functionality.
      */
     static createDataGateway(): FetchGatewayFunc {
         return dataGatewayFunc;

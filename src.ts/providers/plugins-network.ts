@@ -143,7 +143,7 @@ export class GasCostPlugin extends NetworkPlugin implements GasCostParameters {
         function set(name: keyof GasCostParameters, nullish: number): void {
             let value = (costs || { })[name];
             if (value == null) { value = nullish; }
-            assertArgument(typeof(value) === "number", `invalud value for ${ name }`, "costs", costs);
+            assertArgument(typeof(value) === "number", `invalid value for ${ name }`, "costs", costs);
             props[name] = value;
         }
 

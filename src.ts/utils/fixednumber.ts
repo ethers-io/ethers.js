@@ -210,7 +210,7 @@ function toString(val: bigint, decimals: number) {
  *  variant will silently allow overflow, corrupting its value value.
  *
  *  If operations are performed that cause a value to become too small
- *  (close to zero), the value loses precison and is said to //underflow//.
+ *  (close to zero), the value loses precision and is said to //underflow//.
  *
  *  For example, a value with 1 decimal place may store a number as small
  *  as ``0.1``, but the value of ``0.1 / 2`` is ``0.05``, which cannot fit
@@ -219,7 +219,7 @@ function toString(val: bigint, decimals: number) {
  *
  *  Some operations have a normal and //signalling// variant. The normal
  *  variant will silently ignore underflow, while the //signalling// variant
- *  will thow a [[NumericFaultError]] on underflow.
+ *  will throw a [[NumericFaultError]] on underflow.
  */
 export class FixedNumber {
 
@@ -541,7 +541,7 @@ export class FixedNumber {
     /**
      *  Returns a float approximation.
      *
-     *  Due to IEEE 754 precission (or lack thereof), this function
+     *  Due to IEEE 754 precision (or lack thereof), this function
      *  can only return an approximation and most values will contain
      *  rounding errors.
      */

@@ -59,7 +59,7 @@ export class EventLog extends Log {
 export class UndecodedEventLog extends Log {
 
     /**
-     *  The error encounted when trying to decode the log.
+     *  The error encountered when trying to decode the log.
      */
     readonly error!: Error;
 
@@ -158,21 +158,21 @@ export  class ContractUnknownEventPayload extends EventPayload<ContractEventName
     }
 
     /**
-     *  Resolves to the block the event occured in.
+     *  Resolves to the block the event occurred in.
      */
     async getBlock(): Promise<Block> {
         return await this.log.getBlock();
     }
 
     /**
-     *  Resolves to the transaction the event occured in.
+     *  Resolves to the transaction the event occurred in.
      */
     async getTransaction(): Promise<TransactionResponse> {
         return await this.log.getTransaction();
     }
 
     /**
-     *  Resolves to the transaction receipt the event occured in.
+     *  Resolves to the transaction receipt the event occurred in.
      */
     async getTransactionReceipt(): Promise<TransactionReceipt> {
         return await this.log.getTransactionReceipt();

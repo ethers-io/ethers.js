@@ -53,7 +53,7 @@ async function populate(signer: AbstractSigner, tx: TransactionRequest): Promise
 
 
 /**
- *  An **AbstractSigner** includes most of teh functionality required
+ *  An **AbstractSigner** includes most of the functionality required
  *  to get a [[Signer]] working as expected, but requires a few
  *  Signer-specific methods be overridden.
  *
@@ -190,7 +190,7 @@ export abstract class AbstractSigner<P extends null | Provider = null | Provider
                     }
 
                     // Explicitly set untyped transaction to legacy
-                    // @TODO: Maybe this shold allow type 1?
+                    // @TODO: Maybe this should allow type 1?
                     pop.type = 0;
 
                } else {

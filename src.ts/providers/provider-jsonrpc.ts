@@ -158,7 +158,7 @@ export type DebugEventJsonRpcApiProvider = {
 
 /**
  *  Options for configuring a [[JsonRpcApiProvider]]. Much of this
- *  is targetted towards sub-classes, which often will not expose
+ *  is targeted towards sub-classes, which often will not expose
  *  any of these options to their consumers.
  *
  *  **``polling``** - use the polling strategy is used immediately
@@ -308,7 +308,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
         return this.address;
     }
 
-    // JSON-RPC will automatially fill in nonce, etc. so we just check from
+    // JSON-RPC will automatically fill in nonce, etc. so we just check from
     async populateTransaction(tx: TransactionRequest): Promise<TransactionLike<string>> {
         return await this.populateCall(tx);
     }
@@ -412,7 +412,7 @@ export class JsonRpcSigner extends AbstractSigner<JsonRpcApiProvider> {
 
                     // Notify anyone that cares; but we will try again, since
                     // it is likely an intermittent service error
-                    this.provider.emit("error", makeError("failed to fetch transation after sending (will try again)", "UNKNOWN_ERROR", { error }));
+                    this.provider.emit("error", makeError("failed to fetch transaction after sending (will try again)", "UNKNOWN_ERROR", { error }));
                 }
 
                 // Wait another 4 seconds
@@ -617,7 +617,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             }
 
         } else if (staticNetwork) {
-            // Make sure any static network is compatbile with the provided netwrok
+            // Make sure any static network is compatible with the provided network
             assertArgument(network == null || staticNetwork.matches(network),
                 "staticNetwork MUST match network object", "options", options);
             this.#network = staticNetwork;
@@ -802,7 +802,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
      */
     _getSubscriber(sub: Subscription): Subscriber {
 
-        // Pending Filters aren't availble via polling
+        // Pending Filters aren't available via polling
         if (sub.type === "pending") { return new FilterIdPendingSubscriber(this); }
 
         if (sub.type === "event") {

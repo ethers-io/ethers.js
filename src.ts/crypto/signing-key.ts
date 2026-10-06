@@ -80,7 +80,7 @@ export class SigningKey {
      *  a compressed/uncompressed pubic key or aprivate key.
      *
      *  Best practice is usually to use a cryptographic hash on the
-     *  returned value before using it as a symetric secret.
+     *  returned value before using it as a symmetric secret.
      *
      *  @example:
      *    sign1 = new SigningKey(id("some-secret-1"))
