@@ -17,7 +17,7 @@ null;
 
 /**
  *  An interface for objects which have an address, and can
- *  resolve it asyncronously.
+ *  resolve it asynchronously.
  *
  *  This allows objects such as [[Signer]] or [[Contract]] to
  *  be used most places an address can be, for example getting

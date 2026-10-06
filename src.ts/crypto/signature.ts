@@ -114,7 +114,7 @@ export class Signature {
      *  The ``v`` value for a signature.
      *
      *  Since a given ``x`` value for ``r`` has two possible values for
-     *  its correspondin ``y``, the ``v`` indicates which of the two ``y``
+     *  its corresponding ``y``, the ``v`` indicates which of the two ``y``
      *  values to use.
      *
      *  It is normalized to the values ``27`` or ``28`` for legacy

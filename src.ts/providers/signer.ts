@@ -136,7 +136,7 @@ export interface Signer extends Addressable, ContractRunner, NameResolver {
      *  Signs an [[link-eip-191]] prefixed personal message.
      *
      *  If the %%message%% is a string, it is signed as UTF-8 encoded bytes. It is **not**
-     *  interpretted as a [[BytesLike]]; so the string ``"0x1234"`` is signed as six
+     *  interpreted as a [[BytesLike]]; so the string ``"0x1234"`` is signed as six
      *  characters, **not** two bytes.
      *
      *  To sign that example as two bytes, the Uint8Array should be used

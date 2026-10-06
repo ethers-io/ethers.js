@@ -95,7 +95,7 @@ export interface FallbackProviderState extends Required<FallbackProviderConfig> 
     errorResponses: number;
 
     /**
-     *  The number of responses that occured after the result resolved.
+     *  The number of responses that occurred after the result resolved.
      */
     lateResponses: number;
 
@@ -359,7 +359,7 @@ function getFuzzyMode(quorum: number, results: Array<TallyResult>): undefined | 
 /**
  *  A **FallbackProvider** manages several [[Providers]] providing
  *  resilience by switching between slow or misbehaving nodes, security
- *  by requiring multiple backends to aggree and performance by allowing
+ *  by requiring multiple backends to agree and performance by allowing
  *  faster backends to respond earlier.
  *
  */
@@ -367,7 +367,7 @@ export class FallbackProvider extends AbstractProvider {
 
     /**
      *  The number of backends that must agree on a value before it is
-     *  accpeted.
+     *  accepted.
      */
     readonly quorum: number;
 
@@ -742,7 +742,7 @@ export class FallbackProvider extends AbstractProvider {
                 // Check for a legit broadcast error (one which we cannot
                 // recover from; some nodes may return the following red
                 // herring events:
-                // - alredy seend (UNKNOWN_ERROR)
+                // - already seend (UNKNOWN_ERROR)
                 // - NONCE_EXPIRED
                 // - REPLACEMENT_UNDERPRICED
                 const result = checkQuorum(this.quorum, <Array<any>>results.filter((r) => (r != null)));

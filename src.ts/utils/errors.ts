@@ -73,7 +73,7 @@ function stringify(value: any, seen?: Set<any>): any {
  *  All errors emitted by ethers have an **ErrorCode** to help
  *  identify and coalesce errors to simplify programmatic analysis.
  *
- *  Each **ErrorCode** is the %%code%% proerty of a coresponding
+ *  Each **ErrorCode** is the %%code%% property of a corresponding
  *  [[EthersError]].
  *
  *  **Generic Errors**

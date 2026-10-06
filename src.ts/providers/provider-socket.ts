@@ -114,7 +114,7 @@ export class SocketSubscriber implements Subscriber {
      *  provider.
      */
     async _emit(provider: SocketProvider, message: any): Promise<void> {
-        throw new Error("sub-classes must implemente this; _emit");
+        throw new Error("sub-classes must implement this; _emit");
     }
 }
 
@@ -136,7 +136,7 @@ export class SocketBlockSubscriber extends SocketSubscriber {
 }
 
 /**
- *  A **SocketPendingSubscriber** listens for pending transacitons and emits
+ *  A **SocketPendingSubscriber** listens for pending transactions and emits
  *  ``"pending"`` events.
  */
 export class SocketPendingSubscriber extends SocketSubscriber {
@@ -251,7 +251,7 @@ export class SocketProvider extends JsonRpcApiProvider {
 
     /**
      *  Register a new subscriber. This is used internalled by Subscribers
-     *  and generally is unecessary unless extending capabilities.
+     *  and generally is unnecessary unless extending capabilities.
      */
     _register(filterId: number | string, subscriber: SocketSubscriber): void {
         this.#subs.set(filterId, subscriber);

@@ -221,14 +221,14 @@ export class HDNodeWallet extends BaseWallet {
      *  %%password%%.
      *
      *  If %%progressCallback%% is specified, it will receive periodic
-     *  updates as the encryption process progreses.
+     *  updates as the encryption process progresses.
      */
     async encrypt(password: Uint8Array | string, progressCallback?: ProgressCallback): Promise<string> {
         return await encryptKeystoreJson(this.#account(), password, { progressCallback });
     }
 
     /**
-     *  Returns a [JSON Keystore Wallet](json-wallets) encryped with
+     *  Returns a [JSON Keystore Wallet](json-wallets) encrypted with
      *  %%password%%.
      *
      *  It is preferred to use the [async version](encrypt) instead,
@@ -439,7 +439,7 @@ export class HDNodeVoidWallet extends VoidSigner {
      *
      *  Since extended keys do not provider full path details, this
      *  may be ``null``, if instantiated from a source that does not
-     *  enocde it.
+     *  encode it.
      */
     readonly path!: null | string;
 

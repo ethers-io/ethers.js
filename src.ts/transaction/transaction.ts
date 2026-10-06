@@ -1098,12 +1098,12 @@ export class Transaction implements TransactionLike<string> {
      *
      *  When setting ``blobs``, either fully valid [[Blob]] objects
      *  may be specified (i.e. correctly padded, with correct
-     *  committments and proofs) or a raw [[BytesLike]] may
+     *  commitments and proofs) or a raw [[BytesLike]] may
      *  be provided.
      *
      *  If raw [[BytesLike]] are provided, the [[kzg]] property **must**
      *  be already set. The blob will be correctly padded and the
-     *  [[KzgLibrary]] will be used to compute the committment and
+     *  [[KzgLibrary]] will be used to compute the commitment and
      *  proof for the blob.
      *
      *  A BLOb is a sequence of field elements, each of which must
@@ -1412,7 +1412,7 @@ export class Transaction implements TransactionLike<string> {
     }
 
     /**
-     *  Create a copy of this transaciton.
+     *  Create a copy of this transaction.
      */
     clone(): Transaction {
         return Transaction.from(this);

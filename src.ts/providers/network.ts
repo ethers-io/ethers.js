@@ -21,7 +21,7 @@ import type { NetworkPlugin } from "./plugins-network.js";
 const inspect = Symbol.for("nodejs.util.inspect.custom");
 
 /**
- *  A Networkish can be used to allude to a Network, by specifing:
+ *  A Networkish can be used to allude to a Network, by specifying:
  *  - a [[Network]] object
  *  - a well-known (or registered) network name
  *  - a well-known (or registered) chain ID
@@ -100,7 +100,7 @@ export class Network {
     /**
      *  The network common name.
      *
-     *  This is the canonical name, as networks migh have multiple
+     *  This is the canonical name, as networks might have multiple
      *  names.
      */
     get name(): string { return this.#name; }
