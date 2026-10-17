@@ -447,6 +447,22 @@ _code: commify  @lang<script>
     return `${ neg }${ whole }.${ frac }`;
   }
 
+_subsection: Automated Migration  @<migrate-automated>
+
+For larger codebases, the community-maintained
+[EtherMod](https://github.com/softalpha0/EtherMod) codemod can automate most of the
+mechanical changes described above, including namespace
+flattening (``ethers.utils.*`` to ``ethers.*``), provider
+renames (``Web3Provider`` to ``BrowserProvider``), ``BigNumber``
+to ``BigInt`` conversions and import cleanup.
+
+The project ships a GitHub Actions workflow which runs the
+codemod in CI and opens the migration as a pull request, so
+every change can be reviewed before merging, without running
+arbitrary code locally. The codemod is also published on the
+[Codemod Registry](https://app.codemod.com/ethers-v5-to-v6).
+
+
   commify("1234.5");
 
 _subsection: Removed Classes and functions  @<migrate-missing>
