@@ -456,5 +456,8 @@ function injectCommonNetworks(): void {
     registerEth("optimism-goerli", 420, { });
     registerEth("optimism-sepolia", 11155420, { });
 
+    registerEth("valuechain", 286623, { });
+    registerEth("valuechain-testnet", 138565, { });
+
     registerEth("xdai", 100, { ensNetwork: 1 });
 }
