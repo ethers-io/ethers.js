@@ -247,6 +247,20 @@ describe("Test Provider Transaction operations", function() {
 });
 
 describe("Test Networks", function() {
+    for (const [ name, chainId ] of [
+        [ "valuechain", 286623 ],
+        [ "valuechain-testnet", 138565 ],
+    ] as const) {
+        // Validates both ValueChain networks resolve by name, numeric ID and bigint ID.
+        it(`recognizes ${ name } by name and chain ID`, function() {
+            for (const value of [ name, chainId, BigInt(chainId) ]) {
+                const network = Network.from(value);
+                assert.equal(network.name, name, "name");
+                assert.equal(network.chainId, BigInt(chainId), "chainId");
+            }
+        });
+    }
+
     const networks = [
         "mainnet", "sepolia", "holesky",
         "arbitrum", "arbitrum-sepolia",
