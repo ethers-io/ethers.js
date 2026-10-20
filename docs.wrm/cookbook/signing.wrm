@@ -270,4 +270,89 @@ contract RecoverMessage {
 
 _subsection: EIP-712 Typed Data  @<cookbook-signing-eip712>
 
-//Coming soon...//
+EIP-712 typed structured data is a way to sign data with a
+clear structure, so a user can see exactly what they are
+signing instead of an opaque hash. A Wallet can sign typed
+data with signTypedData, and anyone can recover the signer's
+address from the signature with verifyTypedData, for
+example, to verify on a server or in another part of an
+application that a given account signed a given message.
+
+The data is described by three parts. The domain identifies
+the signing domain (name, version, chainId and the verifying
+contract), so a signature made for one application or chain
+cannot be replayed in another. The types describe the
+structure of the data, as field names and types. The value
+is the data itself, matching types.
+
+_code: JavaScript  @lang<javascript>
+
+
+// A private key for demonstration only; never use a known
+// key with real funds
+wallet = new Wallet("0x0123456789012345678901234567890123456789012345678901234567890123");
+wallet.address
+//_result:
+
+
+// The domain; identifies the signing domain, so a signature
+// made for one application or chain cannot be replayed in
+// another
+domain = {
+  name: "Ether Mail",
+  version: "1",
+  chainId: 1,
+  verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+};
+
+
+// The types; the structure of the data, as field names
+// and types
+types = {
+  Person: [
+    { name: "name", type: "string" },
+    { name: "wallet", type: "address" }
+  ],
+  Mail: [
+    { name: "from", type: "Person" },
+    { name: "to", type: "Person" },
+    { name: "contents", type: "string" }
+  ]
+};
+
+
+// The value; the data itself, matching types
+value = {
+  from: {
+    name: "Cow",
+    wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+  },
+  to: {
+    name: "Bob",
+    wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+  },
+  contents: "Hello, Bob!"
+};
+
+
+// Sign the typed data
+signature = await wallet.signTypedData(domain, types, value);
+//_result:
+
+
+// Recover the signer's address; compare it with the
+// expected signer to verify the signature
+signerAddress = verifyTypedData(domain, types, value, signature);
+//_result:
+
+
+// Note: The above recovered address matches the signer
+// address, 0x14791697260E4c9A71f18484C9f997B308e59325
+
+
+_null:
+
+
+If any part of the domain, types or value changes, the
+recovered address will be different, so verification fails
+for tampered data.
