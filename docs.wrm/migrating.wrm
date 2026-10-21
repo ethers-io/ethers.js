@@ -165,6 +165,37 @@ _code: other operations in v6  @lang<script>
   contract.foo.populateTransaction(addr)
 
 
+_subsection: Events and Logs  @<migrate-events>
+
+In v5, a transaction receipt contained an ``events`` array, which included every log emitted during the transaction, already parsed against the contract ABI, with ``event``, ``eventSignature`` and decoded ``args`` properties.
+
+In v6, receipts instead contain a ``logs`` array of raw [[Log]] objects, which are not parsed automatically. To recover the event name and decoded arguments, pass each log to the contract's [[Interface]] using ``parseLog``, which returns a [[ParsedLog]] (or ``null`` for logs that do not match any event in the ABI).
+
+_code: reading events from a receipt in v5  @lang<script>
+  tx = await contract.approve()
+  receipt = await tx.wait()
+
+  // In v5 the receipt events were already parsed
+  event = receipt.events.find(x => x.event === "Approved")
+  amount = event.args[0]
+
+_code: reading events from a receipt in v6  @lang<script>
+  tx = await contract.approve()
+  receipt = await tx.wait()
+
+  // In v6 the receipt contains raw logs; parse the ones you need
+  for (const log of receipt.logs) {
+    parsed = contract.interface.parseLog(log)
+    if (parsed && parsed.name === "Approved") {
+      amount = parsed.args.amount   // or parsed.args[1]
+    }
+  }
+
+_null:
+
+The same applies when filtering historic logs with ``queryFilter``: the results are [[EventLog]] objects, which (unlike a plain [[Log]]) can be parsed directly and expose ``args``, ``eventName`` and ``eventSignature`` properties.
+
+
 _subsection: Importing  @<migrate-importing>
 
 In v5, the project was maintained as a large set of sub-packages
