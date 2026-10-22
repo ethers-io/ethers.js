@@ -168,6 +168,10 @@ _code: connecting to a JSON-RPC URL  @lang<script>
   // Get write access as an account by getting the signer
   signer = await provider.getSigner()
 
+To spread requests over several JSON-RPC URLs with retries and
+failover, you can run a local JSON-RPC proxy (e.g. [[link-erpc]])
+and pass its URL to the [[JsonRpcProvider]] instead.
+
 
 _subsection: User Interaction  @<starting-display>
 
