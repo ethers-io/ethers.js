@@ -362,13 +362,13 @@ function getFuzzyMode(quorum: number, results: Array<TallyResult>): undefined | 
  *  by requiring multiple backends to aggree and performance by allowing
  *  faster backends to respond earlier.
  *
-  *  Subscriptions are not forwarded to the backend providers. Event
-   *  listeners attached to a **FallbackProvider** are polled, even if one
-    *  of the backends is a [[WebSocketProvider]], since the fallback
-     *  provider only uses the stateless API of its backends. To receive
-      *  real-time events over a websocket, attach the listener directly to
-       *  the WebSocketProvider instance instead.
-        *
+ *  Subscriptions are not forwarded to the backend providers. Event
+ *  listeners attached to a **FallbackProvider** are polled, even if one
+ *  of the backends is a [[WebSocketProvider]], since the fallback
+ *  provider only uses the stateless API of its backends. To receive
+ *  real-time events over a websocket, attach the listener directly to
+ *  the WebSocketProvider instance instead.
+ *
  */
 export class FallbackProvider extends AbstractProvider {
 
