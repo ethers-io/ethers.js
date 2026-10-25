@@ -516,7 +516,11 @@ export class FixedNumber {
 
         let value = this.value + bump;
         const tens = getTens(delta);
-        value = (value / tens) * tens;
+        // BigInt division truncates toward zero; floor toward -Infinity instead,
+        // so negative values round to nearest (ties up) like positive ones
+        let quotient = value / tens;
+        if (value < BN_0 && quotient * tens !== value) { quotient -= BN_1; }
+        value = quotient * tens;
 
         checkValue(value, this.#format, "round");
 
