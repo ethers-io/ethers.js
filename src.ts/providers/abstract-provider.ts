@@ -1260,8 +1260,10 @@ export class AbstractProvider implements Provider {
 
         return new Promise(async (resolve, reject) => {
             let timer: null | Timer = null;
+            let cancelled = false;
 
             const listener = (async (blockNumber: number) => {
+                if (cancelled) { return; }
                 try {
                     const receipt = await this.getTransactionReceipt(hash);
                     if (receipt != null) {
@@ -1278,13 +1280,14 @@ export class AbstractProvider implements Provider {
                 } catch (error) {
                     console.log("EEE", error);
                 }
-                this.once("block", listener);
+                if (!cancelled) { this.once("block", listener); }
             });
 
             if (timeout != null) {
                 timer = setTimeout(() => {
                     if (timer == null) { return; }
                     timer = null;
+                    cancelled = true;
                     this.off("block", listener);
                     reject(makeError("timeout", "TIMEOUT", { reason: "timeout" }));
                 }, timeout);
