@@ -31,7 +31,7 @@ export function getPollingSubscriber(provider: AbstractProvider, event: Provider
  */
 export class PollingBlockSubscriber implements Subscriber {
     #provider: AbstractProvider;
-    #poller: null | number;
+    #poller: null | { timer: null | number };
 
     #interval: number;
 
@@ -56,26 +56,26 @@ export class PollingBlockSubscriber implements Subscriber {
     get pollingInterval(): number { return this.#interval; }
     set pollingInterval(value: number) { this.#interval = value; }
 
-    async #poll(): Promise<void> {
+    async #poll(poller: { timer: null | number }): Promise<void> {
         try {
             const blockNumber = await this.#provider.getBlockNumber();
+
+            if (this.#poller !== poller) { return; }
 
             // Bootstrap poll to setup our initial block number
             if (this.#blockNumber === -2) {
                 this.#blockNumber = blockNumber;
-                return;
-            }
-
-            // @TODO: Put a cap on the maximum number of events per loop?
-
-            if (blockNumber !== this.#blockNumber) {
+            } else if (blockNumber !== this.#blockNumber) {
+                // @TODO: Put a cap on the maximum number of events per loop?
                 for (let b = this.#blockNumber + 1; b <= blockNumber; b++) {
                     // We have been stopped
-                    if (this.#poller == null) { return; }
+                    if (this.#poller !== poller) { return; }
 
+                    this.#blockNumber = b;
                     await this.#provider.emit("block", b);
                 }
 
+                if (this.#poller !== poller) { return; }
                 this.#blockNumber = blockNumber;
             }
 
@@ -85,21 +85,24 @@ export class PollingBlockSubscriber implements Subscriber {
             //console.log(error);
         }
 
-        // We have been stopped
-        if (this.#poller == null) { return; }
+        // We have been stopped, or a new polling loop has started
+        if (this.#poller !== poller) { return; }
 
-        this.#poller = this.#provider._setTimeout(this.#poll.bind(this), this.#interval);
+        poller.timer = this.#provider._setTimeout(() => this.#poll(poller), this.#interval);
     }
 
     start(): void {
-        if (this.#poller) { return; }
-        this.#poller = this.#provider._setTimeout(this.#poll.bind(this), this.#interval);
-        this.#poll();
+        if (this.#poller != null) { return; }
+        const poller = { timer: null };
+        this.#poller = poller;
+        this.#poll(poller);
     }
 
     stop(): void {
-        if (!this.#poller) { return; }
-        this.#provider._clearTimeout(this.#poller);
+        if (this.#poller == null) { return; }
+        if (this.#poller.timer != null) {
+            this.#provider._clearTimeout(this.#poller.timer);
+        }
         this.#poller = null;
     }
 
