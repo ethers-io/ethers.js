@@ -164,6 +164,13 @@ function getBaseEncoder(type: string): null | ((value: any) => string) {
             return zeroPadValue(getAddress(value), 32);
         };
         case "bool": return function(value: boolean) {
+            // A string is never coerced by truthiness, otherwise "false"
+            // would be encoded as true; match other EIP-712 implementations
+            // by accepting only the canonical "true" and "false" strings
+            if (typeof(value) === "string") {
+                assertArgument(value === "true" || value === "false", "invalid boolean value", "value", value);
+                return ((value === "true") ? hexTrue: hexFalse);
+            }
             return ((!value) ? hexFalse: hexTrue);
         };
         case "bytes": return function(value: BytesLike) {
@@ -638,6 +645,7 @@ export class TypedDataEncoder {
                     case "address":
                         return value.toLowerCase();
                     case "bool":
+                        if (typeof(value) === "string") { return (value === "true"); }
                         return !!value;
                     case "string":
                         assertArgument(typeof(value) === "string", "invalid string", "value", value);

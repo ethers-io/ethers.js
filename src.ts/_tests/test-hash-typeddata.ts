@@ -168,3 +168,44 @@ describe("Tests Typed Data (EIP-712) aliases", function() {
         assert.equal(data, encoded, "encoded");
     });
 });
+
+describe("Tests Typed Data (EIP-712) bool values", function() {
+    const types = {
+        foo: [
+            { name: "a", type: "bool" },
+            { name: "b", type: "bool[]" },
+        ]
+    };
+
+    it(`encodes the strings "true" and "false" as their booleans`, function() {
+        const encoder = TypedDataEncoder.from(types);
+        assert.equal(encoder.encodeData("foo", { a: "false", b: [ "false", "true" ] }),
+            encoder.encodeData("foo", { a: false, b: [ false, true ] }), "encoded");
+        assert.equal(encoder.encodeData("foo", { a: "true", b: [ ] }),
+            encoder.encodeData("foo", { a: true, b: [ ] }), "encoded");
+
+        const payload = TypedDataEncoder.getPayload({ }, types, { a: "false", b: [ "false", "true" ] });
+        assert.deepStrictEqual(payload.message, { a: false, b: [ false, true ] }, "payload");
+    });
+
+    it(`keeps encoding boolean and number values`, function() {
+        const encoder = TypedDataEncoder.from(types);
+        const hexFalse = "0x" + "00".repeat(32), hexTrue = "0x" + "00".repeat(31) + "01";
+        for (const [ value, expected ] of [ [ true, hexTrue ], [ false, hexFalse ], [ 1, hexTrue ], [ 0, hexFalse ] ]) {
+            // skip the 0x prefix and the type hash; the next word is "a"
+            const encoded = encoder.encodeData("foo", { a: value, b: [ ] });
+            assert.equal("0x" + encoded.substring(66, 130), expected, JSON.stringify(value));
+        }
+    });
+
+    for (const value of [ "", "0", "1", "False", "TRUE", "no" ]) {
+        it(`fails on an invalid boolean string: ${ JSON.stringify(value) }`, function() {
+            assert.throws(() => {
+                TypedDataEncoder.from(types).encodeData("foo", { a: value, b: [ ] });
+            }, (error: any) => {
+                return (error.code === "INVALID_ARGUMENT" &&
+                    error.shortMessage === "invalid boolean value");
+            });
+        });
+    }
+});
