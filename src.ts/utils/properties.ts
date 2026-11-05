@@ -34,7 +34,9 @@ export async function resolveProperties<T>(value: { [ P in keyof T ]: T[P] | Pro
     const keys = Object.keys(value);
     const results = await Promise.all(keys.map((k) => Promise.resolve(value[<keyof T>k])));
     return results.reduce((accum: any, v, index) => {
-        accum[keys[index]] = v;
+        Object.defineProperty(accum, keys[index], {
+            enumerable: true, configurable: true, writable: true, value: v
+        });
         return accum;
     }, <{ [ P in keyof T]: T[P] }>{ });
 }
