@@ -7,14 +7,15 @@
 function checkType(value: any, type: string, name: string): void {
     const types = type.split("|").map(t => t.trim());
     for (let i = 0; i < types.length; i++) {
-        switch (type) {
+        const currentType = types[i];
+        switch (currentType) {
             case "any":
                 return;
             case "bigint":
             case "boolean":
             case "number":
             case "string":
-                if (typeof(value) === type) { return; }
+                if (typeof(value) === currentType) { return; }
         }
     }
 
