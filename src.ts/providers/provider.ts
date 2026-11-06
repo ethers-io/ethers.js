@@ -30,7 +30,7 @@ const BN_0 = BigInt(0);
  *  or a decimal of hex string.
  *
  *  **blockhash** - specifies a specific block by its blockhash; this allows
- *  potentially orphaned blocks to be specifed, without ambiguity, but many
+ *  potentially orphaned blocks to be specified, without ambiguity, but many
  *  backends do not support this for some operations.
  */
 export type BlockTag = BigNumberish | string;
@@ -567,7 +567,7 @@ export class Block implements BlockParams, Iterable<string> {
     readonly excessBlobGas!: null | bigint;
 
     /**
-     *  The miner coinbase address, wihch receives any subsidies for
+     *  The miner coinbase address, which receives any subsidies for
      *  including this block.
      */
     readonly miner!: string;
