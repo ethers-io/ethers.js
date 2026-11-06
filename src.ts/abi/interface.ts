@@ -1,7 +1,7 @@
 /**
  *  The Interface class is a low-level class that accepts an
  *  ABI and provides all the necessary functionality to encode
- *  and decode paramaters to and results from methods, events
+ *  and decode parameters to and results from methods, events
  *  and errors.
  *
  *  It also provides several convenience methods to automatically

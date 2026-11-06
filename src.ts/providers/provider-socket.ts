@@ -251,7 +251,7 @@ export class SocketProvider extends JsonRpcApiProvider {
 
     /**
      *  Register a new subscriber. This is used internalled by Subscribers
-     *  and generally is unecessary unless extending capabilities.
+     *  and generally is unnecessary unless extending capabilities.
      */
     _register(filterId: number | string, subscriber: SocketSubscriber): void {
         this.#subs.set(filterId, subscriber);
