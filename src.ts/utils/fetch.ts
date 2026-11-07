@@ -502,7 +502,13 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
             operation: "request.send", reason: "timeout", request: _request
         });
 
-        if (delay > 0) { await wait(delay); }
+        if (delay > 0) {
+            // Respect the request lifetime and the maximum timer delay.
+            const stall = Math.min(delay, Math.max(0, expires - getTime()), 0x7fffffff);
+            await wait(stall);
+            checkSignal(_request.#signal);
+            return this.#send(attempt, expires, delay - stall, _request, _response);
+        }
 
         let req = this.clone();
         const scheme = (req.url.split(":")[0] || "").toLowerCase();
@@ -557,7 +563,7 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
                 const retryAfter = response.headers["retry-after"];
                 let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
                 if (typeof(retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
-                    delay = parseInt(retryAfter);
+                    delay = parseInt(retryAfter) * 1000;
                 }
                 return req.clone().#send(attempt + 1, expires, delay, _request, response);
             }
