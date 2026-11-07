@@ -802,7 +802,7 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
      */
     _getSubscriber(sub: Subscription): Subscriber {
 
-        // Pending Filters aren't availble via polling
+        // Pending Filters aren't available via polling
         if (sub.type === "pending") { return new FilterIdPendingSubscriber(this); }
 
         if (sub.type === "event") {
