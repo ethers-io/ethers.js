@@ -17,6 +17,7 @@ import "./test-providers-wildcard.js";
 import "./test-rlp.js"
 import "./test-transaction.js";
 import "./test-utils-maths.js";
+import "./test-utils-fetch.js";
 import "./test-utils-misc.js";
 import "./test-utils-units.js";
 import "./test-utils-utf8.js";
