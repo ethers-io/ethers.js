@@ -30,6 +30,19 @@ export {
 
 export { Typed } from "./typed.js";
 
+export { Coder, Reader, Writer } from "./coders/abstract-coder.js";
+
+export { AddressCoder } from "./coders/address.js";
+export { AnonymousCoder } from "./coders/anonymous.js";
+export { ArrayCoder } from "./coders/array.js";
+export { BooleanCoder } from "./coders/boolean.js";
+export { BytesCoder, DynamicBytesCoder } from "./coders/bytes.js";
+export { FixedBytesCoder } from "./coders/fixed-bytes.js";
+export { NullCoder } from "./coders/null.js";
+export { NumberCoder } from "./coders/number.js";
+export { StringCoder } from "./coders/string.js";
+export { TupleCoder } from "./coders/tuple.js";
+
 export type {
     JsonFragment, JsonFragmentType,
     FormatType, FragmentType, ParamTypeWalkAsyncFunc, ParamTypeWalkFunc
