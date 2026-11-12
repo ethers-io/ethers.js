@@ -101,11 +101,15 @@ export function getBigInt(value: BigNumberish, name?: string): bigint {
             return BigInt(value);
         case "string":
             try {
-                if (value === "") { throw new Error("empty string"); }
-                if (value[0] === "-" && value[1] !== "-") {
-                    return -BigInt(value.substring(1));
-                }
-                return BigInt(value);
+                // Reject malformed strings (e.g. "-" or "- 42") that BigInt
+                // would otherwise coerce: an optional sign, then decimal,
+                // hex (0x), binary (0b) or octal (0o) digits, nothing else.
+                // The sign is applied separately because BigInt does not
+                // accept a sign in front of a hex, binary or octal literal.
+                const match = /^([+-]?)(0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[0-9]+)$/.exec(value);
+                if (match == null) { throw new Error("invalid format"); }
+                const result = BigInt(match[2]);
+                return (match[1] === "-") ? -result : result;
             } catch(e: any) {
                 assertArgument(false, `invalid BigNumberish string: ${ e.message }`, name || "value", value);
             }
