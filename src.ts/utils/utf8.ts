@@ -279,6 +279,9 @@ export function toUtf8Bytes(str: string, form?: UnicodeNormalizationForm): Uint8
             result.push(((pair >> 6) & 0x3f) | 0x80);
             result.push((pair & 0x3f) | 0x80);
 
+        } else if ((c & 0xfc00) == 0xdc00) {
+            assertArgument(false, "invalid surrogate pair", "str", str);
+        
         } else {
             result.push((c >> 12) | 0xe0);
             result.push(((c >> 6) & 0x3f) | 0x80);

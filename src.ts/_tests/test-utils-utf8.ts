@@ -127,6 +127,15 @@ describe("Tests UTF-8 bad strings", function() {
             return (error.message.startsWith("invalid surrogate pair"));
         });
     });
+    it("correctly fails to get UTF-8 bytes from lone low surrogate", function() {
+        assert.throws(() => {
+            const text = String.fromCharCode(0xdc00);
+            const result = toUtf8Bytes(text);
+            console.log(result);
+        }, (error: any) => {
+            return (error.message.startsWith("invalid surrogate pair"));
+        });
+    });
 });
 
 describe("Tests UTF-8 bad strings", function() {
