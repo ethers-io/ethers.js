@@ -304,7 +304,17 @@ export class SocketProvider extends JsonRpcApiProvider {
      *  transport to be processed and dispatched.
      */
     async _processMessage(message: string): Promise<void> {
-        const result = <JsonRpcResult | JsonRpcError | JsonRpcSubscription>(JSON.parse(message));
+        let result: JsonRpcResult | JsonRpcError | JsonRpcSubscription;
+        try {
+            result = JSON.parse(message);
+        } catch (error) {
+            this.emit("error", makeError("received unexpected message", "UNKNOWN_ERROR", {
+                reasonCode: "UNEXPECTED_MESSAGE",
+                result: message,
+                error
+            }));
+            return;
+        }
 
         if (result && typeof(result) === "object" && "id" in result) {
             const callback = this.#callbacks.get(result.id);
@@ -319,7 +329,9 @@ export class SocketProvider extends JsonRpcApiProvider {
 
             callback.resolve(result);
 
-        } else if (result && result.method === "eth_subscription") {
+        } else if (result && result.method === "eth_subscription" &&
+            result.params != null && typeof(result.params) === "object" &&
+            typeof(result.params.subscription) === "string" && "result" in result.params) {
             const filterId = result.params.subscription;
             const subscriber = this.#subs.get(filterId);
             if (subscriber) {
