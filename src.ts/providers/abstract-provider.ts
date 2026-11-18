@@ -987,7 +987,7 @@ export class AbstractProvider implements Provider {
 
             // These are the recommended EIP-1559 heuristics for fee data
             const block = this._wrapBlock(_block, network);
-            if (block && block.baseFeePerGas) {
+            if (block && block.isLondon()) {
                 maxPriorityFeePerGas = (priorityFee != null) ? priorityFee: BigInt("1000000000");
                 maxFeePerGas = (block.baseFeePerGas * BN_2) + maxPriorityFeePerGas;
             }

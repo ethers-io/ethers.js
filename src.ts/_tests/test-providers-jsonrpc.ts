@@ -78,6 +78,38 @@ function createProvider(testFunc: ProcessRequest): JsonRpcProvider {
     return new JsonRpcProvider(req, undefined, { cacheTimeout: -1 });
 }
 
+describe("EIP-1559 fee data", function() {
+    for (const [ baseFee, expectedMaxFee ] of [
+        [ undefined, null ], [ "0x0", BigInt(2) ], [ "0x3", BigInt(8) ]
+    ] as const) {
+        it(`handles a base fee of ${ baseFee }`, async function() {
+            const provider = createProvider((method) => {
+                switch (method) {
+                    case "eth_getBlockByNumber":
+                        return {
+                            number: "0x1", parentHash: id("parent"), timestamp: "0x1",
+                            difficulty: "0x0", gasLimit: "0x100000", gasUsed: "0x0",
+                            extraData: "0x", transactions: [], baseFeePerGas: baseFee
+                        };
+                    case "eth_maxPriorityFeePerGas": return "0x2";
+                    case "eth_gasPrice": return "0x2";
+                    default: return undefined;
+                }
+            });
+            try {
+                const block = await provider.getBlock("latest");
+                assert.ok(block);
+                assert.strictEqual(block.isLondon(), baseFee != null);
+                const fees = await provider.getFeeData();
+                assert.strictEqual(fees.maxFeePerGas, expectedMaxFee);
+                assert.strictEqual(fees.maxPriorityFeePerGas, baseFee == null ? null: BigInt(2));
+            } finally {
+                provider.destroy();
+            }
+        });
+    }
+});
+
 describe("Ensure Catchable Errors", function() {
     it("Can catch bad broadcast replies", async function() {
         this.timeout(15000);
