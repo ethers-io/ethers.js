@@ -6,6 +6,8 @@ import {
     JsonRpcProvider, Transaction, Wallet
 } from "../index.js";
 
+import { testReceipt } from "./blockchain-data.js";
+
 const StatusMessages: Record<number, string> = {
   200: "OK",
   400: "BAD REQUEST",
@@ -77,6 +79,27 @@ function createProvider(testFunc: ProcessRequest): JsonRpcProvider {
 
     return new JsonRpcProvider(req, undefined, { cacheTimeout: -1 });
 }
+
+describe("Transaction receipt fees", function() {
+    for (const [ receipt, fee ] of [
+        [ testReceipt.mainnet[0], BigInt("348167900000000") ],
+        [ testReceipt.sepolia[0], BigInt("13354113594904896") ]
+    ] as const) {
+        it(`returns the total fee for ${ receipt.test }`, async function() {
+            const rpcReceipt = JSON.parse(JSON.stringify(receipt, (_, value) =>
+                typeof(value) === "bigint" ? "0x" + value.toString(16): value));
+            const provider = createProvider((method) =>
+                method === "eth_getTransactionReceipt" ? rpcReceipt: undefined);
+            try {
+                const result = await provider.getTransactionReceipt(receipt.hash);
+                assert.ok(result);
+                assert.strictEqual(result.fee, fee);
+            } finally {
+                provider.destroy();
+            }
+        });
+    }
+});
 
 describe("Ensure Catchable Errors", function() {
     it("Can catch bad broadcast replies", async function() {
