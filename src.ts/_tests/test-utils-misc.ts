@@ -1,9 +1,12 @@
 import assert from "assert";
+import { createServer } from "node:http";
+import { performance } from "node:perf_hooks";
 
 import {
     decodeBase64, encodeBase64,
     defineProperties, isError,
-    toUtf8Bytes
+    toUtf8Bytes,
+    FetchRequest
 } from "../index.js";
 
 
@@ -31,6 +34,45 @@ describe("Base64 Coding", function() {
             }
         });
     }
+});
+
+describe("FetchRequest", function() {
+    it("respects a numeric Retry-After header in seconds", async function() {
+        this.timeout(10000);
+
+        const arrivals: Array<number> = [];
+
+        const server = createServer((_req, res) => {
+            const now = performance.now();
+
+            arrivals.push(now);
+
+            if (now - arrivals[0] < 1000) {
+                res.writeHead(429, { "Retry-After": "1" });
+                res.end("rate limited");
+            } else {
+                res.writeHead(200);
+                res.end("ok");
+            }
+        });
+
+        await new Promise<void>((resolve) => { server.listen(0, "127.0.0.1", resolve); });
+
+        try {
+            const address = server.address();
+            assert.ok(address != null && typeof(address) !== "string");
+
+            const response = await new FetchRequest(`http://127.0.0.1:${ address.port }`).send();
+            response.assertOk();
+
+            assert.equal(response.statusCode, 200, "statusCode");
+            assert.equal(arrivals.length, 2, "requests");
+            assert.ok(arrivals[1] - arrivals[0] >= 900, "retry delay");
+        } finally {
+            server.closeAllConnections();
+            await new Promise<void>((resolve) => { server.close(() => { resolve(); }); });
+        }
+    });
 });
 
 describe("Test Minor Features", function() {

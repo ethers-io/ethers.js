@@ -76,6 +76,9 @@ export type FetchGetUrlFunc = (req: FetchRequest, signal?: FetchCancelSignal) =>
 const MAX_ATTEMPTS = 12;
 const SLOT_INTERVAL = 250;
 
+// The longest delay the native timer supports (i.e. setTimeout).
+const MAX_TIMER_DELAY = 2147483647;
+
 // The global FetchGetUrlFunc implementation.
 let defaultGetUrlFunc: FetchGetUrlFunc = createGetUrl();
 
@@ -557,7 +560,14 @@ export class FetchRequest implements Iterable<[ key: string, value: string ]> {
                 const retryAfter = response.headers["retry-after"];
                 let delay = this.#throttle.slotInterval * Math.trunc(Math.random() * Math.pow(2, attempt));
                 if (typeof(retryAfter) === "string" && retryAfter.match(/^[1-9][0-9]*$/)) {
-                    delay = parseInt(retryAfter);
+                    // The Retry-After header is in seconds (RFC 9110),
+                    // while the retry delay is in milliseconds.
+                    delay = parseInt(retryAfter) * 1000;
+
+                    // A very large value would overflow the native timer
+                    // and waiting past the request lifetime would stall the
+                    // request, so cap the delay at the time remaining.
+                    delay = Math.min(delay, MAX_TIMER_DELAY, Math.max(0, expires - getTime()));
                 }
                 return req.clone().#send(attempt + 1, expires, delay, _request, response);
             }
