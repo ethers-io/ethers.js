@@ -20,6 +20,12 @@ import type {
 } from "./provider-jsonrpc.js";
 import type { Networkish } from "./network.js";
 
+// Share subscription state with subscribers for cleanup without exposing it.
+const subscriberMaps = new WeakMap<SocketProvider, {
+    subscribers: Map<number | string, SocketSubscriber>,
+    pending: Map<number | string, Array<any>>
+}>();
+
 
 type JsonRpcSubscription = {
     method: string,
@@ -68,11 +74,23 @@ export class SocketSubscriber implements Subscriber {
     }
 
     stop(): void {
-        (<Promise<number>>(this.#filterId)).then((filterId) => {
-            if (this.#provider.destroyed) { return; }
-            this.#provider.send("eth_unsubscribe", [ filterId ]);
-        });
+        const filterId = this.#filterId;
+        if (filterId == null) { return; }
         this.#filterId = null;
+        const provider = this.#provider;
+        const maps = subscriberMaps.get(provider)!;
+        filterId.then((filterId) => {
+            maps.subscribers.delete(filterId);
+            maps.pending.delete(filterId);
+            if (provider.destroyed) { return; }
+            // Discard notifications received while unsubscribe was in flight.
+            provider.send("eth_unsubscribe", [ filterId ]).then(() => {
+                maps.pending.delete(filterId);
+            }, (error) => {
+                maps.pending.delete(filterId);
+                provider.emit("error", error);
+            });
+        });
     }
 
     // @TODO: pause should trap the current blockNumber, unsub, and on resume use getLogs
@@ -217,6 +235,7 @@ export class SocketProvider extends JsonRpcApiProvider {
         this.#callbacks = new Map();
         this.#subs = new Map();
         this.#pending = new Map();
+        subscriberMaps.set(this, { subscribers: this.#subs, pending: this.#pending });
     }
 
     // This value is only valid after _start has been called
