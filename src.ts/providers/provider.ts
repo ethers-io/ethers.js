@@ -1177,10 +1177,11 @@ export class TransactionReceipt implements TransactionReceiptParams, Iterable<Lo
     }
 
     /**
-     *  The total fee for this transaction, in wei.
+     *  The total fee for this transaction, including any blob gas fee, in wei.
      */
     get fee(): bigint {
-        return this.gasUsed * this.gasPrice;
+        const blobFee = (this.blobGasUsed ?? BN_0) * (this.blobGasPrice ?? BN_0);
+        return this.gasUsed * this.gasPrice + blobFee;
     }
 
     /**
