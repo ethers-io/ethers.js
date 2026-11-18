@@ -784,10 +784,10 @@ export class Block implements BlockParams, Iterable<string> {
     isMined(): this is MinedBlock { return !!this.hash; }
 
     /**
-     *  Returns true if this block is an [[link-eip-2930]] block.
+     *  Returns true if this block is an [[link-eip-1559]] block.
      */
     isLondon(): this is (Block & { baseFeePerGas: bigint }) {
-        return !!this.baseFeePerGas;
+        return this.baseFeePerGas != null;
     }
 
     /**
