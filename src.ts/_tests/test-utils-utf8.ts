@@ -51,6 +51,48 @@ describe("Tests UTF-8 bad strings", function() {
             error: "OVERRUN"
         },
         {
+            name: "OVERRUN before ASCII",
+            bytes: new Uint8Array([ 0xe2, 0x41 ]),
+            ignore: "A",
+            replace: "\ufffdA",
+            error: "OVERRUN"
+        },
+        {
+            name: "OVERRUN before two ASCII bytes",
+            bytes: new Uint8Array([ 0xf0, 0x41, 0x42 ]),
+            ignore: "AB",
+            replace: "\ufffdAB",
+            error: "OVERRUN"
+        },
+        {
+            name: "OVERRUN with continuation before ASCII",
+            bytes: new Uint8Array([ 0xf0, 0x80, 0x41 ]),
+            ignore: "A",
+            replace: "\ufffdA",
+            error: "OVERRUN"
+        },
+        {
+            name: "OVERRUN before a complete multibyte character",
+            bytes: new Uint8Array([ 0xf0, 0xc2, 0xa2 ]),
+            ignore: "\u00a2",
+            replace: "\ufffd\u00a2",
+            error: "OVERRUN"
+        },
+        {
+            name: "OVERRUN with only continuation bytes",
+            bytes: new Uint8Array([ 0xf0, 0x80, 0x80 ]),
+            ignore: "",
+            replace: "\ufffd",
+            error: "OVERRUN"
+        },
+        {
+            name: "OVERRUN before another truncated sequence",
+            bytes: new Uint8Array([ 0xf0, 0xe2, 0x82 ]),
+            ignore: "",
+            replace: "\ufffd\ufffd",
+            error: "OVERRUN"
+        },
+        {
             name: "missing continue",
             bytes: new Uint8Array([ 0x41,  0x42,  0xe2,  0xe2, 0x82, 0xac,  0x43 ]),
             ignore: "AB\u20acC",

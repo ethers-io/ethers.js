@@ -84,20 +84,14 @@ function errorFunc(reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, o
 
 function ignoreFunc(reason: Utf8ErrorReason, offset: number, bytes: Uint8Array, output: Array<number>, badCodepoint?: number): number {
 
-    // If there is an invalid prefix (including stray continuation), skip any additional continuation bytes
-    if (reason === "BAD_PREFIX" || reason === "UNEXPECTED_CONTINUE") {
+    // Skip continuation bytes after an invalid prefix or truncated sequence.
+    if (reason === "BAD_PREFIX" || reason === "UNEXPECTED_CONTINUE" || reason === "OVERRUN") {
         let i = 0;
         for (let o = offset + 1; o < bytes.length; o++) {
             if (bytes[o] >> 6 !== 0x02) { break; }
             i++;
         }
         return i;
-    }
-
-    // This byte runs us past the end of the string, so just jump to the end
-    // (but the first byte was read already read and therefore skipped)
-    if (reason === "OVERRUN") {
-        return bytes.length - offset - 1;
     }
 
     // Nothing to skip
