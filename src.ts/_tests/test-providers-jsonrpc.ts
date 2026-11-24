@@ -78,6 +78,35 @@ function createProvider(testFunc: ProcessRequest): JsonRpcProvider {
     return new JsonRpcProvider(req, undefined, { cacheTimeout: -1 });
 }
 
+describe("JSON-RPC timeout errors", function() {
+    const payload = { id: 1, jsonrpc: "2.0" as const, method: "eth_getLogs", params: [ { } ] };
+
+    it("classifies a request timed out response as TIMEOUT", function() {
+        const provider = new JsonRpcProvider();
+        try {
+            const error = { code: -32000, message: "request timed out" };
+            const result = provider.getRpcError(payload, { id: payload.id, error });
+            assert.ok(isError(result, "TIMEOUT"), "expected JSON-RPC TIMEOUT");
+            assert.equal(result.operation, payload.method);
+            assert.equal(result.reason, error.message);
+            assert.deepEqual(result.info, { payload, error });
+        } finally {
+            provider.destroy();
+        }
+    });
+
+    it("leaves unrelated provider errors unclassified", function() {
+        const provider = new JsonRpcProvider();
+        try {
+            const error = { code: -32000, message: "request failed" };
+            const result = provider.getRpcError(payload, { id: payload.id, error });
+            assert.ok(isError(result, "UNKNOWN_ERROR"));
+        } finally {
+            provider.destroy();
+        }
+    });
+});
+
 describe("Ensure Catchable Errors", function() {
     it("Can catch bad broadcast replies", async function() {
         this.timeout(15000);
