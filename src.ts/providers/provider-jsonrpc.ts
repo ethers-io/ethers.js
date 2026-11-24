@@ -1083,6 +1083,12 @@ export abstract class JsonRpcApiProvider extends AbstractProvider {
             });
         }
 
+        if (typeof(error.message) === "string" && error.message.trim().toLowerCase() === "request timed out") {
+            return makeError("request timed out", "TIMEOUT", {
+                operation: method, reason: error.message, info: { error, payload }
+            });
+        }
+
         return makeError("could not coalesce error", "UNKNOWN_ERROR", { error, payload });
     }
 
